@@ -682,7 +682,7 @@ public class NativeBroker extends DBBroker {
                     final Collection parentCollection = collectionsCache.getIfPresent(parentCollectionUri);
                     if (parentCollection != null) {
                         // parent collection is in cache, is our Collection present on disk?
-                        final Collection loadedCollection = loadCollection(collectionUri, BFile.UNKNOWN_ADDRESS);
+                        final Collection loadedCollection = loadCollection(collectionUri);
 
                         if (loadedCollection != null) {
                             // loaded it from disk
@@ -723,7 +723,7 @@ public class NativeBroker extends DBBroker {
     private Tuple2<Boolean, Collection> getOrCreateCollectionExplicit_rootCollection(final Txn transaction, final XmldbURI collectionUri, final CollectionCache collectionsCache) throws PermissionDeniedException, IOException, LockException, ReadOnlyException, TriggerException {
         // this is the root collection, so no parent, is the Collection present on disk?
 
-        final Collection loadedRootCollection = loadCollection(collectionUri, BFile.UNKNOWN_ADDRESS);
+        final Collection loadedRootCollection = loadCollection(collectionUri);
 
         if (loadedRootCollection != null) {
             // loaded it from disk
@@ -804,8 +804,8 @@ public class NativeBroker extends DBBroker {
             final Optional<Tuple2<Permission, Long>> creationAttributes)
             throws ReadOnlyException, PermissionDeniedException, LockException {
 
-        final Collection collection = creationAttributes.map(attrs -> new MutableCollection(this, collectionUri, attrs._1, attrs._2)).orElseGet(() -> new MutableCollection(this, collectionUri));
-        collection.setId(getNextCollectionId(transaction));
+        final int collectionId = getNextCollectionId(transaction);
+        final Collection collection = creationAttributes.map(attrs -> new MutableCollection(this, collectionId, collectionUri, attrs._1, attrs._2)).orElseGet(() -> new MutableCollection(this, collectionId, collectionUri));
 
         //inherit the group to collection if parent-collection is setGid
         if(parentCollection != null) {
@@ -824,26 +824,16 @@ public class NativeBroker extends DBBroker {
      * Loads a Collection from disk
      *
      * @param collectionUri The URI of the Collection to load
-     * @param address The virtual address in the storage of the Collection if known, else {@link BFile#UNKNOWN_ADDRESS}
      *
      * @return The Collection object loaded from disk, or null if the record does not exist on disk
      */
     private @Nullable @EnsureLocked(mode=LockMode.READ_LOCK, type=LockType.COLLECTION) Collection loadCollection(
-            @EnsureLocked(mode=LockMode.READ_LOCK, type=LockType.COLLECTION) final XmldbURI collectionUri,
-            final long address) throws PermissionDeniedException, LockException, IOException {
-        try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeReadLock(collectionsDb.getLockName())) {
-            VariableByteInput is;
-            if (address == BFile.UNKNOWN_ADDRESS) {
-                final Value key = new CollectionStore.CollectionKey(collectionUri.toString());
-                is = collectionsDb.getAsStream(key);
-            } else {
-                is = collectionsDb.getAsStream(address);
-            }
-            if (is == null) {
-                return null;
-            }
-
-            return MutableCollection.load(this, collectionUri, is);
+            @EnsureLocked(mode=LockMode.READ_LOCK, type=LockType.COLLECTION) final XmldbURI collectionUri)
+            throws PermissionDeniedException, LockException, IOException {
+        try (final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeReadLock(collectionsDb.getLockName())) {
+            final Value key = new CollectionStore.CollectionKey(collectionUri.toString());
+            final VariableByteInput is = collectionsDb.getAsStream(key);
+            return is == null ? null : MutableCollection.load(this, collectionUri, is);
         }
     }
 
@@ -854,27 +844,7 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public Collection openCollection(final XmldbURI uri, final LockMode lockMode) throws PermissionDeniedException {
-        return openCollection(uri, BFile.UNKNOWN_ADDRESS, lockMode);
-    }
-
-    /**
-     * Open a Collection for reading or writing.
-     *
-     * The Collection is identified by its absolute path, e.g. /db/shakespeare.
-     * It will be loaded and locked according to the lockMode argument.
-     *
-     * The caller should take care to release the Collection lock properly by
-     * calling {@link Collection#close()}
-     *
-     * @param path The Collection's path
-     * @param address
-     * @param lockMode the mode for locking the Collection, as specified in {@link LockMode}
-     *
-     * @return the Collection, or null if no Collection matches the path
-     */
-    private @Nullable @EnsureLocked Collection openCollection(final XmldbURI path, final long address, final LockMode lockMode)
-            throws PermissionDeniedException {
-        final XmldbURI collectionUri = prepend(path.toCollectionPathURI().normalizeCollectionPath());
+        final XmldbURI collectionUri = prepend(uri.toCollectionPathURI().normalizeCollectionPath());
 
         final ManagedCollectionLock collectionLock;
         final Runnable unlockFn;    // we unlock on error, or if there is no Collection
@@ -924,7 +894,7 @@ public class NativeBroker extends DBBroker {
         // 2) if not in the cache, load from disk
         final Collection loadedCollection;
         try {
-            loadedCollection = loadCollection(collectionUri, address);
+            loadedCollection = loadCollection(collectionUri);
         } catch(final IOException e) {
             LOG.error(e.getMessage(), e);
             unlockFn.run();
@@ -937,7 +907,7 @@ public class NativeBroker extends DBBroker {
 
         // if we loaded a Collection add it to the cache (if it isn't already there)
         if(loadedCollection != null) {
-            final Collection cachedCollection = collectionsCache.getOrCreate(collectionUri, uri -> loadedCollection);
+            final Collection cachedCollection = collectionsCache.getOrCreate(collectionUri, key -> loadedCollection);
             return new LockedCollection(collectionLock, cachedCollection);
         } else {
             unlockFn.run();
@@ -1810,11 +1780,6 @@ public class NativeBroker extends DBBroker {
         collectionsCache.put(collection);
 
         try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
-
-            if(collection.getId() == Collection.UNKNOWN_COLLECTION_ID) {
-                collection.setId(getNextCollectionId(transaction));
-            }
-
             final Value name = new CollectionStore.CollectionKey(collection.getURI().toString());
             try(final VariableByteOutputStream os = new VariableByteOutputStream(8)) {
                 collection.serialize(os);
@@ -1822,10 +1787,7 @@ public class NativeBroker extends DBBroker {
                 if (address == BFile.UNKNOWN_ADDRESS) {
                     throw new IOException("Could not store collection data for '" + collection.getURI() + "', address=BFile.UNKNOWN_ADDRESS");
                 }
-                collection.setAddress(address);
             }
-        } catch(final ReadOnlyException e) {
-            throw new IOException(DATABASE_IS_READ_ONLY, e);
         } catch(final LockException e) {
             throw new IOException(e);
         }
@@ -1842,12 +1804,15 @@ public class NativeBroker extends DBBroker {
         if(nextCollectionId != Collection.UNKNOWN_COLLECTION_ID) {
             return nextCollectionId;
         }
+
         try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
             final Value key = new CollectionStore.CollectionKey(CollectionStore.NEXT_COLLECTION_ID_KEY);
             final Value data = collectionsDb.get(key);
             if(data != null) {
                 nextCollectionId = ByteConversion.byteToInt(data.getData(), OFFSET_COLLECTION_ID);
                 ++nextCollectionId;
+            } else {
+                nextCollectionId = 1;
             }
             final byte[] d = new byte[Collection.LENGTH_COLLECTION_ID];
             ByteConversion.intToByte(nextCollectionId, d, OFFSET_COLLECTION_ID);

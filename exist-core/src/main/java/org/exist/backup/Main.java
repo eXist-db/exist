@@ -21,16 +21,11 @@
  */
 package org.exist.backup;
 
-import org.exist.backup.restore.listener.ConsoleRestoreListener;
-import org.exist.backup.restore.listener.GuiRestoreListener;
-import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.client.ClientFrame;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.NamedThreadFactory;
 import org.exist.util.SystemExitCodes;
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XmldbURI;
-import org.xml.sax.SAXException;
+import org.exist.xmldb.*;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -38,11 +33,9 @@ import org.xmldb.api.base.XMLDBException;
 import se.softhouse.jargo.*;
 
 import javax.swing.*;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -241,10 +234,17 @@ public class Main {
                 final String uri = properties.getProperty(URI_PROP, DEFAULT_URI);
 
                 try {
-                    if (guiMode) {
-                        restoreWithGui(username, optionPass, optionDbaPass, path, uri);
+                    final XmldbURI dbUri;
+                    if(!uri.endsWith(XmldbURI.ROOT_COLLECTION)) {
+                        dbUri = XmldbURI.xmldbUriFor(uri + XmldbURI.ROOT_COLLECTION);
                     } else {
-                        restoreWithoutGui(username, optionPass, optionDbaPass, path, uri, rebuildRepo, quiet);
+                        dbUri = XmldbURI.xmldbUriFor(uri);
+                    }
+
+                    if (guiMode) {
+                        restoreWithGui(username, optionPass, optionDbaPass, path, dbUri);
+                    } else {
+                        restoreWithoutGui(username, optionPass, optionDbaPass, path, dbUri, rebuildRepo, quiet);
                     }
                 } catch (final Exception e) {
                     reportError(e);
@@ -266,30 +266,28 @@ public class Main {
         System.exit(SystemExitCodes.OK_EXIT_CODE);
     }
 
-    private static void restoreWithoutGui(final String username, final String password, final Optional<String> dbaPassword, final Path f,
-                                          final String uri, final boolean rebuildRepo, final boolean quiet) {
-
-        final RestoreListener listener = new ConsoleRestoreListener(quiet);
-        final Restore restore = new Restore();
-
+    private static void restoreWithoutGui(final String username, final String password,
+            final Optional<String> dbaPassword, final Path f, final XmldbURI uri, final boolean rebuildRepo,
+            final boolean quiet) {
+        final AggregatingConsoleRestoreServiceTaskListener listener = new AggregatingConsoleRestoreServiceTaskListener(quiet);
         try {
-            restore.restore(listener, username, password, dbaPassword.orElse(null), f, uri);
-        } catch (final IOException | URISyntaxException | ParserConfigurationException | XMLDBException | SAXException ioe) {
-            listener.error(ioe.getMessage());
+            final Collection collection = DatabaseManager.getCollection(uri.toString(), username, password);
+            final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
+            service.restore(f.toAbsolutePath().toString(), dbaPassword.orElse(null), listener);
+
+        } catch (final XMLDBException e) {
+            listener.error(e.getMessage());
         }
 
         if (listener.hasProblems()) {
-            System.err.println(listener.warningsAndErrorsAsString());
+            System.err.println(listener.getAllProblems());
         }
+
         if (rebuildRepo) {
             System.out.println("Rebuilding application repository ...");
             System.out.println("URI: " + uri);
             try {
-                String rootURI = uri;
-                if (!(rootURI.contains(XmldbURI.ROOT_COLLECTION) || rootURI.endsWith(XmldbURI.ROOT_COLLECTION))) {
-                    rootURI += XmldbURI.ROOT_COLLECTION;
-                }
-                final Collection root = DatabaseManager.getCollection(rootURI, username, dbaPassword.orElse(password));
+                final Collection root = DatabaseManager.getCollection(uri.toString(), username, dbaPassword.orElse(password));
                 if (root != null) {
                     ClientFrame.repairRepository(root);
                     System.out.println("Application repository rebuilt successfully.");
@@ -311,16 +309,61 @@ public class Main {
         }
     }
 
-    private static void restoreWithGui(final String username, final String password, final Optional<String> dbaPassword, final Path f, final String uri) {
+    private static class AggregatingConsoleRestoreServiceTaskListener extends ConsoleRestoreServiceTaskListener {
+        private StringBuilder allProblems = null;
 
-        final GuiRestoreListener listener = new GuiRestoreListener();
+        public AggregatingConsoleRestoreServiceTaskListener(final boolean quiet) {
+            super(quiet);
+        }
+
+        @Override
+        public void warn(final String message) {
+            super.warn(message);
+            addProblem(true, message);
+        }
+
+        @Override
+        public void error(final String message) {
+            super.error(message);
+            addProblem(false, message);
+        }
+
+        public boolean hasProblems() {
+            return allProblems != null && allProblems.length() > 0;
+        }
+
+        public String getAllProblems() {
+            return allProblems.toString();
+        }
+
+        private void addProblem(final boolean warning, final String message) {
+            final String sep = System.getProperty("line.separator");
+            if (allProblems == null) {
+                allProblems = new StringBuilder();
+                allProblems.append("------------------------------------").append(sep);
+                allProblems.append("Problems occurred found during restore:").append(sep);
+            }
+
+            if (warning) {
+                allProblems.append("WARN: ");
+            } else {
+                allProblems.append("ERROR: ");
+            }
+            allProblems.append(message);
+            allProblems.append(sep);
+        }
+    }
+
+    private static void restoreWithGui(final String username, final String password, final Optional<String> dbaPassword, final Path f, final XmldbURI uri) {
+
+        final GuiRestoreServiceTaskListener listener = new GuiRestoreServiceTaskListener();
 
         final Callable<Void> callable = () -> {
 
-            final Restore restore = new Restore();
-
             try {
-                restore.restore(listener, username, password, dbaPassword.orElse(null), f, uri);
+                final Collection collection = DatabaseManager.getCollection(uri.toString(), username, password);
+                final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
+                service.restore(f.toAbsolutePath().toString(), dbaPassword.orElse(null), listener);
 
                 listener.hideDialog();
 
@@ -328,11 +371,7 @@ public class Main {
                         JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                     System.out.println("Rebuilding application repository ...");
                     try {
-                        String rootURI = uri;
-                        if (!(rootURI.contains(XmldbURI.ROOT_COLLECTION) || rootURI.endsWith(XmldbURI.ROOT_COLLECTION))) {
-                            rootURI += XmldbURI.ROOT_COLLECTION;
-                        }
-                        final Collection root = DatabaseManager.getCollection(rootURI, username, dbaPassword.orElse(password));
+                        final Collection root = DatabaseManager.getCollection(uri.toString(), username, dbaPassword.orElse(password));
                         ClientFrame.repairRepository(root);
                         System.out.println("Application repository rebuilt successfully.");
                     } catch (final XMLDBException e) {
@@ -344,7 +383,7 @@ public class Main {
                 ClientFrame.showErrorMessage(e.getMessage(), null); //$NON-NLS-1$
             } finally {
                 if (listener.hasProblems()) {
-                    ClientFrame.showErrorMessage(listener.warningsAndErrorsAsString(), null);
+                    ClientFrame.showErrorMessage(listener.getAllProblems(), null);
                 }
             }
 

@@ -30,6 +30,7 @@ import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
 import org.exist.EXistException;
+import org.exist.TestUtils;
 import org.exist.backup.restore.listener.LogRestoreListener;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.collections.Collection;
@@ -133,7 +134,7 @@ public class SystemExportImportTest {
 
         final SystemImport restore = new SystemImport(pool);
         final RestoreListener listener = new LogRestoreListener();
-        restore.restore(listener, "admin", "", "", file, "xmldb:exist://");
+        restore.restore(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD, null, file, listener);
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 

@@ -26,9 +26,11 @@ import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.DirSet;
 
-import org.exist.backup.Restore;
-import org.exist.backup.restore.listener.ConsoleRestoreListener;
-import org.exist.backup.restore.listener.RestoreListener;
+import org.exist.xmldb.ConsoleRestoreServiceTaskListener;
+import org.exist.xmldb.EXistRestoreService;
+import org.exist.xmldb.RestoreServiceTaskListener;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -87,9 +89,10 @@ public class RestoreTask extends AbstractXMLDBTask
                             log( msg, Project.MSG_ERR );
                         }
                     } else {
-                        final Restore         restore  = new Restore();
-                        final RestoreListener listener = new ConsoleRestoreListener();
-                        restore.restore( listener, user, password, restorePassword, file, uri );
+                        final RestoreServiceTaskListener listener = new ConsoleRestoreServiceTaskListener();
+                        final Collection collection = DatabaseManager.getCollection(uri, user, password);
+                        final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
+                        service.restore(file.normalize().toAbsolutePath().toString(), restorePassword, listener);
                     }
 
                 } else if( dirSet != null ) {
@@ -114,9 +117,10 @@ public class RestoreTask extends AbstractXMLDBTask
                             log( "Restoring from " + contentsFile.toAbsolutePath().toString() + " ...\n" );
 
                             // TODO subdirectories as sub-collections?
-                            final Restore         restore  = new Restore();
-                            final RestoreListener listener = new ConsoleRestoreListener();
-                            restore.restore( listener, user, password, restorePassword, contentsFile, uri );
+                            final RestoreServiceTaskListener listener = new ConsoleRestoreServiceTaskListener();
+                            final Collection collection = DatabaseManager.getCollection(uri, user, password);
+                            final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
+                            service.restore(contentsFile.normalize().toAbsolutePath().toString(), restorePassword, listener);
                         }
                     }
 
@@ -132,9 +136,10 @@ public class RestoreTask extends AbstractXMLDBTask
                             log( msg, Project.MSG_ERR );
                         }
                     } else {
-                        final Restore         restore  = new Restore();
-                        final RestoreListener listener = new ConsoleRestoreListener();
-                        restore.restore( listener, user, password, restorePassword, zipFile, uri );
+                        final RestoreServiceTaskListener listener = new ConsoleRestoreServiceTaskListener();
+                        final Collection collection = DatabaseManager.getCollection(uri, user, password);
+                        final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
+                        service.restore(zipFile.normalize().toAbsolutePath().toString(), restorePassword, listener);
                     }
                 }
 

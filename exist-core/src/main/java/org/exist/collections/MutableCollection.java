@@ -44,7 +44,6 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
 import org.exist.security.Subject;
 import org.exist.storage.*;
-import org.exist.storage.index.BFile;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.*;
@@ -55,7 +54,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
-import org.exist.util.SyntaxException;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.XMLReaderObjectFactory.VALIDATION_SETTING;
 import org.exist.util.io.FastByteArrayInputStream;
@@ -85,9 +83,8 @@ public class MutableCollection implements Collection {
     private static final Logger LOG = LogManager.getLogger(Collection.class);
     private static final int SHALLOW_SIZE = 550;
     private static final int DOCUMENT_SIZE = 450;
-    private static final int POOL_PARSER_THRESHOLD = 500;
 
-    private int collectionId = UNKNOWN_COLLECTION_ID;
+    private final int collectionId;
     private XmldbURI path;
     private final LockManager lockManager;
 
@@ -99,7 +96,7 @@ public class MutableCollection implements Collection {
      * in this manner locks acquired when iterating are always acquired and released in the same order
      * which gives us deadlock avoidance for Document iteration.
      */
-    @GuardedBy("LockManager") private final LinkedHashMap<String, DocumentImpl> documents = new LinkedHashMap<>();
+    @GuardedBy("LockManager") private final LinkedHashMap<String, DocumentImpl> documents;
 
     /*
      * LinkedHashSet is used to ensure a consistent iteration order of sub-Collections.
@@ -109,14 +106,11 @@ public class MutableCollection implements Collection {
      * in this manner locks acquired when iterating are always acquired and released in the same order
      * which gives us deadlock avoidance for sub-Collection iteration.
      */
-    @GuardedBy("LockManager") private LinkedHashSet<XmldbURI> subCollections = new LinkedHashSet<>();
+    @GuardedBy("LockManager") private final LinkedHashSet<XmldbURI> subCollections;
 
-    private long address = BFile.UNKNOWN_ADDRESS;  // Storage address of the collection in the BFile
-    private long created = 0;
-    private boolean triggersEnabled = true;
-    private XMLReader userReader;
+    private long created;
     private volatile boolean isTempCollection;
-    private Permission permissions;
+    private final Permission permissions;
     private final CollectionMetadata collectionMetadata;
     private final ObservaleMutableCollection observable = new ObservaleMutableCollection();
 
@@ -124,26 +118,52 @@ public class MutableCollection implements Collection {
      * Constructs a Collection Object (not yet persisted)
      *
      * @param broker The database broker
+     * @param collectionId a unique numeric id for the collection
      * @param path The path of the Collection
      */
-    public MutableCollection(final DBBroker broker, final XmldbURI path) {
-        this(broker, path, null, -1);
+    public MutableCollection(final DBBroker broker, final int collectionId, final XmldbURI path) {
+        this(broker, collectionId, path, null, -1, null, null);
     }
 
     /**
      * Constructs a Collection Object (not yet persisted)
      *
      * @param broker The database broker
+     * @param collectionId a unique numeric id for the collection
      * @param path The path of the Collection
      * @param permissions The permissions of the collection, or null for the default
      * @param created The created time of the collection, or -1 for now
      */
-    public MutableCollection(final DBBroker broker, @EnsureLocked(mode=LockMode.READ_LOCK, type=LockType.COLLECTION) final XmldbURI path, @Nullable final Permission permissions, final long created) {
+    public MutableCollection(final DBBroker broker, final int collectionId,
+            @EnsureLocked(mode=LockMode.READ_LOCK, type=LockType.COLLECTION) final XmldbURI path,
+            @Nullable final Permission permissions, final long created) {
+        this(broker, collectionId, path, permissions, created, null, null);
+    }
+
+    /**
+     * Constructs a Collection Object (not yet persisted)
+     *
+     * @param broker The database broker
+     * @param collectionId a unique numeric id for the collection
+     * @param path The path of the Collection
+     * @param permissions The permissions of the collection, or null for the default
+     * @param created The created time of the collection, or -1 for now
+     * @param subCollections the sub-collections
+     * @param documents the documents in the collection
+     */
+    private MutableCollection(final DBBroker broker, final int collectionId,
+            @EnsureLocked(mode=LockMode.READ_LOCK, type=LockType.COLLECTION) final XmldbURI path,
+            @Nullable final Permission permissions, final long created,
+            @Nullable final LinkedHashSet<XmldbURI> subCollections,
+            @Nullable final LinkedHashMap<String, DocumentImpl> documents) {
         setPath(path);
+        this.collectionId = collectionId;
         this.permissions = permissions != null ? permissions : PermissionFactory.getDefaultCollectionPermission(broker.getBrokerPool().getSecurityManager());
         this.created = created > 0 ? created : System.currentTimeMillis();
         this.lockManager = broker.getBrokerPool().getLockManager();
         this.collectionMetadata = new CollectionMetadata(this);
+        this.subCollections = subCollections != null ? subCollections : new LinkedHashSet<>();
+        this.documents = documents != null ? documents : new LinkedHashMap<>();
     }
 
     /**
@@ -160,14 +180,7 @@ public class MutableCollection implements Collection {
     public static MutableCollection load(final DBBroker broker,
             @EnsureLocked(mode=LockMode.WRITE_LOCK, type=LockType.COLLECTION) final XmldbURI path,
             final VariableByteInput inputStream) throws PermissionDeniedException, IOException, LockException {
-        final MutableCollection collection = new MutableCollection(broker, path);
-        collection.deserialize(broker, inputStream);
-        return collection;
-    }
-
-    @Override
-    public boolean isTriggersEnabled() {
-        return triggersEnabled;
+        return deserialize(broker, path, inputStream);
     }
 
     @Override
@@ -847,7 +860,7 @@ public class MutableCollection implements Collection {
     /**
      * Serializes the Collection to a byte representation
      *
-     * Counterpart method to {@link #deserialize(DBBroker, VariableByteInput)}
+     * Counterpart method to {@link #deserialize(DBBroker, XmldbURI, VariableByteInput)}
      *
      * @param outputStream The output stream to write the collection contents to
      */
@@ -884,12 +897,13 @@ public class MutableCollection implements Collection {
      *
      * Counterpart method to {@link #serialize(VariableByteOutputStream)}
      *
-     * @param broker the database broker
-     * @param istream The input data
+     * @param broker The database broker
+     * @param path The path of the Collection
+     * @param istream The input stream to deserialize the Collection from
      */
-    private void deserialize(final DBBroker broker, final VariableByteInput istream)
+    private static MutableCollection deserialize(final DBBroker broker, final XmldbURI path, final VariableByteInput istream)
             throws IOException, PermissionDeniedException, LockException {
-        collectionId = istream.readInt();
+        final int collectionId = istream.readInt();
         if (collectionId < 0) {
             throw new IOException("Internal error reading collection: invalid collection id");
         }
@@ -898,25 +912,29 @@ public class MutableCollection implements Collection {
 
         //TODO(AR) should we WRITE_LOCK the Collection to stop it being loaded from disk concurrently? see NativeBroker#openCollection line 1030 - already has READ_LOCK ;-)
 //        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path, false)) {
-            subCollections = new LinkedHashSet<>(collLen == 0 ? 16 : collLen);
+            final LinkedHashSet<XmldbURI> subCollections = new LinkedHashSet<>(Math.max(16, collLen));
             for (int i = 0; i < collLen; i++) {
                 subCollections.add(XmldbURI.create(istream.readUTF()));
             }
 
-            permissions.read(istream);
+            final Permission permission = PermissionFactory.getDefaultCollectionPermission(broker.getBrokerPool().getSecurityManager());
+            permission.read(istream);
 
-            created = istream.readLong();
-
-            if (!permissions.validate(broker.getCurrentSubject(), Permission.EXECUTE)) {
+            if (!permission.validate(broker.getCurrentSubject(), Permission.EXECUTE)) {
                 throw new PermissionDeniedException("Permission denied to open the Collection " + path);
             }
 
-            final Collection col = this;
+            final long created = istream.readLong();
+
+            final LinkedHashMap<String, DocumentImpl> documents = new LinkedHashMap<>();
+
+            final MutableCollection collection =
+                new MutableCollection(broker, collectionId, path, permission, created,subCollections, documents);
 
             broker.getCollectionResources(new InternalAccess() {
                 @Override
                 public void addDocument(final DocumentImpl doc) throws EXistException {
-                    doc.setCollection(col);
+                    doc.setCollection(collection);
 
                     if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
                         LOG.error("Document must have ID. [" + doc + "]");
@@ -928,9 +946,11 @@ public class MutableCollection implements Collection {
 
                 @Override
                 public int getId() {
-                    return col.getId();
+                    return collectionId;
                 }
             });
+
+            return collection;
 //        }
     }
 
@@ -984,7 +1004,7 @@ public class MutableCollection implements Collection {
                 }
 
                 try {
-                    boolean useTriggers = isTriggersEnabled();
+                    boolean useTriggers = broker.isTriggersEnabled();
                     if (CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(name)) {
                         // we remove a collection.xconf configuration file: tell the configuration manager to
                         // reload the configuration.
@@ -1054,7 +1074,7 @@ public class MutableCollection implements Collection {
 
             try(final ManagedDocumentLock docUpdateLock = lockManager.acquireDocumentWriteLock(doc.getURI())) {
                 try {
-                    final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
+                    final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, null, this, broker.isTriggersEnabled() ? getConfiguration(broker) : null);
 
                     trigger.beforeDeleteDocument(broker, transaction, doc);
 
@@ -1088,6 +1108,17 @@ public class MutableCollection implements Collection {
     @Override
     public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
+        final XMLReader reader = getReader(broker, false, info.getCollectionConfig());
+        try {
+            store(transaction, broker, info, source, reader);
+        } finally {
+            releaseReader(broker, reader);
+        }
+    }
+
+    @Override
+    public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source, final XMLReader reader)
+            throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         storeXMLInternal(transaction, broker, info, storeInfo -> {
             try {
                 final InputStream is = source.getByteStream();
@@ -1103,14 +1134,11 @@ public class MutableCollection implements Collection {
                 // mark is not supported: exception is expected, do nothing
                 LOG.debug("InputStream or CharacterStream underlying the InputSource does not support marking and therefore cannot be re-read.");
             }
-            final XMLReader reader = getReader(broker, false, storeInfo.getCollectionConfig());
             storeInfo.setReader(reader, null);
             try {
                 reader.parse(source);
             } catch(final IOException e) {
                 throw new EXistException(e);
-            } finally {
-                releaseReader(broker, storeInfo, reader);
             }
         });
     }
@@ -1127,7 +1155,7 @@ public class MutableCollection implements Collection {
             } catch(final IOException e) {
                 throw new EXistException(e);
             } finally {
-                releaseReader(broker, storeInfo, reader);
+                releaseReader(broker, reader);
             }
         });
     }
@@ -1265,9 +1293,22 @@ public class MutableCollection implements Collection {
     @Override
     public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputSource source) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         final CollectionConfiguration colconf = getConfiguration(broker);
-        
+        final XMLReader reader = getReader(broker, true, colconf);
+        try {
+            return validateXMLResource(transaction, broker, name, colconf, source, reader);
+        } finally {
+            releaseReader(broker, reader);
+        }
+    }
+
+    @Override
+    public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputSource source, final XMLReader reader) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
+        final CollectionConfiguration colconf = getConfiguration(broker);
+        return validateXMLResource(transaction, broker, name, colconf, source, reader);
+    }
+
+    private IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final CollectionConfiguration colconf, final InputSource source, final XMLReader reader) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         return validateXMLResourceInternal(transaction, broker, name, colconf, (info) -> {
-            final XMLReader reader = getReader(broker, true, colconf);
             info.setReader(reader, null);
             try {
 
@@ -1284,8 +1325,6 @@ public class MutableCollection implements Collection {
                 throw new SAXException("The XML parser reported a problem: " + e.getMessage(), e);
             } catch(final IOException e) {
                 throw new EXistException(e);
-            } finally {
-                releaseReader(broker, info, reader);
             }
         });
     }
@@ -1387,7 +1426,7 @@ public class MutableCollection implements Collection {
                 addObserversToIndexer(broker, indexer);
                 indexer.setValidating(true);
 
-                final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, indexer, this, isTriggersEnabled() ? config : null);
+                final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, indexer, this, broker.isTriggersEnabled() ? config : null);
                 trigger.setValidating(true);
 
                 info.setTriggers(trigger);
@@ -1657,7 +1696,7 @@ public class MutableCollection implements Collection {
             final Date modified, final DBBroker.PreserveType preserve, final DocumentImpl oldDoc,
             final ManagedCollectionLock collectionLock) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
 
-        final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, null, this, isTriggersEnabled() ? getConfiguration(broker) : null);
+        final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, null, this, broker.isTriggersEnabled() ? getConfiguration(broker) : null);
         final XmldbURI docUri = blob.getFileURI();
         try {
             db.getProcessMonitor().startJob(ProcessMonitor.ACTION_STORE_BINARY, docUri);
@@ -1728,11 +1767,6 @@ public class MutableCollection implements Collection {
     }
 
     @Override
-    public void setId(final int id) {
-        this.collectionId = id;
-    }
-
-    @Override
     public void setPermissions(final DBBroker broker, final int mode) throws LockException, PermissionDeniedException {
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
             PermissionFactory.chmod(broker, this, Optional.of(mode), Optional.empty());
@@ -1750,16 +1784,6 @@ public class MutableCollection implements Collection {
     }
 
     @Override
-    public void setAddress(final long addr) {
-        this.address = addr;
-    }
-
-    @Override
-    public long getAddress() {
-        return this.address;
-    }
-
-    @Override
     public void setCreationTime(final long ms) {
         created = ms;
     }
@@ -1767,20 +1791,6 @@ public class MutableCollection implements Collection {
     @Override
     public long getCreationTime() {
         return created;
-    }
-
-    @Override
-    public void setTriggersEnabled(final boolean enabled) {
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
-            this.triggersEnabled = enabled;
-        } catch(final LockException e) {
-            LOG.error(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public void setReader(final XMLReader reader){
-        userReader = reader;
     }
 
     /** 
@@ -1793,10 +1803,6 @@ public class MutableCollection implements Collection {
      * @return An XML Reader
      */
     private XMLReader getReader(final DBBroker broker, final boolean validation, final CollectionConfiguration collectionConf) {
-        // If user-defined Reader is set, return it;
-        if (userReader != null) {
-            return userReader;
-        }
         // Get reader from readerpool.
         final XMLReader reader = broker.getBrokerPool().getParserPool().borrowXMLReader();
         
@@ -1817,18 +1823,9 @@ public class MutableCollection implements Collection {
      * Reset validation mode of reader and return reader to reader pool.
      *
      * @param broker The database broker
-     * @param info The indexing info
      * @param reader The XML Reader to release
      */    
-    private void releaseReader(final DBBroker broker, final IndexInfo info, final XMLReader reader) {
-        if(userReader != null){
-            return;
-        }
-        
-        if(info.getIndexer().getDocSize() > POOL_PARSER_THRESHOLD) {
-            return;
-        }
-        
+    private void releaseReader(final DBBroker broker, final XMLReader reader) {
         // Get validation mode from static configuration
         final Configuration config = broker.getConfiguration();
         final String optionValue = (String) config.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE);

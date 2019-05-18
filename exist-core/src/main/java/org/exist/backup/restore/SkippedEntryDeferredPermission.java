@@ -23,6 +23,9 @@ package org.exist.backup.restore;
 
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
+import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * Represents the permissions for a skipped entry in the restore process, e.g. apply() does nothing
@@ -32,7 +35,12 @@ import org.exist.security.ACLPermission.ACE_TARGET;
 public class SkippedEntryDeferredPermission implements DeferredPermission {
 
     @Override
-    public void apply() {
+    public void apply(final DBBroker broker, final Txn transaction) {
+    }
+
+    @Override
+    public XmldbURI getTarget() {
+        return XmldbURI.create("skipped");
     }
 
     @Override

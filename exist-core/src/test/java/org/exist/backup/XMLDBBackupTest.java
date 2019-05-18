@@ -21,8 +21,9 @@
 package org.exist.backup;
 
 import org.exist.TestUtils;
-import org.exist.backup.restore.listener.ConsoleRestoreListener;
 import org.exist.test.ExistWebServer;
+import org.exist.xmldb.AbstractRestoreServiceTaskListener;
+import org.exist.xmldb.EXistRestoreService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -47,7 +48,9 @@ import javax.xml.transform.Source;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -135,8 +138,10 @@ public class XMLDBBackupTest {
     }
 
     private void restore(final Path backupFile, final XmldbURI collectionUri) throws XMLDBException, SAXException, URISyntaxException, ParserConfigurationException, IOException {
-        final Restore restore = new Restore();
-        restore.restore(new ConsoleRestoreListener(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD, null, backupFile, collectionUri.toString());
+        final Collection collection = DatabaseManager.getCollection(collectionUri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        final EXistRestoreService restoreService = (EXistRestoreService) collection.getService("RestoreService", "1.0");
+        final TestRestoreListener listener = new TestRestoreListener();
+        restoreService.restore(backupFile.normalize().toAbsolutePath().toString(), null, listener);
     }
 
     private void deleteCollection(final XmldbURI collectionUri) throws XMLDBException {
@@ -163,5 +168,31 @@ public class XMLDBBackupTest {
         final Resource binDoc2 = testCollection.createResource(BIN_DOC2_NAME, BinaryResource.RESOURCE_TYPE);
         binDoc2.setContent(binDoc2Content);
         testCollection.storeResource(binDoc2);
+    }
+
+    private static class TestRestoreListener extends AbstractRestoreServiceTaskListener {
+        final List<String> restored = new ArrayList<>();
+
+        @Override
+        public void createdCollection(final String collection) {
+            restored.add(collection);
+        }
+
+        @Override
+        public void restoredResource(final String resource) {
+            restored.add(resource);
+        }
+
+        @Override
+        public void info(final String message) {
+        }
+
+        @Override
+        public void warn(final String message) {
+        }
+
+        @Override
+        public void error(final String message) {
+        }
     }
 }
