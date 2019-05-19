@@ -17,8 +17,3 @@ On other operating systems, change into the location where you
 installed eXist and call
 
 bin/startup.sh or bin/startup.bat
-
-If these scripts don't work for you, try to call Java manually:
-
-java -jar start.jar jetty
-
