@@ -20,7 +20,10 @@ declare function t:setup-action($action) {
 		case element(store-files) return
             t:store-files($action)
         case element(remove-collection) return
-            xmldb:remove($action/@collection)
+            if ($action/@ignore-missing eq "true" and not(xmldb:collection-available($action/@collection)))
+            then ()
+            else
+                xmldb:remove($action/@collection)
         case element(remove-document) return
             xmldb:remove($action/@collection, $action/@name)
         default return
