@@ -1,6 +1,7 @@
 version: '{branch}-{build}'
 
 environment:
+  MAVEN_VERSION: 3.6.1
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       JAVA_HOME: C:\Program Files\Java\jdk1.8.0
@@ -11,7 +12,19 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
 
+# install a newer Maven on AppVeyor Windows CI
+install:
+  - ps: |
+      Add-Type -AssemblyName System.IO.Compression.FileSystem
+      if ($IsWindows -And !(Test-Path -Path "C:\maven" )) {
+        Write-Host "Downloading Maven $env:MAVEN_VERSION"
+        (new-object System.Net.WebClient).DownloadFile("https://repo1.maven.org/maven2/org/apache/maven/apache-maven/$env:MAVEN_VERSION/apache-maven-$env:MAVEN_VERSION-bin.zip", 'C:\maven-bin.zip')
+        [System.IO.Compression.ZipFile]::ExtractToDirectory("C:\maven-bin.zip", "C:\maven")
+      }
+
 build_script:
+  - cmd: SET M2_HOME=C:\maven\apache-maven-%MAVEN_VERSION%
+  - cmd: SET PATH=%M2_HOME%\bin;%JAVA_HOME%\bin;%PATH%
   - cmd: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=false install -B -V
   - sh: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=true install -B -V
 
@@ -38,5 +51,6 @@ artifacts:
 
 cache:
   - '%USERPROFILE%\.m2'
+  - C:\maven -> appveyor.yml
   - '$HOME/.m2'
 
