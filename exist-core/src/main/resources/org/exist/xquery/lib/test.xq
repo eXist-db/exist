@@ -47,7 +47,14 @@ declare function t:store-files($action as element(store-files)) {
         if ($action/@classpath)
         then
             let $classpath-entries := util:system-property("java.class.path")
-            let $matches := fn:tokenize($classpath-entries, ":")[fn:ends-with(., $action/@classpath)]
+            let $path-separator := util:system-property("path.separator")
+            let $cp :=
+                if (util:system-property("file.separator") eq '/')
+                then
+                    $action/@classpath
+                else
+                    replace($action/@classpath, '/', '\\')
+            let $matches := fn:tokenize($classpath-entries, $path-separator)[fn:ends-with(., $cp)]
             return
                 if (not(empty($matches)))
                 then
