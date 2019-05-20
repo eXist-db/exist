@@ -127,9 +127,10 @@ public class CopyResourceTest {
      * As the owner copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_DOC2}.
      */
     @Test
-    public void copyXmlToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    public void copyXmlToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalDoc2LastModified = getLastModified(USER1_DOC2);
+        Thread.sleep(5);
         copyDoc(user1, NO_PRESERVE, USER1_DOC1, USER1_DOC2);
         checkAttributes(USER1_DOC2, USER1_NAME, USER1_NAME, USER1_DOC2_MODE, equalTo(getCreated(USER1_DOC2)), allOf(not(getLastModified(USER1_DOC1)), not(originalDoc2LastModified)));
     }
@@ -138,9 +139,10 @@ public class CopyResourceTest {
      * As the owner copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_BIN_DOC2}.
      */
     @Test
-    public void copyBinaryToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    public void copyBinaryToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalBinDoc2LastModified = getLastModified(USER1_BIN_DOC2);
+        Thread.sleep(5);
         copyDoc(user1, NO_PRESERVE, USER1_BIN_DOC1, USER1_BIN_DOC2);
         checkAttributes(USER1_BIN_DOC2, USER1_NAME, USER1_NAME, USER1_BIN_DOC2_MODE, equalTo(getCreated(USER1_BIN_DOC2)), allOf(not(getLastModified(USER1_BIN_DOC1)), not(originalBinDoc2LastModified)));
     }
@@ -169,9 +171,10 @@ public class CopyResourceTest {
      * As a DBA copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_DOC2}.
      */
     @Test
-    public void copyXmlToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    public void copyXmlToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long originalDoc2LastModified = getLastModified(USER1_DOC2);
+        Thread.sleep(5);
         copyDoc(adminUser, NO_PRESERVE, USER1_DOC1, USER1_DOC2);
         checkAttributes(USER1_DOC2, USER1_NAME, USER1_NAME, USER1_DOC2_MODE, equalTo(getCreated(USER1_DOC2)), allOf(not(getLastModified(USER1_DOC1)), not(originalDoc2LastModified)));
     }
@@ -180,9 +183,10 @@ public class CopyResourceTest {
      * As a DBA copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_BIN_DOC}.
      */
     @Test
-    public void copyBinaryToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    public void copyBinaryToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long originalBinDoc2LastModified = getLastModified(USER1_BIN_DOC2);
+        Thread.sleep(5);
         copyDoc(adminUser, NO_PRESERVE, USER1_BIN_DOC1, USER1_BIN_DOC2);
         checkAttributes(USER1_BIN_DOC2, USER1_NAME, USER1_NAME, USER1_BIN_DOC2_MODE, equalTo(getCreated(USER1_BIN_DOC2)), allOf(not(getLastModified(USER1_BIN_DOC1)), not(originalBinDoc2LastModified)));
     }
@@ -211,9 +215,10 @@ public class CopyResourceTest {
      * As some other (non-owner) user copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER2_DOC2}.
      */
     @Test
-    public void copyXmlToExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    public void copyXmlToExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalDoc2LastModified = getLastModified(USER2_DOC2);
+        Thread.sleep(5);
         copyDoc(user2, NO_PRESERVE, USER1_DOC1, USER2_DOC2);
         checkAttributes(USER2_DOC2, USER2_NAME, USER2_NAME, USER2_DOC2_MODE, equalTo(getCreated(USER2_DOC2)), allOf(not(getLastModified(USER1_DOC1)), not(originalDoc2LastModified)));
     }
@@ -222,9 +227,10 @@ public class CopyResourceTest {
      * As owner user copy {@link #USER1_DOC3} from {@link TestConstants#TEST_COLLECTION_URI} to already existing {@link #USER2_DOC3} owned by someone else.
      */
     @Test
-    public void copyXmlToExistentAsOwner() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    public void copyXmlToExistentAsOwner() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalDoc3LastModified = getLastModified(USER2_DOC3);
+        Thread.sleep(5);
         copyDoc(user1, NO_PRESERVE, USER1_DOC3, USER2_DOC3);
         checkAttributes(USER2_DOC3, USER2_NAME, GROUP1_NAME, USER2_DOC3_MODE, equalTo(getCreated(USER2_DOC3)), allOf(not(getLastModified(USER1_DOC3)), not(originalDoc3LastModified)));
     }
@@ -233,9 +239,10 @@ public class CopyResourceTest {
      * As owner user copy {@link #USER1_BIN_DOC3} from {@link TestConstants#TEST_COLLECTION_URI} to already existing {@link #USER2_BIN_DOC3} owned by someone else.
      */
     @Test
-    public void copyBinaryToExistentAsOwner() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    public void copyBinaryToExistentAsOwner() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalDoc3LastModified = getLastModified(USER2_DOC3);
+        Thread.sleep(5);
         copyDoc(user1, NO_PRESERVE, USER1_BIN_DOC3, USER2_BIN_DOC3);
         checkAttributes(USER2_BIN_DOC3, USER2_NAME, GROUP1_NAME, USER2_BIN_DOC3_MODE, equalTo(getCreated(USER2_BIN_DOC3)), allOf(not(getLastModified(USER1_BIN_DOC3)), not(originalDoc3LastModified)));
     }
@@ -244,9 +251,10 @@ public class CopyResourceTest {
      * As some other (non-owner) user copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER2_BIN_DOC2}.
      */
     @Test
-    public void copyBinaryToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
+    public void copyBinaryToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalBinDoc2LastModified = getLastModified(USER2_BIN_DOC2);
+        Thread.sleep(5);
         copyDoc(user2, NO_PRESERVE, USER1_BIN_DOC1, USER2_BIN_DOC2);
         checkAttributes(USER2_BIN_DOC2, USER2_NAME, USER2_NAME, USER2_BIN_DOC2_MODE, equalTo(getCreated(USER2_BIN_DOC2)), allOf(not(getLastModified(USER1_BIN_DOC1)), not(originalBinDoc2LastModified)));
     }
@@ -280,9 +288,10 @@ public class CopyResourceTest {
      * as the owner copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_DOC2}.
      */
     @Test
-    public void copyPreserveXmlToExistentAsSelf() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
+    public void copyPreserveXmlToExistentAsSelf() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalDoc2Created = getCreated(USER1_DOC2);
+        Thread.sleep(5);
         copyDoc(user1, PRESERVE, USER1_DOC1, USER1_DOC2);
         checkAttributes(USER1_DOC2, USER1_NAME, USER1_NAME, USER1_DOC1_MODE, equalTo(originalDoc2Created), equalTo(getLastModified(USER1_DOC1)));
     }
@@ -292,9 +301,10 @@ public class CopyResourceTest {
      * as the owner copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_BIN_DOC2}.
      */
     @Test
-    public void copyPreserveBinaryToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    public void copyPreserveBinaryToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalBinDoc2Created = getCreated(USER1_BIN_DOC2);
+        Thread.sleep(5);
         copyDoc(user1, PRESERVE, USER1_BIN_DOC1, USER1_BIN_DOC2);
         checkAttributes(USER1_BIN_DOC2, USER1_NAME, USER1_NAME, USER1_BIN_DOC1_MODE, equalTo(originalBinDoc2Created), equalTo(getLastModified(USER1_BIN_DOC1)));
     }
@@ -328,9 +338,10 @@ public class CopyResourceTest {
      * as a DBA copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_DOC2}.
      */
     @Test
-    public void copyPreserveXmlToExistentAsDBA() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
+    public void copyPreserveXmlToExistentAsDBA() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long originalDoc2Created = getCreated(USER1_DOC2);
+        Thread.sleep(5);
         copyDoc(adminUser, PRESERVE, USER1_DOC1, USER1_DOC2);
         checkAttributes(USER1_DOC2, USER1_NAME, USER1_NAME, USER1_DOC1_MODE, equalTo(originalDoc2Created), equalTo(getLastModified(USER1_DOC1)));
     }
@@ -340,9 +351,10 @@ public class CopyResourceTest {
      * as a DBA copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_BIN_DOC2}.
      */
     @Test
-    public void copyPreserveBinaryToExistentAsDBA() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
+    public void copyPreserveBinaryToExistentAsDBA() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long originalBinDoc2Created = getCreated(USER1_BIN_DOC2);
+        Thread.sleep(5);
         copyDoc(adminUser, PRESERVE, USER1_BIN_DOC1, USER1_BIN_DOC2);
         checkAttributes(USER1_BIN_DOC2, USER1_NAME, USER1_NAME, USER1_BIN_DOC1_MODE, equalTo(originalBinDoc2Created), equalTo(getLastModified(USER1_BIN_DOC1)));
     }
@@ -376,9 +388,10 @@ public class CopyResourceTest {
      * as some other (non-owner) user copy {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER2_DOC2}.
      */
     @Test
-    public void copyPreserveXmlToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
+    public void copyPreserveXmlToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalDoc2Created = getCreated(USER2_DOC2);
+        Thread.sleep(5);
         copyDoc(user2, PRESERVE, USER1_DOC1, USER2_DOC2);
         checkAttributes(USER2_DOC2, USER2_NAME, USER2_NAME, USER1_DOC1_MODE, equalTo(originalDoc2Created), equalTo(getLastModified(USER1_DOC1)));
     }
@@ -388,9 +401,10 @@ public class CopyResourceTest {
      * as some other (non-owner) user copy {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER2_BIN_DOC2}.
      */
     @Test
-    public void copyPreserveBinaryToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
+    public void copyPreserveBinaryToExistentAsOther() throws AuthenticationException, EXistException, PermissionDeniedException, LockException, IOException, TriggerException, InterruptedException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalBinDoc2Created = getCreated(USER2_BIN_DOC2);
+        Thread.sleep(5);
         copyDoc(user2, PRESERVE, USER1_BIN_DOC1, USER2_BIN_DOC2);
         checkAttributes(USER2_BIN_DOC2, USER2_NAME, USER2_NAME, USER1_BIN_DOC1_MODE, equalTo(originalBinDoc2Created), equalTo(getLastModified(USER1_BIN_DOC1)));
     }
