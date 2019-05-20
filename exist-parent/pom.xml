@@ -663,6 +663,11 @@
                     <artifactId>maven-gpg-plugin</artifactId>
                     <version>1.6</version>
                 </plugin>
+                <plugin>
+                    <groupId>com.carrotgarden.maven</groupId>
+                    <artifactId>bintray-maven-plugin</artifactId>
+                    <version>1.4.20190427204453</version>
+                </plugin>
             </plugins>
         </pluginManagement>
 
