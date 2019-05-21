@@ -153,8 +153,7 @@
             <plugin>
                 <groupId>com.googlecode.maven-download-plugin</groupId>
                 <artifactId>download-maven-plugin</artifactId>
-                <!-- TODO(AR) - https://github.com/maven-download-plugin/maven-download-plugin/issues/126 -->
-                <version>1.4.2-SNAPSHOT</version>
+                <version>1.4.2</version>
                 <executions>
                     <execution>
                         <id>os-mastermap-samples</id>
