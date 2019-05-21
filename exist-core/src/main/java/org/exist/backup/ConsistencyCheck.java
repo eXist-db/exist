@@ -504,11 +504,10 @@ public class ConsistencyCheck {
                 final VariableByteInput istream = store.getAsStream(pointer);
                 final DocumentImpl doc;
                 if (type == DocumentImpl.BINARY_FILE) {
-                    doc = new BinaryDocument(broker.getBrokerPool());
+                    doc = BinaryDocument.read(broker.getBrokerPool(), istream);
                 } else {
-                    doc = new DocumentImpl(broker.getBrokerPool());
+                    doc = DocumentImpl.read(broker.getBrokerPool(), istream);
                 }
-                doc.read(istream);
                 docCount++;
 
                 if (checkDocs) {

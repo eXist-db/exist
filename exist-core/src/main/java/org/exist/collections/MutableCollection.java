@@ -27,7 +27,6 @@ import org.exist.dom.persistent.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.function.Consumer;
 
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.logging.log4j.LogManager;
@@ -346,17 +345,6 @@ public class MutableCollection implements Collection {
 
                 // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
                 collectionLock.close();
-
-                if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
-                    try {
-                        doc.setDocId(broker.getNextResourceId(transaction));
-                    } catch (final EXistException e) {
-                        LOG.error("Collection error " + e.getMessage(), e);
-
-                        // TODO : re-raise the exception ? -pb
-                        return;
-                    }
-                }
 
                 documents.put(doc.getFileURI().lastSegmentString(), doc);
             }
@@ -1409,9 +1397,13 @@ public class MutableCollection implements Collection {
                 // acquire the WRITE_LOCK on the Document, this lock is released in storeXMLInternal via IndexInfo
                 documentWriteLock = lockManager.acquireDocumentWriteLock(getURI().append(name.lastSegment()));
 
-                DocumentImpl document = new DocumentImpl((BrokerPool) db, this, name);
                 oldDoc = documents.get(name.lastSegmentString());
                 checkPermissionsForAddDocument(broker, oldDoc);
+
+                // NOTE: the new `document` object actually gets discarded in favour of the `oldDoc` below if there is an oldDoc and it is XML (so we can use -1 as the docId because it will never be used)
+                final int docId = (oldDoc != null && oldDoc.getResourceType() == DocumentImpl.XML_FILE) ? - 1 : broker.getNextResourceId(transaction);
+                DocumentImpl document = new DocumentImpl((BrokerPool) db, this, docId, name);
+
                 checkCollectionConflict(name);
                 manageDocumentInformation(oldDoc, document);
                 final Indexer indexer = new Indexer(broker, transaction);
@@ -1457,7 +1449,6 @@ public class MutableCollection implements Collection {
                         broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
                         documents.remove(oldDoc.getFileURI().lastSegmentString());
 
-                        document.setDocId(broker.getNextResourceId(transaction));
                         addDocument(transaction, broker, document);
                     } else {
                         //TODO : use a more elaborated method ? No triggers...
@@ -1472,7 +1463,6 @@ public class MutableCollection implements Collection {
                         LOG.debug("removed old document " + oldDoc.getFileURI());
                     }
                 } else {
-                    document.setDocId(broker.getNextResourceId(transaction));
                     addDocument(transaction, broker, document);
                 }
 
@@ -1631,11 +1621,12 @@ public class MutableCollection implements Collection {
 
             final DocumentImpl oldDoc = getDocument(broker, name);
 
+            final int docId = broker.getNextResourceId(transaction);
             final BinaryDocument blob;
             if (oldDoc != null) {
-                blob = new BinaryDocument(oldDoc);
+                blob = new BinaryDocument(docId, oldDoc);
             } else {
-                blob = new BinaryDocument(broker.getBrokerPool(), this, name);
+                blob = new BinaryDocument(broker.getBrokerPool(), this, docId, name);
             }
 
             return addBinaryResource(db, transaction, broker, blob, is, mimeType, size, created, modified,
@@ -1645,7 +1636,12 @@ public class MutableCollection implements Collection {
 
     @Override
     public BinaryDocument validateBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name) throws PermissionDeniedException, LockException, TriggerException, IOException {
-        return new BinaryDocument(broker.getBrokerPool(), this, name);
+        try {
+            final int docId = broker.getNextResourceId(transaction);
+            return new BinaryDocument(broker.getBrokerPool(), this, docId, name);
+        } catch (final EXistException e) {
+            throw new IOException(e.getMessage(), e);
+        }
     }
 
     @Override
