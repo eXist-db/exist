@@ -112,7 +112,6 @@ public class MutableCollection implements Collection {
     private volatile boolean isTempCollection;
     private final Permission permissions;
     private final CollectionMetadata collectionMetadata;
-    private final ObservaleMutableCollection observable = new ObservaleMutableCollection();
 
     /**
      * Constructs a Collection Object (not yet persisted)
@@ -1250,7 +1249,6 @@ public class MutableCollection implements Collection {
             info.getDocumentLock().close();
             broker.getBrokerPool().getProcessMonitor().endJob();
         }
-        broker.deleteObservers();
         
         if(info.isCreating()) {
             info.getTriggers().afterCreateDocument(broker, transaction, document);
@@ -1422,7 +1420,6 @@ public class MutableCollection implements Collection {
                 info.setCreating(oldDoc == null);
                 info.setOldDocPermissions(oldDoc != null ? oldDoc.getPermissions() : null);
                 indexer.setDocument(document, config);
-                addObserversToIndexer(broker, indexer);
                 indexer.setValidating(true);
 
                 final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, indexer, this, broker.isTriggersEnabled() ? config : null);
@@ -1522,21 +1519,6 @@ public class MutableCollection implements Collection {
                 //throw new EXistException("An error occurred while reloading the updated collection configuration: " + e.getMessage(), e);
         //}
     }
-
-    /**
-     * Add observers to the indexer
-     *
-     * @param broker    The database broker
-     * @param indexer   The indexer to add observers to
-     */
-    private void addObserversToIndexer(final DBBroker broker, final Indexer indexer) {
-        broker.deleteObservers();
-        observable.forEachObserver(observer -> {
-            indexer.addObserver(observer);
-            broker.addObserver(observer);
-        });
-    }
-
 
     /**
      * If an old document exists, keep information about  the document.
@@ -1861,11 +1843,6 @@ public class MutableCollection implements Collection {
     }
 
     @Override
-    public Observable getObservable() {
-        return observable;
-    }
-
-    @Override
     public String toString() {
         final StringBuilder buf = new StringBuilder();
         buf.append( getURI() );
@@ -1889,52 +1866,5 @@ public class MutableCollection implements Collection {
         }
         buf.append("]");
         return buf.toString();
-    }
-
-    private static class ObservaleMutableCollection extends Observable {
-        private Observer[] observers = null;
-
-        @Override
-        public synchronized void addObserver(final Observer o) {
-            if(hasObserver(o)) {
-                return;
-            }
-            if(observers == null) {
-                observers = new Observer[1];
-                observers[0] = o;
-            } else {
-                final Observer n[] = new Observer[observers.length + 1];
-                System.arraycopy(observers, 0, n, 0, observers.length);
-                n[observers.length] = o;
-                observers = n;
-            }
-        }
-
-        private boolean hasObserver(final Observer o) {
-            if(observers == null) {
-                return false;
-            }
-            for (Observer observer : observers) {
-                if (observer == o) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        void forEachObserver(final Consumer<Observer> consumer) {
-            if(observers != null) {
-                for(final Observer observer : observers) {
-                    consumer.accept(observer);
-                }
-            }
-        }
-
-        @Override
-        public synchronized void deleteObservers() {
-            if(observers != null) {
-                observers = null;
-            }
-        }
     }
 }

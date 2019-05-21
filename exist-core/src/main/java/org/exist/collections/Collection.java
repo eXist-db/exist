@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Observable;
 
 import static org.exist.storage.lock.Lock.LockMode.READ_LOCK;
 import static org.exist.storage.lock.Lock.LockMode.WRITE_LOCK;
@@ -814,13 +813,6 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
     BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, BinaryDocument blob, InputStream is,
             String mimeType, long size, Date created, Date modified, DBBroker.PreserveType preserve)
             throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException;
-
-    /**
-     * Gets an Observable object for this Collection
-     *
-     * @return An observable of this Collection, or null if the Collection is not Observable
-     */
-    Observable getObservable();
 
     /**
      * Serializes the Collection to a variable byte representation

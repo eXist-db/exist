@@ -66,7 +66,7 @@ import org.xml.sax.ext.LexicalHandler;
  * 
  * @author wolf
  */
-public class Indexer extends Observable implements ContentHandler, LexicalHandler, ErrorHandler {
+public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
 
     private static final int CACHE_CHILD_COUNT_MAX = 0x10000;
 
@@ -310,8 +310,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
                 indexListener.endIndexDocument(transaction);
             }
             progress.finish();
-            setChanged();
-            notifyObservers(progress);
         }
         //LOG.debug("elementCnt = " + childCnt.length);
     }
@@ -684,10 +682,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
             currentLine = locator.getLineNumber();
             if (!validate) {
                 progress.setValue(currentLine);
-                if (progress.changed()) {
-                    setChanged();
-                    notifyObservers(progress);
-                }
             }
         }
         docSize++;

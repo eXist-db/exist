@@ -275,24 +275,6 @@ public class NativeBroker extends DBBroker {
         return null;
     }
 
-    @Override
-    public synchronized void addObserver(final Observer o) {
-        super.addObserver(o);
-        //textEngine.addObserver(o);
-        //elementIndex.addObserver(o);
-        //TODO : what about other indexes observers ?
-    }
-
-    @Override
-    public synchronized void deleteObservers() {
-        super.deleteObservers();
-        //if (elementIndex != null)
-        //elementIndex.deleteObservers();
-        //TODO : what about other indexes observers ?
-        //if (textEngine != null)
-        //textEngine.deleteObservers();
-    }
-
     // ============ dispatch the various events to indexing classes ==========
 
     private void notifyRemoveNode(final NodeHandle node, final NodePath currentPath, final String content) {
