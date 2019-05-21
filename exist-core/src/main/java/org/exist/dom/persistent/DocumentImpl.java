@@ -43,7 +43,6 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.EnsureContainerLocked;
 import org.exist.storage.lock.EnsureLocked;
-import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.XMLString;
 import org.exist.xmldb.XmldbURI;
@@ -66,7 +65,6 @@ import org.w3c.dom.Text;
 
 import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
-import java.io.EOFException;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -110,7 +108,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     /**
      * the document's id
      */
-    private int docId = UNKNOWN_DOCUMENT_ID;
+    private final int docId;
 
     /**
      * Just the document's file name
@@ -124,10 +122,12 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     /**
      * Creates a new <code>DocumentImpl</code> instance.
      *
+     * Package private - for testing!
+     *
      * @param pool a <code>BrokerPool</code> instance representing the db
      */
-    public DocumentImpl(final BrokerPool pool) {
-        this(pool, null, (XmldbURI)null);
+    DocumentImpl(final BrokerPool pool, final int docId) {
+        this(pool, null, docId, null, PermissionFactory.getDefaultResourcePermission(pool.getSecurityManager()), 0, null, null);
     }
 
     /**
@@ -135,19 +135,23 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      *
      * @param pool The broker pool
      * @param collection The Collection which holds this document
+     * @param docId the id of the document
      * @param fileURI The name of the document
      */
-    public DocumentImpl(final BrokerPool pool, final Collection collection, final XmldbURI fileURI) {
-        this(pool, collection, fileURI, PermissionFactory.getDefaultResourcePermission(pool.getSecurityManager()));
+    public DocumentImpl(final BrokerPool pool, @Nullable final Collection collection, final int docId, @Nullable
+            final XmldbURI fileURI) {
+        this(pool, collection, docId, fileURI,
+                PermissionFactory.getDefaultResourcePermission(pool.getSecurityManager()), 0, null, null);
     }
 
     /**
      * Creates a new persistent Document instance to replace an existing document instance.
      *
+     * @param docId the id of the document
      * @param prevDoc The previous Document object that we are overwriting
      */
-    public DocumentImpl(final DocumentImpl prevDoc) {
-        this(prevDoc.pool, prevDoc.collection, prevDoc.fileURI, prevDoc.permissions.copy());
+    public DocumentImpl(final int docId, final DocumentImpl prevDoc) {
+        this(prevDoc.pool, prevDoc.collection, docId, prevDoc.fileURI, prevDoc.permissions.copy(), 0, null, null);
     }
 
     /**
@@ -155,20 +159,28 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      *
      * @param pool The broker pool
      * @param collection The Collection which holds this document
-     * @param prevDoc The previous Document object that we are overwriting
+     * @param docId the id of the document
+     * @param fileURI The name of the document
+     * @param permissions the permissions of the document
+     * @param children the number of children that the document has
+     * @param childAddress the addresses of the child nodes
+     * @param metadata the document metadata
      */
-    public DocumentImpl(final BrokerPool pool, final Collection collection, final Collection.CollectionEntry prevDoc) {
-        this(pool, collection, prevDoc.getUri().lastSegment(), prevDoc.getPermissions().copy());
-    }
-
-    private DocumentImpl(final BrokerPool pool, final Collection collection, final XmldbURI fileURI, final Permission permissions) {
+    public DocumentImpl(final BrokerPool pool, @Nullable final Collection collection,
+            final int docId, final XmldbURI fileURI, final Permission permissions,
+            final int children, @Nullable final long[] childAddress,
+            final DocumentMetadata metadata) {
         this.pool = pool;
 
         // NOTE: We must not keep a reference to a LockedCollection in the Document object!
         this.collection = LockedCollection.unwrapLocked(collection);
 
+        this.docId = docId;
         this.fileURI = fileURI;
         this.permissions = permissions;
+        this.children = children;
+        this.childAddress = childAddress;
+        this.metadata = metadata;
 
         //inherit the group to the resource if current collection is setGid
         if(collection != null && collection.getPermissions().isSetGid()) {
@@ -219,16 +231,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     @EnsureContainerLocked(mode=READ_LOCK)
     public int getDocId() {
         return docId;
-    }
-
-    /**
-     * The method <code>setDocId</code>
-     *
-     * @param docId an <code>int</code> value
-     */
-    @EnsureContainerLocked(mode=WRITE_LOCK)
-    public void setDocId(final int docId) {
-        this.docId = docId;
     }
 
     /**
@@ -555,30 +557,31 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     }
 
     /**
-     * The method <code>read</code>
+     * Deserialize the document object from bytes.
      *
-     * @param istream a <code>VariableByteInput</code> value
+     * @param pool the database
+     * @param istream the byte stream to read
+     *
+     * @return the document object.
+     *
      * @throws IOException  if an error occurs
-     * @throws EOFException if an error occurs
      */
-    @EnsureContainerLocked(mode=WRITE_LOCK)
-    public void read(final VariableByteInput istream) throws IOException, EOFException {
-        try {
-            docId = istream.readInt();
-            fileURI = XmldbURI.createInternal(istream.readUTF());
-            getPermissions().read(istream);
-            //Should be > 0 ;-)
-            children = istream.readInt();
-            childAddress = new long[children];
-            for(int i = 0; i < children; i++) {
-                childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
-            }
-            metadata = new DocumentMetadata();
-            metadata.read(pool.getSymbols(), istream);
-        } catch(final IOException e) {
-            LOG.error("IO error while reading document data for document " + fileURI, e);
-            //TODO : raise exception ?
+    public static DocumentImpl read(final BrokerPool pool, final VariableByteInput istream) throws IOException {
+        final int docId = istream.readInt();
+        final XmldbURI fileURI = XmldbURI.createInternal(istream.readUTF());
+        final Permission permissions = PermissionFactory.getDefaultResourcePermission(pool.getSecurityManager());
+        permissions.read(istream);
+
+        final int children = istream.readInt();
+        final long childAddress[] = new long[children];
+        for (int i = 0; i < children; i++) {
+            childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
         }
+
+        final DocumentMetadata metadata = new DocumentMetadata();
+        metadata.read(pool.getSymbols(), istream);
+
+        return new DocumentImpl(pool, null, docId, fileURI, permissions, children, childAddress, metadata);
     }
 
     /**

@@ -52,8 +52,8 @@ public class DocumentImplTest {
         replay(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
         //test setup
-        TestableDocumentImpl doc = new TestableDocumentImpl(mockBrokerPool);
-        DocumentImpl other = new DocumentImpl(mockBrokerPool);
+        TestableDocumentImpl doc = new TestableDocumentImpl(mockBrokerPool, 888);
+        DocumentImpl other = new DocumentImpl(mockBrokerPool, 999);
         other.setMetadata(otherMetadata);
 
         //actions
@@ -91,9 +91,9 @@ public class DocumentImplTest {
         replay(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
         //test setup
-        DocumentImpl doc = new DocumentImpl(mockBrokerPool);
+        DocumentImpl doc = new DocumentImpl(mockBrokerPool, 888);
         doc.setMetadata(docMetadata);
-        DocumentImpl other = new DocumentImpl(mockBrokerPool);
+        DocumentImpl other = new DocumentImpl(mockBrokerPool, 999);
         other.setMetadata(otherMetadata);
 
         //actions
@@ -133,9 +133,9 @@ public class DocumentImplTest {
         replay(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
         //test setup
-        DocumentImpl doc = new DocumentImpl(mockBrokerPool);
+        DocumentImpl doc = new DocumentImpl(mockBrokerPool, 888);
         doc.setMetadata(docMetadata);
-        DocumentImpl other = new DocumentImpl(mockBrokerPool);
+        DocumentImpl other = new DocumentImpl(mockBrokerPool, 999);
         other.setMetadata(otherMetadata);
 
         //actions
@@ -170,8 +170,7 @@ public class DocumentImplTest {
         replay(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
         //test setup
-        final DocumentImpl doc = new DocumentImpl(mockBrokerPool);
-        doc.setDocId(99);
+        final DocumentImpl doc = new DocumentImpl(mockBrokerPool, 99);
         assertTrue(doc.isSameNode(doc));
 
         verify(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
@@ -199,11 +198,9 @@ public class DocumentImplTest {
         replay(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
         //test setup
-        final DocumentImpl doc = new DocumentImpl(mockBrokerPool);
-        doc.setDocId(99);
+        final DocumentImpl doc = new DocumentImpl(mockBrokerPool, 99);
 
-        final DocumentImpl doc2 = new DocumentImpl(mockBrokerPool);
-        doc2.setDocId(765);
+        final DocumentImpl doc2 = new DocumentImpl(mockBrokerPool, 765);
 
         assertFalse(doc.isSameNode(doc2));
 
@@ -232,8 +229,7 @@ public class DocumentImplTest {
         replay(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
         //test setup
-        final DocumentImpl doc = new DocumentImpl(mockBrokerPool);
-        doc.setDocId(99);
+        final DocumentImpl doc = new DocumentImpl(mockBrokerPool, 99);
 
         final TextImpl text = new TextImpl("hello");
 
@@ -247,8 +243,8 @@ public class DocumentImplTest {
         private int getMetadata_invCount = 0;
         private DocumentMetadata meta = new DocumentMetadata();
 
-        public TestableDocumentImpl(BrokerPool pool) {
-            super(pool);
+        public TestableDocumentImpl(BrokerPool pool, int docId) {
+            super(pool, docId);
         }
 
         public int getMetadata_invCount() {
