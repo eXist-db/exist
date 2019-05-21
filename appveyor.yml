@@ -28,8 +28,9 @@ build_script:
   - cmd: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=false install -B -V
   - sh: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=true install -B -V
 
+# Note we don't run parallel on AppVeyor Windows CI, see: https://github.com/quartz-scheduler/quartz/issues/448
 test_script:
-  - cmd: mvn -T 2C -Ddocker=false test -B
+  - cmd: mvn -Ddocker=false test -B
   - sh: mvn -T 2C -Ddocker=true test -B
 
 after_test:
