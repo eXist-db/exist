@@ -32,6 +32,7 @@ import org.apache.lucene.facet.FacetsCollector;
 import org.apache.lucene.facet.FacetsConfig;
 import org.apache.lucene.facet.taxonomy.FastTaxonomyFacetCounts;
 import org.apache.lucene.facet.taxonomy.SearcherTaxonomyManager;
+import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyReader;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.*;
@@ -529,29 +530,33 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                   NodeSet contextSet, NodeSet resultSet, boolean returnAncestor,
                                   SearcherTaxonomyManager.SearcherAndTaxonomy searcher, Query query,
                                   @Nullable Set<String> fields, LuceneConfig config) throws IOException {
-        final ExtFacetsCollector facetsCollector = new ExtFacetsCollector(config);
-        final LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, returnAncestor, contextId, facetsCollector, fields);
+        final LuceneFacets facets = new LuceneFacets();
+        final FacetsCollector facetsCollector = new FacetsCollector();
+        final LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, returnAncestor, contextId, facets, facetsCollector, fields);
         searcher.searcher.search(query, collector);
+
+        // compute facets
+        facets.compute(searcher.taxonomyReader, config.facetsConfig, facetsCollector);
     }
 
-    protected static class ExtFacetsCollector extends FacetsCollector {
+    /**
+     * Wrapper around Lucene {@link Facets}, which are computed after the search has finished.
+     */
+    protected static class LuceneFacets {
 
-        private final LuceneConfig config;
+        private Facets facets;
 
-        public ExtFacetsCollector(LuceneConfig config) {
-            super();
-            this.config = config;
+        public Facets getFacets() {
+            return facets;
         }
 
-        public LuceneConfig getConfig() {
-            return config;
+        /**
+         * Compute facets based on the given {@link FacetsCollector}.
+         */
+        public void compute(DirectoryTaxonomyReader reader, FacetsConfig config, FacetsCollector collector)
+                throws IOException {
+            this.facets = new FastTaxonomyFacetCounts(reader, config, collector);
         }
-    }
-
-    public Facets getFacets(final LuceneMatch match) throws IOException, XPathException {
-        final ExtFacetsCollector facetsCollector = match.getFacetsCollector();
-        final LuceneConfig config = facetsCollector.getConfig();
-        return index.withSearcher(searcher -> new FastTaxonomyFacetCounts(searcher.taxonomyReader, config.facetsConfig, facetsCollector));
     }
 
     public NodeSet queryField(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
@@ -877,11 +882,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private final boolean returnAncestor;
         private final int contextId;
         private final Query query;
-        private final ExtFacetsCollector chainedCollector;
+        private final LuceneFacets facets;
+        private final FacetsCollector chainedCollector;
         private final Set<String> fields;
 
-        private LuceneHitCollector(QName qname, Query query, DocumentSet docs, NodeSet contextSet, NodeSet resultSet, boolean returnAncestor,
-                                   int contextId, ExtFacetsCollector nextCollector, @Nullable Set<String> fields) {
+        private LuceneHitCollector(QName qname, Query query, DocumentSet docs, NodeSet contextSet, NodeSet resultSet, boolean returnAncestor, int contextId, LuceneFacets facets, FacetsCollector nextCollector, @Nullable Set<String> fields) {
             this.qname = qname;
             this.docs = docs;
             this.contextSet = contextSet;
@@ -889,6 +894,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             this.returnAncestor = returnAncestor;
             this.contextId = contextId;
             this.query = query;
+            this.facets = facets;
             this.chainedCollector = nextCollector;
             this.fields = fields;
         }
@@ -964,7 +970,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
 
         private LuceneMatch createMatch(int docId, float score, NodeId nodeId) throws IOException {
-            final LuceneMatch match = new LuceneMatch(contextId, nodeId, query, chainedCollector);
+            final LuceneMatch match = new LuceneMatch(contextId, nodeId, query, facets);
             match.setScore(score);
             if (fields != null && !fields.isEmpty()) {
                 final Document luceneDoc = reader.document(docId, fields);
