@@ -40,7 +40,7 @@ import org.xmldb.api.base.XMLDBException;
 public class Base64FunctionsTest {
 
     @ClassRule
-    public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
     public void testBase64Encode() throws XMLDBException {

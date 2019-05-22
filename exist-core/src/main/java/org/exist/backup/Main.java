@@ -35,7 +35,6 @@ import se.softhouse.jargo.*;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -121,23 +120,20 @@ public class Main {
             .build();
 
     private static Properties loadProperties() {
-        // read properties
-        final Path propFile = ConfigurationHelper.lookup("backup.properties");
-        final Properties properties = new Properties();
         try {
-            if (Files.isReadable(propFile)) {
-                try(final InputStream pin = Files.newInputStream(propFile)) {
-                    properties.load(pin);
-                }
-            } else {
-                try(final InputStream pin = Main.class.getResourceAsStream("backup.properties")) {
-                    properties.load(pin);
-                }
+            final Properties properties = ConfigurationHelper.loadProperties("backup.properties", Main.class);
+            if (properties != null) {
+                return properties;
             }
+
+            System.err.println("WARN - Unable to find backup.properties");
+
         } catch (final IOException e) {
-            System.err.println("WARN - Unable to load properties from: " + propFile.toAbsolutePath().toString());
+            System.err.println("WARN - Unable to load backup.properties: " + e.getMessage());
         }
-        return properties;
+
+        // return new empty properties
+        return new Properties();
     }
 
     /**

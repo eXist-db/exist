@@ -44,7 +44,7 @@ import static org.junit.Assert.*;
 public class TryCatchTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
     public void encapsulated_1() throws XMLDBException {

@@ -3,6 +3,8 @@
  */
 package org.exist.xquery;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.Configuration;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -28,8 +30,10 @@ import static org.junit.Assert.fail;
  */
 public class JavaFunctionsTest {
 
+    private static final Logger LOG = LogManager.getLogger(JavaFunctionsTest.class);
+
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private boolean javabindingenabled = false;
 
@@ -53,7 +57,7 @@ public class JavaFunctionsTest {
                 return;
             }
 
-            e.printStackTrace();
+            LOG.error(e.getMessage(), e);
             fail(e.getMessage());
         }
     }

@@ -25,6 +25,7 @@ import org.expath.pkg.repo.PackageException;
 import org.expath.pkg.repo.XarSource;
 import org.expath.pkg.repo.deps.DependencyVersion;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -102,5 +103,6 @@ public interface PackageLoader {
      * @param version the version to install
      * @return a file containing the package or null if not found
      */
+    @Nullable
     XarSource load(String name, Version version) throws IOException;
 }

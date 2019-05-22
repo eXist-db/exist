@@ -78,9 +78,10 @@ public class StoreResourceTest {
      * As group member replace {@link #USER1_DOC1} from {@link TestConstants#TEST_COLLECTION_URI}
      */
     @Test
-    public void replaceXmlAsOwner() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, SAXException {
+    public void replaceXmlAsOwner() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, SAXException, InterruptedException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalDoc1LastModified = getLastModified(USER1_DOC1);
+        Thread.sleep(5);
         replaceXmlDoc(user2, NO_PRESERVE, USER1_DOC1, "<something>else</something>");
         checkAttributes(USER1_DOC1, USER1_NAME, GROUP1_NAME, USER1_DOC1_MODE, equalTo(getCreated(USER1_DOC1)), not(originalDoc1LastModified));
     }
@@ -89,9 +90,10 @@ public class StoreResourceTest {
      * As group member replace {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI}
      */
     @Test
-    public void replaceBinaryAsGroupMember() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
+    public void replaceBinaryAsGroupMember() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalDoc1LastModified = getLastModified(USER1_BIN_DOC1);
+        Thread.sleep(5);
         replaceBinDoc(user2, NO_PRESERVE, USER1_BIN_DOC1, "something else");
         checkAttributes(USER1_BIN_DOC1, USER1_NAME, GROUP1_NAME, USER1_BIN_DOC1_MODE, equalTo(getCreated(USER1_BIN_DOC1)), not(originalDoc1LastModified));
     }

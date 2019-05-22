@@ -1,5 +1,7 @@
 package org.exist.xquery;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.*;
 
@@ -17,8 +19,10 @@ import org.xmldb.api.modules.XMLResource;
  */
 public class TestXPathOpOrSpecialCase extends Assert {
 
+	private static final Logger LOG = LogManager.getLogger(TestXPathOpOrSpecialCase.class);
+
 	@ClassRule
-	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
 	/** Database test collection (<tt>/db/blah</tt>). */
 	private Collection testCollection;
@@ -56,7 +60,7 @@ public class TestXPathOpOrSpecialCase extends Assert {
 		}
 		catch(final XMLDBException e)
 		{
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 			throw e;
 		}
 	}

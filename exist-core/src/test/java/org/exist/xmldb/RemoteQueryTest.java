@@ -21,11 +21,13 @@
  */
 package org.exist.xmldb;
 
-import java.nio.file.Path;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 
-import org.exist.TestUtils;
 import org.exist.test.TestConstants;
 import org.exist.util.MimeType;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmlrpc.XmlRpcTest;
 import org.junit.After;
 import org.junit.Before;
@@ -42,8 +44,10 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.exist.samples.Samples.SAMPLES;
 
 public class RemoteQueryTest extends RemoteDBTest {
 	private Collection testCollection;
@@ -88,7 +92,7 @@ public class RemoteQueryTest extends RemoteDBTest {
 	}
 
 	@Before
-	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, URISyntaxException, IOException {
         // initialize driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         Database database = (Database) cl.newInstance();
@@ -108,9 +112,10 @@ public class RemoteQueryTest extends RemoteDBTest {
         assertNotNull(testCollection);
 
         Resource xr = testCollection.createResource("hamlet.xml", "XMLResource");
-        Path f = TestUtils.resolveShakespeareSample("hamlet.xml");
-        xr.setContent(f);
-        testCollection.storeResource(xr);
+        try (final InputStream is = SAMPLES.getHamletSample()) {
+            xr.setContent(InputStreamUtil.readString(is, UTF_8));
+            testCollection.storeResource(xr);
+        }
 
         xmlrpcCollection = service.createCollection("xmlrpc");
         assertNotNull(xmlrpcCollection);

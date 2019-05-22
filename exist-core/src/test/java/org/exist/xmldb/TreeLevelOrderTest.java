@@ -22,17 +22,15 @@
  */
 package org.exist.xmldb;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-import org.junit.After;
-import org.junit.Before;
+import org.exist.TestUtils;
+import org.exist.test.ExistXmldbEmbeddedServer;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.base.*;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.modules.XQueryService;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -45,52 +43,22 @@ import static org.junit.Assert.assertNotNull;
 
 public class TreeLevelOrderTest {
 
-    /**
-     * eXist database url
-     */
-    static final String eXistUrl = "xmldb:exist://";
+    @ClassRule
+    public static final ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(false, true, true);
 
-    static Method getNodeValueMethod = null;
+    private static final String DOC1_NAME = "survey.xml";
 
-    static {
-        try {
-            getNodeValueMethod = Node.class.getMethod("getNodeValue", (Class[]) null);
-        } catch (Exception ex) {
-        }
-    }
-
-    private Collection root = null;
-
-    public static String nodeValue(Node n) {
-        if (getNodeValueMethod != null) {
-            try {
-                return (String) getNodeValueMethod.invoke(n, (Object[]) null);
-            } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
-                return null;
-            } catch (InvocationTargetException ex) {
-                ex.printStackTrace();
-                return null;
-            } catch (IllegalAccessException ex) {
-                ex.printStackTrace();
-                return null;
-            }
-        }
-        if (n.getNodeType() == Node.ELEMENT_NODE) {
-            StringBuffer builder = new StringBuffer();
-            Node current = n.getFirstChild();
-            while (current != null) {
-                int type = current.getNodeType();
-                if (type == Node.CDATA_SECTION_NODE || type == Node.TEXT_NODE) {
-                    builder.append(current.getNodeValue());
-                }
-                current = current.getNextSibling();
-            }
-            return builder.toString();
-        } else {
-            return n.getNodeValue();
-        }
-    }
+    private static final String DOC1 =
+            "<survey>" +
+            "<date>2004/11/24 17:42:31 GMT</date>" +
+            "<from><![CDATA[tobias.wunden@o2it.ch]]></from>" +
+            "<to><![CDATA[tobias.wunden@o2it.ch]]></to>" +
+            "<subject><![CDATA[Test]]></subject>" +
+            "<field>" +
+            "<name><![CDATA[homepage]]></name>" +
+            "<value><![CDATA[-]]></value>" +
+            "</field>" +
+            "</survey>";
 
     /**
      * Test for the TreeLevelOrder function. This test
@@ -102,30 +70,13 @@ public class TreeLevelOrderTest {
      * </ul>
      */
     @Test
-    public final void treeLevelOrder() throws XMLDBException, IllegalAccessException, InstantiationException, ClassNotFoundException {
-        String document = "survey.xml";
-        EXistXQueryService service = null;
-
-        // Obtain XQuery service
-        service = getXQueryService();
-        assertNotNull(service);
+    public void treeLevelOrder() throws XMLDBException, IllegalAccessException, InstantiationException, ClassNotFoundException {
         // create document
-        StringBuilder xmlDocument = new StringBuilder();
-        xmlDocument.append("<survey>");
-        xmlDocument.append("<date>2004/11/24 17:42:31 GMT</date>");
-        xmlDocument.append("<from><![CDATA[tobias.wunden@o2it.ch]]></from>");
-        xmlDocument.append("<to><![CDATA[tobias.wunden@o2it.ch]]></to>");
-        xmlDocument.append("<subject><![CDATA[Test]]></subject>");
-        xmlDocument.append("<field>");
-        xmlDocument.append("<name><![CDATA[homepage]]></name>");
-        xmlDocument.append("<value><![CDATA[-]]></value>");
-        xmlDocument.append("</field>");
-        xmlDocument.append("</survey>");
         // write document to the database
-        store(xmlDocument.toString(), service, document);
+        store(DOC1, DOC1_NAME);
 
         // read document back from database
-        Node elem = load(service, document);
+        Node elem = load(DOC1_NAME);
         assertNotNull(elem);
 
         //get node using DOM
@@ -135,9 +86,8 @@ public class TreeLevelOrderTest {
         for (int r = 0; r < rootChildren.getLength(); r++) {
             if (rootChildren.item(r).getLocalName().equals("to")) {
                 Node to = rootChildren.item(r);
-
-                //strTo = to.getTextContent();
-                strTo = nodeValue(to);
+                strTo = to.getTextContent();
+                break;
             }
         }
 
@@ -148,75 +98,39 @@ public class TreeLevelOrderTest {
      * Stores the given xml fragment into the database.
      *
      * @param xml      the xml document
-     * @param service  the xquery service
      * @param document the document name
      */
-    private final void store(String xml, EXistXQueryService service, String document) throws XMLDBException {
-        StringBuilder query = new StringBuilder();
-        query.append("xquery version \"1.0\";");
-        query.append("declare namespace xdb=\"http://exist-db.org/xquery/xmldb\";");
-        query.append("let $isLoggedIn := xdb:login('" + eXistUrl + XmldbURI.ROOT_COLLECTION + "', 'admin', ''),");
-        query.append("$doc := xdb:store(\"" + eXistUrl + XmldbURI.ROOT_COLLECTION + "\", $document, $survey)");
+    private void store(final String xml, final String document) throws XMLDBException {
+        final StringBuilder query = new StringBuilder();
+        query.append("declare namespace xmldb='http://exist-db.org/xquery/xmldb';");
+        query.append("let $isLoggedIn := xmldb:login('" + XmldbURI.ROOT_COLLECTION + "', '" + TestUtils.ADMIN_DB_USER + "', '" + TestUtils.ADMIN_DB_PWD + "'),");
+        query.append("$doc := xmldb:store('" + XmldbURI.ROOT_COLLECTION + "', $document, $survey)");
         query.append("return <result/>");
 
+        final XQueryService service = (XQueryService)server.getRoot().getService("XQueryService", "1.0");
         service.declareVariable("survey", xml);
         service.declareVariable("document", document);
-        CompiledExpression cQuery = service.compile(query.toString());
+        final CompiledExpression cQuery = service.compile(query.toString());
         service.execute(cQuery);
     }
 
     /**
      * Loads the xml document identified by <code>document</code> from the database.
      *
-     * @param service  the xquery service
      * @param document the document to load
      */
-    private final Node load(EXistXQueryService service, String document) throws XMLDBException {
-        StringBuilder query = new StringBuilder();
-        query.append("xquery version \"1.0\";");
+    private Node load(final String document) throws XMLDBException {
+        final StringBuilder query = new StringBuilder();
         query.append("let $survey := doc(string-join(('" + XmldbURI.ROOT_COLLECTION + "', $document), '/'))");
         query.append("return $survey");
 
+        final XQueryService service = (XQueryService)server.getRoot().getService("XQueryService", "1.0");
         service.declareVariable("document", document);
-        CompiledExpression cQuery = service.compile(query.toString());
-        ResourceSet set = service.execute(cQuery);
+        final CompiledExpression cQuery = service.compile(query.toString());
+        final ResourceSet set = service.execute(cQuery);
         if (set != null && set.getSize() > 0) {
             return ((XMLResource) set.getIterator().nextResource()).getContentAsDOM();
         }
         return null;
-    }
-
-    /**
-     * Retrieves the base collection and thereof returns a reference to the collection's
-     * xquery service.
-     *
-     * @return the xquery service
-     */
-    private final EXistXQueryService getXQueryService() throws XMLDBException {
-        EXistXQueryService service = (EXistXQueryService) root.getService("XQueryService", "1.0");
-        return service;
-    }
-
-    /**
-     * Registers a new database instance and returns it.
-     */
-    @Before
-    public final void registerDatabase() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-        String driverName = "org.exist.xmldb.DatabaseImpl";
-        Class<?> driver = Class.forName(driverName);
-        Database database = (Database) driver.newInstance();
-        database.setProperty("create-database", "true");
-
-        DatabaseManager.registerDatabase(database);
-        this.root = DatabaseManager.getCollection(eXistUrl + XmldbURI.ROOT_COLLECTION, "admin", "");
-    }
-
-    @After
-    public final void deregisterDatabase() throws XMLDBException {
-        if (root != null) {
-            DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
-            root.close();
-            mgr.shutdown();
-        }
     }
 }

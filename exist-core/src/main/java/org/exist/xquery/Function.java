@@ -19,9 +19,7 @@
  */
 package org.exist.xquery;
 
-import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
 import java.util.List;
 
 import org.exist.dom.QName;
@@ -33,8 +31,6 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-
-import static java.lang.invoke.MethodType.methodType;
 
 /**
  * Abstract base class for all built-in and user-defined functions.
@@ -51,8 +47,6 @@ import static java.lang.invoke.MethodType.methodType;
  * @author wolf
  */
 public abstract class Function extends PathExpr {
-
-    private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
     // Declare it in Namespaces instead? /ljo
     public final static String BUILTIN_FUNCTION_NS =
@@ -135,22 +129,14 @@ public abstract class Function extends PathExpr {
             Function function = null;
             try {
                 // attempt for a constructor that takes 1 argument
-                final MethodHandle methodHandle = LOOKUP.findConstructor(fclazz, methodType(void.class, XQueryContext.class));
-                final java.util.function.Function<XQueryContext, Function> ctor = (java.util.function.Function<XQueryContext, Function>)
-                        LambdaMetafactory.metafactory(
-                                LOOKUP, "apply", methodType(java.util.function.Function.class),
-                                methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
-                function = ctor.apply(context);
+                final Constructor<? extends Function> cstr1 = fclazz.getConstructor(XQueryContext.class);
+                function = cstr1.newInstance(context);
 
             } catch (final NoSuchMethodException nsme1) {
                 try {
                     // attempt for a constructor that takes 2 arguments
-                    final MethodHandle methodHandle = LOOKUP.findConstructor(fclazz, methodType(void.class, XQueryContext.class, FunctionSignature.class));
-                    final java.util.function.BiFunction<XQueryContext, FunctionSignature, Function> ctor = (java.util.function.BiFunction<XQueryContext, FunctionSignature, Function>)
-                            LambdaMetafactory.metafactory(
-                                    LOOKUP, "apply", methodType(java.util.function.BiFunction.class),
-                                    methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
-                    function = ctor.apply(context, def.getSignature());
+                    final Constructor<? extends Function> cstr2 = fclazz.getConstructor(XQueryContext.class, FunctionSignature.class);
+                    function = cstr2.newInstance(context, def.getSignature());
                 } catch (final NoSuchMethodException nsme2) {
                     throw new XPathException(ast.getLine(), ast.getColumn(), "Constructor not found");
                 }

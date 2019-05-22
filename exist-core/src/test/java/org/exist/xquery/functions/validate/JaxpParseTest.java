@@ -21,15 +21,14 @@
  */
 package org.exist.xquery.functions.validate;
 
-import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.FileUtils;
+import org.exist.util.io.InputStreamUtil;
 import org.junit.*;
 import static org.junit.Assert.*;
+import static org.exist.samples.Samples.SAMPLES;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.function.Predicate;
+import java.io.InputStream;
 
 import org.custommonkey.xmlunit.XMLAssert;
 
@@ -45,12 +44,14 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class JaxpParseTest {
 
+    private static final String[] TEST_RESOURCES = { "defaultValue.xml", "defaultValue.xsd" };
+
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String noValidation = "<?xml version='1.0'?>" +
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-            "<validation mode=\"no\"/>" +
+            "<collection xmlns='http://exist-db.org/collection-config/1.0'>" +
+            "    <validation mode='no'/>" +
             "</collection>";
 
     @BeforeClass
@@ -67,17 +68,15 @@ public class JaxpParseTest {
             }
         }
 
-        // Create filter
-        final Predicate<Path> filter = path -> FileUtils.fileName(path).startsWith("default");
-
         Collection schemasCollection = null;
         try {
             schemasCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse_validate");
-            final Path schemas = TestUtils.resolveSample("validation/parse_validate");
 
-            for (final Path file : FileUtils.list(schemas, filter)) {
-                final byte[] data = TestUtils.readFile(file);
-                ExistXmldbEmbeddedServer.storeResource(schemasCollection, FileUtils.fileName(file), data);
+            for (final String testResource : TEST_RESOURCES) {
+                try (final InputStream is = SAMPLES.getSample("validation/parse_validate/" + testResource)) {
+                    assertNotNull(is);
+                    ExistXmldbEmbeddedServer.storeResource(schemasCollection, testResource, InputStreamUtil.readAll(is));
+                }
             }
         } finally {
             if(schemasCollection != null) {

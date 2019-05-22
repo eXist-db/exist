@@ -22,11 +22,7 @@
 package org.exist.xmldb;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Properties;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -37,16 +33,17 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.exist.TestUtils;
 import org.exist.dom.QName;
 import org.exist.security.Account;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.ExistSAXParserFactory;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.XMLFilenameFilter;
 import org.junit.*;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.TestUtils.GUEST_DB_USER;
 import static org.exist.xmldb.AbstractLocal.PROP_JOIN_TRANSACTION_IF_PRESENT;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -65,13 +62,13 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
-import static org.exist.xmldb.XmldbLocalTests.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.exist.samples.Samples.SAMPLES;
 
 public class ResourceTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String TEST_COLLECTION = "testResource";
 
@@ -87,7 +84,7 @@ public class ResourceTest {
 
     @Test
     public void readNonExistingResource() throws XMLDBException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
         Resource nonExistent = testCollection.getResource("12345.xml");
         assertNull(nonExistent);
@@ -95,7 +92,7 @@ public class ResourceTest {
 
     @Test
     public void readResource() throws XMLDBException, IOException {
-        final Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        final Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
         final String[] resources = testCollection.listResources();
         assertEquals(resources.length, testCollection.getResourceCount());
@@ -128,7 +125,7 @@ public class ResourceTest {
         final XMLResource resource1 = addResource(doc1Name, xmlDoc1);
         final XMLResource resource2 = addResource(doc2Name, xmlDoc2);
 
-        final Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        final Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
 
         try(final StringWriter sout = new StringWriter()) {
@@ -156,7 +153,7 @@ public class ResourceTest {
 
     @Test
     public void readDOM() throws XMLDBException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
 
         XMLResource doc = (XMLResource) testCollection.getResource("r_and_j.xml");
@@ -184,7 +181,7 @@ public class ResourceTest {
 
     @Test
     public void setContentAsSAX() throws SAXException, ParserConfigurationException, XMLDBException, IOException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
 
         XMLResource doc =
@@ -207,7 +204,7 @@ public class ResourceTest {
 
     @Test
     public void setContentAsDOM() throws XMLDBException, ParserConfigurationException, SAXException, IOException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
 
         XMLResource doc = (XMLResource) testCollection.createResource("dom.xml", "XMLResource");
@@ -225,7 +222,7 @@ public class ResourceTest {
     
     @Test
     public void setContentAsSource_Reader() throws XMLDBException, SAXException, IOException, XpathException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
 
         XMLResource doc = (XMLResource) testCollection.createResource("source.xml", "XMLResource");
@@ -252,7 +249,7 @@ public class ResourceTest {
     public void queryRemoveResource() throws XMLDBException {
         Resource resource = null;
         
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
                     assertNotNull(testCollection);
         String resourceName = "QueryTestPerson.xml";
         String id = "test." + System.currentTimeMillis();
@@ -307,7 +304,7 @@ public class ResourceTest {
             Collection collection = null;
 
             try {
-                collection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+                collection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
                 collection.removeResource(resource);
             } finally {
                 closeCollection(collection);
@@ -320,7 +317,7 @@ public class ResourceTest {
         XMLResource result = null;
 
         try {
-            collection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+            collection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
             result = (XMLResource) collection.createResource(id, XMLResource.RESOURCE_TYPE);
             result.setContent(content);
             collection.storeResource(result);
@@ -335,7 +332,7 @@ public class ResourceTest {
         XMLResource result = null;
 
         try {
-            collection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+            collection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
             result = (XMLResource) collection.getResource(id);
         } finally {
             closeCollection(collection);
@@ -364,18 +361,18 @@ public class ResourceTest {
         final Collection testCollection = cms.createCollection(TEST_COLLECTION);
         final UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
         // change ownership to guest
-        final Account guest = ums.getAccount(GUEST_UID);
+        final Account guest = ums.getAccount(GUEST_DB_USER);
         ums.chown(guest, guest.getPrimaryGroup());
         ums.chmod("rwxr-xr-x");
 
         //store sample files as guest
-        final Collection testCollectionAsGuest = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
-        try(final Stream<Path> files = Files.list(TestUtils.shakespeareSamples()).filter(XMLFilenameFilter.asPredicate())) {
-            for(final Path file : files.collect(Collectors.toList())) {
-                final XMLResource res = (XMLResource) testCollectionAsGuest.createResource(file.getFileName().toString(), "XMLResource");
-                res.setContent(file.toFile());
-                testCollectionAsGuest.storeResource(res);
+        final Collection testCollectionAsGuest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
+        for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+            final XMLResource res = (XMLResource) testCollectionAsGuest.createResource(sampleName, "XMLResource");
+            try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
+                res.setContent(InputStreamUtil.readString(is, UTF_8));
             }
+            testCollectionAsGuest.storeResource(res);
         }
     }
 

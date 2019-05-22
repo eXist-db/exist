@@ -77,7 +77,7 @@ import java.net.URISyntaxException;
 public class DocTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static SAXParserFactory saxParserFactory = ExistSAXParserFactory.getSAXParserFactory();
     static {

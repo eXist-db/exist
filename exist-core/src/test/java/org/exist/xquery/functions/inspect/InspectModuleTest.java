@@ -53,7 +53,7 @@ import static org.junit.Assert.assertTrue;
 public class InspectModuleTest {
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static final XmldbURI TEST_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("test-inspectModule");
     private static final XmldbURI TEST_MODULE = XmldbURI.create("test.xqm");
@@ -97,7 +97,7 @@ public class InspectModuleTest {
             " : \n" +
             " : @return another result\n" +
             " :)\n" +
-            "declare %public %rest:path(\"/x/y/z\") function x:fun4() {\n" +
+            "declare %public %x:path(\"/x/y/z\") function x:fun4() {\n" +
             "  \"hello from fun4\"\n" +
             "};\n";
 
@@ -212,7 +212,6 @@ public class InspectModuleTest {
         }
     }
 
-    //@Ignore("https://github.com/eXist-db/exist/issues/1386")
     @Test
     public void xqDoc_onAnnotatedFunction() throws PermissionDeniedException, XPathException, EXistException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -241,7 +240,7 @@ public class InspectModuleTest {
             final NodeList annotations = function.getElementsByTagName("annotation");
             assertEquals(2, annotations.getLength());
             assertEquals("public", ((Element)annotations.item(0)).getAttribute("name"));
-            assertEquals("rest:path", ((Element)annotations.item(1)).getAttribute("name"));
+            assertEquals("x:path", ((Element)annotations.item(1)).getAttribute("name"));
             assertEquals("/x/y/z", annotations.item(1).getFirstChild().getFirstChild().getNodeValue());
 
             final NodeList arguments = function.getElementsByTagName("argument");

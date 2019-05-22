@@ -1,5 +1,7 @@
 package org.exist;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentSet;
@@ -33,6 +35,8 @@ import java.util.Properties;
  * Helper class to generate test documents from a given XQuery.
  */
 public class TestDataGenerator {
+
+    private static final Logger LOG = LogManager.getLogger(TestDataGenerator.class);
 
     private final static Properties outputProps = new Properties();
     static {
@@ -90,7 +94,7 @@ public class TestDataGenerator {
                 }
             }
         } catch (final XPathException | PermissionDeniedException | LockException | IOException e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage(), e);
             throw new SAXException(e.getMessage(), e);
         }
         return generatedFiles;
@@ -120,7 +124,7 @@ public class TestDataGenerator {
                 }
             }
         } catch (final XMLDBException | IOException e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage(), e);
             throw new SAXException(e.getMessage(), e);
         }
         return generatedFiles;

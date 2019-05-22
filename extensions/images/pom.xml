@@ -1,0 +1,54 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.exist-db</groupId>
+        <artifactId>exist-parent</artifactId>
+        <version>5.0.0-RC8-SNAPSHOT</version>
+        <relativePath>../../exist-parent</relativePath>
+    </parent>
+
+    <artifactId>exist-images</artifactId>
+    <packaging>jar</packaging>
+
+    <name>eXist-db Images Extension</name>
+    <description>eXist-db NoSQL Database Images Extension</description>
+
+    <scm>
+        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
+        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
+        <url>scm:git:https://github.com/exist-db/exist.git</url>
+    </scm>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.media</groupId>
+            <artifactId>jai_core</artifactId>
+            <version>1.1.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.media</groupId>
+            <artifactId>jai_codec</artifactId>
+            <version>1.1.3</version>
+        </dependency>
+
+    </dependencies>
+
+    <repositories>
+        <repository>
+            <id>osgeo</id>
+            <url>http://download.osgeo.org/webdav/geotools/</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+    </repositories>
+
+</project>

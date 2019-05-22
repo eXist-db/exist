@@ -32,16 +32,19 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TransactionTestDSL;
 import org.exist.util.FileInputSource;
 import org.exist.util.LockException;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.concurrent.*;
 
-import static org.exist.TestUtils.resolveHamletSample;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.test.TransactionTestDSL.ExecutionListener;
 import static org.exist.test.TransactionTestDSL.NULL_SCHEDULE_LISTENER;
 import static org.exist.test.TransactionTestDSL.STD_OUT_SCHEDULE_LISTENER;
@@ -51,6 +54,7 @@ import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.exist.samples.Samples.SAMPLES;
 
 /**
  * Tests for Transactional Operations on the database.
@@ -63,7 +67,7 @@ import static org.junit.Assert.assertNull;
 public class ConcurrentTransactionsTest {
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     // flip this to `true` if you want to see a trace of the transaction schedule execution on Standard Out
     private static final boolean DEBUG_TRACING = false;
@@ -159,7 +163,7 @@ public class ConcurrentTransactionsTest {
     }
 
     @Before
-    public void setupDocs() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+    public void setupDocs() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, URISyntaxException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -169,11 +173,15 @@ public class ConcurrentTransactionsTest {
             assertNotNull(test);
             broker.saveCollection(transaction, test);
 
-            final InputSource inputSource = new FileInputSource(resolveHamletSample());
+            final String sample;
+            try (final InputStream is = SAMPLES.getHamletSample()) {
+                assertNotNull(is);
+                sample = InputStreamUtil.readString(is, UTF_8);
+            }
 
-            final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), inputSource);
+            final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), sample);
             assertNotNull(info);
-            test.store(transaction, broker, info, inputSource);
+            test.store(transaction, broker, info, sample);
 
             transact.commit(transaction);
         }

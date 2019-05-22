@@ -31,13 +31,13 @@ public class DLNStorageTest {
     private static final XmldbURI TEST_COLLECTION = XmldbURI.create(XmldbURI.ROOT_COLLECTION + "/test");
 
     private static final String TEST_XML =
-            "<test>\n" +
-                    "    <para>My first paragraph.</para>\n" +
-                    "    <!-- A comment -->\n" +
-                    "    <para>This one contains a <a href=\"#\">link</a>.</para>\n" +
-                    "    <?echo \"A processing instruction\"?>\n" +
-                    "    <para>Another <b>paragraph</b>.</para>\n" +
-                    "</test>";
+            "<test>" +
+            "<para>My first paragraph.</para>" +
+            "<!-- A comment -->" +
+            "<para>This one contains a <a href=\"#\">link</a>.</para>" +
+            "<?echo \"A processing instruction\"?>" +
+            "<para>Another <b>paragraph</b>.</para>" +
+            "</test>";
 
     @Test
     public void nodeStorage() throws Exception {
@@ -95,7 +95,7 @@ public class DLNStorageTest {
     }
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeClass
     public static void setUp() throws Exception {

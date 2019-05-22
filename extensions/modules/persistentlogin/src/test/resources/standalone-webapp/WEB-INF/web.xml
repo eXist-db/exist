@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app 
+    xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+    metadata-complete="false"
+    version="3.1">
+
+    <description>eXist-db – Open Source Native XML Database</description>
+    <display-name>eXist-db XML Database</display-name>
+
+    <servlet>
+        <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
+        <servlet-class>org.exist.xmlrpc.RpcServlet</servlet-class>
+        <init-param>
+          <param-name>enabledForExtensions</param-name>
+          <param-value>true</param-value>
+        </init-param>
+    </servlet>
+
+    <servlet>
+        <servlet-name>EXistServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.EXistServlet</servlet-class>
+        <init-param>
+            <param-name>configuration</param-name>
+            <param-value>conf.xml</param-value>
+        </init-param>
+        <init-param>
+            <param-name>basedir</param-name>
+            <param-value>WEB-INF/</param-value>
+        </init-param>
+        <init-param>
+            <param-name>start</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+	
+    <servlet>
+        <servlet-name>XQueryURLRewrite</servlet-name>
+        <servlet-class>org.exist.http.urlrewrite.XQueryURLRewrite</servlet-class>
+        <init-param>
+            <param-name>config</param-name>
+            <param-value>WEB-INF/controller-config.xml</param-value>
+        </init-param>
+    </servlet>
+
+    <servlet>
+        <servlet-name>XSLTServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.XSLTServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>XQueryURLRewrite</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+</web-app>

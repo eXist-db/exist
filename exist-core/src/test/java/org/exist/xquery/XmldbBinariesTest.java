@@ -45,13 +45,13 @@ import static org.exist.TestUtils.ADMIN_DB_USER;
 public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resource, XMLDBException> {
 
     @ClassRule
-    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
     private static final String PORT_PLACEHOLDER = "${PORT}";
 
     @Parameterized.Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                { "local", "xmldb:exist://" },
+//                { "local", "xmldb:exist://" },
                 { "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" }
         });
     }
@@ -138,16 +138,17 @@ public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resourc
     }
 
     @Override
-    protected QueryResultAccessor<ResourceSet, XMLDBException> executeXQuery(final String query) throws Exception {
-        Collection colRoot = null;
-        try {
-            colRoot = DatabaseManager.getCollection(getBaseUri() + "/db", ADMIN_DB_USER, ADMIN_DB_PWD);
-            final XQueryService xqueryService = (XQueryService)colRoot.getService("XQueryService", "1.0");
+    protected QueryResultAccessor<ResourceSet, XMLDBException> executeXQuery(final String query) {
+        return consumer -> {
+            Collection colRoot = null;
+            try {
+                colRoot = DatabaseManager.getCollection(getBaseUri() + "/db", ADMIN_DB_USER, ADMIN_DB_PWD);
+                final XQueryService xqueryService = (XQueryService)colRoot.getService("XQueryService", "1.0");
 
-            final CompiledExpression compiledExpression = xqueryService.compile(query);
-            final ResourceSet results = xqueryService.execute(compiledExpression);
+                final CompiledExpression compiledExpression = xqueryService.compile(query);
+                final ResourceSet results = xqueryService.execute(compiledExpression);
 
-            return consumer -> {
+
                 try {
 //                    compiledExpression.reset();  // shows the ordering issue with binary values (see comment below)
 
@@ -157,10 +158,10 @@ public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resourc
                     results.clear();
                     compiledExpression.reset();
                 }
-            };
-        } finally {
-            colRoot.close();
-        }
+            } finally {
+                colRoot.close();
+            }
+        };
     }
 
     @Override

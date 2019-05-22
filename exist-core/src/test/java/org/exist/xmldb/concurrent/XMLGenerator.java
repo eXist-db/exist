@@ -29,15 +29,14 @@ import java.util.Random;
  * @author wolf
  */
 public class XMLGenerator {
+    private final String[] words;
+    private final int elementCnt;
+    private final int attrCnt;
+    private final int depth;
+    private final Random random;
+    private final boolean useNamespaces;
     
-    String[] words;
-    int elementCnt;
-    int attrCnt;
-    int depth;
-    Random random;
-    boolean useNamespaces = false;
-    
-    public XMLGenerator(int elementCnt, int attrCnt, int depth, String[] words, boolean useNamespaces) {
+    public XMLGenerator(final int elementCnt, final int attrCnt, final int depth, final String[] words, final boolean useNamespaces) {
         this.elementCnt = elementCnt;
         this.attrCnt = attrCnt;
         this.depth = depth;
@@ -46,7 +45,7 @@ public class XMLGenerator {
         this.random = new Random(System.currentTimeMillis());
     }
     
-    public void generateXML(Writer writer) throws IOException {
+    public void generateXML(final Writer writer) throws IOException {
         writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         writer.write("<ROOT-ELEMENT>");
         
@@ -63,7 +62,7 @@ public class XMLGenerator {
         return writer.toString();
     }
     
-    protected void writeElement(Writer writer, int level) throws IOException {
+    protected void writeElement(final Writer writer, final int level) throws IOException {
         writer.write('<');
         if (useNamespaces) {
             writer.write("t:");
@@ -103,12 +102,13 @@ public class XMLGenerator {
         writer.write(">\n");
     }
     
-    public String generateText(int len) {
-        StringBuffer buf = new StringBuffer();
-        for(int i = 0; i < len; i++) {
-            if(i > 0)
+    public String generateText(final int len) {
+        final StringBuilder buf = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            if(i > 0) {
                 buf.append(' ');
-            int n = random.nextInt(words.length);
+            }
+            final int n = random.nextInt(words.length);
             buf.append(words[n]);
         }
         return buf.toString();

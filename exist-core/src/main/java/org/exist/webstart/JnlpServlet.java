@@ -23,8 +23,10 @@ package org.exist.webstart;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.SocketException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -32,6 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import static com.evolvedbinary.j8fu.OptionalUtil.or;
 
 /**
  * Dedicated servlet for Webstart.
@@ -43,7 +47,6 @@ public class JnlpServlet extends HttpServlet {
     private static final Logger LOGGER = LogManager.getLogger(JnlpServlet.class);
 
     private JnlpJarFiles jf = null;
-    private JnlpHelper jh = null;
 
     /**
      * Initialize servlet.
@@ -52,19 +55,25 @@ public class JnlpServlet extends HttpServlet {
     public void init() throws ServletException {
         LOGGER.info("Initializing JNLP servlet");
 
-        final String realPath = getServletContext().getRealPath("/");
-        if (realPath == null) {
-            final String txt = "getServletContext().getRealPath() did not return a "
-                    + "value. Webstart is not available.";
+        final Optional<Path> libDir = or(
+            Optional.ofNullable(System.getProperty("app.repo")).map(Paths::get).filter(Files::exists),
+            () -> or (
+                    Optional.ofNullable(System.getProperty("app.home")).map(Paths::get).map(p -> p.resolve("lib")).filter(Files::exists),
+                    () -> or (
+                            Optional.ofNullable(System.getProperty("exist.home")).map(Paths::get).map(p -> p.resolve("lib")).filter(Files::exists),
+                            () -> Optional.ofNullable(getServletContext().getRealPath("/")).map(Paths::get).map(p -> p.resolve("lib")).filter(Files::exists)
+                    )
+            )
+        );
+
+        if (!libDir.isPresent()) {
+            final String txt = "Could not locate lib directory. Webstart is not available.";
             LOGGER.error(txt);
             throw new ServletException(txt);
-
         } else {
-            final Path contextRoot = Paths.get(realPath).normalize();
-            jh = new JnlpHelper(contextRoot);
-            jf = new JnlpJarFiles(jh);
+            LOGGER.debug(String.format("jars location=%s", libDir.get().normalize().toAbsolutePath().toString()));
+            jf = new JnlpJarFiles(libDir.get().normalize());
         }
-
     }
 
     private String stripFilename(String URI) {
@@ -98,7 +107,7 @@ public class JnlpServlet extends HttpServlet {
                 jw.sendJar(jf, filename, request, response);
 
             } else if (requestURI.endsWith(".gif") || requestURI.endsWith(".jpg")) {
-                jw.sendImage(jh, jf, filename, response);
+                jw.sendImage(jf, filename, response);
 
             } else {
                 LOGGER.error("Invalid filename extension.");
@@ -106,7 +115,7 @@ public class JnlpServlet extends HttpServlet {
             }
 
         } catch (final EOFException | SocketException ex) {
-            LOGGER.debug(ex.getMessage());
+            LOGGER.error(ex.getMessage());
 
         } catch (final Throwable e) {
             LOGGER.error(e);
@@ -124,6 +133,4 @@ public class JnlpServlet extends HttpServlet {
             return -1l;
         }
     }
-
-
 }

@@ -43,7 +43,7 @@ public class UtilityPanel extends JFrame implements Observer {
     private JButton dashboardButton;
     private JButton eXideButton;
 
-    public UtilityPanel(final Launcher launcher, boolean hideOnStart) {
+    public UtilityPanel(final Launcher launcher, final boolean traySupported, final boolean hideOnStart) {
         this.setAlwaysOnTop(false);
 
         BufferedImage image = null;
@@ -53,8 +53,9 @@ public class UtilityPanel extends JFrame implements Observer {
         }
         this.setIconImage(image);
 
-        if (!launcher.isSystemTraySupported())
-            {setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);}
+        if (!traySupported) {
+            setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        }
 
         getContentPane().setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
@@ -102,7 +103,7 @@ public class UtilityPanel extends JFrame implements Observer {
         statusLabel.setFont(new Font("Dialog", Font.PLAIN, 10));
         statusLabel.setPreferredSize(new Dimension(200, 16));
         //statusLabel.setMinimumSize(new Dimension(200, 16));
-        if (!launcher.isSystemTraySupported()) {
+        if (!traySupported) {
             statusLabel.setText("System tray icon not supported.");
         }
 

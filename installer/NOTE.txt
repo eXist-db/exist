@@ -1,5 +1,0 @@
-Add the following to
-
-$IZPACK_HOME/bin/langpacks/installer/eng.xml:
-
-<str id="PathInputPanel.extendedIntro" txt="On Windows Vista, please do not install eXist into the 'Program Files' directory unless you deactivated UAC or plan to always run eXist in priviledged mode."/>

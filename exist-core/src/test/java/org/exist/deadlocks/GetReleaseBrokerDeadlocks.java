@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
@@ -41,6 +43,8 @@ import org.junit.Test;
  *
  */
 public class GetReleaseBrokerDeadlocks {
+
+	private static final Logger LOG = LogManager.getLogger(GetReleaseBrokerDeadlocks.class);
 	
 	private static Random rd = new Random();
 
@@ -111,7 +115,7 @@ public class GetReleaseBrokerDeadlocks {
 		        Thread.sleep(rd.nextInt(250));
 		        
 		        if (ex != null) {
-		        	ex.printStackTrace();
+		        	LOG.error(ex.getMessage(), ex);
 					fail(ex.getMessage());
 		        }
 		        
@@ -150,7 +154,7 @@ public class GetReleaseBrokerDeadlocks {
 	        	
 	        
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 			fail(e.getMessage());
 		}
 	}

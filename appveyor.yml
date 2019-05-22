@@ -1,6 +1,7 @@
 version: '{branch}-{build}'
 
 environment:
+  MAVEN_VERSION: 3.6.1
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       JAVA_HOME: C:\Program Files\Java\jdk1.8.0
@@ -11,29 +12,47 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
 
+# install a newer Maven on AppVeyor Windows CI
 install:
-  - cmd: set EXIST_HOME=%APPVEYOR_BUILD_FOLDER%
-  - sh: export EXIST_HOME=$APPVEYOR_BUILD_FOLDER
+  - ps: |
+      Add-Type -AssemblyName System.IO.Compression.FileSystem
+      if ($IsWindows -And !(Test-Path -Path "C:\maven" )) {
+        Write-Host "Downloading Maven $env:MAVEN_VERSION"
+        (new-object System.Net.WebClient).DownloadFile("https://repo1.maven.org/maven2/org/apache/maven/apache-maven/$env:MAVEN_VERSION/apache-maven-$env:MAVEN_VERSION-bin.zip", 'C:\maven-bin.zip')
+        [System.IO.Compression.ZipFile]::ExtractToDirectory("C:\maven-bin.zip", "C:\maven")
+      }
 
 build_script:
-  - cmd: build.bat
-  - sh: cd $EXIST_HOME && ./build.sh clean && ./build.sh
+  - cmd: SET M2_HOME=C:\maven\apache-maven-%MAVEN_VERSION%
+  - cmd: SET PATH=%M2_HOME%\bin;%JAVA_HOME%\bin;%PATH%
+  - cmd: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=false install -B -V
+  - sh: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=true install -B -V
 
 test_script:
-  - cmd: build.bat -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.haltonfailure=true test
-  - sh:  cd $EXIST_HOME && ./build.sh -Dexist.autodeploy=off -Dtest.haltonerror=true -Dtest.haltonfailure=true test
+  - cmd: mvn -T 2C -Ddocker=false test -B
+  - sh: mvn -T 2C -Ddocker=true test -B
 
 after_test:
   - ps: |
       $wc = New-Object 'System.Net.WebClient'
-      foreach ($file in Get-ChildItem -Path "$($env:APPVEYOR_BUILD_FOLDER)\exist-core\target\junit-reports\data\" -Filter *.xml) {
+      foreach ($file in Get-ChildItem -Path "$($env:APPVEYOR_BUILD_FOLDER)\exist-core\target\surefire-reports\" -Filter *.xml) {
         $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", $file.FullName)
       }
 
 on_failure:
-  - cmd: 7z a junit-failed-data.zip %APPVEYOR_BUILD_FOLDER%\exist-core\target\junit-reports\data\ && appveyor PushArtifact junit-failed-data.zip
-  - sh: tar czvf junit-failed-data.tgz $APPVEYOR_BUILD_FOLDER/exist-core/target/junit-reports/data/ && appveyor PushArtifact junit-failed-data.tgz
+  - cmd: 7z a exist-core-surefire-reports.zip %APPVEYOR_BUILD_FOLDER%\exist-core\target\surefire-reports\ && appveyor PushArtifact exist-core-surefire-reports.zip
+  - cmd: 7z a exist-core-test-logs.zip %APPVEYOR_BUILD_FOLDER%\exist-core\target\test-logs\ && appveyor PushArtifact exist-core-test-logs.zip
+  - sh: tar czvf exist-core-surefire-reports.tgz $APPVEYOR_BUILD_FOLDER/exist-core/target/surefire-reports/ && appveyor PushArtifact exist-core-surefire-reports.tgz
+  - sh: tar czvf exist-core-test-logs.tgz $APPVEYOR_BUILD_FOLDER/exist-core/target/test-logs/ && appveyor PushArtifact exist-core-test-logs.tgz
 
 artifacts:
-  - path: exist-core\target\junit-reports
-    name: junit-reports
+  - path: exist-core\target\surefire-reports
+    name: exist-core-surefire-reports
+  - path: exist-core\target\test-logs
+    name: exist-core-test-logs
+
+cache:
+  - '%USERPROFILE%\.m2'
+  - C:\maven -> appveyor.yml
+  - '$HOME/.m2'
+

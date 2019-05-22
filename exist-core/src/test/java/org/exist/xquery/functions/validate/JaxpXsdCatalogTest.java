@@ -22,17 +22,17 @@
 package org.exist.xquery.functions.validate;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.FileUtils;
+import org.exist.util.io.InputStreamUtil;
 import org.junit.*;
 
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.exist.samples.Samples.SAMPLES;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.function.Predicate;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -47,15 +47,15 @@ import org.xmldb.api.base.XMLDBException;
 public class JaxpXsdCatalogTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String noValidation = "<?xml version='1.0'?>" +
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-            "<validation mode=\"no\"/>" +
+            "<collection xmlns='http://exist-db.org/collection-config/1.0'>" +
+            "    <validation mode='no'/>" +
             "</collection>";
 
     @BeforeClass
-    public static void prepareResources() throws XMLDBException, IOException {
+    public static void prepareResources() throws XMLDBException, IOException, URISyntaxException {
 
         // Switch off validation
         Collection conf = null;
@@ -68,46 +68,52 @@ public class JaxpXsdCatalogTest {
             }
         }
 
-        // Create filter
-        final Predicate<Path> filter = path -> FileUtils.fileName(path).endsWith(".xsd");
-
         Collection schemasCollection = null;
         try {
             schemasCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/schemas");
-            final Path schemas = TestUtils.resolveSample("validation/parse/schemas");
 
-            for (final Path file : FileUtils.list(schemas, filter)) {
-                final byte[] data = TestUtils.readFile(file);
-                ExistXmldbEmbeddedServer.storeResource(schemasCollection, FileUtils.fileName(file), data);
+            try (final InputStream is = SAMPLES.getSample("validation/parse/schemas/MyNameSpace.xsd")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(schemasCollection, "MyNameSpace.xsd", InputStreamUtil.readAll(is));
             }
+
+            try (final InputStream is = SAMPLES.getSample("validation/parse/schemas/AnotherNamespace.xsd")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(schemasCollection, "AnotherNamespace.xsd", InputStreamUtil.readAll(is));
+            }
+
         } finally {
             if(schemasCollection != null) {
                 schemasCollection.close();
             }
         }
 
-        final Path catalog = TestUtils.resolveSample("validation/parse");
         Collection parseCollection = null;
         try {
             parseCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse");
-            final byte[] data = TestUtils.readFile(catalog, "catalog.xml");
-            ExistXmldbEmbeddedServer.storeResource(parseCollection, "catalog.xml", data);
+            try (final InputStream is = SAMPLES.getSample("validation/parse/catalog.xml")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(parseCollection, "catalog.xml", InputStreamUtil.readAll(is));
+            }
         } finally {
             if(parseCollection != null) {
                 parseCollection.close();
             }
         }
 
-        final Path instance = TestUtils.resolveSample("validation/parse/instance");
         Collection instanceCollection = null;
         try {
             instanceCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/instance");
 
-            final byte[] valid = TestUtils.readFile(instance, "valid.xml");
-            ExistXmldbEmbeddedServer.storeResource(instanceCollection, "valid.xml", valid);
+            try (final InputStream is = SAMPLES.getSample("validation/parse/instance/valid.xml")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(instanceCollection, "valid.xml", InputStreamUtil.readAll(is));
+            }
 
-            final byte[] invalid = TestUtils.readFile(instance, "invalid.xml");
-            ExistXmldbEmbeddedServer.storeResource(instanceCollection, "invalid.xml", invalid);
+            try (final InputStream is = SAMPLES.getSample("validation/parse/instance/invalid.xml")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(instanceCollection, "invalid.xml", InputStreamUtil.readAll(is));
+            }
         } finally {
             if(instanceCollection != null) {
                 instanceCollection.close();

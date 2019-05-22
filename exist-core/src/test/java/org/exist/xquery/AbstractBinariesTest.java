@@ -81,56 +81,6 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
         });
     }
 
-    /**
-     * {@see https://github.com/eXist-db/exist/issues/790#error-case-3}
-     */
-    @Test
-    public void readBinary() throws Exception {
-        final byte[] data = randomData(1024 * 1024 * 10);  // 10KB
-        final Path tmpFile = createTemporaryFile(data);
-
-        final String query = "import module namespace file = \"http://exist-db.org/xquery/file\";\n" +
-                "file:read-binary('" + tmpFile.toAbsolutePath().toString() + "')";
-
-        final QueryResultAccessor<T, E> resultsAccessor = executeXQuery(query);
-
-        resultsAccessor.accept(results -> {
-            assertEquals(1, size(results));
-
-            final U item = item(results, 0);
-            assertTrue(isBinaryType(item));
-            assertArrayEquals(data, getBytes(item));
-        });
-    }
-
-    /**
-     * {@see https://github.com/eXist-db/exist/issues/790#error-case-4}
-     */
-    @Test
-    public void readAndWriteBinary() throws Exception {
-        final byte[] data = randomData(1024 * 1024);  // 1MB
-        final Path tmpInFile = createTemporaryFile(data);
-
-        final Path tmpOutFile = temporaryFolder.newFile().toPath();
-
-        final String query = "import module namespace file = \"http://exist-db.org/xquery/file\";\n" +
-                "let $bin := file:read-binary('" +  tmpInFile.toAbsolutePath().toString() + "')\n" +
-                "return\n" +
-                "    file:serialize-binary($bin, '" + tmpOutFile.toAbsolutePath().toString() + "')";
-
-        final QueryResultAccessor<T, E> resultsAccessor = executeXQuery(query);
-
-        resultsAccessor.accept(results -> {
-            assertEquals(1, size(results));
-
-            final U item = item(results, 0);
-            assertTrue(isBooleanType(item));
-            assertEquals(true, getBoolean(item));
-        });
-
-        assertArrayEquals(Files.readAllBytes(tmpInFile), Files.readAllBytes(tmpOutFile));
-    }
-
     protected byte[] randomData(final int size) {
         final byte data[] = new byte[size];
         new Random().nextBytes(data);

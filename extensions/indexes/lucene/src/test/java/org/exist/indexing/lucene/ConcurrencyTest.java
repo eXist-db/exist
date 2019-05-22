@@ -19,13 +19,14 @@
  */
 package org.exist.indexing.lucene;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -37,10 +38,8 @@ import org.exist.TestUtils;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.FileUtils;
 import org.exist.util.LockException;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.IndexQueryService;
 import org.junit.AfterClass;
@@ -54,12 +53,14 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XUpdateQueryService;
 
+import static org.exist.samples.Samples.SAMPLES;
+
 public class ConcurrencyTest {
 
     private static final long TIMEOUT_TERMINATION = 1000 * 60 * 3; // 3 minutes (in milliseconds)
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer();
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static int CONCURRENT_THREADS = Runtime.getRuntime().availableProcessors() * 3;
 
@@ -84,7 +85,7 @@ public class ConcurrencyTest {
             final Runnable run = () -> {
                 try {
                     storeRemoveDocs(name);
-                } catch(final XMLDBException | IOException e) {
+                } catch(final XMLDBException | IOException | URISyntaxException e) {
                     e.printStackTrace();
                     fail(e.getMessage());
                 }
@@ -111,7 +112,7 @@ public class ConcurrencyTest {
             Runnable run = () -> {
                 try {
                     xupdateDocs(name);
-                } catch (final XMLDBException | IOException e) {
+                } catch (final XMLDBException | IOException | URISyntaxException e) {
                     e.printStackTrace();
                     fail(e.getMessage());
                 }
@@ -140,7 +141,7 @@ public class ConcurrencyTest {
         });
     }
 
-    private void storeRemoveDocs(final String collectionName) throws XMLDBException, IOException {
+    private void storeRemoveDocs(final String collectionName) throws XMLDBException, IOException, URISyntaxException {
         storeDocs(collectionName);
 
         final EXistXQueryService xqs = (EXistXQueryService) test.getService("XQueryService", "1.0");
@@ -162,7 +163,7 @@ public class ConcurrencyTest {
         assertEquals(0, result.getSize());
     }
 
-    private void xupdateDocs(final String collectionName) throws XMLDBException, IOException {
+    private void xupdateDocs(final String collectionName) throws XMLDBException, IOException, URISyntaxException {
         storeDocs(collectionName);
 
         final EXistXQueryService xqs = (EXistXQueryService) test.getService("XQueryService", "1.0");
@@ -183,7 +184,7 @@ public class ConcurrencyTest {
         assertEquals(98, result.getSize());
     }
 
-    private void storeDocs(final String collectionName) throws XMLDBException, IOException {
+    private void storeDocs(final String collectionName) throws XMLDBException, IOException, URISyntaxException {
         Collection collection = null;
         try {
             collection = existEmbeddedServer.createCollection(test, collectionName);
@@ -191,16 +192,12 @@ public class ConcurrencyTest {
             final IndexQueryService iqs = (IndexQueryService) collection.getService("IndexQueryService", "1.0");
             iqs.configureCollection(COLLECTION_CONFIG1);
 
-            final Path samples = TestUtils.shakespeareSamples();
-            final List<Path> files = FileUtils.list(samples);
-            final MimeTable mimeTab = MimeTable.getInstance();
-            for (final Path file : files) {
-                final MimeType mime = mimeTab.getContentTypeFor(FileUtils.fileName(file));
-                if (mime != null && mime.isXMLType()) {
-                    final Resource resource = collection.createResource(FileUtils.fileName(file), XMLResource.RESOURCE_TYPE);
-                    resource.setContent(file);
-                    collection.storeResource(resource);
+            for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+                final Resource resource = collection.createResource(sampleName, XMLResource.RESOURCE_TYPE);
+                try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
+                    resource.setContent(InputStreamUtil.readString(is, UTF_8));
                 }
+                collection.storeResource(resource);
             }
         } finally {
             if(collection != null) {

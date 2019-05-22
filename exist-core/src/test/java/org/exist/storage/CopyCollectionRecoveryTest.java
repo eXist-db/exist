@@ -20,11 +20,10 @@
 package org.exist.storage;
 
 import java.io.IOException;
-import java.nio.file.Path;
+import java.io.InputStream;
 import java.util.Optional;
 
 import org.exist.EXistException;
-import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.LockedDocument;
@@ -37,16 +36,20 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import org.xml.sax.InputSource;
+import static org.exist.samples.Samples.SAMPLES;
+
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
@@ -130,10 +133,10 @@ public class CopyCollectionRecoveryTest {
             final Collection test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI.append("test2"));
             broker.saveCollection(transaction, test);
 
-            final Path f = getSampleData();
+            final String sample = getSampleData();
             final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
-                    new InputSource(f.toUri().toASCIIString()));
-            test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                    sample);
+            test.store(transaction, broker, info, sample);
 
             final Collection dest = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("destination"));
             broker.saveCollection(transaction, dest);
@@ -174,10 +177,10 @@ public class CopyCollectionRecoveryTest {
                 assertNotNull(test2);
                 broker.saveCollection(transaction, test2);
 
-                final Path f = getSampleData();
+                final String sample = getSampleData();
 
-                IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toUri().toASCIIString()));
-                test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), sample);
+                test2.store(transaction, broker, info, sample);
 
                 transact.commit(transaction);
             }
@@ -205,7 +208,7 @@ public class CopyCollectionRecoveryTest {
         }
     }
 
-    private void xmldbStore() throws XMLDBException {
+    private void xmldbStore() throws XMLDBException, IOException {
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
         EXistCollectionManagementService mgr = (EXistCollectionManagementService)
@@ -224,10 +227,10 @@ public class CopyCollectionRecoveryTest {
         }
         assertNotNull(test2);
 
-        final Path f = getSampleData();
+        final String sample = getSampleData();
         final Resource res = test2.createResource("test_xmldb.xml", "XMLResource");
         assertNotNull(res);
-        res.setContent(f);
+        res.setContent(sample);
         test2.storeResource(res);
 
         org.xmldb.api.base.Collection dest = root.getChildCollection("destination");
@@ -253,8 +256,10 @@ public class CopyCollectionRecoveryTest {
         mgr.removeCollection("destination");
     }
 
-    private Path getSampleData() {
-        return TestUtils.resolveSample("biblio.rdf");
+    private String getSampleData() throws IOException {
+        try (final InputStream is = SAMPLES.getBiblioSample()) {
+            return InputStreamUtil.readString(is, UTF_8);
+        }
     }
 
     @After

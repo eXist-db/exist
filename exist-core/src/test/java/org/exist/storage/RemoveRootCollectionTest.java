@@ -1,17 +1,18 @@
 package org.exist.storage;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
+import static org.exist.samples.Samples.SAMPLES;
 
-import java.nio.file.Paths;
+import java.io.InputStream;
 import java.util.Optional;
 
-import org.exist.TestUtils;
 import org.exist.collections.*;
 import org.exist.storage.txn.*;
 import org.exist.test.ExistEmbeddedServer;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
-import org.xml.sax.InputSource;
 
 
 public class RemoveRootCollectionTest {
@@ -59,7 +60,7 @@ public class RemoveRootCollectionTest {
     }
 
     @Rule
-    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Before
     public void startDB() throws Exception {
@@ -78,12 +79,13 @@ public class RemoveRootCollectionTest {
     private void addDocumentToRoot() throws Exception {
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
-        try (final Txn transaction = transact.beginTransaction()) {
-            final InputSource is = new InputSource(TestUtils.resolveShakespeareSample("hamlet.xml").toUri().toASCIIString());
+        try (final Txn transaction = transact.beginTransaction();
+             final InputStream is = SAMPLES.getHamletSample()) {
             assertNotNull(is);
-            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), is);
+            final String sample = InputStreamUtil.readString(is, UTF_8);
+            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), sample);
             assertNotNull(info);
-            root.store(transaction, broker, info, is);
+            root.store(transaction, broker, info, sample);
             transact.commit(transaction);
         }
     }

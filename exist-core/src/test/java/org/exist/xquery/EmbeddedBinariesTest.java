@@ -46,7 +46,7 @@ import java.util.Optional;
 public class EmbeddedBinariesTest extends AbstractBinariesTest<Sequence, Item, IOException> {
 
     @ClassRule
-    public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Override
     protected void storeBinaryFile(final XmldbURI filePath, final byte[] content) throws Exception {

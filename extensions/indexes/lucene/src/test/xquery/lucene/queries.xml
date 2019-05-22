@@ -34,7 +34,7 @@
 			</collection>
 		</store>
 		<create-collection parent="/db" name="lucene"/>
-		<store-files collection="/db/lucene" dir="samples/shakespeare" pattern="*.xml" type="text/xml"/>
+		<store-files collection="/db/lucene" classpath="exist-samples/target/classes" pattern="org/exist/samples/shakespeare/*.xml" type="text/xml"/>
 		<store collection="/db/lucene" name="text1.xml">
 			<test xmlns:tt="urn:test">
 				<p>Eins zwei drei vier zwei fünf sechs.</p>

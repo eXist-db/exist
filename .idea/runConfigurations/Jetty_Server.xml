@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Jetty Server" type="Application" factoryName="Application">
+    <option name="ALTERNATIVE_JRE_PATH" value="1.8" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+    <option name="MAIN_CLASS_NAME" value="org.exist.start.Main" />
+    <module name="exist-distribution" />
+    <option name="PROGRAM_PARAMETERS" value="jetty $MODULE_DIR$/src/main/config/conf.xml" />
+    <option name="VM_PARAMETERS" value="-Dexist.configurationFile=$MODULE_DIR$/src/main/config/conf.xml -Dlog4j.configurationFile=$MODULE_DIR$/src/main/config/log4j2.xml -Dorg.exist.db-connection.files=$MODULE_DIR$/target/data -Dorg.exist.db-connection.recovery.journal-dir=$MODULE_DIR$/target/data -Dexist.jetty.config=$MODULE_DIR$/../exist-jetty-config/src/main/resources/org/exist/jetty/etc/standard.enabled-jetty-configs -Djetty.home=$MODULE_DIR$/../exist-jetty-config/src/main/resources/org/exist/jetty/etc -Dexist.ensurelocking.disabled=true -Dfile.encoding=UTF-8" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

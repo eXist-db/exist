@@ -88,7 +88,7 @@ public class ConcurrentBrokerPoolTest {
         final ExecutorService executorService = Executors.newFixedThreadPool(MAX_CONCURRENT_THREADS, threadFactory);
 
         // the number of instances to use
-        final int instances = 20;
+        final int instances = 10;
 
         // setup store data tasks
         final List<Callable<Tuple2<Path, UUID>>> tasks = IntStream.range(0, instances)

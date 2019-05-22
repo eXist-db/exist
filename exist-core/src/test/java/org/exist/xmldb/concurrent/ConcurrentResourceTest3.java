@@ -56,7 +56,7 @@ public class ConcurrentResourceTest3 extends ConcurrentTestBase {
 	public List<Runner> getRunners() {
 		return Arrays.asList(
 				new Runner(new MultiResourcesAction(FILES_DIR, XmldbURI.LOCAL_DB + "/C1/C1-C2"), 1, 0, 0),
-				new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C1/C1-C2", "R1.xml", QUERY0), 1500, 200, 250)
+				new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C1/C1-C2", "R1.xml", QUERY0), 1500, 200, 100)
 		);
 	}
 }

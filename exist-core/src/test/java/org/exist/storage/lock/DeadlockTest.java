@@ -30,12 +30,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.TestDataGenerator;
-import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
-import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -44,10 +44,8 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
-import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistXPathQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
@@ -71,6 +69,8 @@ import org.xmldb.api.modules.CollectionManagementService;
  */
 @RunWith(Parameterized.class)
 public class DeadlockTest {
+
+	private static final Logger LOG = LogManager.getLogger(DeadlockTest.class);
 
 	/** pick a set of random collections to query */
 	private static final int TEST_RANDOM_COLLECTION = 0;
@@ -110,30 +110,28 @@ public class DeadlockTest {
     
     private static final int N_THREADS = 40;
 
-    private final static String COLLECTION_CONFIG =
-		"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-		"	<index>" +
-        "		<lucene>" +
-        "           <text match='/*'/>" +
-        "       </lucene>" +
-		"		<create path=\"//section/@id\" type=\"xs:string\"/>" +
-		"	</index>" +
-		"</collection>";
-	
-	private final static String generateXQ = "<book id=\"{$filename}\" n=\"{$count}\">"
-			+ "   <chapter>"
-			+ "       <title>{pt:random-text(7)}</title>"
-			+ "       {"
-			+ "           for $section in 1 to 8 return"
-			+ "               <section id=\"sect{$section}\">"
-			+ "                   <title>{pt:random-text(7)}</title>"
-			+ "                   {"
-			+ "                       for $para in 1 to 10 return"
-			+ "                           <para>{pt:random-text(40)}</para>"
-			+ "                   }"
-			+ "               </section>"
-			+ "       }"
-			+ "   </chapter>" + "</book>";
+	private final static String generateXQ =
+			"declare function local:random-sequence($length as xs:integer, $G as map(xs:string, item())) {\n"
+					+ "  if ($length eq 0)\n"
+					+ "  then ()\n"
+					+ "  else ($G?number, local:random-sequence($length - 1, $G?next()))\n"
+					+ "};\n"
+					+ "let $rnd := fn:random-number-generator() return"
+					+ "<book id=\"{$filename}\" n=\"{$count}\">"
+					+ "   <chapter xml:id=\"chapter{$count}\">"
+					+ "       <title>{local:random-sequence(7, $rnd)}</title>"
+					+ "       {"
+					+ "           for $section in 1 to 8 return"
+					+ "               <section id=\"sect{$section}\">"
+					+ "                   <title>{local:random-sequence(7, $rnd)}</title>"
+					+ "                   {"
+					+ "                       for $para in 1 to 10 return"
+					+ "                           <para>{local:random-sequence(120, $rnd)}</para>"
+					+ "                   }"
+					+ "               </section>"
+					+ "       }"
+					+ "   </chapter>"
+					+ "</book>";
 
 	private final Random random = new Random();
 
@@ -144,7 +142,7 @@ public class DeadlockTest {
 	public int mode;
 
 	@ClassRule
-	public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+	public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
 	@BeforeClass
 	public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
@@ -164,15 +162,6 @@ public class DeadlockTest {
 			assertNotNull(test);
 			broker.saveCollection(transaction, test);
 
-			final CollectionConfigurationManager mgr = pool.getConfigurationManager();
-			mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
-
-			final InputSource is = new InputSource(TestUtils.resolveShakespeareSample("hamlet.xml").toUri().toASCIIString());
-			assertNotNull(is);
-			final IndexInfo info = test.validateXMLResource(transaction, broker,
-					XmldbURI.create("hamlet.xml"), is);
-			assertNotNull(info);
-			test.store(transaction, broker, info, is);
 			transact.commit(transaction);
 
 			// initialize XML:DB driver
@@ -197,7 +186,9 @@ public class DeadlockTest {
             try {
                 wait(DELAY);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+            	Thread.currentThread().interrupt();
+                LOG.error(e.getMessage(), e);
+                fail(e.getMessage());
             }
         }
 		for (int i = 0; i < QUERY_COUNT; i++) {
@@ -213,6 +204,9 @@ public class DeadlockTest {
 		try {
 			terminated = executor.awaitTermination(60 * 60, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			LOG.error(e.getMessage(), e);
+			fail(e.getMessage());
 		}
 		assertTrue(terminated);
 	}
@@ -266,7 +260,7 @@ public class DeadlockTest {
 					generator.releaseAll();
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error(e.getMessage(), e);
 //				fail(e.getMessage());
 			}
 		}
@@ -333,7 +327,7 @@ public class DeadlockTest {
 					service.endProtected();
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOG.error(e.getMessage(), e);
 				fail(e.getMessage());
 			}
 		}
@@ -364,7 +358,7 @@ public class DeadlockTest {
                         removed = true;
                     }
                 } catch (final XMLDBException e) {
-                    e.printStackTrace();
+					LOG.error(e.getMessage(), e);
                     fail(e.getMessage());
                 }
             } while (!removed);

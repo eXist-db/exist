@@ -10,9 +10,7 @@
 package org.exist.repo;
 
 import java.io.IOException;
-import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -20,8 +18,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import javax.xml.transform.Source;
 
 import org.apache.logging.log4j.LogManager;
@@ -43,8 +39,6 @@ import org.expath.pkg.repo.PackageException;
 import org.expath.pkg.repo.Repository;
 import org.expath.pkg.repo.URISpace;
 
-import static java.lang.invoke.MethodType.methodType;
-
 /**
  * A repository as viewed by eXist.
  *
@@ -56,7 +50,6 @@ import static java.lang.invoke.MethodType.methodType;
 public class ExistRepository extends Observable implements BrokerPoolService {
 
     private final static Logger LOG = LogManager.getLogger(ExistRepository.class);
-    private final static MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
     public final static String EXPATH_REPO_DIR = "expathrepo";
     public final static String EXPATH_REPO_DEFAULT = "webapp/WEB-INF/" + EXPATH_REPO_DIR;
 
@@ -152,25 +145,13 @@ public class ExistRepository extends Observable implements BrokerPoolService {
         try {
             try {
                 // attempt for a constructor that takes 1 argument
-                final MethodHandle methodHandle = LOOKUP.findConstructor(clazz, methodType(void.class, Map.class));
-                final Function<Map, Module> ctor = (Function<Map, Module>)
-                        LambdaMetafactory.metafactory(
-                                LOOKUP, "apply", methodType(Function.class),
-                                methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
-                return ctor.apply(Collections.emptyMap());
+                final Constructor<Module> cstr1 = clazz.getConstructor(Map.class);
+                return cstr1.newInstance(Collections.emptyMap());
 
             } catch (final NoSuchMethodException nsme) {
                 // attempt for a constructor that takes 0 arguments
-                final MethodHandle methodHandle = LOOKUP.findConstructor(clazz, methodType(void.class, Map.class));
-                final Supplier<Module> ctor = (Supplier<Module>)
-                        LambdaMetafactory.metafactory(
-                                LOOKUP, "apply", methodType(Supplier.class),
-                                methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
-                return ctor.get();
+                return clazz.newInstance();
             }
-        } catch (final NoSuchMethodException nsme) {
-            throw new XPathException("Cannot find suitable constructor " +
-                "for module from EXPath repository: " + clazz.getName(), nsme);
         } catch (final Throwable e) {
             if (e instanceof InterruptedException) {
                 // NOTE: must set interrupted flag
@@ -178,7 +159,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
             }
 
             throw new XPathException("Unable to instantiate module from EXPath" +
-                    "repository: " + clazz.getName());
+                    "repository: " + clazz.getName(), e);
         }
     }
 

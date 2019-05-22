@@ -53,7 +53,7 @@ import static org.junit.Assert.assertEquals;
 public class CollectionOrderTest {
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static XmldbURI TEST_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("testCollectionOrder");
 

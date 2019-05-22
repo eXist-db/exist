@@ -21,9 +21,7 @@ package org.exist.xquery;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -94,7 +92,6 @@ import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
-import static java.lang.invoke.MethodType.methodType;
 import static javax.xml.XMLConstants.XMLNS_ATTRIBUTE;
 import static javax.xml.XMLConstants.XML_NS_PREFIX;
 import static org.exist.Namespaces.XML_NS;
@@ -1568,13 +1565,15 @@ public class XQueryContext implements BinaryValueManager, Context {
                                      final Map<String, Map<String, List<? extends Object>>> moduleParameters) {
         Module module = null;
         try {
-            final MethodHandles.Lookup lookup = MethodHandles.lookup();
-            final MethodHandle methodHandle = lookup.findConstructor(mClazz, methodType(void.class, Map.class));
-            final java.util.function.Function<Map, Module> ctor = (java.util.function.Function<Map, Module>)
-                    LambdaMetafactory.metafactory(
-                            lookup, "apply", methodType(java.util.function.Function.class),
-                            methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
-            module = ctor.apply(moduleParameters.get(namespaceURI));
+            try {
+                // attempt for a constructor that takes 1 argument
+                final Constructor<Module> cstr1 = mClazz.getConstructor(Map.class);
+                module = cstr1.newInstance(moduleParameters.get(namespaceURI));
+
+            } catch (final NoSuchMethodException nsme) {
+                // attempt for a constructor that takes 0 arguments
+                module = mClazz.newInstance();
+            }
 
             if (namespaceURI != null && !module.getNamespaceURI().equals(namespaceURI)) {
                 LOG.warn("the module declares a different namespace URI. Expected: " + namespaceURI + " found: " + module.getNamespaceURI());

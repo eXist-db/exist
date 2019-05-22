@@ -22,16 +22,15 @@
 package org.exist.xquery.functions.validate;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.FileUtils;
+import org.exist.util.io.InputStreamUtil;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.exist.samples.Samples.SAMPLES;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.function.Predicate;
+import java.io.InputStream;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -46,11 +45,11 @@ import org.xmldb.api.base.XMLDBException;
 public class JaxpDtdCatalogTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String noValidation = "<?xml version='1.0'?>" +
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-            "<validation mode=\"no\"/>" +
+            "<collection xmlns='http://exist-db.org/collection-config/1.0'>" +
+            "    <validation mode='no'/>" +
             "</collection>";
 
     @BeforeClass
@@ -67,16 +66,13 @@ public class JaxpDtdCatalogTest {
             }
         }
 
-        // Create filter
-        final Predicate<Path> filter = path -> (FileUtils.fileName(path).endsWith(".dtd"));
-
         Collection dtdsCollection = null;
         try {
             dtdsCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/dtds");
-            final Path schemas = TestUtils.resolveSample("validation/parse/dtds");
-            for (final Path file : FileUtils.list(schemas, filter)) {
-                final byte[] data = TestUtils.readFile(file);
-                ExistXmldbEmbeddedServer.storeResource(dtdsCollection, FileUtils.fileName(file), data);
+
+            try (final InputStream is = SAMPLES.getSample("validation/parse/dtds/MyNameSpace.dtd")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(dtdsCollection, "MyNameSpace.dtd", InputStreamUtil.readAll(is));
             }
         } finally {
             if(dtdsCollection != null) {
@@ -84,28 +80,33 @@ public class JaxpDtdCatalogTest {
             }
         }
 
-        final Path catalog = TestUtils.resolveSample("validation/parse");
         Collection parseCollection = null;
         try {
             parseCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse");
-            final byte[] data = TestUtils.readFile(catalog, "catalog.xml");
-            ExistXmldbEmbeddedServer.storeResource(parseCollection, "catalog.xml", data);
+
+            try (final InputStream is = SAMPLES.getSample("validation/parse/catalog.xml")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(parseCollection, "catalog.xml", InputStreamUtil.readAll(is));
+            }
         } finally {
             if(parseCollection != null) {
                 parseCollection.close();
             }
         }
 
-        final Path instance = TestUtils.resolveSample("validation/parse/instance");
         Collection instanceCollection = null;
         try {
             instanceCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/instance");
 
-            final byte[] valid = TestUtils.readFile(instance, "valid-dtd.xml");
-            ExistXmldbEmbeddedServer.storeResource(instanceCollection, "valid-dtd.xml", valid);
+            try (final InputStream is = SAMPLES.getSample("validation/parse/instance/valid-dtd.xml")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(instanceCollection, "valid-dtd.xml", InputStreamUtil.readAll(is));
+            }
 
-            final byte[] invalid = TestUtils.readFile(instance, "invalid-dtd.xml");
-            ExistXmldbEmbeddedServer.storeResource(instanceCollection, "invalid-dtd.xml", invalid);
+            try (final InputStream is = SAMPLES.getSample("validation/parse/instance/invalid-dtd.xml")) {
+                assertNotNull(is);
+                ExistXmldbEmbeddedServer.storeResource(instanceCollection, "invalid-dtd.xml", InputStreamUtil.readAll(is));
+            }
         } finally {
             if(instanceCollection != null) {
                 instanceCollection.close();

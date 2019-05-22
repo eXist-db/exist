@@ -46,7 +46,7 @@ import static org.junit.Assert.assertNotNull;
 public class DatabaseCollectionTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String ROOT_URI = XmldbURI.LOCAL_DB;
     private final static String TEST_COLLECTION = "testValidationDatabaseCollection";

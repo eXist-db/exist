@@ -21,10 +21,10 @@
  */
 package org.exist.validation;
 
-import java.io.IOException;
+import java.io.*;
+import java.net.URL;
 import java.util.Optional;
 
-import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -32,6 +32,8 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.XMLReaderObjectFactory;
+import org.exist.util.io.FastByteArrayInputStream;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 
 import org.junit.AfterClass;
@@ -39,7 +41,10 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.TestUtils.*;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
+import static org.exist.samples.Samples.SAMPLES;
 
 /**
  *  Insert documents for validation tests.
@@ -49,11 +54,6 @@ import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 public class DatabaseInsertResources_WithValidation_Test {
 
     private final static String TEST_COLLECTION = "testValidationInsert";
-
-    private final static String ADMIN_UID = "admin";
-    private final static String ADMIN_PWD = "";
-
-    private final static String GUEST_UID = "guest";
 
     private final static String VALIDATION_HOME_COLLECTION_URI = "/db/" + TEST_COLLECTION + "/" + TestTools.VALIDATION_HOME_COLLECTION;
     
@@ -67,16 +67,25 @@ public class DatabaseInsertResources_WithValidation_Test {
      *     <!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd">
      */
     @Test
-    public void testValidDocumentSystemCatalog() throws IOException{
-
-        String hamletWithValid = new String(TestUtils.readHamletSampleXml());
-        hamletWithValid=hamletWithValid.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
-            "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"play.dtd\">" );
+    public void validDocumentSystemCatalog() throws IOException {
+        String hamletWithValid = getHamletXml();
+        hamletWithValid = hamletWithValid.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
+                "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"" + getPlayDtdUrl() + "\">" );
 
         TestTools.insertDocumentToURL(
-                hamletWithValid.getBytes(),
+                new FastByteArrayInputStream(hamletWithValid.getBytes(UTF_8)),
                 "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION + "/hamlet_valid.xml"
         );
+    }
+
+    private String getHamletXml() throws IOException {
+        try (final InputStream is = SAMPLES.getHamletSample()) {
+            return InputStreamUtil.readString(is, UTF_8);
+        }
+    }
+
+    private URL getPlayDtdUrl() {
+        return SAMPLES.getSampleUrl("shakespeare/play.dtd");
     }
 
     /**
@@ -88,24 +97,23 @@ public class DatabaseInsertResources_WithValidation_Test {
      * needs to be modified into
      *     <!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd">
      *
-     * Aditionally all "TITLE" elements are renamed to "INVALIDTITLE"
+     * Additionally all "TITLE" elements are renamed to "INVALIDTITLE"
      */
     @Test
-    public void invalidDocumentSystemCatalog() throws IOException{
-
-        String hamletWithInvalid = new String(TestUtils.readHamletSampleXml());
+    public void invalidDocumentSystemCatalog() throws IOException {
+        String hamletWithInvalid = getHamletXml();
         hamletWithInvalid = hamletWithInvalid.replaceAll("\\Q<!\\E.*DOCTYPE.*\\Q-->\\E",
-            "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"play.dtd\">" );
+            "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"" + getPlayDtdUrl() + "\">" );
 
         hamletWithInvalid = hamletWithInvalid.replaceAll("TITLE", "INVALIDTITLE" );
 
         try {
             TestTools.insertDocumentToURL(
-                hamletWithInvalid.getBytes(),
+                    new FastByteArrayInputStream(hamletWithInvalid.getBytes(UTF_8)),
                 "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION + "/hamlet_invalid.xml"
                 
             );
-        } catch(IOException ioe) {
+        } catch (final IOException ioe) {
             //TODO consider how to get better error handling than matching on exception strings!
             if(!ioe.getCause().getMessage().matches(".*Element type \"INVALIDTITLE\" must be declared.*")){
                 throw ioe;
@@ -119,7 +127,7 @@ public class DatabaseInsertResources_WithValidation_Test {
             .set(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto")
             .build(),
         true,
-        false);
+        true);
 
     @BeforeClass
     public static void startup() throws Exception {
@@ -135,17 +143,17 @@ public class DatabaseInsertResources_WithValidation_Test {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD)));
             final Txn txn = transact.beginTransaction()) {
 
 
             /** create nessecary collections if they dont exist */
             Collection testCollection = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));
-            testCollection.getPermissions().setOwner(GUEST_UID);
+            testCollection.getPermissions().setOwner(GUEST_DB_USER);
             broker.saveCollection(txn, testCollection);
 
             Collection col = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION));
-            col.getPermissions().setOwner(GUEST_UID);
+            col.getPermissions().setOwner(GUEST_DB_USER);
             broker.saveCollection(txn, col);
 
             transact.commit(txn);
@@ -156,7 +164,7 @@ public class DatabaseInsertResources_WithValidation_Test {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD)));
             final Txn txn = transact.beginTransaction()) {
 
             Collection testCollection = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));

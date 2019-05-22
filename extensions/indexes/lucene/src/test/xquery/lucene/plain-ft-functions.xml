@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestSet>
-    <testName>nonXML data indexing tests</testName>
+    <testName>nonXML data query tests</testName>
     <description>
         <p>nonXML tests</p>
         <author>Dannes Wessels</author>

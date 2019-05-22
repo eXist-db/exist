@@ -19,13 +19,14 @@
  */
 package org.exist.indexing.lucene;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
-import java.nio.file.Path;
 import java.util.*;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
@@ -53,6 +54,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.*;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -67,6 +69,7 @@ import org.junit.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import static org.exist.samples.Samples.SAMPLES;
 
 public class LuceneIndexTest {
 
@@ -773,7 +776,7 @@ public class LuceneIndexTest {
 
     @Test
     public void dropDocuments() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
-        configureAndStore(COLLECTION_CONFIG1, TestUtils.shakespeareSamples());
+        configureAndStore(COLLECTION_CONFIG1, SAMPLES.getShakespeareXmlSampleNames());
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -806,7 +809,7 @@ public class LuceneIndexTest {
 
     @Test
     public void removeCollection() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException, XPathException {
-        final DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, TestUtils.shakespeareSamples());
+        final DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, SAMPLES.getShakespeareXmlSampleNames());
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -1278,7 +1281,7 @@ public class LuceneIndexTest {
         return docs;
     }
 
-    private DocumentSet configureAndStore(String configuration, Path directory) throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException {
+    private DocumentSet configureAndStore(String configuration, final String[] sampleNames) throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, TriggerException, LockException, IOException {
 
         final MutableDocumentSet docs = new DefaultDocumentSet();
 
@@ -1292,16 +1295,12 @@ public class LuceneIndexTest {
                 mgr.addConfiguration(transaction, broker, root, configuration);
             }
 
-            final List<Path> files = FileUtils.list(directory);
-            final MimeTable mimeTab = MimeTable.getInstance();
-            for (final Path f : files) {
-                MimeType mime = mimeTab.getContentTypeFor(FileUtils.fileName(f));
-                if(mime != null && mime.isXMLType()) {
-                    InputSource is = new FileInputSource(f);
-                    final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), is);
+            for (final String sampleName : sampleNames) {
+                try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
+                    final String sample = InputStreamUtil.readString(is, UTF_8);
+                    final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(sampleName), sample);
                     assertNotNull(info);
-                    is = new FileInputSource(f);
-                    root.store(transaction, broker, info, is);
+                    root.store(transaction, broker, info, sample);
                     docs.add(info.getDocument());
                 }
             }

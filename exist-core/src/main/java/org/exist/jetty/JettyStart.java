@@ -29,11 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.jar.Attributes;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.servlet.Servlet;
 
@@ -46,6 +42,7 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.Jetty;
 import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.xml.XmlConfiguration;
@@ -117,6 +114,8 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                     return jettyPath;
                 });
 
+        System.setProperty("org.eclipse.jetty.util.log.class?", "org.eclipse.jetty.util.log.Slf4jLog");
+
         final Path jettyConfig;
         if (standalone) {
             jettyConfig = Paths.get(jettyProperty).resolve("etc").resolve(Main.STANDALONE_ENABLED_JETTY_CONFIGS);
@@ -132,15 +131,40 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             return;
         }
 
-        final Path jettyConfig = Paths.get(args[0]);
-        if(Files.notExists(jettyConfig)) {
-            logger.error("Configuration file: {} does not exist!", jettyConfig.toAbsolutePath().toString());
-            return;
+        Path jettyConfig = Paths.get(args[0]);
+        boolean configFromClasspath = false;
+        if (Files.notExists(jettyConfig)) {
+            logger.warn("Configuration file: {} does not exist!", jettyConfig.toAbsolutePath().toString());
+
+            final String jettyConfigFileName = FileUtils.fileName(jettyConfig.getFileName());
+            logger.warn("Fallback... searching for configuration file on classpath: {}.etc/{}", getClass().getPackage().getName(), jettyConfigFileName);
+
+            final URL jettyConfigUrl = getClass().getResource("etc/" + jettyConfigFileName);
+            if (jettyConfigUrl != null) {
+                try {
+                    jettyConfig = Paths.get(jettyConfigUrl.toURI());
+                    configFromClasspath = true;
+                } catch (final URISyntaxException e) {
+                    logger.error("Unable to retrieve configuration file from classpath: {}", e.getMessage(), e);
+                    return;
+                }
+            } else {
+                logger.error("Unable to find configuration file on classpath!");
+                return;
+            }
         }
 
         final Map<String, String> configProperties;
         try {
             configProperties = getConfigProperties(jettyConfig.getParent());
+
+            // modify JETTY_HOME and JETTY_BASE properties when running with classpath config
+            if (configFromClasspath) {
+                final String jettyClasspathHome = jettyConfig.getParent().getParent().toAbsolutePath().toString();
+                System.setProperty(JETTY_HOME_PROP, jettyClasspathHome);
+                configProperties.put(JETTY_HOME_PROP, jettyClasspathHome);
+                configProperties.put(JETTY_BASE_PROP, jettyClasspathHome);
+            }
 
             if (observer != null) {
                 addObserver(observer);
@@ -161,7 +185,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
             logger.info("[Operating System : {} {} {}]", System.getProperty("os.name"), System.getProperty("os.version"), System.getProperty("os.arch"));
             logger.info("[log4j.configurationFile : {}]", System.getProperty("log4j.configurationFile"));
-            logger.info("[jetty Version: {}]", getJettyVersion(configProperties.get(JETTY_BASE_PROP)));
+            logger.info("[jetty Version: {}]", Jetty.VERSION);
             logger.info("[{} : {}]", JETTY_HOME_PROP, configProperties.get(JETTY_HOME_PROP));
             logger.info("[{} : {}]", JETTY_BASE_PROP, configProperties.get(JETTY_BASE_PROP));
             logger.info("[jetty configuration : {}]", jettyConfig.toAbsolutePath().toString());
@@ -331,36 +355,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             setChanged();
             notifyObservers(SIGNAL_ERROR);
         }
-    }
-
-    private static String getJettyVersion(final String jettyBase) {
-        final Path jettyLib = Paths.get(jettyBase, "lib");
-        if(Files.exists(jettyLib)) {
-            try (final Stream<Path> children = Files.list(jettyLib)) {
-                final Optional<Path> jettyServerJar = children.filter(child -> {
-                    final String fileName = FileUtils.fileName(child);
-                    return fileName.startsWith("jetty-server") && fileName.endsWith(".jar");
-                }).findFirst();
-
-                if (jettyServerJar.isPresent()) {
-                    final JarFile jarFile = new JarFile(jettyServerJar.get().toFile());
-                    final Manifest manifest = jarFile.getManifest();
-                    if (manifest != null) {
-                        final Attributes mainAttributes = manifest.getMainAttributes();
-                        if (mainAttributes != null) {
-                            final String jettyVersion = mainAttributes.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
-                            if (jettyVersion != null) {
-                                return jettyVersion;
-                            }
-                        }
-                    }
-                }
-            } catch (final IOException ioe) {
-                logger.error(ioe.getMessage(), ioe);
-            }
-        }
-
-        return "<UNKNOWN>";
     }
 
     private LinkedHashSet<Handler> getAllHandlers(final Handler handler) {

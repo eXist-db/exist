@@ -52,7 +52,7 @@ import static org.junit.Assert.assertTrue;
 public class FunUnparsedTextTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
     public void unparsedText_dynamicallyAvailableDocument_absoluteUri() throws XPathException, EXistException, PermissionDeniedException {

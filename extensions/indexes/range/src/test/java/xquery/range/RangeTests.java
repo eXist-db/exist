@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-    "extensions/indexes/range/src/test/xquery/range"
+    "src/test/xquery/range"
 })
 public class RangeTests {
 }

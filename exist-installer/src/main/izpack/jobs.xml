@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<izpack:processing xmlns:izpack="http://izpack.org/schema/processing" version="5.0">
+
+    <logfiledir>$INSTALL_PATH${FILE_SEPARATOR}logs</logfiledir>
+
+
+    <!--
+        Set the data and journal dirs in conf.xml
+    -->
+
+    <job name="Setting data dir...">
+        <os family="windows"/>
+        <executefile name="java">
+            <arg>-cp</arg>
+            <arg>$INSTALL_PATH\lib\Saxon-HE-${saxon.version}.jar</arg>
+            <arg>net.sf.saxon.Transform</arg>
+            <arg>-s:$INSTALL_PATH\etc\conf.xml</arg>
+            <arg>-xsl:$tmpdir\conf.xslt</arg>
+            <arg>-o:$INSTALL_PATH\etc\conf.xml</arg>
+            <arg>dataDir=${dataDir}</arg>
+        </executefile>
+    </job>
+
+    <job name="Setting data dir...">
+        <os family="unix"/>
+        <executefile name="java">
+            <arg>-cp</arg>
+            <arg>$INSTALL_PATH/lib/Saxon-HE-${saxon.version}.jar</arg>
+            <arg>net.sf.saxon.Transform</arg>
+            <arg>-s:$INSTALL_PATH/etc/conf.xml</arg>
+            <arg>-xsl:$tmpdir/conf.xslt</arg>
+            <arg>-o:$INSTALL_PATH/etc/conf.xml</arg>
+            <arg>dataDir=${dataDir}</arg>
+        </executefile>
+    </job>
+
+
+    <!--
+        Set the admin password if we have a new data dir
+    -->
+
+    <job name="Setting admin password..." condition="!dataDirExists">
+        <os family="windows"/>
+        <executefile name="$INSTALL_PATH/bin/client.bat">
+            <env>JAVA_OPTS="-Dexist.autodeploy=off"</env>
+            <arg>-s</arg>
+            <arg>-l</arg>
+            <arg>--user</arg>
+            <arg>admin</arg>
+            <arg>--xpath</arg>
+            <arg>let $_ := sm:passwd('admin', '$adminPasswd') return 'Changed admin password OK!'</arg>
+        </executefile>
+    </job>
+
+    <job name="Setting admin password..." condition="!dataDirExists">
+        <os family="unix"/>
+        <executefile name="$INSTALL_PATH/bin/client.sh">
+            <env>JAVA_OPTS="-Dexist.autodeploy=off"</env>
+            <arg>-s</arg>
+            <arg>-l</arg>
+            <arg>--user</arg>
+            <arg>admin</arg>
+            <arg>--xpath</arg>
+            <arg>let $_ := sm:passwd('admin', '$adminPasswd') return 'Changed admin password OK!'</arg>
+        </executefile>
+    </job>
+
+</izpack:processing>

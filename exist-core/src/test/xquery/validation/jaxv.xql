@@ -43,20 +43,20 @@ declare variable $val:XSD11_2 := <xs:schema xmlns:xs="http://www.w3.org/2001/XML
 declare
     %test:assertEquals("s4s-elt-invalid-content.1: The content of '#AnonType_root' is invalid.  Element 'assert' is invalid, misplaced, or occurs too often.")
 function val:xsd11_no_xsd11_namespace() {
-    data(validation:jaxv-report($val:XML,$val:XSD11_1)//message)
+    data(validation:jaxv-report($val:XML ,$val:XSD11_1)//message)
 };
 
 (: Good weather scenario : XML is valid:)
 declare
     %test:assertEquals("valid")
 function val:xsd11_valid() {
-    data(validation:jaxv-report($val:XML,$val:XSD11_1,"http://www.w3.org/XML/XMLSchema/v1.1")//status)
+    data(validation:jaxv-report($val:XML, $val:XSD11_1, "http://www.w3.org/XML/XMLSchema/v1.1")//status)
 };
 
 (: Good weather scenario : XML is invalid:)
 declare
     %test:assertEquals("cvc-assertion: Assertion evaluation ('value2 lt value1') for element 'root' on schema type '#AnonType_root' did not succeed. ")
 function val:xsd11_invalid() {
-    data(validation:jaxv-report($val:XML,$val:XSD11_2,"http://www.w3.org/XML/XMLSchema/v1.1")//message)
+    data(validation:jaxv-report($val:XML, $val:XSD11_2, "http://www.w3.org/XML/XMLSchema/v1.1")//message)
 };
 

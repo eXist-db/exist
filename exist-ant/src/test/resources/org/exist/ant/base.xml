@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="BaseTaskTest" xmlns:xdb="http://exist-db.org/ant">
+
+    <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant"/>
+
+    <target name="taskAvailable">
+        <available classname="org.exist.ant.${test.data.task.name}" property="test.data.result"/>
+    </target>
+</project>
