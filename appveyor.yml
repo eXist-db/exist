@@ -25,8 +25,8 @@ install:
 build_script:
   - cmd: SET M2_HOME=C:\maven\apache-maven-%MAVEN_VERSION%
   - cmd: SET PATH=%M2_HOME%\bin;%JAVA_HOME%\bin;%PATH%
-  - cmd: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=false install -B -V
-  - sh: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=true install -B -V
+  - cmd: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=false install -B -V -q
+  - sh: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=true install -B -V -q
 
 test_script:
   - cmd: mvn -T 2C -Ddocker=false test -B
