@@ -1,6 +1,6 @@
 <div align="center" id="logo">
 <a href="http://exist-db.org/" target="_blank">
-<img src="https://github.com/eXist-db/exist/raw/develop/webapp/logo.jpg" alt="eXist Logo" width="333" height="132"></img>
+<img src="https://raw.githubusercontent.com/eXist-db/exist/develop/exist-jetty-config/src/main/resources/webapp/logo.jpg" alt="eXist Logo" width="333" height="132"></img>
 </a>
 </div>
 
