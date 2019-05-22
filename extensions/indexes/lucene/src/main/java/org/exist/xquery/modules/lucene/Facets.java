@@ -26,7 +26,6 @@ import org.exist.dom.QName;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.indexing.lucene.LuceneIndex;
-import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.indexing.lucene.LuceneMatch;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.map.MapType;
@@ -146,9 +145,8 @@ public class Facets extends BasicFunction {
         return map;
     }
 
-    private void addFacetsToMap(MapType map, String dimension, int count, String[] paths, LuceneMatch match) throws IOException, XPathException {
-        final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        final org.apache.lucene.facet.Facets facets = index.getFacets(match);
+    private void addFacetsToMap(MapType map, String dimension, int count, String[] paths, LuceneMatch match) throws IOException {
+        final org.apache.lucene.facet.Facets facets = match.getFacets();
         final FacetResult result;
         if (paths == null) {
             result = facets.getTopChildren(count, dimension);
