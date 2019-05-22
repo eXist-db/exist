@@ -589,7 +589,7 @@
             <plugin>
                 <groupId>org.exist-db.maven.plugins</groupId>
                 <artifactId>public-xar-repo-plugin</artifactId>
-                <version>1.0.0</version>
+                <version>1.0.1</version>
                 <executions>
                     <execution>
                         <id>fetch-xars</id>
