@@ -20,6 +20,7 @@
 
 package org.exist.indexing.lucene;
 
+import org.apache.lucene.facet.Facets;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 import org.exist.dom.persistent.Match;
@@ -41,7 +42,7 @@ public class LuceneMatch extends Match {
     private float score = 0.0f;
     private final Query query;
 
-    private LuceneIndexWorker.ExtFacetsCollector facetsCollector;
+    private LuceneIndexWorker.LuceneFacets facets;
 
     private Map<String, FieldValue[]> fields = null;
 
@@ -49,17 +50,17 @@ public class LuceneMatch extends Match {
         this(contextId, nodeId, query, null);
     }
 
-    LuceneMatch(int contextId, NodeId nodeId, Query query, LuceneIndexWorker.ExtFacetsCollector facetsCollector) {
+    LuceneMatch(int contextId, NodeId nodeId, Query query, LuceneIndexWorker.LuceneFacets facets) {
         super(contextId, nodeId, null);
         this.query = query;
-        this.facetsCollector = facetsCollector;
+        this.facets = facets;
     }
 
     private LuceneMatch(LuceneMatch copy) {
         super(copy);
         this.score = copy.score;
         this.query = copy.query;
-        this.facetsCollector = copy.facetsCollector;
+        this.facets = copy.facets;
         this.fields = copy.fields;
     }
 
@@ -94,8 +95,8 @@ public class LuceneMatch extends Match {
         this.score = score;
     }
 
-    public LuceneIndexWorker.ExtFacetsCollector getFacetsCollector() {
-        return this.facetsCollector;
+    public Facets getFacets() {
+        return this.facets.getFacets();
     }
 
     protected void addField(String name, IndexableField[] values) {
