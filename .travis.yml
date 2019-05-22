@@ -21,7 +21,6 @@ matrix:
          - JAVA_HOME=$(/usr/libexec/java_home)
          - BUILD_DOCKER=false
 
-# TODO: DP switch tag to 'release' when merging into develop, not before!
 deploy:
   provider: script
   skip_cleanup: true
@@ -33,7 +32,7 @@ deploy:
   # see https://github.com/travis-ci/dpl/issues/673
   script: >-
     cd exist-docker &&
-    mvn -DskipTests -Ddocker.tag=experimental -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push &&
+    mvn -DskipTests -Ddocker.tag=release -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push &&
     cd ..
 
 
