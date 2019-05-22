@@ -24,8 +24,9 @@ package org.exist.storage;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.LockedDocument;
+import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
@@ -40,10 +41,11 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -57,12 +59,38 @@ public abstract class AbstractUpdateTest {
         "<products/>";
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void read() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException, XPathException, IOException {
-        BrokerPool.FORCE_CORRUPTION = false;
-        final BrokerPool pool = startDb();
+    public final void update() throws EXistException, DatabaseConfigurationException, LockException, SAXException, PermissionDeniedException, IOException, ParserConfigurationException, XPathException {
+        BrokerPool.FORCE_CORRUPTION = true;
+        BrokerPool pool = startDb();
+        try {
+            final TransactionManager transact = pool.getTransactionManager();
+
+            try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+                final IndexInfo info = init(broker, transact);
+                final MutableDocumentSet docs = new DefaultDocumentSet();
+                docs.add(info.getDocument());
+
+                doUpdate(broker, transact, docs);
+
+                pool.getJournalManager().get().flush(true, false);
+            }
+
+            BrokerPool.FORCE_CORRUPTION = false;
+            existEmbeddedServer.restart(false);
+            pool = existEmbeddedServer.getBrokerPool();
+
+            read(pool);
+        } finally {
+            existEmbeddedServer.stopDb(true);
+        }
+    }
+
+    protected abstract void doUpdate(final DBBroker broker, final TransactionManager transact, final MutableDocumentSet docs)  throws ParserConfigurationException, IOException, SAXException, LockException, XPathException, PermissionDeniedException, EXistException;
+
+    private void read(final BrokerPool pool) throws EXistException, PermissionDeniedException, SAXException, XPathException {
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
             final Serializer serializer = broker.getSerializer();
@@ -106,8 +134,8 @@ public abstract class AbstractUpdateTest {
         return existEmbeddedServer.getBrokerPool();
     }
 
-    @After
-    public void stopDb() {
-        existEmbeddedServer.stopDb();
-    }    
+    @AfterClass
+    public static void cleanup() {
+        BrokerPool.FORCE_CORRUPTION = false;
+    }
 }

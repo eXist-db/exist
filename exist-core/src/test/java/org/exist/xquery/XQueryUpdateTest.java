@@ -35,7 +35,7 @@ public class XQueryUpdateTest {
     protected static String UPDATE_XML =
             "<progress total=\"100\" done=\"0\" failed=\"0\" passed=\"0\"/>";
 
-    protected final static int ITEMS_TO_APPEND = 1000;
+    protected final static int ITEMS_TO_APPEND = 500;
 
     @Test
     public void append() throws EXistException, PermissionDeniedException, XPathException, SAXException {
@@ -244,19 +244,19 @@ public class XQueryUpdateTest {
             }
 
             seq = xquery.execute(broker, "//product[stock cast as xs:double gt 400]", null);
-            assertEquals(seq.getItemCount(), 959);
+            assertEquals(459, seq.getItemCount());
 
             seq = xquery.execute(broker, "//product[starts-with(stock, '401')]", null);
-            assertEquals(seq.getItemCount(), 1);
+            assertEquals(1, seq.getItemCount());
 
             seq = xquery.execute(broker, "/products", null);
-            assertEquals(seq.getItemCount(), 1);
+            assertEquals(1, seq.getItemCount());
 
             seq = xquery.execute(broker, "//product[@num cast as xs:integer eq 3]", null);
-            assertEquals(seq.getItemCount(), 1);
+            assertEquals(1, seq.getItemCount());
 
             seq = xquery.execute(broker, "/products", null);
-            assertEquals(seq.getItemCount(), 1);
+            assertEquals(1, seq.getItemCount());
 
             query =
                     "declare option exist:output-size-limit '-1';\n" +
@@ -266,7 +266,7 @@ public class XQueryUpdateTest {
             seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "//product/stock/external[. cast as xs:integer eq 1]", null);
-            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
+            assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
         }
     }
 

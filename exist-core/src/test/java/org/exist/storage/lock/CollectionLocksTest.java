@@ -44,7 +44,7 @@ import static org.junit.Assert.fail;
 public class CollectionLocksTest {
 
     private static final int CONCURRENCY_LEVEL = Runtime.getRuntime().availableProcessors() * 3;
-    private static final int TEST_DEADLOCK_TIMEOUT = 4000; // 4 seconds
+    private static final int TEST_DEADLOCK_TIMEOUT = 8000; // 4 seconds
 
     /**
      * In the noDeadlock tests this is the maximum amount of time to wait for the second thread to acquire its lock
@@ -637,7 +637,7 @@ public class CollectionLocksTest {
         );
     }
 
-    void stress_noDeadlock(final SupplierE<ManagedCollectionLock, LockException> thread1Lock1, final SupplierE<ManagedCollectionLock, LockException> thread2Lock1, final SupplierE<ManagedCollectionLock, LockException> thread1Lock2, final SupplierE<ManagedCollectionLock, LockException> thread2Lock2, final int numberOfThreads) throws InterruptedException {
+    void stress_noDeadlock(final SupplierE<ManagedCollectionLock, LockException> thread1Lock1, final SupplierE<ManagedCollectionLock, LockException> thread2Lock1, final SupplierE<ManagedCollectionLock, LockException> thread1Lock2, final SupplierE<ManagedCollectionLock, LockException> thread2Lock2, final int numberOfThreads) throws InterruptedException, ExecutionException {
         final Supplier<Callable<Void>> col1ThenCol2_callable = () -> () -> {
             try(final ManagedCollectionLock col1 = thread1Lock1.get()) {
                 sleep();
@@ -670,14 +670,17 @@ public class CollectionLocksTest {
         // execute threads
         final ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);
         final List<Future<Void>> futures = executorService.invokeAll(callables, STRESS_DEADLOCK_TEST_TIMEOUT, TimeUnit.MILLISECONDS);
-
-        // await all threads to finish
-        for(final Future<Void> future : futures) {
-            if(future.isCancelled()) {
-                fail("Stress test likely showed a thread deadlock");
+        try {
+            // await all threads to finish
+            for (final Future<Void> future : futures) {
+                if (future.isCancelled()) {
+                    fail("Stress test likely showed a thread deadlock");
+                    future.get(); // get the result, so that if the future was cancelled due to an exception, the exception is thrown
+                }
             }
+        } finally {
+            executorService.shutdown();
         }
-        executorService.shutdown();
     }
 
     /**
@@ -689,6 +692,7 @@ public class CollectionLocksTest {
             Thread.sleep(1 + random.nextInt(STRESS_DEADLOCK_THREAD_SLEEP));
         } catch (final InterruptedException e) {
             Thread.currentThread().interrupt();
+            e.printStackTrace();
         }
     }
 }

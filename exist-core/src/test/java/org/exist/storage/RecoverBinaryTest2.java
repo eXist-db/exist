@@ -49,7 +49,7 @@ import static org.junit.Assert.assertNotNull;
 public class RecoverBinaryTest2 {
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static String directory = "webapp/resources";
 

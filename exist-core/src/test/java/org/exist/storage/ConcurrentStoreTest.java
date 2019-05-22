@@ -22,14 +22,15 @@
 package org.exist.storage;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStream;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.ConcurrencyTest;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
@@ -38,52 +39,55 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.*;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Test;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.samples.Samples.SAMPLES;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 public class ConcurrentStoreTest {
-    
-    //TODO : revisit !
-    private static String directory = "/home/wolf/xml/shakespeare";
+
+    private static final Logger LOG = LogManager.getLogger(ConcurrencyTest.class);
+
     private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
-    
-    private static Path dir = Paths.get(directory);
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private BrokerPool pool;
     private Collection test, test2;
 
     @Test
-    public synchronized void store() throws InterruptedException, EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException {
+    public void storeAndRead() throws InterruptedException, EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException {
         BrokerPool.FORCE_CORRUPTION = true;
-        pool = startDb();
-        setupCollections();
+        BrokerPool pool = startDb();
+        setupCollections(pool);
 
-        Thread t1 = new StoreThread1();
+        final Thread t1 = new StoreThread1(pool);
         t1.start();
 
-        wait(8000);
+        synchronized (this) {
+            wait(4000);
+        }
 
-        Thread t2 = new StoreThread2();
+        final Thread t2 = new StoreThread2(pool);
         t2.start();
 
         t1.join();
         t2.join();
+
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = restartDb();
+
+        read(pool);
     }
 
-    @Test
-    public void read() throws EXistException, PermissionDeniedException, DatabaseConfigurationException, LockException, IOException {
-        BrokerPool.FORCE_CORRUPTION = false;
-        pool = startDb();
-
+    private void read(final BrokerPool pool) throws EXistException, PermissionDeniedException, LockException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             test = broker.getCollection(TEST_COLLECTION_URI.append("test1"));
@@ -96,7 +100,7 @@ public class ConcurrentStoreTest {
         }
     }
     
-    protected void setupCollections() throws EXistException, PermissionDeniedException, IOException, TriggerException {
+    protected void setupCollections(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction();) {
@@ -119,27 +123,43 @@ public class ConcurrentStoreTest {
         return existEmbeddedServer.getBrokerPool();
     }
 
+    private BrokerPool restartDb() throws EXistException, IOException, DatabaseConfigurationException {
+        existEmbeddedServer.restart(false);
+        return existEmbeddedServer.getBrokerPool();
+    }
+
     @After
     public void stopDb() {
         existEmbeddedServer.stopDb();
     }
+
+    @AfterClass
+    public static void cleanup() {
+        BrokerPool.FORCE_CORRUPTION = false;
+    }
     
     class StoreThread1 extends Thread {
+        private final BrokerPool pool;
+
+        StoreThread1(final BrokerPool pool) {
+            this.pool = pool;
+        }
+
         @Override
         public void run() {
             final TransactionManager transact = pool.getTransactionManager();
             try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                     final Txn transaction = transact.beginTransaction()) {
-                final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
 
                 IndexInfo info;
                 // store some documents into the test collection
-                for (final Path f : files) {
-                    try {
-                        info = test.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
-                        test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+                    try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
+                        final String sample = InputStreamUtil.readString(is, UTF_8);
+                        info = test.validateXMLResource(transaction, broker, XmldbURI.create(sampleName), sample);
+                        test.store(transaction, broker, info, sample);
                     } catch (SAXException e) {
-                        System.err.println("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
+                        System.err.println("Error found while parsing document: " + sampleName + ": " + e.getMessage());
                     }
 //                    if (i % 5 == 0) {
 //                        transact.commit(transaction);
@@ -152,13 +172,19 @@ public class ConcurrentStoreTest {
 //              Don't commit...
                 pool.getJournalManager().get().flush(true, false);
     	    } catch (Exception e) {
-                e.printStackTrace();
+                LOG.error(e.getMessage(), e);
     	        fail(e.getMessage()); 
             }
         }
     }
     
     class StoreThread2 extends Thread {
+        private final BrokerPool pool;
+
+        StoreThread2(final BrokerPool pool) {
+            this.pool = pool;
+        }
+
         @Override
         public void run() {
             final TransactionManager transact = pool.getTransactionManager();
@@ -169,18 +195,18 @@ public class ConcurrentStoreTest {
                 DocumentImpl doc = i.next();
 
                 test.removeXMLResource(transaction, broker, doc.getFileURI());
-                
-                Path f = dir.resolve("hamlet.xml");
-                try {
-                    IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toUri().toASCIIString()));
-                    test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+
+                try (final InputStream is = SAMPLES.getHamletSample()) {
+                    final String sample = InputStreamUtil.readString(is, UTF_8);
+                    IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), sample);
+                    test.store(transaction, broker, info, sample);
                 } catch (SAXException e) {
-                    System.err.println("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
+                    System.err.println("Error found while parsing document: hamlet.xml: " + e.getMessage());
                 }
                 
                 transact.commit(transaction);
             } catch (Exception e) {
-                e.printStackTrace();
+                LOG.error(e.getMessage(), e);
                 fail(e.getMessage());
             }
         }

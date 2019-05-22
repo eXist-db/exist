@@ -84,9 +84,7 @@ function sc:interpolation-funcall() {
 };
 
 declare
-    %test:assertEquals("Hello Chris
-You have just won 10000 dollars!
-Well, 6000 dollars, after taxes.")
+    %test:assertXPath('count(tokenize($result, "\n")) eq 3')
 function sc:newlines() {
 ``[Hello `{$sc:win?name}`
 You have just won `{$sc:win?value}` dollars!

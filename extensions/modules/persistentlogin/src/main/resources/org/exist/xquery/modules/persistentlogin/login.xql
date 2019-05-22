@@ -5,6 +5,10 @@ module namespace login="http://exist-db.org/xquery/login";
 import module namespace plogin="http://exist-db.org/xquery/persistentlogin"
     at "java:org.exist.xquery.modules.persistentlogin.PersistentLoginModule";
 
+import module namespace request = "http://exist-db.org/xquery/request";
+import module namespace response = "http://exist-db.org/xquery/response";
+import module namespace session = "http://exist-db.org/xquery/session";
+
 (:~
     Main entry point into the login module. Checks request parameters to determine the action
     to take. If a parameter "user" is given, try to authenticate this user with the password

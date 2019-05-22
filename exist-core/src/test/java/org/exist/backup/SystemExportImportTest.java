@@ -22,11 +22,13 @@ package org.exist.backup;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Properties;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 
 import org.exist.EXistException;
@@ -39,6 +41,7 @@ import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -48,20 +51,15 @@ import org.exist.storage.txn.Txn;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
 
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.xml.sax.SAXException;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 
 /**
@@ -89,6 +87,12 @@ public class SystemExportImportTest {
 
     @Parameter(value = 2)
     public boolean zip;
+
+    @ClassRule
+    public static TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static String COLLECTION_CONFIG =
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -118,7 +122,7 @@ public class SystemExportImportTest {
     private static String BINARY = "test";
 
     @Test
-    public void exportImport() throws Exception {
+    public void exportImport() throws EXistException, IOException, PermissionDeniedException, SAXException, ParserConfigurationException, AuthenticationException, URISyntaxException, XMLDBException {
         Path file;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
@@ -127,7 +131,8 @@ public class SystemExportImportTest {
             assertNotNull(test);
 
             final SystemExport sysexport = new SystemExport(broker, null, null, direct);
-            file = sysexport.export("backup", false, zip, null);
+            final String backupDir = temporaryFolder.newFolder().getAbsolutePath();
+            file = sysexport.export(backupDir, false, zip, null);
         }
 
         clean();
@@ -165,18 +170,29 @@ public class SystemExportImportTest {
         contentsOutputProps.setProperty( EXistOutputKeys.OUTPUT_DOCTYPE, "yes" );
     }
 	
-	private String serializer(final DBBroker broker, final DocumentImpl document) throws SAXException, IOException {
+	private String serializer(final DBBroker broker, final DocumentImpl document) throws SAXException {
 		final Serializer serializer = broker.getSerializer();
 		serializer.setUser(broker.getCurrentSubject());
 		serializer.setProperties(contentsOutputProps);
 		return serializer.serialize(document);
 	}
 
-    @Rule
-    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    private void clean() throws PermissionDeniedException, IOException, TriggerException, EXistException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+            final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
-	@Before
-    public void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException, ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
+            final Collection test = broker.getCollection(TEST_COLLECTION_URI);
+            if(test != null) {
+                broker.removeCollection(transaction, test);
+            }
+
+            transaction.commit();
+        }
+    }
+
+	@BeforeClass
+    public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 	    pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
 
@@ -203,35 +219,6 @@ public class SystemExportImportTest {
             test.store(transaction, broker, info, XML3);
 
             test.addBinaryResource(transaction, broker, doc11uri.lastSegment(), BINARY.getBytes(), null);
-
-            transaction.commit();
-        }
-
-        rundb();
-    }
-
-
-    private void rundb() throws ClassNotFoundException, XMLDBException, IllegalAccessException, InstantiationException {
-        final Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        final Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-    }
-    
-    @After
-    public void cleanup() throws PermissionDeniedException, IOException, TriggerException, EXistException {
-    	clean();
-    }
-
-    private void clean() throws PermissionDeniedException, IOException, TriggerException, EXistException {
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-
-            final Collection test = broker.getCollection(TEST_COLLECTION_URI);
-            if(test != null) {
-                broker.removeCollection(transaction, test);
-            }
 
             transaction.commit();
         }

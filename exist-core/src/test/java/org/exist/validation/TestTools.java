@@ -31,6 +31,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -61,23 +62,15 @@ public class TestTools {
     
     /**
      *
-     * @param file     File to be uploaded
+     * @param document     File to be uploaded
      * @param target  Target URL (e.g. xmldb:exist:///db/collection/document.xml)
      * @throws java.lang.Exception  Oops.....
      */
-    public static void insertDocumentToURL(final Path file, final String target) throws IOException {
+    public static void insertDocumentToURL(final InputStream document, final String target) throws IOException {
         final URL url = new URL(target);
         final URLConnection connection = url.openConnection();
         try (final OutputStream os = connection.getOutputStream()) {
-            Files.copy(file, os);
-        }
-    }
-
-    public static void insertDocumentToURL(final byte[] data, final String target) throws IOException {
-        final URL url = new URL(target);
-        final URLConnection connection = url.openConnection();
-        try (final OutputStream os = connection.getOutputStream()) {
-            os.write(data);
+            InputStreamUtil.copy(document, os);
         }
     }
 

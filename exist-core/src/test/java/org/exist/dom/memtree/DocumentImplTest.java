@@ -21,8 +21,6 @@
 package org.exist.dom.memtree;
 
 import com.googlecode.junittoolbox.ParallelRunner;
-import net.sf.saxon.dom.AttrOverNodeInfo;
-import net.sf.saxon.dom.DocumentBuilderImpl;
 import org.apache.xerces.dom.AttrNSImpl;
 import org.exist.Namespaces;
 import org.exist.util.ExistSAXParserFactory;
@@ -83,7 +81,7 @@ public class DocumentImplTest {
     }
 
     @Test
-    public void checkNamespaces_saxon() throws IOException, ParserConfigurationException, SAXException {
+    public void checkNamespaces_saxon() throws IOException, ParserConfigurationException, SAXException, IllegalAccessException, InstantiationException, ClassNotFoundException {
         final Document doc;
         try(final InputStream is = new FastByteArrayInputStream(DOC.getBytes(UTF_8))) {
             doc = parseSaxon(is);
@@ -97,7 +95,6 @@ public class DocumentImplTest {
 
         final Attr attr1 = (Attr)attrs.item(index++);
         assertEquals(Node.ATTRIBUTE_NODE, attr1.getNodeType());
-        assertTrue(attr1 instanceof AttrOverNodeInfo);
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, attr1.getNamespaceURI());
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE, attr1.getPrefix());
         assertEquals(XMLConstants.XML_NS_PREFIX, attr1.getLocalName());
@@ -106,7 +103,6 @@ public class DocumentImplTest {
 
         final Attr attr2 = (Attr)attrs.item(index++);
         assertEquals(Node.ATTRIBUTE_NODE, attr2.getNodeType());
-        assertTrue(attr2 instanceof AttrOverNodeInfo);
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, attr2.getNamespaceURI());
         assertEquals(null, attr2.getPrefix());
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE, attr2.getLocalName());
@@ -115,7 +111,6 @@ public class DocumentImplTest {
 
         final Attr attr3 = (Attr)attrs.item(index++);
         assertEquals(Node.ATTRIBUTE_NODE, attr3.getNodeType());
-        assertTrue(attr3 instanceof AttrOverNodeInfo);
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, attr3.getNamespaceURI());
         assertEquals(XMLConstants.XMLNS_ATTRIBUTE, attr3.getPrefix());
         assertEquals("repo", attr3.getLocalName());
@@ -163,8 +158,9 @@ public class DocumentImplTest {
         return builder.parse(is);
     }
 
-    private Document parseSaxon(final InputStream is) throws IOException, SAXException {
-        final DocumentBuilderImpl builder = new DocumentBuilderImpl();
+    private Document parseSaxon(final InputStream is) throws IOException, SAXException, ParserConfigurationException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        final Class clazz = Class.forName("net.sf.saxon.dom.DocumentBuilderImpl");
+        final DocumentBuilder builder = (DocumentBuilder)clazz.newInstance();
         return builder.parse(is);
     }
 

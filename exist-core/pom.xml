@@ -1,0 +1,758 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.exist-db</groupId>
+        <artifactId>exist-parent</artifactId>
+        <version>5.0.0-RC8-SNAPSHOT</version>
+        <relativePath>../exist-parent</relativePath>
+    </parent>
+
+    <artifactId>exist-core</artifactId>
+    <packaging>jar</packaging>
+
+    <name>eXist-db Core</name>
+    <description>eXist-db NoSQL Database Core</description>
+
+    <scm>
+        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
+        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
+        <url>scm:git:https://github.com/exist-db/exist.git</url>
+    </scm>
+
+    <dependencies>
+        <dependency>
+            <groupId>net.jcip</groupId>
+            <artifactId>jcip-annotations</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>antlr</groupId>
+            <artifactId>antlr</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.9.8</version>
+        </dependency>
+
+        <!-- dependency>
+            <groupId>com.fasterxml.woodstox</groupId>
+            <artifactId>woodstox-core</artifactId>
+            <version>5.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.woodstox</groupId>
+            <artifactId>stax2-api</artifactId>
+            <version>3.1.4</version>
+        </dependency -->
+
+        <dependency>
+            <groupId>org.exist-db.thirdparty.uk.ac.ic.doc.slurp.multilock</groupId>
+            <artifactId>multilock</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jctools</groupId>
+            <artifactId>jctools-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.krukow</groupId>
+            <artifactId>clj-ds</artifactId>
+            <version>0.0.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.siemens.ct.exi</groupId>
+            <artifactId>exificient</artifactId>
+            <exclusions>
+                <exclusion> <!-- conflicts with xerces 2.12.0 -->
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ibm.icu</groupId>
+            <artifactId>icu4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.exist-db.thirdparty.com.thaiopensource</groupId>
+            <artifactId>jing</artifactId>
+            <version>20151127</version>
+            <exclusions>
+                <exclusion> <!-- conflicts with xerces 2.12.0 dependency on xml-apis version 1.4.01 -->
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+                <exclusion> <!-- conflicts -->
+                    <groupId>net.sf.saxon</groupId>
+                    <artifactId>saxon</artifactId>
+                </exclusion>
+                <exclusion> <!-- conflicts -->
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-start</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.exquery</groupId>
+            <artifactId>exquery-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.61</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.lz4</groupId>
+            <artifactId>lz4-java</artifactId>
+            <version>1.5.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.evolvedbinary.j8fu</groupId>
+            <artifactId>j8fu</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.uuid</groupId>
+            <artifactId>java-uuid-generator</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+        </dependency>
+
+        <!-- needed on JDK 10+ -->
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.exist-db.thirdparty.javax.xml.xquery</groupId>
+            <artifactId>xqjapi</artifactId>
+            <version>1.0-fr</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jline</groupId>
+            <artifactId>jline</artifactId>
+            <version>3.11.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.fusesource.jansi</groupId>
+            <artifactId>jansi</artifactId>
+            <version>1.18</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>se.softhouse</groupId>
+            <artifactId>jargo</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-configuration2</artifactId>
+            <version>2.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-pool</groupId>
+            <artifactId>commons-pool</artifactId>
+            <version>1.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-jcl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-jul</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.exist-db.thirdparty.xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.12.0</version>
+            <classifier>xml-schema-1.1</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.ws.commons.util</groupId>
+            <artifactId>ws-commons-util</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+
+        <!-- xml-resolver is needed at runtime because xercesImpl declares this as optional,
+            but we use a part of Xerces XMLCatalogResolver which requires this -->
+        <dependency>
+            <groupId>xml-resolver</groupId>
+            <artifactId>xml-resolver</artifactId>
+            <version>1.2</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- xpath2 and java-cup are needed at runtime because xercesImpl declares this as optional,
+            but we need them to enable Schema 1.1 support -->
+        <dependency>
+            <groupId>org.exist-db.thirdparty.org.eclipse.wst.xml</groupId>
+            <artifactId>xpath2</artifactId>
+            <version>1.2.0</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>edu.princeton.cup</groupId>
+            <artifactId>java-cup</artifactId>
+            <version>10k</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>xalan</groupId>
+            <artifactId>xalan</artifactId>
+            <version>2.7.2</version> <!-- needed an compile time for various dependencies -->
+        </dependency>
+
+        <dependency>
+            <groupId>net.sf.saxon</groupId>
+            <artifactId>Saxon-HE</artifactId>
+            <scope>runtime</scope> <!-- You can use either Xalan (XSLT 1.0) or Saxon (XSLT 1.0 and 2.0) with eXist at runtime. Saxon is preferred! -->
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.xmlrpc</groupId>
+            <artifactId>xmlrpc-common</artifactId>
+            <exclusions>
+                <exclusion> <!-- conflicts with xerces 2.12.0 dependency on xml-apis version 1.4.01 -->
+                    <artifactId>xml-apis</artifactId>
+                    <groupId>xml-apis</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xmlrpc</groupId>
+            <artifactId>xmlrpc-client</artifactId>
+            <version>${apache.xmlrpc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.xmlrpc</groupId>
+            <artifactId>xmlrpc-server</artifactId>
+            <version>${apache.xmlrpc.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>${aspectj.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-jaas</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-http</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-security</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.expath.packaging</groupId>
+            <artifactId>pkg-java</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fifesoft</groupId>
+            <artifactId>rsyntaxtextarea</artifactId>
+            <version>3.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz</artifactId>
+            <version>2.3.0</version>  <!-- Quartz 2.3.1 has an issue on Windows, see: https://github.com/quartz-scheduler/quartz/issues/448 -->
+            <!-- exclude Quartz SQL connectivity options -->
+            <exclusions>
+                <exclusion>
+                    <groupId>com.mchange</groupId>
+                    <artifactId>c3p0</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.mchange</groupId>
+                    <artifactId>mchange-commons-java</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.zaxxer</groupId>
+                    <artifactId>HikariCP-java6</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sf.xmldb-org</groupId>
+            <artifactId>xmldb-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>it.unimi.dsi</groupId>
+            <artifactId>fastutil</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>compile</scope>
+            <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
+            <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
+        </dependency>
+
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-jetty-config</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-samples</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.easymock</groupId>
+            <artifactId>easymock</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-matchers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-legacy</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.junit-toolbox</groupId>
+            <artifactId>junit-toolbox</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.exist-db.thirdparty.com.ettrema</groupId>
+            <artifactId>milton-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.exist-db.thirdparty.com.ettrema</groupId>
+            <artifactId>milton-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- needed for starting up a jetty server -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-deploy</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-jmx</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- dependencies from exist-optional.jar -->
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-jndi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-plus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-xml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>fluent-hc</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources-filtered</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources-filtered</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
+
+        <plugins>
+
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <configuration>
+                    <suppressionFiles>
+                        <suppressionFile>${basedir}/project-suppression.xml</suppressionFile>
+                    </suppressionFiles>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>analyze</id>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <failOnWarning>false</failOnWarning>  <!-- TODO(AR) this temporarily overrides the setting in exist-parent and this plugin should be removed from here -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>antlr-maven-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <grammars>
+                        org/exist/xquery/parser/XQuery.g,org/exist/xquery/parser/XQueryTree.g,org/exist/xquery/parser/DeclScanner.g,org/exist/xquery/xqdoc/parser/XQDocParser.g
+                    </grammars>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <configuration>
+                            <excludes>
+                                <!-- compiled by the Aspectj plugin below -->
+                                <exclude>org/exist/storage/lock/EnsureLockingAspect.java</exclude>
+                                <exclude>org/exist/security/PermissionRequiredAspect.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.nickwongdev</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <version>1.12.1</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjtools</artifactId>
+                        <version>${aspectj.version}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+
+                        <!-- Compile and weave aspects after all classes compiled by javac -->
+                        <!-- phase>process-classes</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals -->
+
+                        <configuration>
+                            <forceAjcCompile>true</forceAjcCompile>  <!-- Required, otherwise the Aspects are not re-compiled when the src/main/java is recompiled for the test phase -->
+                            <showWeaveInfo>true</showWeaveInfo>
+                            <complianceLevel>${project.build.source}</complianceLevel>
+                            <source>${project.build.source}</source>
+                            <target>${project.build.target}</target>
+                            <!-- sources>
+                                <source>
+                                    <basedir>${project.build.sourceDirectory}</basedir>
+                                    <includes>
+                                        <include>**/PermissionRequiredAspect.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>**/EnsureLockingAspect.java</exclude>
+                                    </excludes>
+                                </source>
+                            </sources -->
+
+                            <!-- weaveDirectories>
+                                <weaveDirectory>${project.build.directory}/classes</weaveDirectory>
+                            </weaveDirectories -->
+
+                            <excludes>
+                                <!-- excluded by default, as only really needed for debugging lock ownership issues -->
+                                <exclude>**/EnsureLockingAspect.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Dfile.encoding=${project.build.sourceEncoding} -Dlog4j.configurationFile=${project.build.testOutputDirectory}/log4j2.xml</argLine>
+                    <systemPropertyVariables>
+                        <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
+                        <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
+                        <exist.jetty.standalone.webapp.dir>${project.build.testOutputDirectory}/standalone-webapp</exist.jetty.standalone.webapp.dir>
+                    </systemPropertyVariables>
+
+                    <excludes>
+
+                        <!-- NOTE: these can still exhibit deadlocks -->
+                        <exclude>org.exist.collections.ConcurrencyTest</exclude>
+                        <exclude>org.exist.xmldb.concurrent.FragmentsTest</exclude>
+
+                        <!-- NOTE: these tests appear to be invalid -->
+                        <exclude>org.exist.xmldb.concurrent.ConcurrentResourceTest2</exclude>
+                        <exclude>org.exist.xmldb.concurrent.ConcurrentResourceTest3</exclude>
+
+                        <!-- NOTE: these take a long time to run and should become integration tests via maven-failsafe-plugin -->
+                        <exclude>org.exist.http.underheavyload.DatabaseUnderLoadTest</exclude>
+                        <exclude>org.exist.storage.lock.DeadlockTest</exclude>
+                        <exclude>org.exist.storage.RemoveCollectionTest</exclude>
+                        <exclude>org.exist.xmldb.ShutdownTest</exclude>
+
+                        <!-- NOTE: this never completes under Java 8 on Travis CI Mac platform! -->
+                        <exclude>org.exist.xmlrpc.MoveResourceTest</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+
+    </build>
+
+    <profiles>
+        <profile>
+            <!--
+            Disable parallel tests on Windows.
+            When running multiple tests in parallel, Quartz seems to stop eXist-db from shutting down
+            on AppVeyor Windows CI, see: https://github.com/quartz-scheduler/quartz/issues/448
+            -->
+            <id>windows-disable-parallel-testing</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+                <property>
+                    <name>env.APPVEYOR</name>
+                    <value>True</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <forkCount>1C</forkCount>
+                            <reuseForks>false</reuseForks>
+
+                            <excludes>
+                                <!-- NOTE: this test fails on AppVeyor Windows CI with Oracle JDK 11,
+                                 but not on some other windows systems :-/ -->
+                                <exclude>org.exist.storage.lock.CollectionLocksTest</exclude>
+
+                                <!-- NOTE: these can still exhibit deadlocks -->
+                                <exclude>org.exist.collections.ConcurrencyTest</exclude>
+                                <exclude>org.exist.xmldb.concurrent.FragmentsTest</exclude>
+
+                                <!-- NOTE: these tests appear to be invalid -->
+                                <exclude>org.exist.xmldb.concurrent.ConcurrentResourceTest2</exclude>
+                                <exclude>org.exist.xmldb.concurrent.ConcurrentResourceTest3</exclude>
+
+                                <!-- NOTE: these take a long time to run and should become integration tests via maven-failsafe-plugin -->
+                                <exclude>org.exist.http.underheavyload.DatabaseUnderLoadTest</exclude>
+                                <exclude>org.exist.storage.lock.DeadlockTest</exclude>
+                                <exclude>org.exist.storage.RemoveCollectionTest</exclude>
+                                <exclude>org.exist.xmldb.ShutdownTest</exclude>
+
+                                <!-- NOTE: this never completes under Java 8 on Travis CI Mac platform! -->
+                                <exclude>org.exist.xmlrpc.MoveResourceTest</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

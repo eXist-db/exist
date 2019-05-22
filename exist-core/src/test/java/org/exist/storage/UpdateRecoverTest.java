@@ -76,7 +76,7 @@ public class UpdateRecoverTest {
         "</products>";
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
     public void storeAndRead() throws IllegalAccessException, PermissionDeniedException, DatabaseConfigurationException, InstantiationException, SAXException, XMLDBException, EXistException, ClassNotFoundException, LockException, ParserConfigurationException, XPathException, IOException {
@@ -84,10 +84,9 @@ public class UpdateRecoverTest {
         BrokerPool pool = startDb();
         store(pool);
 
-        stopDb();
-
         BrokerPool.FORCE_CORRUPTION = false;
-        pool = startDb();
+        pool = restartDb();
+
         read(pool);
     }
 
@@ -97,10 +96,9 @@ public class UpdateRecoverTest {
         BrokerPool pool = startDb();
         xmldbStore(pool);
 
-        stopDb();
-
         BrokerPool.FORCE_CORRUPTION = false;
-        pool = startDb();
+        pool = restartDb();
+
         xmldbRead(pool);
     }
 
@@ -447,6 +445,11 @@ public class UpdateRecoverTest {
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
 
+        return existEmbeddedServer.getBrokerPool();
+    }
+
+    private BrokerPool restartDb() throws DatabaseConfigurationException, IOException, EXistException {
+        existEmbeddedServer.restart(false);
         return existEmbeddedServer.getBrokerPool();
     }
 

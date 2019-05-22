@@ -22,8 +22,7 @@
 package org.exist.storage;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.InputStream;
 import java.util.Optional;
 
 import org.exist.EXistException;
@@ -41,6 +40,7 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
@@ -54,7 +54,9 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
+import static org.exist.samples.Samples.SAMPLES;
 
 public class MoveCollectionRecoveryTest {
 
@@ -138,11 +140,15 @@ public class MoveCollectionRecoveryTest {
             assertNotNull(test);
             broker.saveCollection(transaction, test);
 
-            final Path f = TestUtils.resolveSample("biblio.rdf");
-            assertTrue(Files.exists(f));
-            final IndexInfo info = test.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toUri().toASCIIString()));
+            final String sample;
+            try (final InputStream is = SAMPLES.getBiblioSample()) {
+                assertNotNull(is);
+                sample = InputStreamUtil.readString(is, UTF_8);
+            }
+
+            final IndexInfo info = test.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, sample);
             assertNotNull(info);
-            test.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+            test.store(transaction, broker, info, sample);
 
             final Collection dest = broker.getOrCreateCollection(transaction, TestConstants.DESTINATION_COLLECTION_URI);
             assertNotNull(dest);
@@ -184,11 +190,14 @@ public class MoveCollectionRecoveryTest {
                 assertNotNull(test2);
                 broker.saveCollection(transaction, test2);
 
-                final Path f = TestUtils.resolveSample("biblio.rdf");
-                assertTrue(Files.exists(f));
-                final IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toUri().toASCIIString()));
+                final String sample;
+                try (final InputStream is = SAMPLES.getBiblioSample()) {
+                    assertNotNull(is);
+                    sample = InputStreamUtil.readString(is, UTF_8);
+                }
+                final IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, sample);
                 assertNotNull(info);
-                test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                test2.store(transaction, broker, info, sample);
 
                 transact.commit(transaction);
             }
@@ -217,7 +226,7 @@ public class MoveCollectionRecoveryTest {
         }
     }
 
-    private void xmldbStore() throws XMLDBException {
+    private void xmldbStore() throws XMLDBException, IOException {
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
         final EXistCollectionManagementService rootMgr = (EXistCollectionManagementService) root.getService("CollectionManagementService", "1.0");
@@ -236,11 +245,14 @@ public class MoveCollectionRecoveryTest {
         }
         assertNotNull(test2);
 
-        final Path f = TestUtils.resolveSample("biblio.rdf");
-        assertTrue(Files.exists(f));
+        final String sample;
+        try (final InputStream is = SAMPLES.getBiblioSample()) {
+            assertNotNull(is);
+            sample = InputStreamUtil.readString(is, UTF_8);
+        }
         final Resource res = test2.createResource("test_xmldb.xml", "XMLResource");
         assertNotNull(res);
-        res.setContent(f);
+        res.setContent(sample);
         test2.storeResource(res);
 
         org.xmldb.api.base.Collection dest = root.getChildCollection(TestConstants.DESTINATION_COLLECTION_URI3.lastSegment().toString());

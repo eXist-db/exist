@@ -51,7 +51,7 @@ import static org.junit.Assert.*;
 public class StoredModuleTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String MODULE =
             "module namespace itg-modules = \"http://localhost:80/itg/xquery\";\n" +
@@ -214,7 +214,8 @@ public class StoredModuleTest {
         r = (String) rs.getResource(0).getContent();
         assertEquals("hi from module 4", r);
     }
-    
+
+    @Ignore("this test pollutes the filesystem by calling writeFile on a non-temporary folder")
     @Test 
     public void testRelativeImportFile() throws Exception {
         String collection2Name = "module2";

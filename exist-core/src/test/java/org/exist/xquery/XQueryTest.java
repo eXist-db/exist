@@ -21,6 +21,8 @@
  */
 package org.exist.xquery;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.DetailedDiff;
 import org.exist.EXistException;
 import org.exist.dom.QName;
@@ -77,8 +79,10 @@ import static org.junit.Assume.assumeTrue;
  */
 public class XQueryTest {
 
+    private final static Logger LOG = LogManager.getLogger(XQueryTest.class);
+
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String NUMBERS_XML = "numbers.xml";
     private static final String BOWLING_XML = "bowling.xml";
@@ -1918,10 +1922,10 @@ public class XQueryTest {
 
             fail("result should have yielded into an error like " +
                     "'A sequence of more than one item is not allowed as the first " + "operand of 'ne'");
-        } catch (XMLDBException ex) {
-            if (!ex.getMessage().contains("one item")) {
-                ex.printStackTrace();
-                fail(ex.getMessage());
+        } catch (XMLDBException e) {
+            if (!e.getMessage().contains("one item")) {
+                LOG.error(e.getMessage(), e);
+                fail(e.getMessage());
             }
         }
     }
@@ -2876,8 +2880,7 @@ public class XQueryTest {
         try {
             result = service.query(query);
         } catch (Exception e) {
-            //SENR0001 : OK
-            e.printStackTrace();
+            //SENR0001 : OK - this is expected
         }
         query = "declare option exist:serialize 'method=text'; \n"
             + "//@* \n";

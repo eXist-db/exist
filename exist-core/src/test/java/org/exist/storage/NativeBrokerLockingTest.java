@@ -42,7 +42,7 @@ public class NativeBrokerLockingTest {
     private final static int TRACE_STACK_DEPTH = 5;
 
     @Rule
-    public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Before
     public void setupTestData() throws EXistException, PermissionDeniedException, IOException, TriggerException {
@@ -409,9 +409,9 @@ public class NativeBrokerLockingTest {
                 stackTrace = null;
             }
 
-            System.out.println(LockTable.formatString(lockEventType, groupId, entry.getId(), entry.getLockType(),
-                    entry.getLockMode(), entry.getOwner(), localCount, timestamp,
-                    stackTrace));
+//            System.out.println(LockTable.formatString(lockEventType, groupId, entry.getId(), entry.getLockType(),
+//                    entry.getLockMode(), entry.getOwner(), localCount, timestamp,
+//                    stackTrace));
 
             final LockAction lockAction = new LockAction(lockEventType, groupId, entry.getId(), entry.getLockType(),
                     entry.getLockMode(), entry.getOwner(), localCount, timestamp,

@@ -80,7 +80,7 @@ public class LatestFileResolver {
 
         final String artifactId = Pattern.quote(uptoToken.substring(uptoToken.lastIndexOf(File.separatorChar) + 1));
         final String suffix = Pattern.quote(fileinfo[1]);
-        final String patternString = '^' + artifactId + "(?:(?:[0-9]+(?:(?:\\.|_)[0-9]+)*)(?:-SNAPSHOT)?(?:-patched)?(?:-[0-9a-f]{7})?)" + suffix + '$';
+        final String patternString = '^' + artifactId + "(?:(?:[0-9]+(?:(?:\\.|_)[0-9]+)*)(?:-RC[0-9]+)?(?:-SNAPSHOT)?(?:-patched)?(?:-[0-9a-f]{7})?)" + suffix + '$';
         final Pattern pattern = Pattern.compile(patternString);
         final Matcher matcher = pattern.matcher("");
 

@@ -79,6 +79,7 @@ function upt:unparsed-text-from-db-xml() {
 
 declare
     %test:assertEquals(26436)
+    %test:pending("Requires external file, should use a temp file which is setup by the test setup method")
 function upt:unparsed-text-from-file-dba() {
     let $home := translate(system:get-exist-home(), "\", "/")
     let $url := ``[file://`{$home}`/LICENSE]``
@@ -88,6 +89,7 @@ function upt:unparsed-text-from-file-dba() {
 
 declare
     %test:assertEquals(504)
+    %test:pending("Requires external file, should use a temp file which is setup by the test setup method")
 function upt:unparsed-text-lines-from-file-dba() {
     let $home := translate(system:get-exist-home(), "\", "/")
     let $url := ``[file://`{$home}`/LICENSE]``

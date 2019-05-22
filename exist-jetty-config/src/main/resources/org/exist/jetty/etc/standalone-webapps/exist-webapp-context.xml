@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure_9_3.dtd">
+
+<Configure id="exist-webapp-context" class="org.exist.jetty.WebAppContext">
+    <!-- contextPath can be set to either '/exist' or '/' -->
+    <Set name="contextPath">/</Set>
+    <Set name="war"><SystemProperty name="exist.jetty.standalone.webapp.dir"><Default><Property name="jetty.home" default="."/>/../../../standalone-webapp/</Default></SystemProperty></Set>
+    <Set name="defaultsDescriptor"><Property name="jetty.home" default="."/>/etc/webdefault.xml</Set>
+    <Set name="securityHandler">
+        <New class="org.eclipse.jetty.security.ConstraintSecurityHandler">
+            <Set name="loginService">
+                <New class="org.eclipse.jetty.jaas.JAASLoginService">
+                    <Set name="name">Test JAAS Realm</Set>
+                    <Set name="loginModuleName">JAASLoginService</Set>
+                </New>
+            </Set>
+        </New>
+    </Set>
+    <Call name="setAttribute">
+        <Arg>org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern</Arg>
+        <Arg>.*/[^/]*servlet-api-[^/]*\.jar$|.*/javax.servlet.jsp.jstl-.*\.jar$|.*/org.apache.taglibs.taglibs-standard-impl-.*\.jar$</Arg>
+    </Call>
+</Configure>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<izpack:shortcuts xmlns:izpack="http://izpack.org/schema/shortcuts" version="5.0">
+    <programGroup defaultName="eXist-db XML Database" location="applications"/>
+
+    <shortcut
+            name="eXist-db Database"
+            genericName="eXist-db"
+            description="eXist-db XML Database Launcher"
+            type="Application"
+            encoding="UTF-8"
+            target="$INSTALL_PATH/bin/launcher.sh"
+            workingDirectory="$INSTALL_PATH"
+            terminal="false"
+            programGroup="yes"
+            iconFile="$INSTALL_PATH/lib/icon.png"
+            desktop="yes"
+            startupNotify="true"/>
+
+    <shortcut name="Uninstall eXist-db"
+              description="Uninstall eXist-db"
+              type="Application"
+              encoding="UTF-8"
+              target="$JAVA_HOME/bin/java"
+              commandLine="-jar &quot;$INSTALL_PATH/lib/izpack-uninstaller.jar&quot;"
+              workingDirectory="$INSTALL_PATH"
+              terminal="false"
+              programGroup="yes"
+              iconFile="trashcan_full"
+              desktop="no"/>
+</izpack:shortcuts>

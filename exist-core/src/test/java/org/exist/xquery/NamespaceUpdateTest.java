@@ -18,7 +18,7 @@ import static org.junit.Assert.assertNotNull;
 public class NamespaceUpdateTest {
 
 	@ClassRule
-	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
 	private final static String namespaces =
 			"<test xmlns='http://www.foo.com'>"
@@ -44,7 +44,7 @@ public class NamespaceUpdateTest {
 
 		query =
 				"declare namespace t='http://www.foo.com';\n" +
-						"/t:test/@ID";
+						"/t:test/@ID/string(.)";
 		ResourceSet result = service.query(query);
 		assertEquals(1, result.getSize());
 		assertEquals("myid", result.getResource(0).getContent().toString());

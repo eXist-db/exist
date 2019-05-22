@@ -1,0 +1,6 @@
+<collection xmlns="http://exist.sourceforge.net/NS/exist" name="/db" version="1" owner="SYSTEM" group="dba" mode="755" created="2019-04-08T16:09:05.09+08:00">
+    <acl entries="0" version="1"/>
+    <resource type="XMLResource" name="example.xml" skip="no" owner="admin" group="dba" mode="770" created="2019-04-08T16:09:05.347+08:00" modified="2019-04-08T16:09:05.386+08:00" filename="example.xml" mimetype="application/xml">
+        <acl entries="0" version="1"/>
+    </resource>
+</collection>

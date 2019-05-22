@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~ Copyright (c) 2012. betterFORM Project - http://www.betterform.de
+  ~ Licensed under the terms of BSD License
+  -->
+
+<!-- $Id: betterform-config.xml 3274 2008-07-16 17:01:30Z lasse $ -->
+<betterform-config>
+
+    <properties>
+        <property name="xforms.schema" value="XFormsDatatypes11.xsd"
+                  description="XForms Schema holding Simple Type Declarations"/>
+
+        <property name="initLogging" value="true" description="'true' if logging should be initialized by betterform, false otherwise"/>
+
+        <property name="log4j.file" value="WEB-INF/log4j.xml"
+                  description="the location of the log4j configuration file relative to context"/>
+
+        <property name="defaultRequestEncoding" value="UTF-8"
+                  description="The character encoding to use for the Request if none was set"/>
+
+        <property name="uploadDir" value="upload" description="the name of the upload directory relative to context"/>
+
+        <property name="xslt.cache.enabled" value="true" description="flag for XSLT caching"/>
+
+        <property name="error.page" value="error/error.page" description="location of error-page relative to context"/>
+
+        <!-- DEPRECATED -->
+        <!--
+                <property name="defaultProcessorBase" value="remote"
+                          description="optional parameter - 'local' or 'remote' operation of betterForm XForms Processor"/>
+        -->
+
+        <property name="forms.uri.relative" value="false"
+                  description="use relative pathes for resources in generated UI"/>
+
+        <property name="filter.ignoreResponseBody" value="false"
+                  description="if 'true' XFormsFilter will not check reponse body for XForms markup"/>
+
+        <!--
+                   Language selection rules at runtime:
+                   [1] 'lang' parameter on Url e.g. host:8888/foo.html?lang=en
+                   [2] presence of a 'lang' request Attribute
+                   [3] value of 'preselect-language' property below
+                   [4] if above not present use accept-language header sent by browser
+               -->
+        <property name="preselect-language" value="en"/>
+        <property name="enable.l10n" value="false"/>
+
+        <!--
+           Property the XForms filter listens on, only if the pattern is present on the accept header
+           the XForms Filter is processing the request.
+
+                Sample Request Header ContentTypes
+                text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,* /*;q=0.5
+                image/png,* /*;q=0.5
+        -->
+        <property name="acceptContentTypePattern" value="application/xhtml\+html"
+                  description="Based on this property, the XFormsFilter decide if should start XForms processing. Value
+                             can be 'all_xml' (WebFactory.ALL_XML_TYPES) to accept all xml content types or a reg
+                             expression to allow only certain ones."/>
+
+        <!--
+            This property allows to switch the stylesheet compilation on.
+            Because of the significant performance gain this option is turned on by default.
+
+            Note: If you extend stylesheets and use custom xpath extensions, compilation can become
+            a problem cause XSLTC has limitations in this area.
+        -->
+        <!-- DEPRECATED -->
+        <!--<property name="betterform.stylesheets.compiled" value="true"/>-->
+
+        <!-- ********* web processor properties ********* -->
+        <!--
+            Normally there should be no reason to change the following prefixes unless they're
+            in conflict with your application that uses betterForm.
+        -->
+        <!-- prefix used in http request param names to denote a data (value) parameter. -->
+        <property name="betterform.web.dataPrefix" value="d_"/>
+        <!-- prefix used in http request param names to denote the id of an action to be fired. -->
+        <property name="betterform.web.triggerPrefix" value="t_"/>
+        <!-- prefix used in http request param names to denote a selector parameter (used for repeats). -->
+        <property name="betterform.web.selectorPrefix" value="s_"/>
+
+        <!-- ********* ui handler properties ********* -->
+        <!--
+            This option allows to steer the processor behaviour regarding the initialization of
+            <case> elements which are not visible currently (unselected). If setting this option
+            to false, only the current <case> will be initialized.
+
+            The default is to initialize all <case> elements.
+        -->
+        <!-- DEPRECATED -->
+        <!-- <property name="betterform.ui.initializeDeselectedCases" value="true"/>-->
+
+        <!-- generate default alert Elements for UI controls. default is false -->
+        <property name="betterform.ui.generateDefaultAlerts" value="false"/>
+
+        <!--
+            allows the define the default error-message for automatically generated alert elements.
+        -->
+        <property name="betterform.ui.defaultAlertText" value="The specified value is invalid"/>
+
+        <property name="betterform.debug-allowed" value="false" description="if true enables debug bar and event log viewer"/>
+
+        <property name="betterform.unloading-message" value="You are about to leave this XForms application" description="Set message which is shown to user if unsaved form is left."/>
+
+        <!-- WARNING: not ready for production use -->
+        <property name="betterform.event-optimization-enabled" value="true" description="TBD: if event optimization is enabled, only events present within the current form will be processed"/>
+
+        <property name="webprocessor.doIncludes" value="false" description="if true the incoming XForms will be scanned for bf:include tags and transformed accordingly"/>
+        <property name="admin.mail" value="foo@bar.de" description="a mail address to report problems and errors with forms"/>
+
+        <!--
+             Full classpath of SSLProtocolSocketFactory which should be used by httpclient.
+             For now there is only one implementing Class in betterFORM, which allows verification of a server cert (KeyStoreSSLContext).
+             SSLProtocolSocketFactory-Handling will be activated if the property is specified.
+             ! You have to uncomment this if you would like to use betterFORM with custom SSL-Certificates. !
+        -->
+        <!--
+                <property name="httpclient.ssl.context" value="de.betterform.connector.http.ssl.KeyStoreSSLContext" description="Full classpath of SSLProtocolSocketFactory which should be used by httpclient."/>
+        -->
+        <!--
+            Specify a customPort for SSLProtocolSocketFactory for httpclient.
+            Port 443,8443 are the default ports.
+            See: http://hc.apache.org/httpclient-3.x/apidocs/org/apache/commons/httpclient/protocol/Protocol.html
+        -->
+        <!--
+                <property name="httpclient.ssl.context.customPort" value="CUSTOM-SSL-PORT" description="Specify custom Port for SSLProtocolSocketFactory for httpclient. 443,8443 if not specified."/>
+        -->
+        <!--
+           Location of JAVA keystore used by httpclient to verify trusted ssl-certs.
+           If / (root-dir) is omitted in the value "user.home" will be used as relative path.
+           Otherwise an absolute path is expected.
+           Used by: KeyStoreSSLContext
+        -->
+        <property name="httpclient.ssl.keystore.path" value="PATH-TO-KEYSTORE" description="Location of the keystore to be used by httpclient."/>
+
+        <!--
+            Password to unlock JAVA keystore.
+            Used by: KeyStoreSSLContext
+        -->
+        <property name="httpclient.ssl.keystore.passwd" value="KEYSTORE-PASSWD" description="Password to unlock keystore."/>
+
+        <property name="ui-transform" value="xhtml.xsl" description="xslt stylesheet used for generating the client-side UI"/>
+    </properties>
+
+    <error-messages>
+        <!--todo: i18n structure for messages-->
+        <message id="default"
+                 value="We're sorry. An unexpected Error occured."
+                 description="Default message. Shouldn't be deleted"/>
+
+        <message id="session-invalid"
+                 value="Sorry your session expired. Press Reload to start over."/>
+    </error-messages>
+
+    <ui-generators>
+        <!-- todo: deprecate unscripted processing?-->
+        <!-- todo: we probably shouldn't use the term 'useragent' here to avoid confusion with other meanings throughout betterform -->
+        <ui-generator useragent="dojo" stylesheet="xhtml.xsl"/>
+        <!--<ui-generator useragent="html" stylesheet="html4.xsl"/>-->
+    </ui-generators>
+
+    <connectors>
+        <!--
+            For each of the connector types you can specifiy one connector to handle one URI scheme.
+        -->
+        <uri-resolver scheme="file" class="de.betterform.connector.file.FileURIResolver" description="Handler for the file protocol"/>
+        <uri-resolver scheme="http" class="de.betterform.connector.http.HTTPURIResolver" description="Handler for the http protocol"/>
+        <uri-resolver scheme="https" class="de.betterform.connector.http.HTTPURIResolver" description="Handler for the https protocol"/>
+        <uri-resolver scheme="xmlrpc" class="de.betterform.connector.xmlrpc.XMLRPCURIResolver" description="Handler for the xmlrpc protocol"/>
+        <uri-resolver scheme="context" class="de.betterform.connector.context.ContextMapResolver" description="Handler for the context protocol"/>
+        <uri-resolver scheme="exist" class="de.betterform.connector.exist.ExistURIResolver" description="Handler for local eXist-db connections"/>
+        <!--
+                <uri-resolver scheme="context" class="de.betterform.connector.context.ContextResolver"/>
+                <uri-resolver scheme="contextobject" class="de.betterform.connector.context.ContextObjectResolver"/>
+        -->
+
+        <submission-handler scheme="file" class="de.betterform.connector.file.FileSubmissionHandler"/>
+        <submission-handler scheme="http" class="de.betterform.connector.http.HTTPSubmissionHandler"/>
+        <submission-handler scheme="https" class="de.betterform.connector.http.HTTPSubmissionHandler"/>
+        <submission-handler scheme="ant" class="de.betterform.connector.ant.AntSubmissionHandler"/>
+        <!-- HTTPSubmissionHandlerXI evaluates any bf:include within the data to load -->
+        <!--
+                <submission-handler scheme="http" class="de.betterform.connector.http.HTTPSubmissionHandlerXI"/>
+                <submission-handler scheme="https" class="de.betterform.connector.http.HTTPSubmissionHandlerXI"/>
+        -->
+        <submission-handler scheme="xmlrpc" class="de.betterform.connector.xmlrpc.XMLRPCSubmissionHandler"/>
+        <!--
+                <submission-handler scheme="context" class="de.betterform.connector.context.ContextSubmissionHandler"/>
+        -->
+        <submission-handler scheme="mailto" class="de.betterform.connector.smtp.SMTPSubmissionHandler"/>
+        <submission-handler scheme="echo" class="de.betterform.connector.echo.EchoSubmissionHandler"/>
+        <submission-handler scheme="exec" class="de.betterform.connector.exec.ExecSubmissionHandler"/>
+        <submission-handler scheme="xslt" class="de.betterform.connector.xslt.XSLTSubmissionHandler"/>
+        <submission-handler scheme="model" class="de.betterform.connector.ModelSubmissionHandler"/>
+        <submission-handler scheme="context" class="de.betterform.connector.context.ContextMapSubmissionHandler"/>
+        <submission-handler scheme="exist" class="de.betterform.connector.exist.ExistSubmissionHandler"/>
+        <!--        <submission-handler scheme="jms" class="de.betterform.connector.jms.JMSSubmissionHandler"/>-->
+        <!--
+            These connector types are deprecated. Their usage is strongly discouraged,
+            since they may disappear without notice. Use custom extension functions instead.
+        -->
+        <!--        <modelitem-calculator scheme="http" class="de.betterform.connector.http.HTTPModelItemCalculator"/>-->
+        <!--        <modelitem-validator scheme="http" class="de.betterform.connector.http.HTTPModelItemValidator"/>-->
+    </connectors>
+
+    <custom-elements>
+        <!--
+              In this section you can associate a foreign namespaced element with a class that implements any
+              arbitrary control. The element is identified by its namespace URI and element name. The implementing
+              class must extend XFormsElement and have a constructor corresponding to the following signature:
+              public YourClass(Element, Model);
+          -->
+        <!--element namespace="http://yourdomain.com/path" name="yourcontrol" class="com.yourdomain.yourpackage.YourClass"/-->
+
+        <element namespace="http://betterform.sourceforge.net/xforms/controls" name="dialog" class="de.betterform.xml.xforms.ui.extensions.Dialog"/>
+        <element namespace="http://betterform.sourceforge.net/xforms/controls" name="show" class="de.betterform.xml.xforms.action.extensions.ShowAction"/>
+        <element namespace="http://betterform.sourceforge.net/xforms/controls" name="hide" class="de.betterform.xml.xforms.action.extensions.HideAction"/>
+
+    </custom-elements>
+
+
+</betterform-config>

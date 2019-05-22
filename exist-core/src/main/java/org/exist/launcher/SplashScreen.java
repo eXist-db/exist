@@ -64,15 +64,18 @@ public class SplashScreen extends JFrame implements Observer, Comparable {
         final EmptyBorder border = new EmptyBorder(20, 20, 10, 20);
         imageLabel.setBorder(border);
         getContentPane().add(imageLabel, BorderLayout.NORTH);
+
         // version label
+        final SystemProperties sysProps = SystemProperties.getInstance();
         final StringBuilder builder = new StringBuilder();
-	builder.append("Version ");
-        builder.append(SystemProperties.getInstance().getSystemProperty("product-version", "unknown"));
-	if (!"".equals(SystemProperties.getInstance().getSystemProperty("git-commit", ""))) {
-	    builder.append(" (");
-	    builder.append(SystemProperties.getInstance().getSystemProperty("git-commit", "(unknown Git commit ID)"));
-	    builder.append(")");
-	}
+	    builder.append("Version ");
+        builder.append(sysProps.getSystemProperty("product-version", "unknown"));
+        final String gitCommit = sysProps.getSystemProperty("git-commit");
+        if (gitCommit != null && !gitCommit.isEmpty()) {
+            builder.append(" (");
+            builder.append(gitCommit, 0, Math.min(7, gitCommit.length()));
+            builder.append(")");
+        }
         versionLabel = new JLabel(builder.toString(), SwingConstants.CENTER);
         versionLabel.setFont(new Font(versionLabel.getFont().getName(), Font.BOLD, 10));
         versionLabel.setForeground(Color.black);

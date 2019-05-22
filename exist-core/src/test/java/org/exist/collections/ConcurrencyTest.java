@@ -1,5 +1,7 @@
 package org.exist.collections;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.EXistXPathQueryService;
 import org.junit.AfterClass;
@@ -25,8 +27,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ConcurrencyTest {
 
+    private static final Logger LOG = LogManager.getLogger(ConcurrencyTest.class);
+
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static int CONCURRENT_THREADS = Runtime.getRuntime().availableProcessors() * 3;
     private static final int DOC_COUNT = CONCURRENT_THREADS * 10;
@@ -112,7 +116,7 @@ public class ConcurrencyTest {
                     }
                 }
             } catch (final Exception e) {
-                e.printStackTrace();
+                LOG.error(e.getMessage(), e);
                 fail(e.getMessage());
             }
         }

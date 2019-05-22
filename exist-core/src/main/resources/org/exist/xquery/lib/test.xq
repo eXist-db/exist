@@ -20,7 +20,10 @@ declare function t:setup-action($action) {
 		case element(store-files) return
             t:store-files($action)
         case element(remove-collection) return
-            xmldb:remove($action/@collection)
+            if ($action/@ignore-missing eq "true" and not(xmldb:collection-available($action/@collection)))
+            then ()
+            else
+                xmldb:remove($action/@collection)
         case element(remove-document) return
             xmldb:remove($action/@collection, $action/@name)
         default return
@@ -41,8 +44,27 @@ declare function t:store($action as element(store)) {
 declare function t:store-files($action as element(store-files)) {
     let $type := if ($action/@type) then $action/@type/string() else "application/xml"
     return
-        xmldb:store-files-from-pattern($action/@collection, $action/@dir, $action/@pattern, $type)
+        if ($action/@classpath)
+        then
+            let $classpath-entries := util:system-property("java.class.path")
+            let $path-separator := util:system-property("path.separator")
+            let $cp :=
+                if (util:system-property("file.separator") eq '/')
+                then
+                    $action/@classpath
+                else
+                    replace($action/@classpath, '/', '\\')
+            let $matches := fn:tokenize($classpath-entries, $path-separator)[fn:ends-with(., $cp)]
+            return
+                if (not(empty($matches)))
+                then
+                    xmldb:store-files-from-pattern($action/@collection, $matches[1], $action/@pattern, $type)
+                else
+                    util:log("ERROR", ("Could not match classpath with '" || $action/@classpath || "' in test.xq"))
+        else
+            xmldb:store-files-from-pattern($action/@collection, $action/@dir, $action/@pattern, $type)
 };
+
 
 declare function t:setup($setup as element(setup)?) {
     for $action in $setup/*

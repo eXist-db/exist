@@ -59,10 +59,10 @@ public class ConcurrentResourceTest2 extends ConcurrentTestBase {
     @Override
     public List<Runner> getRunners() {
         return Arrays.asList(
-                new Runner(new MultiResourcesAction("samples/mods", XmldbURI.LOCAL_DB + "/C1/C1-C2"), 200, 0, 300),
-                new Runner(new MultiResourcesAction("samples/mods", XmldbURI.LOCAL_DB + "/C1/C1-C2"), 200, 0, 300),
-                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C1/C1-C2", "R1.xml", QUERY0), 200, 200, 500),
-                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C1/C1-C2", "R1.xml", QUERY1), 200, 300, 500)
+                new Runner(new MultiResourcesAction("samples/mods", XmldbURI.LOCAL_DB + "/C1/C1-C2"), 200, 0, 50),
+                new Runner(new MultiResourcesAction("samples/mods", XmldbURI.LOCAL_DB + "/C1/C1-C2"), 200, 0, 50),
+                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C1/C1-C2", "R1.xml", QUERY0), 200, 200, 100),
+                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C1/C1-C2", "R1.xml", QUERY1), 200, 300, 100)
                 //new Runner(new XQueryAction(getUri + "/C1/C1-C2", "R1.xml", QUERY0), 200, 400, 500),
                 //new Runner(new XQueryAction(getUri + "/C1/C1-C2", "R1.xml", QUERY1), 200, 500, 500)
         );

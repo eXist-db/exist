@@ -27,9 +27,8 @@ import org.exist.TestUtils;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.FileUtils;
 import org.exist.util.LockException;
-import org.exist.util.XMLFilenameFilter;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
@@ -44,11 +43,13 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 import static org.junit.Assert.assertEquals;
+import static org.exist.samples.Samples.SAMPLES;
 
 /**
  * 
@@ -72,10 +73,6 @@ public class OptimizerTest {
     private final static String COLLECTION_CONFIG =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index xmlns:mods=\"http://www.loc.gov/mods/v3\">" +
-    	"		<lucene>" +
-        "           <text qname=\"LINE\"/>" +
-        "           <text qname=\"SPEAKER\"/>" +
-        "		</lucene>" +
     	"		<create qname=\"b\" type=\"xs:string\"/>" +
         "        <create qname=\"SPEAKER\" type=\"xs:string\"/>" +
         "        <create qname=\"mods:internetMediaType\" type=\"xs:string\"/>" +
@@ -91,42 +88,6 @@ public class OptimizerTest {
     }
 
     @Test
-    public void simplePredicates() throws XMLDBException {
-        long r = execute("//SPEECH[ft:query(LINE, 'king')]", false);
-        execute("//SPEECH[ft:query(LINE, 'king')]", true, MSG_OPT_ERROR, r);
-
-        r = execute("//SPEECH[SPEAKER = 'HAMLET']", false);
-        execute("//SPEECH[SPEAKER = 'HAMLET']", true, MSG_OPT_ERROR, r);
-
-        r = execute("//SPEECH[descendant::SPEAKER = 'HAMLET']", false);
-        execute("//SPEECH[descendant::SPEAKER = 'HAMLET']", true, MSG_OPT_ERROR, r);
-        
-        r = execute("//SCENE[ft:query(descendant::LINE, 'king')]", false);
-        execute("//SCENE[ft:query(descendant::LINE, 'king')]", true, MSG_OPT_ERROR, r);
-
-        r = execute("//LINE[ft:query(., 'king')]", false);
-        execute("//LINE[ft:query(., 'king')]", true, MSG_OPT_ERROR, r);
-
-        r = execute("//SPEAKER[. = 'HAMLET']", false);
-        execute("//SPEAKER[. = 'HAMLET']", true, MSG_OPT_ERROR, r);
-
-//        r = execute("//LINE[descendant-or-self::LINE &= 'king']", false);
-//        execute("//LINE[descendant-or-self::LINE &= 'king']", true, MSG_OPT_ERROR, r);
-
-        r = execute("//SPEAKER[descendant-or-self::SPEAKER = 'HAMLET']", false);
-        execute("//SPEAKER[descendant-or-self::SPEAKER = 'HAMLET']", true, MSG_OPT_ERROR, r);
-
-        r = execute("//SPEECH/LINE[ft:query(., 'king')]", false);
-        execute("//SPEECH/LINE[ft:query(., 'king')]", true, MSG_OPT_ERROR, r);
-        
-        r = execute("//*[ft:query(LINE, 'king')]", false);
-        execute("//*[ft:query(LINE, 'king')]", true, MSG_OPT_ERROR, r);
-
-        r = execute("//*[SPEAKER = 'HAMLET']", false);
-        execute("//*[SPEAKER = 'HAMLET']", true, MSG_OPT_ERROR, r);
-    }
-
-    @Test
     public void simplePredicatesRegex() throws XMLDBException {
         long r = execute("//SPEECH[matches(SPEAKER, '^HAM.*')]", false);
         execute("//SPEECH[matches(SPEAKER, '^HAM.*')]", true, MSG_OPT_ERROR, r);
@@ -136,21 +97,6 @@ public class OptimizerTest {
         execute("//SPEECH[ends-with(SPEAKER, 'EO')]", true, MSG_OPT_ERROR, r);
         r = execute("//SPEECH[matches(descendant::SPEAKER, 'HAML.*')]", false);
         execute("//SPEECH[matches(descendant::SPEAKER, 'HAML.*')]", true, MSG_OPT_ERROR, r);
-    }
-
-    @Test
-    public void twoPredicates() throws XMLDBException {
-        long r = execute("//SPEECH[ft:query(LINE, 'king')][SPEAKER='HAMLET']", false);
-        execute("//SPEECH[ft:query(LINE, 'king')][SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
-        r = execute("//SPEECH[SPEAKER='HAMLET'][ft:query(LINE, 'king')]", false);
-        execute("//SPEECH[SPEAKER='HAMLET'][ft:query(LINE, 'king')]", true, MSG_OPT_ERROR, r);
-    }
-
-    @Test
-    public void twoPredicatesNPEBug808() throws XMLDBException {
-        // Bug #808 NPE $docs[ngram:contains(first, "luke")][ngram:contains(last, "sky")]
-        long r = execute("let $sps := collection('/db/test')//SPEECH return $sps[ngram:contains(SPEAKER, 'HAMLET')][ngram:contains(LINE, 'king')]", false);
-        execute("let $sps := collection('/db/test')//SPEECH return $sps[ngram:contains(SPEAKER, 'HAMLET')][ngram:contains(LINE, 'king')]", true, MSG_OPT_ERROR, r);
     }
 
     @Test
@@ -193,23 +139,6 @@ public class OptimizerTest {
 
     @Test
     public void booleanOperator() throws XMLDBException {
-        long r = execute("//SPEECH[ft:query(LINE, 'king')][SPEAKER='HAMLET']", false);
-        execute("//SPEECH[ft:query(LINE, 'king') and SPEAKER='HAMLET']", false, MSG_OPT_ERROR, r);
-        execute("//SPEECH[ft:query(LINE, 'king') and SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
-        r = execute("//SPEECH[ft:query(LINE, 'king') or SPEAKER='HAMLET']", false);
-        execute("//SPEECH[ft:query(LINE, 'king') or SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
-
-        r = execute("//SPEECH[ft:query(LINE, 'love') and ft:query(LINE, \"woman's\") and SPEAKER='HAMLET']", false);
-        execute("//SPEECH[ft:query(LINE, 'love') and ft:query(LINE, \"woman's\") and SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
-
-        r = execute("//SPEECH[(ft:query(LINE, 'king') or ft:query(LINE, 'love')) and SPEAKER='HAMLET']", false);
-        execute("//SPEECH[(ft:query(LINE, 'king') or ft:query(LINE, 'love')) and SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
-
-        r = execute("//SPEECH[(ft:query(LINE, 'juliet') and ft:query(LINE, 'romeo')) or SPEAKER='HAMLET']", false);
-        assertEquals(368, r);
-        execute("//SPEECH[(ft:query(LINE, 'juliet') and ft:query(LINE, 'romeo')) or SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
-
-
         execute("//SPEECH[true() and false()]", true, MSG_OPT_ERROR, 0);
         execute("//SPEECH[true() and true()]", true, MSG_OPT_ERROR, 2628);
     }
@@ -243,10 +172,10 @@ public class OptimizerTest {
                     .put(FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS, Boolean.FALSE) //Since we use the deprecated text:match-all() function, we have to be sure is is enabled
                     .build(),
             true,
-            false);
+            true);
 
     @BeforeClass
-    public static void initDatabase() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, IOException {
+    public static void initDatabase() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, IOException, URISyntaxException {
         // initialize driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
         Database database = (Database) cl.newInstance();
@@ -266,11 +195,11 @@ public class OptimizerTest {
         resource.setContent(XML);
         testCollection.storeResource(resource);
 
-        final Path dir = TestUtils.shakespeareSamples();
-        final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
-        for (Path file : files) {
-            resource = (XMLResource) testCollection.createResource(FileUtils.fileName(file), XMLResource.RESOURCE_TYPE);
-            resource.setContent(file);
+        for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+            resource = (XMLResource) testCollection.createResource(sampleName, XMLResource.RESOURCE_TYPE);
+            try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
+                resource.setContent(InputStreamUtil.readString(is, UTF_8));
+            }
             testCollection.storeResource(resource);
         }
     }

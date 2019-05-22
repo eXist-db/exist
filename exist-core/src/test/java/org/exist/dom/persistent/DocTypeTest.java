@@ -132,7 +132,7 @@ public class DocTypeTest {
 	}
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
 	@BeforeClass
     public static void setUp() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, DatabaseConfigurationException {

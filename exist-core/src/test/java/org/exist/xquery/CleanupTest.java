@@ -81,7 +81,7 @@ public class CleanupTest {
     private Collection collection;
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Before
     public void setup() throws XMLDBException {

@@ -1,7 +1,8 @@
 package org.exist.storage;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
@@ -12,30 +13,31 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.*;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
+import static org.exist.samples.Samples.SAMPLES;
 
 import org.junit.AfterClass;
 import org.junit.Test;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
+import java.io.InputStream;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 /**
  * Test crash recovery after reindexing a collection.
  */
 public class ReindexRecoveryTest {
 
+    private static final Logger LOG = LogManager.getLogger(ReindexRecoveryTest.class);
+
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
-
-    private static Path dir = TestUtils.shakespeareSamples();
 
     @Test
     public void reindexRecoveryTest() throws EXistException, PermissionDeniedException, IOException, DatabaseConfigurationException, LockException, TriggerException {
@@ -70,9 +72,10 @@ public class ReindexRecoveryTest {
                 assertNotNull(root);
                 broker.saveCollection(transaction, root);
 
-                final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
-                for (final Path f : files) {
-                    storeDocument(broker, transaction, root, XmldbURI.create(FileUtils.fileName(f)), () -> new InputSource(f.toUri().toASCIIString()));
+                for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+                    try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
+                        storeDocument(broker, transaction, root, XmldbURI.create(sampleName), InputStreamUtil.readString(is, UTF_8));
+                    }
                 }
                 transact.commit(transaction);
             }
@@ -87,11 +90,11 @@ public class ReindexRecoveryTest {
     }
 
     private void storeDocument(final DBBroker broker, final Txn transaction, final Collection collection,
-            final XmldbURI docName, final Supplier<InputSource> doc) {
+            final XmldbURI docName, final String data) {
         try {
-            final IndexInfo info = collection.validateXMLResource(transaction, broker, docName, doc.get());
+            final IndexInfo info = collection.validateXMLResource(transaction, broker, docName, data);
             assertNotNull(info);
-            collection.store(transaction, broker, info, doc.get());
+            collection.store(transaction, broker, info, data);
         } catch (final SAXException | EXistException | PermissionDeniedException | LockException | IOException e) {
             fail("Error found while parsing document: " + docName + ": " + e.getMessage());
         }
@@ -115,7 +118,7 @@ public class ReindexRecoveryTest {
             }
             transact.commit(transaction);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage(), e);
             fail(e.getMessage());
         }
     }

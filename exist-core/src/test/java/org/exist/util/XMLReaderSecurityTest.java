@@ -67,7 +67,7 @@ public class XMLReaderSecurityTest {
     private final static String EXPECTED_EXPANDED_DOC = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><foo>" + EXTERNAL_FILE_PLACEHOLDER + "</foo>";
 
     @ClassRule
-    public final static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer();
+    public final static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeClass
     public static void setupTestData() throws EXistException, PermissionDeniedException, IOException, TriggerException {

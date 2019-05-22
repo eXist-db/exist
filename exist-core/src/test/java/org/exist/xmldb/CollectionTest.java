@@ -35,7 +35,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 public class CollectionTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Before
     public void setup() throws XMLDBException {

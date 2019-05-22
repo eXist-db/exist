@@ -11,13 +11,10 @@ import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.*;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.configuration2.PropertiesConfiguration;
-import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.SystemUtils;
 import org.exist.collections.CollectionCache;
 import org.exist.storage.BrokerPool;
@@ -52,10 +49,10 @@ public class ConfigurationDialog extends JDialog {
 
         this.callback = callback;
         
-        final PropertiesConfiguration vmProperties = LauncherWrapper.getVMProperties();
-        final int maxMemProp = vmProperties.getInt("memory.max", 1024);
+        final Properties launcherProperties = LauncherWrapper.getLauncherProperties();
+        final int maxMemProp = Integer.parseInt(launcherProperties.getProperty("memory.max", "2048"));
         maxMemory.setValue(maxMemProp);
-        final int minMemProp = vmProperties.getInt("memory.min", 64);
+        final int minMemProp = Integer.parseInt(launcherProperties.getProperty("memory.min", "64"));
         minMemory.setValue(minMemProp);
         
         try {
@@ -101,7 +98,7 @@ public class ConfigurationDialog extends JDialog {
             lbStartupWarn.setVisible(true);
 
             if (SystemUtils.IS_OS_MAC_OSX) {
-                Path dir = Paths.get(System.getProperty("user.home")).resolve("Library/Application Support/org.exist");
+                Path dir = Paths.get(System.getProperty("user.home")).resolve("Library").resolve("Application Support").resolve("org.exist");
                 dataDir.setText(dir.toAbsolutePath().toString());
             }
         } else {
@@ -452,11 +449,9 @@ public class ConfigurationDialog extends JDialog {
         Path dir = Paths.get(dataDir.getText());
         if (Files.exists(dir)) {
 
-            try(final Stream<Path> fileStream = Files.list(dir)) {
-                final java.util.List<Path> files = fileStream
-                        .filter(p -> FileUtils.fileName(p).endsWith(".dbx"))
-                        .collect(Collectors.toList());
-                if (!files.isEmpty()) {
+            try (final Stream<Path> fileStream = Files.list(dir).filter(p -> FileUtils.fileName(p).endsWith(".dbx"))) {
+                final boolean dbExists = fileStream.findFirst().isPresent();
+                if (dbExists) {
                     final int r = JOptionPane.showConfirmDialog(this, "The specified data directory already contains data. " +
                             "Do you want to use this? Data will not be removed.", "Confirm Data Directory", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
                     if (r == JOptionPane.OK_OPTION) {
@@ -465,9 +460,9 @@ public class ConfigurationDialog extends JDialog {
                     return false;
                 }
             } catch (final IOException e) {
-            JOptionPane.showMessageDialog(this, "Failed to enumerate data files from directory: " + dir.toAbsolutePath().toString(),
+                JOptionPane.showMessageDialog(this, "Failed to enumerate data files from directory: " + dir.toAbsolutePath().toString(),
                     "Failed to enumerate data files", JOptionPane.ERROR_MESSAGE);
-            return false;
+                return false;
             }
         } else {
             final int r = JOptionPane.showConfirmDialog(this, "The specified data directory does not exist. Do you want to create it?",
@@ -500,25 +495,31 @@ public class ConfigurationDialog extends JDialog {
         if (!checkDataDir())
             return;
         try {
-            Properties properties = new Properties();
+            final Properties properties = new Properties();
             properties.setProperty("memory.max", maxMemory.getValue().toString());
             properties.setProperty("memory.min", minMemory.getValue().toString());
+
+            // save the launcher properties
             ConfigurationUtility.saveProperties(properties);
-            ConfigurationUtility.saveWrapperProperties(properties);
 
             properties.clear();
+
+            // update conf.xml
             properties.setProperty("cacheSize", cacheSize.getValue().toString());
             properties.setProperty("collectionCache", collectionCache.getValue().toString());
             properties.setProperty("dataDir", dataDir.getText());
             ConfigurationUtility.saveConfiguration("conf.xml", "conf.xsl", properties);
 
+            properties.clear();
+
             if (jettyConfigChanged) {
-                properties.clear();
+                // update Jetty confs
                 properties.setProperty("port", httpPort.getValue().toString());
                 properties.setProperty("port.ssl", sslPort.getValue().toString());
-                ConfigurationUtility.saveConfiguration("tools/jetty/etc/jetty-ssl.xml", "jetty.xsl", properties);
-                ConfigurationUtility.saveConfiguration("tools/jetty/etc/jetty-http.xml", "jetty.xsl", properties);
+                ConfigurationUtility.saveConfiguration("jetty/jetty-ssl.xml", "jetty.xsl", properties);
+                ConfigurationUtility.saveConfiguration("jetty/jetty-http.xml", "jetty.xsl", properties);
             }
+
             if (beforeStart) {
                 beforeStart = false;
                 btnCancel.setVisible(true);
@@ -534,7 +535,7 @@ public class ConfigurationDialog extends JDialog {
                     callback.accept(true);
                 }
             }
-        } catch (IOException | ConfigurationException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Failed to save Java settings: " + e.getMessage(),
                     "Save Error", JOptionPane.ERROR_MESSAGE);

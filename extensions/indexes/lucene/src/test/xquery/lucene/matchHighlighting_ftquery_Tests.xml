@@ -1,0 +1,115 @@
+<TestSet xmlns:exist="http://exist.sourceforge.net/NS/exist">
+    <testName>tests for match highlighting behaviour on different index types</testName>
+    <description>
+        <p>These tests test whether matches are highlighted correctly. Tests are grouped
+            per index type supporting match highlighting (old FT, lucene FT, ngram), and 
+            repeated 
+            <ul>
+                <li>for matches in both elements and attributes</li>
+                <li>for each setting of highlight-matches: none, attributes, elements, both</li>
+            </ul>
+            Note: the kind of index definition (qname / path) doesn't seem to effect this
+            behaviour, so for clarity's sake, only qname-based indexes are included in these tests.
+        </p>
+        <author>Ron Van den Branden</author>
+    </description>
+    <setup>
+        <create-collection parent="/db/system" name="config"/>
+        <create-collection parent="/db/system/config" name="db"/>
+        <create-collection parent="/db/system/config/db" name="coll"/>
+        <store collection="/db/system/config/db/coll" name="collection.xconf">
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <index>
+                    <lucene>
+                        <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+                        <analyzer id="ws" class="org.apache.lucene.analysis.core.WhitespaceAnalyzer"/>
+                        <text qname="el"/>
+                        <text qname="@att"/>
+                    </lucene>
+                </index>
+            </collection>
+        </store>
+        <create-collection parent="/db" name="coll"/>
+        <store collection="/db/coll" name="test.xml">
+            <test>
+                <el att="val"><a><b>one</b></a><c>two tree</c></el>
+            </test>
+        </store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/coll"/>
+        <remove-collection collection="/db/system/config/db/coll"/>
+    </tearDown>
+    <test output="xml">
+        <task>[lucene FT] element match, match-highlighting=none</task>
+        <code><![CDATA[
+            doc('/db/coll/test.xml')//el[ft:query(., 'tree')]/util:expand(., 'highlight-matches=none')
+            ]]></code>
+        <expected>
+            <el att="val"><a><b>one</b></a><c>two tree</c></el>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[lucene FT] element match, match-highlighting=attributes</task>
+        <code><![CDATA[
+            doc('/db/coll/test.xml')//el[ft:query(., 'tree')]/util:expand(., 'highlight-matches=attributes')
+            ]]></code>
+        <expected>
+            <el att="val"><a><b>one</b></a><c>two tree</c></el>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[lucene FT] element match, match-highlighting=elements</task>
+        <code><![CDATA[
+            doc('/db/coll/test.xml')//el[ft:query(., 'tree')]/util:expand(., 'highlight-matches=elements')
+            ]]></code>
+        <expected>
+            <el att="val"><a><b>one</b></a><c>two <exist:match>tree</exist:match></c></el>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[lucene FT] element match, match-highlighting=both</task>
+        <code><![CDATA[
+            doc('/db/coll/test.xml')//el[ft:query(., 'tree')]/util:expand(., 'highlight-matches=both')
+            ]]></code>
+        <expected>
+            <el att="val"><a><b>one</b></a><c>two <exist:match>tree</exist:match></c></el>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[lucene FT] attribute match, match-highlighting=none</task>
+        <code><![CDATA[
+            doc('/db/coll/test.xml')//el[ft:query(@att, 'val')]/util:expand(., 'highlight-matches=none')
+            ]]></code>
+        <expected>
+            <el att="val"><a><b>one</b></a><c>two tree</c></el>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[lucene FT] attribute match, match-highlighting=attributes</task>
+        <code><![CDATA[
+            doc('/db/coll/test.xml')//el[ft:query(@att, 'val')]/util:expand(., 'highlight-matches=attributes')
+            ]]></code>
+        <expected>
+            <el att="|||val|||"><a><b>one</b></a><c>two tree</c></el>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>[lucene FT] attribute match, match-highlighting=elements</task>
+        <code><![CDATA[
+            doc('/db/coll/test.xml')//el[ft:query(@att, 'val')]/util:expand(., 'highlight-matches=elements')
+            ]]></code>
+        <expected>
+            <el att="val"><a><b>one</b></a><c>two tree</c></el>
+        </expected>
+    </test>
+    <test output="xml" ignore="yes">
+        <task>[lucene FT] attribute match, match-highlighting=both</task>
+        <code><![CDATA[
+            doc('/db/coll/test.xml')//el[ft:query(@att, 'val')]/util:expand(., 'highlight-matches=both')
+            ]]></code>
+        <expected>
+            <el att="|||val|||"><a><b>one</b></a><c>two tree</c></el>
+        </expected>
+    </test>
+</TestSet>

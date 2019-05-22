@@ -25,13 +25,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 
 import org.exist.EXistException;
-import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.BinaryDocument;
@@ -46,6 +42,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.*;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -55,10 +52,11 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.junit.*;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.exist.samples.Samples.SAMPLES;
 
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
@@ -69,8 +67,6 @@ import org.xml.sax.SAXException;
  */
 public class RecoveryTest {
     
-    private static Path dir = TestUtils.shakespeareSamples();
-    
     private static String TEST_XML =
         "<?xml version=\"1.0\"?>" +
         "<test>" +
@@ -79,7 +75,7 @@ public class RecoveryTest {
         "</test>";
 
     @Rule
-    public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @After
     public void cleanup() {
@@ -110,7 +106,6 @@ public class RecoveryTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection test2;
-            List<Path> files;
             BinaryDocument binaryDocument;
 
             try (final Txn transaction = transact.beginTransaction()) {
@@ -122,26 +117,29 @@ public class RecoveryTest {
                 test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
                 broker.saveCollection(transaction, test2);
 
-
-                files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
-                assertNotNull(files);
-                files.sort(Comparator.comparing(FileUtils::fileName));
-
                 binaryDocument = test2.addBinaryResource(transaction, broker, TestConstants.TEST_BINARY_URI, "Some text data".getBytes(), null);
                 assertNotNull(binaryDocument);
 
                 // store some documents. Will be replaced below
-                for (final Path f : files) {
-                    final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
+                for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+                    final String sample;
+                    try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
+                        sample = InputStreamUtil.readString(is, UTF_8);
+                    }
+                    final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(sampleName), sample);
                     assertNotNull(info);
-                    test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                    test2.store(transaction, broker, info, sample);
                 }
 
                 // replace some documents
-                for (final Path f : files) {
-                    final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
+                for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
+                    final String sample;
+                    try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
+                        sample = InputStreamUtil.readString(is, UTF_8);
+                    }
+                    final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(sampleName), sample);
                     assertNotNull(info);
-                    test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                    test2.store(transaction, broker, info, sample);
                 }
 
                 final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), TEST_XML);
@@ -151,7 +149,8 @@ public class RecoveryTest {
                 test2.store(transaction, broker, info, TEST_XML);
 
                 // remove last document
-                test2.removeXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(files.get(files.size() - 1))));
+                final String lastSampleName = SAMPLES.getShakespeareXmlSampleNames()[SAMPLES.getShakespeareXmlSampleNames().length - 1];
+                test2.removeXMLResource(transaction, broker, XmldbURI.create(lastSampleName));
 
                 transact.commit(transaction);
             }
@@ -159,7 +158,8 @@ public class RecoveryTest {
             // the following transaction will not be committed. It will thus be rolled back by recovery
             final Txn transaction = transact.beginTransaction();
 
-            test2.removeXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(files.get(0))));
+            final String firstSampleName = SAMPLES.getShakespeareXmlSampleNames()[0];
+            test2.removeXMLResource(transaction, broker, XmldbURI.create(firstSampleName));
             test2.removeBinaryResource(transaction, broker, binaryDocument);
         }
     }
@@ -181,18 +181,15 @@ public class RecoveryTest {
                 final String data = serializer.serialize(lockedDoc.getDocument());
                 assertNotNull(data);
             }
-            
-            final List<Path> files = FileUtils.list(dir);
-            files.sort(Comparator.comparing(FileUtils::fileName));
-            assertNotNull(files);
-            
-            try(final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(FileUtils.fileName(files.get(files.size() - 1))), LockMode.READ_LOCK)) {
-                assertNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/'" + FileUtils.fileName(files.get(files.size() - 1)) + " should not exist anymore", lockedDoc);
+
+            final String lastSampleName = SAMPLES.getShakespeareXmlSampleNames()[SAMPLES.getShakespeareXmlSampleNames().length - 1];
+            try(final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(lastSampleName), LockMode.READ_LOCK)) {
+                assertNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/'" + lastSampleName + " should not exist anymore", lockedDoc);
             }
             
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            final Sequence seq = xquery.execute(broker, "//SPEECH[ft:query(LINE, 'king')]", null);
+            final Sequence seq = xquery.execute(broker, "//SPEECH[contains(LINE, 'king')]", null);
             assertNotNull(seq);
             for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 final Item next = i.nextItem();

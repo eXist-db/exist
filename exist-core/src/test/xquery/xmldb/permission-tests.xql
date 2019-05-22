@@ -92,16 +92,20 @@ function t:listResources($collection as xs:string) {
 };
 
 (:~
- : Fail: list and print child collections: throws exception even though
+ : List and print child collections: throws exception even though
  : readable flag is set on collection "inaccessible".
  :)
 declare
     %test:user("guest", "guest")
-    %test:assertXPath("count($output) = 2")
+    %test:assertXPath("count($result) eq 1")
 function t:listCollection() {
     for $child in xmldb:get-child-collections($t:collection)
+    let $child-uri := xs:anyURI($t:collection || "/" || $child)
     return
-        sm:get-permissions(xs:anyURI($t:collection || "/" || $child))
+        if (sm:has-access($child-uri, "rx"))
+        then
+            sm:get-permissions($child-uri)
+        else ()
 };
 
 declare 

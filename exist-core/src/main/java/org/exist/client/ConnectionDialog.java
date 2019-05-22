@@ -497,7 +497,9 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         final JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setCurrentDirectory(config.getParent().toFile());
+        if (config != null && config.getParent() != null) {
+            chooser.setCurrentDirectory(config.getParent().toFile());
+        }
         if (chooser.showDialog(this, Messages.getString("LoginPanel.37")) == JFileChooser.APPROVE_OPTION) {
             config = chooser.getSelectedFile().toPath();
             txtConfiguration.setText(config.toAbsolutePath().toString());

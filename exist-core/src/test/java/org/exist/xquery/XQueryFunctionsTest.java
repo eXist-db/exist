@@ -21,7 +21,9 @@
  */
 package org.exist.xquery;
 
+import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -63,7 +65,7 @@ import static org.junit.Assert.assertTrue;
 public class XQueryFunctionsTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
     
     private final static String ROOT_COLLECTION_URI = "xmldb:exist:///db";
 
@@ -975,7 +977,7 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void base64BinaryCast() throws XMLDBException {
+    public void base64BinaryCast() throws XMLDBException, URISyntaxException {
         final String TEST_BINARY_COLLECTION = "testBinary";
         final String TEST_COLLECTION = "/db/" + TEST_BINARY_COLLECTION;
         final String BINARY_RESOURCE_FILENAME = "logo.jpg";
@@ -986,8 +988,7 @@ public class XQueryFunctionsTest {
         Collection testCollection = colService.createCollection(TEST_BINARY_COLLECTION);
         assertNotNull(testCollection);
 
-        Optional<Path> home = ConfigurationHelper.getExistHome();
-        Path fLogo = FileUtils.resolve(home, "webapp").resolve(BINARY_RESOURCE_FILENAME);
+        final Path fLogo = Paths.get(getClass().getResource("value/logo.jpg").toURI());
 
         //store the eXist logo in the test collection
         BinaryResource br = (BinaryResource) testCollection.createResource(BINARY_RESOURCE_FILENAME, "BinaryResource");

@@ -13,7 +13,7 @@ declare variable $t:DATA3 := <test>3</test>;
 declare variable $t:DATA4 := <test>4</test>;
 
 declare
-%test:setUp
+    %test:setUp
 function t:setup() {
     xmldb:create-collection("/db", $t:collection-name),
     xmldb:store($t:collection, "first.xml", $t:DATA1),
@@ -30,21 +30,23 @@ function t:setup() {
 };
 
 declare
-%test:tearDown
+    %test:tearDown
 function t:cleanup() {
-xmldb:remove($t:collection)
+    xmldb:remove($t:collection)
 };
 
 declare
-%test:assertEquals("23")
+    %test:assertEquals("2", "3")
 function t:last-modified-since() {
     let $from := doc($t:collection  || "dates.xml")//firstDate
-    return (xmldb:find-last-modified-since(collection($t:collection)//test, $from)) => string-join()
+    return
+        fn:sort(xmldb:find-last-modified-since(collection($t:collection)//test, $from) ! string(.))
 };
 
 declare
-%test:assertEquals("12")
+    %test:assertEquals("1", "2")
 function t:last-modified-until() {
     let $until := doc($t:collection  || "dates.xml")//secondDate
-    return (xmldb:find-last-modified-until(collection($t:collection)//test, $until)) => string-join()
+    return
+        fn:sort(xmldb:find-last-modified-until(collection($t:collection)//test, $until) ! string (.))
 };

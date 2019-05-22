@@ -18,7 +18,10 @@ xquery version "3.0";
  :)
 module namespace test="http://exist-db.org/xquery/xqsuite";
 
+(: TODO(AR) temporarily disabled http-client due to circular dependency :)
+(:
 import module namespace http = "http://expath.org/ns/http-client";
+:)
 import module namespace map = "http://www.w3.org/2005/xpath-functions/map";
 import module namespace util = "http://exist-db.org/xquery/util";
 import module namespace system = "http://exist-db.org/xquery/system";
@@ -243,8 +246,12 @@ function test:test-assumption($assumption-annotation as element(annotation), $te
             let $uri := $assumption-annotation/value/text()
             return
                 (: set a timeout of 3 seconds :)
+
+                (: TODO(AR) temporarily disabled http-client due to circular dependency :)
+                (:
                 let $response := http:send-request(<http:request method="head" href="{$uri}" timeout="3"/>)[1]
                 return
+                :)
                     () (: nothing failed :)
          } catch * {
             $assumption-annotation (: return the annotation as failed :)
@@ -847,13 +854,13 @@ declare %private function test:assertXPath($annotation as element(annotation), $
                 )
         else
             ()
-    let $xr :=
-        test:checkXPathResult(
-            if (matches($expr, "^\s*/")) then
-                util:eval($prolog || "$result" || $expr)
-            else
-                util:eval($prolog || $expr)
-        )
+    let $eval-query :=
+        if (matches($expr, "^\s*/")) then
+            $prolog || "$result" || $expr
+        else
+            $prolog || $expr
+    let $eval-result := util:eval($eval-query)
+    let $xr := test:checkXPathResult($eval-result)
     return
         if ($xr) then
             ()

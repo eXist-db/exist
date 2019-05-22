@@ -27,7 +27,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
+import org.exist.test.TestConstants;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
@@ -43,6 +45,7 @@ import org.xmldb.api.modules.BinaryResource;
 import javax.annotation.Nullable;
 import java.io.IOException;
 
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.Assert.assertEquals;
 
 public class LoginModuleTest {
@@ -62,7 +65,7 @@ public class LoginModuleTest {
 
     @BeforeClass
     public static void beforeClass() throws XMLDBException {
-        root = DatabaseManager.getCollection("xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc/db", "admin", "");
+        root = DatabaseManager.getCollection("xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc" + XmldbURI.ROOT_COLLECTION, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final BinaryResource res = (BinaryResource)root.createResource(XQUERY_FILENAME, "BinaryResource");
         ((EXistResource) res).setMimeType("application/xquery");
         res.setContent(XQUERY);
@@ -83,24 +86,25 @@ public class LoginModuleTest {
     @Test
     public void loginAndLogout() throws IOException {
         // not logged in
-        doGet(null, "guest");
+        doGet(null, TestUtils.GUEST_DB_USER);
 
         // log in as admin
-        doGet("user=admin&password=&duration=P1D", "admin");
+        doGet("user=" + TestUtils.ADMIN_DB_USER + "&password=" + TestUtils.ADMIN_DB_PWD + "&duration=P1D", TestUtils.ADMIN_DB_USER);
 
         // second request should stay logged in
-        doGet(null, "admin");
+        doGet(null, TestUtils.ADMIN_DB_USER);
 
         // log off returns to guest user
-        doGet("logout=true", "guest");
+        doGet("logout=true", TestUtils.GUEST_DB_USER);
     }
 
     private void doGet(@Nullable String params, String expected) throws IOException {
-        final HttpGet httpGet = new HttpGet("http://localhost:" + existWebServer.getPort() + XmldbURI.ROOT_COLLECTION + '/' + XQUERY_FILENAME +
+        final HttpGet httpGet = new HttpGet("http://localhost:" + existWebServer.getPort() + "/rest" + XmldbURI.ROOT_COLLECTION + '/' + XQUERY_FILENAME +
                 (params == null ? "" : "?" + params));
         HttpResponse response = client.execute(httpGet);
-        assertEquals(200, response.getStatusLine().getStatusCode());
         HttpEntity entity = response.getEntity();
-        assertEquals(expected, EntityUtils.toString(entity));
+        final String responseBody = EntityUtils.toString(entity);
+        assertEquals(responseBody, SC_OK, response.getStatusLine().getStatusCode());
+        assertEquals(expected, responseBody);
     }
 }

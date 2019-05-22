@@ -44,7 +44,7 @@ public class ValueIndexByQNameTest extends ValueIndexTest {
         	"util:qname-index-lookup( xs:QName('itemno'), 3) / parent::item", 1);    
         queryResource(service, "items.xml", 
         		"declare namespace xx='http://test.com'; " +
-        		"util:qname-index-lookup( xs:QName('xx:test'), 123) ", 1);
+        		"util:qname-index-lookup( xs:QName('xx:test'), 123, false() )", 1);
 
 //        queryResource(service, "items.xml", "//item[name &= 'Racing Bicycle']", 1);
 //        queryResource(service, "items.xml", "//item[mixed = 'uneven']", 1);

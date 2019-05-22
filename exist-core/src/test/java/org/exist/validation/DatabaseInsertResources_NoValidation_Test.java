@@ -22,10 +22,9 @@
 package org.exist.validation;
 
 import java.io.IOException;
-import java.nio.file.Path;
+import java.io.InputStream;
 import java.util.Optional;
 
-import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -40,7 +39,9 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import static org.exist.TestUtils.*;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
+import static org.exist.samples.Samples.SAMPLES;
 
 /**
  *  Insert documents for validation tests.
@@ -50,11 +51,6 @@ import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 public class DatabaseInsertResources_NoValidation_Test {
 
     private final static String TEST_COLLECTION = "testNoValidationInsert";
-
-    private final static String ADMIN_UID = "admin";
-    private final static String ADMIN_PWD = "";
-
-    private final static String GUEST_UID = "guest";
 
     private final static String VALIDATION_HOME_COLLECTION_URI = "/db/" + TEST_COLLECTION + "/" + TestTools.VALIDATION_HOME_COLLECTION;
     
@@ -66,52 +62,68 @@ public class DatabaseInsertResources_NoValidation_Test {
     public void insertValidationResources_xsd() throws IOException {
         final Configuration config = existEmbeddedServer.getBrokerPool().getConfiguration();
         config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
-        final Path addressbook = TestUtils.resolveSample("validation/addressbook");
 
-        TestTools.insertDocumentToURL(addressbook.resolve("addressbook.xsd"),
-            "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_XSD_COLLECTION + "/addressbook.xsd");
+        try (final InputStream is = SAMPLES.getSample("validation/addressbook/addressbook.xsd")) {
+            TestTools.insertDocumentToURL(is,
+                    "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_XSD_COLLECTION + "/addressbook.xsd");
+        }
 
+        try (final InputStream is = SAMPLES.getSample("validation/addressbook/catalog.xml")) {
+            TestTools.insertDocumentToURL(is,
+                    "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_XSD_COLLECTION + "/catalog.xml");
+        }
 
-        TestTools.insertDocumentToURL(addressbook.resolve("catalog.xml"),
-            "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_XSD_COLLECTION + "/catalog.xml");
+        try (final InputStream is = SAMPLES.getSample("validation/addressbook/addressbook_valid.xml")) {
+            TestTools.insertDocumentToURL(is,
+                    "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/addressbook_valid.xml");
+        }
 
-        TestTools.insertDocumentToURL(addressbook.resolve("addressbook_valid.xml"),
-            "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/addressbook_valid.xml");
-
-        TestTools.insertDocumentToURL(addressbook.resolve("addressbook_invalid.xml"),
-            "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/addressbook_invalid.xml");
+        try (final InputStream is = SAMPLES.getSample("validation/addressbook/addressbook_invalid.xml")) {
+            TestTools.insertDocumentToURL(is,
+                    "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/addressbook_invalid.xml");
+        }
     }
 
     @Test
     public void insertValidationResources_dtd() throws IOException {
         final Configuration config = existEmbeddedServer.getBrokerPool().getConfiguration();
         config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
-        final Path hamlet = TestUtils.resolveSample("validation/dtd");
 
-        TestTools.insertDocumentToURL(hamlet.resolve("hamlet.dtd"),
-            "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_DTD_COLLECTION + "/hamlet.dtd");
+        try (final InputStream is = SAMPLES.getSample("validation/dtd/hamlet.dtd")) {
+            TestTools.insertDocumentToURL(is,
+                    "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_DTD_COLLECTION + "/hamlet.dtd");
+        }
 
-        TestTools.insertDocumentToURL(hamlet.resolve("catalog.xml"),
-            "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_DTD_COLLECTION + "/catalog.xml");
+        try (final InputStream is = SAMPLES.getSample("validation/dtd/catalog.xml")) {
+            TestTools.insertDocumentToURL(is,
+                    "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_DTD_COLLECTION + "/catalog.xml");
+        }
 
-        TestTools.insertDocumentToURL(hamlet.resolve("hamlet_valid.xml"),
-            "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml");
+        try (final InputStream is = SAMPLES.getSample("validation/dtd/hamlet_valid.xml")) {
+            TestTools.insertDocumentToURL(is,
+                    "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_valid.xml");
+        }
 
-        TestTools.insertDocumentToURL(hamlet.resolve("hamlet_invalid.xml"),
-            "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_invalid.xml");
+        try (final InputStream is = SAMPLES.getSample("validation/dtd/hamlet_invalid.xml")) {
+            TestTools.insertDocumentToURL(is,
+                    "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_invalid.xml");
+        }
     }
 
     @Test
     public void insertValidationResource_dtd_badDocType() throws IOException {
         final Configuration config = existEmbeddedServer.getBrokerPool().getConfiguration();
         config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
-        final Path hamlet = TestUtils.resolveSample("validation/dtd");
 
-        TestTools.insertDocumentToURL(hamlet.resolve("hamlet_nodoctype.xml"),
-            "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI +"/hamlet_nodoctype.xml");
+        try (final InputStream is = SAMPLES.getSample("validation/dtd/hamlet_nodoctype.xml")) {
+            TestTools.insertDocumentToURL(is,
+                    "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_nodoctype.xml");
+        }
 
-        TestTools.insertDocumentToURL(hamlet.resolve("hamlet_wrongdoctype.xml"),
-            "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI +"/hamlet_wrongdoctype.xml");
+        try (final InputStream is = SAMPLES.getSample("validation/dtd/hamlet_wrongdoctype.xml")) {
+            TestTools.insertDocumentToURL(is,
+                    "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_wrongdoctype.xml");
+        }
     }
 
     @ClassRule
@@ -120,7 +132,7 @@ public class DatabaseInsertResources_NoValidation_Test {
                 .set(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto")
                 .build(),
             true,
-            false);
+            true);
 
     @BeforeClass
     public static void startup() throws Exception {
@@ -137,24 +149,24 @@ public class DatabaseInsertResources_NoValidation_Test {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD)));
                 final Txn txn = transact.beginTransaction()) {
 
-            /** create nessecary collections if they dont exist */
+            /** create necessary collections if they dont exist */
             Collection testCollection = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI));
-            testCollection.getPermissions().setOwner(GUEST_UID);
+            testCollection.getPermissions().setOwner(GUEST_DB_USER);
             broker.saveCollection(txn, testCollection);
 
             Collection col = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_DTD_COLLECTION));
-            col.getPermissions().setOwner(GUEST_UID);
+            col.getPermissions().setOwner(GUEST_DB_USER);
             broker.saveCollection(txn, col);
 
             col = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_XSD_COLLECTION));
-            col.getPermissions().setOwner(GUEST_UID);
+            col.getPermissions().setOwner(GUEST_DB_USER);
             broker.saveCollection(txn, col);
 
             col = broker.getOrCreateCollection(txn, XmldbURI.create(VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION));
-            col.getPermissions().setOwner(GUEST_UID);
+            col.getPermissions().setOwner(GUEST_DB_USER);
             broker.saveCollection(txn, col);
 
             transact.commit(txn);
@@ -165,7 +177,7 @@ public class DatabaseInsertResources_NoValidation_Test {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_UID, ADMIN_PWD)));
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD)));
             final Txn txn = transact.beginTransaction()) {
 
             /** create necessary collections if they dont exist */

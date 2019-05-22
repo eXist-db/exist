@@ -25,6 +25,7 @@ import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.*;
 import org.exist.security.Account;
 
+import static org.exist.TestUtils.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -40,12 +41,11 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
-import static org.exist.xmldb.XmldbLocalTests.*;
 
 public class CollectionConfigurationTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String TEST_COLLECTION = "testIndexConfiguration";
     
@@ -162,7 +162,7 @@ public class CollectionConfigurationTest {
         final Collection testCollection = service.createCollection(TEST_COLLECTION);
         UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
         // change ownership to guest
-        final Account guest = ums.getAccount(GUEST_UID);
+        final Account guest = ums.getAccount(GUEST_DB_USER);
         ums.chown(guest, guest.getPrimaryGroup());
         ums.chmod("rwxr-xr-x");
 
@@ -184,7 +184,7 @@ public class CollectionConfigurationTest {
 
     @Test
     public void collectionConfigurationService1() throws XMLDBException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
         //Configure collection automatically
         IndexQueryService idxConf = (IndexQueryService)testCollection.getService("IndexQueryService", "1.0");
@@ -214,7 +214,7 @@ public class CollectionConfigurationTest {
 
     @Test
     public void testCollectionConfigurationService2() throws XMLDBException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
         // Add document....
         XMLResource doc = (XMLResource) testCollection.createResource(
@@ -264,7 +264,7 @@ public class CollectionConfigurationTest {
 
     @Test
     public void collectionConfigurationService3() throws XMLDBException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
         //Configure collection *manually*
         storeConfiguration(CONF_COLL_URI, CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI, CONFIG1);
@@ -297,7 +297,7 @@ public class CollectionConfigurationTest {
 
    @Test
    public void collectionConfigurationService4() throws XMLDBException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
    
        // Add document....
        XMLResource doc = (XMLResource) testCollection.createResource(
@@ -347,7 +347,7 @@ public class CollectionConfigurationTest {
 
    @Test
    public void collectionConfigurationService5() throws XMLDBException {
-       Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+       Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
        //Configure collection *manually*
        XmldbURI configurationFileName = XmldbURI.create(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE);
@@ -390,7 +390,7 @@ public class CollectionConfigurationTest {
 
    @Test
    public void collectionConfigurationService6() throws XMLDBException {
-       Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+       Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
        // Add document....
        XMLResource doc = (XMLResource) testCollection.createResource(
@@ -457,7 +457,7 @@ public class CollectionConfigurationTest {
     @Test
     public void collectionConfigurationService7() throws XMLDBException {
 
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         
         CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
         Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
@@ -496,7 +496,7 @@ public class CollectionConfigurationTest {
     /** Overwrite configuration in a sub collection */
     @Test
     public void collectionConfigurationService8() throws XMLDBException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
         CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
         Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
@@ -535,7 +535,7 @@ public class CollectionConfigurationTest {
     /** Overwrite configuration in a sub collection 2 times */
     @Test
     public void collectionConfigurationService9() throws XMLDBException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
         Collection sub1 = cms.createCollection(COLLECTION_SUB1.toString());
         UserManagementService ums = (UserManagementService) sub1.getService("UserManagementService", "1.0");
@@ -602,7 +602,7 @@ public class CollectionConfigurationTest {
     @Test
     public void collectionConfigurationService10() throws XMLDBException {
 
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
         CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
         Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
@@ -635,7 +635,7 @@ public class CollectionConfigurationTest {
         assertEquals(1, result.getSize());
 
         // remove config document thus dropping the configuration
-        Collection confCol = DatabaseManager.getCollection("xmldb:exist://" + CONF_COLL_URI.toString(), ADMIN_UID, ADMIN_PWD);
+        Collection confCol = DatabaseManager.getCollection("xmldb:exist://" + CONF_COLL_URI.toString(), ADMIN_DB_USER, ADMIN_DB_PWD);
         Resource confDoc = confCol.getResource("collection.xconf");
         assertNotNull(confDoc);
         confCol.removeResource(confDoc);
@@ -659,7 +659,7 @@ public class CollectionConfigurationTest {
     /** Remove config collection */
     @Test
     public void collectionConfigurationService11() throws XMLDBException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
         CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
         Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
@@ -692,7 +692,7 @@ public class CollectionConfigurationTest {
         assertEquals(1, result.getSize());
 
         // remove config document thus dropping the configuration
-        Collection confCol = DatabaseManager.getCollection("xmldb:exist://" + CONF_COLL_URI.toString(), ADMIN_UID, ADMIN_PWD);
+        Collection confCol = DatabaseManager.getCollection("xmldb:exist://" + CONF_COLL_URI.toString(), ADMIN_DB_USER, ADMIN_DB_PWD);
         Resource confDoc = confCol.getResource("collection.xconf");
         assertNotNull(confDoc);
         confCol.removeResource(confDoc);
@@ -713,7 +713,7 @@ public class CollectionConfigurationTest {
 
     @Test
     public void invalidConfiguration1() throws XMLDBException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
         CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
         Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
@@ -741,7 +741,7 @@ public class CollectionConfigurationTest {
 
    @Test @Ignore
    public void rangeIndex1() throws XMLDBException {
-       Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+       Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
        
        //Configure collection automatically
        IndexQueryService idxConf = (IndexQueryService)
@@ -858,7 +858,7 @@ public class CollectionConfigurationTest {
 
    @Test @Ignore
     public void rangeIndex2() throws XMLDBException {
-       Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+       Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
        //Configure collection automatically
        IndexQueryService idxConf = (IndexQueryService)
@@ -975,7 +975,7 @@ public class CollectionConfigurationTest {
 
    @Test @Ignore
     public void rangeIndex3() throws XMLDBException {
-        Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         
         //Configure collection automatically
         IndexQueryService idxConf = (IndexQueryService)
@@ -1060,7 +1060,7 @@ public class CollectionConfigurationTest {
 
    @Test @Ignore
    public void rangeIndexOverAttributes() throws XMLDBException {
-       Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+       Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
        
        //Configure collection automatically
        IndexQueryService idxConf = (IndexQueryService)
@@ -1247,7 +1247,7 @@ public class CollectionConfigurationTest {
 
    @Test
    public void missingRangeIndexes() throws Exception {
-       Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
+       Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
        @SuppressWarnings("unused")
        ResourceSet result; 
        boolean exceptionThrown = false;
@@ -1424,8 +1424,8 @@ public class CollectionConfigurationTest {
    	  }
    }
    private void storeConfiguration(XmldbURI collPath, XmldbURI confName, String confContent) throws XMLDBException {
-       Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
-       String fullCollPath = ROOT_URI + collPath.toString();
+       Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
+       String fullCollPath = XmldbURI.LOCAL_DB + collPath.toString();
        Collection configColl = DatabaseManager.getCollection(fullCollPath, "admin", "");
        if(configColl == null) {
      	   CollectionManagementService cms = (CollectionManagementService)testCollection.getService("CollectionManagementService", "1.0");

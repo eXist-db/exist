@@ -33,6 +33,7 @@ import org.exist.security.Subject;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -46,7 +47,7 @@ public class ActiveDirectoryRealmTest {
 		"	<context>" +
 //		"		principalPattern='CN={0},OU=users,DC=bnb,DC=bulungur,dc=nb' " +
 //		"		searchBase='ou=users,dc=bnb,dc=bulungur,dc=nb' " +
-		"		<url>ldap://bulungur.nb:389</url>" +
+		"		<url>ldap://fake.com:389</url>" +
 //		"		<authentication>strong</authentication>" +
 		"	</context>" +
 		"</ActiveDirectory>";
@@ -75,11 +76,12 @@ public class ActiveDirectoryRealmTest {
 	/**
 	 * Test method for {@link org.exist.security.realm.activedirectory.ActiveDirectoryRealm#authenticate(java.lang.String, java.lang.Object)}.
 	 */
+	@Ignore
 	@Test
 	public void testAuthenticate() {
 		Subject currentUser = null;
 		try {
-			currentUser = realm.authenticate("accounter@bulungur", "password");
+			currentUser = realm.authenticate("accounter@fake.com", "password");
 		} catch (AuthenticationException e) {
 			e.printStackTrace();
 			fail(e.getMessage());

@@ -20,11 +20,10 @@
  */
 package org.exist.xmldb.concurrent;
 
-import java.io.Writer;
+import java.io.*;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.exist.source.Source;
 import org.exist.source.StringSource;
@@ -154,24 +153,23 @@ public class DBUtils {
                 "XQueryService", "1.0");
     }
 
-    /**
-     * @param root The root collection
-     */
-    public static String[] wordList(final Collection root) throws XMLDBException {
-        final String query = "util:index-keys(//*, \"\", function($key, $options) {\n" +
-                "    $key\n" +
-                "}, 100, \"lucene-index\")";
-        final EXistXQueryService service = getXQueryService(root);
-        final ResourceSet result = service.query(query);
-
-        final List<String> list = new ArrayList<>();
-        for (final ResourceIterator iter = result.getIterator(); iter.hasMoreResources(); ) {
-            Resource next = iter.nextResource();
-            list.add(next.getContent().toString());
+    public static String[] wordList() throws XMLDBException {
+        final URL url = DBUtils.class.getClassLoader().getResource("uk-towns.txt");
+        if (url == null) {
+            throw new XMLDBException();
         }
-        final String[] words = new String[list.size()];
-        list.toArray(words);
-        System.out.println("Size of the word list: " + words.length);
-        return words;
+
+        final String[] words = new String[100];
+        try {
+            try (final InputStream is = url.openStream();
+                    final LineNumberReader reader = new LineNumberReader(new InputStreamReader(is))) {
+                for (int i = 0; i < words.length; i++) {
+                    words[i] = reader.readLine();
+                }
+            }
+            return words;
+        } catch (final IOException e) {
+          throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
+        }
     }
 }

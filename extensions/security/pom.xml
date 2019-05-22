@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.exist-db</groupId>
+        <artifactId>exist-parent</artifactId>
+        <version>5.0.0-RC8-SNAPSHOT</version>
+        <relativePath>../../exist-parent</relativePath>
+    </parent>
+
+    <artifactId>exist-security</artifactId>
+    <packaging>pom</packaging>
+
+    <name>eXist-db Extension Security Modules</name>
+    <description>eXist-db Extension Security Modules</description>
+
+    <scm>
+        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
+        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
+        <url>scm:git:https://github.com/exist-db/exist.git</url>
+    </scm>
+
+    <modules>
+        <module>activedirectory</module>
+        <module>iprange</module>
+        <module>ldap</module>
+    </modules>
+
+</project>

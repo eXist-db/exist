@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestSet xmlns:xqdoc="http://www.xqdoc.org/1.0">
+    <testName>XQDoc Tests</testName>
+    <description>
+        <p>Test XQuery documentation generation</p>
+        <author>Wolfgang Meier</author>
+    </description>
+    <setup>
+        <create-collection parent="/db" name="xqtest"/>
+        <store collection="/db/xqtest" name="test.xql" type="application/xquery"><![CDATA[
+module namespace test="http://test.org";
+
+(:~ 
+    Just a dummy function.
+    
+    @param $param a parameter.
+:)
+declare function test:ttt($param as xs:integer) as xs:double {
+    $param * 2.0
+};
+        ]]></store>
+    </setup>
+    <tearDown>
+        <remove-collection collection="/db/xqtest"/>
+    </tearDown>
+    <test id="xqdoc-load-module-by-uri" output="text" ignore="true">
+        <task>Load known module by URI</task>
+        <code>xqdm:scan(xs:anyURI("http://exist-db.org/xquery/kwic"))</code>
+        <xpath>//xqdoc:function/xqdoc:name = 'summarize'</xpath>
+    </test>
+    <test id="xqdoc-load-module-from-classpath" output="text" ignore="true">
+        <task>Load module from classpath</task>
+        <code>xqdm:scan(xs:anyURI("resource:org/exist/xquery/lib/kwic.xql"))</code>
+        <xpath>//xqdoc:function/xqdoc:name = 'summarize'</xpath>
+    </test>
+    <test id="xqdoc-load-module-from-db-check-name" output="text" ignore="true">
+        <task>Load module from database (check name)</task>
+        <code>xqdm:scan(xs:anyURI("xmldb:exist:///db/xqtest/test.xql"))</code>
+        <xpath>//xqdoc:function/xqdoc:name = 'ttt'</xpath>
+    </test>
+    <test id="xqdoc-load-module-from-db-check-comments" output="text" ignore="true">
+        <task>Load module from database (check comments)</task>
+        <code>xqdm:scan(xs:anyURI("xmldb:exist:///db/xqtest/test.xql"))</code>
+        <xpath>//xqdoc:function/xqdoc:comment[contains(xqdoc:param, '$param')]</xpath>
+    </test>
+</TestSet>

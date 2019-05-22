@@ -1,0 +1,82 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.exist-db</groupId>
+        <artifactId>exist-parent</artifactId>
+        <version>5.0.0-RC8-SNAPSHOT</version>
+        <relativePath>../../exist-parent</relativePath>
+    </parent>
+
+    <artifactId>exist-debuggee</artifactId>
+    <packaging>jar</packaging>
+
+    <name>eXist-db XQuery Debugger Extension</name>
+    <description>eXist-db NoSQL Database XQuery Debugger Extension</description>
+
+    <scm>
+        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
+        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
+        <url>scm:git:https://github.com/exist-db/exist.git</url>
+    </scm>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.mina</groupId>
+            <artifactId>mina-core</artifactId>
+            <version>2.1.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>fluent-hc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-jetty-config</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources-filtered</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Dlog4j.configurationFile=${project.build.testOutputDirectory}/log4j2.xml</argLine>
+                    <systemPropertyVariables>
+                        <exist.jetty.standalone.webapp.dir>${project.build.testOutputDirectory}/standalone-webapp</exist.jetty.standalone.webapp.dir>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

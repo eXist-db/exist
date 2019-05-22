@@ -51,7 +51,7 @@ public class LargeValuesTest {
     private static final int KEY_LENGTH = 5000;
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
     public void storeAndRecover() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException {

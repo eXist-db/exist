@@ -13,14 +13,24 @@
         <store collection="/db/morebinary" name="index2.txt" type="text/plain">BBBBBB</store>
         <store collection="/db/morebinary" name="index3.txt" type="text/plain">CCCCCC</store>
         <create-collection parent="/db/morebinary" name="shakespeare"/>
-        <store-files collection="/db/morebinary/shakespeare" dir="samples/shakespeare" pattern="*.xml"/>
+        <store-files collection="/db/morebinary/shakespeare" classpath="exist-samples/target/classes" pattern="org/exist/samples/shakespeare/*.xml"/>
+
+        <create-collection parent="/db" name="morebinary2"/>
+        <create-collection parent="/db/morebinary2" name="shakespeare"/>
+        <store-files collection="/db/morebinary2/shakespeare" classpath="exist-samples/target/classes" pattern="org/exist/samples/shakespeare/*.xml"/>
+
+        <create-collection parent="/db" name="morebinary3"/>
+        <create-collection parent="/db/morebinary3" name="shakespeare"/>
+        <store-files collection="/db/morebinary3/shakespeare" classpath="exist-samples/target/classes" pattern="org/exist/samples/shakespeare/*.xml"/>
     </setup>
-    
+
     <tearDown>
-        <!--remove-collection collection="/db/morebinary"/-->
+        <remove-collection collection="/db/morebinary"/>
+        <remove-collection collection="/db/morebinary2"/>
+        <remove-collection collection="/db/morebinary3" ignore-missing="true"/>
     </tearDown>
 
-    <test output="xml" > <!-- trace="yes" -->
+    <test output="xml" >
         <task>Store index document 1</task>
         <code><![CDATA[
         ft:index( "/db/morebinary/index1.txt", 
@@ -32,7 +42,7 @@
         </code>
     </test>     
     
-    <test output="xml" > <!-- trace="yes" -->
+    <test output="xml" >
         <task>Store index document 2</task>
         <code><![CDATA[
         ft:index( "/db/morebinary/index2.txt", 
@@ -159,8 +169,8 @@ return
     <test output="text" > 
         <task>Remove single document</task>
         <code><![CDATA[
-            xmldb:remove("/db/morebinary/shakespeare", "macbeth.xml"),
-            count(ft:search("/db/morebinary/shakespeare", 'speech:"boil bake"')//field)
+            xmldb:remove("/db/morebinary2/shakespeare", "macbeth.xml"),
+            count(ft:search("/db/morebinary2/shakespeare", 'speech:"boil bake"')//field)
         ]]></code>
         <expected>0</expected>
     </test>
@@ -168,8 +178,8 @@ return
     <test output="text" > 
         <task>Remove collection</task>
         <code><![CDATA[
-            xmldb:remove("/db/morebinary"),
-            for $uri in ft:search("/db/morebinary", "para:text")//@uri order by $uri return $uri 
+            xmldb:remove("/db/morebinary3"),
+            for $uri in ft:search("/db/morebinary3", "para:text")//@uri order by $uri return $uri
         ]]></code>
         <expected/>
     </test>

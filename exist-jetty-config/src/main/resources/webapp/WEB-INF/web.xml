@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--+
+    | Configuration file for the web application.
+    |
+    | The URL mapping for rest, xmlrpc, soap etc are handled now by the
+    | XQueryURLRewrite servlet filter. See for details below.
+    +-->
+<web-app 
+    xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+    metadata-complete="false"
+    version="3.1">
+
+    <description>eXist Open Source Native XML Database</description>
+    <display-name>eXist XML Database</display-name>
+
+    <!--
+	 | ScaleImageJAI servlet: scale images on the fly and cache
+	 | the output. Commented out by default.
+	 +-->
+    <!--
+    <servlet>
+        <servlet-name>ScaleImageJAI</servlet-name>
+        <servlet-class>org.exist.http.servlets.ScaleImageJAI</servlet-class>
+
+        <init-param>
+            <param-name>base</param-name>
+            <param-value>xmldb:exist:///db</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>output-dir</param-name>
+            <param-value>/home/wolf/images</param-value>
+        </init-param>
+    </servlet>
+    -->
+
+    <!--
+        RpcServlet provides XML-RPC access.
+    -->
+    <servlet>
+        <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
+        <servlet-class>org.exist.xmlrpc.RpcServlet</servlet-class>
+        <init-param>
+            <param-name>enabledForExtensions</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <!--
+            When no user is specified in an XML-RPC request,
+            the guest user account will be used.
+
+            When useDefaultUser is set to false, the guest user
+            is prohibited from accessing the XML-RPC API.
+            -->
+            <param-name>useDefaultUser</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <!--
+            The Apache XML-RPC servlet does not set a charset
+            in the HTTP response, so the default HTTP charset
+            of ISO-8859-1 is implied.
+
+            We override that to make the default UTF-8 here.
+            You may choose any charset supported by
+            java.nio.charset.Charset
+            -->
+            <param-name>charset</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+    </servlet>
+
+    <!--
+        EXistServlet is a helper servlet that is used to ensure that
+        eXist is running in the background.
+        Set the start-parameter to true and load-on-startup a low value e.g. 2.
+    -->
+    <servlet>
+        <servlet-name>EXistServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.EXistServlet</servlet-class>
+
+        <!--
+            Location of eXist's configuration file relative to the basedir
+            of the web-application.
+        -->
+        <init-param>
+            <param-name>configuration</param-name>
+            <param-value>conf.xml</param-value>
+        </init-param>
+
+        <!--
+            eXist's home directory. All file names in the configuration file
+            will be relative to this directory.
+        -->
+        <init-param>
+            <param-name>basedir</param-name>
+            <param-value>WEB-INF/</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>start</param-name>
+            <param-value>true</param-value>
+        </init-param>
+
+        <!--
+			If parameter "hidden" is set to true, direct access to the
+			REST interface will be denied. Only requests coming from the
+			URL rewriting will be processed.
+
+			Rationale: on a production server, you may want to store the
+			application within the database, but without allowing users
+			to browse the database contents. By setting hidden=true, you
+			can expose defined URLs to the outside world via URL rewriting
+			while hiding the rest of the database.
+		-->
+        <init-param>
+            <param-name>hidden</param-name>
+            <param-value>false</param-value>
+        </init-param>
+
+        <!--
+            Determines who is allowed to submit XQuery to the servlet
+            and have it executed.
+
+            For example the RESTServer allows submission via the
+            GET query parameter _query, and
+            POST via an XML document with a <query> document element
+
+            - disabled
+                Does not allow anyone to submit XQuery for execution
+
+            - enabled
+                Allows anyone to submit XQuery for execution
+
+            - authenticated
+                Allows any authenticated (non-guest) user to submit
+                XQuery for execution
+        -->
+        <init-param>
+            <param-name>xquery-submission</param-name>
+            <param-value>enabled</param-value>
+        </init-param>
+
+        <!--
+            Determines who is allowed to submit XUpdate to the servlet
+            and have it executed.
+
+            For example the RESTServer allows submission via
+            POST of an XML XUpdate document
+
+            - disabled
+                Does not allow anyone to submit XUpdate for execution
+
+            - enabled
+                Allows anyone to submit XUpdate for execution
+
+            - authenticated
+                Allows any authenticated (non-guest) user to submit
+                XUpdate for execution
+        -->
+        <init-param>
+            <param-name>xupdate-submission</param-name>
+            <param-value>enabled</param-value>
+        </init-param>
+
+
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+
+    <!--
+        JMXservlet is a servlet to monitor the database. It returns status information 
+        for the database based on the JMX interface.
+    -->
+    <servlet>
+        <servlet-name>JMXServlet</servlet-name>
+        <servlet-class>org.exist.management.client.JMXServlet</servlet-class>
+    </servlet>
+
+    <!--
+        XQueryServlet generates HTML from an XQuery file.
+    -->
+    <servlet>
+        <servlet-name>XQueryServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.XQueryServlet</servlet-class>
+
+        <init-param>
+            <param-name>uri</param-name>
+            <param-value>xmldb:exist:///db</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>form-encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>container-encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>hide-error-messages</param-name>
+            <param-value>false</param-value>
+        </init-param>
+
+    </servlet>
+
+    <!--
+        XQueryURLRewrite, servlet filter for URL rewriting and redirection.
+    -->
+    <servlet>
+        <servlet-name>XQueryURLRewrite</servlet-name>
+        <servlet-class>org.exist.http.urlrewrite.XQueryURLRewrite</servlet-class>
+
+        <!-- Defines the location of the controller-config.xml file,
+             which defines the root mappings. -->
+        <init-param>
+            <param-name>config</param-name>
+            <param-value>WEB-INF/controller-config.xml</param-value>
+        </init-param>
+
+        <!-- The controller-config.xml file could also be stored inside the db: -->
+        <!--
+        <init-param>
+			<param-name>config</param-name>
+			<param-value>xmldb:exist:///db/controller-config.xml</param-value>
+		</init-param>
+        -->
+
+        <!--
+        <init-param>
+			<param-name>compiled-cache</param-name>
+			<param-value>false</param-value>
+		</init-param>
+        -->
+
+        <!-- When true and attempting basic authentication with
+             the client, a challenge will always be sent -->
+        <init-param>
+            <param-name>send-challenge</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </servlet>
+
+    <!--
+        XSLTServlet applies an XSLT transformation to its input stream.
+    -->
+    <servlet>
+        <servlet-name>XSLTServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.XSLTServlet</servlet-class>
+    </servlet>
+
+    <!--
+        Webstart servlet, provides access to the java client.
+    -->
+    <servlet>
+        <servlet-name>jnlp</servlet-name>
+        <servlet-class>org.exist.webstart.JnlpServlet</servlet-class>
+    </servlet>
+
+
+    <!--
+        ====================== URL space mappings =======================
+    -->
+
+    <!--
+         IMPORTANT: the XQueryURLRewrite servlet filter does now serve as a single
+         entry point into the web application. All eXist-related URL  mappings are
+         handled by XQueryURLRewrite (see controller-config.xml).
+
+         The servlet mappings below are thus commented out. We keep them here
+         for documentation purposes. If you need to switch to the old setup,
+         you can re-enable the mappings below and disable them in controller-config.xml.
+
+         However, please note that some features of the website will only work if
+         XQueryURLRewrite controls the /rest servlet  (EXistServlet).
+    -->
+
+    <!-- XQuery URL rewriter -->
+    <servlet-mapping>
+        <servlet-name>XQueryURLRewrite</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- XMLRPC -->
+    <!--
+    <servlet-mapping>
+        <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
+        <url-pattern>/xmlrpc</url-pattern>
+    </servlet-mapping>
+    -->
+
+    <!-- REST -->
+    <!--
+    <servlet-mapping>
+        <servlet-name>EXistServlet</servlet-name>
+        <url-pattern>/rest/*</url-pattern>
+    </servlet-mapping>
+    -->
+
+    <!-- XQuery (Note: not for database stored queries) -->
+    <!--
+    <servlet-mapping>
+        <servlet-name>XQueryServlet</servlet-name>
+        <url-pattern>*.xql</url-pattern>
+    </servlet-mapping>
+    -->
+
+    <!--
+        ==================== various MIME type mappings ==================
+    -->
+
+    <mime-mapping>
+        <extension>css</extension>
+        <mime-type>text/css</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>xml</extension>
+        <mime-type>application/xml</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>xsl</extension>
+        <mime-type>application/xml+xslt</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>xconf</extension>
+        <mime-type>application/xml</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>xmap</extension>
+        <mime-type>application/xml</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>ent</extension>
+        <mime-type>text/plain</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>grm</extension>
+        <mime-type>text/plain</mime-type>
+    </mime-mapping>
+
+    <!--
+    <jsp-config>
+        <taglib>
+            <taglib-uri>http://exist-db.org/exist</taglib-uri>
+            <taglib-location>/WEB-INF/exist.tld</taglib-location>
+        </taglib>
+    </jsp-config>
+    -->
+
+    <login-config>
+        <auth-method>FORM</auth-method>
+        <realm-name>JAASLoginService</realm-name>
+        <form-login-config>
+            <form-login-page>/login/login</form-login-page>
+            <form-error-page>/login/error</form-error-page>
+        </form-login-config>
+    </login-config>
+
+    <!-- 
+        Enable dynamic GZip of server responses
+
+        Standard approach is to use org.eclipse.jetty.servlets.GZipFilter, the
+        javadoc describes the init-params and the conditions under which gzip encoding
+        is applied - http://download.eclipse.org/jetty/stable-7/apidocs/org/eclipse/jetty/servlets/GzipFilter.html
+
+        A more flexible approach can be gained by using org.eclipse.jetty.servlets.IncludableGzipFilter,
+        the javadoc can be found here - http://download.eclipse.org/jetty/stable-7/apidocs/org/eclipse/jetty/servlets/IncludableGzipFilter.html
+    -->
+    <!--
+    <filter>
+        <filter-name>GzipFilter</filter-name>
+
+        <filter-class>org.eclipse.jetty.servlets.IncludableGzipFilter</filter-class>
+        <!- <filter-class>org.eclipse.jetty.servlets.GzipFilter</filter-class> -!>
+
+        <!- <async-support>true</async-support> -!>
+        <init-param>
+            <param-name>bufferSize</param-name>
+            <param-value>8192</param-value>
+        </init-param>
+        <init-param>
+            <param-name>minGzipSize</param-name>
+            <param-value>2048</param-value>
+        </init-param>
+        <init-param>
+            <param-name>userAgent</param-name>
+            <param-value>(?:Mozilla[^\(]*\(compatible;\s*+([^;]*);.*)|(?:.*?([^\s]+/[^\s]+).*)</param-value>
+        </init-param>
+        <init-param>
+            <param-name>cacheSize</param-name>
+            <param-value>1024</param-value>
+        </init-param>
+        <init-param>
+            <param-name>excludedAgents</param-name>
+            <param-value>MSIE 6.0</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>GzipFilter</filter-name>
+        <url-pattern>*</url-pattern>
+    </filter-mapping>
+    -->
+</web-app>

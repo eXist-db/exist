@@ -21,7 +21,6 @@
  */
 package org.exist.util;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -73,25 +72,6 @@ public class SingleInstanceConfiguration extends Configuration {
     }
     
     /**
-     *  Check wether exist runs in Servlet container (as war file).
-     * @return TRUE if exist runs in servlet container.
-     */
-    public static boolean isInWarFile(){
-        
-        boolean retVal =true;
-        
-        // if existHome is not set,try to do so.
-        if (!_existHome.isPresent()){
-            _existHome = ConfigurationHelper.getExistHome();
-        }
-        
-        if(_existHome.map(h -> Files.isDirectory(h.resolve("lib/core"))).orElse(false)) {
-            retVal = false;
-        }
-        return retVal;
-    }
-    
-    /**
      * Get folder in which the exist webapplications are found.
      * For default install ("jar install") and in webcontainer ("war install")
      * the location is different. (EXIST_HOME/webapps vs. TOMCAT/webapps/exist)
@@ -104,6 +84,6 @@ public class SingleInstanceConfiguration extends Configuration {
         	_existHome = ConfigurationHelper.getExistHome();
         }
 
-        return _existHome.map(h -> isInWarFile() ? h.getParent() : h.resolve("webapp"));
+        return _existHome.map(h -> h.resolve("webapp"));
     }
 }

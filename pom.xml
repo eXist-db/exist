@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.exist-db</groupId>
+        <artifactId>exist-parent</artifactId>
+        <version>5.0.0-RC8-SNAPSHOT</version>
+        <relativePath>exist-parent</relativePath>
+    </parent>
+
+    <artifactId>exist</artifactId>
+    <packaging>pom</packaging>
+
+    <name>eXist-db</name>
+    <description>eXist-db multi-module project</description>
+
+    <scm>
+        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
+        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
+        <url>scm:git:https://github.com/exist-db/exist.git</url>
+    </scm>
+
+    <modules>
+        <module>exist-parent</module>
+        <module>exist-ant</module>
+        <module>exist-core</module>
+        <module>exist-core-jmh</module>
+        <module>exist-distribution</module>
+        <module>exist-installer</module>
+        <module>exist-jetty-config</module>
+        <module>exist-samples</module>
+        <module>exist-service</module>
+        <module>exist-start</module>
+        <module>extensions</module>
+    </modules>
+
+    <profiles>
+        <profile>
+            <id>docker</id>
+            <activation>
+                <property>
+                    <name>docker</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>exist-docker</module>
+            </modules>
+        </profile>
+    </profiles>
+
+</project>

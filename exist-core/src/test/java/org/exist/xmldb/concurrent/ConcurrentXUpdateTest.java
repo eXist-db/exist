@@ -64,7 +64,7 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
 		//String query1 = "/ROOT-ELEMENT//ELEMENT-2[@attribute-2]";
 
 		return Arrays.asList(
-				new Runner(new RemoveAppendAction(XmldbURI.LOCAL_DB + "/C1", "R1.xml", wordList), 50, 0, 200)
+				new Runner(new RemoveAppendAction(XmldbURI.LOCAL_DB + "/C1", "R1.xml", wordList), 50, 0, 100)
 				//new Runner(new RemoveAppendAction(getUri + "/C1", "R1.xml", wordList), 50, 100, 200);
 				//new Runner(new MultiResourcesAction("samples/mods", getUri + "/C1"), 1, 0, 300);
 				//new Runner(new RetrieveResourceAction(getUri + "/C1", "R1.xml"), 10, 1000, 2000);
@@ -79,7 +79,7 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
             getTestCollection().getService("IndexQueryService", "1.0");
         assertNotNull(idxConf);
         idxConf.configureCollection(CONFIG);
-        this.wordList = DBUtils.wordList(existXmldbEmbeddedServer.getRoot());
+        this.wordList = DBUtils.wordList();
         assertNotNull(wordList);
         this.tempFile = DBUtils.generateXMLFile(500, 10, wordList);
         DBUtils.addXMLResource(getTestCollection(), "R1.xml", tempFile);

@@ -1,0 +1,18 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <id>native-unix</id>
+    <formats>
+        <format>tar.bz2</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+            <directory>${project.basedir}</directory>
+            <outputDirectory>${file.separator}</outputDirectory>
+            <includes>
+                <include>bin/jsvc*</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</assembly>

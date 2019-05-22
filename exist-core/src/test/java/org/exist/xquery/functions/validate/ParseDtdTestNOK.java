@@ -22,16 +22,15 @@
 package org.exist.xquery.functions.validate;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.FileUtils;
-import org.exist.util.XMLFilenameFilter;
+import org.exist.util.io.InputStreamUtil;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.exist.samples.Samples.SAMPLES;
 
 import java.io.IOException;
-import java.nio.file.Path;
+import java.io.InputStream;
 
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -46,7 +45,7 @@ import org.xmldb.api.base.XMLDBException;
 public class ParseDtdTestNOK {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String noValidation = "<?xml version='1.0'?>" +
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -68,14 +67,15 @@ public class ParseDtdTestNOK {
         }
 
         // Store dtd test files
+        final String[] dtdTestFiles = { "catalog.xml", "hamlet_invalid.xml", "hamlet_nodoctype.xml", "hamlet_valid.xml", "hamlet_wrongdoctype.xml" };
         Collection collection = null;
         try {
             collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "hamlet");
-            final Path sources = TestUtils.resolveSample("validation/dtd");
 
-            for (final Path file : FileUtils.list(sources, XMLFilenameFilter.asPredicate())) {
-                final byte[] data = TestUtils.readFile(file);
-                ExistXmldbEmbeddedServer.storeResource(collection, FileUtils.fileName(file), data);
+            for (final String dtdTestFile : dtdTestFiles) {
+                try (final InputStream is = SAMPLES.getSample("validation/dtd/" + dtdTestFile)) {
+                    ExistXmldbEmbeddedServer.storeResource(collection, dtdTestFile, InputStreamUtil.readAll(is));
+                }
             }
         } finally {
             if(collection != null) {
@@ -83,12 +83,12 @@ public class ParseDtdTestNOK {
             }
         }
 
-        final Path dtd = TestUtils.resolveSample("validation/dtd");
         Collection collection1 = null;
         try {
             collection1 = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "hamlet/dtd");
-            final byte[] data = TestUtils.readFile(dtd, "hamlet.dtd");
-            ExistXmldbEmbeddedServer.storeResource(collection1, "hamlet.dtd", data);
+            try (final InputStream is = SAMPLES.getSample("validation/dtd/hamlet.dtd")) {
+                ExistXmldbEmbeddedServer.storeResource(collection1, "hamlet.dtd", InputStreamUtil.readAll(is));
+            }
         } finally {
             if(collection1 != null) {
                 collection1.close();

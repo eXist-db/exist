@@ -90,9 +90,6 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
 	@Override
 	public void prepare(final BrokerPool brokerPool) {
 		this.db = brokerPool;
-
-		//Temporary for testing
-		addPlugin("org.exist.scheduler.SchedulerManager");
 	}
 
 	@Override

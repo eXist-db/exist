@@ -508,7 +508,7 @@ public class MatchListenerTest {
     }
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeClass
     public static void startDB() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException {

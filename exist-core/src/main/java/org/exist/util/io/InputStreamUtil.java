@@ -23,6 +23,7 @@ package org.exist.util.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 public class InputStreamUtil {
 
@@ -57,6 +58,39 @@ public class InputStreamUtil {
         final byte buffer[] = new byte[bufferSize];
         while ((read = is.read(buffer)) > -1) {
             os.write(buffer, 0, read);
+        }
+    }
+
+    /**
+     * Read all bytes from the InputStream.
+     *
+     * @param is the input stream
+     *
+     * @return the bytes read from the input stream.
+     *
+     * @throws IOException if an I/O error occurs.
+     */
+    public static byte[] readAll(final InputStream is) throws IOException {
+        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+            os.write(is);
+            return os.toByteArray();
+        }
+    }
+
+    /**
+     * Read all bytes from the InputStream into a String.
+     *
+     * @param is the input stream
+     * @param charset the charset encoding of the byte string.
+     *
+     * @return the String read from the input stream.
+     *
+     * @throws IOException if an I/O error occurs.
+     */
+    public static String readString(final InputStream is, final Charset charset) throws IOException {
+        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+            os.write(is);
+            return new String(os.toByteArray(), charset);
         }
     }
 }
