@@ -180,8 +180,7 @@ public class DocumentMetadata implements ResourceMetadata {
         pageCount = istream.readInt();
         userLock = istream.readInt();
         if(istream.readByte() == HAS_DOCTYPE) {
-            docType = new DocumentTypeImpl();
-            ((DocumentTypeImpl) docType).read(istream);
+            docType = DocumentTypeImpl.read(istream);
         } else {
             docType = null;
         }
