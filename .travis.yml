@@ -22,25 +22,36 @@ matrix:
          - BUILD_DOCKER=false
 
 deploy:
-  provider: script
-  skip_cleanup: true
-  on:
-    jdk: openjdk8
-    branch: master
-    condition: $BUILD_DOCKER = true
+  - provider: script
+    skip_cleanup: true
+    on:
+      jdk: openjdk8
+      branch: master
+      condition: $BUILD_DOCKER = true
   #  before_script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   # see https://github.com/travis-ci/dpl/issues/673
-  script: >-
-    cd exist-docker &&
-    mvn -DskipTests -Ddocker.tag=release -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push &&
-    cd ..
+    script: >-
+      cd exist-docker &&
+      mvn -DskipTests -Ddocker.tag=release -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push &&
+      cd ..
+
+  - provider: script
+    skip_cleanup: true
+    on:
+      jdk: openjdk8
+      branch: develop
+      condition: $BUILD_DOCKER = true
+    script: >-
+      cd exist-docker &&
+      mvn -DskipTests -Ddocker.tag=latest -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push &&
+      cd ..
 
 
 cache:
   directories:
   - $HOME/.m2
 
-install: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=$BUILD_DOCKER install -B -V
+install: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=$BUILD_DOCKER install -B -V -q
 
 script: mvn -T 2C -Ddocker=$BUILD_DOCKER test -B
 
