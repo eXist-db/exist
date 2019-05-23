@@ -186,8 +186,7 @@ public class DocumentMetadata implements ResourceMetadata {
         }
         // TODO added by dwes
         if(istream.readByte() == HAS_LOCKTOKEN) {
-            lockToken = new LockToken();
-            lockToken.read(istream);
+            lockToken = LockToken.read(istream);
         } else {
             lockToken = null;
         }
