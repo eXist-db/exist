@@ -386,7 +386,7 @@ public class ExistDocument extends ExistResource {
             }
 
             // Check for request for shared lock. @@TODO
-            if (inputToken.getScope() == LockToken.LOCK_SCOPE_SHARED) {
+            if (inputToken.getScope() == LockToken.LockScope.SHARED) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Shared locks are not implemented.");
                 }
