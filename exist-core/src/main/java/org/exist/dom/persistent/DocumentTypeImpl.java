@@ -1,23 +1,25 @@
-/* eXist xml document repository and xpath implementation
- * Copyright (C) 2001-2014,  Wolfgang M. Meier (wolfgang@exist-db.org)
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2019 The eXist Project
+ * http://exist-db.org
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public License
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Library General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
 package org.exist.dom.persistent;
 
+import net.jcip.annotations.ThreadSafe;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.w3c.dom.DocumentType;
@@ -26,29 +28,18 @@ import org.w3c.dom.Node;
 
 import java.io.IOException;
 
+@ThreadSafe
 public class DocumentTypeImpl extends StoredNode implements DocumentType {
 
-    protected String publicId = null;
-    protected String systemId = null;
-    protected String name = null;
-
-    public DocumentTypeImpl() {
-        super(Node.DOCUMENT_TYPE_NODE);
-    }
+    private final String publicId;
+    private final String systemId;
+    private final String name;
 
     public DocumentTypeImpl(final String name, final String publicId, final String systemId) {
         super(Node.DOCUMENT_TYPE_NODE);
         this.name = name;
         this.publicId = publicId;
         this.systemId = systemId;
-    }
-
-    @Override
-    public void clear() {
-        super.clear();
-        this.publicId = null;
-        this.systemId = null;
-        this.name = null;
     }
 
     @Override
@@ -61,17 +52,9 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
         return publicId;
     }
 
-    public void setPublicId(final String publicId) {
-        this.publicId = publicId;
-    }
-
     @Override
     public String getSystemId() {
         return systemId;
-    }
-
-    public void setSystemId(final String systemId) {
-        this.systemId = systemId;
     }
 
     @Override
@@ -95,16 +78,18 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
         ostream.writeUTF(publicId != null ? publicId : "");
     }
 
-    protected void read(final VariableByteInput istream) throws IOException {
-        name = istream.readUTF();
-        systemId = istream.readUTF();
+    public static DocumentTypeImpl read(final VariableByteInput istream) throws IOException {
+        final String name = istream.readUTF();
+        String systemId = istream.readUTF();
         if(systemId.length() == 0) {
             systemId = null;
         }
-        publicId = istream.readUTF();
+        String publicId = istream.readUTF();
         if(publicId.length() == 0) {
             publicId = null;
         }
+
+        return new DocumentTypeImpl(name, publicId, systemId);
     }
 
     @Override
