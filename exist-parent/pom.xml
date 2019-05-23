@@ -87,7 +87,7 @@
         <log4j.version>2.11.2</log4j.version>
         <lucene.version>4.10.4</lucene.version>
         <milton.version>1.8.1.3</milton.version>
-        <saxon.version>9.9.1-2</saxon.version>
+        <saxon.version>9.9.1-3</saxon.version>
         <xmlunit.version>2.6.2</xmlunit.version>
     </properties>
 
