@@ -107,6 +107,9 @@ public class ConfigurationDialog extends JDialog {
         }
         setVisible(true);
         requestFocus();
+        // make sure the process dies when the dialog is closed
+        // we cannot set this before the dialog is open though
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
     /**
