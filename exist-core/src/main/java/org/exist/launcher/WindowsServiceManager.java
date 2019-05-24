@@ -109,7 +109,7 @@ class WindowsServiceManager implements ServiceManager {
                 "--LogPrefix=service",
                 "--PidFile=service.pid",
                 "--Startup=auto",
-                "--Jvm=auto",
+                "--Jvm=" + findJvm().orElse("auto"),
                 "--Classpath=\"" + existHome.resolve("lib").toAbsolutePath().toString().replace('\\', '/') + "/*\"",
                 "--JvmMs=" + minMemory,
                 "--StartMode=jvm",
@@ -257,6 +257,25 @@ class WindowsServiceManager implements ServiceManager {
         } catch (final IOException e) {
             throw new ServiceManagerException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * Try to find jvm.dll, which should either reside in `bin/client` or `bin/server` below
+     * JAVA_HOME. Autodetection does not seem to work with OpenJDK-based Java distributions.
+     *
+     * @return Path to jvm.dll or empty Optional
+     */
+    private Optional<String> findJvm() {
+        final Path javaHome = Paths.get(System.getProperty("java.home")).toAbsolutePath();
+        Path jvm = javaHome.resolve("bin/client/jvm.dll");
+        if (Files.exists(jvm)) {
+            return Optional.of(jvm.toString());
+        }
+        jvm = javaHome.resolve("bin/server/jvm.dll");
+        if (Files.exists(jvm)) {
+            return Optional.of(jvm.toString());
+        }
+        return Optional.empty();
     }
 
     private WindowsServiceState getState() throws ServiceManagerException {
