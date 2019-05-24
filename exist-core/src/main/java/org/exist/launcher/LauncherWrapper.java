@@ -55,6 +55,8 @@ public class LauncherWrapper {
             System.out.println("First launch: opening configuration dialog");
             ConfigurationDialog configDialog = new ConfigurationDialog(restart -> {
                 wrapper.launch();
+                // make sure the process dies when the dialog is closed
+                System.exit(0);
             });
             configDialog.open(true);
             configDialog.requestFocus();
