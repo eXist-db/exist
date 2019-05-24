@@ -69,13 +69,7 @@ public class CommentImpl extends AbstractCharacterData implements Comment {
      */
     @Override
     public byte[] serialize() {
-        String s;
-        try {
-            s = StringValue.expand(cdata);
-        } catch(final XPathException e) {
-            LOG.warn(e);
-            s = cdata.toString();
-        }
+        final String s = cdata.toString();
         final byte[] cd = s.getBytes(UTF_8);
 
         final int nodeIdLen = nodeId.size();
