@@ -231,19 +231,20 @@ public class RemoteCollectionTest extends RemoteDBTest {
         prepareContent(resource);
         collection.storeResource(resource);
         // load stored content
-        resource.getContentIntoAStream(new ByteArrayOutputStream());
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        resource.getContentIntoAStream(outputStream);
+        // compare size
+        assertEquals(16777229, outputStream.size());
     }
 
     private void prepareContent(RemoteXMLResource resource) throws XMLDBException, SAXException {
-        final char[] buffer = new char[1024];
+        final char[] buffer = new char[16 * 1024 * 1024];
         Arrays.fill(buffer, (char) 'x');
         ContentHandler content = resource.setContentAsSAX();
         content.startDocument();
         content.startElement("", "root", "root", new AttributesImpl());
-        for (int i = 0, n = 16 * 1024; i < n; i++) {
-            // writing 16 mb to resource
-            content.characters(buffer, 0, 1024);
-        }
+        // writing 16 mb to resource
+        content.characters(buffer, 0, buffer.length);
         content.endElement("", "root", "root");
         content.endDocument();
     }
