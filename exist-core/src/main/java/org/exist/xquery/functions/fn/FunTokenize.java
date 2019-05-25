@@ -117,7 +117,7 @@ public class FunTokenize extends FunMatches {
                         pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
                     } else {
                         final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
-                        final boolean caseBlind = !hasCaseInsensitive(flags);
+                        final boolean caseBlind = hasCaseInsensitive(flags);
                         pattern = translateRegexp(this, getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
                     }
                 }
