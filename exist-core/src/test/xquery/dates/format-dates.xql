@@ -37,7 +37,7 @@ declare
     %test:args("1970-10-07")
     %test:assertEquals("07 OCT 1970")
 function fd:format-month-string-width-caps($date as xs:date) {
-    format-date($date, "[D01] [MN,*-3] [Y0001]")
+    format-date($date, "[D01] [MN,*-3] [Y0001]", "en", (), ())
 };
 
 declare
@@ -46,7 +46,7 @@ declare
     %test:args("1970-10-07")
     %test:assertEquals("07 Oct 1970")
 function fd:format-month-string-width-title($date as xs:date) {
-    format-date($date, "[D01] [MNn,*-3] [Y0001]")
+    format-date($date, "[D01] [MNn,*-3] [Y0001]", "en", (), ())
 };
 
 declare
@@ -55,7 +55,7 @@ declare
     %test:args("1970-10-07")
     %test:assertEquals("Wednesday, October 7, 1970")
 function fd:format-names($date as xs:date) {
-    format-date($date, "[FNn], [MNn] [D], [Y]")
+    format-date($date, "[FNn], [MNn] [D], [Y]", "en", (), ())
 };
 
 declare
@@ -64,7 +64,7 @@ declare
     %test:args("1970-10-07")
     %test:assertEquals("Wed Oct 7 1970")
 function fd:format-names-width($date as xs:date) {
-    format-date($date, "[FNn,*-3] [MNn,*-3] [D] [Y]")
+    format-date($date, "[FNn,*-3] [MNn,*-3] [D] [Y]", "en", (), ())
 };
 
 declare
@@ -77,7 +77,7 @@ declare
     %test:args("2012-06-03")
     %test:assertEquals("Sunday, June 3rd, 2012")
 function fd:format-ordinal($date as xs:date) {
-    format-date($date, "[FNn], [MNn] [D0o], [Y]")
+    format-date($date, "[FNn], [MNn] [D0o], [Y]", "en", (), ())
 };
 
 declare
@@ -91,7 +91,7 @@ declare
     %test:args("2012-06-26T23:14:22.566+02:00")
     %test:assertEquals("11:14 pm on Tuesday, June 26th, 2012")
 function fd:format-dateTime($date as xs:dateTime) {
-    format-dateTime($date, "[h00]:[m00] [P] on [FNn], [MNn] [D1o], [Y]")
+    format-dateTime($date, "[h00]:[m00] [P] on [FNn], [MNn] [D1o], [Y]", "en", (), ())
 };
 
 declare
