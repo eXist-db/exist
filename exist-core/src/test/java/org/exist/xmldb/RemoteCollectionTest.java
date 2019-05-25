@@ -253,6 +253,7 @@ public class RemoteCollectionTest extends RemoteDBTest {
             Resource res = getCollection().createResource(name, type);
             if(type.equals("XMLResource")) {
                 res.setContent(XML_CONTENT);
+            } else {
                 res.setContent(BINARY_CONTENT);
             }
             getCollection().storeResource(res);
