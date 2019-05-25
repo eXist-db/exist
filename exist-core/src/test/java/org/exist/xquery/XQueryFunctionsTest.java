@@ -156,6 +156,18 @@ public class XQueryFunctionsTest {
                         "return fn:deep-equal($res, $reference)");
         r = (String) result.getResource(0).getContent();
         assertEquals("true", r);
+
+        result = existEmbeddedServer.executeQuery("tokenize('firstSecondThirdLast', '[A-Z]')");
+        assertEquals(4, result.getSize());
+        r = (String) result.getResource(0).getContent();
+        assertEquals("first", r);
+        r = (String) result.getResource(1).getContent();
+        assertEquals("econd", r);
+        r = (String) result.getResource(2).getContent();
+        assertEquals("hird", r);
+        r = (String) result.getResource(3).getContent();
+        assertEquals("ast", r);
+
     }
 
     @Test
