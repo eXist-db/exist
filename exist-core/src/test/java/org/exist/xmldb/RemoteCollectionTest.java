@@ -9,7 +9,10 @@ import org.exist.xquery.util.URIUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -22,12 +25,14 @@ import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
 
 import javax.xml.transform.Source;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
@@ -199,7 +204,7 @@ public class RemoteCollectionTest extends RemoteDBTest {
         assertEquals(0, xmlNames.size());
         assertEquals(0, binaryNames.size());
 	}
-	
+
 	/**
 	 * Trying to access a collection where the parent collection does
 	 * not exist caused NullPointerException on DatabaseManager.getCollection() method.
@@ -218,7 +223,32 @@ public class RemoteCollectionTest extends RemoteDBTest {
         c = DatabaseManager.getCollection(getUri() + colName, "admin", "");
         assertNull(c);
 	}
-	
+
+	@Test  /* issue 2743 */
+    public void getLoadRemoteResourceContentBiggerThan16MB() throws XMLDBException, SAXException {
+        Collection collection = getCollection();
+        final RemoteXMLResource resource = (RemoteXMLResource)collection.createResource("testresource", "XMLResource");
+        prepareContent(resource);
+        collection.storeResource(resource);
+        // load stored content
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        resource.getContentIntoAStream(outputStream);
+        // compare size
+        assertEquals(16777229, outputStream.size());
+    }
+
+    private void prepareContent(RemoteXMLResource resource) throws XMLDBException, SAXException {
+        final char[] buffer = new char[16 * 1024 * 1024];
+        Arrays.fill(buffer, (char) 'x');
+        ContentHandler content = resource.setContentAsSAX();
+        content.startDocument();
+        content.startElement("", "root", "root", new AttributesImpl());
+        // writing 16 mb to resource
+        content.characters(buffer, 0, buffer.length);
+        content.endElement("", "root", "root");
+        content.endDocument();
+    }
+
     private void createResources(ArrayList<String> names, String type) throws XMLDBException {
         for (String name : names) {
             Resource res = getCollection().createResource(name, type);

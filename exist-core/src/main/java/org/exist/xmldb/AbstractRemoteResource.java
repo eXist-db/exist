@@ -50,7 +50,7 @@ import static org.exist.util.io.InputStreamUtil.copy;
 
 public abstract class AbstractRemoteResource extends AbstractRemote
         implements EXistResource, ExtendedResource, Resource {
-    private static final int DEFAULT_IN_MEMORY_SIZE = 0x400_0000; // 4 MB
+    private static final int DEFAULT_IN_MEMORY_SIZE = 4 * 1024 * 1024; // 4 MB
 
     protected final Leasable<XmlRpcClient>.Lease xmlRpcClientLease;
     protected final XmldbURI path;
