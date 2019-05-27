@@ -142,12 +142,13 @@ public final class VirtualTempPath implements AutoCloseable {
     public byte[] getBytes() {
         long stamp = lock.readLock();
         try {
+            if (contentFile != null) {
+                return Files.readAllBytes(contentFile);
+            }
             if (content != null) {
                 byte[] buffer = new byte[(int) content.size()];
                 content.read(buffer, 0L, 0, buffer.length);
                 return buffer;
-            } else if (contentFile != null) {
-                return Files.readAllBytes(contentFile);
             }
         } catch (IOException e) {
             LOG.error("Unable to get content", e);
