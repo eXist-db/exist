@@ -35,7 +35,7 @@
         <dependency>
             <groupId>org.z3950.zing</groupId>
             <artifactId>cql-java</artifactId>
-            <version>1.10</version>
+            <version>1.13</version>
         </dependency>
 
         <dependency>
