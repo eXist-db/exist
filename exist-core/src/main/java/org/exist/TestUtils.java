@@ -64,7 +64,6 @@ public class TestUtils {
                     final DocumentImpl doc = i.next();
                     root.removeXMLResource(transaction, broker, doc.getURI().lastSegment());
                 }
-                broker.saveCollection(transaction, root);
 
                 for (final Iterator<XmldbURI> i = root.collectionIterator(broker); i.hasNext(); ) {
                     final XmldbURI childName = i.next();
@@ -76,7 +75,6 @@ public class TestUtils {
                         broker.removeCollection(transaction, childColl);
                     }
                 }
-                broker.saveCollection(transaction, root);
             }
 
             // Remove /db/system/config/db and all collection configurations with it
