@@ -359,7 +359,7 @@ public class MutableCollection implements Collection {
                     }
                 }
 
-                documents.put(doc.getFileURI().getRawCollectionPath(), doc);
+                documents.put(doc.getFileURI().lastSegmentString(), doc);
             }
         }
     }
@@ -372,7 +372,7 @@ public class MutableCollection implements Collection {
                 throw new PermissionDeniedException("Permission denied to remove document from collection: " + path);
             }
 
-            documents.remove(doc.getFileURI().getRawCollectionPath());
+            documents.remove(doc.getFileURI().lastSegmentString());
         }
     }
 
@@ -658,8 +658,8 @@ public class MutableCollection implements Collection {
     public DocumentImpl getDocument(final DBBroker broker, final XmldbURI name) throws PermissionDeniedException {
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
 
-            try(final ManagedDocumentLock docLock = lockManager.acquireDocumentReadLock(getURI().append(name))) {
-                final DocumentImpl doc = documents.get(name.getRawCollectionPath());
+            try(final ManagedDocumentLock docLock = lockManager.acquireDocumentReadLock(getURI().append(name.lastSegment()))) {
+                final DocumentImpl doc = documents.get(name.lastSegmentString());
 
                 // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
                 collectionLock.close();
@@ -696,23 +696,23 @@ public class MutableCollection implements Collection {
             final Runnable unlockFn;    // we unlock on error, or if there is no Collection
             switch (lockMode) {
                 case WRITE_LOCK:
-                    documentLock = lockManager.acquireDocumentWriteLock(getURI().append(name));
+                    documentLock = lockManager.acquireDocumentWriteLock(getURI().append(name.lastSegment()));
                     unlockFn = documentLock::close;
                     break;
 
                 case READ_LOCK:
-                    documentLock = lockManager.acquireDocumentReadLock(getURI().append(name));
+                    documentLock = lockManager.acquireDocumentReadLock(getURI().append(name.lastSegment()));
                     unlockFn = documentLock::close;
                     break;
 
                 case NO_LOCK:
                 default:
-                    documentLock = ManagedDocumentLock.notLocked(getURI().append(name));
+                    documentLock = ManagedDocumentLock.notLocked(getURI().append(name.lastSegment()));
                     unlockFn = () -> {};
             }
 
 
-            final DocumentImpl doc = documents.get(name.getRawCollectionPath());
+            final DocumentImpl doc = documents.get(name.lastSegmentString());
 
             // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
             collectionLock.close();
@@ -815,11 +815,11 @@ public class MutableCollection implements Collection {
                 throw new PermissionDeniedException("Permission denied to read collection: " + path);
             }
 
-            return documents.containsKey(name.getRawCollectionPath());
+            return documents.containsKey(name.lastSegmentString());
         } catch(final LockException e) {
             LOG.warn(e.getMessage(), e);
             //TODO : ouch ! Should we return at any price ? Without even logging ? -pb
-            return documents.containsKey(name.getRawCollectionPath());
+            return documents.containsKey(name.lastSegmentString());
         }
     }
 
@@ -941,7 +941,7 @@ public class MutableCollection implements Collection {
                         throw new EXistException("Document must have ID.");
                     }
 
-                    documents.put(doc.getFileURI().getRawCollectionPath(), doc);
+                    documents.put(doc.getFileURI().lastSegmentString(), doc);
                 }
 
                 @Override
@@ -991,10 +991,9 @@ public class MutableCollection implements Collection {
                 throw new PermissionDeniedException("Permission denied to write collection: " + path);
             }
 
-            final XmldbURI docUri = XmldbURI.create(name.getRawCollectionPath());
-            try(final ManagedDocumentLock docUpdateLock = lockManager.acquireDocumentWriteLock(path.append(docUri))) {
+            try(final ManagedDocumentLock docUpdateLock = lockManager.acquireDocumentWriteLock(path.append(name.lastSegment()))) {
 
-                final DocumentImpl doc = documents.get(docUri);
+                final DocumentImpl doc = documents.get(name.lastSegmentString());
 
                 if (doc == null) {
                     // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
@@ -1020,7 +1019,7 @@ public class MutableCollection implements Collection {
                     trigger.beforeDeleteDocument(broker, transaction, doc);
 
                     broker.removeXMLResource(transaction, doc);
-                    documents.remove(name.getRawCollectionPath());
+                    documents.remove(name.lastSegmentString());
 
                     trigger.afterDeleteDocument(broker, transaction, getURI().append(name));
 
@@ -1044,7 +1043,7 @@ public class MutableCollection implements Collection {
                 throw new PermissionDeniedException("Permission denied to write collection: " + path);
             }
 
-            try(final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(path.append(name))) {
+            try(final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(path.append(name.lastSegment()))) {
                 final DocumentImpl doc = getDocument(broker, name);
                 removeBinaryResource(transaction, broker, doc);
 
@@ -1088,7 +1087,7 @@ public class MutableCollection implements Collection {
                         } catch (final IOException ex) {
                             throw new PermissionDeniedException("Cannot delete file: " + doc.getURI().toString() + ": " + ex.getMessage(), ex);
                         }
-                        documents.remove(doc.getFileURI().getRawCollectionPath());
+                        documents.remove(doc.getFileURI().lastSegmentString());
                     } finally {
                         indexController.endIndexDocument(transaction, listener);
                     }
@@ -1410,10 +1409,10 @@ public class MutableCollection implements Collection {
             try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
 
                 // acquire the WRITE_LOCK on the Document, this lock is released in storeXMLInternal via IndexInfo
-                documentWriteLock = lockManager.acquireDocumentWriteLock(getURI().append(name));
+                documentWriteLock = lockManager.acquireDocumentWriteLock(getURI().append(name.lastSegment()));
 
                 DocumentImpl document = new DocumentImpl((BrokerPool) db, this, name);
-                oldDoc = documents.get(name.getRawCollectionPath());
+                oldDoc = documents.get(name.lastSegmentString());
                 checkPermissionsForAddDocument(broker, oldDoc);
                 checkCollectionConflict(name);
                 manageDocumentInformation(oldDoc, document);
@@ -1459,7 +1458,7 @@ public class MutableCollection implements Collection {
                     if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE) {
                         //TODO : use a more elaborated method ? No triggers...
                         broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
-                        documents.remove(oldDoc.getFileURI().getRawCollectionPath());
+                        documents.remove(oldDoc.getFileURI().lastSegmentString());
 
                         document.setDocId(broker.getNextResourceId(transaction));
                         addDocument(transaction, broker, document);
@@ -1643,7 +1642,7 @@ public class MutableCollection implements Collection {
             throw new IOException("Database is read-only");
         }
 
-        final XmldbURI uri = getURI().append(name);
+        final XmldbURI uri = getURI().append(name.lastSegment());
 
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path);
             final ManagedDocumentLock docLock = lockManager.acquireDocumentWriteLock(uri)) {
