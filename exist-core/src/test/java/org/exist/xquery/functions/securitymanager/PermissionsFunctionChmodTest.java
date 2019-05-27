@@ -278,8 +278,6 @@ public class PermissionsFunctionChmodTest {
             final BinaryDocument uqxq1 = collection.addBinaryResource(transaction, broker, USER1_XQUERY1, xquery1.getBytes(UTF_8), "application/xquery");
             PermissionFactory.chmod_str(broker, uqxq1, Optional.of("u+s,g+s"), Optional.empty());
 
-            broker.saveCollection(transaction, collection);
-
             transaction.commit();
         }
     }
