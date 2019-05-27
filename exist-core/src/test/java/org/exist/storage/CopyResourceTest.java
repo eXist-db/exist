@@ -480,7 +480,7 @@ public class CopyResourceTest {
         try (final DBBroker broker = pool.get(Optional.of(sm.getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
             final Collection collection = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
-            chmod(broker, transaction, collection.getURI(), 511);
+            PermissionFactory.chmod(broker, collection, Optional.of(511), Optional.empty());
             broker.saveCollection(transaction, collection);
 
             createGroup(broker, sm, GROUP1_NAME);
@@ -530,8 +530,6 @@ public class CopyResourceTest {
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC3), USER1_BIN_DOC3_MODE);
             chgrp(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC3), GROUP1_NAME);
 
-            broker.saveCollection(transaction, collection);
-
             transaction.commit();
         }
 
@@ -560,8 +558,6 @@ public class CopyResourceTest {
             collection.addBinaryResource(transaction, broker, USER2_BIN_DOC3, u2d3bin.getBytes(UTF_8), "text/plain");
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER2_BIN_DOC3), USER2_BIN_DOC3_MODE);
             chgrp(broker, transaction, TEST_COLLECTION_URI.append(USER2_BIN_DOC3), GROUP1_NAME);
-
-            broker.saveCollection(transaction, collection);
 
             transaction.commit();
         }
@@ -660,8 +656,6 @@ public class CopyResourceTest {
             if (doc != null) {
                 collection.removeResource(transaction, broker, doc);
             }
-
-            broker.saveCollection(transaction, collection);
         }
     }
 

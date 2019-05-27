@@ -198,7 +198,7 @@ public class StoreResourceTest {
         try (final DBBroker broker = pool.get(Optional.of(sm.getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
             final Collection collection = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
-            chmod(broker, transaction, collection.getURI(), 511);
+            PermissionFactory.chmod(broker, collection, Optional.of(511), Optional.empty());
             broker.saveCollection(transaction, collection);
 
             createGroup(broker, sm, GROUP1_NAME);
@@ -229,8 +229,6 @@ public class StoreResourceTest {
             collection.addBinaryResource(transaction, broker, USER1_BIN_DOC1, u1d3bin.getBytes(UTF_8), "text/plain");
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC1), USER1_BIN_DOC1_MODE);
             chgrp(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC1), GROUP1_NAME);
-
-            broker.saveCollection(transaction, collection);
 
             transaction.commit();
         }
@@ -314,8 +312,6 @@ public class StoreResourceTest {
             if (doc != null) {
                 collection.removeResource(transaction, broker, doc);
             }
-
-            broker.saveCollection(transaction, collection);
         }
     }
 
