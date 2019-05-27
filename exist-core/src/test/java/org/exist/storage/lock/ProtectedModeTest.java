@@ -78,7 +78,7 @@ public class ProtectedModeTest {
         try {
             service.beginProtected();
             final ResourceSet result = service.query("collection('/db/protected/test5')//book");
-            assertEquals(result.getSize(), DOCUMENT_COUNT);
+            assertEquals(DOCUMENT_COUNT, result.getSize());
         } finally {
             service.endProtected();
         }
@@ -91,7 +91,7 @@ public class ProtectedModeTest {
         try {
             service.beginProtected();
             final ResourceSet result = service.query("//book");
-            assertEquals(result.getSize(), COLLECTION_COUNT * DOCUMENT_COUNT);
+            assertEquals(COLLECTION_COUNT * DOCUMENT_COUNT, result.getSize());
         } finally {
             service.endProtected();
         }
@@ -107,7 +107,7 @@ public class ProtectedModeTest {
             try {
                 service.beginProtected();
                 final ResourceSet result = service.query(docURI + "//book");
-                assertEquals(result.getSize(), 1);
+                assertEquals(1, result.getSize());
             } finally {
                 service.endProtected();
             }
