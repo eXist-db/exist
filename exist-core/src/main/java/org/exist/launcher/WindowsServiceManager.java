@@ -267,11 +267,11 @@ class WindowsServiceManager implements ServiceManager {
      */
     private Optional<String> findJvm() {
         final Path javaHome = Paths.get(System.getProperty("java.home")).toAbsolutePath();
-        Path jvm = javaHome.resolve("bin/client/jvm.dll");
+        Path jvm = javaHome.resolve("bin").resolve("client").resolve("jvm.dll");
         if (Files.exists(jvm)) {
             return Optional.of(jvm.toString());
         }
-        jvm = javaHome.resolve("bin/server/jvm.dll");
+        jvm = javaHome.resolve("bin").resolve("server").resolve("jvm.dll");
         if (Files.exists(jvm)) {
             return Optional.of(jvm.toString());
         }
