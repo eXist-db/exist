@@ -2522,6 +2522,9 @@ public class NativeBroker extends DBBroker {
                     blobStore.remove(transaction, ((BinaryDocument)oldDoc).getBlobId());
                 }
 
+                // remove oldDoc entry from collections.dbx
+                removeResourceMetadata(transaction, oldDoc);
+
                 // TODO(AR) do we need a freeId flag to control this?
                 // recycle the id
                 collectionsDb.freeResourceId(oldDoc.getDocId());
