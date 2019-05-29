@@ -2447,7 +2447,7 @@ public class NativeBroker extends DBBroker {
      */
     private void doCopyDocument(final Txn transaction, final DocumentTrigger trigger,
             final DocumentImpl sourceDocument, final Collection targetCollection, final XmldbURI newDocName,
-            @EnsureLocked(mode=LockMode.WRITE_LOCK) final DocumentImpl oldDoc, final PreserveType preserve)
+            @EnsureLocked(mode=LockMode.WRITE_LOCK) @Nullable final DocumentImpl oldDoc, final PreserveType preserve)
             throws TriggerException, LockException, PermissionDeniedException, IOException, EXistException {
 
         final XmldbURI sourceDocumentUri = sourceDocument.getURI();
