@@ -89,6 +89,7 @@ public class VirtualTempPathTest {
         assertEquals(MemoryContentsInputStream.class, in.getClass());
 
         assertArrayEquals(buf, readAllBytes(in));
+        assertArrayEquals(buf, virtualTempPath.getBytes());
     }
 
     @Test
@@ -100,6 +101,7 @@ public class VirtualTempPathTest {
         assertNotEquals(MemoryContentsInputStream.class, in.getClass());
 
         assertArrayEquals(buf, readAllBytes(in));
+        assertArrayEquals(buf, virtualTempPath.getBytes());
     }
 
     @Test
