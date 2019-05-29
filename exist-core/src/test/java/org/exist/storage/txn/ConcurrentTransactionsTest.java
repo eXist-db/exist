@@ -121,6 +121,8 @@ public class ConcurrentTransactionsTest {
             .execute(existEmbeddedServer.getBrokerPool(), EXECUTION_LISTENER);
 
         assertNull(null, result._1);
+
+        // NOTE: This is null because eXist-db has no real transaction isolation (allows dirty reads), the document delete by t1, is seen by t2 even though t2 started before t1 committed
         assertNull(null, result._2);  // should be null as document was deleted!
     }
 
