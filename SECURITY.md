@@ -2,8 +2,7 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+eXist-db provides security patches for the following versions:
 
 | Version | Supported          |
 | ------- | ------------------ |
