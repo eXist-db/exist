@@ -279,10 +279,12 @@ public class CopyCollectionTest {
                 final Collection collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
 
             final Collection u1c1 = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append(USER1_COL1));
-            chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_COL1), USER1_COL1_MODE);
+            chmod(broker, u1c1, USER1_COL1_MODE);
+            broker.saveCollection(transaction, u1c1);
 
             final Collection u1c2 = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append(USER1_COL2));
-            chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_COL2), USER1_COL2_MODE);
+            chmod(broker, u1c2, USER1_COL2_MODE);
+            broker.saveCollection(transaction, u1c2);
 
             broker.saveCollection(transaction, collection);
 
@@ -296,7 +298,8 @@ public class CopyCollectionTest {
                 final Collection collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
 
             final Collection u2c2 = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append(USER2_COL2));
-            chmod(broker, transaction, TEST_COLLECTION_URI.append(USER2_COL2), USER2_COL2_MODE);
+            chmod(broker, u2c2, USER2_COL2_MODE);
+            broker.saveCollection(transaction, u2c2);
 
             broker.saveCollection(transaction, collection);
 
@@ -352,6 +355,10 @@ public class CopyCollectionTest {
 
     private static void chmod(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final int mode) throws PermissionDeniedException {
         PermissionFactory.chmod(broker, transaction, pathUri, Optional.of(mode), Optional.empty());
+    }
+
+    private static void chmod(final DBBroker broker, final Collection collection, final int mode) throws PermissionDeniedException {
+        PermissionFactory.chmod(broker, collection, Optional.of(mode), Optional.empty());
     }
 
     private static void removeUser(final SecurityManager sm, final String username) throws PermissionDeniedException, EXistException {
