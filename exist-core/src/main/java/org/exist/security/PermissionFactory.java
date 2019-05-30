@@ -166,6 +166,8 @@ public class PermissionFactory {
      * Changes the ownership of a resource in the database
      * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
      *
+     * Note - this function will persist the updated permissions of the database resource.
+     *
      * @param broker the database broker.
      * @param transaction the database transaction;
      * @param pathUri the URI to a resource in the database.
@@ -182,6 +184,8 @@ public class PermissionFactory {
      * Changes the ownership of a Collection in the database
      * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
      *
+     * Note - this function does not persist the updated permissions of the Collection.
+     *
      * @param broker the database broker.
      * @param collection the URI to a Collection in the database.
      * @param owner the new owner for the collection.
@@ -196,6 +200,8 @@ public class PermissionFactory {
     /**
      * Changes the ownership of a Document in the database
      * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
+     *
+     * Note - this function does not persist the updated permissions of the Document.
      *
      * @param broker the database broker.
      * @param document the URI to a Document in the database.
@@ -286,6 +292,8 @@ public class PermissionFactory {
      * Changes the mode of a resource in the database
      * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
      *
+     * Note - this function will persist the updated permissions of the database resource.
+     *
      * @param broker the database broker.
      * @param transaction the database transaction.
      * @param pathUri the URI to a resource in the database.
@@ -302,6 +310,8 @@ public class PermissionFactory {
      * Changes the mode of a Collection in the database
      * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
      *
+     * Note - this function does not persist the updated permissions of the Collection.
+     *
      * @param broker the database broker.
      * @param collection the URI to a Collection in the database.
      * @param modeStr the new mode for the collection.
@@ -316,6 +326,8 @@ public class PermissionFactory {
     /**
      * Changes the mode of a Document in the database
      * inline with the rules of POSIX.1-2017 (Issue 7, 2018 edition).
+     *
+     * Note - this function does not persist the updated permissions of the Document.
      *
      * @param broker the database broker.
      * @param document the URI to a Document in the database.
