@@ -32,8 +32,6 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DefaultDocumentSet;
-import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -41,12 +39,10 @@ import org.exist.security.Subject;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
-import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertTrue;
 
@@ -55,17 +51,11 @@ import static org.junit.Assert.assertTrue;
  */
 public class TwoDatabasesTest {
 
-    @ClassRule
-    public static final TemporaryFolder tmpFolder = new TemporaryFolder();
-
     private static Path config1File;
-    private static Path dataDir1;
-
     private static Path config2File;
-    private static Path dataDir2;
 
     @BeforeClass
-    public static void prepare() throws URISyntaxException, IOException {
+    public static void prepare() throws URISyntaxException {
         final String log4j = System.getProperty("log4j.configurationFile");
         if (log4j == null) {
             Path lf = Paths.get("log42j.xml");
@@ -79,18 +69,7 @@ public class TwoDatabasesTest {
         final String packagePath = TwoDatabasesTest.class.getPackage().getName().replace('.', separator);
 
         config1File = Paths.get(loader.getResource(packagePath + separator + "conf1.xml").toURI());
-        dataDir1 = tmpFolder.newFolder("data1").toPath();
-        FileUtils.mkdirsQuietly(dataDir1);
-
         config2File = Paths.get(loader.getResource(packagePath + separator + "conf2.xml").toURI());
-        dataDir2 = tmpFolder.newFolder("data2").toPath();
-        FileUtils.mkdirsQuietly(dataDir2);
-    }
-
-    @AfterClass
-    public static void cleanup() {
-        FileUtils.deleteQuietly(dataDir2);
-        FileUtils.deleteQuietly(dataDir1);
     }
 
     @Rule
@@ -155,25 +134,19 @@ public class TwoDatabasesTest {
         }
     }
 
-    static String bin = "ABCDEFG";
+    private static final String bin = "ABCDEFG";
 
     private Collection storeBin(final DBBroker broker, final Txn txn, String suffix) throws PermissionDeniedException, LockException, TriggerException, EXistException, IOException {
         String data = bin + suffix;
-        Collection top = broker.openCollection(XmldbURI.create("xmldb:exist:///"), LockMode.WRITE_LOCK);
-        top.addBinaryResource(txn, broker, XmldbURI.create("xmldb:exist:///bin"), data.getBytes(), "text/plain");
+        Collection top = broker.openCollection(XmldbURI.create("xmldb:exist:///db"), LockMode.WRITE_LOCK);
+        top.addBinaryResource(txn, broker, XmldbURI.create("bin"), data.getBytes(), "text/plain");
         return top;
     }
 
     private boolean getBin(final DBBroker broker, final String suffix) throws PermissionDeniedException, IOException, LockException {
         BinaryDocument binDoc = null;
-        try(final Collection top = broker.openCollection(XmldbURI.create("xmldb:exist:///"), LockMode.READ_LOCK)) {
-            int count = top.getDocumentCount(broker);
-            MutableDocumentSet docs = new DefaultDocumentSet();
-            top.getDocuments(broker, docs);
-            XmldbURI[] uris = docs.getNames();
-            //binDoc = (BinaryDocument)broker.getXMLResource(XmldbURI.create("xmldb:exist:///bin"),LockMode.READ_LOCK);
-
-            binDoc = (BinaryDocument) top.getDocument(broker, XmldbURI.create("xmldb:exist:///bin"));
+        try(final Collection top = broker.openCollection(XmldbURI.create("xmldb:exist:///db"), LockMode.READ_LOCK)) {
+            binDoc = (BinaryDocument) top.getDocument(broker, XmldbURI.create("bin"));
             assertTrue(binDoc != null);
             try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream((int)binDoc.getContentLength())) {
                 broker.readBinaryResource(binDoc, os);
@@ -182,5 +155,4 @@ public class TwoDatabasesTest {
             }
         }
     }
-
 }

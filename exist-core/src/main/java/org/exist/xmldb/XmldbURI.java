@@ -527,6 +527,25 @@ public class XmldbURI implements Comparable<Object>, Serializable {
         return new XmldbURI(name.substring(last + 1));
     }
 
+    public String lastSegmentString() {
+        String name = getRawCollectionPath();
+        int last;
+
+        // No slash - give them the whole thing!
+        if ((last = name.lastIndexOf('/')) == Constants.STRING_NOT_FOUND) {
+            return name;
+        }
+
+        // Checks against a trailing slash
+        // is this appropriate?
+        if (last == (name.length() - 1)) {
+            name = name.substring(0, last);
+            last = name.lastIndexOf('/');
+        }
+
+        return name.substring(last + 1);
+    }
+
     /**
      * This function returns a relative XmldbURI with the value after the last / in the collection path of the URI.
      *
