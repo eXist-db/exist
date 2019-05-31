@@ -298,8 +298,6 @@ public class TransactionManager implements BrokerPoolService {
 
         transactions.remove(txn.getId());
 
-        processSystemTasks();
-
         if (LOG.isDebugEnabled()) {
             LOG.debug("Committed transaction: " + txn.getId());
         }
@@ -377,8 +375,6 @@ public class TransactionManager implements BrokerPoolService {
 
         transactions.remove(txn.getId());
 
-        processSystemTasks();
-
         if (LOG.isDebugEnabled()) {
             LOG.debug("Aborted transaction: " + txn.getId());
         }
@@ -416,6 +412,8 @@ public class TransactionManager implements BrokerPoolService {
         } finally {
             txn.setState(Txn.State.CLOSED); //transaction is now closed!
         }
+
+        processSystemTasks();
     }
 
     /**
