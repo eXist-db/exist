@@ -19,9 +19,11 @@
  */
 package org.exist.backup;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -40,6 +42,7 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
@@ -51,8 +54,11 @@ import org.exist.storage.txn.Txn;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
 
 import org.exist.test.ExistEmbeddedServer;
+import org.exist.util.FileUtils;
 import org.exist.util.LockException;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.functions.util.BinaryDoc;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
@@ -141,7 +147,8 @@ public class SystemExportImportTest {
         final RestoreListener listener = new LogRestoreListener();
         restore.restore(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD, null, file, listener);
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             final Collection test = broker.getCollection(TEST_COLLECTION_URI);
             assertNotNull(test);
@@ -154,6 +161,14 @@ public class SystemExportImportTest {
 
             doc = getDoc(broker, test, doc03uri.lastSegment());
             assertEquals(XML3_PROPER, serializer(broker, doc));
+
+            doc = getDoc(broker, test, doc11uri.lastSegment());
+            assertTrue(doc instanceof BinaryDocument);
+            try (final InputStream is = broker.getBinaryResource(transaction, ((BinaryDocument)doc))) {
+                assertEquals(BINARY, InputStreamUtil.readString(is, UTF_8));
+            }
+
+            transaction.commit();
         }
 	}
 
@@ -194,7 +209,6 @@ public class SystemExportImportTest {
 	@BeforeClass
     public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-	    pool.getPluginsManager().addPlugin("org.exist.storage.md.Plugin");
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
