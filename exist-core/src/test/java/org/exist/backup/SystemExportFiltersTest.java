@@ -41,6 +41,7 @@ import org.exist.util.LockException;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
+import org.junit.rules.TemporaryFolder;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
@@ -90,6 +91,9 @@ public class SystemExportFiltersTest {
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
+    @ClassRule
+    public static final TemporaryFolder tempFolder = new TemporaryFolder();
+
     @BeforeClass
     public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -128,7 +132,8 @@ public class SystemExportFiltersTest {
 
             boolean direct = true;
             final SystemExport sysexport = new SystemExport(broker, null, null, direct);
-            file = sysexport.export("backup", false, false, null);
+            final Path backupDir = tempFolder.newFolder().toPath();
+            file = sysexport.export(backupDir.toAbsolutePath().toString(), false, false, null);
         }
 
         TestUtils.cleanupDB();
