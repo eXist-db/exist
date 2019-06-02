@@ -259,8 +259,7 @@ public class IndexStatisticsWorker implements IndexWorker {
                 final byte type = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE];
                 final VariableByteInput istream = store.getAsStream(pointer);
                 if (type == DocumentImpl.XML_FILE) {
-                    final DocumentImpl doc = new DocumentImpl(broker.getBrokerPool());
-                    doc.read(istream);
+                    final DocumentImpl doc = DocumentImpl.read(broker.getBrokerPool(), istream);
                     updateDocument(broker, doc);
                 }
             } catch (final Exception e) {

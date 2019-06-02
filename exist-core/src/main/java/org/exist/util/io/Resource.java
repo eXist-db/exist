@@ -634,7 +634,8 @@ public class Resource extends File {
                 } else {
                     // store as binary resource
                     try (final InputStream is = new FastByteArrayInputStream(new byte[0])) {
-                        final BinaryDocument blob = new BinaryDocument(db, collection, fileName);
+                        final int docId = broker.getNextResourceId(transaction);
+                        final BinaryDocument blob = new BinaryDocument(db, collection, docId, fileName);
                         collection.addBinaryResource(transaction, broker, blob, is,
                                 mimeType.getName(), 0L, new Date(), new Date());
                     }

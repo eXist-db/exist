@@ -44,7 +44,6 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Observable;
 
 /**
  * Just a Delegate to a {@link Collection} which allows us to also hold a lock
@@ -428,11 +427,6 @@ public class LockedCollection implements Collection {
     @Override
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final BinaryDocument blob, final InputStream is, final String mimeType, final long size, final Date created, final Date modified, final DBBroker.PreserveType preserve) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
         return collection.addBinaryResource(transaction, broker, blob, is, mimeType, size, created, modified, preserve);
-    }
-
-    @Override
-    public Observable getObservable() {
-        return collection.getObservable();
     }
 
     @Override
