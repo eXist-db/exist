@@ -86,9 +86,9 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         return Arrays.asList(
                 Start(stored.transactionId),
+                CollectionNextDocId(stored.transactionId, 1, docId),
                 StoreBlobFile(stored.transactionId, stored.docLocation.blobId),
                 UpdateBlobRefCount(stored.transactionId, stored.docLocation.blobId, 0, 1),
-                CollectionNextDocId(stored.transactionId, 1, docId),
                 CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation.dbLocation),
                 Commit(stored.transactionId)
         );
@@ -101,9 +101,9 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         return Arrays.asList(
                 Start(stored.transactionId),
+                CollectionNextDocId(stored.transactionId, 1, docId),
                 StoreBlobFile(stored.transactionId, stored.docLocation.blobId),
                 UpdateBlobRefCount(stored.transactionId, stored.docLocation.blobId, 0, 1),
-                CollectionNextDocId(stored.transactionId, 1, docId),
                 CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation.dbLocation)
         );
     }
@@ -114,9 +114,9 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         return Arrays.asList(
                 Start(stored.transactionId),
+                CollectionNextDocId(stored.transactionId, 1, docId),
                 StoreBlobFile(stored.transactionId, stored.docLocation.blobId),
                 UpdateBlobRefCount(stored.transactionId, stored.docLocation.blobId, 0, 1),
-                CollectionNextDocId(stored.transactionId, 1, docId),
                 CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation.dbLocation),
                 Commit(stored.transactionId),
 
@@ -132,9 +132,9 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
         final int docId = FIRST_USABLE_DOC_ID + 0;
         return Arrays.asList(
                 Start(stored.transactionId),
+                CollectionNextDocId(stored.transactionId, 1, docId),
                 StoreBlobFile(stored.transactionId, stored.docLocation.blobId),
                 UpdateBlobRefCount(stored.transactionId, stored.docLocation.blobId, 0, 1),
-                CollectionNextDocId(stored.transactionId, 1, docId),
                 CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation.dbLocation),
 
                 Start(deleted.transactionId),
@@ -150,9 +150,9 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         return Arrays.asList(
                 Start(stored.transactionId),
+                CollectionNextDocId(stored.transactionId, 1, docId),
                 StoreBlobFile(stored.transactionId, stored.docLocation.blobId),
                 UpdateBlobRefCount(stored.transactionId, stored.docLocation.blobId, 0, 1),
-                CollectionNextDocId(stored.transactionId, 1, docId),
                 CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation.dbLocation),
                 Commit(stored.transactionId),
 
@@ -168,9 +168,9 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         return Arrays.asList(
                 Start(stored.transactionId),
+                CollectionNextDocId(stored.transactionId, 1, docId),
                 StoreBlobFile(stored.transactionId, stored.docLocation.blobId),
                 UpdateBlobRefCount(stored.transactionId, stored.docLocation.blobId, 0, 1),
-                CollectionNextDocId(stored.transactionId, 1, docId),
                 CollectionCreateDoc(stored.transactionId, 1, docId, stored.docLocation.dbLocation),
 
                 Start(deleted.transactionId),
@@ -208,10 +208,10 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         return Arrays.asList(
                 Start(replaced.transactionId),
+                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
                 UpdateBlobRefCount(replaced.transactionId, replaced.docLocation.blobId, 1, 0),
                 CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation.dbLocation),
                 UpdateBlobRefCount(replaced.transactionId, replaced.docLocation.blobId, 0, 1),
-                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
                 CollectionCreateDoc(replaced.transactionId, 1, docId + 1, replaced.docLocation.dbLocation),
                 Commit(replaced.transactionId)
         );
@@ -223,11 +223,11 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         return Arrays.asList(
                 Start(replacement.transactionId),
+                CollectionNextDocId(replacement.transactionId, 1, docId + 1),
                 UpdateBlobRefCount(replacement.transactionId, original.docLocation.blobId, 1, 0),
                 CollectionDeleteDoc(replacement.transactionId, 1, docId, original.docLocation.dbLocation),
                 StoreBlobFile(replacement.transactionId, replacement.docLocation.blobId),
                 UpdateBlobRefCount(replacement.transactionId, replacement.docLocation.blobId, 0, 1),
-                CollectionNextDocId(replacement.transactionId, 1, docId + 1),
                 CollectionCreateDoc(replacement.transactionId, 1, docId + 1, replacement.docLocation.dbLocation),
                 Commit(replacement.transactionId)
         );
@@ -239,10 +239,10 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         return Arrays.asList(
                 Start(replaced.transactionId),
+                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
                 UpdateBlobRefCount(replaced.transactionId, replaced.docLocation.blobId, 1, 0),
                 CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation.dbLocation),
                 UpdateBlobRefCount(replaced.transactionId, replaced.docLocation.blobId, 0, 1),
-                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
                 CollectionCreateDoc(replaced.transactionId, 1, docId + 1, replaced.docLocation.dbLocation)
         );
     }
@@ -253,11 +253,11 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         return Arrays.asList(
                 Start(replacement.transactionId),
+                CollectionNextDocId(replacement.transactionId, 1, docId + 1),
                 UpdateBlobRefCount(replacement.transactionId, original.docLocation.blobId, 1, 0),
                 CollectionDeleteDoc(replacement.transactionId, 1, docId, original.docLocation.dbLocation),
                 StoreBlobFile(replacement.transactionId, replacement.docLocation.blobId),
                 UpdateBlobRefCount(replacement.transactionId, replacement.docLocation.blobId, 0, 1),
-                CollectionNextDocId(replacement.transactionId, 1, docId + 1),
                 CollectionCreateDoc(replacement.transactionId, 1, docId + 1, replacement.docLocation.dbLocation)
         );
     }
@@ -268,10 +268,10 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         return Arrays.asList(
                 Start(replaced.transactionId),
+                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
                 UpdateBlobRefCount(replaced.transactionId, replaced.docLocation.blobId, 1, 0),
                 CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation.dbLocation),
                 UpdateBlobRefCount(replaced.transactionId, replaced.docLocation.blobId, 0, 1),
-                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
                 CollectionCreateDoc(replaced.transactionId, 1, docId + 1, replaced.docLocation.dbLocation),
                 Commit(replaced.transactionId),
 
@@ -289,11 +289,11 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         return Arrays.asList(
                 Start(replacement.transactionId),
+                CollectionNextDocId(replacement.transactionId, 1, docId + 1),
                 UpdateBlobRefCount(replacement.transactionId, original.docLocation.blobId, 1, 0),
                 CollectionDeleteDoc(replacement.transactionId, 1, docId, original.docLocation.dbLocation),
                 StoreBlobFile(replacement.transactionId, replacement.docLocation.blobId),
                 UpdateBlobRefCount(replacement.transactionId, replacement.docLocation.blobId, 0, 1),
-                CollectionNextDocId(replacement.transactionId, 1, docId + 1),
                 CollectionCreateDoc(replacement.transactionId, 1, docId + 1, replacement.docLocation.dbLocation),
                 Commit(replacement.transactionId),
 
@@ -310,10 +310,10 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         return Arrays.asList(
                 Start(replaced.transactionId),
+                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
                 UpdateBlobRefCount(replaced.transactionId, replaced.docLocation.blobId, 1, 0),
                 CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation.dbLocation),
                 UpdateBlobRefCount(replaced.transactionId, replaced.docLocation.blobId, 0, 1),
-                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
                 CollectionCreateDoc(replaced.transactionId, 1, docId + 1, replaced.docLocation.dbLocation),
 
                 Start(deleted.transactionId),
@@ -329,11 +329,11 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         return Arrays.asList(
                 Start(replacement.transactionId),
+                CollectionNextDocId(replacement.transactionId, 1, docId + 1),
                 UpdateBlobRefCount(replacement.transactionId, original.docLocation.blobId, 1, 0),
                 CollectionDeleteDoc(replacement.transactionId, 1, docId, original.docLocation.dbLocation),
                 StoreBlobFile(replacement.transactionId, replacement.docLocation.blobId),
                 UpdateBlobRefCount(replacement.transactionId, replacement.docLocation.blobId, 0, 1),
-                CollectionNextDocId(replacement.transactionId, 1, docId + 1),
                 CollectionCreateDoc(replacement.transactionId, 1, docId + 1, replacement.docLocation.dbLocation),
 
                 Start(deleted.transactionId),
@@ -349,10 +349,10 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         return Arrays.asList(
                 Start(replaced.transactionId),
+                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
                 UpdateBlobRefCount(replaced.transactionId, replaced.docLocation.blobId, 1, 0),
                 CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation.dbLocation),
                 UpdateBlobRefCount(replaced.transactionId, replaced.docLocation.blobId, 0, 1),
-                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
                 CollectionCreateDoc(replaced.transactionId, 1, docId + 1, replaced.docLocation.dbLocation),
                 Commit(replaced.transactionId),
 
@@ -368,11 +368,11 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         return Arrays.asList(
                 Start(replacement.transactionId),
+                CollectionNextDocId(replacement.transactionId, 1, docId + 1),
                 UpdateBlobRefCount(replacement.transactionId, original.docLocation.blobId, 1, 0),
                 CollectionDeleteDoc(replacement.transactionId, 1, docId, original.docLocation.dbLocation),
                 StoreBlobFile(replacement.transactionId, replacement.docLocation.blobId),
                 UpdateBlobRefCount(replacement.transactionId, replacement.docLocation.blobId, 0, 1),
-                CollectionNextDocId(replacement.transactionId, 1, docId + 1),
                 CollectionCreateDoc(replacement.transactionId, 1, docId + 1, replacement.docLocation.dbLocation),
                 Commit(replacement.transactionId),
 
@@ -387,10 +387,10 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
         final int docId = FIRST_USABLE_DOC_ID + offset;
         return Arrays.asList(
                 Start(replaced.transactionId),
+                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
                 UpdateBlobRefCount(replaced.transactionId, replaced.docLocation.blobId, 1, 0),
                 CollectionDeleteDoc(replaced.transactionId, 1, docId, replaced.docLocation.dbLocation),
                 UpdateBlobRefCount(replaced.transactionId, replaced.docLocation.blobId, 0, 1),
-                CollectionNextDocId(replaced.transactionId, 1, docId + 1),
                 CollectionCreateDoc(replaced.transactionId, 1, docId + 1, replaced.docLocation.dbLocation),
 
                 Start(deleted.transactionId),
@@ -404,11 +404,11 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
         final int docId = FIRST_USABLE_DOC_ID + offset;
         return Arrays.asList(
                 Start(replacement.transactionId),
+                CollectionNextDocId(replacement.transactionId, 1, docId + 1),
                 UpdateBlobRefCount(replacement.transactionId, original.docLocation.blobId, 1, 0),
                 CollectionDeleteDoc(replacement.transactionId, 1, docId, original.docLocation.dbLocation),
                 StoreBlobFile(replacement.transactionId, replacement.docLocation.blobId),
                 UpdateBlobRefCount(replacement.transactionId, replacement.docLocation.blobId, 0, 1),
-                CollectionNextDocId(replacement.transactionId, 1, docId + 1),
                 CollectionCreateDoc(replacement.transactionId, 1, docId + 1, replacement.docLocation.dbLocation),
 
                 Start(deleted.transactionId),

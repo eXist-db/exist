@@ -23,9 +23,10 @@
 package org.exist.dom.persistent;
 
 import org.exist.collections.Collection;
+import org.exist.security.Permission;
+import org.exist.security.PermissionFactory;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.blob.BlobId;
-import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.xmldb.XmldbURI;
@@ -45,8 +46,26 @@ public class BinaryDocument extends DocumentImpl {
     private BlobId blobId;
     private long realSize = 0L;
 
-    public BinaryDocument(final BrokerPool pool) {
-        super(pool);
+    /**
+     * Creates a new persistent binary Document instance.
+     *
+     * @param pool The broker pool
+     * @param collection The Collection which holds this document
+     * @param docId the id of the document
+     * @param fileURI The name of the document
+     */
+    public BinaryDocument(final BrokerPool pool, final Collection collection, final int docId, final XmldbURI fileURI) {
+        super(pool, collection, docId, fileURI);
+    }
+
+    /**
+     * Creates a new persistent binary Document instance to replace an existing document instance.
+     *
+     * @param docId the id of the document
+     * @param prevDoc The previous binary Document object that we are overwriting
+     */
+    public BinaryDocument(final int docId, final DocumentImpl prevDoc) {
+        super(docId, prevDoc);
     }
 
     /**
@@ -54,30 +73,18 @@ public class BinaryDocument extends DocumentImpl {
      *
      * @param pool The broker pool
      * @param collection The Collection which holds this document
+     * @param docId the id of the document
      * @param fileURI The name of the document
+     * @param blobId the id of the blob in the blob store
+     * @param permissions the permissions of the document
+     * @param realSize the real size of the binary document
+     * @param metadata the metadata for the document
      */
-    public BinaryDocument(final BrokerPool pool, final Collection collection, final XmldbURI fileURI) {
-        super(pool, collection, fileURI);
-    }
-
-    /**
-     * Creates a new persistent binary Document instance to replace an existing document instance.
-     *
-     * @param prevDoc The previous binary Document object that we are overwriting
-     */
-    public BinaryDocument(final DocumentImpl prevDoc) {
-        super(prevDoc);
-    }
-
-    /**
-     * Creates a new persistent binary Document instance to replace an existing document instance.
-     *
-     * @param collection The Collection which holds this document
-     * @param prevDoc The previous Document object that we are overwriting
-     * @param prevDoc The previous binary Document object that we are overwriting
-     */
-    public BinaryDocument(final BrokerPool pool, final Collection collection, final Collection.CollectionEntry prevDoc) {
-        super(pool, collection, prevDoc);
+    private BinaryDocument(final BrokerPool pool, final Collection collection, final int docId, final XmldbURI fileURI,
+            final BlobId blobId, final Permission permissions, final long realSize, final DocumentMetadata metadata) {
+        super(pool, collection, docId, fileURI, permissions, 0, null, metadata);
+        this.blobId = blobId;
+        this.realSize = realSize;
     }
 
     @Override
@@ -122,20 +129,30 @@ public class BinaryDocument extends DocumentImpl {
         getMetadata().write(getBrokerPool().getSymbols(), ostream);
     }
 
-    @Override
-    public void read(final VariableByteInput istream) throws IOException {
-        setDocId(istream.readInt());
-        setFileURI(XmldbURI.create(istream.readUTF()));
+    /**
+     * Deserialize the document object from bytes.
+     *
+     * @param pool the database
+     * @param istream the byte stream to read
+     *
+     * @return the document object.
+     */
+    public static BinaryDocument read(final BrokerPool pool, final VariableByteInput istream) throws IOException {
+        final int docId = istream.readInt();
+        final XmldbURI fileURI = XmldbURI.create(istream.readUTF());
 
         final byte[] blobIdRaw = new byte[istream.readInt()];
         istream.read(blobIdRaw);
-        this.blobId = new BlobId(blobIdRaw);
+        final BlobId blobId = new BlobId(blobIdRaw);
 
-        getPermissions().read(istream);
+        final Permission permissions = PermissionFactory.getDefaultResourcePermission(pool.getSecurityManager());
+        permissions.read(istream);
 
-        this.realSize = istream.readLong();
+        final long realSize = istream.readLong();
+
         final DocumentMetadata metadata = new DocumentMetadata();
-        metadata.read(getBrokerPool().getSymbols(), istream);
-        setMetadata(metadata);
+        metadata.read(pool.getSymbols(), istream);
+
+        return new BinaryDocument(pool, null, docId, fileURI, blobId, permissions, realSize, metadata);
     }
 }

@@ -72,7 +72,7 @@ import java.util.function.Function;
  * 
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
-public abstract class DBBroker extends Observable implements AutoCloseable {
+public abstract class DBBroker implements AutoCloseable {
 
 	// Matching types
 	public final static int MATCH_EXACT 		= 0;

@@ -27,7 +27,6 @@ import org.exist.dom.persistent.*;
 
 import java.io.*;
 import java.util.*;
-import java.util.function.Consumer;
 
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.logging.log4j.LogManager;
@@ -112,7 +111,6 @@ public class MutableCollection implements Collection {
     private volatile boolean isTempCollection;
     private final Permission permissions;
     private final CollectionMetadata collectionMetadata;
-    private final ObservaleMutableCollection observable = new ObservaleMutableCollection();
 
     /**
      * Constructs a Collection Object (not yet persisted)
@@ -347,17 +345,6 @@ public class MutableCollection implements Collection {
 
                 // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
                 collectionLock.close();
-
-                if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
-                    try {
-                        doc.setDocId(broker.getNextResourceId(transaction));
-                    } catch (final EXistException e) {
-                        LOG.error("Collection error " + e.getMessage(), e);
-
-                        // TODO : re-raise the exception ? -pb
-                        return;
-                    }
-                }
 
                 documents.put(doc.getFileURI().lastSegmentString(), doc);
             }
@@ -1250,7 +1237,6 @@ public class MutableCollection implements Collection {
             info.getDocumentLock().close();
             broker.getBrokerPool().getProcessMonitor().endJob();
         }
-        broker.deleteObservers();
         
         if(info.isCreating()) {
             info.getTriggers().afterCreateDocument(broker, transaction, document);
@@ -1411,9 +1397,13 @@ public class MutableCollection implements Collection {
                 // acquire the WRITE_LOCK on the Document, this lock is released in storeXMLInternal via IndexInfo
                 documentWriteLock = lockManager.acquireDocumentWriteLock(getURI().append(name.lastSegment()));
 
-                DocumentImpl document = new DocumentImpl((BrokerPool) db, this, name);
                 oldDoc = documents.get(name.lastSegmentString());
                 checkPermissionsForAddDocument(broker, oldDoc);
+
+                // NOTE: the new `document` object actually gets discarded in favour of the `oldDoc` below if there is an oldDoc and it is XML (so we can use -1 as the docId because it will never be used)
+                final int docId = (oldDoc != null && oldDoc.getResourceType() == DocumentImpl.XML_FILE) ? - 1 : broker.getNextResourceId(transaction);
+                DocumentImpl document = new DocumentImpl((BrokerPool) db, this, docId, name);
+
                 checkCollectionConflict(name);
                 manageDocumentInformation(oldDoc, document);
                 final Indexer indexer = new Indexer(broker, transaction);
@@ -1422,7 +1412,6 @@ public class MutableCollection implements Collection {
                 info.setCreating(oldDoc == null);
                 info.setOldDocPermissions(oldDoc != null ? oldDoc.getPermissions() : null);
                 indexer.setDocument(document, config);
-                addObserversToIndexer(broker, indexer);
                 indexer.setValidating(true);
 
                 final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, indexer, this, broker.isTriggersEnabled() ? config : null);
@@ -1460,7 +1449,6 @@ public class MutableCollection implements Collection {
                         broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
                         documents.remove(oldDoc.getFileURI().lastSegmentString());
 
-                        document.setDocId(broker.getNextResourceId(transaction));
                         addDocument(transaction, broker, document);
                     } else {
                         //TODO : use a more elaborated method ? No triggers...
@@ -1475,7 +1463,6 @@ public class MutableCollection implements Collection {
                         LOG.debug("removed old document " + oldDoc.getFileURI());
                     }
                 } else {
-                    document.setDocId(broker.getNextResourceId(transaction));
                     addDocument(transaction, broker, document);
                 }
 
@@ -1522,21 +1509,6 @@ public class MutableCollection implements Collection {
                 //throw new EXistException("An error occurred while reloading the updated collection configuration: " + e.getMessage(), e);
         //}
     }
-
-    /**
-     * Add observers to the indexer
-     *
-     * @param broker    The database broker
-     * @param indexer   The indexer to add observers to
-     */
-    private void addObserversToIndexer(final DBBroker broker, final Indexer indexer) {
-        broker.deleteObservers();
-        observable.forEachObserver(observer -> {
-            indexer.addObserver(observer);
-            broker.addObserver(observer);
-        });
-    }
-
 
     /**
      * If an old document exists, keep information about  the document.
@@ -1649,11 +1621,12 @@ public class MutableCollection implements Collection {
 
             final DocumentImpl oldDoc = getDocument(broker, name);
 
+            final int docId = broker.getNextResourceId(transaction);
             final BinaryDocument blob;
             if (oldDoc != null) {
-                blob = new BinaryDocument(oldDoc);
+                blob = new BinaryDocument(docId, oldDoc);
             } else {
-                blob = new BinaryDocument(broker.getBrokerPool(), this, name);
+                blob = new BinaryDocument(broker.getBrokerPool(), this, docId, name);
             }
 
             return addBinaryResource(db, transaction, broker, blob, is, mimeType, size, created, modified,
@@ -1663,7 +1636,12 @@ public class MutableCollection implements Collection {
 
     @Override
     public BinaryDocument validateBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name) throws PermissionDeniedException, LockException, TriggerException, IOException {
-        return new BinaryDocument(broker.getBrokerPool(), this, name);
+        try {
+            final int docId = broker.getNextResourceId(transaction);
+            return new BinaryDocument(broker.getBrokerPool(), this, docId, name);
+        } catch (final EXistException e) {
+            throw new IOException(e.getMessage(), e);
+        }
     }
 
     @Override
@@ -1861,11 +1839,6 @@ public class MutableCollection implements Collection {
     }
 
     @Override
-    public Observable getObservable() {
-        return observable;
-    }
-
-    @Override
     public String toString() {
         final StringBuilder buf = new StringBuilder();
         buf.append( getURI() );
@@ -1889,52 +1862,5 @@ public class MutableCollection implements Collection {
         }
         buf.append("]");
         return buf.toString();
-    }
-
-    private static class ObservaleMutableCollection extends Observable {
-        private Observer[] observers = null;
-
-        @Override
-        public synchronized void addObserver(final Observer o) {
-            if(hasObserver(o)) {
-                return;
-            }
-            if(observers == null) {
-                observers = new Observer[1];
-                observers[0] = o;
-            } else {
-                final Observer n[] = new Observer[observers.length + 1];
-                System.arraycopy(observers, 0, n, 0, observers.length);
-                n[observers.length] = o;
-                observers = n;
-            }
-        }
-
-        private boolean hasObserver(final Observer o) {
-            if(observers == null) {
-                return false;
-            }
-            for (Observer observer : observers) {
-                if (observer == o) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        void forEachObserver(final Consumer<Observer> consumer) {
-            if(observers != null) {
-                for(final Observer observer : observers) {
-                    consumer.accept(observer);
-                }
-            }
-        }
-
-        @Override
-        public synchronized void deleteObservers() {
-            if(observers != null) {
-                observers = null;
-            }
-        }
     }
 }
