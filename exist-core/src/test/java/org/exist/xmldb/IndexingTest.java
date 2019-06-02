@@ -1,6 +1,8 @@
 package org.exist.xmldb;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Random;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -264,19 +266,26 @@ public class IndexingTest {
         try {
             Transformer t = TransformerFactory.newInstance().newTransformer();
             DOMSource source = new DOMSource(n);
-            SAXResult result = new SAXResult(new IndexingTest.SAXHandler());
+            SAXHandler saxHandler = new SAXHandler();
+            SAXResult result = new SAXResult(saxHandler);
             t.transform(source, result);
+            System.out.println(saxHandler.getWriter());
         } catch (Exception e) {
             fail(e.getMessage());
         }
     }
 
     class SAXHandler implements ContentHandler {
+        private final PrintWriter writer = new PrintWriter(new StringWriter());
         SAXHandler() {
         }
 
+        public PrintWriter getWriter() {
+            return writer;
+        }
+
         public void characters(char[] ch, int start, int length) {
-            System.out.println(
+            writer.println(
                     "SAXHandler.characters("
                             + new String(ch)
                             + ", "
@@ -287,14 +296,14 @@ public class IndexingTest {
         }
 
         public void endDocument() {
-            System.out.println("SAXHandler.endDocument()");
+            writer.println("SAXHandler.endDocument()");
         }
 
         public void endElement(
                 String namespaceURI,
                 String localName,
                 String qName) {
-            System.out.println(
+            writer.println(
                     "SAXHandler.endElement("
                             + namespaceURI
                             + ", "
@@ -305,11 +314,11 @@ public class IndexingTest {
         }
 
         public void endPrefixMapping(String prefix) {
-            System.out.println("SAXHandler.endPrefixMapping(" + prefix + ")");
+            writer.println("SAXHandler.endPrefixMapping(" + prefix + ")");
         }
 
         public void ignorableWhitespace(char[] ch, int start, int length) {
-            System.out.println(
+            writer.println(
                     "SAXHandler.ignorableWhitespace("
                             + new String(ch)
                             + ", "
@@ -320,7 +329,7 @@ public class IndexingTest {
         }
 
         public void processingInstruction(String target, String data) {
-            System.out.println(
+            writer.println(
                     "SAXHandler.processingInstruction("
                             + target
                             + ", "
@@ -329,16 +338,16 @@ public class IndexingTest {
         }
 
         public void setDocumentLocator(Locator locator) {
-            System.out.println(
+            writer.println(
                     "SAXHandler.setDocumentLocator(" + locator + ")");
         }
 
         public void skippedEntity(String name) {
-            System.out.println("SAXHandler.skippedEntity(" + name + ")");
+            writer.println("SAXHandler.skippedEntity(" + name + ")");
         }
 
         public void startDocument() {
-            System.out.println("SAXHandler.startDocument()");
+            writer.println("SAXHandler.startDocument()");
         }
 
         public void startElement(
@@ -346,7 +355,7 @@ public class IndexingTest {
                 String localName,
                 String qName,
                 Attributes atts) {
-            System.out.println(
+            writer.println(
                     "SAXHandler.startElement("
                             + namespaceURI
                             + ", "
@@ -359,7 +368,7 @@ public class IndexingTest {
         }
 
         public void startPrefixMapping(String prefix, String xuri) {
-            System.out.println(
+            writer.println(
                     "SAXHandler.startPrefixMapping(" + prefix + ", " + xuri + ")");
         }
 
