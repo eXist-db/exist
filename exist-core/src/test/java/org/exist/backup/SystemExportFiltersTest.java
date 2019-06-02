@@ -28,6 +28,7 @@ import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -37,18 +38,20 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -134,7 +137,8 @@ public class SystemExportFiltersTest {
         final RestoreListener listener = new LogRestoreListener();
         restore.restore(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD, null, file, listener);
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+            final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             final Collection test = broker.getCollection(TEST_COLLECTION_URI);
             assertNotNull(test);
@@ -147,6 +151,14 @@ public class SystemExportFiltersTest {
 
             doc = getDoc(broker, test, doc03uri.lastSegment());
             assertEquals(XML3_PROPER, serializer(broker, doc));
+
+            doc = getDoc(broker, test, doc11uri.lastSegment());
+            assertTrue(doc instanceof BinaryDocument);
+            try (final InputStream is = broker.getBinaryResource(transaction, ((BinaryDocument)doc))) {
+                assertEquals(BINARY, InputStreamUtil.readString(is, UTF_8));
+            }
+
+            transaction.commit();
         }
     }
 

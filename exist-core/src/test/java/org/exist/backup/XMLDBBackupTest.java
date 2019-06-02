@@ -52,8 +52,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
 public class XMLDBBackupTest {
@@ -115,6 +115,7 @@ public class XMLDBBackupTest {
         // check restore has restored the collection
         final Collection testCollection = DatabaseManager.getCollection(collectionUri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         assertNotNull(testCollection);
+
         final Resource doc1 = testCollection.getResource(DOC1_NAME);
         assertNotNull(doc1);
         final Source expected = Input.fromString(doc1Content).build();
@@ -124,6 +125,12 @@ public class XMLDBBackupTest {
                 .checkForIdentical()
                 .build();
         assertFalse(diff.toString(), diff.hasDifferences());
+
+        final Resource binDoc1 = testCollection.getResource(BIN_DOC1_NAME);
+        assertEquals(binDoc1Content, new String((byte[])binDoc1.getContent(), UTF_8));
+
+        final Resource binDoc2 = testCollection.getResource(BIN_DOC2_NAME);
+        assertEquals(binDoc2Content, new String((byte[])binDoc2.getContent(), UTF_8));
     }
 
     private Path backup(final String filename, final XmldbURI collectionUri) throws IOException, XMLDBException, SAXException {
