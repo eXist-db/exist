@@ -51,10 +51,11 @@ public class MultiDBTest {
 
     private final static String CONFIG =
             "<exist>" +
-                    "   <db-connection database=\"native\" files=\".\" cacheSize=\"32M\">" +
-                    "       <pool min=\"1\" max=\"5\" sync-period=\"120000\"/>" +
-                    "   </db-connection>" +
-                    "</exist>";
+            "   <db-connection database=\"native\" files=\".\" cacheSize=\"32M\">" +
+            "       <pool min=\"1\" max=\"5\" sync-period=\"120000\"/>" +
+            "       <recovery enabled=\"yes\" group-commit=\"no\" journal-dir=\".\" size=\"100M\" sync-on-commit=\"no\" force-restart=\"no\" consistency-check=\"yes\"/>" +
+            "   </db-connection>" +
+            "</exist>";
 
     @Test
     public void store() throws XMLDBException, IOException {
