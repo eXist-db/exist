@@ -103,8 +103,14 @@ public class LockTableUtils {
                 for(final LockTable.LockModeOwner lockModeOwner : type.getValue()) {
                     builder
                             .append("\t\t").append(lockModeOwner.getLockMode())
-                            .append('\t').append(lockModeOwner.getOwnerThread())
-                            .append(EOL);
+                            .append('\t').append(lockModeOwner.getOwnerThread());
+                            if (lockModeOwner.trace != null && includeStack) {
+                                builder.append(EOL).append("\t\t\tTrace ").append(": ").append(EOL);
+                                for (int i = 0; i < lockModeOwner.trace.length; i++) {
+                                    builder.append("\t\t\t\t").append(lockModeOwner.trace[i]).append(EOL);
+                                }
+                            }
+                            builder.append(EOL);
                 }
             }
         }
@@ -194,6 +200,25 @@ public class LockTableUtils {
 
                     xmlWriter.writeStartElement("thread");
                     xmlWriter.writeAttribute("id", lockModeOwner.getOwnerThread());
+
+                    if (lockModeOwner.trace != null && includeStack) {
+                        xmlWriter.writeStartElement("stack-trace");
+
+                        for (int i = 0; i < lockModeOwner.trace.length; i++) {
+                            xmlWriter.writeStartElement("call");
+                            final StackTraceElement call = lockModeOwner.trace[i];
+                            xmlWriter.writeAttribute("index", Integer.toString(i));
+                            xmlWriter.writeAttribute("class", call.getClassName());
+                            xmlWriter.writeAttribute("method", call.getMethodName());
+                            xmlWriter.writeAttribute("file", call.getFileName());
+                            xmlWriter.writeAttribute("line", Integer.toString(call.getLineNumber()));
+                            xmlWriter.writeCharacters(call.toString());
+                            xmlWriter.writeEndElement();
+                        }
+
+                        xmlWriter.writeEndElement();
+                    }
+
                     xmlWriter.writeEndElement();
 
                     xmlWriter.writeEndElement();

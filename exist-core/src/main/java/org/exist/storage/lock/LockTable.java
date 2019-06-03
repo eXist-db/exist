@@ -519,7 +519,7 @@ public class LockTable {
                     if (v1 == null) {
                         v1 = new ArrayList<>();
                     }
-                    v1.add(new LockModeOwner(entry.lockMode, entry.owner));
+                    v1.add(new LockModeOwner(entry.lockMode, entry.owner, entry.stackTraces != null ? entry.stackTraces.get(0) : null));
                     return v1;
                 });
 
@@ -593,10 +593,12 @@ public class LockTable {
     public static class LockModeOwner {
         final LockMode lockMode;
         final String ownerThread;
+        @Nullable final StackTraceElement[] trace;
 
-        public LockModeOwner(final LockMode lockMode, final String ownerThread) {
+        public LockModeOwner(final LockMode lockMode, final String ownerThread, @Nullable final StackTraceElement[] trace) {
             this.lockMode = lockMode;
             this.ownerThread = ownerThread;
+            this.trace = trace;
         }
 
         public LockMode getLockMode() {
@@ -605,6 +607,10 @@ public class LockTable {
 
         public String getOwnerThread() {
             return ownerThread;
+        }
+
+        @Nullable public StackTraceElement[] getTrace() {
+            return trace;
         }
     }
 
