@@ -184,7 +184,7 @@
                         <configuration>
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>org.exist-db:exist-expath:jar:${project.version}</ignoredUnusedDeclaredDependency>  <!-- needed for XQSuite tests that depend on EXPath HTTP client -->
+                                <ignoredUnusedDeclaredDependency>${project.groupId}:exist-expath:jar:${project.version}</ignoredUnusedDeclaredDependency>  <!-- needed for XQSuite tests that depend on EXPath HTTP client -->
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
