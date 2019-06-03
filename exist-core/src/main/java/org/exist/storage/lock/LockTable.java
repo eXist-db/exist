@@ -180,7 +180,7 @@ public class LockTable {
                     break;
                 }
 
-                // mark attempt as usused
+                // mark attempt as unused
                 attemptFailedEntry.count = 0;
 
                 notifyListeners(lockEventType, timestamp, groupId, attemptFailedEntry);
@@ -214,7 +214,7 @@ public class LockTable {
                     notifyListeners(lockEventType, timestamp, groupId, acquiredEntry);
                 }
 
-                // mark attempt as usused
+                // mark attempt as unused
                 attemptEntry.count = 0;
 
                 break;
@@ -505,6 +505,10 @@ public class LockTable {
 
             // read count (volatile) first to ensure visibility
             final int localCount = entry.count;
+            if (localCount == 0) {
+                // attempt entry object is marked as unused
+                continue;
+            }
 
             result.compute(entry.id, (_k, v) -> {
                 if (v == null) {
@@ -533,8 +537,6 @@ public class LockTable {
      */
     public Map<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> getAcquired() {
         final Map<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> result = new HashMap<>();
-
-        // TODO(AR) implement
 
         final Iterator<Entries> it = acquired.values().iterator();
         while (it.hasNext()) {
