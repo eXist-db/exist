@@ -82,7 +82,7 @@
                         <configuration>
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>org.exist-db:exist-compression:jar:${project.version}</ignoredUnusedDeclaredDependency>  <!-- needed for XQSuite tests that depend on Compression Module -->
+                                <ignoredUnusedDeclaredDependency>${project.groupId}:exist-compression:jar:${project.version}</ignoredUnusedDeclaredDependency>  <!-- needed for XQSuite tests that depend on Compression Module -->
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

@@ -45,7 +45,7 @@
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
                                 <!-- needed for running tests that depend on eXist-db Jetty server -->
-                                <ignoredUnusedDeclaredDependency>org.exist-db:exist-jetty-config:jar:${project.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>${project.groupId}:exist-jetty-config:jar:${project.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-deploy:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-jmx:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
