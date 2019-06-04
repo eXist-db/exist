@@ -45,6 +45,9 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
+import java.io.IOException;
+import java.io.StringWriter;
+
 import static org.exist.TestUtils.*;
 
 /**
@@ -71,7 +74,7 @@ public class ContentAsDOMTest {
 
 
     @Test
-    public void getContentAsDOM() throws XMLDBException, TransformerException {
+    public void getContentAsDOM() throws XMLDBException, TransformerException, IOException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
         ResourceSet result = service.query(XQUERY);
@@ -83,8 +86,10 @@ public class ContentAsDOMTest {
             t.setOutputProperty(OutputKeys.INDENT, "yes");
             t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             DOMSource source = new DOMSource(node);
-            StreamResult output = new StreamResult(System.out);
-            t.transform(source, output);
+            try (final StringWriter writer = new StringWriter()) {
+                StreamResult output = new StreamResult(writer);
+                t.transform(source, output);
+            }
         }
     }
 

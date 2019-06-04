@@ -180,7 +180,7 @@ public class LockTable {
                     break;
                 }
 
-                // mark attempt as usused
+                // mark attempt as unused
                 attemptFailedEntry.count = 0;
 
                 notifyListeners(lockEventType, timestamp, groupId, attemptFailedEntry);
@@ -214,7 +214,7 @@ public class LockTable {
                     notifyListeners(lockEventType, timestamp, groupId, acquiredEntry);
                 }
 
-                // mark attempt as usused
+                // mark attempt as unused
                 attemptEntry.count = 0;
 
                 break;
@@ -505,6 +505,10 @@ public class LockTable {
 
             // read count (volatile) first to ensure visibility
             final int localCount = entry.count;
+            if (localCount == 0) {
+                // attempt entry object is marked as unused
+                continue;
+            }
 
             result.compute(entry.id, (_k, v) -> {
                 if (v == null) {
@@ -515,7 +519,7 @@ public class LockTable {
                     if (v1 == null) {
                         v1 = new ArrayList<>();
                     }
-                    v1.add(new LockModeOwner(entry.lockMode, entry.owner));
+                    v1.add(new LockModeOwner(entry.lockMode, entry.owner, entry.stackTraces != null ? entry.stackTraces.get(0) : null));
                     return v1;
                 });
 
@@ -533,8 +537,6 @@ public class LockTable {
      */
     public Map<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> getAcquired() {
         final Map<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> result = new HashMap<>();
-
-        // TODO(AR) implement
 
         final Iterator<Entries> it = acquired.values().iterator();
         while (it.hasNext()) {
@@ -591,10 +593,12 @@ public class LockTable {
     public static class LockModeOwner {
         final LockMode lockMode;
         final String ownerThread;
+        @Nullable final StackTraceElement[] trace;
 
-        public LockModeOwner(final LockMode lockMode, final String ownerThread) {
+        public LockModeOwner(final LockMode lockMode, final String ownerThread, @Nullable final StackTraceElement[] trace) {
             this.lockMode = lockMode;
             this.ownerThread = ownerThread;
+            this.trace = trace;
         }
 
         public LockMode getLockMode() {
@@ -603,6 +607,10 @@ public class LockTable {
 
         public String getOwnerThread() {
             return ownerThread;
+        }
+
+        @Nullable public StackTraceElement[] getTrace() {
+            return trace;
         }
     }
 
