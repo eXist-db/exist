@@ -590,6 +590,18 @@ function arr:insert-before3() {
 };
 
 declare
+    %test:assertError("err:FOAY0001")
+function arr:insert-before-pos-zero() {
+    array:insert-before(["a", "b", "c", "d"], 0, "x")?*
+};
+
+declare
+    %test:assertError("err:FOAY0001")
+function arr:insert-before-pos-illegal-index() {
+    array:insert-before(["a", "b", "c", "d"], 6, "x")?*
+};
+
+declare
     %test:assertEquals("array")
 function arr:array-type1() {
     let $a := [1, 2]
