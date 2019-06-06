@@ -50,8 +50,7 @@ public class FunContainsToken extends BasicFunction {
             return BooleanValue.FALSE;
         }
 
-        /* if any of the input chunks (tokenized at whitespace) is equal to trimmed token then return true */
-
+        /* tokenize all input on whitespace*/
         ArrayList<String> fragments = new ArrayList<>();
 
         for (int i = 0; i < args[0].getItemCount(); i++) {
@@ -67,13 +66,9 @@ public class FunContainsToken extends BasicFunction {
             collator = context.getCollator(args[2].getStringValue());
         }
 
-        //if (comparison == Constants.EQUAL)
-
+        /* return true only if some fragment matches the trimmed token under current collation */
         for (String fragment : fragments) {
-            /* if fragment is equivalent to the token under chosen collation */
-            //if (fragment.contains(token))
-            int comparison = Collations.compare(collator, fragment, token);
-            if (comparison == Constants.EQUAL) {
+            if (Collations.compare(collator, fragment, token) == Constants.EQUAL) {
                 return BooleanValue.TRUE;
             }
         }
