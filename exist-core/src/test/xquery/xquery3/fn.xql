@@ -122,3 +122,37 @@ function fnt:outermost() {
             ","
         )
 };
+
+declare
+      %test:args('red green blue ', 'red')          %test:assertTrue
+      %test:args("red, green, blue", ' red ')       %test:assertFalse
+      %test:args('', 'red')                         %test:assertFalse
+      %test:args('red green blue', '')              %test:assertFalse
+      %test:args('red green blue', ' ')             %test:assertFalse
+      %test:args('red green blue ', 'RED ')         %test:assertFalse
+function fnt:contains-token-tests($input, $token) {
+    contains-token($input, $token)
+};
+
+declare
+      %test:arg("input", "red", "green", "blue")
+      %test:arg("token", ' red ')
+      %test:assertTrue
+function fnt:contains-token-tests-input-sequence($input, $token) {
+    contains-token($input, $token)
+};
+
+declare
+      %test:arg("input")
+      %test:arg("token", ' red ')
+      %test:assertFalse
+function fnt:contains-token-tests-empty-input-sequence($input, $token) {
+    contains-token($input, $token)
+};
+
+declare
+     %test:args('red green blue', 'RED', "http://www.w3.org/2005/xpath-functions/collation/html-ascii-case-insensitive")
+     %test:assertTrue
+function fnt:contains-token-tests-collation($input, $token, $collation) {
+    contains-token($input, $token, $collation)
+};
