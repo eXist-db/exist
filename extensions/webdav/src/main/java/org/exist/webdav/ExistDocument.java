@@ -248,7 +248,7 @@ public class ExistDocument extends ExistResource {
             }
 
             // Open document if possible, else abort
-            try(final LockedDocument lockedResource = collection.getDocumentWithLock(broker, docName, LockMode.READ_LOCK)) {
+            try(final LockedDocument lockedResource = collection.getDocumentWithLock(broker, docName, LockMode.WRITE_LOCK)) {
                 if (lockedResource == null) {
                     LOG.debug(String.format("No resource found for path: %s", xmldbUri));
                     txnManager.abort(txn);
