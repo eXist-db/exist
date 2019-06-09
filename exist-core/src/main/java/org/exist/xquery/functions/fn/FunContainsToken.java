@@ -10,6 +10,10 @@ import java.util.ArrayList;
 
 import static org.exist.xquery.FunctionDSL.*;
 
+/**
+ * @author tuurma
+ * @see <a href="https://www.w3.org/TR/xpath-functions-31/#func-contains-token">https://www.w3.org/TR/xpath-functions-31/#func-contains-token</a>
+ */
 public class FunContainsToken extends BasicFunction {
     private static final QName FS_CONTAINS_TOKEN_NAME = new QName("contains-token", Function.BUILTIN_FUNCTION_NS);
 
