@@ -60,7 +60,7 @@ public class FunContainsToken extends BasicFunction {
             }
         }
 
-        Collator collator = context.getDefaultCollator();;
+        Collator collator = context.getDefaultCollator();
 
         if (args.length > 2 && !args[2].isEmpty()) {
             collator = context.getCollator(args[2].getStringValue());
