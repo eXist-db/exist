@@ -313,7 +313,9 @@
               overwrite="true"/>
 
         <!-- Indicate that we want a custom icon -->
-        <exec executable="/Applications/Xcode.app/Contents/Developer/Tools/SetFile" os="Mac OS X">
+        <!-- The SetFile tool is included the Xcode Command Line Tools; a full installation 
+            of Xcode is not necessary. See https://developer.apple.com/library/archive/technotes/tn2339/_index.html -->
+        <exec executable="/usr/bin/SetFile" os="Mac OS X">
             <arg value="-a"/>
             <arg value="C"/>
             <arg value="${app.dest}"/>
