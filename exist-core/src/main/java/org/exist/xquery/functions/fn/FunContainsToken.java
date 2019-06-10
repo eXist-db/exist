@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import static org.exist.xquery.FunctionDSL.*;
 
 /**
+ * fn:contains-token($input as xs:string*, $token as xs:string) as xs:boolean
+ * fn:contains-token($input as xs:string*, $token as xs:string, $collation as xs:string) as xs:boolean
+ * 
  * @author tuurma
  * @see <a href="https://www.w3.org/TR/xpath-functions-31/#func-contains-token">https://www.w3.org/TR/xpath-functions-31/#func-contains-token</a>
  */
