@@ -248,7 +248,9 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT_AVAILABLE[0], FunUnparsedText.class),
         new FunctionDef(FunUnparsedText.FS_UNPARSED_TEXT_AVAILABLE[1], FunUnparsedText.class),
         new FunctionDef(FnRandomNumberGenerator.FS_RANDOM_NUMBER_GENERATOR[0], FnRandomNumberGenerator.class),
-        new FunctionDef(FnRandomNumberGenerator.FS_RANDOM_NUMBER_GENERATOR[1], FnRandomNumberGenerator.class)
+        new FunctionDef(FnRandomNumberGenerator.FS_RANDOM_NUMBER_GENERATOR[1], FnRandomNumberGenerator.class),
+        new FunctionDef(FunContainsToken.FS_CONTAINS_TOKEN[0], FunContainsToken.class),
+        new FunctionDef(FunContainsToken.FS_CONTAINS_TOKEN[1], FunContainsToken.class)
     };
 
     static {
