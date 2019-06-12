@@ -51,7 +51,7 @@ cache:
   directories:
   - $HOME/.m2
 
-install: mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=$BUILD_DOCKER install -B -V
+install: travis_wait mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=$BUILD_DOCKER install -B -V -q
 
 script: mvn -T 2C -Ddocker=$BUILD_DOCKER test -B
 
