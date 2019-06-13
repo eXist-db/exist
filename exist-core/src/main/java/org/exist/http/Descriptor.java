@@ -95,9 +95,12 @@ public class Descriptor implements ErrorHandler {
         try {
             // First, try to read Descriptor from file. Guess the location if necessary
             // from the home folder.
-            final Path f = ConfigurationHelper.lookup(file);
+            Path f = ConfigurationHelper.lookup(file);
             if (!Files.isReadable(f)) {
-                LOG.warn("Giving up unable to read descriptor file from " + f);
+                f = f.getParent().resolve("etc").resolve(file);
+                if (!Files.isReadable(f)) {
+                    LOG.warn("Giving up unable to read descriptor file from " + f);
+                }
             } else {
                 is = Files.newInputStream(f);
                 LOG.info("Reading Descriptor from file " + f);
