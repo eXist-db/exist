@@ -10,6 +10,12 @@
 set -e
 set -x
 
+# cleanup any previous DMG before creating a new DMG
+if [[ -f "${6}" ]]; then
+    echo "Removing previous DMG"
+    rm -v "${6}"
+fi
+
 tmp_dmg=/tmp/$2-dmg-tmp
 tmp_dmg_mount=$tmp_dmg-mount
 
