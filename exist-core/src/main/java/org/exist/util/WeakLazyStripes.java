@@ -54,7 +54,7 @@ public class WeakLazyStripes<K, S> {
     private static final int MAX_EXPIRED_REFERENCE_READ_COUNT = 1000;
 
     private final ReferenceQueue<S> referenceQueue;
-    private final ConcurrentMap<K, WeakReference<S>> stripes;
+    private final ConcurrentMap<K, WeakValueReference<K, S>> stripes;
     private final AtomicInteger expiredReferenceReadCount = new AtomicInteger();
 
     private final Function<K, S> creator;
@@ -93,12 +93,12 @@ public class WeakLazyStripes<K, S> {
      * @return the stripe
      */
     public S get(final K key) {
-        final WeakReference<S> stripeRef = stripes.compute(key, (k, valueRef) -> {
+        final WeakValueReference<K, S> stripeRef = stripes.compute(key, (k, valueRef) -> {
             if(valueRef == null) {
-                return new WeakReference<>(creator.apply(k), referenceQueue);
+                return new WeakValueReference<>(k, creator.apply(k), referenceQueue);
             } else if(valueRef.get() == null) {
                 expiredReferenceReadCount.incrementAndGet();
-                return new WeakReference<>(creator.apply(k), referenceQueue);
+                return new WeakValueReference<>(k, creator.apply(k), referenceQueue);
             } else {
                 return valueRef;
             }
@@ -130,14 +130,22 @@ public class WeakLazyStripes<K, S> {
         Reference<? extends S> ref;
         while ((ref = referenceQueue.poll()) != null) {
             @SuppressWarnings("unchecked")
-            final WeakReference<? extends S> stripeRef = (WeakReference<? extends S>)ref;
+            final WeakValueReference<K, S> stripeRef = (WeakValueReference<K, S>)ref;
 
-            /*
-                If this is too slow, we could store Map<Key, WeakReference<Tuple2<Key, Value>>>
-                to sacrifice a small amount of memory for remove performance by then calling Map#remove(key)
-                instead of calling the iterative function Map#values()#remove(value)
-             */
-            stripes.values().remove(stripeRef);
+            stripes.remove(stripeRef.key);
+        }
+    }
+
+    /**
+     * Extends a WeakReference with a strong reference to a key.
+     *
+     * Used for cleaning up the {@link #stripes} from the {@link #referenceQueue}.
+     */
+    private static class WeakValueReference<K, V> extends WeakReference<V> {
+        final K key;
+        public WeakValueReference(final K key, final V referent, final ReferenceQueue<? super V> q) {
+            super(referent, q);
+            this.key = key;
         }
     }
 }
