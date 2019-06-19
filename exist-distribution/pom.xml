@@ -387,6 +387,7 @@
                         <configuration>
                             <sourceFile>${assemble.dir}/etc/org/exist/jetty/etc</sourceFile>
                             <destinationFile>${assemble.dir}/etc/jetty</destinationFile>
+                            <ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
                         </configuration>
                     </execution>
 
@@ -399,6 +400,7 @@
                         <configuration>
                             <sourceFile>${mac.bundle.resources.dir}/etc/org/exist/jetty/etc</sourceFile>
                             <destinationFile>${mac.bundle.resources.dir}/etc/jetty</destinationFile>
+                            <ignoreFileNotFoundOnIncremental>true</ignoreFileNotFoundOnIncremental>
                         </configuration>
                     </execution>
 
@@ -661,6 +663,7 @@
                                             <to>${assemble.dir}/autodeploy</to>
                                         </path>
                                     </paths>
+                                    <replaceExisting>true</replaceExisting>
                                 </resource>
                             </resources>
                         </configuration>
@@ -682,6 +685,7 @@
                                         <from>${expath.pkg.dir}</from>
                                         <to>${mac.bundle.resources.dir}/autodeploy</to>
                                     </path>
+                                    <replaceExisting>true</replaceExisting>
                                 </resource>
                             </resources>
                         </configuration>
@@ -865,7 +869,7 @@
             <plugin>
                 <groupId>com.evolvedbinary.appbundler</groupId>
                 <artifactId>appbundler-maven-plugin</artifactId>
-                <version>1.0.4</version>
+                <version>1.0.5</version>
                 <executions>
                     <execution>
                         <id>exist-db-mac-app</id>
