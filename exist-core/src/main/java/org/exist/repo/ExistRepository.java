@@ -23,6 +23,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -201,8 +202,9 @@ public class ExistRepository extends Observable implements BrokerPoolService {
                 }
             }
             String sysid = null; // declared here to be used in catch
+            Source src = null;
             try {
-                final Source src = pkg.resolve(namespace, URISpace.XQUERY);
+                src = pkg.resolve(namespace, URISpace.XQUERY);
                 if (src != null) {
                     sysid = src.getSystemId();
                     return Paths.get(new URI(sysid));
@@ -211,6 +213,19 @@ public class ExistRepository extends Observable implements BrokerPoolService {
                 throw new XPathException("Error parsing the URI of the query library: " + sysid, ex);
             } catch (final PackageException ex) {
                 throw new XPathException("Error resolving the query library: " + namespace, ex);
+            } finally {
+                if (src != null && src instanceof StreamSource) {
+                    final StreamSource streamSource = ((StreamSource)src);
+                    try {
+                        if (streamSource.getInputStream() != null) {
+                            streamSource.getInputStream().close();
+                        } else if (streamSource.getReader() != null) {
+                            streamSource.getReader().close();
+                        }
+                    } catch (final IOException e) {
+                        LOG.warn("Unable to close pkg source: " + e.getMessage(), e);
+                    }
+                }
             }
         }
         return null;
