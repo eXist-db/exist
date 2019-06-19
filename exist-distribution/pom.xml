@@ -271,11 +271,16 @@
             <artifactId>jetty-jmx</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <!-- TODO Needed for Monex Console! :-/ Should not be in here! -->
         <dependency>
             <groupId>org.eclipse.jetty.websocket</groupId>
-            <artifactId>websocket-servlet</artifactId>
+            <artifactId>websocket-server</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <!-- server-side dependency for javax.websocket (JSR-356) support -->
+        <dependency>
+          <groupId>org.eclipse.jetty.websocket</groupId>
+          <artifactId>javax-websocket-server-impl</artifactId>
+          <scope>runtime</scope>
         </dependency>
 
         <!-- needed for the AppAssembler booter approach -->
