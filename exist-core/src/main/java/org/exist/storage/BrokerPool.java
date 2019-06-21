@@ -1903,12 +1903,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         return pluginManager;
     }
 
-    protected MetaStorage metaStorage = null;
-
-    public MetaStorage getMetaStorage() {
-        return metaStorage;
-    }
-
     /**
      * Represents a change involving {@link BrokerPool#inactiveBrokers}
      * or {@link BrokerPool#activeBrokers} or {@link DBBroker#referenceCount}

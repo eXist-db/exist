@@ -1307,20 +1307,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             // docId also needs to be indexed
             IntField fDocIdIdx = new IntField(FIELD_DOC_ID, 0, IntField.TYPE_NOT_STORED);
 
-            final List<Field> metas = new ArrayList<>();
-
-            broker.getIndexController().streamMetas(new MetaStreamListener() {
-                @Override
-                public void metadata(QName key, Object value) {
-                    if (value instanceof String) {
-                        String name = key.getLocalPart();//LuceneUtil.encodeQName(key, index.getBrokerPool().getSymbols());
-                        Field fld = new Field(name, value.toString(), Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.YES);
-                        metas.add(fld);
-                        //System.out.println(" "+name+" = "+value.toString());
-                    }
-                }
-            });
-
             for (PendingDoc pending : nodesToWrite) {
                 final Document doc = new Document();
 
@@ -1368,10 +1354,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
                 fDocIdIdx.setIntValue(currentDoc.getDocId());
                 doc.add(fDocIdIdx);
-                
-                for (final Field meta : metas) {
-                    doc.add(meta);
-                }
 
                 final byte[] docNodeId = LuceneUtil.createId(currentDoc.getDocId(), pending.nodeId);
                 final Field fDocNodeId = new StoredField("docNodeId", docNodeId);
