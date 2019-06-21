@@ -39,7 +39,6 @@ import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.CacheManager;
 import org.exist.storage.DBBroker;
-import org.exist.storage.MetaStorage;
 import org.exist.storage.NotificationService;
 import org.exist.storage.ProcessMonitor;
 import org.exist.storage.blob.BlobStore;
@@ -181,8 +180,6 @@ public interface Database {
     public BlobStore getBlobStore();
 
     public SymbolTable getSymbols();
-
-    public MetaStorage getMetaStorage();
 
     void addStatusObserver(final Observer statusObserver);
     boolean removeStatusObserver(final Observer statusObserver);
