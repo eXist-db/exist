@@ -49,6 +49,7 @@ public class SystemModule extends AbstractInternalModule {
             new FunctionDef(GetMemory.getMemoryMax, GetMemory.class),
             new FunctionDef(GetMemory.getMemoryTotal, GetMemory.class),
             new FunctionDef(GetMemory.getMemoryFree, GetMemory.class),
+			new FunctionDef(GetProductName.signature, GetProductName.class),
             new FunctionDef(GetVersion.signature, GetVersion.class),
             new FunctionDef(GetBuild.signature, GetBuild.class),
             new FunctionDef(GetRevision.signature, GetRevision.class),
