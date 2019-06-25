@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2015 The eXist Project
+ * Copyright (C) 2001-2019 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -35,6 +35,8 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
 import org.exist.util.Leasable;
+import org.exist.util.io.ByteArrayContent;
+import org.exist.util.io.ContentFile;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.util.io.TemporaryFileManager;
@@ -50,14 +52,12 @@ import static org.exist.util.io.InputStreamUtil.copy;
 
 public abstract class AbstractRemoteResource extends AbstractRemote
         implements EXistResource, ExtendedResource, Resource {
-    private static final int DEFAULT_IN_MEMORY_SIZE = 4 * 1024 * 1024; // 4 MB
-
     protected final Leasable<XmlRpcClient>.Lease xmlRpcClientLease;
     protected final XmldbURI path;
     private String mimeType;
 
     protected Path file = null;
-    private VirtualTempPath contentFile = null;
+    private ContentFile contentFile = null;
     protected InputSource inputSource = null;
     private long contentLen = -1L;
     private Permission permissions = null;
@@ -96,8 +96,8 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                 return readFile(((java.io.File) res).toPath());
             } else if (res instanceof InputSource) {
                 return readFile((InputSource) res);
-            } else if (res instanceof VirtualTempPath) {
-                return ((VirtualTempPath) res).getBytes();
+            } else if (res instanceof ContentFile) {
+                return ((ContentFile) res).getBytes();
             }
         }
         return res;
@@ -119,8 +119,8 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                 return readFile((InputSource) res);
             } else if (res instanceof String) {
                 return ((String) res).getBytes(UTF_8);
-            } else if (res instanceof VirtualTempPath) {
-                return ((VirtualTempPath) res).getBytes();
+            } else if (res instanceof ContentFile) {
+                return ((ContentFile) res).getBytes();
             }
         }
 
@@ -193,7 +193,11 @@ public abstract class AbstractRemoteResource extends AbstractRemote
         boolean wasSet = false;
         try {
             freeResources();
-            if (value instanceof Path) {
+            if (value instanceof ContentFile) {
+                contentFile = (ContentFile)value;
+                setExtendendContentLength(contentFile.size());
+                wasSet = true;
+            } else  if (value instanceof Path) {
                 file = (Path) value;
                 setExtendendContentLength(Files.size(file));
                 wasSet = true;
@@ -208,16 +212,12 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                 }
                 wasSet = true;
             } else if (value instanceof byte[]) {
-                file = TemporaryFileManager.getInstance().getTemporaryFile();
-                Files.write(file, (byte[]) value);
-                setExtendendContentLength(Files.size(file));
+                contentFile = ByteArrayContent.of((byte[]) value);
+                setExtendendContentLength(contentFile.size());
                 wasSet = true;
             } else if (value instanceof String) {
-                file = TemporaryFileManager.getInstance().getTemporaryFile();
-                try (final Writer writer = Files.newBufferedWriter(file, UTF_8)) {
-                    writer.write((String) value);
-                }
-                setExtendendContentLength(Files.size(file));
+                contentFile = ByteArrayContent.of((String) value);
+                setExtendendContentLength(contentFile.size());
                 wasSet = true;
             }
         } catch (final IOException e) {
@@ -360,9 +360,9 @@ public abstract class AbstractRemoteResource extends AbstractRemote
         }
     }
 
-    private int getInMemorySize(Properties properties) {
+    protected final int getInMemorySize(Properties properties) {
         if (inMemoryBufferSize == null) {
-            inMemoryBufferSize = new LazyVal<>(() -> Integer.parseInt(properties.getProperty("in-memory-buffer-size", Integer.toString(DEFAULT_IN_MEMORY_SIZE))));
+            inMemoryBufferSize = new LazyVal<>(() -> Integer.parseInt(properties.getProperty("in-memory-buffer-size", Integer.toString(VirtualTempPath.DEFAULT_IN_MEMORY_SIZE))));
         }
         return inMemoryBufferSize.get().intValue();
     }
