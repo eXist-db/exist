@@ -7,7 +7,7 @@ matrix:
     - jdk: openjdk8
     - jdk: openjdk9
     - jdk: openjdk10
-    - jdk: oraclejdk11
+    - jdk: openjdk11
 
     - os: osx
       osx_image: xcode9.3
