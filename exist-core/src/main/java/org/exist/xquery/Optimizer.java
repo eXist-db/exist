@@ -126,44 +126,7 @@ public class Optimizer extends DefaultExpressionVisitor {
                 
                 // Replace the old expression with the pragma
                 path.replace(locationStep, extension);
-                
-                // Check if there are additional steps before the optimizable expression and
-                // rewrite them to use the ancestor axis. This will change //a/b//c[d = "D"] into
-                // //c[d = "D"][ancestor::b/parent::a]
-                int reverseAxis = reverseAxis(locationStep.getAxis());
-                Expression previous = path.getPrevious(extension);
-                if (previous != null && reverseAxis != Constants.UNKNOWN_AXIS) {
-                	final List<Step> prevSteps = new ArrayList<Step>();
-                	while (previous != null && previous != path.getFirst() && previous instanceof Step) {
-                		final Step prevStep = (Step) previous;
-                		if (prevStep.getAxis() == Constants.CHILD_AXIS && !(path.getPrevious(prevStep) instanceof LocationStep)) {
-                			// Do not rewrite this step if it is the first step after a root step and 
-                			// the axis is the child axis! 
-                			break;
-                		}
-                		reverseAxis = reverseAxis(prevStep.getAxis());
-                		if (reverseAxis != Constants.UNKNOWN_AXIS && !prevStep.hasPredicates() &&
-                			!prevStep.getTest().isWildcardTest()) {
-                			prevSteps.add(prevStep);
-                			previous = path.getPrevious(prevStep);
-                			path.remove(prevStep);
-                		} else
-                			{break;}
-                	}
-                	
-                	if (prevSteps.size() > 0) {
-                		reverseAxis = reverseAxis(locationStep.getAxis());
-                		final Predicate predicate = new Predicate(context);
-                		for (final Step expr : prevSteps) {
-                			final int axis = expr.getAxis();
-                			expr.setAxis(reverseAxis);
-                			reverseAxis = reverseAxis(axis);
-                			predicate.add(expr);
-                		}
-                		locationStep.setAxis(Constants.DESCENDANT_AXIS);
-                		locationStep.addPredicate(predicate);
-                	}
-                }
+
                 if (LOG.isTraceEnabled())
                     {LOG.trace("Rewritten expression: " + ExpressionDumper.dump(parent));}
             } catch (final XPathException e) {
