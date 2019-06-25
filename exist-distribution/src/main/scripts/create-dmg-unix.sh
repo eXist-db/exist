@@ -61,8 +61,5 @@ rm $tmp_dmg.dmg
 # Delete the mount point
 rm -r $tmp_dmg_mount
 
-# Delete the link for the app
-unlink $final_app_dir
-
 # Delete the copied `volname`.app used for the DMG
 rm -r $final_app_dir
