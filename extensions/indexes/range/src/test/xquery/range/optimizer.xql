@@ -690,3 +690,27 @@ function ot:ne-string-collation-with-diacritics($name) {
     count(//tei:form[tei:orth != $name])
 };
 
+(:~ See XPath general comparison optimisation bug #2786 :)
+declare
+    %test:assertEquals(1)
+function ot:nested-element-rewrite-bug() {
+    let $dita :=
+        <dita>
+            <topic>
+                <prolog>
+                    <metadata>
+                        <data name="topicType" value="topicValue"/>
+                    </metadata>
+                </prolog>
+                <topic>
+                    <prolog>
+                        <metadata>
+                            <data name="topicType" value="topicValue"/>
+                        </metadata>
+                    </prolog>
+                </topic>
+            </topic>
+        </dita>
+    return
+      count($dita/topic/prolog//data[@name eq 'topicType']/@value)
+};
