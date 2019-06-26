@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2015 The eXist Project
+ * Copyright (C) 2001-2019 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -30,6 +30,7 @@ import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.Leasable;
 import org.exist.util.MimeType;
 import org.exist.util.io.TemporaryFileManager;
+import org.exist.util.io.VirtualTempPath;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.value.StringValue;
@@ -56,9 +57,11 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.TransformerException;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -275,11 +278,11 @@ public class RemoteXMLResource
 
     @Override
     public void setContentAsDOM(final Node root) throws XMLDBException {
-        try {
-            final Path tempFile = TemporaryFileManager.getInstance().getTemporaryFile();
-            try (final Writer osw = Files.newBufferedWriter(tempFile, UTF_8)) {
-                final DOMSerializer xmlout = new DOMSerializer(osw, getProperties());
-
+        Properties properties = getProperties();
+        try  {
+            VirtualTempPath tempFile = new VirtualTempPath(getInMemorySize(properties), TemporaryFileManager.getInstance());
+            try (OutputStream out = tempFile.newOutputStream(); OutputStreamWriter osw = new OutputStreamWriter(out, UTF_8)) {
+                final DOMSerializer xmlout = new DOMSerializer(osw, properties);
                 final short type = root.getNodeType();
                 if (type == Node.ELEMENT_NODE || type == Node.DOCUMENT_FRAGMENT_NODE || type == Node.DOCUMENT_NODE) {
                     xmlout.serialize(root);
@@ -289,6 +292,7 @@ public class RemoteXMLResource
             }
             setContent(tempFile);
         } catch (final TransformerException | IOException ioe) {
+            freeResources();
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
         }
     }
@@ -318,8 +322,8 @@ public class RemoteXMLResource
     }
 
     private class InternalXMLSerializer extends SAXSerializer {
-        private Path tempFile = null;
-        private Writer writer = null;
+        private VirtualTempPath  tempFile = null;
+        private OutputStreamWriter writer = null;
 
         public InternalXMLSerializer() {
             super();
@@ -328,9 +332,8 @@ public class RemoteXMLResource
         @Override
         public void startDocument() throws SAXException {
             try {
-                tempFile = TemporaryFileManager.getInstance().getTemporaryFile();
-
-                writer = Files.newBufferedWriter(tempFile, UTF_8);
+                tempFile = new VirtualTempPath(getInMemorySize(getProperties()), TemporaryFileManager.getInstance());
+                writer = new OutputStreamWriter(tempFile.newOutputStream(), UTF_8);
                 setOutput(writer, new Properties());
 
             } catch (final IOException ioe) {
@@ -346,6 +349,7 @@ public class RemoteXMLResource
 
             try {
                 if (writer != null) {
+                    writer.flush();
                     writer.close();
                 }
 
