@@ -28,7 +28,7 @@ import org.junit.Test;
 import java.util.Properties;
 
 /**
- * @author Otmar Humbel <ohumbel@gmail.com>
+ * @author <a href="mailto:ohumbel@gmail.com">Otmar Humbel</a>
  */
 public class BrokerPoolNoRecoveryTest {
 

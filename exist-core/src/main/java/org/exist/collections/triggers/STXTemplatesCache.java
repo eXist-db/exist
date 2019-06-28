@@ -47,7 +47,7 @@ import org.xml.sax.SAXException;
  * The cache is concurrent, however requests
  * for each stylesheet use a READ_LOCK per document.
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 @ThreadSafe
 public class STXTemplatesCache {

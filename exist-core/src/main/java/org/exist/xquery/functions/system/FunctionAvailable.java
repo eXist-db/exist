@@ -45,7 +45,7 @@ import org.exist.xquery.value.Type;
 /**
  * Return whether the function is available
  * 
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class FunctionAvailable extends BasicFunction {
 

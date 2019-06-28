@@ -84,6 +84,7 @@ import org.exist.dom.persistent.XMLUtil;
  * The servlet accepts the following initialization parameters in web.xml:
  *
  * <table border="0">
+ *  <caption>Initialization Parameters</caption>
  * 	<tr><td>user</td><td>The user identity with which the script is executed.</td></tr>
  * 	<tr><td>password</td><td>Password for the user.</td></tr>
  * 	<tr><td>uri</td><td>A valid XML:DB URI leading to the root collection used to

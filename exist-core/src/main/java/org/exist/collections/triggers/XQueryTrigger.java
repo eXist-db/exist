@@ -64,9 +64,9 @@ import org.exist.xquery.value.StringValue;
  * <code>xxx:event</code> : the kind of triggered event
  * xxx is the namespace prefix within the XQuery, can be set by the variable "bindingPrefix"
  * 
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
- * @author Adam Retter <adam.retter@devon.gov.uk>
- * @author Evgeny Gazdovsky <gazdovsky@gmail.com>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
+ * @author <a href="mailto:gazdovsky@gmail.com">Evgeny Gazdovsky</a>
 */
 public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, CollectionTrigger {
 

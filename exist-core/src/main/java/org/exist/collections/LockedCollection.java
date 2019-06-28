@@ -51,7 +51,7 @@ import java.util.List;
  * allows us to use ARM (Automatic Resource Management) e.g. try-with-resources
  * with eXist Collection objects
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class LockedCollection implements Collection {
     private final ManagedCollectionLock managedCollectionLock;

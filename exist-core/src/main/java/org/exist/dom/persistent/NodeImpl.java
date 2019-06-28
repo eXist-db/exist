@@ -95,7 +95,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     /**
      * Insert a list of nodes at the position before the reference
      * child.
-     * <p/>
+     *
      * NOTE: You must call insertBefore on the parent node of the node that you
      * want to insert nodes before.
      */
@@ -106,7 +106,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     /**
      * Insert a list of nodes at the position following the reference
      * child.
-     * <p/>
+     *
      * NOTE: You must call insertAfter on the parent node of the node that you want
      * to insert nodes after.
      */

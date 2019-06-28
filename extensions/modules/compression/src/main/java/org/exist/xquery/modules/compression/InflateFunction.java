@@ -45,7 +45,7 @@ import org.exist.xquery.value.Type;
 /**
  * Inflate uncompression
  * 
- * @author Olaf Schreck <olaf@existsolutions.com>
+ * @author <a href="mailto:olaf@existsolutions.com">Olaf Schreck</a>
  * @version 1.0
  */
 public class InflateFunction extends BasicFunction

@@ -55,7 +55,7 @@ public interface VariableByteInput {
     public int read(byte b[], int off, int len) throws IOException;
     
     /**
-     * Returns a value > 0 if more bytes can be read
+     * Returns a value &gt; 0 if more bytes can be read
      * from the input.
      * 
      * @throws IOException

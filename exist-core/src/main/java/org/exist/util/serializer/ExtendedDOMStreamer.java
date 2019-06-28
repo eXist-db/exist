@@ -43,7 +43,7 @@ public class ExtendedDOMStreamer extends DOMStreamer {
     }
 
     /**
-     *
+     * @param xmlSerializer the serializer
      */
     public ExtendedDOMStreamer(final Serializer xmlSerializer) {
         super();
@@ -51,8 +51,9 @@ public class ExtendedDOMStreamer extends DOMStreamer {
     }
 
     /**
-     * @param contentHandler
-     * @param lexicalHandler
+     * @param xmlSerializer the serializer
+     * @param contentHandler the content handler
+     * @param lexicalHandler the lexical handler
      */
     public ExtendedDOMStreamer(final Serializer xmlSerializer, final ContentHandler contentHandler,
             final LexicalHandler lexicalHandler) {

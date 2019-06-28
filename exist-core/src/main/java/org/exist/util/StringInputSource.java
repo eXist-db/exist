@@ -37,6 +37,8 @@ public class StringInputSource extends InputSource {
      * Creates a String Source from a string
      * the InputSource will be read using
      * {@link #getCharacterStream()}.
+     *
+     * @param string the input string.
      */
     public StringInputSource(final String string) {
         super();
@@ -47,6 +49,8 @@ public class StringInputSource extends InputSource {
      * Creates a String Source from bytes
      * the InputSource will be read using
      * {@link #getByteStream()}.
+     *
+     * @param string the input string.
      */
     public StringInputSource(final byte[] string) {
         super();
@@ -63,6 +67,10 @@ public class StringInputSource extends InputSource {
     }
 
     /**
+     * Set a character stream input.
+     *
+     * @param r the reader
+     *
      * @throws IllegalStateException this class is immutable!
      */
     @Override
@@ -80,6 +88,10 @@ public class StringInputSource extends InputSource {
     }
 
     /**
+     * Set a byte stream input.
+     *
+     * @param is the input stream.
+     *
      * @throws IllegalStateException this class is immutable!
      */
     @Override

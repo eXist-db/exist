@@ -50,7 +50,7 @@ import java.io.Reader;
  *
  * Based on code by Thomas Weidenfeller and  Aki Nieminen
  *
- * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  * @serial 2008-03-06
  * @version 1.1
  */

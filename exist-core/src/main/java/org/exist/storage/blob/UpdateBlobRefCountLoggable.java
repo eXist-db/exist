@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
 
 /**
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class UpdateBlobRefCountLoggable extends AbstractBlobLoggable {
 

@@ -153,6 +153,8 @@ public interface Database {
 
     /**
      * Master document triggers.
+     *
+     * @return the document triggers.
      */
     public Collection<TriggerProxy<? extends DocumentTrigger>> getDocumentTriggers();
 
@@ -160,6 +162,8 @@ public interface Database {
 
     /**
      * Master Collection triggers.
+     *
+     * @return the collection triggers.
      */
     public Collection<TriggerProxy<? extends CollectionTrigger>> getCollectionTriggers();
 

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Functions on arrays {@link http://www.w3.org/TR/xpath-functions-31/#array-functions}.
+ * Functions on arrays, see http://www.w3.org/TR/xpath-functions-31/#array-functions.
  *
  * @author Wolf
  */

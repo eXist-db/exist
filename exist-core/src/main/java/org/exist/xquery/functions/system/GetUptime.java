@@ -40,7 +40,7 @@ import org.exist.xquery.value.Type;
 /**
  * Return the duration since eXist was started
  * 
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class GetUptime extends BasicFunction {
 

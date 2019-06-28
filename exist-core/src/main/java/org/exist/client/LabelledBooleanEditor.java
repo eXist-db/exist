@@ -33,7 +33,7 @@ import javax.swing.SwingConstants;
 /**
  * Editor for a LabelledBoolean using a JCheckBox
  *
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class LabelledBooleanEditor extends AbstractCellEditor implements TableCellEditor {
 

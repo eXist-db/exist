@@ -9,7 +9,6 @@ import java.io.Writer;
  * We don't compress the sequence if it would occupy more than 8 bytes, because that's the space we've got available
  * in the TinyTree arrays.
  */
-
 public class CompressedWhitespace implements CharSequence {
 
     private static char[] WHITE_CHARS = {0x09, 0x0A, 0x0D, 0x20};
@@ -120,9 +119,9 @@ public class CompressedWhitespace implements CharSequence {
      * Returns the <code>char</code> value at the specified index.  An index ranges from zero
      * to <tt>length() - 1</tt>.  The first <code>char</code> value of the sequence is at
      * index zero, the next at index one, and so on, as for array
-     * indexing. </p>
-     * <p/>
-     * <p>If the <code>char</code> value specified by the index is a
+     * indexing.
+     *
+     * If the <code>char</code> value specified by the index is a
      * <a href="Character.html#unicode">surrogate</a>, the surrogate
      * value is returned.
      *
@@ -153,7 +152,7 @@ public class CompressedWhitespace implements CharSequence {
      * ends with the <code>char</code> value at index <tt>end - 1</tt>.  The length
      * (in <code>char</code>s) of the
      * returned sequence is <tt>end - start</tt>, so if <tt>start == end</tt>
-     * then an empty sequence is returned. </p>
+     * then an empty sequence is returned.
      *
      * @param start the start index, inclusive
      * @param end   the end index, exclusive
@@ -192,8 +191,11 @@ public class CompressedWhitespace implements CharSequence {
 
     /**
      * Write the value to a Writer
+     *
+     * @param writer the writer
+     *
+     * @throws java.io.IOException if an error occurs whilst writing
      */
-
     public void write(Writer writer) throws java.io.IOException {
         final long val = value;
         for (int s=56; s>=0; s-=8) {
@@ -210,9 +212,13 @@ public class CompressedWhitespace implements CharSequence {
     }
 
     /**
-     * Write the value to a Writer with escaping of special characters
+     * Write the value to a Writer with escaping of special characters.
+     *
+     * @param specialChars an array of special character markers
+     * @param writer the writer
+     *
+     * @throws java.io.IOException if an error occurs whilst writing
      */
-
     public void writeEscape(boolean[] specialChars, Writer writer) throws java.io.IOException {
         final long val = value;
         for (int s=56; s>=0; s-=8) {

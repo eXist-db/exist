@@ -55,12 +55,12 @@ import java.util.Optional;
  * to an embedded database instance running in the same virtual machine.
  * The driver chooses an implementation depending on the XML:DB URI passed
  * to getCollection().
- * <p>
+ *
  * When running in embedded mode, the driver can create a new database
  * instance if none is available yet. It will do so if the property
  * "create-database" is set to "true" or if there is a system property
  * "exist.initdb" with value "true".
- * <p>
+ *
  * You may optionally provide the location of an alternate configuration
  * file through the "configuration" property. The driver is also able to
  * address different database instances - which may have been installed at
@@ -342,8 +342,9 @@ public class DatabaseImpl implements Database {
      * Register a ShutdownListener for the current database instance. The ShutdownListener is called
      * after the database has shut down. You have to register a listener before any calls to getCollection().
      *
-     * @param listener
-     * @throws XMLDBException
+     * @param listener the shutdown listener.
+     *
+     * @throws XMLDBException if an error occurs whilst setting the listener.
      */
     public void setDatabaseShutdownListener(final ShutdownListener listener) throws XMLDBException {
         shutdown = listener;

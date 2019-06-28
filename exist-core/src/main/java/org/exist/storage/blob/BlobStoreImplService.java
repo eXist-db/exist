@@ -35,7 +35,7 @@ import java.nio.file.Path;
  * Broker Pool Service for the de-duplicating
  * Blob Store, see {@link BlobStoreImpl}.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class BlobStoreImplService implements BlobStoreService, BrokerPoolService {
 

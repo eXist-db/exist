@@ -37,7 +37,7 @@ import org.exist.xquery.value.Type;
 
 /**
  *
- * @author Adam Retter <adam@googlemail.com>
+ * @author <a href="mailto:adam@googlemail.com">Adam Retter</a>
  */
 public class SetPrincipalMetadataFunction extends BasicFunction {
 

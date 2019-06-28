@@ -38,7 +38,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * A lock event listener which formats events as XML and writes them to a file
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @NotThreadSafe
 public class LockEventXmlListener implements LockTable.LockEventListener {

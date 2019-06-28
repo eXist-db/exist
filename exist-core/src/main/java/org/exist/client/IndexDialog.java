@@ -41,7 +41,7 @@ import java.util.ArrayList;
 /**
  * Dialog for viewing and editing Indexes in the Admin Client 
  * 
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  * @serial 2006-03-12
  * @version 1.0
  */

@@ -78,7 +78,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * 
  * Data pages are buffered.
  * 
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class BFile extends BTree {
 
@@ -2458,7 +2458,7 @@ public class BFile extends BTree {
     /**
      * Represents a single data page (as opposed to a overflow page).
      * 
-     * @author Wolfgang Meier <wolfgang@exist-db.org>
+     * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
      */
     private final class SinglePage extends DataPage {
 

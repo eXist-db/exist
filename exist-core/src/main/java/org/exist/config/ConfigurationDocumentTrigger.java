@@ -55,7 +55,7 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
  * before the deferred updates are applied.
  *
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
 

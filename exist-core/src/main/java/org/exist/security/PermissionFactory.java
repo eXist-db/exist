@@ -51,7 +51,7 @@ import static org.exist.storage.DBBroker.POSIX_CHOWN_RESTRICTED_PROPERTY;
 /**
  * Instantiates an appropriate Permission class based on the current configuration
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class PermissionFactory {
 

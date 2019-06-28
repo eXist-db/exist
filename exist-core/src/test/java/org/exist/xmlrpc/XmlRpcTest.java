@@ -23,7 +23,6 @@ import java.io.IOException;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import org.exist.security.MessageDigester;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.test.ExistWebServer;
@@ -32,7 +31,6 @@ import org.exist.util.Compressor;
 import org.exist.util.MimeType;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
-import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.XmldbURI;
 
 import static org.exist.xmldb.RemoteCollection.MAX_UPLOAD_CHUNK;
@@ -42,9 +40,9 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import org.exist.security.Permission;
@@ -56,15 +54,15 @@ import java.util.*;
 
 import org.junit.After;
 import org.xml.sax.SAXException;
-import org.xmldb.api.base.ErrorCodes;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.BinaryResource;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.builder.Input;
+import org.xmlunit.diff.Diff;
 
 /**
  * JUnit test for XMLRPC interface methods.
  *
- * @author wolf
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author <a href="mailto:wolfgangmm@exist-db.org">Wolfgang Meier</a>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  * @author ljo
  */
 public class XmlRpcTest {
@@ -89,8 +87,8 @@ public class XmlRpcTest {
             + "</test>";
 
     private final static String XSL_DATA
-            = "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" "
-            + "version=\"1.0\">"
+            = "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
+            + "<xsl:output omit-xml-declaration=\"no\"/>"
             + "<xsl:param name=\"testparam\"/>"
             + "<xsl:template match=\"test\"><test><xsl:apply-templates/></test></xsl:template>"
             + "<xsl:template match=\"para\">"
@@ -454,7 +452,7 @@ public class XmlRpcTest {
         Map<String, String> options = new HashMap<>();
         options.put(EXistOutputKeys.STYLESHEET, "test.xsl");
         options.put(EXistOutputKeys.STYLESHEET_PARAM + ".testparam", "Test");
-        options.put(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        options.put(OutputKeys.OMIT_XML_DECLARATION, "no");
         //TODO : check the number of resources before !
         List<Object> params = new ArrayList<>();
         String query = "//para[1]";
@@ -472,8 +470,15 @@ public class XmlRpcTest {
         assertNotNull(item);
         assertTrue(item.length > 0);
         String out = new String(item, UTF_8);
-        assertXMLEqual("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                + "<p>Test: \u00E4\u00E4\u00F6\u00F6\u00FC\u00FC\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC\u00DF\u00DF</p>", out);
+
+        final Source expected = Input.fromString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<p>Test: \u00E4\u00E4\u00F6\u00F6\u00FC\u00FC\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC\u00DF\u00DF</p>").build();
+        final Source actual = Input.fromString(out).build();
+
+        final Diff diff = DiffBuilder.compare(expected)
+                .withTest(actual)
+                .checkForSimilar()
+                .build();
+        assertFalse(diff.toString(), diff.hasDifferences());
     }
 
     @Test

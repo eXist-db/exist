@@ -91,7 +91,7 @@ public interface Module {
 	/**
 	 * Try to find the signature of the function identified by its QName.
 	 * 
-	 * @param qname
+	 * @param qname the function name
 	 * @return the function signature or null if the function is not defined.
 	 */
 	public Iterator<FunctionSignature> getSignaturesForFunction(QName qname);
@@ -108,11 +108,15 @@ public interface Module {
      * Returns an iterator over all global variables in this modules, which were
      * either declared with "declare variable" (for external modules) or set in the
      * module implementation (internal modules).
+	 *
+	 * @return an iterator over the names of the global variables
      */
     public Iterator<QName> getGlobalVariables();
 
 	/**
 	 * Reset the module's internal state for being reused.
+	 *
+	 * @param context the xquery context
 	 *
 	 * @deprecated use {@link #reset(XQueryContext, boolean)} instead
 	 */
@@ -122,6 +126,8 @@ public interface Module {
 	/**
 	 * Reset the module's internal state for being reused.
 	 *
+	 * @param context the xquery context
+	 * @param keepGlobals true to keep global declarations
 	 */
 	public void reset(XQueryContext xqueryContext, boolean keepGlobals);
 

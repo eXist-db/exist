@@ -34,7 +34,6 @@ package org.exist.util;
  * word can be provided a character at time (by calling add()), or at once
  * by calling one of the various stem(something) methods.  
  */
-
 public class PorterStemmer
 {   
   private char[] b;
@@ -60,7 +59,9 @@ public class PorterStemmer
 
   /**
    * Add a character to the word being stemmed.  When you are finished 
-   * adding characters, you can call stem(void) to process the word. 
+   * adding characters, you can call stem(void) to process the word.
+   *
+   * @param ch the character
    */ 
   public void add(char ch) {
     if (b.length <= i + EXTRA) {
@@ -76,11 +77,15 @@ public class PorterStemmer
    * After a word has been stemmed, it can be retrieved by toString(), 
    * or a reference to the internal buffer can be retrieved by getResultBuffer
    * and getResultLength (which is generally more efficient.)
+   *
+   * @return the stemmed string
    */
   public String toString() { return new String(b,0,i); }
 
   /**
    * Returns the length of the word resulting from the stemming process.
+   *
+   * @return the length
    */
   public int getResultLength() { return i; }
 
@@ -88,6 +93,8 @@ public class PorterStemmer
    * Returns a reference to a character buffer containing the results of
    * the stemming process.  You also need to consult getResultLength()
    * to determine the length of the result.
+   *
+   * @return the result buffer
    */
   public char[] getResultBuffer() { return b; }
 
@@ -409,6 +416,10 @@ public class PorterStemmer
 
   /** 
    * Stem a word provided as a String.  Returns the result as a String.
+   *
+   * @param s the word to stem
+   *
+   * @return the stemmed string
    */
   public String stem(String s) {
 	  final char[] word = s.toCharArray();
@@ -420,18 +431,30 @@ public class PorterStemmer
 	  return result;
   }
 
-  /** Stem a word contained in a char[].  Returns true if the stemming process
-   * resulted in a word different from the input.  You can retrieve the 
-   * result with getResultLength()/getResultBuffer() or toString(). 
+  /**
+   * Stem a word contained in a char[].  Returns true if the stemming process
+   * resulted in a word different from the input.  You can retrieve the
+   * result with getResultLength()/getResultBuffer() or toString().
+   *
+   * @param word the word to stem
+   *
+   * @return true if the stemmed word is different
    */
   public boolean stem(char[] word) {
     return stem(word, word.length);
   }
 
-  /** Stem a word contained in a portion of a char[] array.  Returns
+  /**
+   * Stem a word contained in a portion of a char[] array.  Returns
    * true if the stemming process resulted in a word different from
    * the input.  You can retrieve the result with
-   * getResultLength()/getResultBuffer() or toString().  
+   * getResultLength()/getResultBuffer() or toString().
+   *
+   * @param wordBuffer the buffer containing the word to stem
+   * @param offset the offset of the word in the buffer
+   * @param wordLen the length of the word in the buffer
+   *
+   * @return true if the stemmed word is different
    */
   public boolean stem(char[] wordBuffer, int offset, int wordLen) {
     reset();
@@ -445,19 +468,28 @@ public class PorterStemmer
     return stem(0);
   }
 
-  /** Stem a word contained in a leading portion of a char[] array.
+  /**
+   * Stem a word contained in a leading portion of a char[] array.
    * Returns true if the stemming process resulted in a word different
    * from the input.  You can retrieve the result with
-   * getResultLength()/getResultBuffer() or toString().  
+   * getResultLength()/getResultBuffer() or toString().
+   *
+   * @param word the word to stem
+   * @param wordLen the length of the word to stem
+   *
+   * @return true if the stemmed word is different
    */
   public boolean stem(char[] word, int wordLen) {
     return stem(word, 0, wordLen);
   }
 
-  /** Stem the word placed into the Stemmer buffer through calls to add().
+  /**
+   * Stem the word placed into the Stemmer buffer through calls to add().
    * Returns true if the stemming process resulted in a word different
    * from the input.  You can retrieve the result with
-   * getResultLength()/getResultBuffer() or toString().  
+   * getResultLength()/getResultBuffer() or toString().
+   *
+   * @return true if the stemmed word is different
    */
   public boolean stem() {
     return stem(0);
@@ -473,9 +505,12 @@ public class PorterStemmer
     return dirty;
   }
 
-  /** Test program for demonstrating the Stemmer.  It reads a file and
+  /**
+   * Test program for demonstrating the Stemmer.  It reads a file and
    * stems each word, writing the result to standard out.  
-   * Usage: Stemmer file-name 
+   * Usage: Stemmer file-name
+   *
+   * @param args the arguments
    */
   public static void main(String[] args) {
     final PorterStemmer s = new PorterStemmer();

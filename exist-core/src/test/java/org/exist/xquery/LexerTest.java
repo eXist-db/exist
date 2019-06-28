@@ -39,10 +39,10 @@ public class LexerTest {
 
 	private static final String xml =
 		"<text><body>"
-			+ "<p>\u660E &#x660E;</p>"
-			+ "<p>&#xC5F4; &#xB2E8;&#xACC4;</p>"
-			+ "<p>\u4ED6\u4E3A\u8FD9\u9879\u5DE5\u7A0B\u6295"
-			+ "\u5165\u4E86\u5341\u4E09\u5E74\u65F6\u95F4\u3002</p>"
+			+ "\u660E &#x660E;"
+			+ "&#xC5F4; &#xB2E8;&#xACC4;"
+			+ "\u4ED6\u4E3A\u8FD9\u9879\u5DE5\u7A0B\u6295"
+			+ "\u5165\u4E86\u5341\u4E09\u5E74\u65F6\u95F4\u3002"
 			+ "</body></text>";
 
 	@ClassRule

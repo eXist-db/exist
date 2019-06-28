@@ -73,7 +73,7 @@ import org.xml.sax.XMLReader;
 
 /**
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 class RestXqServiceImpl extends AbstractRestXqService {
 

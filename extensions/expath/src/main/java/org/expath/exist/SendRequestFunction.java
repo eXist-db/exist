@@ -51,7 +51,7 @@ import org.expath.httpclient.model.exist.EXistResult;
 import org.expath.tools.model.exist.EXistSequence;
 
 /**
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  * @version EXPath HTTP Client Module Candidate 9 January 2010 http://expath.org/spec/http-client/20100109
  */
 public class SendRequestFunction extends BasicFunction {

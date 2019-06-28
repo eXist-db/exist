@@ -61,7 +61,7 @@ import org.xml.sax.SAXException;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  * @version EXPath Zip Client Module Candidate 12 October 2010 http://expath.org/spec/zip/20101012
  */
 public class ZipEntryFunctions extends BasicFunction {

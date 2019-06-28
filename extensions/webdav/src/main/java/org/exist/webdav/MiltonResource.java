@@ -40,7 +40,7 @@ import java.util.GregorianCalendar;
 /**
  * Generic class representing a Milton Resource.
  *
- * @author Dannes Wessels <dannes@exist-db.org>
+ * @author <a href="mailto:dannes@exist-db.org">Dannes Wessels</a>
  */
 public class MiltonResource implements Resource {
 

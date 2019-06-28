@@ -40,7 +40,7 @@ import javax.annotation.Nonnull;
 /**
  * Set's a HTTP server status code on the HTTP Response.
  *
- * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  * @see org.exist.xquery.Function
  */
 public class SetStatusCode extends StrictResponseFunction {

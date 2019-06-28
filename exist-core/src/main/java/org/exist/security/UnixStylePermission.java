@@ -40,7 +40,7 @@ import static org.exist.security.PermissionRequired.*;
  * [userId(20),setUid(1),userMode(rwx)(3),groupId(20),setGid(1),groupMode(rwx)(3),sticky(1),otherMode(rwx)(3)]
  * @see UnixStylePermission#encodeAsBitVector(int, int, int) for more details
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class UnixStylePermission extends AbstractUnixStylePermission implements Permission {
 

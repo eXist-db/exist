@@ -44,7 +44,7 @@ import javax.xml.stream.XMLStreamException;
 /**
  * The base class for all persistent DOM nodes in the database.
  *
- * @author Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ * @author <a href="mailto:meier@ifs.tu-darmstadt.de">Wolfgang Meier</a>
  */
 public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> implements Visitable, NodeHandle, IStoredNode<T> {
 
@@ -116,7 +116,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
 
     /**
      * Read a node from the specified byte array.
-     * <p/>
+     *
      * This checks the node type and calls the {@link #deserialize(byte[], int, int, DocumentImpl, boolean)}
      * method of the corresponding node class.
      *
@@ -131,7 +131,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
 
     /**
      * Read a node from the specified byte array.
-     * <p/>
+     *
      * This checks the node type and calls the {@link #deserialize(byte[], int, int, DocumentImpl, boolean)}
      * method of the corresponding node class. The node will be allocated in the pool
      * and should be released once it is no longer needed.

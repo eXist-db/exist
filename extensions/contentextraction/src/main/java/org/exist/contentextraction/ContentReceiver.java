@@ -40,8 +40,8 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
- * @author Dulip Withanage <dulip.withanage@gmail.com>
- * @author Dannes Wessels <dannes@exist-db.org>
+ * @author <a href="mailto:dulip.withanage@gmail.com">Dulip Withanage</a>
+ * @author <a href="mailto:dannes@exist-db.org">Dannes Wessels</a>
  * 
  * @version 1.1
  */

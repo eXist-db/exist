@@ -30,11 +30,9 @@ import java.nio.CharBuffer;
 import java.util.Properties;
 
 /**
- * Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="adam.retter@googlemail.com">Adam Retter</a>
  */
 public class MicroXmlWriter extends IndentingXMLWriter {
-
-
 
     private String removePrefix(final String qname) {
         final int prefixDelimIdx = qname.indexOf(':');

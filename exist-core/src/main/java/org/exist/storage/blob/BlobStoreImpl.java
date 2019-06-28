@@ -177,7 +177,7 @@ import static org.exist.util.ThreadUtils.newInstanceSubThreadGroup;
  *      process when the Blob Store is next opened.
  *
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @ThreadSafe
 public class BlobStoreImpl implements BlobStore {
@@ -1399,7 +1399,7 @@ public class BlobStoreImpl implements BlobStore {
 
         /**
          * First, closes the underlying Input Stream
-         * by calling {@link super#close()} and then
+         * by calling {@code super#close()} and then
          * always executes the {@link #closeAction}.
          *
          * This method is idempotent, which is to say that

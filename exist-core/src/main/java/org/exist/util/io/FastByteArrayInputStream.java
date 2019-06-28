@@ -33,7 +33,7 @@ import static java.lang.Math.min;
  * which removes the synchronization overhead for non-concurrent
  * access; as such this class is not thread-safe.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @NotThreadSafe
 public class FastByteArrayInputStream extends InputStream {

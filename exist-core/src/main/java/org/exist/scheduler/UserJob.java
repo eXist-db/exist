@@ -22,9 +22,9 @@ package org.exist.scheduler;
 /**
  * Class to represent a User's Job Should be extended by all classes wishing to schedule as a Job that perform user defined functions.
  *
- * <p>Classes extending UserJob may have multiple instances executing within the scheduler at once</p>
+ * Classes extending UserJob may have multiple instances executing within the scheduler at once
  *
- * @author  Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public abstract class UserJob implements JobDescription, org.quartz.Job {
     

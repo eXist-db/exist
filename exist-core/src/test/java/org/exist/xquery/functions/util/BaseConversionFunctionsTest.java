@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class BaseConversionFunctionsTest {
 

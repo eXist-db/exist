@@ -49,7 +49,7 @@ import org.w3c.dom.NodeList;
  * An extension module for the eXist Native XML Database that allows queries
  * against JNDI sources, including LDAP, returning an XML representation of the results.
  * 
- * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  * @author ljo
  * @serial 2008-12-02
  * @version 1.0

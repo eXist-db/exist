@@ -33,7 +33,7 @@ import org.xml.sax.SAXException;
  * Modified by alisterpillow on 19/08/2014.
  * Get a mail message
  *
- * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  * @serial 2009-03-12
  * @version 1.3
  *

@@ -53,8 +53,8 @@ import org.exist.xquery.value.Type;
  * Enumerate a list of files and directories, including their size and modification time, found in
  * a specified directory
  *
- * @author Dannes Wessels
- * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author <a href="mailto:andrzej@chaeron.com">Dannes Wessels
+ * @author Andrzej Taramina</a>
  * @author ljo
  * @serial 2010-05-12
  * @version 1.2

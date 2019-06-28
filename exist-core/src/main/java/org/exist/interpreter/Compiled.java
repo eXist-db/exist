@@ -40,9 +40,10 @@ public interface Compiled extends IPathExpr {
     /**
      * Execute the compiled query, optionally using the specified
      * sequence as context.
-     * 
-     * @param contextSequence
-     * @throws XPathException
+     *
+     * @param contextSequence the context sequence.
+     *
+     * @throws XPathException if an error occurs during evaluation.
      */
     public Sequence eval(Sequence contextSequence) throws XPathException;
 

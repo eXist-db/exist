@@ -32,8 +32,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 /** An abstract wrapper for remote DB tests
- * @author Sebastian Bossung, Technische Universitaet Hamburg-Harburg
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Sebastian Bossung, Technische Universitaet Hamburg-Harburg
+ * @author Pierrick Brihaye</a>
  */
 //TODO : manage content from here, not from the derived classes
 public abstract class RemoteDBTest {

@@ -104,8 +104,10 @@ public interface Expression {
      * 
      * During the static analysis phase, the query engine can detect
      * unknown variables and some type errors.
+     *
+     * @param contextInfo the context infomation.
      * 
-     * @throws XPathException
+     * @throws XPathException if an error occurs during the analysis.
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException;
 
@@ -135,6 +137,10 @@ public interface Expression {
      * @param contextSequence the current context sequence.
      * @param contextItem a single item, taken from context. This defines the item,
      * the expression should work on.
+     *
+     * @return the result sequence.
+     *
+     * @throws XPathException if an error occurs during evaluation.
      */
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException;
 
@@ -143,6 +149,12 @@ public interface Expression {
      *
      * An overloaded method which just passes the context sequence depending on the
      * expression context.
+     *
+     * @param contextSequence the current context sequence.
+     *
+     * @return the result sequence.
+     *
+     * @throws XPathException if an error occurs during evaluation.
      */
     public Sequence eval(Sequence contextSequence) throws XPathException;
 
@@ -156,6 +168,8 @@ public interface Expression {
      * This method should return one of the type constants defined in class
      * {@link org.exist.xquery.value.Type}. If the return type cannot be determined
      * statically, return Type.ITEM.
+     *
+     * @return the type.
      */
     public int returnsType();
 
@@ -163,6 +177,8 @@ public interface Expression {
      * The expected cardinality of the return value of the expression.
      *
      * Should return a bit mask with bits set as defined in class {@link Cardinality}.
+     *
+     * @return the cardinality.
      */
     public int getCardinality();
 
@@ -183,19 +199,23 @@ public interface Expression {
      * All cached data in the expression object should be dropped. For example,
      * the xmldb:document() function calls this method whenever the input document
      * set has changed.
-     * @param postOptimization
+     *
+     * @param postOptimization true if post optimisation should be undertaken.
      */
     public void resetState(boolean postOptimization);
 
     /**
      * Returns true if the expression object has not yet been reset, so
      * {@link #resetState(boolean)} should be called.
+     *
+     * @return true if the expression needs reseting.
      */
     public boolean needsReset();
 
     /**
      * Start traversing the expression tree using the specified {@link ExpressionVisitor}.
-     * @param visitor
+     *
+     * @param visitor the visitor
      */
     public void accept(ExpressionVisitor visitor);
 

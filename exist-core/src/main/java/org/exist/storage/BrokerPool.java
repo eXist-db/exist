@@ -97,12 +97,12 @@ import static org.exist.util.ThreadUtils.newInstanceThread;
  * Use it to configure, start and stop database instances.
  * You may have multiple instances defined, each using its own configuration.
  * To define multiple instances, pass an identification string to
- * {@link #configure(String, int, int, Configuration, Optional<Observer>)}
+ * {@link #configure(String, int, int, Configuration, Optional)}
  * and use {@link #getInstance(String)} to retrieve an instance.
  *
- * @author Wolfgang Meier <wolfgang@exist-db.org>
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 @ConfigurationClass("pool")
 public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Database {

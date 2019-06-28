@@ -36,7 +36,7 @@ import static org.exist.dom.QName.Validity.*;
 /**
  * Represents a QName, consisting of a local name, a namespace URI and a prefix.
  *
- * @author Wolfgang <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang</a>
  */
 public class QName implements Comparable<QName> {
 

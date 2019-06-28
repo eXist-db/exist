@@ -47,7 +47,7 @@ import org.exist.xquery.value.Type;
  * 
  * Get's the width of an Image
  * 
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @author Loren Cahlander
  * @version 1.2
  *

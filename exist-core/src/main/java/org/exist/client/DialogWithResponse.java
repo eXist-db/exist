@@ -23,7 +23,7 @@ package org.exist.client;
 
 /**
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public interface DialogWithResponse<T> {
     

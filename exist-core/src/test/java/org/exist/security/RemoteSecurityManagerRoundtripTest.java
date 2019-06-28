@@ -26,7 +26,7 @@ import org.junit.ClassRule;
 /**
  * Security Manager round trip tests against the XML:DB Remote API
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class RemoteSecurityManagerRoundtripTest extends AbstractSecurityManagerRoundtripTest {
 

@@ -95,16 +95,16 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * A servlet to redirect HTTP requests. Similar to the popular UrlRewriteFilter, but
  * based on XQuery.
- * <p>
+ *
  * The request is passed to an XQuery whose return value determines where the request will be
  * redirected to. An empty return value means the request will be passed through the filter
  * untouched. Otherwise, the query should return a single XML element, which will instruct the filter
  * how to further process the request. Details about the format can be found in the main documentation.
- * <p>
+ *
  * The request is forwarded via {@link javax.servlet.RequestDispatcher#forward(javax.servlet.ServletRequest, javax.servlet.ServletResponse)}.
  * Contrary to HTTP forwarding, there is no additional roundtrip to the client. It all happens on
  * the server. The client will not notice the redirect.
- * <p>
+ *
  * Please read the <a href="http://exist-db.org/urlrewrite.html">documentation</a> for further information.
  */
 public class XQueryURLRewrite extends HttpServlet {

@@ -24,7 +24,7 @@ package org.exist.client;
 /**
  * Simple Label and Boolean value
  *
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class LabelledBoolean {  
     private final String label;

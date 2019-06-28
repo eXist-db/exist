@@ -37,7 +37,7 @@ import javax.xml.stream.XMLStreamWriter;
 /**
  * Utilities for working with the Lock Table
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class LockTableUtils {
 

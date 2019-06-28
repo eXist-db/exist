@@ -64,7 +64,7 @@ import static org.exist.storage.journal.Journal.*;
 import static org.junit.Assert.*;
 
 /**
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @RunWith(Parameterized.class)
 public class BlobStoreRecoveryTest {

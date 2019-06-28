@@ -30,7 +30,7 @@ import static org.exist.util.crypto.digest.DigestType.RIPEMD_256;
 /**
  * Implementation of RIPEMD256 streamable digest.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class RIPEMD256StreamableDigest implements StreamableDigest {
     private final ExtendedDigest ed = new RIPEMD256Digest();

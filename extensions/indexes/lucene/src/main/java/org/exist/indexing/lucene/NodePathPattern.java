@@ -32,18 +32,18 @@ import java.util.ArrayList;
 import java.util.Map;
 
 /**
- * @author Stanislav Jordanov <stenlee@gmail.com>
+ * @author <a href="mailto:stenlee@gmail.com">Stanislav Jordanov</a>
  * @version 1.0
- * <p>
+ *
  * Class NodePathPattern is a replacement for class NodePath
  * in cases it was used not as a path, but as a path pattern.
  * Most notably this mis-design was employed in LuceneConfig and LuceneIndexConfig.
- * <p>
+ *
  * This is required in order to implement the feature requested/discussed here:
  * @see <a href='https://sourceforge.net/p/exist/mailman/message/36392026/'>
  * [Exist-open] Are more elaborate xpath expressions allowed in Lucene's index config <text match='...'/>
  * </a>
- * <p>
+ *
  * After class NodePath2 was introduced and replaced NodePath in all cases related to Lucene index
  * element walking and matching, now all that is left in order to have the desired feature implemented
  * is implementing properly NodePathPattern.match methods, w/o modifying the originally used NodePath.

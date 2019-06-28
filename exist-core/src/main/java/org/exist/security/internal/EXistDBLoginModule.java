@@ -63,20 +63,20 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 	/**
 	 * Initialize this <code>LoginModule</code>.
 	 * 
-	 * <p>
+	 *
 	 * 
 	 * @param subject
 	 *            the <code>Subject</code> to be authenticated.
-	 *            <p>
+	 *
 	 * 
 	 * @param callbackHandler
 	 *            a <code>CallbackHandler</code> for communicating with the end
 	 *            user (prompting for user names and passwords, for example).
-	 *            <p>
+	 *
 	 * 
 	 * @param sharedState
 	 *            shared <code>LoginModule</code> state.
-	 *            <p>
+	 *
 	 * 
 	 * @param options
 	 *            options specified in the login <code>Configuration</code> for
@@ -97,14 +97,14 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 	/**
 	 * Authenticate the user by prompting for a user name and password.
 	 * 
-	 * <p>
+	 *
 	 * 
 	 * @return true in all cases since this <code>LoginModule</code> should not
 	 *         be ignored.
 	 * 
 	 * @exception FailedLoginException
 	 *                if the authentication fails.
-	 *                <p>
+	 *
 	 * 
 	 * @exception LoginException
 	 *                if this <code>LoginModule</code> is unable to perform the
@@ -165,12 +165,12 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 	}
 
 	/**
-	 * <p>
+	 *
 	 * This method is called if the LoginContext's overall authentication
 	 * succeeded (the relevant REQUIRED, REQUISITE, SUFFICIENT and OPTIONAL
 	 * LoginModules succeeded).
 	 * 
-	 * <p>
+	 *
 	 * If this LoginModule's own authentication attempt succeeded (checked by
 	 * retrieving the private state saved by the <code>login</code> method),
 	 * then this method associates a <code>SamplePrincipal</code> with the
@@ -178,7 +178,7 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 	 * LoginModule's own authentication attempted failed, then this method
 	 * removes any state that was originally saved.
 	 * 
-	 * <p>
+	 *
 	 * 
 	 * @exception LoginException
 	 *                if the commit fails.
@@ -206,18 +206,18 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 	}
 
 	/**
-	 * <p>
+	 *
 	 * This method is called if the LoginContext's overall authentication
 	 * failed. (the relevant REQUIRED, REQUISITE, SUFFICIENT and OPTIONAL
 	 * LoginModules did not succeed).
 	 * 
-	 * <p>
+	 *
 	 * If this LoginModule's own authentication attempt succeeded (checked by
 	 * retrieving the private state saved by the <code>login</code> and
 	 * <code>commit</code> methods), then this method cleans up any state that
 	 * was originally saved.
 	 * 
-	 * <p>
+	 *
 	 * 
 	 * @exception LoginException
 	 *                if the abort fails.
@@ -243,11 +243,11 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 	/**
 	 * Logout the user.
 	 * 
-	 * <p>
+	 *
 	 * This method removes the <code>SamplePrincipal</code> that was added by
 	 * the <code>commit</code> method.
 	 * 
-	 * <p>
+	 *
 	 * 
 	 * @exception LoginException
 	 *                if the logout fails.

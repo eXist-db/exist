@@ -121,7 +121,7 @@ public class JnlpJarFiles {
     /**
      * Creates a new instance of JnlpJarFiles
      *
-     * @param libDir
+     * @param libDir the lib folder.
      */
     public JnlpJarFiles(final Path libDir) {
         LOGGER.info("Initializing jar files Webstart");
@@ -153,7 +153,8 @@ public class JnlpJarFiles {
     /**
      * Get file reference for JAR file.
      *
-     * @param key
+     * @param key the key for the JAR file.
+     *
      * @return Reference to the jar file, NULL if not existent.
      */
     public Path getJarFile(final String key) {
@@ -172,7 +173,11 @@ public class JnlpJarFiles {
     }
 
     /**
-     * Get last modified of main JAR file
+     * Get last modified of main JAR file.
+     *
+     * @return the last modified time, or -1 if unknown.
+     *
+     * @throws IOException if the last modified time cannot be retrieved.
      */
     public long getLastModified() throws IOException {
         return (mainJar == null) ? -1 : Files.getLastModifiedTime(mainJar).toMillis();

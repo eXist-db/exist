@@ -58,7 +58,7 @@ import static com.evolvedbinary.j8fu.Either.Right;
 /**
  * Write document to local database (embedded) using output stream.
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @author Dannes Wessels
  */
 public class EmbeddedOutputStream extends OutputStream {

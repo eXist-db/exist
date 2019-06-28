@@ -13,7 +13,7 @@ import java.util.function.BiFunction;
 import static java.lang.invoke.MethodType.methodType;
 
 /**
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public abstract class BinaryValueType<T extends FilterOutputStream> {
 

@@ -68,7 +68,7 @@ public class Collations {
 
 
     /**
-     * The HTML ASCII Case-Insensitive Collation as defined by the XPath F&O spec.
+     * The HTML ASCII Case-Insensitive Collation as defined by the XPath F&amp;O spec.
      */
     public final static String HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI = "http://www.w3.org/2005/xpath-functions/collation/html-ascii-case-insensitive";
 
@@ -99,7 +99,7 @@ public class Collations {
 
     /**
      * Get a {@link Comparator}from the specified URI.
-     * <p>
+     *
      * The original code is from saxon (@linkplain http://saxon.sf.net).
      *
      * @param uri The URI describing the collation and settings

@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 /**
  * A utility class for xmldb URis. Since, java.net.URI is <strong>final</strong> this class acts as a wrapper.
  *
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  */
 /*
  * This base class implementation only provides a path.  FullXmldbURI provides
@@ -138,6 +138,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
      * Contructs an XmldbURI from given URI. The provided URI must have the XMLDB_SCHEME ("xmldb")
      *
      * @param xmldbURI A string
+     * @param mustHaveXMLDB true if the provided shceme must be xmldb
      * @throws URISyntaxException If the given string is not a valid xmldb URI.
      */
     protected XmldbURI(URI xmldbURI, final boolean mustHaveXMLDB) throws URISyntaxException {
@@ -270,9 +271,10 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     /**
      * Feeds private members. Receives a URI with the xmldb: scheme already stripped
      *
-     * @param xmldbURI       DOCUMENT ME!
-     * @param hadXmldbPrefix DOCUMENT ME!
-     * @throws URISyntaxException
+     * @param xmldbURI the xmldb URI.
+     * @param hadXmldbPrefix if the xmldb URI has an xmldb prefix.
+     *
+     * @throws URISyntaxException if the URI is invalid.
      */
     protected void parseURI(final URI xmldbURI, final boolean hadXmldbPrefix) throws URISyntaxException {
         splitPath(xmldbURI.getRawPath());
@@ -283,7 +285,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
      * would probably prefer a split policy based on the presence of a well-known root collection.
      *
      * @param path The java.net.URI.getPath() provided.
-     * @throws URISyntaxException
+     * @throws URISyntaxException if the URI is invalid.
      */
     protected void splitPath(final String path) throws URISyntaxException {
         encodedCollectionPath = path;
@@ -297,8 +299,8 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     /**
      * To be called before a context operation with another XmldbURI.
      *
-     * @param uri
-     * @throws IllegalArgumentException
+     * @param uri the uri
+     * @throws IllegalArgumentException if the URI is invalid
      */
     protected void checkCompatibilityForContextOperation(final XmldbURI uri) throws IllegalArgumentException {
         if ((this.getInstanceName() != null) && (uri.getInstanceName() != null) && !this.getInstanceName().equals(uri.getInstanceName())) {
@@ -322,8 +324,8 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     /**
      * To be called before a collection path operation with another XmldbURI.
      *
-     * @param uri
-     * @throws IllegalArgumentException
+     * @param uri the uri
+     * @throws IllegalArgumentException if the uri is invalid
      */
     protected void checkCompatibilityForCollectionOperation(final XmldbURI uri) throws IllegalArgumentException {
         if ((this.getInstanceName() != null) && (uri.getInstanceName() != null) && !this.getInstanceName().equals(uri.getInstanceName())) {
@@ -452,7 +454,7 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     /**
      * To be called each time a private member that interacts with the wrapped URI is modified.
      *
-     * @throws URISyntaxException
+     * @throws URISyntaxException if the URI is invalid.
      */
     protected void recomputeURI() throws URISyntaxException {
     }
@@ -641,10 +643,14 @@ public class XmldbURI implements Comparable<Object>, Serializable {
      * Ugly workaround for non-URI compliant pathes.
      *
      * @param pseudoURI What is supposed to be a URI
-     * @return an supposedly correctly escaped URI <strong>string representation</string></strong>
-     * @throws URISyntaxException DOCUMENT ME!
+     *
+     * @return an supposedly correctly escaped URI <strong>string representation</strong>
+     *
+     * @throws URISyntaxException if the URI is invalid.
+     *
      * @deprecated By definition, using this method is strongly discouraged
      */
+    @Deprecated
     public static String recoverPseudoURIs(final String pseudoURI) throws URISyntaxException {
         final Pattern p = Pattern.compile("/");
         final String[] parts = p.split(pseudoURI);
@@ -907,13 +913,18 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     }
 
 
-    /* @deprecated Legacy method used here and there in the code
-     * if the currentPath is null return the parentPath else
+    /**
+     * If the currentPath is null return the parentPath else
      * if the currentPath doesnt not start with "/db/" and is not equal to "/db" then adjust the path to start with the parentPath
      *
      * Fix to Jens collection/resource name problem by deliriumsky
      *
-     * @deprecated Use {@link #resolveCollectionPath(String) resolveCollectionPath} instead
+     * @param currentPath the current path
+     * @param parentPath the parent path
+     *
+     * @return the checked path
+     *
+     * @deprecated Use {@link #resolveCollectionPath(XmldbURI)} instead
      */
     public static String checkPath(String currentPath, String parentPath) {
         if (currentPath == null) {
@@ -954,9 +965,9 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param fileName
-     * @param parentPath
-     * @return DOCUMENT ME!
+     * @param fileName the filename
+     * @param parentPath the parent path
+     * @return the checked path
      * @deprecated Legacy method used here and there in the code
      */
     @Deprecated
@@ -972,8 +983,8 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param name
-     * @return DOCUMENT ME!
+     * @param name the name
+     * @return the absolute name
      * @deprecated Legacy method used here and there in the code and copied as such
      */
     //TODO : changes // into /  */
@@ -1011,8 +1022,8 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param name
-     * @return DOCUMENT ME!
+     * @param name the name
+     * @return the normalized collection name
      * @deprecated Legacy method used here and there in the code and copied as such
      */
     //TODO : changes // into /  */

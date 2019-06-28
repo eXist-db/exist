@@ -30,13 +30,15 @@ import java.util.List;
  * @param <S> Information about the state which was modified
  * @param <C> the change which was applied to the state
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class TraceableStateChanges<S, C> {
     private List<TraceableStateChange<S, C>> stateChangeTrace = new ArrayList<>();
 
     /**
-     * Add a state change to the tail
+     * Add a state change to the tail.
+     *
+     * @param stateChange the state change
      */
     public void add(final TraceableStateChange<S, C> stateChange) {
         stateChangeTrace.add(stateChange);

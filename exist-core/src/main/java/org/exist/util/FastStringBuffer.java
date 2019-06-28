@@ -155,10 +155,11 @@ public final class FastStringBuffer implements CharSequence, Serializable {
     }
 
     /**
-     * Append a wide character to the buffer (as a surrogate pair if necessary)
+     * Append a wide character to the buffer (as a surrogate pair if necessary).
+     *
+     * @param ch the character
      */
-
-    public void appendWideChar(int ch) {
+    public void appendWideChar(final int ch) {
         if (ch > 0xffff) {
             append(XMLChar.highSurrogate(ch));
             append(XMLChar.lowSurrogate(ch));
@@ -168,9 +169,10 @@ public final class FastStringBuffer implements CharSequence, Serializable {
     }
 
     /**
-     * Prepend a wide character to the buffer (as a surrogate pair if necessary)
+     * Prepend a wide character to the buffer (as a surrogate pair if necessary).
+     *
+     * @param ch the character
      */
-
     public void prependWideChar(int ch) {
         if (ch > 0xffff) {
             insertCharAt(0, XMLChar.lowSurrogate(ch));
@@ -182,7 +184,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
 
     /**
      * Returns the length of this character sequence.  The length is the number
-     * of 16-bit <code>char</code>s in the sequence.</p>
+     * of 16-bit <code>char</code>s in the sequence.
      *
      * @return the number of <code>char</code>s in this sequence
      */
@@ -194,9 +196,9 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * Returns the <code>char</code> value at the specified index.  An index ranges from zero
      * to <tt>length() - 1</tt>.  The first <code>char</code> value of the sequence is at
      * index zero, the next at index one, and so on, as for array
-     * indexing. </p>
-     * <p/>
-     * <p>If the <code>char</code> value specified by the index is a
+     * indexing.
+     *
+     * If the <code>char</code> value specified by the index is a
      * <a href="Character.html#unicode">surrogate</a>, the surrogate
      * value is returned.
      *
@@ -218,7 +220,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * ends with the <code>char</code> value at index <tt>end - 1</tt>.  The length
      * (in <code>char</code>s) of the
      * returned sequence is <tt>end - start</tt>, so if <tt>start == end</tt>
-     * then an empty sequence is returned. </p>
+     * then an empty sequence is returned.
      *
      * @param start the start index, inclusive
      * @param end   the end index, exclusive
@@ -234,14 +236,14 @@ public final class FastStringBuffer implements CharSequence, Serializable {
     /**
      * Copies characters from this FastStringBuffer into the destination character
      * array.
-     * <p>
+     *
      * The first character to be copied is at index <code>srcBegin</code>;
      * the last character to be copied is at index <code>srcEnd-1</code>
      * (thus the total number of characters to be copied is
      * <code>srcEnd-srcBegin</code>). The characters are copied into the
      * subarray of <code>dst</code> starting at index <code>dstBegin</code>
      * and ending at index:
-     * <p><blockquote><pre>
+     * <blockquote><pre>
      *     dstbegin + (srcEnd-srcBegin) - 1
      * </pre></blockquote>
      *
@@ -279,7 +281,6 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * @param ch the character to search for
      * @return the position of the first occurrence, or -1 if not found
      */
-
     public int indexOf(char ch) {
         for (int i=0; i<used; i++) {
             if (array[i] == ch) {
@@ -292,7 +293,6 @@ public final class FastStringBuffer implements CharSequence, Serializable {
     /**
      * Convert contents of the FastStringBuffer to a string
      */
-
     public String toString() {
         condense();
         return new String(array, 0, used);
@@ -302,9 +302,8 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * Set the character at a particular offset
      * @param index the index of the character to be set
      * @param ch the new character to overwrite the existing character at that location
-     * @throws IndexOutOfBoundsException if int<0 or int>=length()
+     * @throws IndexOutOfBoundsException if {@code int < 0 || int >= length()}
      */
-
     public void setCharAt(int index, char ch) {
         if (index<0 || index>used) {
             throw new IndexOutOfBoundsException(""+index);
@@ -316,9 +315,8 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * Insert a character at a particular offset
      * @param index the index of the character to be set
      * @param ch the new character to insert at that location
-     * @throws IndexOutOfBoundsException if int<0 or int>=length()
+     * @throws IndexOutOfBoundsException if {@code int < 0 || int >= length()}
      */
-
     public void insertCharAt(int index, char ch) {
         if (index<0 || index>used) {
             throw new IndexOutOfBoundsException(""+index);
@@ -334,9 +332,8 @@ public final class FastStringBuffer implements CharSequence, Serializable {
     /**
      * Remove a character at a particular offset
      * @param index the index of the character to be set
-     * @throws IndexOutOfBoundsException if int<0 or int>=length()
+     * @throws IndexOutOfBoundsException if {@code int < 0 || int >= length()}
      */
-
     public void removeCharAt(int index) {
         if (index<0 || index>used) {
             throw new IndexOutOfBoundsException(""+index);
@@ -351,9 +348,9 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * Set the length. If this exceeds the current length, this method is a no-op.
      * If this is less than the current length, characters beyond the specified point
      * are deleted.
+     *
      * @param length the new length
      */
-
     public void setLength(int length) {
         if (length < 0 || length > used) {
             return;
@@ -363,8 +360,9 @@ public final class FastStringBuffer implements CharSequence, Serializable {
 
     /**
      * Expand the character array if necessary to ensure capacity for appended data
+     *
+     * @param extra the extra capacity needed.
      */
-
     public void ensureCapacity(int extra) {
         if (used + extra > array.length) {
             int newlen = array.length * 2;
@@ -382,8 +380,9 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * possible size; it only reclaims space if it seems worth doing. Specifically, it
      * contracts the array if the amount of wasted space is more than 256 characters, or
      * more than half the allocated size.
+     *
+     * @return the character sequence.
      */
-
     public CharSequence condense() {
         if (array.length - used > 256 || array.length > used * 2) {
             char[] array2 = new char[used];
@@ -394,17 +393,23 @@ public final class FastStringBuffer implements CharSequence, Serializable {
     }
 
     /**
-     * Write the value to a writer
+     * Write the value to a writer.
+     *
+     * @param writer the writer
+     *
+     * @throws java.io.IOException if an error occurs whilst writing
      */
-
-    public void write(Writer writer) throws java.io.IOException {
+    public void write(final Writer writer) throws java.io.IOException {
         writer.write(array, 0, used);
     }
 
     /**
-     * Diagnostic print of the contents of a CharSequence
+     * Diagnostic print of the contents of a CharSequence.
+     *
+     * @param in the character sequence
+     *
+     * @return the diagnostic print
      */
-
     public static String diagnosticPrint(CharSequence in) {
         final FastStringBuffer buff = new FastStringBuffer(in.length()*2);
         for (int i=0; i<in.length(); i++) {

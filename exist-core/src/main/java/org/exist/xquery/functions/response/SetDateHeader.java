@@ -40,7 +40,7 @@ import javax.annotation.Nonnull;
 /**
  * Set's a HTTP header on the HTTP Response.
  *
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  * @see org.exist.xquery.Function
  */
 public class SetDateHeader extends StrictResponseFunction {

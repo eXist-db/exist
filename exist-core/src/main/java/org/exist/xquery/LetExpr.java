@@ -31,7 +31,7 @@ import org.exist.xquery.value.Type;
 /**
  * Implements an XQuery let-expression.
  * 
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class LetExpr extends BindingExpression {
 

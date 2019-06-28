@@ -42,7 +42,7 @@ import java.util.Deque;
  * either {@see applyDeferredEvents()} or one or more of the
  * _deferred methods to change this behaviour.
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public abstract class DeferrableFilteringTrigger extends FilteringTrigger {
 
@@ -59,7 +59,7 @@ public abstract class DeferrableFilteringTrigger extends FilteringTrigger {
      *
      * If we are deferring events and this function is called
      * with 'false' then deferred events will be applied
-     * by calling {@see applyDeferredEvents()}
+     * by calling {@link #applyDeferredEvents()}.
      *
      * @param defer Should we defer the processing of events?
      */

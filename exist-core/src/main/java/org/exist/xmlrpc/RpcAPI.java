@@ -38,7 +38,7 @@ import javax.annotation.Nullable;
 /**
  * Defines the methods callable through the XMLRPC interface.
  *
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
  */
 public interface RpcAPI {
@@ -75,7 +75,7 @@ public interface RpcAPI {
      * @param delay The delay in milliseconds
      * @return true if the shutdown was scheduled, false otherwise
      * @throws PermissionDeniedException
-     * @deprecated {@see org.exist.xmlrpc.RpcAPI#shutdown(long)
+     * @deprecated Use {@link org.exist.xmlrpc.RpcAPI#shutdown(long)}
      */
     @Deprecated
     boolean shutdown(String delay) throws PermissionDeniedException;
@@ -107,7 +107,7 @@ public interface RpcAPI {
 
     /**
      * Retrieve document by name. XML content is indented if prettyPrint is set
-     * to >=0. Use supplied encoding for output.
+     * to &gt;=0. Use supplied encoding for output.
      *
      * This method is provided to retrieve a document with encodings other than
      * UTF-8. Since the data is handled as binary data, character encodings are
@@ -115,7 +115,7 @@ public interface RpcAPI {
      * library.
      *
      * @param name the document's name.
-     * @param prettyPrint pretty print XML if >0.
+     * @param prettyPrint pretty print XML if &gt;0.
      * @param encoding character encoding to use.
      * @return Document data as binary array.
      * @throws org.exist.EXistException
@@ -126,7 +126,7 @@ public interface RpcAPI {
 
     /**
      * Retrieve document by name. XML content is indented if prettyPrint is set
-     * to >=0. Use supplied encoding for output and apply the specified
+     * to &gt;=0. Use supplied encoding for output and apply the specified
      * stylesheet.
      *
      * This method is provided to retrieve a document with encodings other than
@@ -135,7 +135,7 @@ public interface RpcAPI {
      * library.
      *
      * @param name the document's name.
-     * @param prettyPrint pretty print XML if >0.
+     * @param prettyPrint pretty print XML if &gt;0.
      * @param encoding character encoding to use.
      * @param stylesheet
      * @return The document value
@@ -415,7 +415,7 @@ public interface RpcAPI {
     /**
      * execute XPath query and return howmany nodes from the result set,
      * starting at position <code>start</code>. If <code>prettyPrint</code> is
-     * set to >0 (true), results are pretty printed.
+     * set to &gt;0 (true), results are pretty printed.
      *
      * @param xquery
      * @param howmany maximum number of results to return.
@@ -442,6 +442,7 @@ public interface RpcAPI {
      * per doctype. This method returns a struct with the following fields:
      *
      * <table border="1">
+     *  <caption>Fields</caption>
      *  <tr>
      *      <td>"queryTime"</td>
      *      <td>int</td>
@@ -496,7 +497,7 @@ public interface RpcAPI {
      * later be identified by <code>docName</code>. Some xmlrpc clients seem to
      * have problems with character encodings when sending xml content. To avoid
      * this, parse() accepts the xml document content as byte[]. If
-     * <code>overwrite</code> is >0, an existing document with the same name
+     * <code>overwrite</code> is &gt;0, an existing document with the same name
      * will be replaced by the new document.
      *
      * @param xmlData The document data
@@ -514,7 +515,7 @@ public interface RpcAPI {
      * later be identified by <code>docName</code>. Some xmlrpc clients seem to
      * have problems with character encodings when sending xml content. To avoid
      * this, parse() accepts the xml document content as byte[]. If
-     * <code>overwrite</code> is >0, an existing document with the same name
+     * <code>overwrite</code> is &gt;0, an existing document with the same name
      * will be replaced by the new document.
      *
      * @param xmlData The document data
@@ -722,6 +723,7 @@ public interface RpcAPI {
      * This method returns a struct with the following fields:
      *
      * <table border="1">
+     *  <caption>Fields</caption>
      *  <tr>
      *      <td>"queryTime"</td>
      *      <td>int</td>

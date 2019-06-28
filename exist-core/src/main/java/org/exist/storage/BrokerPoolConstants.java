@@ -30,7 +30,7 @@ public interface BrokerPoolConstants {
     //on-start, ready, go
     /*** initializing sub-components */
     String SIGNAL_STARTUP = "startup";
-    /*** ready for recovery & read-only operations */
+    /*** ready for recovery &amp; read-only operations */
     String SIGNAL_READINESS = "ready";
     /*** ready for writable operations */
     String SIGNAL_WRITABLE = "writable";

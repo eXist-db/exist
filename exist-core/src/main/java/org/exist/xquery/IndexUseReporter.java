@@ -19,7 +19,7 @@
  * 
  *  $Id$
  *  
- *  @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ *  @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  */
 package org.exist.xquery;
 

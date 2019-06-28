@@ -110,6 +110,10 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
+     * Normalize the string.
+     *
+     * @param mode the normalization mode
+     *
      * @return may return `this` or a new XMLString. The caller should be prepared to cleanup one or
      *     two XMLString instances!
      */
@@ -193,7 +197,12 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @return this
+     * Delete the content between {@code offset} and {@code offset + count}.
+     *
+     * @param offset the offset to start deleting from
+     * @param count the number of characters to delete
+     *
+     * @return this after the deletion has been made
      */
     public final XMLString delete(final int start, final int count) {
         System.arraycopy(value_, start + count + start_, value_, start, length_ - (start + count));
@@ -203,7 +212,12 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * @return this
+     * Insert the content at {@code offset}.
+     *
+     * @param offset the offset to start the insertion from
+     * @param data the characters to be inserted
+     *
+     * @return this after the insertion has been made
      */
     public final XMLString insert(final int offset, final String data) {
         ensureCapacity(length_ + data.length());
@@ -214,7 +228,14 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
     }
 
     /**
-     * return `this`
+     * Replace the content between {@code offset} and {@code offset + count}
+     * with {@code data}.
+     *
+     * @param offset the offset to start replacing from
+     * @param count the number of characters to replace
+     * @param data the replacement characters
+     *
+     * @return this after the replacement has been made
      */
     public final XMLString replace(final int offset, final int count, final String data) {
         if (offset < 0 || count < 0 || offset >= length_ || offset + count > length_) {

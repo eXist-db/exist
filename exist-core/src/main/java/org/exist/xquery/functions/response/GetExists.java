@@ -42,7 +42,7 @@ import java.util.Optional;
 /**
  * Determines if the HTTP Response is set in the XQuery Context.
  *
- * @author  Andrzej Taramina <andrzej@chaeron.com>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  */
 public class GetExists extends ResponseFunction {
     private static final Logger logger = LogManager.getLogger(GetExists.class);

@@ -33,7 +33,7 @@ import org.exquery.xquery.Type;
 
 /**
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 class LiteralValueAdapter implements Literal {
     private Type type;

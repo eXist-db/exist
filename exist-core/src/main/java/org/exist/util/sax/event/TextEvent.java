@@ -22,7 +22,7 @@
 package org.exist.util.sax.event;
 
 /**
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public abstract class TextEvent {
     public final char ch[];

@@ -43,7 +43,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * JMX MXBean for examining the LockTable
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class LockTable implements LockTableMXBean {
 

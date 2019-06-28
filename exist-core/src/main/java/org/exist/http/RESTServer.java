@@ -252,19 +252,26 @@ public class RESTServer {
      * "application/xquery" is requested then the xquery will not be executed,
      * instead the source of the document will be returned. Must be enabled in
      * descriptor.xml with the following syntax
-     * <xquery-app><allow-source><xquery
-     * path="/db/mycollection/myquery.xql"/></allow-source></xquery-app> </li>
+     * <pre>{@code
+     *     <xquery-app>
+     *         <allow-source>
+     *             <xquery path="/db/mycollection/myquery.xql"/>
+     *         </allow-source>
+     *     </xquery-app>
+     * }</pre>
+     * </li>
      *
      * <li>_xsl: an URI pointing to an XSL stylesheet that will be applied to
      * the returned XML.</li>
+     * </ul>
      *
-     * @param broker
-     * @param request
-     * @param response
-     * @param path
-     * @throws BadRequestException
-     * @throws PermissionDeniedException
-     * @throws NotFoundException
+     * @param broker the database broker
+     * @param request the request
+     * @param response the response
+     * @param path the path of the request
+     * @throws BadRequestException if a bad request is made
+     * @throws PermissionDeniedException if the request has insufficient permissions
+     * @throws NotFoundException if the request resource cannot be found
      */
     public void doGet(final DBBroker broker, final Txn transaction, final HttpServletRequest request,
             final HttpServletResponse response, final String path)
@@ -1789,14 +1796,14 @@ public class RESTServer {
         writer.write(path);
         writer.write("\">");
         writer.write(path);
-        writer.write("</a></p>");
+        writer.write("</a>");
 
         writer.write("<p class=\"errmsg\">");
         final String message = e.getMessage() == null ? e.toString() : e.getMessage();
         writer.write(XMLUtil.encodeAttrMarkup(message));
-        writer.write("</p>");
+        writer.write("");
         if (query != null) {
-            writer.write("<p><span class=\"high\">Query</span>:</p><pre>");
+            writer.write("<span class=\"high\">Query</span>:<pre>");
             writer.write(XMLUtil.encodeAttrMarkup(query));
             writer.write("</pre>");
         }

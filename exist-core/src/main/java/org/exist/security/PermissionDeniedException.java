@@ -21,8 +21,8 @@ package org.exist.security;
 /**
  *  Description of the Class
  *
- *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- *@since    24. Juni 2002
+ * @author <a href="mailto:meier@ifs.tu-darmstadt.de">Wolfgang Meier</a>
+ * @since 24. Juni 2002
  */
 public class PermissionDeniedException extends Exception {
 

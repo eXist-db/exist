@@ -123,7 +123,7 @@ public class LuceneUtil {
      * Extract all terms which would be matched by a given query.
      * The terms are put into a map with the term as key and the
      * corresponding query object as value.
-     * <p>
+     *
      * This method is used by {@link LuceneMatchListener}
      * to highlight matches in the search results.
      *
