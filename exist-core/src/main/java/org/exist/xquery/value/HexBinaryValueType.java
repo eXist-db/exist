@@ -30,7 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class HexBinaryValueType extends BinaryValueType<HexOutputStream> {
 

@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class Base64BinaryValueType extends BinaryValueType<Base64OutputStream> {
 

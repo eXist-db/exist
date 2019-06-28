@@ -52,7 +52,7 @@ import org.xml.sax.*;
 /**
  * Utility Functions for XQuery Extension Modules
  * 
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @serial 200805202059
  * @version 1.1
  */

@@ -25,7 +25,7 @@ import org.exist.collections.CollectionCache;
 /**
  * JMX MXBean interface for examining the CollectionCache
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public interface CollectionCacheMXBean extends PerInstanceMBean {
 

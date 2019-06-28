@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 
 /**
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 @RunWith(ParallelRunner.class)
 public class UnixStylePermissionTest {

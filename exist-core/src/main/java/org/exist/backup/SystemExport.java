@@ -82,16 +82,16 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Embedded database export tool class. Tries to export as much data as possible, even if parts of the collection hierarchy are corrupted or documents
  * are no longer readable. Features:
- * <p>
+ *
  * <ul>
  * <li>Descendant collections will be exported properly even if their ancestor collection is corrupted.</li>
  * <li>Documents which are intact but belong to a destroyed collection will be stored into a special collection /db/__lost_and_found__.</li>
  * <li>Damaged documents are detected by ConsistencyCheck and are removed from the backup.</li>
  * <li>The format of the exported data is compatible with backups generated via the standard backup tool (Java admin client).</li>
  * </ul>
- * <p>
- * <p>The class should be used in combination with {@link ConsistencyCheck}. The error lists returned by ConsistencyCheck can be passed to {@link
- * #export(BackupHandler, org.exist.collections.Collection, BackupWriter, java.util.Date, BackupDescriptor, java.util.List, org.exist.dom.persistent.MutableDocumentSet)}.</p>
+ *
+ * The class should be used in combination with {@link ConsistencyCheck}. The error lists returned by ConsistencyCheck can be passed to {@link
+ * #export(BackupHandler, org.exist.collections.Collection, BackupWriter, java.util.Date, BackupDescriptor, java.util.List, org.exist.dom.persistent.MutableDocumentSet)}.
  */
 public class SystemExport {
     public final static Logger LOG = LogManager.getLogger(SystemExport.class);

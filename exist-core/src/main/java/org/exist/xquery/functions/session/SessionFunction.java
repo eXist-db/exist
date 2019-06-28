@@ -31,7 +31,7 @@ import java.util.Optional;
  * Abstract for functions in the {@link SessionFunction}
  * which need access to the http session.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public abstract class SessionFunction extends BasicFunction {
 

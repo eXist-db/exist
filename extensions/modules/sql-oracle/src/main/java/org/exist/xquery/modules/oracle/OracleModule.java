@@ -33,11 +33,11 @@ import org.exist.xquery.FunctionDef;
  * PL/SQL Stored Procedures within an Oracle RDBMS, returning an XML representation
  * of the result set. In particular, this module gives access to a <code>ResultSet</code>
  * returned in an <code>OracleType.CURSOR</code>, functionality which is not provided by
- * the more generic SQL extension module.<p><b>Please note</b> that this module is
+ * the more generic SQL extension module.<b>Please note</b> that this module is
  * dependent on functionality contained within the SQL extension module and both modules
  * must be enabled in <code>conf.xml</code> for this module to function correctly.
  * 
- * @author Robert Walpole <robert.walpole@metoffice.gov.uk>
+ * @author <a href="mailto:robert.walpole@metoffice.gov.uk">Robert Walpole</a>
  * @serial 2010-03-23
  * @version 1.0
  * 

@@ -26,7 +26,7 @@ import static org.exist.xquery.regex.RegexUtil.*;
 /**
  * XPath and XQuery 3.0 F+O fn:analyze-string()
  * 
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @serial 201211101626
  * 
  * Corrections were made by to the previous buggy version

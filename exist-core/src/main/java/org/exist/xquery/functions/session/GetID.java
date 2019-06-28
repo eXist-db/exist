@@ -36,7 +36,7 @@ import javax.annotation.Nonnull;
  * Returns the ID of the current session or an empty sequence
  * if there is no session.
  *
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  * @author Loren Cahlander
  */
 public class GetID extends StrictSessionFunction {

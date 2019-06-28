@@ -105,16 +105,10 @@ import static org.exist.util.io.InputStreamUtil.copy;
  * Provides access to all low-level operations required by
  * the database. Extends {@link DBBroker}.
  *
- * Observer Design Pattern: role : this class is the subject (alias observable)
- * for various classes that generate indices for the database content :
+ * This class dispatches the various events (defined by the methods
+ * of {@link org.exist.storage.ContentLoadingObserver}) to indexing classes.
  *
  * @author Wolfgang Meier
- * @link org.exist.storage.NativeElementIndex
- * @link org.exist.storage.NativeValueIndex
- * @link org.exist.storage.NativeValueIndexByQName
- *
- * This class dispatches the various events (defined by the methods
- * of @link org.exist.storage.ContentLoadingObserver) to indexing classes.
  */
 public class NativeBroker extends DBBroker {
 

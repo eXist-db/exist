@@ -37,7 +37,7 @@ import java.util.function.Function;
  *
  * @param <T> The type of the underlying value
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 @ThreadSafe
 public class ConcurrentValueWrapper<T> {
@@ -51,8 +51,12 @@ public class ConcurrentValueWrapper<T> {
     /**
      * Read from the value.
      *
+     * @param <U> the return type.
+     *
      * @param readFn A function which reads the value
      *     and returns a result.
+     *
+     * @return the result of the {@code readFn}.
      */
     public <U> U read(final Function<T, U> readFn) {
         try (final ManagedLock<ReadWriteLock> readLock = ManagedLock.acquire(lock, LockMode.READ_LOCK)) {
@@ -73,6 +77,8 @@ public class ConcurrentValueWrapper<T> {
 
     /**
      * Write to the value and return a result.
+     *
+     * @param <U> the return type.
      *
      * @param writeFn A function which writes to the value
      *     and returns a result.
@@ -106,7 +112,7 @@ public class ConcurrentValueWrapper<T> {
      * @param writeFn A function which writes to the value.
      *
      * @param <E1> An exception which may be thrown by the {@code writeFn}.
-     * @param <E1> An exception which may be thrown by the {@code writeFn}.
+     * @param <E2> An exception which may be thrown by the {@code writeFn}.
      *
      * @throws E1 if an exception is thrown by the {@code writeFn}.
      * @throws E2 if an exception is thrown by the {@code writeFn}.

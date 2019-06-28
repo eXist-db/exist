@@ -35,6 +35,8 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 
     /**
      * Constructor for DatabaseInstanceManagerImpl.
+     *
+     * @param client the XML-RPC client.
      */
     public RemoteDatabaseInstanceManager(final XmlRpcClient client) {
         this.client = client;

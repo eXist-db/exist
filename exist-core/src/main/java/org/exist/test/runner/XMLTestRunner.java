@@ -66,7 +66,10 @@ public class XMLTestRunner extends AbstractTestRunner {
     private final XMLTestInfo info;
 
     /**
-     * @param path The path to the XML file containing the tests
+     * @param path The path to the XML file containing the tests.
+     * @param parallel whether the tests should be run in parallel.
+     *
+     * @throws InitializationError if the test runner could not be constructed.
      */
     public XMLTestRunner(final Path path, final boolean parallel) throws InitializationError {
         super(path, parallel);

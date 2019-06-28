@@ -38,7 +38,7 @@ import org.exist.xquery.FunctionDef;
  * An extension module for the eXist Native XML Database that allows operations
  * on images stored in the eXist database.
  * 
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @author ljo
  * @serial 2006-03-10
  * @version 1.0
@@ -86,7 +86,7 @@ public class ImageModule extends AbstractInternalModule {
     }
 	
     /**
-     * @author Rafael Troilo <rtroilo@gmail.com>
+     * @author <a href="mailto:rtroilo@gmail.com">Rafael Troilo</a>
      */
     protected static BufferedImage createThumb(Image image, int height, int width) {
         int thumbWidth = 0;

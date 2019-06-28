@@ -33,7 +33,7 @@ import org.xml.sax.ext.LexicalHandler;
  * in a queue and then applying them at a later
  * date to a ContentHandler
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public interface LexicalHandlerEvent extends SAXEvent<LexicalHandler> {
 }

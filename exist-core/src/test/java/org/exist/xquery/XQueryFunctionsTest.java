@@ -694,7 +694,7 @@ public class XQueryFunctionsTest {
      * Bugfix 3070
      *
      * @see http://svn.sourceforge.net/exist/?rev=3070&view=rev
-     * <p/>
+     *
      * seconds-from-dateTime() returned wrong value when dateTime had
      * no millesecs available. Special value was returned.
      */

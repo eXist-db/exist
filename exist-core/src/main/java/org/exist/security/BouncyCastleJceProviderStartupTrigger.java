@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  * Startup Trigger to register the Bouncy Castle JCE Provider
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class BouncyCastleJceProviderStartupTrigger implements StartupTrigger {
 

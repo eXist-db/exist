@@ -81,7 +81,7 @@ public class MarshallerTest {
             "<test>" +
             "   <div xmlns=\"urn:foo\" xmlns:ns1=\"urn:baz\" id=\"div1\">" +
             "       <head>Title</head>" +
-            "       <p ns1:attr=\"a\" rend=\"bold\">Some <hi>text</hi>.</p>" +
+            "       <p ns1:attr=\"a\" rend=\"bold\">Some <hi>text</hi>." +
             "   </div>" +
             "</test>";
     

@@ -36,7 +36,9 @@ import java.util.stream.Stream;
 public class ArgumentUtil {
 
     /**
-     * Get the value of an optional argument
+     * Get the value of an optional argument.
+     *
+     * @param <T> the type of the argument.
      *
      * @param parsedArguments The arguments which have been parsed
      * @param argument The argument that we are looking for
@@ -53,7 +55,9 @@ public class ArgumentUtil {
     }
 
     /**
-     * Get the values of an optional argument
+     * Get the values of an optional argument.
+     *
+     * @param <T> the type of the argument.
      *
      * @param parsedArguments The arguments which have been parsed
      * @param argument The argument that we are looking for

@@ -45,7 +45,7 @@ public abstract class AbstractSequence implements Sequence {
     /**
      * To retain compatibility with eXist versions before september 20th 2005 ,
      * for conversion to boolean;
-     * <p>
+     *
      * {@see http://cvs.sourceforge.net/viewcvs.py/exist/eXist-1.0/src/org/exist/xquery/value/AbstractSequence.java?r1=1.11&r2=1.12}
      */
     private static final boolean OLD_EXIST_VERSION_COMPATIBILITY = false;
@@ -152,7 +152,7 @@ public abstract class AbstractSequence implements Sequence {
 
     /**
      * See
-     * <a <href="http://www.w3.org/TR/xquery/#id-ebv">2.4.3 Effective Boolean Value</a>
+     * <a href="http://www.w3.org/TR/xquery/#id-ebv">2.4.3 Effective Boolean Value</a>
      *
      * @see org.exist.xquery.value.Sequence#effectiveBooleanValue()
      */

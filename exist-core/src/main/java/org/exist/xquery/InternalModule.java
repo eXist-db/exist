@@ -40,6 +40,8 @@ public interface InternalModule extends Module {
 	 * Prepare the module for use.
 	 *
 	 * @param context The XQuery Context.
+	 *
+	 * @throws XPathException if an XPath error occurs
 	 */
 	default void prepare(final XQueryContext context) throws XPathException {
 		// no-op

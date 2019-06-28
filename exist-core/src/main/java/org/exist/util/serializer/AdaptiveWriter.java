@@ -71,9 +71,9 @@ public class AdaptiveWriter extends IndentingXMLWriter {
      * @param sequence input sequence
      * @param itemSep separator string to output between items in the sequence
      * @param enclose if set to true: enclose sequences of items into parentheses
-     * @throws SAXException
-     * @throws XPathException
-     * @throws TransformerException
+     * @throws SAXException if an error occurs during serialization
+     * @throws XPathException if an XPath error occurs
+     * @throws TransformerException if an error occurs whilst transforming
      */
     public void write(final Sequence sequence, final String itemSep, final boolean enclose) throws SAXException, XPathException, TransformerException {
         try {

@@ -45,7 +45,7 @@ import org.xmldb.api.base.XMLDBException;
 /**
  * Class to represent a collection.xconf which holds the configuration data for a collection
  * 
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  * @serial 2006-08-25
  * @version 1.2
  */

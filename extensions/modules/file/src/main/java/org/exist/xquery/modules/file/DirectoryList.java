@@ -54,7 +54,7 @@ import org.exist.xquery.value.Type;
  * Enumerate a list of files, including their size and modification time, found
  * in a specified directory, using a pattern
  *
- * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  * @author ljo
  * @serial 2009-08-09
  * @version 1.2

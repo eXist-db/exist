@@ -47,9 +47,9 @@ import org.exist.storage.DBBroker;
 /**
  * Represents a user within the database.
  * 
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
- * @author Adam retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam retter</a>
  */
 @ConfigurationClass("account")
 public class AccountImpl extends AbstractAccount {

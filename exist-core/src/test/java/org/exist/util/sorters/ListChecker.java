@@ -30,7 +30,7 @@ import java.util.List;
 
 /**
  * Check sort(List).
- * <p>
+ *
  * This work was undertaken as part of the development of the taxonomic
  * repository at http://biodiversity.org.au . See <A
  * href="ghw-at-anbg.gov.au">Greg&nbsp;Whitbread</A> for further details.

@@ -33,8 +33,8 @@ import org.w3c.dom.NodeList;
 import javax.xml.XMLConstants;
 
 /**
- * configuration -> element
- * property -> attribute
+ * configuration -&gt; element
+ * property -&gt; attribute
  * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *

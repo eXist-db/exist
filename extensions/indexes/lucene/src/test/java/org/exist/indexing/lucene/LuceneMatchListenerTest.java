@@ -76,8 +76,8 @@ public class LuceneMatchListenerTest {
     private static String XML1 =
             "<article>" +
             "   <head>The <b>title</b>of it</head>" +
-            "   <p>A simple<note>sic</note> paragraph with <hi>highlighted</hi> text <note>and a note</note> to be ignored.</p>" +
-            "   <p>Paragraphs with <s>mix</s><s>ed</s> content are <s>danger</s>ous.</p>" +
+            "   A simple<note>sic</note> paragraph with <hi>highlighted</hi> text <note>and a note</note> to be ignored." +
+            "   Paragraphs with <s>mix</s><s>ed</s> content are <s>danger</s>ous." +
             "</article>";
 
     private static String XML2 =
@@ -103,7 +103,7 @@ public class LuceneMatchListenerTest {
             "        <w>видим</w>\n" +
             "        <w>многи</w>\n" +
             "        <w>љуте</w>.</s>\n" +
-            "</p>";
+            "";
 
     private static String CONF1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -265,23 +265,23 @@ public class LuceneMatchListenerTest {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq);
-            XMLAssert.assertEquals("<p>Paragraphs with <s>" + MATCH_START + "mix" + MATCH_END +
-                    "</s><s>ed</s> content are <s>danger</s>ous.</p>", result);
+            XMLAssert.assertEquals("Paragraphs with <s>" + MATCH_START + "mix" + MATCH_END +
+                    "</s><s>ed</s> content are <s>danger</s>ous.", result);
 
             seq = xquery.execute(broker, "//p[ft:query(., 'ignored')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            XMLAssert.assertEquals("<p>A simple<note>sic</note> paragraph with <hi>highlighted</hi> text <note>and a note</note> to be " +
-                    MATCH_START + "ignored" + MATCH_END + ".</p>", result);
+            XMLAssert.assertEquals("A simple<note>sic</note> paragraph with <hi>highlighted</hi> text <note>and a note</note> to be " +
+                    MATCH_START + "ignored" + MATCH_END + ".", result);
 
             seq = xquery.execute(broker, "//p[ft:query(., 'highlighted')]", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);
-            XMLAssert.assertEquals("<p>A simple<note>sic</note> paragraph with <hi>" + MATCH_START +
+            XMLAssert.assertEquals("A simple<note>sic</note> paragraph with <hi>" + MATCH_START +
                     "highlighted" + MATCH_END + "</hi> text <note>and a note</note> to be " +
-                    "ignored.</p>", result);
+                    "ignored.", result);
 
             seq = xquery.execute(broker, "//p[ft:query(., 'highlighted')]/hi", null);
             assertNotNull(seq);
@@ -337,7 +337,7 @@ public class LuceneMatchListenerTest {
             "        <w>видим</w>\n" +
             "        <w>многи</w>\n" +
             "        <w>љуте</w>.</s>\n" +
-            "</p>";
+            "";
 
             XMLAssert.assertEquals(expected, result);
         }

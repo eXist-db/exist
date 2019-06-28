@@ -46,7 +46,7 @@ public interface IStoredNode<T extends IStoredNode> extends INode<DocumentImpl, 
 
     /**
      * Set the Document that this node belongs to
-     * <p/>
+     *
      * Counterpart to @see org.exist.dom.INode#getOwnerDocument()
      *
      * @param doc The document that this node belongs to
@@ -95,7 +95,7 @@ public interface IStoredNode<T extends IStoredNode> extends INode<DocumentImpl, 
      * this seems to do two things
      * clear the state, and then return the object
      * to NodePool - all a bit of a mess really!
-     * <p/>
+     *
      * org.exist.Indexer seems to borrow and return to the pool
      * org.exist.memtree.DOMIndexer only seems to borrow nodes
      * org.exist.serializers.NativeSerializer only seems to return nodes

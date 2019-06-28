@@ -39,7 +39,7 @@ import java.util.List;
  * XML-RPC type parser for sub-classes of
  * {@link com.evolvedbinary.j8fu.tuple.Tuple}.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 class TupleParser extends RecursiveTypeParserImpl {
     private int level = 0;

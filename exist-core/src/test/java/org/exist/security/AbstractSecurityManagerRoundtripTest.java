@@ -18,7 +18,7 @@ import org.xmldb.api.base.XMLDBException;
  * Ensures that security manager data, accounts, groups (and associations)
  * are correctly persisted across database restarts
  *
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public abstract class AbstractSecurityManagerRoundtripTest {
 

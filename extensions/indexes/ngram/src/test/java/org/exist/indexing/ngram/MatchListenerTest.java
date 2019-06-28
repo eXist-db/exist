@@ -85,7 +85,7 @@ public class MatchListenerTest {
         "    <lb n=\"0257c18\" ed=\"T\"/>唯於邪道。競說勝能。是故我今建立表剎 \n" +
         "    <lb n=\"0257c19\" ed=\"T\"/>宣示於世。咸使聞知佛勝功德。於佛世尊。是 \n" +
         "    <lb n=\"0257c20\" ed=\"T\"/>大丈夫。最尊最上。無有等者。\n" +
-        "</p>";
+        "";
     
     private static String CONF1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +

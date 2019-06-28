@@ -35,7 +35,7 @@ import java.io.InputStream;
  * Simple version of a ByteArrayInputStream which
  * does not permit mark/reset
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 @NotThreadSafe
 public class NonMarkableByteArrayInputStream extends InputStream {

@@ -39,8 +39,7 @@ import java.lang.annotation.Target;
  * The typical use is to ensure that a container holds appropriate locks (by URI)
  * when calling the method accessors on their internal state.
  *
- * <pre>
- * {@code
+ * <pre>{@code
  * public class MyCollectonImpl implements Collection {
  *     final XmldbURI uri;
  *     public MyCollectionImpl(@EnsureLocked(mode=LockMode.READ_LOCK, type=LockType.COLLECTION) final XmldbURI uri) {
@@ -58,10 +57,9 @@ import java.lang.annotation.Target;
  *         return documents.size();
  *     }
  * }
- * }
- * </pre>
+ * }</pre>
  *
- * @author <a href="mailto:adam@evolvedbinary.com>Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = {ElementType.METHOD})

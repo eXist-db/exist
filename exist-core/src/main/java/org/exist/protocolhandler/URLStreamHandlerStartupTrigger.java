@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Startup Trigger to register eXists URL Stream Handler
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @author Dannes Wessels
  */
 public class URLStreamHandlerStartupTrigger implements StartupTrigger {

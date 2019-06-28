@@ -19,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.runners.Parameterized.Parameter;
 
 /**
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 @RunWith(value = Parameterized.class)
 public class TransformerFactoryAllocatorTest {

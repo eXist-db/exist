@@ -95,7 +95,7 @@ public class BlockingInputStream extends InputStream {
      * <code>len</code> bytes, but a smaller number may be read.
      * The number of bytes actually read is returned as an integer.
      * 
-     * <p> This method blocks until input data is available, end of file is
+     *  This method blocks until input data is available, end of file is
      * detected, or an exception is thrown.
      * 
      * 
@@ -174,7 +174,6 @@ public class BlockingInputStream extends InputStream {
      * 
      * @return the number of bytes that can be read from this input stream
      *             without blocking.
-     * @throws ExistIOException  if an I/O error occurs.
      */
     @Override
     public synchronized int available() {
@@ -267,7 +266,7 @@ public class BlockingInputStream extends InputStream {
      * of the input stream also implemented by this class.
      * Closes this output stream.
      * A closed stream cannot perform output operations and cannot be reopened.
-     * <p>
+     *
      * This method blocks its caller until the corresponding input stream is
      * closed or an exception occurs.
      * 
@@ -305,7 +304,7 @@ public class BlockingInputStream extends InputStream {
     /**
      * Flushes this output stream and forces any buffered output bytes 
      * to be written out.
-     * <p>
+     *
      * This methods blocks its caller until all buffered bytes are actually
      * read by the consuming threads.
      * 

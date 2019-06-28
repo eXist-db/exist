@@ -34,7 +34,7 @@ import org.exquery.xquery3.FunctionSignature;
 
 /**
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class AnnotationAdapter implements Annotation {
 

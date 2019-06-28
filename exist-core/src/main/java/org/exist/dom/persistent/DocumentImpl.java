@@ -77,7 +77,7 @@ import static org.exist.storage.lock.Lock.LockMode.WRITE_LOCK;
  * Represents a persistent document object in the database;
  * it can be an XML_FILE , a BINARY_FILE, or Xquery source code.
  *
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 @NotThreadSafe
 public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Document {
@@ -449,7 +449,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     /**
      * Returns the estimated size of the data in this document.
-     * <p/>
+     *
      * As an estimation, the number of pages occupied by the document
      * is multiplied with the current page size.
      */

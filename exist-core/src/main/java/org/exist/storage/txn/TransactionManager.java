@@ -65,7 +65,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * There's only one TransactionManager per database instance, it can be
  * accessed via {@link BrokerPool#getTransactionManager()}.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author wolf
  */
 @ThreadSafe

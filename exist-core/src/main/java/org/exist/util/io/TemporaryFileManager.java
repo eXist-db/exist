@@ -70,7 +70,7 @@ import org.exist.util.FileUtils;
  *
  * @version 2.0
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class TemporaryFileManager {
 

@@ -49,8 +49,8 @@ import org.exist.xquery.value.Type;
  * 
  * Get a mail session
  * 
- * @author Andrzej Taramina <andrzej@chaeron.com>
- * @author José María Fernández <josemariafg@gmail.com>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
+ * @author <a href="mailto:josemariafg@gmail.com">José María Fernández</a>
  * @serial 2009-03-12
  * @version 1.3
  *

@@ -32,7 +32,7 @@ import javax.xml.stream.XMLStreamReader;
  * Used for the AbbrevForwardStep '@' when
  * attempting to match not attribute node kinds.
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class FailTest implements NodeTest {
     private static final int NO_TYPE = Integer.MIN_VALUE;

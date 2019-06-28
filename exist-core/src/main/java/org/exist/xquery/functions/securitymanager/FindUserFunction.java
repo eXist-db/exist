@@ -42,7 +42,7 @@ import org.exist.xquery.value.ValueSequence;
 
 /**
  *
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class FindUserFunction extends BasicFunction {
 

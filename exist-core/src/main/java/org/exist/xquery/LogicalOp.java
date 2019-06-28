@@ -29,7 +29,7 @@ import org.exist.xquery.value.Type;
 /**
  * Base class for the boolean operators "and" and "or".
  * 
- * @author Wolfgang <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang</a>
  */
 public abstract class LogicalOp extends BinaryOp {
 

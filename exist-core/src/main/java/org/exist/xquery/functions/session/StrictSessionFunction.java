@@ -37,7 +37,7 @@ import java.util.Optional;
  * should raise an {@link ErrorCodes#XPDY0002} if
  * the request is not available.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public abstract class StrictSessionFunction extends SessionFunction {
 

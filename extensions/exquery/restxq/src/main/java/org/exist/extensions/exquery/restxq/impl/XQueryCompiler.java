@@ -43,7 +43,7 @@ import org.exist.xquery.XQueryContext;
 
 /**
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 class XQueryCompiler {
     

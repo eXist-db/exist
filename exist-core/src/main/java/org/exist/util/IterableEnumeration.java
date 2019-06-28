@@ -24,9 +24,11 @@ import java.util.Enumeration;
 import java.util.Iterator;
 
 /**
- * Adapter class from Iterable<T> to Enumeration<T>
+ * Adapter class from Iterable to Enumeration
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @param <T> the type of the iterable.
+ *
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class IterableEnumeration<T> implements Enumeration<T> {
     private final Iterator<T> iterator;

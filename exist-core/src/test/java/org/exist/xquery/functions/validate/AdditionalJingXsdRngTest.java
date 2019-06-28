@@ -45,7 +45,7 @@ public class AdditionalJingXsdRngTest {
     public void testValidateXSDwithJing() throws XMLDBException {
         final String query = "let $v := <doc>\n" +
                 "\t<title>Title</title>\n" +
-                "\t<p>Some paragraph.</p>\n" +
+                "\tSome paragraph.\n" +
                 "      </doc>\n" +
                 "let $schema := <xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"\n" +
                 "\t\t elementFormDefault=\"qualified\">\n" +
@@ -73,7 +73,7 @@ public class AdditionalJingXsdRngTest {
     public void testValidateXSDwithJing_invalid() throws XMLDBException {
         final String query = "let $v := <doc>\n" +
                 "\t<title1>Title</title1>\n" +
-                "\t<p>Some paragraph.</p>\n" +
+                "\tSome paragraph.\n" +
                 "      </doc>\n" +
                 "let $schema := <xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"\n" +
                 "\t\t elementFormDefault=\"qualified\">\n" +
@@ -101,7 +101,7 @@ public class AdditionalJingXsdRngTest {
     public void testValidateRNGwithJing() throws XPathException, XMLDBException {
         final String query = "let $v := <doc>\n" +
                 "\t<title>Title</title>\n" +
-                "\t<p>Some paragraph.</p>\n" +
+                "\tSome paragraph.\n" +
                 "      </doc>\n" +
                 "let $schema := <grammar xmlns=\"http://relaxng.org/ns/structure/1.0\">\n" +
                 "  <start>\n" +
@@ -141,7 +141,7 @@ public class AdditionalJingXsdRngTest {
     public void testValidateRNGwithJing_invalid() throws XMLDBException {
         final String query = "let $v := <doc>\n" +
                 "\t<title1>Title</title1>\n" +
-                "\t<p>Some paragraph.</p>\n" +
+                "\tSome paragraph.\n" +
                 "      </doc>\n" +
                 "let $schema := <grammar xmlns=\"http://relaxng.org/ns/structure/1.0\">\n" +
                 "  <start>\n" +

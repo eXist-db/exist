@@ -27,7 +27,7 @@ package org.exist.storage.cache;
  * in the cache). It depends on the concrete cache implementation if and how
  * these fields are used.
  * 
- * @author Wolfgang <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang</a>
  */
 public interface Cacheable {
 

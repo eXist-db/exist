@@ -44,8 +44,9 @@ public final class CharSlice implements CharSequence, Serializable {
     }
 
     /**
-     * Returns the length of this character sequence.  The length is the number
-     * of 16-bit Unicode characters in the sequence. </p>
+     * Returns the length of this character sequence.
+     *
+     * The length is the number of 16-bit Unicode characters in the sequence.
      *
      * @return  the number of characters in this sequence
      */
@@ -56,17 +57,17 @@ public final class CharSlice implements CharSequence, Serializable {
 
     /**
      * Returns the character at the specified index.  An index ranges from zero
-     * to <tt>length() - 1</tt>.  The first character of the sequence is at
+     * to <pre>length() - 1</pre>.  The first character of the sequence is at
      * index zero, the next at index one, and so on, as for array
-     * indexing. </p>
+     * indexing.
      *
      * @param   index   the index of the character to be returned
      *
      * @return  the specified character
      *
      * @throws  java.lang.IndexOutOfBoundsException
-     *          if the <tt>index</tt> argument is negative or not less than
-     *          <tt>length()</tt>
+     *          if the <pre>index</pre> argument is negative or not less than
+     *          <pre>length()</pre>
      */
     @Override
     public char charAt(final int index) {
@@ -76,9 +77,9 @@ public final class CharSlice implements CharSequence, Serializable {
     /**
      * Returns a new character sequence that is a subsequence of this sequence.
      * The subsequence starts with the character at the specified index and
-     * ends with the character at index <tt>end - 1</tt>.  The length of the
-     * returned sequence is <tt>end - start</tt>, so if <tt>start == end</tt>
-     * then an empty sequence is returned. </p>
+     * ends with the character at index <pre>end - 1</pre>.  The length of the
+     * returned sequence is <pre>end - start</pre>, so if <pre>start == end</pre>
+     * then an empty sequence is returned.
      *
      * @param   start   the start index, inclusive
      * @param   end     the end index, exclusive
@@ -86,9 +87,9 @@ public final class CharSlice implements CharSequence, Serializable {
      * @return  the specified subsequence
      *
      * @throws  java.lang.IndexOutOfBoundsException
-     *          if <tt>start</tt> or <tt>end</tt> are negative,
-     *          if <tt>end</tt> is greater than <tt>length()</tt>,
-     *          or if <tt>start</tt> is greater than <tt>end</tt>
+     *          if <pre>start</pre> or <pre>end</pre> are negative,
+     *          if <pre>end</pre> is greater than <pre>length()</pre>,
+     *          or if <pre>start</pre> is greater than <pre>end</pre>
      */
     @Override
     public CharSequence subSequence(final int start, final int end) {
@@ -145,8 +146,12 @@ public final class CharSlice implements CharSequence, Serializable {
     /**
      * Returns a new character sequence that is a subsequence of this sequence.
      * Unlike subSequence, this is guaranteed to return a String.
+     *
+     * @param start the start offset of the substring
+     * @param end the end offset of the substring
+     *
+     * @return the substring
      */
-
     public String substring(final int start, final int end) {
         return new String(array, offset + start, end - start);
     }
@@ -162,7 +167,10 @@ public final class CharSlice implements CharSequence, Serializable {
     }
 
     /**
-     * Write the value to a writer
+     * Write the value to a writer.
+     *
+     * @param writer the writer
+     * @throws java.io.IOException if an error occurs whilst writing
      */
     public void write(final Writer writer) throws java.io.IOException {
         writer.write(array, offset, len);

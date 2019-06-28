@@ -23,7 +23,7 @@ import org.exist.storage.journal.AbstractLoggable;
 import java.nio.ByteBuffer;
 
 /**
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public abstract class AbstractBlobLoggable extends AbstractLoggable implements BlobLoggable {
     protected DBBroker broker;

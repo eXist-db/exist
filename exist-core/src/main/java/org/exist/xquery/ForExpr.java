@@ -30,7 +30,7 @@ import org.exist.xquery.value.*;
 /**
  * Represents an XQuery "for" expression.
  * 
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class ForExpr extends BindingExpression {
 

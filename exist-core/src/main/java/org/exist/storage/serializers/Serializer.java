@@ -111,7 +111,7 @@ import org.xml.sax.ext.LexicalHandler;
  *  Output can be configured through properties. Property keys are defined in classes
  * {@link javax.xml.transform.OutputKeys} and {@link org.exist.storage.serializers.EXistOutputKeys}
  *
- *@author     Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public abstract class Serializer implements XMLReader {
 
@@ -878,7 +878,7 @@ public abstract class Serializer implements XMLReader {
 	 * wrap is set to true, output a wrapper element to enclose the serialized items. The
 	 * wrapper element will be in namespace {@link org.exist.Namespaces#EXIST_NS} and has the following form:
 	 * 
-	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count">
+	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count"&gt;
 	 * 
 	 * @param seq The sequence to serialize
 	 * @param start The position in the sequence to start serialization from
@@ -935,7 +935,7 @@ public abstract class Serializer implements XMLReader {
 	 * wrap is set to true, output a wrapper element to enclose the serialized items. The
 	 * wrapper element will be in namespace {@link org.exist.Namespaces#EXIST_NS} and has the following form:
 	 * 
-	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count">
+	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count"&gt;
 	 *
 	 * @param seq The sequence to serialize
 	 *
@@ -1140,9 +1140,9 @@ public abstract class Serializer implements XMLReader {
     /**
      * Quick code fix for the remote XQJ API implementation.
      *
-     * attribute name { "value" } ---> goes through fine.
+     * attribute name { "value" } ---&gt; goes through fine.
      *
-     * fn:doc($expr)/element()/attribute() ---> fails, as this is
+     * fn:doc($expr)/element()/attribute() ---&gt; fails, as this is
      * contained within the Database (not an in memory attribute).
      *
      * @param item a NodeValue
@@ -1237,7 +1237,7 @@ public abstract class Serializer implements XMLReader {
 	 *  URIResolver is called by the XSL transformer to handle <xsl:include>,
 	 *  <xsl:import> ...
 	 *
-	 *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+	 *@author     <a href="mailto:meier@ifs.tu-darmstadt.de">Wolfgang Meier</a>
 	 */
 	private class InternalURIResolver implements URIResolver {
 

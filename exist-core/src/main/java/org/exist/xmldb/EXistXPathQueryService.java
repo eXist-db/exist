@@ -28,7 +28,7 @@ import org.xmldb.api.modules.XPathQueryService;
  * Extends {@link org.xmldb.api.modules.XPathQueryService} by additional
  * methods specific to eXist.
  *
- * @author Wolfgang <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang</a>
  */
 public interface EXistXPathQueryService extends XPathQueryService {
 
@@ -135,6 +135,8 @@ public interface EXistXPathQueryService extends XPathQueryService {
 
     /**
      * Clears any previously declared variables
+     *
+     * @throws XMLDBException if an error occurs whilst clearning the variables.
      */
     void clearVariables() throws XMLDBException;
 
@@ -148,6 +150,8 @@ public interface EXistXPathQueryService extends XPathQueryService {
      * It is thus guaranteed that documents referenced by the
      * query or the result set are not modified by other threads
      * until {@link #endProtected} is called.
+     *
+     * @throws XMLDBException if an error occurs whilst begining protected mode.
      */
     void beginProtected() throws XMLDBException;
 

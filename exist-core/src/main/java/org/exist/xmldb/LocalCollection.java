@@ -96,10 +96,10 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
     /**
      * Create a collection with no parent (root collection).
      *
-     * @param user
-     * @param brokerPool
-     * @param collection
-     * @throws XMLDBException
+     * @param user the user
+     * @param brokerPool the broker pool
+     * @param collection the collection
+     * @throws XMLDBException if an error occurs opening the collection
      */
     public LocalCollection(final Subject user, final BrokerPool brokerPool, final XmldbURI collection) throws XMLDBException {
         this(user, brokerPool, null, collection);
@@ -108,13 +108,13 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
     /**
      * Create a collection identified by its name. Load the collection from the database.
      *
-     * @param user
-     * @param brokerPool
-     * @param parent
-     * @param name
-     * @throws XMLDBException
+     * @param user the user
+     * @param brokerPool the broker pool
+     * @param parent the parent collection
+     * @param name the name of this collection
+     * @throws XMLDBException if an error occurs opening the collection
      */
-    public LocalCollection(Subject user, final BrokerPool brokerPool, final LocalCollection parent, final XmldbURI name) throws XMLDBException {
+    public LocalCollection(final Subject user, final BrokerPool brokerPool, final LocalCollection parent, final XmldbURI name) throws XMLDBException {
         super(user, brokerPool, parent);
 
         if(name == null) {
@@ -372,10 +372,6 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
         });
     }
 
-    /** Possible services: XPathQueryService, XQueryService,
-     * CollectionManagementService (CollectionManager), UserManagementService,
-     * DatabaseInstanceManager, XUpdateQueryService,  IndexQueryService,
-     * ValidationService. */
     @Override
     public Service getService(final String name, final String version) throws XMLDBException {
         final Service service;
@@ -452,7 +448,9 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
     }
 
     /**
-     * Retrieve the list of resources in the collection
+     * Retrieve the list of resources in the collection.
+     *
+     * @return the list of resources.
      * 
      * @throws XMLDBException if and invalid collection was specified, or if permission is denied
      */
@@ -707,6 +705,8 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      * @param res the html resource
      *
      * @return true if a HTML reader should be used.
+     *
+     * @throws XMLDBException if the HTML Reader cannot be configured.
      */
     private boolean useHtmlReader(final DBBroker broker, final Txn transaction, final LocalXMLResource res) throws XMLDBException {
         final String normalize = properties.getProperty(NORMALIZE_HTML, "no");
@@ -777,7 +777,11 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      *
      * NOTE this read will occur using the database user set on the collection
      *
+     * @param <R> the return type.
+     *
      * @return A function to receive a read-only operation to perform against the collection
+     *
+     * @throws XMLDBException if the collection could not be read
      */
     protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read() throws XMLDBException {
         return readOp -> this.<R>read(path).apply((collection, broker, transaction) -> readOp.apply(collection, broker, transaction));
@@ -788,6 +792,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      *
      * NOTE this read will occur using the database user set on the collection
      *
+     * @param <R> the return type.
      * @param errorCode The error code to use in the XMLDBException if the collection does not exist, see {@link ErrorCodes}
      * @return A function to receive a read-only operation to perform against the collection
      *
@@ -802,6 +807,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      *
      * NOTE this read will occur using the database user set on the collection
      *
+     * @param <R> the return type.
      * @param broker The broker to use for the operation
      * @param transaction The transaction to use for the operation
      * @return A function to receive a read-only operation to perform against the collection
@@ -815,6 +821,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      *
      * NOTE this read will occur using the database user set on the collection
      *
+     * @param <R> the return type.
      * @param broker The broker to use for the operation
      * @param transaction The transaction to use for the operation
      * @param errorCode The error code to use in the XMLDBException if the collection does not exist, see {@link ErrorCodes}
@@ -831,7 +838,11 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      *
      * NOTE this read/write will occur using the database user set on the collection
      *
+     * @param <R> the return type.
+     *
      * @return A function to receive a read/write operation to perform against the collection
+     *
+     * @throws XMLDBException if the collection could not be modified
      */
     private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> modify() throws XMLDBException {
         return modifyOp -> this.<R>modify(path).apply((collection, broker, transaction) -> modifyOp.apply(collection, broker, transaction));
@@ -842,9 +853,13 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      *
      * NOTE this read/write will occur using the database user set on the collection
      *
+     * @param <R> the return type.
      * @param broker The database broker to use when accessing the collection
      * @param transaction The transaction to use when accessing the collection
+     *
      * @return A function to receive a read/write operation to perform against the collection
+     *
+     * @throws XMLDBException if the collection could not be modified
      */
     private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> modify(final DBBroker broker, final Txn transaction) throws XMLDBException {
         return modifyOp -> this.<R>modify(broker, transaction, path).apply((collection, broker1, transaction1) -> modifyOp.apply(collection, broker1, transaction1));
@@ -853,10 +868,14 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
     /**
      * Higher-order function for performing lockable operations on this collection
      *
-     * @param lockMode
+     * @param <R> the return type.
+     * @param lockMode the lock mode
      * @param broker The broker to use for the operation
      * @param transaction The transaction to use for the operation
+     *
      * @return A function to receive an operation to perform on the locked database collection
+     *
+     * @throws XMLDBException if the the operation raises an error
      */
     protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> with(final LockMode lockMode, final DBBroker broker, final Txn transaction) throws XMLDBException {
         return op -> this.<R>with(lockMode, broker, transaction, path).apply((collection, broker1, transaction1) -> op.apply(collection, broker1, transaction1));

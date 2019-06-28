@@ -54,7 +54,7 @@ import org.exist.xquery.value.Type;
  * 
  * Search a JNDI Directory
  * 
- * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  * @serial 2008-12-02
  * @version 1.0
  * 

@@ -41,7 +41,7 @@ import static java.lang.invoke.MethodType.methodType;
 /**
  * Factory to instantiate a cache object
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class FilterInputStreamCacheFactory {
 
@@ -56,8 +56,14 @@ public class FilterInputStreamCacheFactory {
     }
 
     /**
-     * Get a suitable Cache instance
+     * Get a suitable Cache instance.
      *
+     * @param cacheConfiguration the configuration for the cache
+     * @param is the input stream to cache
+     *
+     * @return the cache instance
+     *
+     * @throws IOException if an error occurs setting up the cache
      */
     public static FilterInputStreamCache getCacheInstance(final FilterInputStreamCacheConfiguration cacheConfiguration, final InputStream is) throws IOException {
         final FilterInputStreamCache cache = new FilterInputStreamCacheFactory().instantiate(cacheConfiguration, is);

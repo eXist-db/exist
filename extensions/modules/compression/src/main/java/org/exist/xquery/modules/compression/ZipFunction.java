@@ -38,7 +38,7 @@ import org.exist.xquery.value.Type;
 /**
  * Compresses a sequence of resources and/or collections into a Zip file
  * 
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @version 1.0
  */
 public class ZipFunction extends AbstractCompressFunction {

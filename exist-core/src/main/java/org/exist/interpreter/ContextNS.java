@@ -11,13 +11,13 @@ public interface ContextNS {
 	/**
 	 * Declare a user-defined static prefix/namespace mapping.
 	 *
-	 * <p>eXist internally keeps a table containing all prefix/namespace mappings it found in documents, which have been previously stored into the
-	 * database. These default mappings need not to be declared explicitely.</p>
+	 * eXist internally keeps a table containing all prefix/namespace mappings it found in documents, which have been previously stored into the
+	 * database. These default mappings need not to be declared explicitely.
 	 *
-	 * @param   prefix
-	 * @param   uri
+	 * @param prefix the namespace prefix.
+	 * @param uri the namespace URI.
 	 *
-	 * @throws  XPathException  
+	 * @throws XPathException if an error occurs whilst declaring the namespace.
 	 */
 	public void declareNamespace(String prefix, String uri) throws XPathException;
 
@@ -26,15 +26,15 @@ public interface ContextNS {
 	/**
 	 * Removes the namespace URI from the prefix/namespace mappings table.
 	 *
-	 * @param  uri
+	 * @param uri the namespace URI.
 	 */
 	public void removeNamespace(String uri);
 
 	/**
 	 * Declare an in-scope namespace. This is called during query execution.
 	 *
-	 * @param  prefix
-	 * @param  uri
+	 * @param prefix the namespace prefix.
+	 * @param uri the namespace URI.
 	 */
 	public void declareInScopeNamespace(String prefix, String uri);
 
@@ -49,95 +49,99 @@ public interface ContextNS {
 	/**
 	 * Return the namespace URI mapped to the registered prefix or null if the prefix is not registered.
 	 *
-	 * @param   prefix
+	 * @param prefix the namespace prefix.
 	 *
-	 * @return  namespace
+	 * @return namespace
 	 */
 	public String getURIForPrefix(String prefix);
 
 	/**
 	 * Get URI Prefix
 	 *
-	 * @param   uri
+	 * @param uri the namespace URI.
 	 *
-	 * @return  the prefix mapped to the registered URI or null if the URI is not registered.
+	 * @return the prefix mapped to the registered URI or null if the URI is not registered.
 	 */
 	public String getPrefixForURI(String uri);
 
 	/**
 	 * Returns the current default function namespace.
 	 *
-	 * @return  current default function namespace
+	 * @return current default function namespace
 	 */
 	public String getDefaultFunctionNamespace();
 
 	/**
 	 * Set the default function namespace. By default, this points to the namespace for XPath built-in functions.
 	 *
-	 * @param   uri
+	 * @param uri the namespace URI.
 	 *
-	 * @throws  XPathException  
+	 * @throws XPathException if an error occurs whilst setting the default function namespace.
 	 */
 	public void setDefaultFunctionNamespace(String uri) throws XPathException;
 
 	/**
 	 * Returns the current default element namespace.
 	 *
-	 * @return  current default element namespace schema
+	 * @return current default element namespace schema
 	 *
-	 * @throws  XPathException  
+	 * @throws XPathException if an error occurs whilst getting the default element namespace schema.
 	 */
 	public String getDefaultElementNamespaceSchema() throws XPathException;
 
 	/**
 	 * Set the default element namespace. By default, this points to the empty uri.
 	 *
-	 * @param   uri
+	 * @param uri the namespace URI.
 	 *
-	 * @throws  XPathException  
+	 * @throws XPathException if an error occurs whilst setting the default element namespace schema.
 	 */
 	public void setDefaultElementNamespaceSchema(String uri) throws XPathException;
 
 	/**
 	 * Returns the current default element namespace.
 	 *
-	 * @return  current default element namespace
+	 * @return current default element namespace
 	 *
-	 * @throws  XPathException  
+	 * @throws XPathException if an error occurs whilst getting the default element namespace.
 	 */
 	public String getDefaultElementNamespace() throws XPathException;
 
 	/**
 	 * Set the default element namespace. By default, this points to the empty uri.
 	 *
-	 * @param      uri     a <code>String</code> value
-	 * @param      schema  a <code>String</code> value
+	 * @param uri the namespace URI.
+	 * @param schema the schema
 	 *
-	 * @exception  XPathException  if an error occurs
+	 * @throws XPathException if an error occurs whilst getting the default element namespace.
 	 */
 	public void setDefaultElementNamespace(String uri, String schema) throws XPathException;
 
 	/**
-	 * Returns true if namespaces for constructed element and document nodes should be preserved on copy by default. 
+	 * Returns true if namespaces for constructed element and document nodes should be preserved on copy by default.
+	 *
+	 * @return true if namespaces are preserved, false otherwise.
 	 */
 	public boolean preserveNamespaces();
 
 	/**
-	 * The method <code>setPreserveNamespaces.</code>
+	 * Set whether namespaces should be preserved.
 	 *
-	 * @param  preserve  a <code>boolean</code> value
+	 * @param preserve true if namespaces should be preserved, false otherwise.
 	 */
 	public void setPreserveNamespaces(final boolean preserve);
 
 	/**
-	 * Returns true if namespaces for constructed element and document nodes should be inherited on copy by default. 
+	 * Returns true if namespaces for constructed element and document nodes should be inherited on copy by default.
+	 *
+	 * @return true if namespaces are inheirted, false otherwise.
 	 */
 	public boolean inheritNamespaces();
 
 	/**
-	 * The method <code>setInheritNamespaces.</code>
+	 * Set to true if namespaces for constructed element and document nodes should be inherited on copy by default.
 	 *
-	 * @param  inherit  a <code>boolean</code> value
+	 * @param inherit true if namespaces are inheirted, false otherwise.
 	 */
 	public void setInheritNamespaces(final boolean inherit);
 
@@ -145,44 +149,44 @@ public interface ContextNS {
 	 * Returns the shared name pool used by all in-memory documents which are created within this query context. Create a name pool for every document
 	 * would be a waste of memory, especially since it is likely that the documents contain elements or attributes with similar names.
 	 *
-	 * @return  the shared name pool
+	 * @return the shared name pool
 	 */
 	public NamePool getSharedNamePool();
 
 	/**
 	 * Set the base URI for the evaluation context.
 	 *
-	 * <p>This is the URI returned by the fn:base-uri() function.</p>
+	 * This is the URI returned by the fn:base-uri() function.
 	 *
-	 * @param  uri
+	 * @param uri the namespace URI.
 	 */
 	public void setBaseURI(AnyURIValue uri);
 
 	/**
 	 * Set the base URI for the evaluation context.
 	 *
-	 * <p>A base URI specified via the base-uri directive in the XQuery prolog overwrites any other setting.</p>
+	 * A base URI specified via the base-uri directive in the XQuery prolog overwrites any other setting.
 	 *
-	 * @param  uri
-	 * @param  setInProlog
+	 * @param uri the namespace URI.
+	 * @param setInProlog true if the base-uri was defined in the prolog.
 	 */
 	public void setBaseURI(AnyURIValue uri, boolean setInProlog);
 
 	/**
-	 * The method <code>isBaseURIDeclared.</code>
+	 * Determine if the base-uri is declared.
 	 *
-	 * @return  a <code>boolean</code> value
+	 * @return true if the base-uri is declared, false otherwise.
 	 */
 	public boolean isBaseURIDeclared();
 
 	/**
 	 * Get the base URI of the evaluation context.
 	 *
-	 * <p>This is the URI returned by the fn:base-uri() function.</p>
+	 * This is the URI returned by the fn:base-uri() function.
 	 *
-	 * @return     base URI of the evaluation context
+	 * @return base URI of the evaluation context
 	 *
-	 * @exception  XPathException  if an error occurs
+	 * @exception XPathException if an error occurs whilst setting the base-uri
 	 */
 	public AnyURIValue getBaseURI() throws XPathException;
 
@@ -191,7 +195,7 @@ public interface ContextNS {
 	/**
 	 * Push all in-scope namespace declarations onto the stack.
 	 *
-	 * @param  inherit  
+	 * @param  inherit true if namespaces should be inheirted when pushing
 	 */
 	public void pushInScopeNamespaces(boolean inherit);
 

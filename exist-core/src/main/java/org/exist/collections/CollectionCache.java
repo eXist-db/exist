@@ -46,7 +46,7 @@ import javax.annotation.Nullable;
  * on the actual collections when manipulating the
  * CollectionCache
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @ThreadSafe
 public class CollectionCache implements BrokerPoolService {

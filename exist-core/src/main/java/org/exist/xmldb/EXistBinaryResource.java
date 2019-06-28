@@ -35,6 +35,8 @@ public interface EXistBinaryResource extends BinaryResource {
      * Get the ID of the BLOB.
      *
      * @return the id of the BLOB.
+     *
+     * @throws XMLDBException if an error occurs retrieving the blobId.
      */
     BlobId getBlobId() throws XMLDBException;
 
@@ -42,6 +44,8 @@ public interface EXistBinaryResource extends BinaryResource {
      * Get the length of the binary content.
      *
      * @return the length of the binary content.
+     *
+     * @throws XMLDBException if an error occurs getting the content length.
      */
     long getContentLength() throws XMLDBException;
 
@@ -51,6 +55,8 @@ public interface EXistBinaryResource extends BinaryResource {
      * @param digestType the message digest to use.
      *
      * @return the digest of the BLOB's content
+     *
+     * @throws XMLDBException if an error occurs getting the content digest.
      */
     MessageDigest getContentDigest(final DigestType digestType) throws XMLDBException;
 }

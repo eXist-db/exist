@@ -34,7 +34,7 @@ import java.util.Comparator;
  * as Item even though they have quite different inheritance
  * hierarchies.
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class ItemComparator implements Comparator<Item> {
 

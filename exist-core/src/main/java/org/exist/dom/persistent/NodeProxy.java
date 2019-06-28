@@ -57,7 +57,7 @@ import java.util.Properties;
 
 /**
  * Placeholder class for DOM nodes.
- * <p/>
+ *
  * NodeProxy is an internal proxy class, acting as a placeholder for all types of persistent XML nodes
  * during query processing. NodeProxy just stores the node's unique id and the document it belongs to.
  * Query processing deals with these proxys most of the time. Using a NodeProxy is much cheaper
@@ -71,7 +71,7 @@ import java.util.Properties;
  * a sequence, NodeProxy does itself extend NodeSet. It thus represents a node set containing
  * just one, single node.
  *
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, Comparable<Object> {
 
@@ -103,7 +103,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     /**
      * The first {@link Match} object associated with this node.
      * Match objects are used to track hits throughout query processing.
-     * <p/>
+     *
      * Matches are stored as a linked list.
      */
     private Match match = null;

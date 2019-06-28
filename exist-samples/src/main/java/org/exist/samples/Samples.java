@@ -65,9 +65,11 @@ public class Samples {
     }
 
     /**
-     * Gets the path of the Macbeth sample.
+     * Gets the path of the shakespeare sample.
      *
-     * @return The path to the Macbeth sample
+     * @param sampleFileName the name of the shakespeare sample.
+     *
+     * @return The path to the shakespeare sample
      */
     public @Nullable InputStream getShakespeareSample(final String sampleFileName) {
         return getSample("shakespeare/" + sampleFileName);

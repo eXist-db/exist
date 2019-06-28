@@ -112,7 +112,7 @@ import org.w3c.dom.Node;
  * The upper two bits of the tuple id are used to indicate the type of the record
  * (see {@link org.exist.storage.dom.ItemId}).
  * 
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class DOMFile extends BTree implements Lockable {
 
@@ -451,9 +451,11 @@ public class DOMFile extends BTree implements Lockable {
      * Store a raw binary resource into the file. The data will always be
      * written into an overflow page.
      *
-     * @Param transaction
-     * @param doc
+     * @param transaction the transaction
+     * @param doc the document to add
      * @param is Binary resource as stream.
+     *
+     * @return the page num
      */
     public long addBinary(final Txn transaction, final DocumentImpl doc, final InputStream is) {
         if(LOG.isDebugEnabled() && !lockManager.isBtreeLockedForWrite(getLockName())) {

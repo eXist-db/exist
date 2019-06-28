@@ -37,7 +37,7 @@ import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertArrayEquals;
 
 /**
- * @author Patrick Reinhart <patrick@reini.net>
+ * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
  */
 public class OverflowToDiskStreamTest {
     private MemoryContents memoryContents;

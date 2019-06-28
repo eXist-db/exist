@@ -30,7 +30,7 @@ import org.exquery.restxq.RestXqServiceException;
 
 /**
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 class RestXqServiceCompilationException extends RestXqServiceException {
 

@@ -35,7 +35,7 @@ import org.exist.xquery.value.Type;
 import javax.annotation.Nonnull;
 
 /**
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  */
 public class GetURL extends StrictRequestFunction {
 

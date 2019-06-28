@@ -63,8 +63,8 @@ import org.xmldb.api.modules.BinaryResource;
 /**
  * JUnit test for XMLRPC interface methods.
  *
- * @author wolf
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">wolf
+ * @author Pierrick Brihaye</a>
  * @author ljo
  */
 public class XmlRpcTest {
@@ -94,7 +94,7 @@ public class XmlRpcTest {
             + "<xsl:param name=\"testparam\"/>"
             + "<xsl:template match=\"test\"><test><xsl:apply-templates/></test></xsl:template>"
             + "<xsl:template match=\"para\">"
-            + "<p><xsl:value-of select=\"$testparam\"/>: <xsl:apply-templates/></p></xsl:template>"
+            + "<xsl:value-of select=\"$testparam\"/>: <xsl:apply-templates/></xsl:template>"
             + "</xsl:stylesheet>";
 
     public final static String MODULE_DATA
@@ -473,7 +473,7 @@ public class XmlRpcTest {
         assertTrue(item.length > 0);
         String out = new String(item, UTF_8);
         assertXMLEqual("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                + "<p>Test: \u00E4\u00E4\u00F6\u00F6\u00FC\u00FC\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC\u00DF\u00DF</p>", out);
+                + "Test: \u00E4\u00E4\u00F6\u00F6\u00FC\u00FC\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC\u00DF\u00DF", out);
     }
 
     @Test

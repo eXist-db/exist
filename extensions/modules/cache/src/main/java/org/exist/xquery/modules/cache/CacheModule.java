@@ -33,7 +33,7 @@ import static org.exist.xquery.FunctionDSL.functionDefs;
  * XQuery Extension module for store data in global cache
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
- * @author Evgeny Gazdovsky <gazdovsky@gmail.com>
+ * @author <a href="mailto:gazdovsky@gmail.com">Evgeny Gazdovsky</a>
  * @author ljo
  *
  * @version 2.0

@@ -41,12 +41,12 @@ public class TransformTest {
             "return transform:transform($xml, $xsl, ())";
         String result = execQuery(query);
         assertEquals(result, "<doc>" +
-                "<p>Start Template 1</p>" +
-                "<p>Start Template 2</p>" +
-                "<p>Template 3</p>" +
-                "<p>End Template 2</p>" +
-                "<p>Template 3</p>" +
-                "<p>End Template 1</p>" +
+                "Start Template 1" +
+                "Start Template 2" +
+                "Template 3" +
+                "End Template 2" +
+                "Template 3" +
+                "End Template 1" +
                 "</doc>");
     }
     
@@ -100,10 +100,10 @@ public class TransformTest {
         "<xsl:import href='xsl2/2.xsl' />\n" +
         "<xsl:template match='/'>\n" +
         "<doc>" +
-        "<p>Start Template 1</p>" +
+        "Start Template 1" +
         "<xsl:call-template name='template-2' />" +
         "<xsl:call-template name='template-3' />" +
-        "<p>End Template 1</p>" +
+        "End Template 1" +
         "</doc>" +
         "</xsl:template>" +
         "</xsl:stylesheet>";
@@ -112,16 +112,16 @@ public class TransformTest {
         "<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform' version='1.0'>\n"+
         "<xsl:import href='../../xsl3/3.xsl' />\n" +
         "<xsl:template name='template-2'>\n" +
-        "<p>Start Template 2</p>" +
+        "Start Template 2" +
         "<xsl:call-template name='template-3' />" +
-        "<p>End Template 2</p>" +
+        "End Template 2" +
         "</xsl:template>" +
         "</xsl:stylesheet>";
 
         String	doc3 = "<?xml version='1.0' encoding='UTF-8'?>\n" +
         "<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform' version='1.0'>\n"+
         "<xsl:template name='template-3'>\n" +
-        "<p>Template 3</p>" +
+        "Template 3" +
         "</xsl:template>" +
         "</xsl:stylesheet>";
 

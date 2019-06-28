@@ -82,8 +82,8 @@ public class LuceneIndexTest {
     private static final String XML1 =
             "<section>" +
             "   <head>The title in big letters</head>" +
-            "   <p rend=\"center\">A simple paragraph with <hi>just</hi> text in it.</p>" +
-            "   <p rend=\"right\">paragraphs with <span>mix</span><span>ed</span> content are <span>danger</span>ous.</p>" +
+            "   <p rend=\"center\">A simple paragraph with <hi>just</hi> text in it." +
+            "   <p rend=\"right\">paragraphs with <span>mix</span><span>ed</span> content are <span>danger</span>ous." +
             "</section>";
 
     private static final String XML2 =
@@ -96,7 +96,7 @@ public class LuceneIndexTest {
     private static final String XML3 =
             "<section>" +
             "   <head>TITLE IN UPPERCASE LETTERS</head>" +
-            "   <p>UPPERCASE PARAGRAPH</p>" +
+            "   UPPERCASE PARAGRAPH" +
             "</section>";
 
     private static final String XML4 =
@@ -105,10 +105,10 @@ public class LuceneIndexTest {
     private static final String XML5 =
             "<article>" +
             "   <head>The <b>title</b>of it</head>" +
-            "   <p>A simple paragraph with <hi>highlighted</hi> text <note>and a note</note> " +
-            "       in it.</p>" +
-            "   <p>Paragraphs with <s>mix</s><s>ed</s> content are <s>danger</s>ous.</p>" +
-            "   <p><note1>ignore</note1> <s2>warn</s2>ings</p>" +
+            "   A simple paragraph with <hi>highlighted</hi> text <note>and a note</note> " +
+            "       in it." +
+            "   Paragraphs with <s>mix</s><s>ed</s> content are <s>danger</s>ous." +
+            "   <note1>ignore</note1> <s2>warn</s2>ings" +
             "</article>";
 
     private static final String XML6 =
@@ -121,11 +121,11 @@ public class LuceneIndexTest {
     private static final String XML7 =
         "<section>" +
         "   <head>Query Test</head>" +
-        "   <p>Eine wunderbare Heiterkeit hat meine ganze Seele eingenommen, gleich den " +
+        "   Eine wunderbare Heiterkeit hat meine ganze Seele eingenommen, gleich den " +
         "   süßen Frühlingsmorgen, die ich mit ganzem Herzen genieße. Ich bin allein und " +
         "   freue mich meines Lebens in dieser Gegend, die für solche Seelen geschaffen " +
         "   ist wie die meine. Ich bin so glücklich, mein Bester, so ganz in dem Gefühle " +
-        "   von ruhigem Dasein versunken, daß meine Kunst darunter leidet.</p>" +
+        "   von ruhigem Dasein versunken, daß meine Kunst darunter leidet." +
         "</section>";
 
     private static final String XML8 =
@@ -140,9 +140,9 @@ public class LuceneIndexTest {
     private static final String XML9 =
 	    "<TEI xmlns=\"http://www.tei-c.org/ns/1.0\">" +
 	    "   <body>" +
-            "      <p>erste aus haus maus zaus yaus raus qaus leisten</p>" +
-            "      <p>ausser aus</p>" +
-            "      <p>auf boden</p>" +
+            "      erste aus haus maus zaus yaus raus qaus leisten" +
+            "      ausser aus" +
+            "      auf boden" +
 	    "   </body>" +
             "</TEI>";
 

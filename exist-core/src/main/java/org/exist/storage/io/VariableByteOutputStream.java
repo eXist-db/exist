@@ -38,7 +38,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * If support for negative numbers is desired then, the reader
  * should look to zig-zag encoding as used in the varint's of
  * Google's Protocol Buffers https://developers.google.com/protocol-buffers/docs/encoding#signed-integers
- * or Hadoop's VarInt encoding {@see org.apache.hadoop.io.file.tfile.Utils#writeVInt(java.io.DataOutput, int)}
+ * or Hadoop's VarInt encoding, see org.apache.hadoop.io.file.tfile.Utils#writeVInt(java.io.DataOutput, int).
  *
  * VBE is never an alternative to having advance knowledge of number
  * ranges and using fixed size byte arrays to represent them.

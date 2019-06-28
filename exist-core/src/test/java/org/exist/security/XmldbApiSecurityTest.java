@@ -44,7 +44,7 @@ import org.xmldb.api.modules.XMLResource;
 
 /**
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 @RunWith(Parameterized.class)
 public class XmldbApiSecurityTest extends AbstractApiSecurityTest {

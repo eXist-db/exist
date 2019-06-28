@@ -29,7 +29,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Tests the {@link ByteArrayContent} implementation.
  *
- * @author Patrick Reinhart <patrick@reini.net>
+ * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
  */
 public class ByteArrayContentTest {
     private ByteArrayContent content;

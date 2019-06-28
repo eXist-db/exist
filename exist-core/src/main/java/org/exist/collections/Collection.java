@@ -318,7 +318,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
 
     /**
      * Return an iterator over all child Collections
-     * <p>
+     *
      * The list of child Collections is copied first, so modifications
      * via the iterator have no effect.
      *
@@ -329,7 +329,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
 
     /**
      * Return an iterator over all child Collections.
-     * <p>
+     *
      * The list of child Collections is copied first, so modifications
      * via the iterator have no effect.
      *
@@ -380,7 +380,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker    The database broker
      * @param docs      A mutable document set which receives the documents
      * @param recursive true if we should get all descendants, false just retrieves the children
-     * @return The mutable document set provided in {@param docs}
+     * @return The mutable document set provided in {@code docs}
      */
     MutableDocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive)
             throws PermissionDeniedException, LockException;
@@ -392,7 +392,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param docs      A mutable document set which receives the documents
      * @param recursive true if we should get all descendants, false just retrieves the children
      * @param lockMap   A map that receives the locks we have taken on documents
-     * @return The mutable document set provided in {@param docs}
+     * @return The mutable document set provided in {@code docs}
      */
     MutableDocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive,
                                LockedDocumentMap lockMap) throws PermissionDeniedException, LockException;
@@ -405,7 +405,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param recursive true if we should get all descendants, false just retrieves the children
      * @param lockMap   A map that receives the locks we have taken on documents
      * @param lockType  The type of lock to acquire on the documents
-     * @return The mutable document set provided in {@param docs}
+     * @return The mutable document set provided in {@code docs}
      */
     DocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive, LockedDocumentMap lockMap,
                         LockMode lockType) throws LockException, PermissionDeniedException;
@@ -415,7 +415,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param broker The database broker
      * @param docs   A mutable document set which receives the documents
-     * @return The mutable document set provided in {@param docs}
+     * @return The mutable document set provided in {@code docs}
      */
     DocumentSet getDocuments(DBBroker broker, MutableDocumentSet docs) throws PermissionDeniedException, LockException;
 
@@ -424,7 +424,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param broker The database broker
      * @param docs   A mutable document set which receives the documents
-     * @return The mutable document set provided in {@param docs}
+     * @return The mutable document set provided in {@code docs}
      * @deprecated This is not an atomic operation and
      * so there are no guarantees about which docs will be added to
      * the document set. Use {@link #getDocuments(DBBroker, MutableDocumentSet)}
@@ -440,7 +440,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param docs     A mutable document set which receives the documents
      * @param lockMap  A map that receives the locks we have taken on documents
      * @param lockType The type of lock to acquire on the documents
-     * @return The mutable document set provided in {@param docs}
+     * @return The mutable document set provided in {@code docs}
      */
     DocumentSet getDocuments(DBBroker broker, MutableDocumentSet docs, LockedDocumentMap lockMap, LockMode lockType)
             throws LockException, PermissionDeniedException;
@@ -607,7 +607,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
 
     /**
      * Stores an XML document into the Collection
-     * <p>
+     *
      * {@link #validateXMLResource(Txn, DBBroker, XmldbURI, InputSource)} should have been called previously in order
      * to acquire a write lock for the document. Launches the finish trigger.
      *
@@ -621,7 +621,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
 
     /**
      * Stores an XML document into the Collection
-     * <p>
+     *
      * {@link #validateXMLResource(Txn, DBBroker, XmldbURI, InputSource, XMLReader)} should have been called previously
      * in order to acquire a write lock for the document. Launches the finish trigger.
      *
@@ -636,7 +636,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
 
     /**
      * Stores an XML document into the Collection
-     * <p>
+     *
      * {@link #validateXMLResource(Txn, DBBroker, XmldbURI, String)} should have been called previously in order to
      * acquire a write lock for the document. Launches the finish trigger.
      *
@@ -650,7 +650,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
 
     /**
      * Stores an XML document into the Collection
-     * <p>
+     *
      * {@link #validateXMLResource(Txn, DBBroker, XmldbURI, Node)} should have been called previously in order to
      * acquire a write lock for the document. Launches the finish trigger.
      *

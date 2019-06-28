@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * A simple factory for thread groups, where you
  * may want multiple groups with similar names.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class NamedThreadGroupFactory {
 

@@ -25,7 +25,7 @@ import org.exist.storage.CacheManager;
  * Base interface for all cache implementations that are used for
  * buffering btree and data pages.
  * 
- * @author Wolfgang <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang</a>
  *
  * @param <T> The type that implements {@link Cacheable}
  */

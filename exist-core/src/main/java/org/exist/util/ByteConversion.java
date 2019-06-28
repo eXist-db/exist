@@ -25,15 +25,20 @@ package org.exist.util;
  * A collection of static methods to write integer values from/to a
  * byte array.
  *
- *@author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class ByteConversion {
 
     /**
-     *  Read an integer value from the specified byte array, starting at start.
+     * Read an integer value from the specified byte array, starting at start.
+     *
+     * @param data the input data
+     * @param start the offset to start from in the input data.
+     *
+     * @return the integer
      *
      * @deprecated reads the lowest byte first. will be replaced with
-     * {@link #byteToIntH(byte[], int)} for consistency.
+     *     {@link #byteToIntH(byte[], int)} for consistency.
      */
     public final static int byteToInt( final byte data[], final int start ) {
         return ( data[start] & 0xff ) |
@@ -46,6 +51,11 @@ public class ByteConversion {
      * Read an integer value from the specified byte array, starting at start.
      *
      * This version of the method reads the highest byte first.
+     *
+     * @param data the input data
+     * @param start the offset to start from in the input data.
+     *
+     * @return the integer
      */
     public final static int byteToIntH( final byte data[], final int start ) {
         return ( data[start + 3] & 0xff ) |
@@ -56,6 +66,11 @@ public class ByteConversion {
 
     /**
      *  Read a long value from the specified byte array, starting at start.
+     *
+     * @param data the input data
+     * @param start the offset to start from in the input data.
+     *
+     * @return the long integer
      */
     public final static long byteToLong( final byte[] data, final int start ) {
         return ( ( ( (long) data[start] ) & 0xffL ) << 56 ) |
@@ -72,7 +87,12 @@ public class ByteConversion {
      * Read a short value from the specified byte array, starting at start.
      *
      * @deprecated reads the lowest byte first. will be replaced with
-     * {@link #byteToShortH(byte[], int)} for consistency.
+     *     {@link #byteToShortH(byte[], int)} for consistency.
+     *
+     * @param data the input data
+     * @param start the offset to start from in the input data.
+     *
+     * @return the short integer
      */
     public final static short byteToShort( final byte[] data, final int start ) {
         return (short) ( ( ( data[start + 1] & 0xff ) << 8 ) |
@@ -83,6 +103,11 @@ public class ByteConversion {
      * Read a short value from the specified byte array, starting at start.
      *
      * This version of the method reads the highest byte first.
+     *
+     * @param data the input data
+     * @param start the offset to start from in the input data.
+     *
+     * @return the short integer
      */
     public final static short byteToShortH( final byte[] data, final int start ) {
         return (short) ( ( ( data[start] & 0xff ) << 8 ) |

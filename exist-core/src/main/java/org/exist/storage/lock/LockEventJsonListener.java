@@ -37,7 +37,7 @@ import java.nio.file.StandardOpenOption;
 /**
  * A lock event listener which formats events as JSON and writes them to a file
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @NotThreadSafe
 public class LockEventJsonListener implements LockTable.LockEventListener {

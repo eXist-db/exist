@@ -30,14 +30,14 @@ import org.exist.numbering.NodeId;
 
 /**
  * Used to track matches throughout the query.
- * <p/>
+ *
  * Index may add a match object to every {@link org.exist.dom.persistent.NodeProxy}
  * that triggered a match for every term matched. The
  * Match object contains the nodeId of the text node that triggered the
  * match, the string value of the matching term and a frequency count,
  * indicating the frequency of the matching term string within the corresponding
  * single text node.
- * <p/>
+ *
  * All path operations copy existing match objects, i.e. the match objects
  * are copied to the selected descendant or child nodes. This means that
  * every NodeProxy being the direct or indirect result of a

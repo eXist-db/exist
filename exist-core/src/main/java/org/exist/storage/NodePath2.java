@@ -31,14 +31,14 @@ import org.xml.sax.Attributes;
 import java.util.HashMap;
 
 /**
- * @author Stanislav Jordanov <stenlee@gmail.com>
+ * @author <a href="mailto:stenlee@gmail.com">Stanislav Jordanov</a>
  * @version 1.0
- * <p>
+ *
  * This is an extension of class NodePath, that keeps track of a *real* node/element path, not just a QName path
  * as its base class -- NodePath does.
  * This is required in order to implement the feature requested/discussed here:
  * @see <a href='https://sourceforge.net/p/exist/mailman/message/36392026/'>
- * [Exist-open] Are more elaborate xpath expressions allowed in Lucene's index config <text match='...'/>
+ * [Exist-open] Are more elaborate xpath expressions allowed in Lucene's index config &lt;text match='...'/&gt;
  * </a>
  */
 public class NodePath2 extends NodePath {

@@ -44,7 +44,7 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
  * sequence, and provides access to a subset
  * of the wrapped sequence, i.e. a sub-sequence.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class SubSequence extends AbstractSequence {
     private static final Logger LOG = LogManager.getLogger(SubSequence.class);

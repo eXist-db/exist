@@ -44,7 +44,7 @@ import static se.softhouse.jargo.Arguments.helpArgument;
  * of the Blob Store in CSV format for the
  * purposes of debugging or visualisation.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class BlobStoreDumpTool {
 

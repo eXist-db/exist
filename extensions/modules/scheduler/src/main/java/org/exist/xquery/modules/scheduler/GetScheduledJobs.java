@@ -46,10 +46,10 @@ import org.xml.sax.SAXException;
 /**
  * eXist Scheduler Module Extension GetScheduledJobs.
  *
- * <p>Retrieves details of Jobs that have been Scheduled</p>
+ * Retrieves details of Jobs that have been Scheduled
  *
- * @author   Adam Retter <adam.retter@devon.gov.uk>
- * @author   Loren Cahlander <loren@syntactica.com>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
+ * @author <a href="mailto:loren@syntactica.com">Loren Cahlander</a>
  * @version  1.3
  * @see      org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  * @serial   2007-12-04
