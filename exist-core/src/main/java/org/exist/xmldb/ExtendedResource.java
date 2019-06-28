@@ -40,11 +40,19 @@ public interface ExtendedResource {
     /**
      * It returns an object representing the content, in the representation
      * which needs less memory.
+     *
+     * @return the content.
+     *
+     * @throws XMLDBException if an error occurs whilst retriveing the extended content.
      */
     Object getExtendedContent() throws XMLDBException;
 
     /**
-     * It returns an stream to the content, whichever it is its origin
+     * It returns an stream to the content, whichever it is its origin.
+     *
+     * @return the content.
+     *
+     * @throws XMLDBException if an error occurs whilst streaming the content.
      */
     InputStream getStreamContent() throws XMLDBException;
 
@@ -52,18 +60,28 @@ public interface ExtendedResource {
      * It returns the length of the content, if known.
      *
      * @return The content length, or -1 if not known.
+     *
+     * @throws XMLDBException if an error occurs whilst getting the stream's length.
      */
     long getStreamLength() throws XMLDBException;
 
     /**
      * It saves the resource to the local file given as input parameter.
      * Do NOT confuse with set content.
+     *
+     * @param localfile the file.
+     *
+     * @throws XMLDBException if an error occurs whilst getting the content.
      */
     void getContentIntoAFile(Path localfile) throws XMLDBException;
 
     /**
      * It saves the resource to the local stream given as input parameter.
      * Do NOT confuse with set content.
+     *
+     * @param os the stream.
+     *
+     * @throws XMLDBException if an error occurs whilst getting the content.
      */
     void getContentIntoAStream(OutputStream os) throws XMLDBException;
 }

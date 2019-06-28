@@ -35,7 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.exist.util.FileUtils;
 
 /**
- * @author Patrick Reinhart <patrick@reini.net>
+ * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
  */
 @ThreadSafe
 public final class VirtualTempPath implements ContentFile {

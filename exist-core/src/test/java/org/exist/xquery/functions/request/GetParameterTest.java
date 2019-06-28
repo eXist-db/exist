@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
 /**
  * Tests expected behaviour of request:get-parameter() XQuery function
  * 
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @version 1.0
  */
 public class GetParameterTest extends RESTTest {

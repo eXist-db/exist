@@ -37,7 +37,7 @@ import java.util.List;
 
 /**
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class GroupManagementFunction extends BasicFunction {
 

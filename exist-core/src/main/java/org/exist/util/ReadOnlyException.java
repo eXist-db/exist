@@ -14,7 +14,8 @@ public class ReadOnlyException extends Exception {
 
 	/**
 	 * Constructor for ReadOnlyException.
-	 * @param message
+	 *
+	 * @param message the exception message
 	 */
 	public ReadOnlyException(String message) {
 		super(message);

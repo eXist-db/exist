@@ -1,6 +1,6 @@
 /**
  * DTMHandleTest.java
- * <p/>
+ *
  * 2004 by O2 IT Engineering
  * Zurich,  Switzerland (CH)
  */

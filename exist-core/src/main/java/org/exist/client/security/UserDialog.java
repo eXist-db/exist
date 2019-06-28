@@ -37,7 +37,7 @@ import org.xmldb.api.base.XMLDBException;
 
 /**
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class UserDialog extends javax.swing.JFrame {
 

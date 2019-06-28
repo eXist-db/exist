@@ -26,7 +26,7 @@ import org.expath.tools.model.Attribute;
 import org.w3c.dom.Attr;
 
 /**
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class EXistAttribute implements Attribute {
 

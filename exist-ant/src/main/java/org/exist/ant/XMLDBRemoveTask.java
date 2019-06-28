@@ -36,7 +36,7 @@ import org.xmldb.api.modules.CollectionManagementService;
  *
  * @author  wolf
  *
- *          <p>modified by</p>
+ *          modified by
  * @author  peter.klotz@blue-elephant-systems.com
  */
 public class XMLDBRemoveTask extends AbstractXMLDBTask

@@ -62,30 +62,30 @@ import java.nio.ByteBuffer;
  *  Copied this class from Xalan and adopted it for eXist. Bare-bones, unsafe,
  *  fast string buffer. No thread-safety, no parameter range checking, exposed
  *  fields. Note that in typical applications, thread-safety of a StringBuffer
- *  is a somewhat dubious concept in any case. <p>
+ *  is a somewhat dubious concept in any case.
  *
  *  Note that Stree and DTM used a single FastStringBuffer as a string pool, by
  *  recording start and length indices within this single buffer. This minimizes
  *  heap overhead, but of course requires more work when retrieving the data.
- *  <p>
+ *
  *
  *  FastStringBuffer operates as a "chunked buffer". Doing so reduces the need
  *  to recopy existing information when an append exceeds the space available;
  *  we just allocate another chunk and flow across to it. (The array of chunks
  *  may need to grow, admittedly, but that's a much smaller object.) Some excess
  *  recopying may arise when we extract Strings which cross chunk boundaries;
- *  larger chunks make that less frequent. <p>
+ *  larger chunks make that less frequent.
  *
  *  The size values are parameterized, to allow tuning this code. In theory,
  *  Result Tree Fragments might want to be tuned differently from the main
- *  document's text. <p>
+ *  document's text.
  *
  *  %REVIEW% An experiment in self-tuning is included in the code (using nested
  *  FastStringBuffers to achieve variation in chunk sizes), but this
  *  implementation has proven to be problematic when data may be being copied
  *  from the FSB into itself. We should either re-architect that to make this
  *  safe (if possible) or remove that code and clean up for
- *  performance/maintainability reasons. <p>
+ *  performance/maintainability reasons.
  *
  */
 public class FastByteBuffer implements ByteArray {
@@ -159,7 +159,7 @@ public class FastByteBuffer implements ByteArray {
      *  Field m_lastChunk is an index into m_array[], pointing to the last chunk
      *  of the Chunked Array currently in use. Note that additional chunks may
      *  actually be allocated, eg if the FastStringBuffer had previously been
-     *  truncated or if someone issued an ensureSpace request. <p>
+     *  truncated or if someone issued an ensureSpace request.
      *
      *  The insertion point for append operations is addressed by the
      *  combination of m_lastChunk and m_firstFree.
@@ -186,12 +186,11 @@ public class FastByteBuffer implements ByteArray {
 
     /**
      *  Construct a FastStringBuffer, with allocation policy as per parameters.
-     *  <p>
      *
      *  For coding convenience, I've expressed both allocation sizes in terms of
      *  a number of bits. That's needed for the final size of a chunk, to permit
      *  fast and efficient shift-and-mask addressing. It's less critical for the
-     *  inital size, and may be reconsidered. <p>
+     *  inital size, and may be reconsidered.
      *
      *  An alternative would be to accept integer sizes and round to powers of
      *  two; that really doesn't seem to buy us much, if anything.
@@ -241,11 +240,10 @@ public class FastByteBuffer implements ByteArray {
 
 
     /**
-     *  Construct a FastStringBuffer, using a default rebundleBits value.
-     *  NEEDSDOC
+     * Construct a FastStringBuffer, using a default rebundleBits value.
      *
-     *@param  initChunkBits  NEEDSDOC
-     *@param  maxChunkBits
+     * @param initChunkBits the initial number of chunk bits
+     * @param maxChunkBits the maximum number of chunk bits
      */
     public FastByteBuffer( int initChunkBits, int maxChunkBits ) {
         this( initChunkBits, maxChunkBits, 2 );
@@ -253,20 +251,22 @@ public class FastByteBuffer implements ByteArray {
 
 
     /**
-     *  Construct a FastStringBuffer, using default maxChunkBits and
-     *  rebundleBits values. <p>
+     * Construct a FastStringBuffer, using default maxChunkBits and
+     * rebundleBits values.
      *
-     *  ISSUE: Should this call assert initial size, or fixed size? Now
-     *  configured as initial, with a default for fixed.
+     * ISSUE: Should this call assert initial size, or fixed size? Now
+     * configured as initial, with a default for fixed.
      *
-     *@param  initChunkBits
+     * @param initChunkBits the initial chunk size in bits
      */
     public FastByteBuffer( int initChunkBits ) {
         this( initChunkBits, 15, 2 );
     }
 
 
-    /**  Construct a FastStringBuffer, using a default allocation policy. */
+    /**
+     * Construct a FastStringBuffer, using a default allocation policy.
+     */
     public FastByteBuffer() {
 
         // 10 bits is 1K. 15 bits is 32K. Remember that these are character
@@ -286,7 +286,7 @@ public class FastByteBuffer implements ByteArray {
      *  WHEN source.length()==1<<(source.m_chunkBits+source.m_rebundleBits)
      *  NEEDSDOC
      *
-     *@param  source
+     * @param source the source buffer
      */
     private FastByteBuffer( FastByteBuffer source ) {
 
@@ -321,13 +321,13 @@ public class FastByteBuffer implements ByteArray {
 
     /**
      *  Append a single character onto the FastStringBuffer, growing the storage
-     *  if necessary. <p>
+     *  if necessary.
      *
      *  NOTE THAT after calling append(), previously obtained references to
      *  m_array[][] may no longer be valid.... though in fact they should be in
      *  this instance.
      *
-     *@param  value  character to be appended.
+     * @param value character to be appended.
      */
     public final void append( byte value ) {
 
@@ -381,9 +381,9 @@ public class FastByteBuffer implements ByteArray {
 
 
     /**
-     *  Append the contents of the array onto the buffer.
+     * Append the contents of the array onto the buffer.
      *
-     *@param  chars  Description of the Parameter
+     * @param chars Description of the Parameter
      */
     public final void append( byte[] chars ) {
         append( chars, 0, chars.length );
@@ -392,15 +392,15 @@ public class FastByteBuffer implements ByteArray {
 
     /**
      *  Append part of the contents of a Character Array onto the
-     *  FastStringBuffer, growing the storage if necessary. <p>
+     *  FastStringBuffer, growing the storage if necessary.
      *
      *  NOTE THAT after calling append(), previously obtained references to
      *  m_array[] may no longer be valid.
      *
-     *@param  chars   character array from which data is to be copied
-     *@param  start   offset in chars of first character to be copied,
+     * @param  chars   character array from which data is to be copied
+     * @param  start   offset in chars of first character to be copied,
      *      zero-based.
-     *@param  length  number of characters to be copied
+     * @param  length  number of characters to be copied
      */
     public final void append( byte[] chars, int start, int length ) {
 
@@ -470,12 +470,12 @@ public class FastByteBuffer implements ByteArray {
 
     /**
      *  Append the contents of another FastStringBuffer onto this
-     *  FastStringBuffer, growing the storage if necessary. <p>
+     *  FastStringBuffer, growing the storage if necessary.
      *
      *  NOTE THAT after calling append(), previously obtained references to
      *  m_array[] may no longer be valid.
      *
-     *@param  value  FastStringBuffer whose contents are to be appended.
+     * @param  value  FastStringBuffer whose contents are to be appended.
      */
     public final void append( FastByteBuffer value ) {
 
@@ -688,7 +688,7 @@ public class FastByteBuffer implements ByteArray {
      *  does exist, its contents are unpredictable. The only safe use for our
      *  setLength() is to truncate the FastStringBuffer to a shorter string.
      *
-     *@param  l  New length. If l<0 or l>=getLength(), this operation will not
+     *@param  l  New length. If {@code l < 0 || l >= getLength()}, this operation will not
      *      report an error but future operations will almost certainly fail.
      */
     public final void setLength( int l ) {

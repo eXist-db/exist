@@ -32,7 +32,7 @@ import org.xml.sax.SAXException;
  * Custom XML-RPC type factory to enable the use
  * of extended types in XML-RPC with eXist-db.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class ExistRpcTypeFactory extends TypeFactoryImpl {
     public ExistRpcTypeFactory(final XmlRpcController controller) {

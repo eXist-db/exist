@@ -29,7 +29,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.SimpleACLPermission;
 
 /**
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class SimpleACLPermissionAider extends UnixStylePermissionAider implements ACLPermission {
 

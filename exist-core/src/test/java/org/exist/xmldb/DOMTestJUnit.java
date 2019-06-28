@@ -20,8 +20,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 /** A test case for accessing DOMS remotely
- * @author jmv
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">jmv
+ * @author Pierrick Brihaye</a>
  */
 public class DOMTestJUnit extends RemoteDBTest {
 	private static String name = "test.xml";

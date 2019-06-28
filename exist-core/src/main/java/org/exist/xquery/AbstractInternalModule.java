@@ -72,7 +72,11 @@ public abstract class AbstractInternalModule implements InternalModule {
     }
 
     /**
-     * returns a module parameter
+     * Get a parameter.
+     *
+     * @param paramName the name of the parameter
+     *
+     * @return the value of tyhe parameter
      */
     protected List<? extends Object> getParameter(final String paramName) {
         return parameters.get(paramName);

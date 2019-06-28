@@ -74,7 +74,7 @@ import org.w3c.dom.NodeList;
  * 
  * Get a mail store
  * 
- * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  * @serial 2009-03-12
  * @version 1.3
  *

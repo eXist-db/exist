@@ -324,7 +324,13 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     }
 
     /**
-     * @deprecated use getSubExpression
+     * Get the expression.
+     *
+     * @param pos the position.
+     *
+     * @return the expression.
+     *
+     * @deprecated use {@link #getSubExpression(int)}
      */
     @Deprecated
     public Expression getExpression(final int pos) {
@@ -341,6 +347,10 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     }
 
     /**
+     * Get the length.
+     *
+     * @return the length of the path expression.
+     *
      * @deprecated use {@link #getSubExpressionCount()}
      */
     @Deprecated

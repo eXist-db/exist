@@ -14,7 +14,7 @@ import org.expath.tools.ToolsException;
 import javax.xml.XMLConstants;
 
 /**
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class EXistTreeBuilder implements TreeBuilder {
 

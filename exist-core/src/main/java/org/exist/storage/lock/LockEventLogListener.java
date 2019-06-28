@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * A lock event listener which sends events to Log4j
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @NotThreadSafe
 public class LockEventLogListener implements LockTable.LockEventListener {

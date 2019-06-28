@@ -119,13 +119,14 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     }
 
     /**
-     * Calculate the Julian day number at 00:00 on a given date. Code taken from saxon
-     * {@link <a href="http://saxon.sourceforge.net">http://saxon.sourceforge.net</a>}. Original algorithm is taken from
+     * Calculate the Julian day number at 00:00 on a given date. Code taken from saxon,
+     * see <a href="http://saxon.sourceforge.net">http://saxon.sourceforge.net</a>
+     * Original algorithm is taken from
      * http://vsg.cape.com/~pbaum/date/jdalg.htm and
      * http://vsg.cape.com/~pbaum/date/jdalg2.htm
      * (adjusted to handle BC dates correctly)
-     * <p/>
-     * <p>Note that this assumes dates in the proleptic Gregorian calendar</p>
+     *
+     * Note that this assumes dates in the proleptic Gregorian calendar.
      *
      * @param year  the year
      * @param month the month (1-12)
@@ -610,10 +611,10 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         }
 
         /**
-         * <p>Parse a formated <code>String</code> into an <code>XMLGregorianCalendar</code>.</p>
-         * <p>
-         * <p>If <code>String</code> is not formated as a legal <code>XMLGregorianCalendar</code> value,
-         * an <code>IllegalArgumentException</code> is thrown.</p>
+         * Parse a formated <code>String</code> into an <code>XMLGregorianCalendar</code>.
+         *
+         * If <code>String</code> is not formated as a legal <code>XMLGregorianCalendar</code> value,
+         * an <code>IllegalArgumentException</code> is thrown.
          *
          * @throws IllegalArgumentException If <code>String</code> is not formated as a legal <code>XMLGregorianCalendar</code> value.
          */

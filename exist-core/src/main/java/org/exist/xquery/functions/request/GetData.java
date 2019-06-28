@@ -50,8 +50,8 @@ import org.xml.sax.XMLReader;
 import javax.annotation.Nonnull;
 
 /**
- * @author Wolfgang Meier <wolfgang@exist-db.org>
- * @author Adam retter <adam@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
+ * @author <a href="mailto:adam@exist-db.org">Adam retter</a>
  */
 public class GetData extends StrictRequestFunction {
 

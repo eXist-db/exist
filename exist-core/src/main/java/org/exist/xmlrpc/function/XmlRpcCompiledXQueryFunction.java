@@ -30,7 +30,7 @@ import org.exist.xquery.XPathException;
  * XML-RPC server operations; Predominantly converts exceptions
  * from the database into EXistException types
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 @FunctionalInterface
 public interface XmlRpcCompiledXQueryFunction<R> extends Function2E<CompiledXQuery, R, EXistException, PermissionDeniedException> {

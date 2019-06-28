@@ -96,6 +96,7 @@ public class Compressor {
      * @param buf the data to uncompress.
      * @param os the destination for the uncompressed data;
      *
+     * @return the number of bytes uncompressed
      *
      * @exception IOException if an error occurs
      */

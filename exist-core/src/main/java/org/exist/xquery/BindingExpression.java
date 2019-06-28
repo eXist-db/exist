@@ -32,7 +32,7 @@ import org.exist.xquery.value.*;
 /**
  * Abstract superclass for the variable binding expressions "for" and "let".
  * 
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public abstract class BindingExpression extends AbstractFLWORClause implements RewritableExpression {
 

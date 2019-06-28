@@ -51,20 +51,27 @@ public interface CompiledXQuery extends CompiledExpression {
      * Execute the compiled query, optionally using the specified
      * sequence as context.
      * 
-     * @param contextSequence
-     * @throws XPathException
+     * @param contextSequence the context sequence
+     *
+     * @return the result.
+     *
+     * @throws XPathException if an error occurs during evaluation.
      */
     public Sequence eval(Sequence contextSequence) throws XPathException;
 
     /**
      * Is the compiled expression still valid? Returns false if, for example,
      * the source code of one of the imported modules has changed.
+     *
+     * @return true if the compiled query is valid
      */
     public boolean isValid();
 
     /**
      * Writes a diagnostic dump of the expression structure to the
      * specified writer.
+     *
+     * @param writer the writer to dump the query to.
      */
     public void dump(Writer writer);
 

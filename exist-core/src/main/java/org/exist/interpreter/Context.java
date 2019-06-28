@@ -68,7 +68,7 @@ public interface Context {
     /**
      * Returns true if this context has a parent context (means it is a module context).
      *
-     * @return False.
+     * @return true if there is a parent context.
      */
     boolean hasParent();
 
@@ -78,7 +78,7 @@ public interface Context {
 
     /**
      * Update the current dynamic context using the properties of another context.
-     * <p>
+     *
      * This is needed by {@link org.exist.xquery.functions.util.Eval}.
      *
      * @param from the context to update from
@@ -109,7 +109,7 @@ public interface Context {
     /**
      * Called from the XQuery compiler to set the root expression for this context.
      *
-     * @param expr
+     * @param expr the root expression.
      */
     void setRootExpression(Expression expr);
 
@@ -134,12 +134,13 @@ public interface Context {
     /**
      * Declare a user-defined static prefix/namespace mapping.
      *
-     * <p>eXist internally keeps a table containing all prefix/namespace mappings it found in documents, which have been previously stored into the
-     * database. These default mappings need not to be declared explicitely.</p>
+     * eXist internally keeps a table containing all prefix/namespace mappings it found in documents, which have been previously stored into the
+     * database. These default mappings need not to be declared explicitely.
      *
-     * @param prefix
-     * @param uri
-     * @throws XPathException
+     * @param prefix the namespace prefix.
+     * @param uri the namespace URI.
+     *
+     * @throws XPathException if an error occurs when declaring the namespace.
      */
     void declareNamespace(String prefix, String uri) throws XPathException;
 
@@ -148,7 +149,7 @@ public interface Context {
     /**
      * Removes the namespace URI from the prefix/namespace mappings table.
      *
-     * @param uri
+     * @param uri the namespace URI.
      */
     void removeNamespace(String uri);
 
@@ -156,7 +157,7 @@ public interface Context {
      * Declare an in-scope namespace. This is called during query execution.
      *
      * @param prefix the namespace prefix.
-     * @param uri    the namespace uri.
+     * @param uri the namespace uri.
      */
     void declareInScopeNamespace(String prefix, String uri);
 
@@ -171,15 +172,17 @@ public interface Context {
     /**
      * Return the namespace URI mapped to the registered prefix or null if the prefix is not registered.
      *
-     * @param prefix
-     * @return namespace
+     * @param prefix the namespace prefix.
+     *
+     * @return the namespace URI.
      */
     String getURIForPrefix(String prefix);
 
     /**
-     * Get URI Prefix
+     * Get URI Prefix.
      *
-     * @param uri
+     * @param uri the namespace URI.
+     *
      * @return the prefix mapped to the registered URI or null if the URI is not registered.
      */
     String getPrefixForURI(String uri);
@@ -194,8 +197,9 @@ public interface Context {
     /**
      * Set the default function namespace. By default, this points to the namespace for XPath built-in functions.
      *
-     * @param uri
-     * @throws XPathException
+     * @param uri the namespace URI.
+     *
+     * @throws XPathException if an error occurs when setting the default function namespace.
      */
     void setDefaultFunctionNamespace(String uri) throws XPathException;
 
@@ -203,7 +207,8 @@ public interface Context {
      * Returns the current default element namespace.
      *
      * @return current default element namespace schema
-     * @throws XPathException
+     *
+     * @throws XPathException if an error occurs when getting the default element namespace.
      */
     String getDefaultElementNamespaceSchema() throws XPathException;
 
@@ -211,7 +216,8 @@ public interface Context {
      * Set the default element namespace. By default, this points to the empty uri.
      *
      * @param uri the default element namespace schema uri
-     * @throws XPathException
+     *
+     * @throws XPathException if an error occurs when setting the default element namespace schema.
      */
     void setDefaultElementNamespaceSchema(String uri) throws XPathException;
 
@@ -219,16 +225,18 @@ public interface Context {
      * Returns the current default element namespace.
      *
      * @return current default element namespace
-     * @throws XPathException
+     *
+     * @throws XPathException if an error occurs when getting the default element namespace.
      */
     String getDefaultElementNamespace() throws XPathException;
 
     /**
      * Set the default element namespace. By default, this points to the empty uri.
      *
-     * @param uri    the namespace uri
+     * @param uri the namespace uri
      * @param schema detail of the namespace schema, or null
-     * @throws XPathException if an error occurs
+     *
+     * @throws XPathException if an error occurs when setting the default element namespace.
      */
     void setDefaultElementNamespace(String uri, @Nullable String schema) throws XPathException;
 
@@ -237,7 +245,8 @@ public interface Context {
      * Throws an exception if the collation is unknown or cannot be instantiated.
      *
      * @param uri the collation URI
-     * @throws XPathException
+     *
+     * @throws XPathException if an error occurs when setting the default collation.
      */
     void setDefaultCollation(String uri) throws XPathException;
 
@@ -271,7 +280,8 @@ public interface Context {
      * Get statically known documents
      *
      * @return set of statically known documents.
-     * @throws XPathException
+     *
+     * @throws XPathException if an error occurs when getting the statically known documents.
      */
     DocumentSet getStaticallyKnownDocuments() throws XPathException;
 
@@ -286,7 +296,7 @@ public interface Context {
     /**
      * Should loaded documents be locked?
      *
-     * <p>see #setLockDocumentsOnLoad(boolean)</p>
+     * @return true if documents should be locked on load.
      */
     boolean lockDocumentsOnLoad();
 
@@ -324,26 +334,30 @@ public interface Context {
     boolean preserveNamespaces();
 
     /**
-     * The method <code>setPreserveNamespaces.</code>
+     * Set whether namespaces should be preserved.
      *
-     * @param preserve a <code>boolean</code> value
+     * @param preserve true if namespaces should be preserved, false otherwise.
      */
     void setPreserveNamespaces(final boolean preserve);
 
     /**
      * Returns true if namespaces for constructed element and document nodes should be inherited on copy by default.
+     *
+     * @return true if namespaces are inheirted, false otherwise.
      */
     boolean inheritNamespaces();
 
     /**
-     * The method <code>setInheritNamespaces.</code>
+     * Set whether namespaces should be inherited.
      *
-     * @param inherit a <code>boolean</code> value
+     * @param inherit true if namespaces should be inherited, false otherwise.
      */
     void setInheritNamespaces(final boolean inherit);
 
     /**
      * Returns true if order empty is set to greatest, otherwise false for order empty is least.
+     *
+     * @return true if the order is empty-greatest, false otherwise.
      */
     boolean orderEmptyGreatest();
 
@@ -374,6 +388,7 @@ public interface Context {
      * Get the built-in module registered for the given namespace URI.
      *
      * @param namespaceURI the namespace of the module.
+     *
      * @return the module, or null
      */
     @Nullable
@@ -395,16 +410,17 @@ public interface Context {
 
     /**
      * Load a built-in module from the given class name and assign it to the namespace URI.
-     * <p>
+     *
      * The specified {@code moduleClass} should be a subclass of {@link Module}. The method will try to instantiate
      * the class.
-     * <p>
+     *
      * If the class is not found or an exception is thrown, the method will silently fail. The
      * namespace URI has to be equal to the namespace URI declared by the module class. Otherwise,
      * the module is not loaded.
      *
      * @param namespaceURI the namespace URI of the module to load
      * @param moduleClass  the Java class of the module to load
+     *
      * @return the loaded module, or null
      */
     @Nullable
@@ -414,17 +430,20 @@ public interface Context {
      * Declare a user-defined function. All user-defined functions are kept in a single hash map.
      *
      * @param function the function.
-     * @throws XPathException
+     *
+     * @throws XPathException if an error orccurs whilst declaring the function.
      */
     void declareFunction(UserDefinedFunction function) throws XPathException;
 
     /**
      * Resolve a user-defined function.
      *
-     * @param name     the function name
+     * @param name the function name
      * @param argCount the function arity
+     *
      * @return the resolved function, or null
-     * @throws XPathException
+     *
+     * @throws XPathException if an error occurs whilst resolving the function
      */
     @Nullable
     UserDefinedFunction resolveFunction(QName name, int argCount) throws XPathException;
@@ -438,8 +457,10 @@ public interface Context {
      * Declare a local variable. This is called by variable binding expressions like "let" and "for".
      *
      * @param var the variable
+     *
      * @return the declare variable
-     * @throws XPathException
+     *
+     * @throws XPathException if an error occurs whilst declaring the variable binding
      */
     LocalVariable declareVariableBinding(LocalVariable var) throws XPathException;
 
@@ -447,8 +468,10 @@ public interface Context {
      * Declare a global variable as by "declare variable".
      *
      * @param var the variable
+     *
      * @return variable the declared variable
-     * @throws XPathException
+     *
+     * @throws XPathException if an error occurs whilst declaring the global variable
      */
     Variable declareGlobalVariable(Variable var) throws XPathException;
 
@@ -456,14 +479,16 @@ public interface Context {
 
     /**
      * Declare a user-defined variable.
-     * <p>
+     *
      * The value argument is converted into an XPath value (@see XPathUtil#javaObjectToXPath(Object)).
      *
      * @param qname the qualified name of the new variable. Any namespaces should have been declared before.
      * @param value a Java object, representing the fixed value of the variable
+     *
      * @return the created Variable object
+     *
      * @throws XPathException if the value cannot be converted into a known XPath value or the variable QName
-     *                        references an unknown namespace-prefix.
+     *     references an unknown namespace-prefix.
      */
     Variable declareVariable(String qname, Object value) throws XPathException;
 
@@ -498,7 +523,7 @@ public interface Context {
 
     /**
      * Turn on/off XPath 1.0 backwards compatibility.
-     * <p>
+     *
      * If turned on, comparison expressions will behave like in XPath 1.0, i.e. if any one of the operands is a number,
      * the other operand will be cast to a double.
      *
@@ -508,7 +533,7 @@ public interface Context {
 
     /**
      * XPath 1.0 backwards compatibility turned on?
-     * <p>
+     *
      * In XPath 1.0 compatible mode, additional conversions will be applied to values if a numeric value is expected.
      *
      * @return true if XPath 1.0 compatible mode is enabled.
@@ -519,7 +544,7 @@ public interface Context {
 
     /**
      * Get the DBBroker instance used for the current query.
-     * <p>
+     *
      * The DBBroker is the main database access object, providing access to all internal database functions.
      *
      * @return DBBroker instance
@@ -586,7 +611,7 @@ public interface Context {
 
     /**
      * Set the base URI for the evaluation context.
-     * <p>
+     *
      * This is the URI returned by the {@code fn:base-uri()} function.
      *
      * @param uri the base URI
@@ -595,10 +620,10 @@ public interface Context {
 
     /**
      * Set the base URI for the evaluation context.
-     * <p>
+     *
      * A base URI specified via the base-uri directive in the XQuery prolog overwrites any other setting.
      *
-     * @param uri         the base URI
+     * @param uri the base URI
      * @param setInProlog true if it was set by a declare option in the XQuery prolog
      */
     void setBaseURI(AnyURIValue uri, boolean setInProlog);
@@ -623,10 +648,11 @@ public interface Context {
 
     /**
      * Get the base URI of the evaluation context.
-     * <p>
+     *
      * This is the URI returned by the fn:base-uri() function.
      *
      * @return base URI of the evaluation context
+     *
      * @throws XPathException if an error occurs
      */
     AnyURIValue getBaseURI() throws XPathException;
@@ -635,7 +661,7 @@ public interface Context {
      * Set the current context position, i.e. the position of the currently processed item in the context sequence.
      * This value is required by some expressions, e.g. fn:position().
      *
-     * @param pos      the position
+     * @param pos the position
      * @param sequence the sequence
      */
     void setContextSequencePosition(int pos, Sequence sequence);
@@ -672,6 +698,7 @@ public interface Context {
      * passing the return value to {@link #popLocalVariables(LocalVariable)}.
      *
      * @param newContext true if there is a new context
+     *
      * @return last variable on the local variable stack
      */
     LocalVariable markLocalVariables(boolean newContext);
@@ -708,6 +735,7 @@ public interface Context {
      * to be optimized.
      *
      * @param signature the function signature
+     *
      * @return true if the function call is tail recursive
      */
     boolean tailRecursiveCall(FunctionSignature signature);
@@ -719,10 +747,12 @@ public interface Context {
      * specified by the module is used. If location is null, the module will be read from the namespace URI.
      *
      * @param namespaceURI the namespace URI of the module
-     * @param prefix       the namespace prefix of the module
-     * @param location     the location of the module
+     * @param prefix the namespace prefix of the module
+     * @param location the location of the module
+     *
      * @return the imported module
-     * @throws XPathException
+     *
+     * @throws XPathException if an error occurs whilst importing the module
      */
     Module importModule(String namespaceURI, String prefix, String location) throws XPathException;
 
@@ -730,6 +760,7 @@ public interface Context {
      * Returns the static location mapped to an XQuery source module, if known.
      *
      * @param namespaceURI the URI of the module
+     *
      * @return the location string
      */
     String getModuleLocation(String namespaceURI);
@@ -751,7 +782,7 @@ public interface Context {
     /**
      * Resolve all forward references to previously undeclared functions.
      *
-     * @throws XPathException
+     * @throws XPathException of an exception occurs whilst resolving the forward references
      */
     void resolveForwardReferences() throws XPathException;
 
@@ -762,7 +793,8 @@ public interface Context {
      *
      * @param name  the name of the option
      * @param value the value of the option
-     * @throws XPathException
+     *
+     * @throws XPathException of an exception occurs whilst adding the option
      */
     void addOption(String name, String value) throws XPathException;
 
@@ -771,7 +803,8 @@ public interface Context {
      *
      * @param name  the name of the dynamic option
      * @param value the value of the dynamic option
-     * @throws XPathException
+     *
+     * @throws XPathException if an exception occurs whilst adding the dynamic option
      */
     void addDynamicOption(String name, String value) throws XPathException;
 
@@ -792,7 +825,8 @@ public interface Context {
      *
      * @param doc the in-memory document
      * @return The temporary document
-     * @throws XPathException
+     *
+     * @throws XPathException if an exception occurs whilst storing the temporary document
      */
     DocumentImpl storeTemporaryDoc(org.exist.dom.memtree.DocumentImpl doc) throws XPathException;
 
@@ -807,6 +841,7 @@ public interface Context {
      * copy the corresponding settings to the current set of output properties.
      *
      * @param properties the properties object to which serialization parameters will be added.
+     *
      * @throws XPathException if an error occurs while parsing the option
      */
     void checkOptions(Properties properties) throws XPathException;

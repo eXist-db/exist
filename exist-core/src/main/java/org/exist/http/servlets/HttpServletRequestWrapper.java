@@ -60,19 +60,19 @@ import org.exist.util.io.FilterInputStreamCacheFactory;
  * A wrapper for HttpServletRequest
  * - differentiates between POST parameters in the URL or Content Body
  * - caches content Body of the POST request as read, making it available many times
- * <p>
+ *
  * A method of differentiating between POST parameters in the URL or Content Body of the request was needed.
  * The standard javax.servlet.http.HTTPServletRequest does not differentiate between URL or content body parameters,
  * this class does, the type is indicated in RequestParameter.type.
- * <p>
+ *
  * To differentiate manually we need to read the URL (getQueryString()) and the Content body (getInputStream()),
  * this is problematic with the standard javax.servlet.http.HTTPServletRequest as parameter functions (getParameterMap(), getParameterNames(), getParameter(String), getParameterValues(String))
  * affect the  input stream functions (getInputStream(), getReader()) and vice versa.
- * <p>
+ *
  * This class solves this by reading the Request Parameters initially from both the URL and the Content Body of the Request
  * and storing them in the private variable params for later use.
  *
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  * @version 1.2
  * @serial 2018-04-03
  */

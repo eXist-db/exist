@@ -40,7 +40,7 @@ import java.util.Optional;
 /**
  * Determines if the HTTP Request is set in the XQuery Context.
  *
- * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  */
 public class GetExists extends RequestFunction {
 	protected static final Logger logger = LogManager.getLogger(GetExists.class);

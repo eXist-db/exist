@@ -27,7 +27,7 @@ import static org.exist.util.HexEncoder.bytesToHex;
 /**
  * Message Digest.
  *
- * @author Adam Reter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Reter</a>
  */
 public class MessageDigest {
     private final DigestType digestType;

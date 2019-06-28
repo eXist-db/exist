@@ -57,7 +57,7 @@ import org.expath.pkg.repo.tui.BatchUserInteraction;
 /**
  * Install Function: Install package into repository
  *
- * @author James Fuller <jim.fuller@exist-db.org>
+ * @author <a href="mailto:jim.fuller@exist-db.org">James Fuller</a>
  * @author Wolfgang Meier
  * @author ljo
  */

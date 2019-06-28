@@ -35,7 +35,7 @@ import java.util.function.Function;
 /**
  * Store for BLOBs (Binary Large Objects).
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public interface BlobStore extends Closeable {
 

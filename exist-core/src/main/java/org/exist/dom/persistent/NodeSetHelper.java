@@ -44,10 +44,10 @@ public final class NodeSetHelper {
      * For two given sets of potential parent and child nodes, find those nodes
      * from the child set that actually have parents in the parent set, i.e. the
      * parent-child relationship is true.
-     * <p/>
+     *
      * The method returns either the matching descendant or ancestor nodes,
      * depending on the mode constant.
-     * <p/>
+     *
      * If mode is {@link NodeSet#DESCENDANT}, the returned node set will contain all
      * child nodes found in this node set for each parent node. If mode is
      * {@link NodeSet#ANCESTOR}, the returned set will contain those parent nodes, for
@@ -154,10 +154,10 @@ public final class NodeSetHelper {
      * For two given sets of potential ancestor and descendant nodes, find those
      * nodes from the descendant set that actually have ancestors in the
      * ancestor set, i.e. the ancestor-descendant relationship is true.
-     * <p/>
+     *
      * The method returns either the matching descendant or ancestor nodes,
      * depending on the mode constant.
-     * <p/>
+     *
      * If mode is {@link NodeSet#DESCENDANT}, the returned node set will contain all
      * descendant nodes found in this node set for each ancestor. If mode is
      * {@link NodeSet#ANCESTOR}, the returned set will contain those ancestor nodes,

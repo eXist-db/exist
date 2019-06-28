@@ -40,7 +40,7 @@ import java.util.function.Function;
  * A fluent lambda API for working
  * with Documents and Collections.
  *
- * @author <a href="mailto:adam@evolvedbinary.com>Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class FluentBrokerAPI {
 

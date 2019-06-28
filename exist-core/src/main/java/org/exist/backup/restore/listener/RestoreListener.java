@@ -24,7 +24,7 @@ package org.exist.backup.restore.listener;
 import java.util.Observable;
 
 /**
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public interface RestoreListener {
 

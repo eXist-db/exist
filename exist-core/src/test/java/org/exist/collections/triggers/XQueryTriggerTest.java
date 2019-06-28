@@ -45,7 +45,7 @@ import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
 
 /** class under test : {@link XQueryTrigger}
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  */
 public class XQueryTriggerTest {
 

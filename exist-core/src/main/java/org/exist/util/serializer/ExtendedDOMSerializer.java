@@ -45,18 +45,15 @@ public class ExtendedDOMSerializer extends DOMSerializer {
     private DBBroker broker;
 
     /**
-     * @param writer
-     * @param outputProperties
+     * @param broker the database broker
+     * @param writer the destination
+     * @param outputProperties the output proprerties
      */
     public ExtendedDOMSerializer(DBBroker broker, Writer writer, Properties outputProperties) {
         super(writer, outputProperties);
         this.broker = broker;
     }
 
-    
-    /* (non-Javadoc)
-     * @see org.exist.util.serializer.DOMSerializer#startNode(org.w3c.dom.Node)
-     */
     @Override
     protected void startNode(Node node) throws TransformerException {
         if(node.getNodeType() == NodeImpl.REFERENCE_NODE) {

@@ -39,7 +39,7 @@ import static org.exist.security.PermissionRequired.ACL_WRITE;
  * everyone has READ_ACL
  * WRITE access implies WRITE_ACL
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class SimpleACLPermission extends UnixStylePermission implements ACLPermission {
 

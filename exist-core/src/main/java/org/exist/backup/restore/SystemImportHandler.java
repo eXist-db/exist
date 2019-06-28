@@ -67,7 +67,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * restoration of a db backup
  *
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- * @author  Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class SystemImportHandler extends DefaultHandler {
     

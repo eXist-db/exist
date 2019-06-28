@@ -22,83 +22,83 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 
 /**
- * <p>Java class for anonymous complex type.
+ * Java class for anonymous complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType>
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="text" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="variables" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="variable">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;sequence>
- *                             &lt;element name="qname">
- *                               &lt;complexType>
- *                                 &lt;complexContent>
- *                                   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                                     &lt;sequence>
- *                                       &lt;element name="localname" type="{http://www.w3.org/2001/XMLSchema}NCName"/>
- *                                       &lt;element name="namespace" type="{http://www.w3.org/2001/XMLSchema}anyURI"/>
- *                                       &lt;element name="prefix" type="{http://www.w3.org/2001/XMLSchema}NCName" minOccurs="0"/>
- *                                       &lt;element ref="{http://exist-db.org/xquery/types/serialized}sequence"/>
- *                                     &lt;/sequence>
- *                                   &lt;/restriction>
- *                                 &lt;/complexContent>
- *                               &lt;/complexType>
- *                             &lt;/element>
- *                           &lt;/sequence>
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="properties" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="property" maxOccurs="unbounded">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                           &lt;attribute name="value" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *       &lt;/sequence>
- *       &lt;attribute name="start" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="max" type="{http://www.w3.org/2001/XMLSchema}int" />
- *       &lt;attribute name="enclose" type="{http://exist.sourceforge.net/NS/exist}yesNo" />
- *       &lt;attribute name="wrap" type="{http://exist.sourceforge.net/NS/exist}yesNo" />
- *       &lt;attribute name="method" type="{http://www.w3.org/2001/XMLSchema}NCName" />
- *       &lt;attribute name="typed" type="{http://exist.sourceforge.net/NS/exist}yesNo" />
- *       &lt;attribute name="mime" type="{http://www.w3.org/2001/XMLSchema}NCName" />
- *       &lt;attribute name="cache" type="{http://exist.sourceforge.net/NS/exist}yesNo" />
- *       &lt;attribute name="session" type="{http://www.w3.org/2001/XMLSchema}NCName" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="text" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
+ *         &lt;element name="variables" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="variable"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;sequence&gt;
+ *                             &lt;element name="qname"&gt;
+ *                               &lt;complexType&gt;
+ *                                 &lt;complexContent&gt;
+ *                                   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                                     &lt;sequence&gt;
+ *                                       &lt;element name="localname" type="{http://www.w3.org/2001/XMLSchema}NCName"/&gt;
+ *                                       &lt;element name="namespace" type="{http://www.w3.org/2001/XMLSchema}anyURI"/&gt;
+ *                                       &lt;element name="prefix" type="{http://www.w3.org/2001/XMLSchema}NCName" minOccurs="0"/&gt;
+ *                                       &lt;element ref="{http://exist-db.org/xquery/types/serialized}sequence"/&gt;
+ *                                     &lt;/sequence&gt;
+ *                                   &lt;/restriction&gt;
+ *                                 &lt;/complexContent&gt;
+ *                               &lt;/complexType&gt;
+ *                             &lt;/element&gt;
+ *                           &lt;/sequence&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                 &lt;/sequence&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="properties" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="property" maxOccurs="unbounded"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                           &lt;attribute name="value" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                 &lt;/sequence&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="start" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="max" type="{http://www.w3.org/2001/XMLSchema}int" /&gt;
+ *       &lt;attribute name="enclose" type="{http://exist.sourceforge.net/NS/exist}yesNo" /&gt;
+ *       &lt;attribute name="wrap" type="{http://exist.sourceforge.net/NS/exist}yesNo" /&gt;
+ *       &lt;attribute name="method" type="{http://www.w3.org/2001/XMLSchema}NCName" /&gt;
+ *       &lt;attribute name="typed" type="{http://exist.sourceforge.net/NS/exist}yesNo" /&gt;
+ *       &lt;attribute name="mime" type="{http://www.w3.org/2001/XMLSchema}NCName" /&gt;
+ *       &lt;attribute name="cache" type="{http://exist.sourceforge.net/NS/exist}yesNo" /&gt;
+ *       &lt;attribute name="session" type="{http://www.w3.org/2001/XMLSchema}NCName" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  * 
  * 
@@ -431,29 +431,29 @@ public class Query {
 
 
     /**
-     * <p>Java class for anonymous complex type.
+     * Java class for anonymous complex type.
      * 
-     * <p>The following schema fragment specifies the expected content contained within this class.
+     * The following schema fragment specifies the expected content contained within this class.
      * 
      * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="property" maxOccurs="unbounded">
-     *           &lt;complexType>
-     *             &lt;complexContent>
-     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *                 &lt;attribute name="value" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *               &lt;/restriction>
-     *             &lt;/complexContent>
-     *           &lt;/complexType>
-     *         &lt;/element>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;sequence&gt;
+     *         &lt;element name="property" maxOccurs="unbounded"&gt;
+     *           &lt;complexType&gt;
+     *             &lt;complexContent&gt;
+     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *                 &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+     *                 &lt;attribute name="value" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+     *               &lt;/restriction&gt;
+     *             &lt;/complexContent&gt;
+     *           &lt;/complexType&gt;
+     *         &lt;/element&gt;
+     *       &lt;/sequence&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
      * </pre>
      * 
      * 
@@ -469,21 +469,18 @@ public class Query {
 
         /**
          * Gets the value of the property property.
-         * 
-         * <p>
+         *
          * This accessor method returns a reference to the live list,
          * not a snapshot. Therefore any modification you make to the
          * returned list will be present inside the JAXB object.
          * This is why there is not a <CODE>set</CODE> method for the property property.
-         * 
-         * <p>
+         *
          * For example, to add a new item, do as follows:
          * <pre>
          *    getProperty().add(newItem);
          * </pre>
          * 
-         * 
-         * <p>
+         *
          * Objects of the following type(s) are allowed in the list
          * {@link Query.Properties.Property }
          * 
@@ -498,19 +495,19 @@ public class Query {
 
 
         /**
-         * <p>Java class for anonymous complex type.
+         * Java class for anonymous complex type.
          * 
-         * <p>The following schema fragment specifies the expected content contained within this class.
+         * The following schema fragment specifies the expected content contained within this class.
          * 
          * <pre>
-         * &lt;complexType>
-         *   &lt;complexContent>
-         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-         *       &lt;attribute name="value" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-         *     &lt;/restriction>
-         *   &lt;/complexContent>
-         * &lt;/complexType>
+         * &lt;complexType&gt;
+         *   &lt;complexContent&gt;
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+         *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+         *       &lt;attribute name="value" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+         *     &lt;/restriction&gt;
+         *   &lt;/complexContent&gt;
+         * &lt;/complexType&gt;
          * </pre>
          * 
          * 
@@ -578,43 +575,43 @@ public class Query {
 
 
     /**
-     * <p>Java class for anonymous complex type.
+     * Java class for anonymous complex type.
      * 
-     * <p>The following schema fragment specifies the expected content contained within this class.
+     * The following schema fragment specifies the expected content contained within this class.
      * 
      * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="variable">
-     *           &lt;complexType>
-     *             &lt;complexContent>
-     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;sequence>
-     *                   &lt;element name="qname">
-     *                     &lt;complexType>
-     *                       &lt;complexContent>
-     *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                           &lt;sequence>
-     *                             &lt;element name="localname" type="{http://www.w3.org/2001/XMLSchema}NCName"/>
-     *                             &lt;element name="namespace" type="{http://www.w3.org/2001/XMLSchema}anyURI"/>
-     *                             &lt;element name="prefix" type="{http://www.w3.org/2001/XMLSchema}NCName" minOccurs="0"/>
-     *                             &lt;element ref="{http://exist-db.org/xquery/types/serialized}sequence"/>
-     *                           &lt;/sequence>
-     *                         &lt;/restriction>
-     *                       &lt;/complexContent>
-     *                     &lt;/complexType>
-     *                   &lt;/element>
-     *                 &lt;/sequence>
-     *               &lt;/restriction>
-     *             &lt;/complexContent>
-     *           &lt;/complexType>
-     *         &lt;/element>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;sequence&gt;
+     *         &lt;element name="variable"&gt;
+     *           &lt;complexType&gt;
+     *             &lt;complexContent&gt;
+     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *                 &lt;sequence&gt;
+     *                   &lt;element name="qname"&gt;
+     *                     &lt;complexType&gt;
+     *                       &lt;complexContent&gt;
+     *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *                           &lt;sequence&gt;
+     *                             &lt;element name="localname" type="{http://www.w3.org/2001/XMLSchema}NCName"/&gt;
+     *                             &lt;element name="namespace" type="{http://www.w3.org/2001/XMLSchema}anyURI"/&gt;
+     *                             &lt;element name="prefix" type="{http://www.w3.org/2001/XMLSchema}NCName" minOccurs="0"/&gt;
+     *                             &lt;element ref="{http://exist-db.org/xquery/types/serialized}sequence"/&gt;
+     *                           &lt;/sequence&gt;
+     *                         &lt;/restriction&gt;
+     *                       &lt;/complexContent&gt;
+     *                     &lt;/complexType&gt;
+     *                   &lt;/element&gt;
+     *                 &lt;/sequence&gt;
+     *               &lt;/restriction&gt;
+     *             &lt;/complexContent&gt;
+     *           &lt;/complexType&gt;
+     *         &lt;/element&gt;
+     *       &lt;/sequence&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
      * </pre>
      * 
      * 
@@ -654,33 +651,33 @@ public class Query {
 
 
         /**
-         * <p>Java class for anonymous complex type.
+         * Java class for anonymous complex type.
          * 
-         * <p>The following schema fragment specifies the expected content contained within this class.
+         * The following schema fragment specifies the expected content contained within this class.
          * 
          * <pre>
-         * &lt;complexType>
-         *   &lt;complexContent>
-         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;sequence>
-         *         &lt;element name="qname">
-         *           &lt;complexType>
-         *             &lt;complexContent>
-         *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *                 &lt;sequence>
-         *                   &lt;element name="localname" type="{http://www.w3.org/2001/XMLSchema}NCName"/>
-         *                   &lt;element name="namespace" type="{http://www.w3.org/2001/XMLSchema}anyURI"/>
-         *                   &lt;element name="prefix" type="{http://www.w3.org/2001/XMLSchema}NCName" minOccurs="0"/>
-         *                   &lt;element ref="{http://exist-db.org/xquery/types/serialized}sequence"/>
-         *                 &lt;/sequence>
-         *               &lt;/restriction>
-         *             &lt;/complexContent>
-         *           &lt;/complexType>
-         *         &lt;/element>
-         *       &lt;/sequence>
-         *     &lt;/restriction>
-         *   &lt;/complexContent>
-         * &lt;/complexType>
+         * &lt;complexType&gt;
+         *   &lt;complexContent&gt;
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+         *       &lt;sequence&gt;
+         *         &lt;element name="qname"&gt;
+         *           &lt;complexType&gt;
+         *             &lt;complexContent&gt;
+         *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+         *                 &lt;sequence&gt;
+         *                   &lt;element name="localname" type="{http://www.w3.org/2001/XMLSchema}NCName"/&gt;
+         *                   &lt;element name="namespace" type="{http://www.w3.org/2001/XMLSchema}anyURI"/&gt;
+         *                   &lt;element name="prefix" type="{http://www.w3.org/2001/XMLSchema}NCName" minOccurs="0"/&gt;
+         *                   &lt;element ref="{http://exist-db.org/xquery/types/serialized}sequence"/&gt;
+         *                 &lt;/sequence&gt;
+         *               &lt;/restriction&gt;
+         *             &lt;/complexContent&gt;
+         *           &lt;/complexType&gt;
+         *         &lt;/element&gt;
+         *       &lt;/sequence&gt;
+         *     &lt;/restriction&gt;
+         *   &lt;/complexContent&gt;
+         * &lt;/complexType&gt;
          * </pre>
          * 
          * 
@@ -720,23 +717,23 @@ public class Query {
 
 
             /**
-             * <p>Java class for anonymous complex type.
+             * Java class for anonymous complex type.
              * 
-             * <p>The following schema fragment specifies the expected content contained within this class.
+             * The following schema fragment specifies the expected content contained within this class.
              * 
              * <pre>
-             * &lt;complexType>
-             *   &lt;complexContent>
-             *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-             *       &lt;sequence>
-             *         &lt;element name="localname" type="{http://www.w3.org/2001/XMLSchema}NCName"/>
-             *         &lt;element name="namespace" type="{http://www.w3.org/2001/XMLSchema}anyURI"/>
-             *         &lt;element name="prefix" type="{http://www.w3.org/2001/XMLSchema}NCName" minOccurs="0"/>
-             *         &lt;element ref="{http://exist-db.org/xquery/types/serialized}sequence"/>
-             *       &lt;/sequence>
-             *     &lt;/restriction>
-             *   &lt;/complexContent>
-             * &lt;/complexType>
+             * &lt;complexType&gt;
+             *   &lt;complexContent&gt;
+             *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+             *       &lt;sequence&gt;
+             *         &lt;element name="localname" type="{http://www.w3.org/2001/XMLSchema}NCName"/&gt;
+             *         &lt;element name="namespace" type="{http://www.w3.org/2001/XMLSchema}anyURI"/&gt;
+             *         &lt;element name="prefix" type="{http://www.w3.org/2001/XMLSchema}NCName" minOccurs="0"/&gt;
+             *         &lt;element ref="{http://exist-db.org/xquery/types/serialized}sequence"/&gt;
+             *       &lt;/sequence&gt;
+             *     &lt;/restriction&gt;
+             *   &lt;/complexContent&gt;
+             * &lt;/complexType&gt;
              * </pre>
              * 
              * 

@@ -32,7 +32,7 @@ import java.util.List;
 
 /**
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 abstract class AbstractDeferredPermission implements DeferredPermission {
 

@@ -28,7 +28,7 @@ import org.exist.storage.lock.ManagedDocumentLock;
  * allows us to use ARM (Automatic Resource Management) e.g. try-with-resources
  * with eXist Document objects
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class LockedDocument implements AutoCloseable {
     private final ManagedDocumentLock managedDocumentLock;

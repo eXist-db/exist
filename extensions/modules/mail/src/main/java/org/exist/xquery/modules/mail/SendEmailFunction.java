@@ -56,10 +56,10 @@ import java.util.*;
  * The email sending functionality of the eXist Mail Module Extension that
  * allows email to be sent from XQuery using either SMTP or Sendmail.  
  * 
- * @author Adam Retter <adam@exist-db.org>
- * @author Robert Walpole <robert.walpole@devon.gov.uk>
- * @author Andrzej Taramina <andrzej@chaeron.com>
- * @author José María Fernández <josemariafg@gmail.com>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
+ * @author <a href="mailto:robert.walpole@devon.gov.uk">Robert Walpole</a>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
+ * @author <a href="mailto:josemariafg@gmail.com">José María Fernández</a>
  * @serial 2011-08-02
  * @version 1.6
  *

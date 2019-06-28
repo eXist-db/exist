@@ -38,7 +38,9 @@ public class SerializerPool extends StackKeyedObjectPool {
     }
     
     /**
-     * 
+     * @param factory the object factory
+     * @param max the maximum size of the pool
+     * @param init the initial size of the pool
      */
     public SerializerPool(KeyedPoolableObjectFactory factory, int max, int init) {
         super(factory, max, init);

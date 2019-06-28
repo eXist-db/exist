@@ -46,7 +46,13 @@ public class TestUtils {
 
     /**
      * Removes all sub-collections of /db
-     * except for /db/system
+     * except for /db/system.
+     *
+     * @throws EXistException if an error occurs with the database.
+     * @throws PermissionDeniedException if the user does not have appropriate permissions.
+     * @throws LockException if a lock cannot be obtained.
+     * @throws IOException if an IO error occurs.
+     * @throws TriggerException if a trigger throws an error.
      */
     public static void cleanupDB() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
         BrokerPool pool = BrokerPool.getInstance();
@@ -91,7 +97,10 @@ public class TestUtils {
     }
 
     /**
-     * Deletes all data files from the eXist data files directory
+     * Deletes all data files from the eXist data files directory.
+     *
+     * @throws IOException if an IO error occurs.
+     * @throws DatabaseConfigurationException if an error occurs whilst configuring the database.
      */
     public static void cleanupDataDir() throws IOException, DatabaseConfigurationException {
         final Configuration conf = new Configuration();
@@ -105,23 +114,27 @@ public class TestUtils {
     }
 
     /**
-     * Reads the content of a file
+     * Reads the content of a file.
      *
      * @param directory The directory to read from
      * @param filename the filename in the directory to read from
      *
      * @return The content of the file
+     *
+     * @throws IOException if an IO error occurs.
      */
     public static byte[] readFile(final Path directory, final String filename) throws IOException {
         return readFile(directory.resolve(filename));
     }
 
     /**
-     * Reads the content of a file
+     * Reads the content of a file.
      *
      * @param file the file to read from
      *
      * @return The content of the file
+     *
+     * @throws IOException if an IO error occurs.
      */
     public static byte[] readFile(final Path file) throws IOException {
         if(!Files.isReadable(file)) {
@@ -141,11 +154,13 @@ public class TestUtils {
     }
 
     /**
-     * Get a file from within the EXIST_HOME directory
+     * Get a file from within the EXIST_HOME directory.
      *
      * @param fileName Just the name of the file.
      *
      * @return The path if it exists
+     *
+     * @throws IOException if an IO error occurs.
      */
     public static Optional<Path> getExistHomeFile(final String fileName) throws IOException {
         final Path path = getEXistHome().orElseGet(() -> Paths.get(".")).resolve(fileName);

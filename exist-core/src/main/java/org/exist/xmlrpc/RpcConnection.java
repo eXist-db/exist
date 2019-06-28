@@ -124,9 +124,9 @@ import static java.nio.file.StandardOpenOption.*;
  * This class implements the actual methods defined by
  * {@link org.exist.xmlrpc.RpcAPI}.
  *
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:adam.retter@googlemail.com">Wolfgang Meier (wolfgang@exist-db.org)
  *         Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author Adam Retter</a>
  */
 public class RpcConnection implements RpcAPI {
 
@@ -557,10 +557,10 @@ public class RpcConnection implements RpcAPI {
 
     /**
      * The method <code>describeCollection</code>
-     * <p>
+     *
      * Returns details of a collection - collections (list of sub-collections) -
      * name - created - owner - group - permissions - acl
-     * <p>
+     *
      * If you do not have read access on the collection, the list of
      * sub-collections will be empty, an exception will not be thrown!
      *
@@ -1000,7 +1000,7 @@ public class RpcConnection implements RpcAPI {
     /**
      * Creates a unique name for a database resource Uniqueness is only
      * guaranteed within the eXist instance
-     * <p>
+     *
      * The name is based on a hex encoded string of a random integer and will
      * have the format xxxxxxxx.xml where x is in the range 0 to 9 and a to f
      *
@@ -1368,7 +1368,7 @@ public class RpcConnection implements RpcAPI {
 
     /**
      * Parse a file previously uploaded with upload.
-     * <p>
+     *
      * The temporary file will be removed.
      *
      * @param localFile
@@ -1387,7 +1387,7 @@ public class RpcConnection implements RpcAPI {
     /**
      * Parse a file previously uploaded with upload, forcing it to XML or
      * Binary.
-     * <p>
+     *
      * The temporary file will be removed.
      *
      * @param localFile
@@ -2780,11 +2780,11 @@ public class RpcConnection implements RpcAPI {
 
     /**
      * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
-     * <p>
+     *
      * modified by Chris Tomlinson based on above updateAccount - it appears
      * that this code can rely on the SecurityManager to enforce policy about
      * whether user is or is not permitted to update the Account with name.
-     * <p>
+     *
      * This is called via RemoteUserManagementService.addUserGroup(Account)
      *
      * @param name
@@ -2824,11 +2824,11 @@ public class RpcConnection implements RpcAPI {
 
     /**
      * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
-     * <p>
+     *
      * modified by Chris Tomlinson based on above updateAccount - it appears
      * that this code can rely on the SecurityManager to enforce policy about
      * whether user is or is not permitted to update the Account with name.
-     * <p>
+     *
      * This is called via RemoteUserManagementService.removeGroup(Account,
      * String)
      *
@@ -4008,7 +4008,7 @@ public class RpcConnection implements RpcAPI {
     /**
      * Higher-order-function for performing an XMLDB operation on
      * the database.
-     * <p>
+     *
      * Performs the operation as the current user of the RpcConnection
      *
      * @param dbOperation The operation to perform on the database

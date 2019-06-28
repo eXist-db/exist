@@ -35,7 +35,7 @@ import java.util.Properties;
 /**
  * Generic class representing an eXist Resource.
  *
- * @author Dannes Wessels <dannes@exist-db.org>
+ * @author <a href="mailto:dannes@exist-db.org">Dannes Wessels</a>
  */
 public abstract class ExistResource {
 

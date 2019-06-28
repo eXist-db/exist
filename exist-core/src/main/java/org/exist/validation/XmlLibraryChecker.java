@@ -38,7 +38,7 @@ import org.xml.sax.XMLReader;
 /**
  *  Class for checking dependencies with XML libraries.
  *
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  */
 public class XmlLibraryChecker {
 

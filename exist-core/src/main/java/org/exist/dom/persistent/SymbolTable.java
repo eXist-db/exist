@@ -49,12 +49,12 @@ import java.util.Iterator;
  * table maps namespace URIs and node names to unique, numeric ids. Internally,
  * the db does not store node QNames in clear text. Instead, it uses the numeric ids
  * maintained here.
- * <p/>
+ *
  * The global SymbolTable singleton can be retrieved from {@link org.exist.storage.BrokerPool#getSymbols()}.
  * It is saved into the database file "symbols.dbx".
  *
- * @author wolf
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">wolf</a>
+ * @author Adam Retter
  */
 public class SymbolTable implements BrokerPoolService, Closeable {
 
@@ -149,7 +149,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
 
     /**
      * Retrieve a shared QName instance from the temporary pool.
-     * <p/>
+     *
      * TODO: make the namePool thread-local to avoid synchronization.
      *
      * @param namespaceURI
@@ -432,8 +432,8 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     /**
      * Represents a distinct collection of symbols
      *
-     * @author wolf
-     * @author Adam Retter <adam@exist-db.org>
+     * @author <a href="mailto:adam@exist-db.org">wolf
+     * @author Adam Retter</a>
      */
     protected class SymbolCollection {
 
@@ -563,14 +563,14 @@ public class SymbolTable implements BrokerPoolService, Closeable {
 
     /**
      * Local name storage is used by both element names and attribute names
-     * <p/>
+     *
      * Attributes behave slightly differently to element names
      * For the persistent map symbolsByName, the attribute name is prefixed with
      * an '@' symbol to differentiate the attribute name from a similar element name
      * However, for the in-memory reverse map symbolsById, the attribute name
      * should not be prefixed.
      *
-     * @author Adam Retter <adam@exist-db.org>
+     * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
      */
     private class LocalNameSymbolCollection extends SymbolCollection {
 

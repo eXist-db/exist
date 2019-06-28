@@ -62,7 +62,7 @@ public class DocTypeTest {
         "<topic >" +
 		"	<title>abc</title>" +
 		"	<shortdesc>def</shortdesc>" +
-        "   <body><p>ghi</p></body>" +
+        "   <body>ghi</body>" +
 		"</topic>";
 
 	private static Collection root = null;

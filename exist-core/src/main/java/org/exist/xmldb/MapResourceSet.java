@@ -71,7 +71,9 @@ public class MapResourceSet implements ResourceSet
      * Adds a resource to the container
      *
      * @param resource The resource to be added to the object
-     * @throws org.xmldb.api.base.XMLDBException
+     * @param resource the resource to add.
+     *
+     * @throws XMLDBException if an error occurs whilst add the resource.
      */
     @Override
     public void addResource(final Resource resource) throws XMLDBException {
@@ -89,7 +91,7 @@ public class MapResourceSet implements ResourceSet
     /**
      * Make the container empty
      *
-     * @throws XMLDBException
+     * @throws XMLDBException if an error occurs whilst clearing the resource set.
      */
     @Override
     public void clear() throws XMLDBException {
@@ -97,10 +99,11 @@ public class MapResourceSet implements ResourceSet
     }
 
     /**
-     * Gets the iterator property
+     * Get an iterator over the resource set.
      *
-     * @return The iterator value
-     * @throws XMLDBException
+     * @return The iterator
+     *
+     * @throws XMLDBException if an error occurs whilst getting the iterator.
      */
     @Override
     public ResourceIterator getIterator() throws XMLDBException {
@@ -110,8 +113,10 @@ public class MapResourceSet implements ResourceSet
     /**
      * Gets the iterator property, starting from a given position
      *
-     * @param start starting position>0 for the iterator
+     * @param start starting position &gt; 0 for the iterator
+     *
      * @return The iterator value
+     *
      * @throws XMLDBException thrown if pos is out of range
      */
     public ResourceIterator getIterator(final long start) throws XMLDBException {
@@ -122,7 +127,8 @@ public class MapResourceSet implements ResourceSet
      * Gets the membersAsResource property of the object
      *
      * @return The membersAsResource value
-     * @exception XMLDBException Description of the Exception
+     *
+     * @throws XMLDBException Description of the Exception
      */
     @Override
     public Resource getMembersAsResource() throws XMLDBException {
@@ -132,7 +138,7 @@ public class MapResourceSet implements ResourceSet
     /**
      * Gets the resource at a given position.
      *
-     * @param pos position > 0
+     * @param pos position &gt; 0
      * @return The resource value
      * @exception XMLDBException thrown if pos is out of range
      */
@@ -149,10 +155,11 @@ public class MapResourceSet implements ResourceSet
     }
 
     /**
-     * Gets the size property
+     * Gets the size property.
      *
      * @return The size value
-     * @exception XMLDBException
+     *
+     * @exception XMLDBException if an error occurs getting the size.
      */
     @Override
     public long getSize() throws XMLDBException {
@@ -162,7 +169,7 @@ public class MapResourceSet implements ResourceSet
     /**
      * Removes the resource at a given position.
      *
-     * @param pos position > 0
+     * @param pos position &gt; 0
      * @exception XMLDBException thrown if pos is out of range
      */
     @Override

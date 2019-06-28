@@ -33,10 +33,10 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 /**
  * Module function definitions for util module.
  *
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:adam.retter@googlemail.com">Wolfgang Meier (wolfgang@exist-db.org)
  * @author ljo
  * @author Andrzej Taramina (andrzej@chaeron.com)
- * @author Adam retter <adam.retter@googlemail.com>
+ * @author Adam retter</a>
  */
 public class UtilModule extends AbstractInternalModule {
 

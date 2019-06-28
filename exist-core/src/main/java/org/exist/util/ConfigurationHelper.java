@@ -53,6 +53,8 @@ public class ConfigurationHelper {
      *   <li>classpath entry : if exists, with a conf.xml file
      * </ol>
      *
+     * @param config the path to the config file.
+     *
      * @return the path to exist home if known
      */
     public static Optional<Path> getExistHome(final String config) {

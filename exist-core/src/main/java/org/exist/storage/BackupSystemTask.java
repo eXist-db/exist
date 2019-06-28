@@ -28,6 +28,7 @@ import java.util.stream.Stream;
  * {@link #configure(org.exist.util.Configuration, java.util.Properties)} method:
  *
  * <table>
+ *      <caption>Properties</caption>
  *      <tr>
  *          <td>collection</td>
  *          <td>the collection to backup, specified as an absolute path into the db, e.g. /db/back-me-up</td>

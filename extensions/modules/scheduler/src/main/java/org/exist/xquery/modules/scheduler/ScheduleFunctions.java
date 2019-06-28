@@ -44,11 +44,11 @@ import java.util.Properties;
 /**
  * eXist Scheduler Module Extension ScheduleFunctions.
  *
- * <p>Schedules job's with eXist's Scheduler</p>
+ * Schedules job's with eXist's Scheduler
  *
- * @author   Adam Retter <adam.retter@devon.gov.uk>
- * @author   Loren Cahlander <loren.cahlander@gmail.com>
- * @author   Andrzej Taramina <andrzej@chaeron.com>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
+ * @author <a href="mailto:loren.cahlander@gmail.com">Loren Cahlander</a>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  * @version  1.3
  * @see      org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  * @serial   2010-03-10

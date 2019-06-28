@@ -34,11 +34,11 @@ import org.exist.xquery.value.Type;
 
 /**
  * Abstract base class for all built-in and user-defined functions.
- * <p>
+ *
  * Built-in functions just extend this class. A new function instance
  * will be created for each function call. Subclasses <b>have</b> to
  * provide a function signature to the constructor.
- * <p>
+ *
  * User-defined functions extend class {@link org.exist.xquery.UserDefinedFunction},
  * which is again a subclass of Function. They will not be called directly, but through a
  * {@link org.exist.xquery.FunctionCall} object, which checks the type and cardinality of
@@ -69,8 +69,8 @@ public abstract class Function extends PathExpr {
      * Internal constructor. Subclasses should <b>always</b> call this and
      * pass the current context and their function signature.
      *
-     * @param context
-     * @param signature
+     * @param context the xquery context.
+     * @param signature the function signature.
      */
     protected Function(final XQueryContext context, final FunctionSignature signature) {
         super(context);
@@ -82,7 +82,9 @@ public abstract class Function extends PathExpr {
     }
 
     /**
-     * Returns the module to which this function belongs
+     * Returns the module to which this function belongs.
+     *
+     * @return the parent module or null.
      */
     protected Module getParentModule() {
         return context.getModule(mySignature.getName().getNamespaceURI());
@@ -112,7 +114,13 @@ public abstract class Function extends PathExpr {
     /**
      * Create a built-in function from the specified class.
      *
+     * @param context the xquery context
+     * @param ast the ast node
+     * @param def the function definition
+     *
      * @return the created function or null if the class could not be initialized.
+     *
+     * @throws XPathException if the function could not be created
      */
     public static Function createFunction(final XQueryContext context, final XQueryAST ast,
                                           final FunctionDef def) throws XPathException {
@@ -161,7 +169,7 @@ public abstract class Function extends PathExpr {
      * Set the parent expression of this function, i.e. the
      * expression from which the function is called.
      *
-     * @param parent
+     * @param parent the parent expression
      */
     public void setParent(final Expression parent) {
         this.parent = parent;
@@ -169,6 +177,8 @@ public abstract class Function extends PathExpr {
 
     /**
      * Returns the expression from which this function gets called.
+     *
+     * @return the parent expression
      */
     @Override
     public Expression getParent() {
@@ -177,17 +187,18 @@ public abstract class Function extends PathExpr {
 
     /**
      * Set the (static) arguments for this function from a list of expressions.
-     * <p>
+     *
      * This will also trigger a check on the type and cardinality of the
      * passed argument expressions. By default, the method sets the
      * argumentsChecked property to false, thus triggering the analyze method to
      * perform a type check.
-     * <p>
+     *
      * Classes overwriting this method are typically optimized functions and will
      * handle type checks for arguments themselves.
      *
-     * @param arguments
-     * @throws XPathException
+     * @param arguments the function arguments.
+     *
+     * @throws XPathException if an error occurs setting the arguments
      */
     public void setArguments(final List<Expression> arguments) throws XPathException {
         if ((!mySignature.isOverloaded()) && arguments.size() != mySignature.getArgumentCount()) {
@@ -205,7 +216,9 @@ public abstract class Function extends PathExpr {
     }
 
     /**
-     * @throws XPathException
+     * Check the fuction arguments.
+     *
+     * @throws XPathException if an error occurs when checking the arguments.
      */
     protected void checkArguments() throws XPathException {
         if (!argumentsChecked) {
@@ -226,10 +239,11 @@ public abstract class Function extends PathExpr {
      * Statically check an argument against the sequence type specified in
      * the signature.
      *
-     * @param expr
-     * @param type
+     * @param expr the expression
+     * @param type the type of the argument
+     * @param argPosition the position of the argument
      * @return The passed expression
-     * @throws XPathException
+     * @throws XPathException if an error occurs whilst checking the argument
      */
     protected Expression checkArgument(Expression expr, final SequenceType type, final int argPosition)
             throws XPathException {
@@ -363,7 +377,9 @@ public abstract class Function extends PathExpr {
      * Get an argument expression by its position in the
      * argument list.
      *
-     * @param pos
+     * @param pos the position of the argument
+     *
+     * @return the expression.
      */
     public Expression getArgument(final int pos) {
         return getExpression(pos);

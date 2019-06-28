@@ -37,7 +37,7 @@ import static com.evolvedbinary.j8fu.Either.Right;
 import static java.lang.invoke.MethodType.methodType;
 
 /**
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class BrokerFactory {
 

@@ -47,7 +47,7 @@ import java.util.function.Consumer;
  *
  * @param <T> The type of the leasable object.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @ThreadSafe
 public class Leasable<T> {
@@ -67,11 +67,14 @@ public class Leasable<T> {
     }
 
     /**
-     * Creates a {@code Leasable<T>} from an {@code T extends AutoCloseable}.
+     * Creates a {@code Leasable<U>} from an {@code U extends AutoCloseable}.
      *
      * The {@link AutoCloseable#close()} method will be involed as the `closer`
      * and exception thrown by {@link AutoCloseable#close()} will be promoted
      * to an {@link IllegalLeasableState} exception.
+     *
+     *
+     * @param <U> the type of the auto-closeable object.
      *
      * @param object The object to setup for leasing.
      *

@@ -64,7 +64,7 @@ package org.exist.util;
  * in this class can be used to verify that a character is a valid
  * XML character or if the character is a space, name start, or name
  * character.
- * <p>
+ *
  * A series of convenience methods are supplied to ease the burden
  * of the developer. Because inlining the checks can improve per
  * character performance, the tables of character properties are
@@ -111,7 +111,7 @@ public class XMLChar {
      * be considered the start of markup, such as '&lt;' and '&amp;'.
      * The various newline characters are considered special as well.
      * All other valid XML characters can be considered content.
-     * <p>
+     *
      * This is an optimization for the inner loop of character scanning.
      */
     public static final int MASK_CONTENT = 0x20;
@@ -383,6 +383,8 @@ public class XMLChar {
      * Returns true if the specified character is a supplemental character.
      *
      * @param c The character to check.
+     *
+     * @return true if the specified character is a supplemental character.
      */
     public static boolean isSupplemental(int c) {
         return (c >= 0x10000 && c <= 0x10FFFF);
@@ -394,6 +396,8 @@ public class XMLChar {
      *
      * @param h The high surrogate.
      * @param l The low surrogate.
+     *
+     * @return the supplemental character
      */
     public static int supplemental(char h, char l) {
         return (h - 0xD800) * 0x400 + (l - 0xDC00) + 0x10000;
@@ -403,6 +407,8 @@ public class XMLChar {
      * Returns the high surrogate of a supplemental character
      *
      * @param c The supplemental character to "split".
+     *
+     * @return the high surrogate of the supplemental character
      */
     public static char highSurrogate(int c) {
         return (char) (((c - 0x00010000) >> 10) + 0xD800);
@@ -412,6 +418,8 @@ public class XMLChar {
      * Returns the low surrogate of a supplemental character
      *
      * @param c The supplemental character to "split".
+     *
+     * @return the low surrogate of the supplemental character
      */
     public static char lowSurrogate(int c) {
         return (char) (((c - 0x00010000) & 0x3FF) + 0xDC00);
@@ -421,6 +429,8 @@ public class XMLChar {
      * Returns whether the given character is a high surrogate
      *
      * @param c The character to check.
+     *
+     * @return true if the character is a high surrogate
      */
     public static boolean isHighSurrogate(int c) {
         return (0xD800 <= c && c <= 0xDBFF);
@@ -430,6 +440,8 @@ public class XMLChar {
      * Returns whether the given character is a low surrogate
      *
      * @param c The character to check.
+     *
+     * @return true if the character is a low surrogate
      */
     public static boolean isLowSurrogate(int c) {
         return (0xDC00 <= c && c <= 0xDFFF);
@@ -437,6 +449,10 @@ public class XMLChar {
 
     /**
      * Return whether a given char (codepoint) is a surrogate (high or low)
+     *
+     * @param c the character to check.
+     *
+     * @return true if the character is a surrogate
      */
     static public boolean isSurrogate(char c) {
         return (c & 0xF800) == 0xD800;
@@ -445,12 +461,14 @@ public class XMLChar {
     /**
      * Returns true if the specified character is valid. This method
      * also checks the surrogate character range from 0x10000 to 0x10FFFF.
-     * <p>
+     *
      * If the program chooses to apply the mask directly to the
      * <code>CHARS</code> array, then they are responsible for checking
      * the surrogate character range.
      *
      * @param c The character to check.
+     *
+     * @return true if the character is valid.
      */
     public static boolean isValid(int c) {
         return (c < 0x10000 && (CHARS[c] & MASK_VALID) != 0) ||
@@ -461,6 +479,8 @@ public class XMLChar {
      * Returns true if the specified character is invalid.
      *
      * @param c The character to check.
+     *
+     * @return true if the character is a invalid.
      */
     public static boolean isInvalid(int c) {
         return !isValid(c);
@@ -470,6 +490,8 @@ public class XMLChar {
      * Returns true if the specified character can be considered content.
      *
      * @param c The character to check.
+     *
+     * @return true if the character can be considered as content.
      */
     public static boolean isContent(int c) {
         return (c < 0x10000 && (CHARS[c] & MASK_CONTENT) != 0) ||
@@ -481,6 +503,8 @@ public class XMLChar {
      * Markup characters include '&lt;', '&amp;', and '%'.
      *
      * @param c The character to check.
+     *
+     * @return true if the specified character can be considered as markup
      */
     public static boolean isMarkup(int c) {
         return c == '<' || c == '&' || c == '%';
@@ -491,6 +515,8 @@ public class XMLChar {
      * as defined by production [3] in the XML 1.0 specification.
      *
      * @param c The character to check.
+     *
+     * @return true if the specified character is a space character
      */
     public static boolean isSpace(int c) {
         return c < 0x10000 && (CHARS[c] & MASK_SPACE) != 0;
@@ -502,6 +528,8 @@ public class XMLChar {
      * specification.
      *
      * @param c The character to check.
+     *
+     * @return true if the specified character is a valid name start character
      */
     public static boolean isNameStart(int c) {
         return c < 0x10000 && (CHARS[c] & MASK_NAME_START) != 0;
@@ -513,6 +541,8 @@ public class XMLChar {
      * specification.
      *
      * @param c The character to check.
+     *
+     * @return true if the specified character is a valid name character
      */
     public static boolean isName(int c) {
         return c < 0x10000 && (CHARS[c] & MASK_NAME) != 0;
@@ -524,6 +554,8 @@ public class XMLChar {
      * recommendation.
      *
      * @param c The character to check.
+     *
+     * @return true if the specified character is a valid NCName start character
      */
     public static boolean isNCNameStart(int c) {
         return c < 0x10000 && (CHARS[c] & MASK_NCNAME_START) != 0;
@@ -535,6 +567,8 @@ public class XMLChar {
      * recommendation.
      *
      * @param c The character to check.
+     *
+     * @return true if the specified character is a valid NCName character
      */
     public static boolean isNCName(int c) {
         return c < 0x10000 && (CHARS[c] & MASK_NCNAME) != 0;
@@ -546,6 +580,8 @@ public class XMLChar {
      * specification.
      *
      * @param c The character to check.
+     *
+     * @return true if the specified character is a valid Pubid character
      */
     public static boolean isPubid(int c) {
         return c < 0x10000 && (CHARS[c] & MASK_PUBID) != 0;
@@ -642,6 +678,8 @@ public class XMLChar {
      * IANA encoding name.
      *
      * @param ianaEncoding The IANA encoding name.
+     *
+     * @return true if the encoding name is a valid IANA encoding
      */
     public static boolean isValidIANAEncoding(String ianaEncoding) {
         if (ianaEncoding != null) {
@@ -671,6 +709,8 @@ public class XMLChar {
      * Java encoding name.
      *
      * @param javaEncoding The Java encoding name.
+     *
+     * @return true if the encoding name is a valid Java encoding
      */
     public static boolean isValidJavaEncoding(String javaEncoding) {
         if (javaEncoding != null) {

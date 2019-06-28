@@ -42,8 +42,7 @@ import org.exist.storage.lock.Lock.LockType;
  *
  * For example we may indicate that Collection parameters to methods
  * must already be locked appropriately before the method is called:
- * <pre>
- * {@code
+ * <pre>{@code
  * public Result copyCollection(
  *         @EnsureLocked(mode=LockMode.READ_LOCK) final Collection srcCollection,
  *         @EnsureLocked(mode=LockMode.WRITE_LOCK) final Collection destCollection) {
@@ -51,23 +50,20 @@ import org.exist.storage.lock.Lock.LockType;
  *    ...
  *
  * }
- * }
- * </pre>
+ * }</pre>
  *
  * We may also indicate that objects returned from a function must have gained an appropriate
  * lock for the calling thread:
  *
- * <pre>
- * {@code
+ * <pre>{@code
  * public @EnsureLocked(mode=LockMode.READ_LOCK) Collection openCollection(final XmldbURI uri, final LockMode lockMode) {
  *
  *    ...
  *
  * }
- * }
- * </pre>
+ * }</pre>
  *
- * @author <a href="mailto:adam@evolvedbinary.com>Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = {ElementType.METHOD, ElementType.PARAMETER})

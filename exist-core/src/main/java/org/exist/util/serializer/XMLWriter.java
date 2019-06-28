@@ -164,7 +164,7 @@ public class XMLWriter {
     /**
      * Set a new writer. Calling this method will reset the state of the object.
      * 
-     * @param writer
+     * @param writer the writer
      */
     public void setWriter(final Writer writer) {
         this.writer = writer;

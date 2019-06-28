@@ -39,7 +39,7 @@ import javax.xml.transform.Source;
 import java.util.Properties;
 
 /**
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  */
 public class Compare extends Function {
 	

@@ -55,12 +55,12 @@ import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
 /**
  * Webapplication Descriptor
- * <p>
+ *
  * Class representation of an XQuery Web Application Descriptor file
  * with some helper functions for performing Descriptor related actions
  * Uses the Singleton design pattern.
  *
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  * @version 1.71
  * @serial 2006-03-19
  */
@@ -85,8 +85,8 @@ public class Descriptor implements ErrorHandler {
     private String mapList[][] = null;                    //Array of Mappings
 
     /**
-     * Descriptor Constructor
-     * <p>
+     * Descriptor Constructor.
+     *
      * Class has a Singleton design pattern
      * to get an instance, call getDescriptorSingleton()
      */
@@ -193,9 +193,9 @@ public class Descriptor implements ErrorHandler {
     }
 
     /**
-     * loads <allow-source> settings from the descriptor.xml file
+     * loads {@code allow-source} settings from the descriptor.xml file
      *
-     * @param    allowsourcexqueries    The <allow-source> DOM Element from the descriptor.xml file
+     * @param    allowsourcexqueries    The &lt;allow-source&gt; DOM Element from the descriptor.xml file
      */
     private void configureAllowSourceXQuery(Element allowsourcexqueries) {
         //Get the xquery element(s)
@@ -225,9 +225,9 @@ public class Descriptor implements ErrorHandler {
     }
 
     /**
-     * loads <maps> settings from the descriptor.xml file
+     * loads &lt;maps&gt; settings from the descriptor.xml file
      *
-     * @param    maps    The <maps> DOM Element from the descriptor.xml file
+     * @param    maps    The &lt;maps&gt; DOM Element from the descriptor.xml file
      */
     private void configureMaps(Element maps) {
         //TODO: add pattern support for mappings, as an alternative to path - deliriumsky
@@ -337,9 +337,9 @@ public class Descriptor implements ErrorHandler {
     }
 
     /**
-     * Determines whether it is permissible to Log Requests
-     * <p>
-     * Enabled by descriptor.xml <xquery-app request-replay-log="true">
+     * Determines whether it is permissible to Log Requests.
+     *
+     * Enabled by descriptor.xml &lt;xquery-app request-replay-log="true"&gt;
      *
      * @return The boolean value true or false indicating whether it is permissible to Log Requests
      */
@@ -350,8 +350,8 @@ public class Descriptor implements ErrorHandler {
     /**
      * Logs HTTP Request's in a log file suitable for replaying to eXist later
      * Takes a HttpServletRequest or a HttpServletRequestWrapper as an argument for logging.
-     * <p>
-     * Enabled by descriptor.xml <xquery-app request-replay-log="true">
+     *
+     * Enabled by descriptor.xml &lt;xquery-app request-replay-log="true"&gt;
      *
      * @param request The HttpServletRequest to log.
      *                For Simple HTTP POST Requests - EXistServlet/XQueryServlet - POST parameters (e.g. form data) will only be logged if a HttpServletRequestWrapper is used instead of HttpServletRequest! POST Uploaded files are not yet supported!

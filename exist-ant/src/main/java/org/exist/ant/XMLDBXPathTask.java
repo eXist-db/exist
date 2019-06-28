@@ -51,11 +51,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * an ant task to execute an query using XPath.
- * <p>
- * <p/>The query is either passed as nested text in the element, or via an attribute "query".
- * </p>
  *
- * @author wolf <p>modified by:</p>
+ * The query is either passed as nested text in the element, or via an attribute "query".
+ *
+ *
+ * @author wolf modified by:
  * @author peter.klotz@blue-elephant-systems.com
  */
 public class XMLDBXPathTask extends AbstractXMLDBTask {

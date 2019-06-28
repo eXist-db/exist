@@ -62,6 +62,17 @@ public class FunctionFactory {
      * functions. It also deals with constructor functions and
      * optimizes some function calls like starts-with, ends-with or
      * contains.
+     *
+     * @param context the XQuery context
+     * @param qname the name of the function
+     * @param ast the AST node of the function
+     * @param parent the parent expression of the function
+     * @param params the parameters to the function
+     * @param optimizeStrFuncs true if string functions be optimized
+     *
+     * @return the function expression
+     *
+     * @throws XPathException if an error occurs creating the function
      */
     public static Expression createFunction(XQueryContext context, QName qname, XQueryAST ast, PathExpr parent, List<Expression> params,
         boolean optimizeStrFuncs) throws XPathException {

@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 /**
  * Tests to ensure the correct behaviour of the LockManager
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 @RunWith(Parameterized.class)
 public class LockManagerTest {

@@ -31,7 +31,7 @@ import java.util.function.Supplier;
  *
  * @param <V> The type of the object reference.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @NotThreadSafe
 public class TimestampedReference<V> {

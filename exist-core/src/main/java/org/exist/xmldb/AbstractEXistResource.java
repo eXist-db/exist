@@ -137,6 +137,10 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
      *
      * @param readOp The read-only operation to execute against the resource
      * @return The result of the read-only operation
+     *
+     * @param <R> the return type.
+     *
+     * @throws XMLDBException if an error occurs whilst reading.
      */
     protected <R> R read(final LocalXmldbDocumentFunction<R> readOp) throws XMLDBException {
         return withDb((broker, transaction) -> this.<R>read(broker, transaction).apply(readOp));
@@ -148,6 +152,10 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
      * @param broker The broker to use for the operation
      * @param transaction The transaction to use for the operation
      * @return A function to receive a read-only operation to perform against the resource
+     *
+     * @param <R> the return type.
+     *
+     * @throws XMLDBException if an error occurs whilst reading.
      */
     public <R> FunctionE<LocalXmldbDocumentFunction<R>, R, XMLDBException> read(final DBBroker broker, final Txn transaction) throws XMLDBException {
         return with(LockMode.READ_LOCK, broker, transaction);
@@ -160,6 +168,10 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
      *
      * @param op The read/write operation to execute against the resource
      * @return The result of the operation
+     *
+     * @param <R> the return type.
+     *
+     * @throws XMLDBException if an error occurs whilst modifying.
      */
     protected <R> R modify(final LocalXmldbDocumentFunction<R> op) throws XMLDBException {
         return withDb((broker, transaction) -> this.<R>modify(broker, transaction).apply(op));
@@ -171,6 +183,10 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
      * @param broker The broker to use for the operation
      * @param transaction The transaction to use for the operation
      * @return A function to receive an operation to perform against the resource
+     *
+     * @param <R> the return type.
+     *
+     * @throws XMLDBException if an error occurs whilst modifying.
      */
     public <R> FunctionE<LocalXmldbDocumentFunction<R>, R, XMLDBException> modify(final DBBroker broker, final Txn transaction) throws XMLDBException {
         return writeOp -> this.<R>with(LockMode.WRITE_LOCK, broker, transaction).apply((document, broker1, transaction1) -> {
@@ -187,6 +203,10 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
      * @param broker The broker to use for the operation
      * @param transaction The transaction to use for the operation
      * @return A function to receive an operation to perform on the locked database resource
+     *
+     * @param <R> the return type.
+     *
+     * @throws XMLDBException if an error occurs during the operation.
      */
     private <R> FunctionE<LocalXmldbDocumentFunction<R>, R, XMLDBException> with(final LockMode lockMode, final DBBroker broker, final Txn transaction) throws XMLDBException {
         return documentOp ->
@@ -215,6 +235,8 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
      *
      * The method will only be called once, no matter
      * how many times the user calls {@link #close()}.
+     *
+     * @throws XMLDBException if an error occurs whilst closing.
      */
     protected void doClose() throws XMLDBException {
         //no-op

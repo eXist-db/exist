@@ -26,11 +26,11 @@ import javax.annotation.Nullable;
  * This class contains two static tools for doing UTF-8 encoding and
  * decoding.
  *
- * <p> UTF-8 is ASCII- transparent.  It supports character sets
+ *  UTF-8 is ASCII- transparent.  It supports character sets
  * requiring more than the seven bit ASCII base range of UTF-8,
  * including Unicode, ISO-8859, ISO-10646, etc..
  *
- * <p> We do not use an ISO UCS code signature, and we do not use a
+ *  We do not use an ISO UCS code signature, and we do not use a
  * Java Data I/O- style strlen prefix.
  *
  * @author John Pritchard (john@syntelos.org)
@@ -40,6 +40,10 @@ public class UTF8 {
     /**
      * Decode UTF-8 input, terminates decoding at a null character,
      * value 0x0.
+     *
+     * @param code the encoded UTf-8 string
+     *
+     * @return the decoded UTF-8 string
      *
      * @throws IllegalStateException Bad format.
      */
@@ -62,6 +66,13 @@ public class UTF8 {
     /**
      * Decode UTF-8 input, terminates decoding at a null character,
      * value 0x0.
+     *
+     * @param code the encoded UTf-8 string
+     * @param off the offset of the string
+     * @param many many
+     * @param xs xs
+     *
+     * @return the decoded UTF-8 string
      *
      * @throws IllegalStateException Bad format.
      */
@@ -130,6 +141,10 @@ public class UTF8 {
 
     /**
      * Encode string in UTF-8.
+     *
+     * @param str the string to encode
+     *
+     * @return the encoded string
      */
     public final static byte[] encode(@Nullable final char[] str) {
         if (null == str || 0 >= str.length) {
@@ -140,9 +155,17 @@ public class UTF8 {
 
     /**
      * Encode string in UTF-8.
-     * <p>
+     *
      * Warning: the size of bytbuf is not checked. Use encoded() to determine
      * the size needed.
+     *
+     * @param str the string to encode
+     * @param start the offset of the string
+     * @param length the length of the string
+     * @param bytbuf bytebuf
+     * @param offset the offset in bytebuf
+     *
+     * @return the encoded string
      */
     public final static byte[] encode(@Nullable final char[] str, final int start, final int length, @Nullable byte[] bytbuf, int offset) {
         if (null == str || 0 >= length) {
@@ -198,9 +221,17 @@ public class UTF8 {
 
     /**
      * Encode string in UTF-8.
-     * <p>
+     *
      * Warning: the size of bytbuf is not checked. Use encoded() to determine
      * the size needed.
+     *
+     * @param str the string to encode
+     * @param start the offset of the string
+     * @param length the length of the string
+     * @param bytbuf bytebuf
+     * @param offset the offset in bytebuf
+     *
+     * @return the encoded string
      */
     public final static byte[] encode(@Nullable final String str, final int start, final int length, final byte[] bytbuf, int offset) {
         if (null == str || 0 >= length) {
@@ -248,6 +279,10 @@ public class UTF8 {
 
     /**
      * Encode string in UTF-8.
+     *
+     * @param s the string to encode
+     *
+     * @return the encoded string
      */
     public final static byte[] encode(@Nullable final String s) {
         if (null == s) {
@@ -275,6 +310,9 @@ public class UTF8 {
 
     /**
      * Returns the length of the string encoded in UTF-8.
+     *
+     * @param str the string
+     * @return the length of the encoded string
      */
     public final static int encoded(@Nullable final String str) {
         if (null == str) {
@@ -303,6 +341,11 @@ public class UTF8 {
 
     /**
      * Returns the length of the string encoded in UTF-8.
+     *
+     * @param str the string
+     * @param start the offset of the string
+     * @param len the length of the string
+     * @return the length of the encoded string
      */
     public final static int encoded(@Nullable final char[] str, final int start, final int len) {
         if (null == str || 0 >= len) {

@@ -29,7 +29,7 @@ import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
 /**
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  * @version EXPath HTTP Client Module Candidate 9 January 2010 http://expath.org/spec/http-client
  */
 public class HttpClientModule extends AbstractInternalModule {

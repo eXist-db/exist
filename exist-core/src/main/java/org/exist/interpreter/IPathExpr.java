@@ -32,22 +32,22 @@ public interface IPathExpr extends Expression {
 	/**
 	 * Add an arbitrary expression to this object's list of child-expressions.
 	 * 
-	 * @param s
+	 * @param expr the expression.
 	 */
-	public void add(Expression s);
+	public void add(Expression expr);
 
 	/**
 	 * Add all the child-expressions from another PathExpr to this object's
 	 * child-expressions.
 	 * 
-	 * @param path
+	 * @param path the path expression.
 	 */
 	public void add(IPathExpr path);
 
 	/**
 	 * Add another PathExpr to this object's expression list.
-	 * 
-	 * @param path
+	 *
+	 * @param path the path expression.
 	 */
 	public void addPath(IPathExpr path);
 
@@ -55,7 +55,7 @@ public interface IPathExpr extends Expression {
 	 * Add a predicate expression to the list of expressions. The predicate is
 	 * added to the last expression in the list.
 	 * 
-	 * @param pred
+	 * @param pred the predicate.
 	 */
 	public void addPredicate(IPredicate pred);
 
@@ -73,6 +73,10 @@ public interface IPathExpr extends Expression {
 
 	/**
 	 * @deprecated use {@link #getSubExpression(int)}
+	 *
+	 * @param pos the position of the expression.
+	 *
+	 * @return the expression
 	 */
 	@Deprecated
 	public Expression getExpression(int pos);
@@ -81,6 +85,8 @@ public interface IPathExpr extends Expression {
 
 	/**
 	 * @deprecated use {@link #getSubExpressionCount()}
+	 *
+	 * @return the length of the path expression
 	 */
 	@Deprecated
 	public int getLength();

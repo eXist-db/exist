@@ -548,7 +548,7 @@ public abstract class Paged implements AutoCloseable {
     /**
      * FileHeader
      *
-     * @author Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+     * @author <a href="mailto:meier@ifs.tu-darmstadt.de">Wolfgang Meier</a>
      */
     public abstract class FileHeader {
         private short version;

@@ -43,7 +43,7 @@ import org.expath.pkg.repo.Repository;
 /**
  * List function: Lists out repository packages
  *
- * @author James Fuller <jim.fuller@exist-db.org>
+ * @author <a href="mailto:jim.fuller@exist-db.org">James Fuller</a>
  * @author cutlass
  * @version 1.0
  */

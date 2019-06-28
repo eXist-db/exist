@@ -27,7 +27,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * @author Patrick Reinhart <patrick@reini.net>
+ * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
  */
 final class OverflowToDiskStream extends OutputStream {
     private static final Logger LOG = LogManager.getLogger(OverflowToDiskStream.class);

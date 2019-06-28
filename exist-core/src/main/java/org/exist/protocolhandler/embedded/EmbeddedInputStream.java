@@ -59,7 +59,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Read document from embedded database as an InputStream.
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @author Dannes Wessels
  */
 @NotThreadSafe

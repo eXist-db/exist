@@ -48,9 +48,9 @@ import java.util.Properties;
  * java option 'org.exist.http.session_create_listener' when an
  * HTTP session is created and 'org.exist.http.session_destroy_listener'
  * when an HTTP session is destroyed.
- * <p>
+ *
  * If the java option is not set, then do nothing.
- * <p>
+ *
  * If the java option is set, then retrieve the script from the file
  * or resource designated by the value of the property.  Execute the
  * XQuery script to record the creation or destruction of a HTTP session.

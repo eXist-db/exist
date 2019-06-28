@@ -44,7 +44,7 @@ import java.util.HashMap;
 /**
  * Builds an in-memory DOM tree from SAX {@link org.exist.util.serializer.Receiver} events.
  *
- * @author Wolfgang <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang</a>
  */
 public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, Receiver {
 

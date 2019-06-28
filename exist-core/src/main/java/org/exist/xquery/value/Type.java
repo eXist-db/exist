@@ -403,7 +403,7 @@ public class Type {
 
     /**
      * Find a common supertype for two given type codes.
-     * <p>
+     *
      * Type.ITEM is returned if no other common supertype
      * is found.
      *

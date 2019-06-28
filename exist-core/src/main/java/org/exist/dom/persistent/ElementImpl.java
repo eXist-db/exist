@@ -203,14 +203,14 @@ public class ElementImpl extends NamedNode implements Element {
      * namespacePrefixLength = [short] (2 bytes)
      * elementNamespacePrefix = eUtf8
      *
-     * eUtf8 = {@see org.exist.util.UTF8#encode(java.lang.String, byte[], int)}
+     * eUtf8 = {@link org.exist.util.UTF8#encode(java.lang.String, byte[], int)}
      *
      * prefixData = namespaceMappingsCount namespaceMapping+
      * namespaceMappingsCount = [short] (2 bytes)
      * namespaceMapping = namespacePrefix namespaceUriId
      * namespacePrefix = jUtf8
      *
-     * jUtf8 = {@see java.io.DataOutputStream#writeUTF(java.lang.String)}
+     * jUtf8 = {@link java.io.DataOutputStream#writeUTF(java.lang.String)}
      *
      * @return the returned byte array after use must be returned to the ByteArrayPool
      *     by calling {@link ByteArrayPool#releaseByteArray(byte[])}

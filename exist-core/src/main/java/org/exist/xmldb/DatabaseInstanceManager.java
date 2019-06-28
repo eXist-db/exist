@@ -20,7 +20,7 @@ public interface DatabaseInstanceManager extends Service {
      * This operation is synchronous and will not return
      * until the database is shutdown
      *
-	 * @throws XMLDBException
+	 * @throws XMLDBException if an error occurs during shutdown.
 	 */
 	void shutdown() throws XMLDBException;
 	
@@ -34,7 +34,9 @@ public interface DatabaseInstanceManager extends Service {
      * This operation is asynchronous and the delay is scheduled
      * with the database scheduler.
 	 *
-	 * @throws XMLDBException
+	 * @param delay the period in ms to wait before shutting down
+	 *
+	 * @throws XMLDBException if an error occurs during shutdown.
 	 */
 	void shutdown(long delay) throws XMLDBException;
 

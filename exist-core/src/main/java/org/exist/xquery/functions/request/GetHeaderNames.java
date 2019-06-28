@@ -38,9 +38,8 @@ import org.exist.xquery.value.ValueSequence;
 import javax.annotation.Nonnull;
 
 /**
- * @author Alain Pannetier <alain.m.pannetier@gmail.com>
- * <p>
- * Adjusted and Committed by Adam Retter <adam.retter@devon.gov.uk>
+ * @author <a href="mailto:alain.m.pannetier@gmail.com">Alain Pannetier</a>
+ * @author <a href="adam.retter@devon.gov.uk">Adam Retter</a>
  */
 
 public class GetHeaderNames extends StrictRequestFunction {

@@ -202,7 +202,7 @@ public class XPathQueryTest {
     private final static String xpointerElementName =
             "<test><xpointer/></test>";
 
-    private final static String cdata_content = "<p>Hello there \"Bob?\"</p>";
+    private final static String cdata_content = "Hello there \"Bob?\"";
     private final static String cdata_xml = "<elem1><![CDATA[" + cdata_content + "]]></elem1>";
     
     private Collection testCollection;

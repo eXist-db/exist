@@ -59,12 +59,12 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 /**
- * <p>This is a utility class used by selectors and DirectoryScanner. The
+ * This is a utility class used by selectors and DirectoryScanner. The
  * functionality more properly belongs just to selectors, but unfortunately
  * DirectoryScanner exposed these as protected methods. Thus we have to
  * support any subclasses of DirectoryScanner that may access these methods.
- * </p>
- * <p>This is a Singleton.</p>
+ *
+ * This is a Singleton.
  *
  * @author Arnout J. Kuiper
  * <a href="mailto:ajkuiper@wxs.nl">ajkuiper@wxs.nl</a>
@@ -82,9 +82,11 @@ public final class SelectorUtils {
     private SelectorUtils() {
     }
 
-     /**
-      * Retrieves the instance of the Singleton.
-      */
+    /**
+     * Retrieves the instance of the Singleton.
+     *
+     * @return the instance
+     */
     public static SelectorUtils getInstance() {
         return instance;
     }
@@ -92,7 +94,7 @@ public final class SelectorUtils {
     /**
      * Tests whether or not a given path matches the start of a given
      * pattern up to the first "**".
-     * <p>
+     *
      * This is not a general purpose test and should only be used if you
      * can live with false positives. For example, <code>pattern=**\a</code>
      * and <code>str=b</code> will yield <code>true</code>.
@@ -111,7 +113,7 @@ public final class SelectorUtils {
     /**
      * Tests whether or not a given path matches the start of a given
      * pattern up to the first "**".
-     * <p>
+     *
      * This is not a general purpose test and should only be used if you
      * can live with false positives. For example, <code>pattern=**\a</code>
      * and <code>str=b</code> will yield <code>true</code>.

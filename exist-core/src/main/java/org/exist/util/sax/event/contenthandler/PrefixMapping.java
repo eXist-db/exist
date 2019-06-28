@@ -22,7 +22,7 @@
 package org.exist.util.sax.event.contenthandler;
 
 /**
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public abstract class PrefixMapping implements ContentHandlerEvent {
     public final String prefix;

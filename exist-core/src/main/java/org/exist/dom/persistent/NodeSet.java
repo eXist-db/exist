@@ -126,7 +126,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
     /**
      * Check if any child nodes are found within this node set for a given
      * set of potential parent nodes.
-     * <p/>
+     *
      * If mode is {@link #DESCENDANT}, the returned node set will contain
      * all child nodes found in this node set for each parent node. If mode is
      * {@link #ANCESTOR}, the returned set will contain those parent nodes,
@@ -140,7 +140,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
     /**
      * Check if any child nodes are found within this node set for a given
      * set of potential parent nodes.
-     * <p/>
+     *
      * If mode is {@link #DESCENDANT}, the returned node set will contain
      * all child nodes found in this node set for each parent node. If mode is
      * {@link #ANCESTOR}, the returned set will contain those parent nodes,
@@ -160,7 +160,7 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
     /**
      * Check if any descendant nodes are found within this node set for a given
      * set of potential ancestor nodes.
-     * <p/>
+     *
      * If mode is {@link #DESCENDANT}, the returned node set will contain
      * all descendant nodes found in this node set for each ancestor. If mode is
      * {@link #ANCESTOR}, the returned set will contain those ancestor nodes,
@@ -228,11 +228,11 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
     /**
      * Check if the node identified by its node id has an ancestor contained in this node set
      * and return the ancestor found.
-     * <p/>
+     *
      * If directParent is true, only immediate ancestors (parents) are considered.
      * Otherwise the method will call itself recursively for all the node's
      * parents.
-     * <p/>
+     *
      * If includeSelf is true, the method returns also true if
      * the node itself is contained in the node set.
      */
@@ -241,11 +241,11 @@ public interface NodeSet extends Sequence, NodeList, Iterable<NodeProxy> {
     /**
      * Check if the given node has an ancestor contained in this node set
      * and return the ancestor found.
-     * <p/>
+     *
      * If directParent is true, only immediate ancestors (parents) are considered.
      * Otherwise the method will call itself recursively for all the node's
      * parents.
-     * <p/>
+     *
      * If includeSelf is true, the method returns also true if
      * the node itself is contained in the node set.
      */

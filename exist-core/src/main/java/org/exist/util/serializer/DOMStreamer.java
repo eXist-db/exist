@@ -91,8 +91,8 @@ public class DOMStreamer {
     /**
      * Serialize the given node and all its descendants to SAX.
      *
-     * @param node
-     * @throws SAXException
+     * @param node the node to serialize
+     * @throws SAXException if an error occurs during serialization.
      */
     public void serialize(final Node node) throws SAXException {
         serialize(node, false);
@@ -103,9 +103,9 @@ public class DOMStreamer {
      * callDocumentEvents is set to false, startDocument/endDocument
      * events will not be fired.
      *
-     * @param node
-     * @param callDocumentEvents
-     * @throws SAXException
+     * @param node the node to serialize
+     * @param callDocumentEvents whether we shoiuld call the document events startDocument/endDocument
+     * @throws SAXException if an error occurs during serialization.
      */
     public void serialize(Node node, final boolean callDocumentEvents) throws SAXException {
         if (callDocumentEvents) {

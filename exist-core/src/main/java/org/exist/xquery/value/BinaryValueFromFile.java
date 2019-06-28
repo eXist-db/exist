@@ -21,7 +21,7 @@ import java.util.function.BiConsumer;
  * Representation of an XSD binary value e.g. (xs:base64Binary or xs:hexBinary)
  * whose source is backed by a File
  *
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class BinaryValueFromFile extends BinaryValue {
 

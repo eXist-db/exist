@@ -58,7 +58,7 @@ public class BlockingOutputStream extends OutputStream {
      * 
      * 
      * @param b   the <code>byte</code>.
-     * @throws ExistIOException  if an I/O error occurs. In particular, 
+     * @throws IOException  if an I/O error occurs. In particular,
      *             an <code>ExistIOException</code> may be thrown if the 
      *             output stream has been closed.
      */
@@ -92,7 +92,7 @@ public class BlockingOutputStream extends OutputStream {
     /**
      * Closes this output stream.
      * A closed stream cannot perform output operations and cannot be reopened.
-     * <p>
+     *
      * This method blocks its caller until the corresponding input stream is
      * closed or an exception occurs.
      * 
@@ -117,7 +117,7 @@ public class BlockingOutputStream extends OutputStream {
     /**
      * Flushes this output stream and forces any buffered output bytes 
      * to be written out.
-     * <p>
+     *
      * This methods blocks its caller until all buffered bytes are actually
      * read by the consuming threads.
      * 

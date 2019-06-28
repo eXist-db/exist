@@ -46,7 +46,7 @@ import static org.exist.storage.lock.LockTable.LockEventType.*;
  * which is typically an indicator of the
  * lock subject.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class LockTable {
 

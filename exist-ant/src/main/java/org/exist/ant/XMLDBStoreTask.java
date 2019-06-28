@@ -46,15 +46,15 @@ import java.util.ArrayList;
 
 /**
  * An Ant task to store a set of files into eXist.
- * <p>
- * <p/>The task expects a nested fileset element. The files selected by the fileset will be stored into the database.</p>
- * <p>
- * <p>New collections can be created as needed. It is also possible to specify that files relative to the base directory should be stored into
- * subcollections of the root collection, where the relative path of the directory corresponds to the relative path of the subcollections.</p>
+ *
+ * The task expects a nested fileset element. The files selected by the fileset will be stored into the database.
+ *
+ * New collections can be created as needed. It is also possible to specify that files relative to the base directory should be stored into
+ * subcollections of the root collection, where the relative path of the directory corresponds to the relative path of the subcollections.
  *
  * @author wolf
- *         <p>
- *         <p>slightly modified by:</p>
+ *
+ *         slightly modified by:
  * @author peter.klotz@blue-elephant-systems.com
  */
 public class XMLDBStoreTask extends AbstractXMLDBTask {

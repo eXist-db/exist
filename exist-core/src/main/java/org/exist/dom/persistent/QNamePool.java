@@ -180,7 +180,7 @@ public class QNamePool extends AbstractHashSet<QName> {
 
     /**
      * Used to calculate a hashCode for a QName
-     * <p/>
+     *
      * This varies from {@see org.exist.dom.QName#hashCode()} in so far
      * as it also includes the prefix in the hash calculation
      *
@@ -198,7 +198,7 @@ public class QNamePool extends AbstractHashSet<QName> {
 
     /**
      * Used to calculate equality for a QName and it's constituent components
-     * <p/>
+     *
      * This varies from {@see org.exist.dom.QName#equals(Object)} in so far
      * as it also includes the prefix in the equality test
      *

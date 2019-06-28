@@ -64,7 +64,7 @@ import static org.junit.Assert.assertNotNull;
  * Actual JUnit test cases are defined in the
  * subclass {@link AbstractJournalTest}.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class JournalXmlTest extends AbstractJournalTest<String> {
 

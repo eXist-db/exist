@@ -102,10 +102,19 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
     }
 
     /**
-     * Create Xmlreader and setup validation
+     * Create Xmlreader and setup validation.
+     *
+     * @param validation the validation setting
+     * @param grammarPool the grammar pool
+     * @param resolver the catalog resolver
+     *
+     * @return the configured reader
+     *
+     * @throws ParserConfigurationException if the parser cannot be configured
+     * @throws SAXException if an exception occurs with the parser
      */
     public static XMLReader createXmlReader(VALIDATION_SETTING validation, GrammarPool grammarPool,
-            eXistXMLCatalogResolver resolver) throws ParserConfigurationException, SAXException{
+            eXistXMLCatalogResolver resolver) throws ParserConfigurationException, SAXException {
 
         // Create a xmlreader
         final SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
@@ -135,6 +144,10 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
 
     /**
      * Convert configuration text (yes,no,true,false,auto) into a magic number.
+     *
+     * @param option the configuration option
+     *
+     * @return the validation setting
      */
     public static VALIDATION_SETTING convertValidationMode(String option) {
         VALIDATION_SETTING mode = VALIDATION_SETTING.AUTO;
@@ -154,6 +167,9 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
 
     /**
      * Setup validation mode of xml reader.
+     *
+     * @param validation the validation setting
+     * @param xmlReader the reader
      */
     public static void setReaderValidationMode(VALIDATION_SETTING validation, XMLReader xmlReader) {
 

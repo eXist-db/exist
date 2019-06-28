@@ -33,12 +33,12 @@ import java.util.Iterator;
 
 /**
  * This interface represents a sequence as defined in the XPath 2.0 specification.
- * <p>
+ *
  * A sequence is a sequence of items. Each item is either an atomic value or a
  * node. A single item is also a sequence, containing only the item. The base classes for
  * {@link org.exist.xquery.value.AtomicValue atomic values} and {@link org.exist.dom.persistent.NodeProxy
  * nodes} thus implement the Sequence interface.
- * <p>
+ *
  * Also, a {@link org.exist.dom.persistent.NodeSet node set} is a special type of sequence, where all
  * items are of type node.
  */
@@ -61,11 +61,11 @@ public interface Sequence {
      * Add an item to the current sequence. An {@link XPathException} may be thrown
      * if the item's type is incompatible with this type of sequence (e.g. if the sequence
      * is a node set).
-     * <p>
+     *
      * The sequence may or may not allow duplicate values.
      *
-     * @param item
-     * @throws XPathException
+     * @param item the item to add
+     * @throws XPathException if an error occurs
      */
     void add(Item item) throws XPathException;
 
@@ -74,8 +74,9 @@ public interface Sequence {
      * be thrown if the type of the items in the other sequence is incompatible with
      * the primary type of this sequence.
      *
-     * @param other
-     * @throws XPathException
+     * @param other the other sequence
+     *
+     * @throws XPathException if an error occurs
      */
     void addAll(Sequence other) throws XPathException;
 
@@ -92,13 +93,19 @@ public interface Sequence {
      * Returns an iterator over all items in the sequence. The
      * items are returned in document order where applicable.
      *
-     * @throws XPathException TODO
+     * @return the iterator
+     *
+     * @throws XPathException if an error occurs
      */
     SequenceIterator iterate() throws XPathException;
 
     /**
      * Returns an iterator over all items in the sequence. The returned
      * items may - but need not - to be in document order.
+     *
+     * @return the iterator
+     *
+     * @throws XPathException if an error occurs
      */
     SequenceIterator unorderedIterator() throws XPathException;
 
@@ -162,6 +169,8 @@ public interface Sequence {
      * value is a combination of flags as defined in
      * {@link org.exist.xquery.Cardinality}.
      *
+     * @return the cardinality
+     *
      * @see org.exist.xquery.Cardinality
      */
     int getCardinality();
@@ -170,7 +179,8 @@ public interface Sequence {
      * Returns the item located at the specified position within
      * this sequence. Items are counted beginning at 0.
      *
-     * @param pos
+     * @param pos the position
+     * @return the item at the position
      */
     Item itemAt(int pos);
 
@@ -182,12 +192,17 @@ public interface Sequence {
      * is thrown if the conversion is impossible.
      *
      * @param requiredType one of the type constants defined in class {@link Type}
-     * @throws XPathException
+     *
+     * @return the converted value or null
+     *
+     * @throws XPathException if an error occurs
      */
     @Nullable AtomicValue convertTo(int requiredType) throws XPathException;
 
     /**
      * Convert the sequence to a string.
+     *
+     * @return the string value
      */
     String getStringValue() throws XPathException;
 
@@ -195,13 +210,17 @@ public interface Sequence {
      * Get the effective boolean value of this sequence. Will be false if the sequence is empty,
      * true otherwise.
      *
-     * @throws XPathException
+     * @return the effective boolean value
+     *
+     * @throws XPathException if an error occurs
      */
     boolean effectiveBooleanValue() throws XPathException;
 
     /**
      * Convert the sequence into a NodeSet. If the sequence contains items
      * which are not nodes, an XPathException is thrown.
+     *
+     * @return the node set
      *
      * @throws XPathException if the sequence contains items which are not nodes.
      */
@@ -213,6 +232,8 @@ public interface Sequence {
      * node sets, this method will return null. Call {@link #isPersistentSet()} to check
      * if the sequence is a persistent node set.
      *
+     * @return the in memory node set
+     *
      * @throws XPathException if the sequence contains items which are not nodes or is
      *                        a persistent node set
      */
@@ -221,12 +242,16 @@ public interface Sequence {
     /**
      * Returns the set of documents from which the node items in this sequence
      * have been selected. This is for internal use only.
+     *
+     * @return the document set
      */
     DocumentSet getDocumentSet();
 
     /**
      * Return an iterator on all collections referenced by documents
      * contained in this sequence..
+     *
+     * @return the iterator
      */
     Iterator<Collection> getCollectionIterator();
 
@@ -235,7 +260,9 @@ public interface Sequence {
      * a value to be converted into the given Java class. Low numbers mean
      * that the value can be easily converted into the given class.
      *
-     * @param javaClass
+     * @param javaClass the java class
+     *
+     * @return the preference
      */
     int conversionPreference(Class<?> javaClass);
 
@@ -243,14 +270,19 @@ public interface Sequence {
      * Convert the value into an instance of the specified
      * Java class.
      *
-     * @param target
-     * @throws XPathException
+     * @param target the target class
+     *
+     * @return the Java object.
+     *
+     * @throws XPathException if an error occurs
      */
     <T> T toJavaObject(Class<T> target) throws XPathException;
 
     /**
      * Returns true if the sequence is the result of a previous operation
      * and has been cached.
+     *
+     * @return true if the sequence has been cached
      */
     boolean isCached();
 
@@ -258,7 +290,7 @@ public interface Sequence {
      * Indicates that the sequence is the result of a previous operation
      * and has not been recomputed.
      *
-     * @param cached
+     * @param cached true if the sequence should be cached
      */
     void setIsCached(boolean cached);
 
@@ -267,6 +299,10 @@ public interface Sequence {
      * information that is stored during query processing. This
      * feature is used for node sets, which may store information
      * about their context node.
+     *
+     * @param contextId the context id
+     *
+     * @throws XPathException if an error occurs whilst clearing the context
      */
     void clearContext(int contextId) throws XPathException;
 
@@ -278,9 +314,8 @@ public interface Sequence {
      * Node sets may implement this method to be informed of storage address
      * and node id changes after updates.
      *
-     * @param oldNodeId
-     * @param newNode
-     * @see org.exist.storage.UpdateListener
+     * @param oldNodeId the old node id
+     * @param newNode the new node
      */
     void nodeMoved(NodeId oldNodeId, NodeHandle newNode);  //TODO why is this here, it only pertains to Persistent nodes and NOT also in-memory nodes
 
@@ -292,6 +327,9 @@ public interface Sequence {
 
     /**
      * Clean up any resources used by the items in this sequence.
+     *
+     * @param context the XQuery context
+     * @param contextSequence the context sequence
      */
     void destroy(XQueryContext context, Sequence contextSequence);
 }

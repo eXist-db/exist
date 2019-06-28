@@ -44,8 +44,8 @@ import org.exist.xquery.value.ValueSequence;
 /**
  * Built-in function fn:substring().
  *
- *	@author Adam Retter <adam.retter@devon.gov.uk>
- *	@author ljo <ellefj@gmail.com>
+ *	@author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
+ *	@author <a href="mailto:ellefj@gmail.com">ljo</a>
  */
 public class FunSubstring extends Function {
 	

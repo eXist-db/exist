@@ -34,7 +34,7 @@ import static org.exist.util.ThreadUtils.nameInstanceThread;
  * A simple thread factory that provides a standard naming convention
  * for threads.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class NamedThreadFactory implements ThreadFactory {
 

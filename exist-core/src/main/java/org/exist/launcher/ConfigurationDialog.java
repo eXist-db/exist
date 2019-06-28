@@ -40,6 +40,9 @@ public class ConfigurationDialog extends JDialog {
 
     /**
      * Creates new form ConfigurationDialog
+     *
+     * @param callback a callback for after when the configuration is saved
+     *     and the dialog is dismissed.
      */
     public ConfigurationDialog(Consumer<Boolean> callback) {
         setModal(true);
@@ -252,7 +255,7 @@ public class ConfigurationDialog extends JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         getContentPane().add(collectionCache, gridBagConstraints);
 
-        jLabel8.setText("<html><p>Memory settings only become effective after restart and only apply when eXist-db is started via the system tray launcher.</p></html>");
+        jLabel8.setText("<html>Memory settings only become effective after restart and only apply when eXist-db is started via the system tray launcher.</html>");
         jLabel8.setPreferredSize(new java.awt.Dimension(280, 48));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -274,7 +277,7 @@ public class ConfigurationDialog extends JDialog {
         getContentPane().add(lbCurrentUsage, gridBagConstraints);
 
         lbStartupMsg.setFont(lbStartupMsg.getFont().deriveFont(lbStartupMsg.getFont().getStyle() & ~java.awt.Font.BOLD));
-        lbStartupMsg.setText("<html><p>It seems you are starting eXist-db for the first time. Please configure your memory settings below.</p></html>");
+        lbStartupMsg.setText("<html>It seems you are starting eXist-db for the first time. Please configure your memory settings below.</html>");
         lbStartupMsg.setMinimumSize(new java.awt.Dimension(60, 64));
         lbStartupMsg.setPreferredSize(new java.awt.Dimension(300, 32));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -287,7 +290,7 @@ public class ConfigurationDialog extends JDialog {
         gridBagConstraints.insets = new java.awt.Insets(27, 22, 0, 22);
         getContentPane().add(lbStartupMsg, gridBagConstraints);
 
-        jLabel9.setText("<html><p>Changing the data directory will create an empty database in the new location (unless there's already data in it).</p></html>");
+        jLabel9.setText("<html>Changing the data directory will create an empty database in the new location (unless there's already data in it).</html>");
         jLabel9.setPreferredSize(new java.awt.Dimension(280, 48));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -319,7 +322,7 @@ public class ConfigurationDialog extends JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 22, 0, 0);
         getContentPane().add(dataDir, gridBagConstraints);
 
-        jLabel11.setText("<html><p>Total cache size should not exceed 1/3 of max memory unless you have more than 2GB available. These sizes are in megabytes.</p></html>");
+        jLabel11.setText("<html>Total cache size should not exceed 1/3 of max memory unless you have more than 2GB available. These sizes are in megabytes.</html>");
         jLabel11.setPreferredSize(new java.awt.Dimension(280, 48));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -360,7 +363,7 @@ public class ConfigurationDialog extends JDialog {
 
         lbStartupWarn.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         lbStartupWarn.setForeground(new java.awt.Color(255, 0, 0));
-        lbStartupWarn.setText("<html><p>After startup, use dashboard or Java client to set a password for admin (empty by default).</p></html>");
+        lbStartupWarn.setText("<html>After startup, use dashboard or Java client to set a password for admin (empty by default).</html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -417,8 +420,8 @@ public class ConfigurationDialog extends JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         getContentPane().add(sslPort, gridBagConstraints);
 
-        jLabel15.setText("<html><p>Set the ports used by the integrated web server. Please make sure " +
-                "those ports are not used by other processes.</p></html>");
+        jLabel15.setText("<html>Set the ports used by the integrated web server. Please make sure " +
+                "those ports are not used by other processes.</html>");
         jLabel15.setPreferredSize(new java.awt.Dimension(280, 48));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;

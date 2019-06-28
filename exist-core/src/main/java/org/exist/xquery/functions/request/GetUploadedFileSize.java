@@ -43,7 +43,7 @@ import org.exist.xquery.value.ValueSequence;
 import javax.annotation.Nonnull;
 
 /**
- * @author Adam Retter <adam.retter@exist-db.org>
+ * @author <a href="mailto:adam.retter@exist-db.org">Adam Retter</a>
  */
 public class GetUploadedFileSize extends StrictRequestFunction {
 

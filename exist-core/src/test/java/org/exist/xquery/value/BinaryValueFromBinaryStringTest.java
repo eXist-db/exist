@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 
 /**
  *
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class BinaryValueFromBinaryStringTest {
 

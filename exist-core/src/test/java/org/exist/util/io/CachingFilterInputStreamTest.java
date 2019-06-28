@@ -23,7 +23,7 @@ import static org.junit.Assert.fail;
  *
  * @version 1.0
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 @RunWith(value = ParallelParameterized.class)
 public class CachingFilterInputStreamTest {

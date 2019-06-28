@@ -37,7 +37,7 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * Tests for various constructed node operations (in-memory nodes)
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  * @author ljo
  */
 @RunWith(ParallelRunner.class)

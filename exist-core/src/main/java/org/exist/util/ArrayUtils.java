@@ -158,6 +158,7 @@ public class ArrayUtils {
      *
      * @param a the array to be searched.
      * @param key the value to be searched for.
+     * @param size the size of the array {@code a}.
      * @return index of the search key, if it is contained in the list;
      *         otherwise, <tt>(-(<i>insertion point</i>) - 1)</tt>.  The
      *         <i>insertion point</i> is defined as the point at which the

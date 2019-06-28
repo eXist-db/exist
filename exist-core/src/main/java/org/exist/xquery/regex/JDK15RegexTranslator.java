@@ -121,8 +121,8 @@ public class JDK15RegexTranslator extends RegexTranslator {
      * If the string comes from XML content, a conforming XML parser will automatically
      * check this; if the string comes from elsewhere, it may be necessary to check
      * surrogate usage before matching.
-     * @param xmlVersion set to {@link net.sf.saxon.Configuration#XML10} for XML 1.0
-     * or {@link net.sf.saxon.Configuration#XML11} for XML 1.1
+     * @param xmlVersion set to net.sf.saxon.Configuration#XML10 for XML 1.0
+     * or net.sf.saxon.Configuration#XML11 for XML 1.1
      * @param regExp a String containing a regular expression in the syntax of XML Schemas Part 2
      * @param xpath  a boolean indicating whether the XPath 2.0 F+O extensions to the schema
      *               regex syntax are permitted

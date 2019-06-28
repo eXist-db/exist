@@ -40,10 +40,10 @@ import org.exist.xquery.modules.ModuleUtils.ContextMapEntryModifier;
 /**
  * eXist SQL Module Extension.
  *
- * <p>An extension module for the eXist Native XML Database that allows queries against SQL Databases, returning an XML representation of the result
- * set.</p>
+ * An extension module for the eXist Native XML Database that allows queries against SQL Databases, returning an XML representation of the result
+ * set.
  *
- * @author   Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @author   ljo
  * @version  1.2
  * @see      org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[], java.util.Map) 

@@ -34,7 +34,7 @@ import java.io.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public abstract class BinaryValue extends AtomicValue implements Closeable {
 

@@ -62,7 +62,7 @@ import static org.exist.samples.Samples.SAMPLES;
  * Each transaction executes in its own thread according
  * to the schedule which we describe with the {@link TransactionTestDSL}.
  *
- * @author <a href="mailto:adam@evolvedbinary.com>Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class ConcurrentTransactionsTest {
 

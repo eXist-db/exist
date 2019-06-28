@@ -30,7 +30,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import static org.exist.security.PermissionRequired.*;
 
 /**
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 @Aspect
 public class PermissionRequiredAspect {

@@ -76,7 +76,7 @@ import java.util.function.Supplier;
  * {@link EnsureContainerUnlocked} on a method, ensures that the encapsulating object on which the method operates holds
  * no locks before the method is called.
  *
- * @author <a href="mailto:adam@evolvedbinary.com>Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @Aspect
 public class EnsureLockingAspect {

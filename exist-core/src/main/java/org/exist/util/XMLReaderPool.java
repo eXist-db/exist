@@ -52,11 +52,11 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
     private Configuration configuration = null;
 
     /**
-     * 
-     * 
-     * @param factory 
-     * @param maxIdle 
-     * @param initIdleCapacity 
+     * Constructs an XML Reader Pool.
+     *
+     * @param factory the object factory
+     * @param maxIdle the max idle time for a reader
+     * @param initIdleCapacity the initial capacity
      */
     public XMLReaderPool(final PoolableObjectFactory<XMLReader> factory, final int maxIdle, final int initIdleCapacity) {
         super(factory, maxIdle, initIdleCapacity);

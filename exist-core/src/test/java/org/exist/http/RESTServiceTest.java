@@ -63,8 +63,8 @@ import static org.junit.Assume.assumeThat;
 
 /**
  * A test case for accessing a remote server via REST-Style Web API.
- * @author wolf
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">wolf
+ * @author Pierrick Brihaye</a>
  */
 //@RunWith(ParallelRunner.class)    // TODO(AR) when running in parallel a deadlock is encountered in eXist-db... this needs to be resolved!
 public class RESTServiceTest {

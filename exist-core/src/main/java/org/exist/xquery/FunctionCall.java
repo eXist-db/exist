@@ -165,8 +165,8 @@ public class FunctionCall extends Function {
      * yet been declared. XQueryContext remembers all calls to undeclared functions
      * and tries to resolve them after parsing has completed.
      * 
-     * @param functionDef
-     * @throws XPathException
+     * @param functionDef the function definition to resolve
+     * @throws XPathException if an error occurs resolving the forward reference
      */
     public void resolveForwardReference(UserDefinedFunction functionDef) throws XPathException {
         setFunction(functionDef);
@@ -252,10 +252,12 @@ public class FunctionCall extends Function {
     }
 
     /**
-     * @param contextSequence
-     * @param contextItem
-     * @param seq
-     * @throws XPathException
+     * Evaluate the function.
+     *
+     * @param contextSequence the context sequence
+     * @param contextItem the context item
+     * @param seq the sequence
+     * @throws XPathException if an error occurs whilst evaluation the function.
      */
     public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq) throws XPathException {
         return evalFunction(contextSequence, contextItem, seq, null);

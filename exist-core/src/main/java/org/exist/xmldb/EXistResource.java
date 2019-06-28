@@ -48,6 +48,8 @@ public interface EXistResource extends Resource, AutoCloseable {
      * The content length if known.
      *
      * @return The content length, or -1 if not known.
+     *
+     * @throws XMLDBException if an error occurs whilst getting the content's length.
      */
     long getContentLength() throws XMLDBException;
 

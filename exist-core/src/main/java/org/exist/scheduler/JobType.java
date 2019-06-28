@@ -21,7 +21,7 @@ package org.exist.scheduler;
 
 /**
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public enum JobType {
     USER,

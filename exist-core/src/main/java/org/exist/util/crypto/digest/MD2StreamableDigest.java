@@ -30,7 +30,7 @@ import static org.exist.util.crypto.digest.DigestType.MD_2;
 /**
  * Implementation of MD2 streamable digest.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class MD2StreamableDigest implements StreamableDigest {
     private final ExtendedDigest ed = new MD2Digest();

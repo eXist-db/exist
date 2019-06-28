@@ -23,7 +23,7 @@ package org.exist.util.crypto.digest;
 /**
  * Interface for a Streamable Digest implementation.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public interface StreamableDigest {
 
@@ -38,7 +38,7 @@ public interface StreamableDigest {
      * Update the message digest calculation with more data.
      *
      * @param buf the data
-     * @param offset the position in the {@ buf} to start reading from
+     * @param offset the position in the {@code buf} to start reading from
      * @param len the number of bytes to read from the {@code offset}
      */
     void update(final byte[] buf, final int offset, final int len);
@@ -74,6 +74,8 @@ public interface StreamableDigest {
      * Gets the current message digest as a {@code Message Digest}.
      *
      * The underlying byte array will be copied.
+     *
+     * @return a copy of the message digest.
      */
     MessageDigest copyMessageDigest();
 

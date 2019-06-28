@@ -70,7 +70,7 @@ import java.util.function.Function;
  * operations like storing, removing or index access are provided by subclasses
  * of this class.
  * 
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public abstract class DBBroker implements AutoCloseable {
 
@@ -766,7 +766,7 @@ public abstract class DBBroker implements AutoCloseable {
 	 *
 	 * @param transaction The transaction, which registers the acquired write locks. The locks should be released on commit/abort.
 	 * @param sourceCollection The origin collection
-	 * @param targetCollection The destination parent collection
+	 * @param destination The destination parent collection
 	 * @param newName The new name of the collection
 	 *
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
@@ -812,7 +812,7 @@ public abstract class DBBroker implements AutoCloseable {
      *     `sourceDocument` and its parent Collection,
      *     and a {@link LockMode#WRITE_LOCK} on the `targetCollection`
 	 *
-	 * @param sourceDocumet the resource to copy
+	 * @param sourceDocument the resource to copy
 	 * @param targetCollection the destination collection
 	 * @param newName the new name the resource should have in the destination collection
      *

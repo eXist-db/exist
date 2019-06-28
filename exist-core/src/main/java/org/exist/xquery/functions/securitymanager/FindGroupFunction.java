@@ -37,7 +37,7 @@ import org.exist.xquery.value.*;
 
 /**
  *
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class FindGroupFunction extends BasicFunction {
 

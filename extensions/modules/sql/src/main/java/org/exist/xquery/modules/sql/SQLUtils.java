@@ -7,8 +7,8 @@ import org.exist.xquery.value.Type;
 /**
  * Utility class for converting to/from SQL types and escaping XML text and attributes.
  * 
- * @author Adam Retter <adam@exist-db.org>
- * @author Robert Walpole <robert.walpole@metoffice.gov.uk>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
+ * @author <a href="mailto:robert.walpole@metoffice.gov.uk">Robert Walpole</a>
  * @serial 2010-07-23
  * @version 1.0
  * 
