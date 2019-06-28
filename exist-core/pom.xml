@@ -51,9 +51,9 @@
         </dependency -->
 
         <dependency>
-            <groupId>org.exist-db.thirdparty.uk.ac.ic.doc.slurp.multilock</groupId>
+            <groupId>com.evolvedbinary.multilock</groupId>
             <artifactId>multilock</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0.1</version>
         </dependency>
 
         <dependency>
