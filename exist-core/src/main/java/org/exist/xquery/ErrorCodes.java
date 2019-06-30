@@ -7,16 +7,16 @@
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
+ *
  *  $Id$
  */
 package org.exist.xquery;
@@ -29,7 +29,7 @@ import org.exist.dom.QName;
  * @author aretter
  */
 public class ErrorCodes {
-    
+
 	/* XPath 2.0 http://www.w3.org/TR/xpath20/#id-errors */
     public static final ErrorCode XPST0001 = new W3CErrorCode("XPST0001", "It is a static error if analysis of an expression relies on some component of the static context that has not been assigned a value.");
     public static final ErrorCode XPDY0002 = new W3CErrorCode("XPDY0002", "It is a dynamic error if evaluation of an expression relies on some part of the dynamic context that has not been assigned a value.");
@@ -166,6 +166,7 @@ public class ErrorCodes {
     public static final ErrorCode FORG0006 = new W3CErrorCode("FORG0006", "Invalid argument type.");
     public static final ErrorCode FORG0008 = new W3CErrorCode("FORG0008", "Both arguments to fn:dateTime have a specified timezone.");
     public static final ErrorCode FORG0009 = new W3CErrorCode("FORG0009", "Error in resolving a relative URI against a base URI in fn:resolve-uri.");
+    public static final ErrorCode FORG0010 = new W3CErrorCode("FORG0010", "Invalid date/time.");
     public static final ErrorCode FORX0001 = new W3CErrorCode("FORX0001", "Invalid regular expression. flags");
     public static final ErrorCode FORX0002 = new W3CErrorCode("FORX0002", "Invalid regular expression.");
     public static final ErrorCode FORX0003 = new W3CErrorCode("FORX0003", "Regular expression matches zero-length string.");
@@ -200,9 +201,9 @@ public class ErrorCodes {
 
     public static final ErrorCode FODF1310 = new W3CErrorCode("FODF1310", " Invalid decimal format picture string.");
 	public static final ErrorCode FTDY0020 = new W3CErrorCode("FTDY0020", "");
-	
+
 	public static final ErrorCode FODC0006 = new W3CErrorCode("FODC0006", "String passed to fn:parse-xml is not a well-formed XML document.");
-	
+
 	public static final ErrorCode FOAP0001 = new W3CErrorCode("FOAP0001", "Wrong number of arguments");
 
     /* XQuery 3.1 */
@@ -223,7 +224,7 @@ public class ErrorCodes {
     public static final ErrorCode FOQM0005 = new W3CErrorCode("FOQM0005", "Parameter for dynamically-loaded XQuery " +
             "module has incorrect type");
     public static final ErrorCode FOQM0006 = new W3CErrorCode("FOQM0006", "No suitable XQuery processor available.");
-    
+
     /* eXist specific XQuery and XPath errors
      *
      * Codes have the format [EX][XQ|XP][DY|SE|ST][nnnn]
@@ -240,9 +241,9 @@ public class ErrorCodes {
     public static final ErrorCode EXXQDY0002 = new EXistErrorCode("EXXQDY0002", "Error parsing XML.");
     public static final ErrorCode EXXQDY0003 = new EXistErrorCode("EXXQDY0003", "Only Supported for xquery version \"3.0\" and later.");
     public static final ErrorCode EXXQDY0004 = new EXistErrorCode("EXXQDY0004", "Only Supported for xquery version \"3.1\" and later.");
-    
+
     public static final ErrorCode ERROR = new EXistErrorCode("ERROR", "Error.");
-    
+
     public static class ErrorCode {
 
         private final QName errorQName;
