@@ -48,8 +48,13 @@ public class SearchResourceResolver implements XMLEntityResolver {
     
     private String collection=null;
     private BrokerPool brokerPool = null;
-    
-    /** Creates a new instance of StoredResourceResolver */
+
+    /**
+     * Creates a new instance of StoredResourceResolver
+     *
+     * @param collectionPath Path of collection that will be searched.
+     * @param pool  Brokerpool.
+     */
     public SearchResourceResolver(String collectionPath, BrokerPool pool) {
         LOG.debug("Specified collectionPath="+collectionPath);
         collection=collectionPath;
