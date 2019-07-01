@@ -121,10 +121,14 @@ public class GrammarTooling extends BasicFunction  {
             
             
     };
-    
-    
-    
-    /** Creates a new instance */
+
+
+    /**
+     * Creates a new instance.
+     *
+     * @param context Xquery context.
+     * @param signature Function signature.
+     */
     public GrammarTooling(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
         final BrokerPool brokerPool = context.getBroker().getBrokerPool();

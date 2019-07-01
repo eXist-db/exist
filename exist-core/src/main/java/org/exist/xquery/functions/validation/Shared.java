@@ -74,7 +74,12 @@ public class Shared {
     public final static String xmlreportText = "a validation report.";
 
     /**
-     *  Get input stream for specified resource.
+     *  Get input stream for specified resource
+     * @param s The item
+     * @param context Xquery context
+     * @return Inputstream containing the item
+     * @throws XPathException An error occurred.
+     * @throws IOException An I/O error occurred.
      */
     public static InputStream getInputStream(Item s, XQueryContext context) throws XPathException, IOException {
         final StreamSource streamSource = getStreamSource(s, context);
@@ -82,8 +87,13 @@ public class Shared {
     }
 
     /**
-     *  Get stream source for specified resource, containing InputStream and 
+     *  Get stream source for specified resource, containing InputStream and
      * location. Used by @see Jaxv.
+     * @param s The sequence
+     * @param context xquery context
+     * @return Streamsources
+     * @throws XPathException An error occurred.
+     * @throws IOException An I/O error occurred.
      */
     public static StreamSource[] getStreamSource(Sequence s, XQueryContext context) throws XPathException, IOException {
 
@@ -178,8 +188,13 @@ public class Shared {
     }
 
     /**
-     *  Get input source for specified resource, containing inputStream and 
-     * location. Used by @see Jing.
+     *  Get input source for item. Used by @see Jing.
+     *
+     *  @param s The item
+     *  @param context xquery context
+     *  @return Inputsource
+     *  @throws XPathException An error occurred.
+     *  @throws IOException An I/O error occurred.
      */
     public static InputSource getInputSource(Item s, XQueryContext context) throws XPathException, IOException {
 
@@ -204,7 +219,11 @@ public class Shared {
 
     /**
      *  Get URL value of item.
+     * @param item Item
+     * @return URL of item
+     * @throws XPathException Item has no URL.
      */
+
     public static String getUrl(Item item) throws XPathException {
 
         String url = null;
@@ -237,7 +256,11 @@ public class Shared {
     }
 
     /**
-     *  Get URL values of sequence.
+     * Get URL values of sequence items.
+     *
+     * @param s Sequence
+     * @return URLs of items in sequence
+     * @throws XPathException Thrown when an item does not have an associated URL.
      */
     public static String[] getUrls(Sequence s) throws XPathException {
 
@@ -261,6 +284,9 @@ public class Shared {
 
     /**
      * Create validation report.
+     * @param report The validation report data.
+     * @param builder Helperclass to create in memory XML.
+     * @return Validation report as node.
      */
     static public NodeImpl writeReport(ValidationReport report, MemTreeBuilder builder) {
 
@@ -352,7 +378,8 @@ public class Shared {
     }
 
     /**
-     *  Safely close the input source and underlying inputstream.
+     * Safely close the input source and underlying inputstream.
+     * @param source The inputsource.
      */
     public static void closeInputSource(InputSource source){
 
@@ -377,6 +404,7 @@ public class Shared {
 
     /**
      *  Safely close the stream source and underlying inputstream.
+     * @param source The stream source.
      */
     public static void closeStreamSource(StreamSource source){
 
@@ -400,7 +428,8 @@ public class Shared {
     }
 
     /**
-     *  Safely close the stream sources and underlying inputstreams.
+     * Safely close the stream sources and underlying inputstreams.
+     * @param sources Streamsources.
      */
     public static void closeStreamSources(StreamSource sources[]){
 

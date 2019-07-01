@@ -145,12 +145,8 @@ public class Jaxv extends BasicFunction  {
         super(context, signature);
     }
 
-    /**
-     * @throws org.exist.xquery.XPathException 
-     * @see BasicFunction#eval(Sequence[], Sequence)
-     */
-    public Sequence eval(Sequence[] args, Sequence contextSequence)
-            throws XPathException {
+
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
         // Check input parameters
         if (args.length != 2  && args.length != 3) {
