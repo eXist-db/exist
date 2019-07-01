@@ -50,8 +50,12 @@ public class AnyUriResolver implements XMLEntityResolver {
     private final String parentURI;
     
     private boolean firstTime=true;
-    
-    /** Creates a new instance of AnyUriResolver */
+
+    /**
+     * Creates a new instance of AnyUriResolver.
+     *
+     * @param path Original path of resource.
+     */
     public AnyUriResolver(String path) {
         docPath=path;
         if(docPath.startsWith("/")){

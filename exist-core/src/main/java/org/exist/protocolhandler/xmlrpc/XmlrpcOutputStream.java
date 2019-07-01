@@ -45,7 +45,6 @@ public class XmlrpcOutputStream extends OutputStream {
      *
      * @param threadGroup the group for the threads created by this stream.
      * @param url         Location of document in database.
-     * @throws MalformedURLException Thrown for illegal URLs.
      */
     public XmlrpcOutputStream(final ThreadGroup threadGroup, final XmldbURL url) {
         final BlockingInputStream bis = new BlockingInputStream();

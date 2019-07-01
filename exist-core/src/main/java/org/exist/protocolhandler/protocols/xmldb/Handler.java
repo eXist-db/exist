@@ -51,6 +51,8 @@ public class Handler extends URLStreamHandler {
 
     /**
      * Creates a new instance of Handler
+     *
+     * @param mode Data buffer mode.
      */
     public Handler(final Mode mode) {
         if (LOG.isDebugEnabled()) {

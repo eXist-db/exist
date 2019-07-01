@@ -1376,10 +1376,11 @@ public class InteractiveClient {
     }
 
     /**
-     * stores given Resource
+     * Stores given Resource
      *
      * @param file file or directory
-     * @throws XMLDBException
+     * @return TRUE if file or files in directory were all correctly stored.
+     * @throws XMLDBException An error was detected.
      */
     protected synchronized boolean parse(final Path file) throws XMLDBException {
         try {

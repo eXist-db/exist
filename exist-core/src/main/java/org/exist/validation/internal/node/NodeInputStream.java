@@ -34,6 +34,8 @@ import org.exist.xquery.value.NodeValue;
 import static org.exist.util.ThreadUtils.newInstanceThread;
 
 /**
+ * Node to Inputstream serializer.
+ *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class NodeInputStream extends InputStream {
@@ -42,7 +44,11 @@ public class NodeInputStream extends InputStream {
     private static final AtomicLong nodeSerializerThreadId = new AtomicLong();
 
     /**
-     * Creates a new instance of NodeInputStream
+     * Creates a new instance of NodeInputStream.
+     *
+     * @param database      The database.
+     * @param serializer    The serializer.
+     * @param node          The node that is serialized.
      */
     public NodeInputStream(final Database database, final Serializer serializer, final NodeValue node) {
         this.bis = new BlockingInputStream();

@@ -44,7 +44,7 @@ public class ReceiverToSAX implements Receiver {
     private final char[] charBuf = new char[2048];
 
     /**
-     * @param handle the content handler
+     * @param handler the content handler
      */
     public ReceiverToSAX(final ContentHandler handler) {
         super();

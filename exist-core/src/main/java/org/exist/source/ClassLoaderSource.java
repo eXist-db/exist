@@ -38,7 +38,7 @@ public class ClassLoaderSource extends URLSource {
     /**
      * @param source The resource name (e.g. url).
      *
-     *                The name of a resource is a '<tt>/</tt>'-separated path name that
+     *                The name of a resource is a '<code>/</code>'-separated path name that
      *               identifies the resource. Preceding "/" and "resource:"" are removed.
      */
     public ClassLoaderSource(String source) throws IOException {

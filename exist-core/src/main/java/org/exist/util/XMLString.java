@@ -199,7 +199,7 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
     /**
      * Delete the content between {@code offset} and {@code offset + count}.
      *
-     * @param offset the offset to start deleting from
+     * @param start the offset to start deleting from
      * @param count the number of characters to delete
      *
      * @return this after the deletion has been made

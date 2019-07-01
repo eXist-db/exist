@@ -333,7 +333,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     /**
      * Gets the node from the broker, i.e. fom the underlying file system
-     * Call this method <string>only</strong> when necessary
+     * Call this method <em>only</em> when necessary
      * @see org.exist.xquery.value.NodeValue#getNode()
      */
     @Override
