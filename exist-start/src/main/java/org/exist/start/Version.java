@@ -31,6 +31,8 @@ public class Version {
     /**
      * parses version string in the form version[.revision[.subrevision[extension]]]
      * into this instance.
+     *
+     * @param version_string  Text representation of a version.
      */
     public void parse(String version_string) {
         _version = 0;
@@ -74,6 +76,7 @@ public class Version {
     /**
      * Compares with other version. Does not take extension into account,
      * as there is no reliable way to order them.
+     * @param other Version object to be compared.
      * @return Constants.INFERIOR if this is older version that other,
      *         Constants.EQUAL if its same version,
      *         Constants.SUPERIOR if it's newer version than other
@@ -90,7 +93,11 @@ public class Version {
     }
     
     /**
-     * Check whether this verion is in range of versions specified
+     * Check whether this version is in range of versions specified
+     *
+     * @param high Highest version, inclusive.
+     * @param low Lowest version, inclusive.
+     * @return TRUE if Version is between high and low (inclusive), otherwise FALSE.
      */
     public boolean isInRange(Version low, Version high) {
         return (compare(low)>=0 && compare(high)<=0);

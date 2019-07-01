@@ -109,6 +109,10 @@ public abstract class ExistResource {
     /**
      * Authenticate subject with password. NULL is returned when
      * the subject could not be authenticated.
+     *
+     * @param username Username
+     * @param password Password
+     * @return Authenticated subject, or NULL when authentication failed.
      */
     protected Subject authenticate(String username, String password) {
 

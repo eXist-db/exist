@@ -42,7 +42,9 @@ public class InMemoryURLConnection extends URLConnection {
 
     /**
      * Constructs a URL connection to the specified URL.
-      */
+     * @param threadGroup Thread group
+     * @param url URL
+     */
     protected InMemoryURLConnection(final ThreadGroup threadGroup, final URL url) {
         super(url);
         this.threadGroup = threadGroup;

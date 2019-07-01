@@ -140,12 +140,15 @@ public interface Cache<T extends Cacheable> {
 
     /**
      * Get the number of buffers currently used.
-     * 
+     * @return number of buffers currently used.
      */
     int getUsedBuffers();
 
     /**
      * Get the number of times where an object has been successfully
+     * loaded from the cache.
+     *
+     * @return number of times where an object has been successfully
      * loaded from the cache.
      */
     int getHits();

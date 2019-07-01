@@ -121,7 +121,12 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     private final InteractiveClient client;
 
     /**
-     * @throws java.awt.HeadlessException
+     * Constructor.
+     *
+     * @param client Existdb client
+     * @param path Database connection URL.
+     * @param properties Configuration items.
+     * @throws java.awt.HeadlessException Environment  does not support a keyboard, display, or mouse.
      */
     public ClientFrame(final InteractiveClient client, final XmldbURI path, final Properties properties) throws HeadlessException {
         super(Messages.getString("ClientFrame.3")); //$NON-NLS-1$

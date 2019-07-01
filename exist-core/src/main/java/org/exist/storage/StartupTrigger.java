@@ -27,6 +27,7 @@ public interface StartupTrigger {
      * starting your asynchronous execution by calling sysBroker.getBrokerPool().
      * 
      * @param sysBroker The single system broker available during database startup
+     * @param transaction Transaction
      * @param params Key, Values
      */
     public void execute(final DBBroker sysBroker, final Txn transaction, final Map<String, List<? extends Object>> params);

@@ -85,8 +85,9 @@ public abstract class BasicFunction extends Function {
      * arguments, their type and cardinality have already been checked to match
      * the function signature.
      *
-     * @param args The arguments given to the function
-     * @param contextSequence The context sequence for the function or null
+     * @param args The arguments given to the function.
+     * @param contextSequence The context sequence for the function or null.
+     * @throws XPathException An error occurred.
      *
      * @return The result of the XPath function
      */

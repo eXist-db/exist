@@ -43,7 +43,7 @@ public class Connection {
     protected String uri;
     protected boolean ssl;
     
-    /** path to an alternate configuration file for emebeded mode */
+    /** path to an alternate configuration file for embedded mode */
     protected String configuration;
     
     public Connection(final String username, final String password, final String uri, final boolean ssl) {

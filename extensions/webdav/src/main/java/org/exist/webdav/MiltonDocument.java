@@ -161,6 +161,8 @@ public class MiltonDocument extends MiltonResource
 
     /**
      * Set to TRUE if getContentLength is used for PROPFIND.
+     *
+     * @param isPropFind Set to TRUE if request is PropFind request.
      */
     public void setIsPropFind(boolean isPropFind) {
         this.isPropFind = isPropFind;

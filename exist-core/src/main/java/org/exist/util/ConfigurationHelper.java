@@ -171,7 +171,7 @@ public class ConfigurationHelper {
     
     
     /**
-     * Resolves the given path by means of eventually replacing <tt>~</tt> with the users
+     * Resolves the given path by means of eventually replacing <code>~</code> with the users
      * home directory, taken from the system property <code>user.home</code>.
      *
      * @param path the path to resolve
