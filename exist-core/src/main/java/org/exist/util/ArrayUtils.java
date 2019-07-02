@@ -151,7 +151,7 @@ public class ArrayUtils {
     /**
      * Searches the specified array of ints for the specified value using the
      * binary search algorithm.  The array <strong>must</strong> be sorted (as
-     * by the <tt>sort</tt> method, above) prior to making this call.  If it
+     * by the <code>sort</code> method, above) prior to making this call.  If it
      * is not sorted, the results are undefined.  If the array contains
      * multiple elements with the specified value, there is no guarantee which
      * one will be found.
@@ -160,10 +160,10 @@ public class ArrayUtils {
      * @param key the value to be searched for.
      * @param size the size of the array {@code a}.
      * @return index of the search key, if it is contained in the list;
-     *         otherwise, <tt>(-(<i>insertion point</i>) - 1)</tt>.  The
+     *         otherwise, <code>(-(<i>insertion point</i>) - 1)</code>.  The
      *         <i>insertion point</i> is defined as the point at which the
      *         key would be inserted into the list: the index of the first
-     *         element greater than the key, or <tt>list.size()</tt>, if all
+     *         element greater than the key, or <code>list.size()</code>, if all
      *         elements in the list are less than the specified key.  Note
      *         that this guarantees that the return value will be &gt;= 0 if
      *         and only if the key is found.
