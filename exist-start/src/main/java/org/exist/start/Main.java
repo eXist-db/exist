@@ -67,6 +67,8 @@ public class Main {
 
     /**
      * Singleton Factory Method
+     *
+     * @return instance of Main class.
      */
     public static Main getMain() {
         if (exist == null) {
