@@ -55,7 +55,7 @@ public class XmldbURL {
      * Creates a new instance of XmldbURL using an XmldbURI object.
      *
      * @param xmldbURI Resource location.
-     * @throws java.net.MalformedURLException
+     * @throws java.net.MalformedURLException URL is not correct.
      */
     public XmldbURL(XmldbURI xmldbURI) throws MalformedURLException {
         this(xmldbURI.toURL());
@@ -64,7 +64,7 @@ public class XmldbURL {
     /**
      * Creates a new instance of XmldbURL using an URL object.
      * @param url Resource location.
-     * @throws java.net.MalformedURLException
+     * @throws java.net.MalformedURLException URL is not correct.
      */
     public XmldbURL(URL url) throws MalformedURLException  {
         // check protocol
@@ -79,7 +79,7 @@ public class XmldbURL {
      * Creates a new instance of XmldbURL using an URI object.
      *
      * @param uri Resource location.
-     * @throws java.net.MalformedURLException
+     * @throws java.net.MalformedURLException URL is not correct.
      */
     public XmldbURL(URI uri) throws MalformedURLException  {
         this(uri.toURL());
@@ -88,7 +88,7 @@ public class XmldbURL {
     /**
      * Creates a new instance of XmldbURL using an String.
      * @param txt Resource location.
-     * @throws java.net.MalformedURLException
+     * @throws java.net.MalformedURLException URL is not correct.
      */
     public XmldbURL(String txt) throws MalformedURLException {
         this(new URL(txt));
@@ -138,7 +138,7 @@ public class XmldbURL {
     
     /**
      * xmldb:exist://username:password@hostname:8080<B>/exist/xmlrpc</B>/db/collection/document.xml?query#fragment
-     * Return context, null if not available.
+     * @return context, null if not available.
      */
     public String getContext() {
         final String path = myUrl.getPath();
