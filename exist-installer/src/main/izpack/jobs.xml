@@ -17,7 +17,7 @@
             <arg>-s:$INSTALL_PATH\etc\conf.xml</arg>
             <arg>-xsl:$tmpdir\conf.xslt</arg>
             <arg>-o:$INSTALL_PATH\etc\conf.xml</arg>
-            <arg>dataDir=${dataDir}</arg>
+            <arg>dataDir=$dataDir</arg>
         </executefile>
     </job>
 
@@ -30,7 +30,7 @@
             <arg>-s:$INSTALL_PATH/etc/conf.xml</arg>
             <arg>-xsl:$tmpdir/conf.xslt</arg>
             <arg>-o:$INSTALL_PATH/etc/conf.xml</arg>
-            <arg>dataDir=${dataDir}</arg>
+            <arg>dataDir=$dataDir</arg>
         </executefile>
     </job>
 
@@ -42,7 +42,7 @@
     <job name="Setting admin password..." condition="!dataDirExists">
         <os family="windows"/>
         <executefile name="$INSTALL_PATH/bin/client.bat">
-            <env>JAVA_OPTS="-Dexist.autodeploy=off"</env>
+            <env>JAVA_OPTS=-Dexist.autodeploy=off</env>
             <arg>-s</arg>
             <arg>-l</arg>
             <arg>--user</arg>
@@ -55,7 +55,7 @@
     <job name="Setting admin password..." condition="!dataDirExists">
         <os family="unix"/>
         <executefile name="$INSTALL_PATH/bin/client.sh">
-            <env>JAVA_OPTS="-Dexist.autodeploy=off"</env>
+            <env>JAVA_OPTS=-Dexist.autodeploy=off</env>
             <arg>-s</arg>
             <arg>-l</arg>
             <arg>--user</arg>
