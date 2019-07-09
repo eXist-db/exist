@@ -40,9 +40,6 @@ public class NodeComparison extends BinaryOp {
 
     private final NodeComparisonOperator relation;
 
-    /**
-     * @param context
-     */
     public NodeComparison(XQueryContext context, Expression left, Expression right, NodeComparisonOperator relation) {
         super(context);
         this.relation = relation;

@@ -51,8 +51,7 @@ public class RootNode extends Step {
 	private DocumentSet cachedDocs = null;
 
     private UpdateListener listener = null;
-    
-    /** Constructor for the RootNode object */
+
     public RootNode(XQueryContext context) {
         super(context, Constants.SELF_AXIS);
     }
