@@ -7,16 +7,16 @@
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
+ *
  *  $Id$
  */
 package org.exist.xquery.functions.fn;
@@ -122,6 +122,7 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunAdjustTimezone.fnAdjustTimeToTimezone[1], FunAdjustTimezone.class),
         new FunctionDef(FunAdjustTimezone.fnAdjustDateTimeToTimezone[0], FunAdjustTimezone.class),
         new FunctionDef(FunAdjustTimezone.fnAdjustDateTimeToTimezone[1], FunAdjustTimezone.class),
+        new FunctionDef(FunParseIetfDate.FNS_PARSE_IETF_DATE, FunParseIetfDate.class),
         new FunctionDef(FnHasChildren.FNS_HAS_CHILDREN_0, FnHasChildren.class),
         new FunctionDef(FnHasChildren.FNS_HAS_CHILDREN_1, FnHasChildren.class),
         new FunctionDef(FunId.signature[0], FunId.class),
@@ -229,7 +230,7 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunHigherOrderFun.FN_FOLD_RIGHT, FunHigherOrderFun.class),
         new FunctionDef(FunHigherOrderFun.FN_APPLY, FunHigherOrderFun.class),
         new FunctionDef(FunEnvironment.signature[0], FunEnvironment.class),
-        new FunctionDef(FunEnvironment.signature[1], FunEnvironment.class),        
+        new FunctionDef(FunEnvironment.signature[1], FunEnvironment.class),
         new FunctionDef(ParsingFunctions.signatures[0], ParsingFunctions.class),
         new FunctionDef(ParsingFunctions.signatures[1], ParsingFunctions.class),
         new FunctionDef(JSON.signatures[0], JSON.class),

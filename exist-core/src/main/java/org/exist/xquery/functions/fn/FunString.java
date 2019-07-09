@@ -7,16 +7,16 @@
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
+ *
  *  $Id$
  */
 package org.exist.xquery.functions.fn;
@@ -58,7 +58,7 @@ public class FunString extends Function {
 			"If the value of $arg is the empty sequence, the zero-length string is returned. " +
 			"If the context item of $arg is undefined, an error is raised.",
 			new SequenceType[] {
-				 new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_ONE, "The sequence to get the vaule of as an xs:string")},
+				 new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_ONE, "The sequence to get the value of as an xs:string")},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the value of $arg as an xs:string")
 		)
 	};
@@ -70,7 +70,7 @@ public class FunString extends Function {
 	@Override
 	public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null) {
             	context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
@@ -78,8 +78,8 @@ public class FunString extends Function {
             if (contextItem != null) {
             	context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
             }
-        }      
-        
+        }
+
 		if (contextItem != null) {
 			contextSequence = contextItem.toSequence();
 		}
@@ -98,13 +98,13 @@ public class FunString extends Function {
         else if (contextSequence.isEmpty()) {
         	return Sequence.EMPTY_SEQUENCE;
         }
-        
-        final Sequence result = contextSequence.convertTo(Type.STRING);        
+
+        final Sequence result = contextSequence.convertTo(Type.STRING);
 
         if (context.getProfiler().isEnabled()) {
         	context.getProfiler().end(this, "", result);
         }
-        
-        return result;           
+
+        return result;
 	}
 }
