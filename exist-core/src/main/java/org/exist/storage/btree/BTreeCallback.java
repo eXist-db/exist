@@ -58,12 +58,14 @@ import org.exist.xquery.TerminatedException;
  */
 
 public interface BTreeCallback {
+
    /**
     * indexInfo is a callback method for index enumeration.
     *
     * @param value The Value being reported
     * @param pointer The data pointer being reported
     * @return false to cancel the enumeration
+    * @throws TerminatedException to be documented
     */
    boolean indexInfo(Value value, long pointer) throws TerminatedException;
 }

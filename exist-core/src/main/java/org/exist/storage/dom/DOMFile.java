@@ -328,9 +328,11 @@ public class DOMFile extends BTree implements Lockable {
      * nodes are stored in sequential order. A new page will be allocated if the
      * current page is full. If the value is larger than the page size, it will
      * be written to an overflow page.
-     * 
+     *
+     * @param transaction to be documented
      * @param value the value to append
      * @return the virtual storage address of the value
+     * @throws ReadOnlyException to be documented
      */
     public long add(final Txn transaction, final byte[] value) throws ReadOnlyException {
         if(LOG.isDebugEnabled() && !lockManager.isBtreeLockedForWrite(getLockName())) {
@@ -360,10 +362,10 @@ public class DOMFile extends BTree implements Lockable {
      * will be saved into its own, reserved chain of pages. The current page
      * will just contain a link to the first overflow page.
      * 
-     * @param value
-     * @param overflowPage
+     * @param value to be documented
+     * @param overflowPage to be documented
      * @return the virtual storage address of the value
-     * @throws ReadOnlyException
+     * @throws ReadOnlyException to be documented
      */
     private long add(final Txn transaction, final byte[] value, final boolean overflowPage) throws ReadOnlyException {
         if(LOG.isDebugEnabled() && !lockManager.isBtreeLockedForWrite(getLockName())) {
@@ -436,6 +438,10 @@ public class DOMFile extends BTree implements Lockable {
      * written into an overflow page.
      * 
      * @param value Binary resource as byte array
+     * @param transaction to be documented
+     * @param doc to be documented
+     * @return to be documented
+     *
      */
     public long addBinary(final Txn transaction, final DocumentImpl doc, final byte[] value) {
         if(LOG.isDebugEnabled() && !lockManager.isBtreeLockedForWrite(getLockName())) {
@@ -470,7 +476,8 @@ public class DOMFile extends BTree implements Lockable {
     /**
      * Return binary data stored with {@link #addBinary(Txn, DocumentImpl, byte[])}.
      * 
-     * @param pageNum
+     * @param pageNum to be documented
+     * @return binary data stored
      */
     public byte[] getBinary(final long pageNum) {
         if(LOG.isDebugEnabled() && !lockManager.isBtreeLocked(getLockName())) {
@@ -494,8 +501,11 @@ public class DOMFile extends BTree implements Lockable {
     /**
      * Insert a new node after the specified node.
      * 
-     * @param key
-     * @param value
+     * @param key to be documented
+     * @param value to be documented
+     * @param transaction to be documented
+     * @param doc to be documented
+     * @return to be documented
      */
     public long insertAfter(final Txn transaction, final DocumentImpl doc, final Value key, final byte[] value) {
         if(LOG.isDebugEnabled() && !lockManager.isBtreeLockedForWrite(getLockName())) {
@@ -527,6 +537,8 @@ public class DOMFile extends BTree implements Lockable {
      * @param address   the storage address of the node after which the 
      *                  new value should be inserted.
      * @param value     the value of the new node.
+     * @param transaction to be documented
+     * @return to be documented
      */
     public long insertAfter(final Txn transaction, final DocumentImpl doc, final long address, byte[] value) {
         if(LOG.isDebugEnabled() && !lockManager.isBtreeLockedForWrite(getLockName())) {
@@ -1258,9 +1270,12 @@ public class DOMFile extends BTree implements Lockable {
 
     /**
      * Retrieve node at virtual address.
-     * 
+     * @param broker to be documented
      * @param node The virtual address
      * @return  The reference of the node
+     * @throws IOException to be documented
+     * @throws BTreeException to be documented
+     *
      */
     protected long findValue(final DBBroker broker, final NodeProxy node)
             throws IOException, BTreeException {
@@ -1413,7 +1428,7 @@ public class DOMFile extends BTree implements Lockable {
     /**
      * Retrieve a node by key
      * 
-     * @param key
+     * @param key to be documented
      * @return Description of the Return Value
      */
     public Value get(final Value key) {
@@ -1520,10 +1535,12 @@ public class DOMFile extends BTree implements Lockable {
 
     /**
      * Put a new key/value pair.
-     * 
+     *
+     * @param transaction to be documented
      * @param key   Description of the Parameter
      * @param value Description of the Parameter
      * @return Description of the Return Value
+     * @throws ReadOnlyException to be documented
      */
     public long put(final Txn transaction, final Value key, final byte[] value)
             throws ReadOnlyException {
@@ -1541,10 +1558,9 @@ public class DOMFile extends BTree implements Lockable {
         return pointer;
     }
 
-    /**
-     * Physically remove a node. The data of the node will be removed from the
-     * page and the occupied space is freed.
-     */
+
+     // Physically remove a node. The data of the node will be removed from the
+     // page and the occupied space is freed.
     //Unused ? -pb
     //public void remove(Value key) {
         //if (!lock.isLockedForWrite())
@@ -1648,12 +1664,8 @@ public class DOMFile extends BTree implements Lockable {
         }
     }
 
-    /**
-     * Physically remove a node. The data of the node will be removed from the
-     * page and the occupied space is freed.
-     * 
-     * @param pointer
-     */
+     // Physically remove a node. The data of the node will be removed from the
+     // page and the occupied space is freed.
     //Seems to be unused -pb
     //public void removeNode(long pointer) {
         //removeNode(null, pointer);
@@ -1739,6 +1751,9 @@ public class DOMFile extends BTree implements Lockable {
     /**
      * Physically remove a node. The data of the node will be removed from the
      * page and the occupied space is freed.
+     * @param transaction to be documented
+     * @param pointer to be documented
+     * @param key to be documented
      */
     public void remove(final Txn transaction, final Value key, final long pointer) {
         removeNode(transaction, pointer);
@@ -1753,7 +1768,7 @@ public class DOMFile extends BTree implements Lockable {
     /**
      * Remove the specified page. The page is added to the list of free pages.
      * 
-     * @param page
+     * @param page to be documented
      */
     private void removePage(final DOMPage page) {
         if(LOG.isDebugEnabled() && !lockManager.isBtreeLockedForWrite(getLockName())) {
@@ -1793,6 +1808,9 @@ public class DOMFile extends BTree implements Lockable {
     /**
      * Remove a sequence of pages, starting with the page denoted by the passed
      * address pointer p.
+     *
+     * @param pointer to be documented
+     * @param transaction to be documented
      */
     public void removeAll(final Txn transaction, final long pointer) {
         if(LOG.isDebugEnabled() && !lockManager.isBtreeLockedForWrite(getLockName())) {
@@ -1855,7 +1873,9 @@ public class DOMFile extends BTree implements Lockable {
      * 
      * @param key   Description of the Parameter
      * @param value Description of the Parameter
+     * @param transaction to be documented
      * @return Description of the Return Value
+     * @throws ReadOnlyException to be documented
      */
     public boolean update(final Txn transaction, final Value key, final byte[] value)
             throws ReadOnlyException {
@@ -1877,7 +1897,11 @@ public class DOMFile extends BTree implements Lockable {
     }
 
     /**
-     * Update the key/value pair where the value is found at address p. 
+     * Update the key/value pair where the value is found at address p.
+     * @param transaction to be documented
+     * @param pointer to be documented
+     * @param value to be documented
+     * @throws ReadOnlyException to be documented
      */
     public void update(final Txn transaction, final long pointer, final byte[] value) throws ReadOnlyException {
         if(LOG.isDebugEnabled() && !lockManager.isBtreeLockedForWrite(getLockName())) {
@@ -1920,7 +1944,9 @@ public class DOMFile extends BTree implements Lockable {
      * node data, we do not need to create a potentially large amount of node objects
      * and thus save memory and time for garbage collection. 
      * 
-     * @param node
+     * @param node to be documented
+     * @param broker to be documented
+     * @param addWhitespace to be documented
      * @return string value of the specified node
      */
     public String getNodeValue(final DBBroker broker, final IStoredNode node, final boolean addWhitespace) {
@@ -2123,7 +2149,8 @@ public class DOMFile extends BTree implements Lockable {
     /**
      * Find a record within the page or the pages linked to it.
      * 
-     * @param pointer
+     * @param pointer  to be documented
+     * @param skipLinks to be documented
      * @return The record position in the page
      */
     protected RecordPos findRecord(final long pointer, final boolean skipLinks) {

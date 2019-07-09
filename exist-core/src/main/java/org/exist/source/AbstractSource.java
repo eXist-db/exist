@@ -90,8 +90,8 @@ public abstract class AbstractSource implements Source {
     /**
      * Check if the XQuery file declares a content encoding in the
      * XQuery declaration.
-     * 
-     * @param is
+     *
+     * @param is the input stream
      * @return The guessed encoding.
      */
     protected final static String guessXQueryEncoding(InputStream is) {
@@ -109,7 +109,7 @@ public abstract class AbstractSource implements Source {
      * Check if the source is an XQuery module. If yes, return a QName containing
      * the module prefix as local name and the module namespace as namespace URI.
      *
-     * @param is
+     * @param is the input stream
      * @return QName describing the module namespace or null if the source is not
      * a module.
      */

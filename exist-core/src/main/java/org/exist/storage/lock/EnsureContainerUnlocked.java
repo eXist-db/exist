@@ -40,7 +40,7 @@ import java.lang.annotation.Target;
  * when calling the method accessors on their internal state.
  *
  * <pre>
- * {@code
+ *
  * public class MyCollectonImpl implements Collection {
  *     final XmldbURI uri;
  *     public MyCollectionImpl(final XmldbURI uri) {
@@ -53,12 +53,12 @@ import java.lang.annotation.Target;
  *
  *     ...
  *
- *     @EnsureContainerUnlocked
+ *     <code>@EnsureContainerUnlocked</code>
  *     public int dirtyCountDocuments() {
  *         return documents.size();
  *     }
  * }
- * }
+ *
  * </pre>
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>

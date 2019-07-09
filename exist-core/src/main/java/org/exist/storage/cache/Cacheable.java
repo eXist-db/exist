@@ -91,6 +91,8 @@ public interface Cacheable {
 	 * cache. The object should prepare to be garbage
 	 * collected. All unwritten data should be flushed
 	 * to disk.
+	 * @param syncJournal the journal to sync
+	 * @return true if sync was successful
 	 */
 	boolean sync(boolean syncJournal);
 	

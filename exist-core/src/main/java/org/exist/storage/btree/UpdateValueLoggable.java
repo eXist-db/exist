@@ -38,16 +38,7 @@ public class UpdateValueLoggable extends BTAbstractLoggable {
     protected Value key;
     protected long pointer;
     protected long oldPointer;
-    
-    /**
-     * @param fileId 
-     * @param pageNum 
-     * @param idx 
-     * @param key 
-     * @param pointer 
-     * @param oldPointer 
-     * @param transaction 
-     */
+
     public UpdateValueLoggable(Txn transaction, byte fileId, long pageNum, int idx, Value key, long pointer, long oldPointer) {
         super(BTree.LOG_UPDATE_VALUE, fileId, transaction);
         this.pageNum = pageNum;
@@ -57,10 +48,6 @@ public class UpdateValueLoggable extends BTAbstractLoggable {
         this.oldPointer = oldPointer;
     }
 
-    /**
-     * @param broker 
-     * @param transactionId 
-     */
     public UpdateValueLoggable(DBBroker broker, long transactionId) {
         super(BTree.LOG_UPDATE_VALUE, broker, transactionId);
     }

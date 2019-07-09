@@ -38,18 +38,7 @@ public class OverflowRemoveLoggable extends AbstractBFileLoggable {
     protected byte[] data;
     protected int length;
     protected long nextInChain;
-    
-    /**
-     * 
-     * 
-     * @param status 
-     * @param pageNum 
-     * @param data 
-     * @param length 
-     * @param nextInChain 
-     * @param fileId 
-     * @param transaction 
-     */
+
     public OverflowRemoveLoggable(byte fileId, Txn transaction, byte status, long pageNum, byte[] data, 
             int length, long nextInChain) {
         super(BFile.LOG_OVERFLOW_REMOVE, fileId, transaction);
@@ -60,10 +49,6 @@ public class OverflowRemoveLoggable extends AbstractBFileLoggable {
         this.nextInChain = nextInChain;
     }
 
-    /**
-     * @param broker
-     * @param transactionId
-     */
     public OverflowRemoveLoggable(DBBroker broker, long transactionId) {
         super(broker, transactionId);
     }

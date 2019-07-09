@@ -87,9 +87,6 @@ public class DocumentMetadata implements ResourceMetadata {
         this.lastModified = other.lastModified;
     }
 
-    /**
-     * Copy all relevant fields from other
-     */
     public void copyOf(final DocumentMetadata other) {
         setCreated(other.getCreated());
         setLastModified(other.getLastModified());
@@ -126,7 +123,8 @@ public class DocumentMetadata implements ResourceMetadata {
     }
 
     /**
-     * Returns the number of pages currently occupied by this document.
+     * @return the number of pages currently occupied by this document.
+     *
      */
     public int getPageCount() {
         return pageCount;
@@ -135,7 +133,8 @@ public class DocumentMetadata implements ResourceMetadata {
     /**
      * Set the number of pages currently occupied by this document.
      *
-     * @param pageCount
+     * @param pageCount number of pages currently occupied by this document
+     *
      */
     public void setPageCount(final int pageCount) {
         this.pageCount = pageCount;

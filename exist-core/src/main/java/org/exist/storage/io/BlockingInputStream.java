@@ -57,7 +57,8 @@ public class BlockingInputStream extends InputStream {
     private BlockingOutputStream bos = new BlockingOutputStream(this);
 
     /**
-     * BlockingOutputStream adapter for this BlockingInputStream.
+     * @return BlockingOutputStream adapter for this BlockingInputStream.
+     *
      */
     public BlockingOutputStream getOutputStream() {
         return bos;
@@ -160,6 +161,7 @@ public class BlockingInputStream extends InputStream {
      * ExistIOException with this exception as its cause.
      * Releases the buffer associated with this stream.
      * <code>BlockingInputStream</code> specific method.
+     * @param ex the occurred exception
      */
     public synchronized void close(Exception ex) {
         inException = ex;

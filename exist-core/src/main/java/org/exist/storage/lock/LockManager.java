@@ -162,6 +162,7 @@ public class LockManager {
      * @param collectionPath The path of the Collection for which a lock is requested.
      *
      * @return A READ_LOCK on the Collection.
+     * @throws LockException if a lock error occurs
      */
     public ManagedCollectionLock acquireCollectionReadLock(final XmldbURI collectionPath) throws LockException {
         final XmldbURI[] segments = collectionPath.getPathSegments();
@@ -284,6 +285,7 @@ public class LockManager {
      * @param collectionPath The path of the Collection for which a lock is requested.
      *
      * @return A WRITE_LOCK on the Collection.
+     * @throws LockException if a lock error occurs
      */
     public ManagedCollectionLock acquireCollectionWriteLock(final XmldbURI collectionPath) throws LockException {
         return acquireCollectionWriteLock(collectionPath, false);

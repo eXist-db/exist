@@ -60,6 +60,8 @@ public class PermissionFactory {
     /**
      * Get the Default Resource permissions for the current Subject
      * this includes incorporating their umask
+     * @param sm the security manager
+     * @return a new Permission object, that the caller is free to modify.
      */
     public static Permission getDefaultResourcePermission(final SecurityManager sm) {
         
@@ -91,6 +93,9 @@ public class PermissionFactory {
     
     /**
      * Get permissions for the current Subject
+     * @param sm the security manager.
+     * @param mode mode for the resource.
+     * @return a new Permission object, that the caller is free to modify.
      */
     public static Permission getPermission(final SecurityManager sm, final int mode) {
         final Subject currentSubject = sm.getDatabase().getActiveBroker().getCurrentSubject();
@@ -99,6 +104,12 @@ public class PermissionFactory {
     
     /**
      * Get permissions for the user, group and mode
+     * @param sm the security manager.
+     * @param userId id of the user
+     * @param groupId id of the group
+     * @param mode mode for the resource.
+     * @return a new Permission object, that the caller is free to modify.
+
      */
     public static Permission getPermission(final SecurityManager sm, final int userId, final int groupId, final int mode) {
         return new SimpleACLPermission(sm, userId, groupId, mode);

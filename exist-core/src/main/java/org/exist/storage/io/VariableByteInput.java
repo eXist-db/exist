@@ -40,15 +40,16 @@ public interface VariableByteInput {
      * Read a single byte and return as an int value.
      * 
      * @return the byte value as int or -1 if no more bytes are available.
-     * @throws IOException
+     * @throws IOException in case of an I/O error
      */
     public int read() throws IOException;
 
     /**
      * Fill the provided byte array with data from the input.
      * 
-     * @param data
-     * @throws IOException
+     * @param data to be documented
+     * @throws IOException in case of an I/O error
+     * @return to be documented
      */
     public int read(byte[] data) throws IOException;
     
@@ -57,30 +58,34 @@ public interface VariableByteInput {
     /**
      * Returns a value &gt; 0 if more bytes can be read
      * from the input.
-     * 
-     * @throws IOException
+     *
+     * @throws IOException in case of an I/O error
+     * @return to be documented
      */
     public int available() throws IOException;
     
     /**
      * Read a single byte. Throws EOFException if no
      * more bytes are available.
-     * 
-     * @throws IOException
+     *
+     * @throws IOException in case of an I/O error
+     * @return to be documented
      */
     public byte readByte() throws IOException;
 
     /**
      * Read a short value in variable byte encoding.
-     * 
-     * @throws IOException
+     *
+     * @throws IOException in case of an I/O error
+     * @return to be documented
      */
     public short readShort() throws IOException;
 
     /**
      * Read an integer value in variable byte encoding.
-     * 
-     * @throws IOException
+     *
+     * @throws IOException in case of an I/O error
+     * @return to be documented
      */
     public int readInt() throws IOException;
 
@@ -88,8 +93,9 @@ public interface VariableByteInput {
     
     /**
      * Read a long value in variable byte encoding.
-     * 
-     * @throws IOException
+     *
+     * @throws IOException in case of an I/O error
+     * @return to be documented
      */
     public long readLong() throws IOException;
 
@@ -99,8 +105,8 @@ public interface VariableByteInput {
      * Read the following count numeric values from the input
      * and drop them.
      * 
-     * @param count
-     * @throws IOException
+     * @param count to be documented
+     * @throws IOException in case of an I/O error
      */
     public void skip(int count) throws IOException;
 
@@ -110,8 +116,8 @@ public interface VariableByteInput {
      * Copy the next numeric value from the input to the
      * specified output stream.
      * 
-     * @param os
-     * @throws IOException
+     * @param os to be documented
+     * @throws IOException in case of an I/O error
      */
     public void copyTo(VariableByteOutputStream os) throws IOException;
 
@@ -119,9 +125,9 @@ public interface VariableByteInput {
      * Copy the count next numeric values from the input to
      * the specified output stream.
      * 
-     * @param os
-     * @param count
-     * @throws IOException
+     * @param os to be documented
+     * @param count to be documented
+     * @throws IOException in case of an I/O error
      */
     public void copyTo(VariableByteOutputStream os, int count)
             throws IOException;

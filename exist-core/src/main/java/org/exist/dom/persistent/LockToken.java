@@ -70,7 +70,7 @@ public class LockToken {
     // Getters and setters
 
     /**
-     * Get type of lock.
+     * @return the type of lock.
      */
     public LockType getType() {
         return type;

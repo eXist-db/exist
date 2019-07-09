@@ -93,8 +93,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * gives a hint about the number of items to be expected for the
      * current document.
      *
-     * @param proxy
-     * @param sizeHint
+     * @param proxy the proxy object
+     * @param sizeHint hint about the number of items
      */
     @Override
     public void add(final NodeProxy proxy, final int sizeHint) {
@@ -105,8 +105,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * Add all items from the given sequence to the node set. All items
      * have to be a subtype of node.
      *
-     * @param other
-     * @throws XPathException
+     * @param other sequence of items to be added
+     * @throws XPathException in case of an XPath error
      */
     @Override
     public void addAll(final Sequence other) throws XPathException {
@@ -236,7 +236,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * @param descendants node set containing potential ancestors
      * @param includeSelf if true, check if the ancestor node itself is contained
      *                    in this node set (ancestor-or-self axis)
-     * @param contextId
+     * @param contextId the context id
+     * @return all ancestors having descendants in this node set
      */
     @Override
     public NodeSet selectAncestors(final NodeSet descendants, boolean includeSelf, int contextId) {
@@ -416,7 +417,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * The information does not need to be exact. -1 is returned if the
      * size cannot be determined (the default).
      *
-     * @param doc
+     * @param doc the document to get the hint for
+     * @return hint about how many nodes in this node set belong to the specified document
      */
     @Override
     public int getSizeHint(final DocumentImpl doc) {
@@ -427,7 +429,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * Return a new node set, which represents the intersection of the current
      * node set with the given node set.
      *
-     * @param other
+     * @param other to intersect the current node set with
+     * @return new node set, which represents the intersection of the current node set with the given node set.
      */
     @Override
     public NodeSet intersection(final NodeSet other) {
@@ -511,7 +514,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * Return a new node set which represents the union of the
      * current node set and the given node set.
      *
-     * @param other
+     * @param other NodeSet to unify with current node set
+     * @return new node set which represents the union of the current node set and the given node set.
      */
     public NodeSet union(final NodeSet other) {
         if(isEmpty()) {

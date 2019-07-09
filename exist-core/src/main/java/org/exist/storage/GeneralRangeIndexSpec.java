@@ -48,7 +48,7 @@ public class GeneralRangeIndexSpec extends RangeIndexSpec {
     }
     
     /**
-     * Returns the path corresponding to this index.
+     * @return the path corresponding to this index.
      */
     public NodePath getPath() {
         return path;
@@ -58,7 +58,7 @@ public class GeneralRangeIndexSpec extends RangeIndexSpec {
      * Check if the path argument matches the path
      * of this index spec.
      * 
-     * @param otherPath
+     * @param otherPath path argument to check
      * @return Whether or not the 2 paths match
      */
     protected boolean matches(NodePath otherPath) {

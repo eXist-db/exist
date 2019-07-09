@@ -67,7 +67,7 @@ public class RawNodeIterator implements IRawNodeIterator {
      * @param broker the owner object used to acquire a lock on the underlying data file (usually a DBBroker)
      * @param db the underlying data file
      * @param node the start node where the iterator will be positioned.
-     * @throws IOException
+     * @throws IOException to be documented
      */
     public RawNodeIterator(final DBBroker broker, final DOMFile db, final NodeHandle node) throws IOException {
         this.broker = broker;

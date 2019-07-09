@@ -34,12 +34,13 @@ import org.exist.storage.txn.Txn;
  * collection configuration file, called "collection.xconf", which should be
  * stored in the corresponding database collection. If a collection configuration file is
  * found in the collection, it will be parsed and any triggers will be created and configured.
- * The {@link #configure(DBBroker, Collection, Map) configure} method is called once on each trigger.
+ * The {@link org.exist.collections.triggers.XQueryTrigger#configure(DBBroker, Txn, Collection, Map)
+ * configure} method is called once on each trigger.
  * 
  * Triggers listen to events. Currently, there are five events to which triggers may be
  * attached:
  * 
- * <table border="0">
+ * <table border="0" summary="events triggers can be attached to">
  * 	<tr>
  * 		<td>{@link #STORE_DOCUMENT_EVENT}</td>
  * 		<td>Fired, if a new document is inserted into the collection.</td>
@@ -61,6 +62,7 @@ import org.exist.storage.txn.Txn;
  *      <td>{@link #CREATE_COLLECTION_EVENT}</td>
  *      <td>Fired, before a new collection is created.</td>
  *  </tr>
+ *
  * </table>
  * 
  * The document-related events are handled by the sub-interface {@link org.exist.collections.triggers.DocumentTrigger},
@@ -82,7 +84,7 @@ import org.exist.storage.txn.Txn;
  * </pre>
  * 
  * @author wolf
- * @see org.exist.collections.triggers.DocumentTrigger
+ * @see org.exist.collections.triggers.DocumentTrigger DocumentTrigger
  */
 public interface Trigger {
     
@@ -116,6 +118,7 @@ public interface Trigger {
      *            actions. Please note: the broker instance used for
      *            configuration is probably different from the one passed to the
      *            prepare method. Don't store the broker object in your class.
+     * @param transaction the tnx transaction
      * @param parent
      *            the collection to which this trigger belongs.
      * @param parameters

@@ -135,7 +135,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
     public final static String PREPARE_EXCEPTION_MESSAGE = "Error during trigger prepare";
 	
 	/**
-	 * @link org.exist.collections.Trigger#configure(org.exist.storage.DBBroker, org.exist.collections.Collection, java.util.Map)
+	 * {@link org.exist.collections.triggers.Trigger#configure(DBBroker, Txn, Collection, Map)}
 	 */
     @Override
 	public void configure(DBBroker broker, Txn transaction, Collection parent, Map<String, List<?>> parameters) throws TriggerException

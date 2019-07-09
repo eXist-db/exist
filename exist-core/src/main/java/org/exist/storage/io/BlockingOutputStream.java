@@ -43,7 +43,7 @@ public class BlockingOutputStream extends OutputStream {
     }
 
     /**
-     * BlockingInputStream of this BlockingOutputStream.
+     * @return BlockingInputStream of this BlockingOutputStream.
      */
     public BlockingInputStream getInputStream() {
         return bis;
@@ -108,6 +108,7 @@ public class BlockingOutputStream extends OutputStream {
      * This will cause all consumer calls to be unblocked and throw an
      * IOException with this exception as its cause.
      * <code>BlockingInputStream</code> specific method.
+     * @param ex the occurred exception
      * @throws IOException  if an I/O error occurs.
      */
     public void close(Exception ex) throws IOException {

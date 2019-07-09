@@ -59,6 +59,8 @@ public final class NodeSetHelper {
      * @param contextId Used to track context nodes when evaluating predicate
      *                  expressions. If contextId != {@link Expression#NO_CONTEXT_ID},
      *                  the current context will be added to each result of the selection.
+     * @return find those nodes from the child set that actually have parents in the parent set, i.e. the
+     * parent-child relationship is true.
      */
     public static NodeSet selectParentChild(final NodeSet dl, final NodeSet al,
             final int mode, final int contextId) {
@@ -171,6 +173,8 @@ public final class NodeSetHelper {
      * @param contextId   Used to track context nodes when evaluating predicate
      *                    expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current
      *                    context will be added to each result of the selection.
+     * @return those nodes from the descendant set that actually have ancestors in the
+     * ancestor set, i.e. the ancestor-descendant relationship is true.
      */
     public static NodeSet selectAncestorDescendant(final NodeSet dl,
             final NodeSet al, final int mode, final boolean includeSelf,
@@ -296,6 +300,7 @@ public final class NodeSetHelper {
      *                    expressions. If contextId != {@link Expression#NO_CONTEXT_ID},
      *                    the current context will be added to each result of the of the
      *                    selection.
+     * @return all the real ancestors having a descendant in the descendant set.
      */
     public static NodeSet selectAncestors(final NodeSet al, final NodeSet dl,
             final boolean includeSelf, final int contextId) {
@@ -386,6 +391,8 @@ public final class NodeSetHelper {
      * @param contextId  Used to track context nodes when evaluating predicate
      *                   expressions. If contextId != {@link Expression#NO_CONTEXT_ID},
      *                   the current context will be added to each result of the of the selection.
+     * @return all nodes from the passed set of potential siblings, which are preceding siblings of
+     * the nodes in the other set.
      */
     public static NodeSet selectPrecedingSiblings(final NodeSet candidates,
             final NodeSet references, final int contextId) {
@@ -494,6 +501,8 @@ public final class NodeSetHelper {
      * @param contextId  Used to track context nodes when evaluating predicate
      *                   expressions. If contextId != {@link Expression#NO_CONTEXT_ID},
      *                   the current context will be added to each result of the of the selection.
+     * @return all nodes from the passed set of potential siblings, which are following siblings of
+     * the nodes in the other set.
      */
     public static NodeSet selectFollowingSiblings(final NodeSet candidates,
             final NodeSet references, final int contextId) {
@@ -598,9 +607,8 @@ public final class NodeSetHelper {
         return result;
     }
 
-    /**
-     * TODO: doesn't work!!!
-     */
+
+     // TODO: doesn't work!!!
     public static NodeSet selectPreceding(final NodeSet references, final NodeSet candidates)
         throws XPathException {
         if(candidates.isEmpty() || references.isEmpty()) {
@@ -619,9 +627,8 @@ public final class NodeSetHelper {
         return result;
     }
 
-    /**
-     * TODO: doesn't work!!!
-     */
+
+    // TODO: doesn't work!!!
     public static NodeSet selectFollowing(final NodeSet references,
             final NodeSet candidates) throws XPathException {
         if(candidates.isEmpty() || references.isEmpty()) {

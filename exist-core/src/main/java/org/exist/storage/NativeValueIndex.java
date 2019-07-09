@@ -781,6 +781,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @param result             DOCUMENT ME!
      * @param collator           DOCUMENT ME!
      * @param truncation         The type of string truncation to apply
+     * @param watchDog  the watchdog
      * @return DOCUMENT ME!
      * @throws TerminatedException DOCUMENT ME!
      * @throws EXistException      DOCUMENT ME!

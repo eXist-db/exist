@@ -39,12 +39,6 @@ import org.exist.xquery.value.Sequence;
  */
 public class ReferenceNode extends NodeImpl {
 
-    /**
-     * Creates a new ReferenceNode object.
-     *
-     * @param doc
-     * @param nodeNumber
-     */
     public ReferenceNode(final DocumentImpl doc, final int nodeNumber) {
         super(doc, nodeNumber);
     }

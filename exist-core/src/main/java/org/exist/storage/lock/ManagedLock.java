@@ -47,6 +47,8 @@ public class ManagedLock<T> implements AutoCloseable {
      * @param mode the mode of the lock
      *
      * @return A managed lock which will be released with {@link #close()}
+     *
+     * @throws LockException if a lock error occurs
      */
     public static ManagedLock<Lock> acquire(final Lock lock, final Lock.LockMode mode) throws LockException {
         if(!lock.acquire(mode)) {
@@ -63,6 +65,7 @@ public class ManagedLock<T> implements AutoCloseable {
      * @param type the type of the lock
      *
      * @return A managed lock which will be released with {@link #close()}
+     * @throws LockException if a lock error occurs
      */
     public static ManagedLock<Lock> acquire(final Lock lock, final Lock.LockMode mode, final Lock.LockType type) throws LockException {
         if(!lock.acquire(mode)) {
@@ -78,6 +81,7 @@ public class ManagedLock<T> implements AutoCloseable {
      * @param mode the mode of the lock
      *
      * @return A managed lock which will be released with {@link #close()}
+     * @throws LockException if a lock error occurs
      */
     public static ManagedLock<Lock> attempt(final Lock lock, final Lock.LockMode mode) throws LockException {
         if(!lock.attempt(mode)) {
@@ -120,6 +124,7 @@ public class ManagedLock<T> implements AutoCloseable {
      * @param mode the mode of the lock
      *
      * @return A managed lock which will be released with {@link #close()}
+     * @throws LockException if a lock error occurs
      */
     public static ManagedLock<java.util.concurrent.locks.ReadWriteLock> attempt(final java.util.concurrent.locks.ReadWriteLock lock, final Lock.LockMode mode) throws LockException {
         final java.util.concurrent.locks.Lock modeLock;
@@ -160,6 +165,7 @@ public class ManagedLock<T> implements AutoCloseable {
      * @param lock The lock to call {@link java.util.concurrent.locks.Lock#tryLock()} on
      *
      * @return A managed lock which will be released with {@link #close()}
+     * @throws LockException if a lock error occurs
      */
     public static ManagedLock<ReentrantLock> attempt(final ReentrantLock lock) throws LockException {
         if(!lock.tryLock()) {

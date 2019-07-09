@@ -36,14 +36,6 @@ public class OverflowCreatePageLoggable extends AbstractBFileLoggable {
     protected long newPage;
     protected long prevPage;
 
-    /**
-     * 
-     * 
-     * @param transaction 
-     * @param fileId 
-     * @param newPage 
-     * @param prevPage 
-     */
     public OverflowCreatePageLoggable(Txn transaction, byte fileId, long newPage, long prevPage) {
         super(BFile.LOG_OVERFLOW_CREATE_PAGE, fileId, transaction);
         this.newPage = newPage;

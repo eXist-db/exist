@@ -36,22 +36,13 @@ public class SetParentLoggable extends BTAbstractLoggable {
     protected long pageNum;
     protected long parentNum;
     
-    /**
-     * @param fileId 
-     * @param pageNum 
-     * @param parentNum 
-     * @param transaction 
-     */
+
     public SetParentLoggable(Txn transaction, byte fileId, long pageNum, long parentNum) {
         super(BTree.LOG_SET_PARENT, fileId, transaction);
         this.pageNum = pageNum;
         this.parentNum = parentNum;
     }
-
-    /**
-     * @param broker 
-     * @param transactionId 
-     */
+    
     public SetParentLoggable(DBBroker broker, long transactionId) {
         super(BTree.LOG_SET_PARENT, broker, transactionId);
     }

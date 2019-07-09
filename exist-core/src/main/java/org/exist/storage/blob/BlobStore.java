@@ -150,6 +150,7 @@ public interface BlobStore extends Closeable {
      *     {@link com.evolvedbinary.j8fu.Try} or similar.
      *
      * @throws IOException if an error occurs whilst retrieving the BLOB file.
+     * @return to be documented
      */
     <T> T with(final Txn transaction, final BlobId blobId, final Function<Path, T> fnFile) throws IOException;
 

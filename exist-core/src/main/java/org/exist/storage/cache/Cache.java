@@ -98,7 +98,9 @@ public interface Cache<T extends Cacheable> {
      * 
      * This gives the items a chance to write all
      * unwritten data to disk.
+     * @return true if flush was successful otherwise false
      */
+
     boolean flush();
 
     /**

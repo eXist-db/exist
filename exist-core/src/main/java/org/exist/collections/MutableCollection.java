@@ -172,6 +172,9 @@ public class MutableCollection implements Collection {
      * @param broker The database broker
      * @param path The path of the Collection
      * @param inputStream The input stream to deserialize the Collection from
+     * @throws PermissionDeniedException is user does not have sufficient rights
+     * @throws IOException if an I/O error happens
+     * @throws LockException in case dbbroker is locked
      *
      * @return The Collection Object
      */

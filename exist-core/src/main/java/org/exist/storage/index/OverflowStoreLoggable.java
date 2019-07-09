@@ -40,17 +40,6 @@ public class OverflowStoreLoggable extends AbstractBFileLoggable {
     protected int startOffset;
     protected int size;
 
-    /**
-     * 
-     * 
-     * @param page 
-     * @param prevPage 
-     * @param chunk 
-     * @param startOffset 
-     * @param chunkSize 
-     * @param fileId 
-     * @param transaction 
-     */
     public OverflowStoreLoggable(byte fileId, Txn transaction, long page, long prevPage, 
             byte[] chunk, int startOffset, int chunkSize) {
         super(BFile.LOG_OVERFLOW_STORE, fileId, transaction);
@@ -61,10 +50,6 @@ public class OverflowStoreLoggable extends AbstractBFileLoggable {
         this.startOffset = startOffset;
     }
 
-    /**
-     * @param broker
-     * @param transactionId
-     */
     public OverflowStoreLoggable(DBBroker broker, long transactionId) {
         super(broker, transactionId);
     }

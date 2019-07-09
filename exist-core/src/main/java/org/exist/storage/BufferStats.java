@@ -34,10 +34,7 @@ public class BufferStats {
 	private int used = 0;
 	private int pageFails = 0;
 	private int pageHits = 0;
-	
-	/**
-	 * 
-	 */
+
 	public BufferStats(int size, int used, int hits, int fails) {
 		this.size = size;
 		this.used = used;
@@ -45,30 +42,19 @@ public class BufferStats {
 		this.pageFails = fails;
 	}
 
-	/**
-	 * @return int
-	 */
+
 	public int getPageFails() {
 		return pageFails;
 	}
 
-	/**
-	 * @return int
-	 */
 	public int getPageHits() {
 		return pageHits;
 	}
 
-	/**
-	 * @return int
-	 */
 	public int getSize() {
 		return size;
 	}
 
-	/**
-	 * @return int
-	 */
 	public int getUsed() {
 		return used;
 	}

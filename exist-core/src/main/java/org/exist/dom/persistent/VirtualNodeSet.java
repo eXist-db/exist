@@ -86,6 +86,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
     /**
      * Creates a new <code>VirtualNodeSet</code> instance.
      *
+     * @param broker eXist-db DBBroker
      * @param axis      an <code>int</code> value
      * @param test      a <code>NodeTest</code> value
      * @param contextId an <code>int</code> value

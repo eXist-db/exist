@@ -38,16 +38,6 @@ public class OverflowModifiedLoggable extends AbstractBFileLoggable {
     protected int length;
     protected int oldLength;
 
-    /**
-     * 
-     * 
-     * @param pageNum 
-     * @param length 
-     * @param oldLength 
-     * @param lastInChain 
-     * @param fileId 
-     * @param transaction 
-     */
     public OverflowModifiedLoggable(byte fileId, Txn transaction, long pageNum, int length, 
             int oldLength, long lastInChain) {
         super(BFile.LOG_OVERFLOW_MODIFIED, fileId, transaction);
@@ -57,10 +47,6 @@ public class OverflowModifiedLoggable extends AbstractBFileLoggable {
         this.lastInChain = lastInChain;
     }
 
-    /**
-     * @param broker
-     * @param transactionId
-     */
     public OverflowModifiedLoggable(DBBroker broker, long transactionId) {
         super(broker, transactionId);
     }

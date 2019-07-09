@@ -62,7 +62,8 @@ public interface IStoredNode<T extends IStoredNode> extends INode<DocumentImpl, 
 
 
     /**
-     * Returns a count of the number of children
+     * @return a count of the number of children
+     *
      */
     public int getChildCount(); //TODO also available in memtree.ElementImpl - consider moving to org.exist.dom.INode (also this is only really used for ElementImpl and DocumentImpl)
 
@@ -70,16 +71,16 @@ public interface IStoredNode<T extends IStoredNode> extends INode<DocumentImpl, 
      * Returns true if the node was modified recently and nodes
      * were inserted at the start or in the middle of its children.
      *
-     * @return true when node the node is 'dirty'
-     */
+     * TODO: 2019-07-11 can't we not detect this?
+     **/
     //public boolean isDirty();
 
-    //TODO can we not detect this?
 
     /**
      * Set the node to dirty to indicated
      * that nodes were inserted at the start
      * or in the middle of its children.
+     * @param dirty set to true if node is dirty
      */
     public void setDirty(boolean dirty);
 
@@ -91,7 +92,7 @@ public interface IStoredNode<T extends IStoredNode> extends INode<DocumentImpl, 
     //TODO clean this up
 
     /**
-     * @see org.exist.dom.persistent.StoredNode#reset()
+     * @see StoredNode#release()
      * this seems to do two things
      * clear the state, and then return the object
      * to NodePool - all a bit of a mess really!

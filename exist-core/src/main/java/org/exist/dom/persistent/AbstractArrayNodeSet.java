@@ -102,6 +102,8 @@ public abstract class AbstractArrayNodeSet extends AbstractNodeSet implements Do
      * Just add the node to this set
      * all of the checks have been
      * done in @see AbstractArrayNodeSet#add(NodeProxy, int)
+     * @param proxy  node to add
+     * @param sizeHint hint about the size
      */
     protected abstract void addInternal(final NodeProxy proxy, final int sizeHint);
 

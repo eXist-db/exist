@@ -36,22 +36,11 @@ public class OverflowCreateLoggable extends AbstractBFileLoggable {
 
     protected long pageNum;
 
-    /**
-     * 
-     * 
-     * @param pageNum 
-     * @param fileId 
-     * @param transaction 
-     */
     public OverflowCreateLoggable(byte fileId, Txn transaction, long pageNum) {
         super(BFile.LOG_OVERFLOW_CREATE, fileId, transaction);
         this.pageNum = pageNum;
     }
 
-    /**
-     * @param broker
-     * @param transactionId
-     */
     public OverflowCreateLoggable(DBBroker broker, long transactionId) {
         super(broker, transactionId);
     }

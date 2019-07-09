@@ -1015,8 +1015,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     /**
      * Copy the document fragment starting at the specified node to the given document builder.
      *
-     * @param node
-     * @param receiver
+     * @param node node to provide document fragment
+     * @param receiver document builder
      * @throws SAXException DOCUMENT ME!
      */
     public void copyTo(final NodeImpl node, final DocumentBuilderReceiver receiver) throws SAXException {
@@ -1255,10 +1255,10 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
      * Stream the specified document fragment to a receiver. This method
      * is called by the serializer to output in-memory nodes.
      *
-     * @param serializer
-     * @param node
-     * @param receiver
-     * @throws SAXException
+     * @param serializer the serializer
+     * @param node node to be serialized
+     * @param receiver the receiveer
+     * @throws SAXException DOCUMENT ME
      */
     public void streamTo(final Serializer serializer, NodeImpl node, final Receiver receiver)
         throws SAXException {

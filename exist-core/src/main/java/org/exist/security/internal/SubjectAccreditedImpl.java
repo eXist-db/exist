@@ -34,7 +34,7 @@ public class SubjectAccreditedImpl extends AbstractSubject {
 	
 	/**
 	 * 
-	 * @param account
+	 * @param account the abstract account
 	 * @param letterOfCredit the object the prove authentication
 	 */
 	public SubjectAccreditedImpl(AbstractAccount account, Object letterOfCredit) {
