@@ -63,10 +63,7 @@ public class FunQName extends BasicFunction {
 				new FunctionParameterSequenceType("qname", Type.STRING, Cardinality.EXACTLY_ONE, "The prefix")
 			},
 			new FunctionReturnSequenceType(Type.QNAME, Cardinality.EXACTLY_ONE, "the xs:QName with the namespace URI given in $uri"));
-	
-	/**
-	 * @param context
-	 */
+
 	public FunQName(XQueryContext context) {
 		super(context, signature);
 	}

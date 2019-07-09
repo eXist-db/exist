@@ -504,12 +504,12 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     /**
      * Generic, slow implementation. Applied if none of the possible optimizations can be used.
      *
-     * @param   contextSequence
-     * @param   contextItem
+     * @param   contextSequence the context sequence
+     * @param   contextItem optional context item
      *
      * @return  The Sequence resulting from the comparison
      *
-     * @throws  XPathException
+     * @throws  XPathException in case of dynamic error
      */
     protected Sequence genericCompare( Sequence contextSequence, Item contextItem ) throws XPathException
     {

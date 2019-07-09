@@ -62,10 +62,7 @@ public class CallFunction extends Function {
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results from the function called"),
             true
         );
-    
-    /**
-     * @param context
-     */
+
     public CallFunction(XQueryContext context) {
         super(context, signature);
     }

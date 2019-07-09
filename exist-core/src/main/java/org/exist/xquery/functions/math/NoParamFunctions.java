@@ -51,10 +51,7 @@ public class NoParamFunctions extends BasicFunction {
         null,
         new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the value of pi")
     );
-    
-    /**
-     * @param context
-     */
+
     public NoParamFunctions(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }

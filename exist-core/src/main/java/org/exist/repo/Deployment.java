@@ -162,12 +162,15 @@ public class Deployment {
      * Install and deploy a give xar archive. Dependencies are installed from
      * the PackageLoader.
      *
-     * @param broker
-     * @param transaction
+     * @param broker the broker to use
+     * @param transaction the transaction for this deployment task
      * @param xar the .xar file to install
      * @param loader package loader to use
      * @param enforceDeps when set to true, the method will throw an exception if a dependency could not be resolved
      *                    or an older version of the required dependency is installed and needs to be replaced.
+     * @return the collection path to which the package was deployed or Optional.empty if not deployed
+     * @throws PackageException if package installation failed
+     * @throws IOException in case of an IO error
      */
     public Optional<String> installAndDeploy(final DBBroker broker, final Txn transaction, final XarSource xar, final PackageLoader loader, boolean enforceDeps) throws PackageException, IOException {
         final Optional<DocumentImpl> descriptor = getDescriptor(broker, xar);

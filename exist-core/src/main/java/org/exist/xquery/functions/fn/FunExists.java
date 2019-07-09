@@ -53,10 +53,7 @@ public class FunExists extends Function {
                 new FunctionParameterSequenceType("items", Type.ITEM, Cardinality.ZERO_OR_MORE, "The item sequence")
 			},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if not the empty-sequence, false() otherwise"));
-				
-	/**
-	 * @param context
-	 */
+
 	public FunExists(XQueryContext context) {
 		super(context, signature);
 	}

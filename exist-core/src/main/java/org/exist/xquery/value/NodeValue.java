@@ -50,8 +50,9 @@ public interface NodeValue extends Item, Sequence {
      * Returns true if this node has the same identity as another
      * node. Used to implement "is" and "isnot" comparisons.
      *
-     * @param other
-     * @throws XPathException
+     * @param other the other node to compare with
+     * @return true if the nodes have the same identity
+     * @throws XPathException in case of a dynamic error
      */
     boolean equals(NodeValue other) throws XPathException;
 
@@ -59,8 +60,10 @@ public interface NodeValue extends Item, Sequence {
      * Returns true if this node comes before another node in
      * document order.
      *
-     * @param other
-     * @throws XPathException
+     * @param other the other node to compare with
+     * @param isPreceding if true, return false for ancestors of the current node
+     * @return true if this nodes precedes the other node
+     * @throws XPathException in case of dynamic error
      */
     boolean before(NodeValue other, boolean isPreceding) throws XPathException;
 
@@ -68,14 +71,18 @@ public interface NodeValue extends Item, Sequence {
      * Returns true if this node comes after another node in
      * document order.
      *
-     * @param other
-     * @throws XPathException
+     * @param other the other node to compare with
+     * @param isFollowing if true, return false for descendants of the current node
+     * @return true if this nodes precedes the other node
+     * @throws XPathException in case of dynamic error
      */
     boolean after(NodeValue other, boolean isFollowing) throws XPathException;
 
     /**
      * Returns the implementation-type of this node, i.e. either
      * {@link #IN_MEMORY_NODE} or {@link #PERSISTENT_NODE}.
+     *
+     * @return {@link #IN_MEMORY_NODE} or {@link #PERSISTENT_NODE}
      */
     int getImplementationType();
 

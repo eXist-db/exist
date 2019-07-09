@@ -35,9 +35,6 @@ public class SelfSelector implements NodeSelector {
     private int contextId;
     private NodeSet context;
 
-    /**
-     *
-     */
     public SelfSelector(NodeSet contextSet, int contextId) {
         this.context = contextSet;
         this.contextId = contextId;

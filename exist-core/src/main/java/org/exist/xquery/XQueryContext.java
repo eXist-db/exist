@@ -489,6 +489,8 @@ public class XQueryContext implements BinaryValueManager, Context {
      *
      * Should be called before compilation to prepare the query context,
      * or before re-execution if the query was cached.
+     *
+     * @throws XPathException in case of static error
      */
     public void prepareForReuse() throws XPathException {
         // prepare the variables of the internal modules (which were previously reset)
@@ -1117,6 +1119,10 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * Get's a document from the "Available documents" of the
      * dynamic context.
+     *
+     * @param uri the URI by which the document was registered
+     * @return sequence of available documents matching the URI
+     * @throws XPathException in case of dynamic error
      */
     public @Nullable
     Sequence getDynamicallyAvailableDocument(final String uri) throws XPathException {
@@ -1136,6 +1142,11 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * Get's a text resource from the "Available text resources" of the
      * dynamic context.
+     *
+     * @param uri the URI by which the document was registered
+     * @param charset the charset to use for retrieving the resource
+     * @return a reader to read the resource content from
+     * @throws XPathException in case of a dynamic error
      */
     public @Nullable
     Reader getDynamicallyAvailableTextResource(final String uri, final Charset charset)
@@ -1156,6 +1167,10 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * Get's a collection from the "Available collections" of the
      * dynamic context.
+     *
+     * @param uri the URI of the collection to retrieve
+     * @return a sequence of document nodes
+     * @throws XPathException in case of dynamic error
      */
     public @Nullable
     Sequence getDynamicallyAvailableCollection(final String uri) throws XPathException {

@@ -102,6 +102,7 @@ public interface PackageLoader {
      * @param name unique name of the package
      * @param version the version to install
      * @return a file containing the package or null if not found
+     * @throws IOException in case of an io error locating the package
      */
     @Nullable
     XarSource load(String name, Version version) throws IOException;

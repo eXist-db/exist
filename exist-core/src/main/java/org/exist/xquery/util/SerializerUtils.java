@@ -80,6 +80,7 @@ public class SerializerUtils {
      * @param parent     the parent expression calling this method
      * @param parameters root node of the XML fragment
      * @param properties parameters are added to the given properties
+     * @throws XPathException in case of dynamic error
      */
     public static void getSerializationOptions(final Expression parent, final NodeValue parameters, final Properties properties) throws XPathException {
         try {

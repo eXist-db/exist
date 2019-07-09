@@ -43,6 +43,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
     private Source source = null;
 
     /**
+     * @param message the error message
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
@@ -52,6 +53,9 @@ public class XPathException extends Exception implements XPathErrorProvider {
     }
 
     /**
+     * @param line line number the error appeared in
+     * @param column column the error appeared in
+     * @param message the error message
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
@@ -121,6 +125,8 @@ public class XPathException extends Exception implements XPathErrorProvider {
     }
 
     /**
+     * @param ast ast representation
+     * @param message the error message
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
@@ -144,6 +150,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
     }
 
     /**
+     * @param cause the cause throwable
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
@@ -155,6 +162,8 @@ public class XPathException extends Exception implements XPathErrorProvider {
     }
 
     /**
+     * @param cause the cause throwable
+     * @param message the error message
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
@@ -167,6 +176,8 @@ public class XPathException extends Exception implements XPathErrorProvider {
     }
 
     /**
+     * @param expr expression causing the error
+     * @param cause the cause throwable
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
@@ -175,6 +186,9 @@ public class XPathException extends Exception implements XPathErrorProvider {
     }
 
     /**
+     * @param expr expression causing the error
+     * @param message error message
+     * @param cause the cause throwable
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
@@ -227,6 +241,10 @@ public class XPathException extends Exception implements XPathErrorProvider {
     }
 
     /**
+     * @param line line number the error appeared in
+     * @param column column the error appeared in
+     * @param message the error message
+     * @param cause the cause throwable
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
@@ -241,6 +259,10 @@ public class XPathException extends Exception implements XPathErrorProvider {
     }
 
     /**
+     * @param line line number the error appeared in
+     * @param column column the error appeared in
+     * @param cause the cause throwable
+     *
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated

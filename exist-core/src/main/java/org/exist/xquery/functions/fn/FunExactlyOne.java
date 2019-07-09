@@ -56,10 +56,7 @@ public class FunExactlyOne extends Function {
                 new FunctionParameterSequenceType("items", Type.ITEM, Cardinality.ZERO_OR_MORE, "The item sequence")
 			},
 			new FunctionReturnSequenceType(Type.ITEM, Cardinality.EXACTLY_ONE, "the sole item in $items if it contains exactly one item. Otherwise, an error is raised."));
-				
-	/**
-	 * @param context
-	 */
+
 	public FunExactlyOne(XQueryContext context) {
 		super(context, signature);
 	}

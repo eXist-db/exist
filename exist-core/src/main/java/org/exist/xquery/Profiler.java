@@ -89,7 +89,7 @@ public class Profiler {
     }
 
     /**
-     * Configure the profiler from an XQuery pragma.
+     * Configure the profiler from an XQuery option.
      * Parameters are:
      * 
      * <ul>
@@ -97,7 +97,7 @@ public class Profiler {
      *  <li><strong>logger</strong>: name of the logger to use.</li>
      *  <li><strong>verbosity</strong>: integer value &gt; 0. 1 does only output function calls.</li>
      * </ul>
-     * @param pragma
+     * @param pragma the option to read settings from
      */
     public final void configure(Option pragma) {
         final String options[] = pragma.tokenizeContents();
@@ -266,6 +266,8 @@ public class Profiler {
      * 
      * @param expr the expression.
      * @param message required: a message to be printed to the log.
+     * @param result the result sequence of the expression. If present and set to verbose output,
+     *               the number of items in the result sequence will be printed to the log.
      */
     public final void end(Expression expr, String message, Sequence result) {
         if (!enabled)
@@ -349,10 +351,11 @@ public class Profiler {
      * expression object.
      * 
      * 
-     * @param level 
-     * @param title 
-     * @param sequence 
-     * @param expr 
+     * @param level debug level: message will be ignore if verbosity is set to lower level
+     * @param title a title string
+     * @param sequence the result sequence of the expression. If present and set to verbose output,
+     *                 the number of items in the result sequence will be printed to the log.
+     * @param expr the expression
      */
     public final void message(Expression expr, int level, String title, Sequence sequence) {
     	if (!enabled)

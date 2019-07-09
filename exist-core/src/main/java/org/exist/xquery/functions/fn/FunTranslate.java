@@ -63,10 +63,7 @@ public class FunTranslate extends Function {
 				new FunctionParameterSequenceType("trans", Type.STRING, Cardinality.EXACTLY_ONE, "The translation string")
 			},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the translated string"));
-				
-	/**
-	 * @param context
-	 */
+
 	public FunTranslate(XQueryContext context) {
 		super(context, signature);
 	}

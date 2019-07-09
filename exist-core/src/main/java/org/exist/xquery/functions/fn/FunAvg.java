@@ -66,9 +66,6 @@ public class FunAvg extends Function {
             new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE,
                 "The average of the values in the input sequence"));
 
-    /**
-     * @param context
-     */
     public FunAvg(XQueryContext context) {
         super(context, signature);
     }

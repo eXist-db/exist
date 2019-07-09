@@ -41,9 +41,6 @@ public class RangeExpression extends PathExpr {
 	Expression start;
 	Expression end;
 
-	/**
-	 * @param context
-	 */
 	//TODO : RangeExpression(XQueryContext context, Expressoin start, Expression end)
 	//Needs parser refactoring
 	public RangeExpression(XQueryContext context) {

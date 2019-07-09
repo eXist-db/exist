@@ -114,10 +114,6 @@ public class FunMin extends CollatingFunction {
 		)
 	};
 
-	/**
-	 * @param context
-	 * @param signature
-	 */
 	public FunMin(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}

@@ -1507,7 +1507,9 @@ public class InteractiveClient {
      * stores given Resource
      *
      * @param fileName simple file or directory
-     * @throws XMLDBException
+     * @throws XMLDBException in case of database error storing the resource
+     * @throws IOException in case of a read error
+     * @return true if the operation succeeded
      */
     protected synchronized boolean parseGZip(String fileName) throws XMLDBException, IOException {
         //TODO : why is this test for ? Fileshould make it, shouldn't it ? -pb
@@ -1590,7 +1592,8 @@ public class InteractiveClient {
      *
      * @param zipPath Path to a zip file
      *
-     * @throws XMLDBException
+     * @throws XMLDBException in case of error writing to the database
+     * @return true if operation succeeded
      */
     protected synchronized boolean parseZip(final Path zipPath) throws XMLDBException {
         try {
@@ -1674,7 +1677,8 @@ public class InteractiveClient {
      *
      * @param files  : selected
      * @param upload : GUI object
-     * @throws XMLDBException
+     * @throws XMLDBException in case of an error uploading the resources
+     * @return true if the operation succeeded
      */
     protected synchronized boolean parse(final List<Path> files, final UploadDialog upload) throws XMLDBException {
         final Collection uploadRootCollection = current;
@@ -2131,7 +2135,9 @@ public class InteractiveClient {
     /**
      * Main processing method for the InteractiveClient object
      *
+     * @param args command line arguments
      * @return true on success, false on failure
+     * @throws Exception if an error occurs
      */
     public boolean run(final String args[]) throws Exception {
 

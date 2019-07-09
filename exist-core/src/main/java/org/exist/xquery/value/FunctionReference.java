@@ -60,8 +60,8 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
     /**
      * Calls {@link FunctionCall#analyze(AnalyzeContextInfo)}.
      *
-     * @param contextInfo
-     * @throws XPathException
+     * @param contextInfo current context information
+     * @throws XPathException in case of static error
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         functionCall.analyze(contextInfo);
@@ -77,6 +77,10 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
 
     /**
      * Calls {@link FunctionCall#eval(Sequence)}.
+     *
+     * @param contextSequence the input sequence
+     * @return evaluation result of the function call
+     * @throws XPathException in case of dynamic error
      */
     public Sequence eval(Sequence contextSequence) throws XPathException {
         return functionCall.eval(contextSequence);
@@ -84,6 +88,12 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
 
     /**
      * Calls {@link FunctionCall#evalFunction(Sequence, Item, Sequence[])}.
+     *
+     * @param contextSequence the input sequence
+     * @param contextItem optional: the current context item
+     * @param seq array of parameters to be passed to the function
+     * @return evaluation result of the function call
+     * @throws XPathException in case of dynamic error
      */
     public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq) throws XPathException {
         return functionCall.evalFunction(contextSequence, contextItem, seq);

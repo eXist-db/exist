@@ -34,6 +34,8 @@ public class Annotation {
     /**
      * Get the signature of the function on which this
      * annotation was placed
+     *
+     * @return the function signature
      */
     public FunctionSignature getFunctionSignature() {
         return signature;

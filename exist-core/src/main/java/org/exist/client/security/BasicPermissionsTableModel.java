@@ -74,7 +74,7 @@ public class BasicPermissionsTableModel extends DefaultTableModel {
     /**
      * Get the Mode described by the table model
      * 
-     * The Unix mode of the permissions
+     * @return The Unix mode of the permissions
      */
     public int getMode() {
         int mode = 0;

@@ -61,9 +61,6 @@ public class FunDocumentURI extends Function {
                 "the document URI of $document-node")
         );
 
-    /**
-     * 
-     */
     public FunDocumentURI(XQueryContext context) {
         super(context, signature);
     }

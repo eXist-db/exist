@@ -77,8 +77,8 @@ public class ConsistencyCheck {
      *
      * @param callback the callback object to report to
      * @return a list of {@link ErrorReport} objects or an empty list if no errors were found
-     * @throws TerminatedException
-     * @throws PermissionDeniedException
+     * @throws TerminatedException if a signal was received that operations should be aborted
+     * @throws PermissionDeniedException if the current user lacks permissions
      */
     public List<ErrorReport> checkAll(final ProgressCallback callback)
             throws TerminatedException, PermissionDeniedException {
@@ -92,8 +92,8 @@ public class ConsistencyCheck {
      *
      * @param callback callback object
      * @return a list of {@link ErrorReport} instances describing the errors found
-     * @throws TerminatedException
-     * @throws PermissionDeniedException
+     * @throws TerminatedException if a signal was received that operations should be aborted
+     * @throws PermissionDeniedException if the current user lacks permissions
      */
     public List<ErrorReport> checkCollectionTree(final ProgressCallback callback)
             throws TerminatedException, PermissionDeniedException {

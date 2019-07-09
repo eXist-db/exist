@@ -112,10 +112,6 @@ public class FunMax extends CollatingFunction {
 			)
 	};
 
-	/**
-	 * @param context
-	 * @param signature
-	 */
 	public FunMax(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}

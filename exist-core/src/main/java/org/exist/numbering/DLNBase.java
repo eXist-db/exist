@@ -168,8 +168,8 @@ public class DLNBase {
      * Set the level id which starts at offset to the
      * given id value.
      *
-     * @param offset
-     * @param levelId
+     * @param offset offset in number of bits
+     * @param levelId the level id to set
      */
     public void setLevelId(final int offset, final int levelId) {
         bitIndex = offset - 1;
@@ -181,6 +181,7 @@ public class DLNBase {
      * as initial value.
      *
      * @param levelId initial value
+     * @param isSubLevel if the new level id is a sublevel
      */
     public void addLevelId(final int levelId, final boolean isSubLevel) {
         if (bitIndex > -1){
@@ -227,7 +228,7 @@ public class DLNBase {
      * The data array will be resized automatically if the bit set is
      * too small to encode the id.
      *
-     * @param levelId
+     * @param levelId the level id
      */
     protected void setCurrentLevelId(int levelId) {
         final int units = getUnitsRequired(levelId);
@@ -247,7 +248,7 @@ public class DLNBase {
     /**
      * Returns the id starting at offset.
      *
-     * @param startBit
+     * @param startBit the offset (in number of bits) to read the level id from
      * @return the level id
      */
     public int getLevelId(int startBit) {
@@ -306,6 +307,7 @@ public class DLNBase {
      * Returns the number of level in this id, which corresponds
      * to the depth at which the node occurs within the node tree.
      *
+     * @param startOffset the offset (in number of bits) to start counting
      * @return the number of levels in this id
      */
     public int getLevelCount(final int startOffset) {
@@ -331,7 +333,7 @@ public class DLNBase {
      * startOffset. This is required to determine where a node
      * can be inserted.
      * 
-     * @param startOffset
+     * @param startOffset the start offset (in number of bits)
      * @return number of sub-levels
      */
     public int getSubLevelCount(final int startOffset) {
@@ -434,7 +436,7 @@ public class DLNBase {
      * that can be actually used for the id, not including the
      * trailing address bits.
      * 
-     * @param units
+     * @param units the number of units to use
      * @return number of bits available
      */
     protected static int bitWidth(final int units) {
@@ -523,7 +525,8 @@ public class DLNBase {
      * same bit sequence as other. This is used
      * to test ancestor-descendant relationships.
      * 
-     * @param other
+     * @param other other DLN to compare with
+     * @return true if this DLN starts with the same bit sequence as the other
      */
     public boolean startsWith(final DLNBase other) {
         if (other.bitIndex > bitIndex) {

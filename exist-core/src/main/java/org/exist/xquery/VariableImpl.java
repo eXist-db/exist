@@ -60,10 +60,7 @@ public class VariableImpl implements Variable {
     private int staticType = Type.ITEM;
 
     private boolean initialized = true;
-    
-	/**
-	 * 
-	 */
+
 	public VariableImpl(QName qname) {
 		this.qname = qname;
 	}

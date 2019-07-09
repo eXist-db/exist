@@ -120,6 +120,7 @@ public class FunSubSequence extends Function {
     /**
      * Creates a Subsequence from a sequence
      *
+     * @param sequence the input sequence
      * @param startLoc the starting location value as passed to {@code fn:subsequence}
      * @param length the length value as passed to {@code fn:subsequence}, or null for all items
      *
