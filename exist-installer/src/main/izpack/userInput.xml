@@ -16,7 +16,7 @@
             type="title"/ -->
         <field size="1.33" bold="false" txt="Set Admin Password" align="left"
             type="title"/>
-        <field align="left" variable="adminPasswd" type="password">
+        <field align="left" variable="adminPasswd" type="password" omitFromAuto="false">
             <description txt="Please enter a password for user 'admin', the database administrator:"
                 align="left"/>
             <spec>
