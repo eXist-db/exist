@@ -42,10 +42,7 @@ public class QuantifiedExpression extends BindingExpression {
 	public final static int EVERY = 1;
 	
 	private final int mode;
-	
-	/**
-	 * @param context
-	 */
+
 	public QuantifiedExpression(XQueryContext context, int mode) {
 		super(context);
 		switch (mode) {

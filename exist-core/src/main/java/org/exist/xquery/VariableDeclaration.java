@@ -45,9 +45,6 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
     SequenceType sequenceType = null;
     boolean analyzeDone = false;
 
-    /**
-	 * @param context
-	 */
 	public VariableDeclaration(XQueryContext context, QName qname, Expression expr) {
 		super(context);
 		this.qname = qname;
@@ -61,7 +58,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 	/**
 	 * Set the sequence type of the variable.
 	 * 
-	 * @param type
+	 * @param type the sequence type
 	 */
 	public void setSequenceType(SequenceType type) {
 		this.sequenceType = type;
@@ -104,8 +101,8 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
      * Analyze just the expression. For dynamically imported modules this needs to be done one time
      * after import.
      *
-     * @param contextInfo
-     * @throws XPathException
+     * @param contextInfo context information
+     * @throws XPathException in case of static error
      */
     public void analyzeExpression(AnalyzeContextInfo contextInfo) throws XPathException {
         if (expression.isPresent()) {

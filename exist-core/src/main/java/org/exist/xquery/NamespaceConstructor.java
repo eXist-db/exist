@@ -42,10 +42,7 @@ public class NamespaceConstructor extends NodeConstructor {
 
     private Expression qnameExpr;
     private Expression content = null;
-    
-    /**
-     * @param context
-     */
+
     public NamespaceConstructor(XQueryContext context) {
         super(context);
     }

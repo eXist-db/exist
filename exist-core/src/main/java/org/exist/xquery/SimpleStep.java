@@ -38,11 +38,7 @@ import org.exist.xquery.value.MemoryNodeSet;
 public class SimpleStep extends Step {
 
 	private final Expression expression;
-	
-	/**
-	 * @param context
-	 * @param axis
-	 */
+
 	public SimpleStep(XQueryContext context, int axis, Expression expression) {
 		super(context, axis);
 		this.expression = expression;

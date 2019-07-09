@@ -64,6 +64,9 @@ public class SwitchExpression extends AbstractExpression {
     
     /**
      * Add case clause(s) with a return.
+     *
+     * @param caseOperands list of operands
+     * @param returnClause the return clause
      */
     public void addCase(List<Expression> caseOperands, Expression returnClause) {
         cases.add(new Case(caseOperands, returnClause));
@@ -71,6 +74,8 @@ public class SwitchExpression extends AbstractExpression {
     
     /**
      * Set the default clause.
+     *
+     * @param defaultClause the default clause
      */
     public void setDefault(Expression defaultClause) {
         this.defaultClause = new Case(null, defaultClause);
