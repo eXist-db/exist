@@ -1,6 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <processing>
     <logfiledir>$INSTALL_PATH</logfiledir>
+    <job name="Setting data dir...">
+        <os family="windows"/>
+        <executefile name="java">
+            <arg>-cp</arg>
+            <arg>$INSTALL_PATH\lib\endorsed\Saxon-HE-Saxon-HE-9.6.0-7.jar</arg>
+            <arg>net.sf.saxon.Transform</arg>
+            <arg>-s:$INSTALL_PATH\conf.xml</arg>
+            <arg>-xsl:$INSTALL_PATH\bin\conf.xslt</arg>
+            <arg>-o:$INSTALL_PATH\conf.xml</arg>
+            <arg>dataDir=$dataDir</arg>
+        </executefile>
+    </job>
+    <job name="Setting data dir...">
+        <os family="unix"/>
+        <executefile name="java">
+            <arg>-cp</arg>
+            <arg>$INSTALL_PATH/lib/endorsed/Saxon-HE-9.6.0-7.jar</arg>
+            <arg>net.sf.saxon.Transform</arg>
+            <arg>-s:$INSTALL_PATH/conf.xml</arg>
+            <arg>-xsl:$INSTALL_PATH/bin/conf.xslt</arg>
+            <arg>-o:$INSTALL_PATH/conf.xml</arg>
+            <arg>dataDir=$dataDir</arg>
+        </executefile>
+    </job>
     <job name="Setting admin password ...">
         <os family="windows"/>
         <executefile name="$INSTALL_PATH/bin/setup.bat">
