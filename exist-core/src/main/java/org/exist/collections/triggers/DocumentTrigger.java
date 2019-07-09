@@ -25,13 +25,15 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 
+import java.util.Map;
+
 /**
  * Interface for triggers that react to document-related events.
  * 
  * Document triggers may have two roles:
  * 
  * <ol>
- *  <li>before the document is stored, updated or removed, the trigger's {@link #prepare(int, DBBroker,Txn, XmldbURI, DocumentImpl) prepare} 
+ *  <li>before the document is stored, updated or removed, the trigger's {@link org.exist.collections.triggers.XQueryTrigger#prepare(int, DBBroker, Txn, XmldbURI, XmldbURI, boolean)}
  *  method is called. The trigger code may take any action desired, for example, to ensure referential
  *  integrity on the database, issue XUpdate commands on other documents in the database...</li>
  *  <li>the trigger also functions as a filter: the trigger interface extends SAX {@link org.xml.sax.ContentHandler content handler} and
@@ -42,18 +44,18 @@ import org.exist.xmldb.XmldbURI;
  * </ol>
  * 
  * The DocumentTrigger interface is also called for binary resources. However, in this case, the trigger can not function as
- * a filter and the SAX-related methods are useless. Only {@link #prepare(int, DBBroker, Txn, XmldbURI, DocumentImpl)} and
- * {@link #finish(int, DBBroker, Txn, XmldbURI, DocumentImpl)} will be called. To determine if the document is a binary resource,
+ * a filter and the SAX-related methods are useless. Only {@link org.exist.collections.triggers.XQueryTrigger#prepare(int, DBBroker, Txn, XmldbURI, XmldbURI, boolean)} and
+ * {@link  org.exist.collections.triggers.XQueryTrigger#finish(int, DBBroker, Txn, XmldbURI, XmldbURI, boolean)} will be called. To determine if the document is a binary resource,
  * call {@link org.exist.dom.persistent.DocumentImpl#getResourceType()}.
  * 
  * The general contract for a trigger is as follows:
  * 
  * <ol>
  *  <li>configuration phase: whenever the collection loads its configuration file, the trigger's 
- *  {@link #configure(DBBroker, Collection, Map) configure} method
+ *  {@link org.exist.collections.triggers.XQueryTrigger#configure(DBBroker, Txn, Collection, Map)} method
  *  will be called once.</li>
  *  <li>pre-parse phase: before parsing the source document, the collection will call the trigger's
- *  {@link #prepare(int, DBBroker, Txn, XmldbURI, DocumentImpl) prepare} 
+ *  {@link org.exist.collections.triggers.XQueryTrigger#prepare(int, DBBroker, Txn, XmldbURI, XmldbURI, boolean) prepare}
  *  method once for each document to be stored, removed or updated. The trigger may
  *  throw a TriggerException if the current action should be aborted.</li>
  *  <li>validation phase: during the validation phase, the document is parsed once by the SAX parser. During this
@@ -61,9 +63,8 @@ import org.exist.xmldb.XmldbURI;
  *  is aborted.</li>
  *  <li>storage phase: the document is again parsed by the SAX parser. The trigger will still receive all SAX events,
  *  but it is not allowed to throw an exception. Throwing an exception during the storage phase will result in an
- *  invalid document in the database. Use {@link #isValidating() isValidating} in your code to check that you're
- *  in validation phase.</li>
- *  <li>finalization: the method {@link #finish(int, DBBroker, Txn, XmldbURI, DocumentImpl)} is called. At this point, the document
+ *  invalid document in the database.</li>
+ *  <li>finalization: the method {@link org.exist.collections.triggers.XQueryTrigger#finish(int, DBBroker, Txn, XmldbURI, XmldbURI, boolean)} is called. At this point, the document
  *  has already been stored and is ready to be used or - for {@link #REMOVE_DOCUMENT_EVENT} - has been removed.
  *  </li>
  * </ol>
@@ -76,21 +77,21 @@ public interface DocumentTrigger extends Trigger {
      * This method is called once before the database will actually parse the input data. You may take any action
      * here, using the supplied broker instance.
      * 
-     * @param broker
-     * @param txn
-     * @param uri
-     * @throws TriggerException
+     * @param broker eXist-db DBBroker
+     * @param txn transaction
+     * @param uri the uri
+     * @throws TriggerException in case of an error
      */
     public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException;
     
     /**
      * This method is called after the operation completed. At this point, the document has already
      * been stored.
-     * 
-     * @param broker
-     * @param txn
-     * @param document
-     * @throws TriggerException
+     *
+     * @param broker eXist-db DBBroker
+     * @param txn transaction
+     * @param document stored document
+     * @throws TriggerException in case of an error
      */
     public void afterCreateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException;
 
@@ -121,7 +122,7 @@ public interface DocumentTrigger extends Trigger {
     /**
      * Called by the database to report that it is entering validation phase.
      * 
-     * @param validating
+     * @param validating enable or disable validation
      */
     public void setValidating(boolean validating);
 }

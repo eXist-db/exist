@@ -39,7 +39,7 @@ import java.util.Deque;
  * we are deferring events and then they are queued.
  * When events are realised from the deferred queue
  * they will then be dispatched to 'super', you may override
- * either {@see applyDeferredEvents()} or one or more of the
+ * either {@link #applyDeferredEvents()} or one or more of the
  * _deferred methods to change this behaviour.
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
@@ -62,6 +62,7 @@ public abstract class DeferrableFilteringTrigger extends FilteringTrigger {
      * by calling {@link #applyDeferredEvents()}.
      *
      * @param defer Should we defer the processing of events?
+     * @throws SAXException in case of an Error
      */
     public void defer(final boolean defer) throws SAXException {
         if(this.defer && !defer) {
@@ -235,6 +236,7 @@ public abstract class DeferrableFilteringTrigger extends FilteringTrigger {
     /**
      * Applies any deferred events
      * by dispatching to the appropriate _deferred method
+     * @throws SAXException in case of an error
      */
     protected void applyDeferredEvents() throws SAXException {
         SAXEvent event = null;

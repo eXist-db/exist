@@ -77,6 +77,9 @@ public class STXTemplatesCache {
      *
      * @param broker Database broker for accessing the serializer pool
      * @param stylesheet The stylesheet document
+     * @throws TransformerConfigurationException if there is an error in the transformations
+     * @throws SAXException if a SAX error comes up
+     * @throws LockException if dbbroker is locked
      *
      * @return The compiled stylesheet
      */
