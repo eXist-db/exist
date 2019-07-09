@@ -47,28 +47,38 @@ public interface ContentLoadingObserver extends AutoCloseable {
 	 */
 	void storeAttribute(AttrImpl attr, NodePath currentPath, RangeIndexSpec spec, boolean remove);
 
-	/** store and index given text node */ 
+	/** store and index given text node
+	 * @param currentPath  the node path
+	 * @param node the text node to store
+	 * */
 	void storeText(TextImpl node, NodePath currentPath);
 			
 	/**
-	 * The given node is being removed from the database. 
+	 * The given node is being removed from the database.
+	 *
+	 * @param node given node
+	 * @param currentPath to be documented
+	 * @param content to be documented
 	 */
 	void removeNode(NodeHandle node, NodePath currentPath, String content );
 
-	/** set the current document; generally called before calling an operation */
+	/** set the current document; generally called before calling an operation
+	 *
+	 * @param document the document to set as current document
+	 * */
 	void setDocument(DocumentImpl document);
 
 	/**
 	 * Drop all index entries for the given collection.
 	 * 
-	 * @param collection
+	 * @param collection to be documented
 	 */
 	void dropIndex(Collection collection);
 
 	/**
 	 * Drop all index entries for the given document.
 	 * 
-	 * @param doc
+	 * @param doc to be documented
 	 */
 	void dropIndex(DocumentImpl doc);
 
@@ -81,7 +91,8 @@ public interface ContentLoadingObserver extends AutoCloseable {
 	void flush() throws DBException;
 
 	/** triggers a cache sync, i.e. forces to write out all cached pages.	
-	 sync() is called from time to time by the background sync daemon. */
+	 * sync() is called from time to time by the background sync daemon.
+	 */
 	void sync();
 
 	@Override

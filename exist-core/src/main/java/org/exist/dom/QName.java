@@ -281,7 +281,7 @@ public class QName implements Comparable<QName> {
      * Extract the local name from a QName string.
      *
      * @param qname The QName from which to extract the local name.
-     *
+     * @return the local name of the given QName string
      * @throws IllegalQNameException if the qname starts with a leading : or ends with a :
      */
     public static String extractLocalName(final String qname) throws IllegalQNameException {
@@ -331,11 +331,11 @@ public class QName implements Comparable<QName> {
      * Parses the given string into a QName. The method uses context to look up
      * a namespace URI for an existing prefix.
      *
-     * @param context
+     * @param context the xquery context
      * @param qname The QName may be either in Clark Notation
      *              e.g. `{namespace}local-part` or XDM literal qname form e.g. `prefix:local-part`.
      * @param defaultNS the default namespace to use if no namespace prefix is present.
-     * @return QName
+     * @return parsed QName
      *
      * @throws IllegalQNameException if the qname is invalid
      */
@@ -377,11 +377,12 @@ public class QName implements Comparable<QName> {
      *
      * This method uses the default element namespace for qnames without prefix.
      *
-     * @param context
+     * @param context the xquery context
      * @param qname The QName may be either in Clark Notation
      *              e.g. `{namespace}local-part` or XDM literal qname form
      *              e.g. `prefix:local-part` or `local-part`.
      * @throws IllegalQNameException if no namespace URI is mapped to the prefix
+     * @return the parse QName
      */
     public static QName parse(final Context context, final String qname) throws IllegalQNameException {
         return parse(context, qname, context.getURIForPrefix(XMLConstants.DEFAULT_NS_PREFIX));
@@ -472,7 +473,7 @@ public class QName implements Comparable<QName> {
          * Parses the given prefix into a WildcardLocalPartQName. The method uses context to look up
          * a namespace URI for an existing prefix.
          *
-         * @param context
+         * @param context the xquery context
          * @param prefix The namepspace prefix
          * @param defaultNS the default namespace to use if no namespace prefix is present.
          * @return WildcardLocalPartQName
@@ -499,7 +500,7 @@ public class QName implements Comparable<QName> {
          * Parses the given prefix into a WildcardLocalPartQName. The method uses context to look up
          * a namespace URI for an existing prefix.
          *
-         * @param context
+         * @param context the xquery context
          * @param prefix The namepspace prefix
          * @return WildcardLocalPartQName
          * @exception IllegalQNameException if no namespace URI is mapped to the prefix

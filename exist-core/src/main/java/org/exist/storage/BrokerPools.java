@@ -84,6 +84,7 @@ abstract class BrokerPools {
      * @param config     The configuration object for the database instance
      *
      * @throws EXistException If the initialization fails.
+     * @throws DatabaseConfigurationException in case of an error in the config
      */
     public static void configure(final int minBrokers, final int maxBrokers, final Configuration config)
             throws EXistException, DatabaseConfigurationException {
@@ -101,6 +102,7 @@ abstract class BrokerPools {
      * @param statusObserver    Observes the status of this database instance
      *
      * @throws EXistException If the initialization fails.
+     * @throws DatabaseConfigurationException in case of an error in the config
      */
     public static void configure(final int minBrokers, final int maxBrokers, final Configuration config,
             final Optional<Observer> statusObserver)  throws EXistException, DatabaseConfigurationException {

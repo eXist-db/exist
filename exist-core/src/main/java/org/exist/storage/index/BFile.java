@@ -179,11 +179,12 @@ public class BFile extends BTree {
      * with the key. A new entry is created if the key does not
      * yet exist in the database.
      * 
-     * @param key
-     * @param value
+     * @param key to be documented
+     * @param value to be documented
      *
-     * @throws ReadOnlyException
-     * @throws IOException
+     * @throws ReadOnlyException to be documented
+     * @throws IOException to be documented
+     * @return to be documented
      */
     public long append(final Value key, final ByteArray value)
             throws ReadOnlyException, IOException {
@@ -300,11 +301,11 @@ public class BFile extends BTree {
     /**
      * Remove all entries matching the given query.
      *
-     * @param transaction
-     * @param query
+     * @param transaction to be documented
+     * @param query to be documented
      *
-     * @throws IOException
-     * @throws BTreeException
+     * @throws IOException to be documented
+     * @throws BTreeException to be documented
      */
     public void removeAll(final Txn transaction, final IndexQuery query) throws IOException, BTreeException {
         // first collect the values to remove, then sort them by their page number
@@ -411,7 +412,8 @@ public class BFile extends BTree {
      * Get the value data associated with the specified key
      * or null if the key could not be found.
      * 
-     * @param key
+     * @param key to be documented
+     * @return to be documented
      */
     public Value get(final Value key) {
         try {
@@ -434,8 +436,9 @@ public class BFile extends BTree {
      * Get the value data for the given key as a variable byte
      * encoded input stream.
      * 
-     * @param key
-     * @throws IOException
+     * @param key to be documented
+     * @throws IOException to be documented
+     * @return to be documented
      */
     public VariableByteInput getAsStream(final Value key) throws IOException {
         try {
@@ -459,8 +462,9 @@ public class BFile extends BTree {
      * Get the value located at the specified address as a
      * variable byte encoded input stream.
      * 
-     * @param pointer
-     * @throws IOException
+     * @param pointer to be documented
+     * @throws IOException to be documented
+     * @return to be documented
      */
     public VariableByteInput getAsStream(final long pointer) throws IOException {
         final DataPage page = getDataPage(StorageAddress.pageFromPointer(pointer));
@@ -488,7 +492,7 @@ public class BFile extends BTree {
     /**
      * Returns the value located at the specified address.
      * 
-     * @param p
+     * @param p to be documented
      * @return value located at the specified address
      */
     public Value get(final long p) {
@@ -504,6 +508,10 @@ public class BFile extends BTree {
 
     /**
      * Retrieve value at logical address p from page
+     * @param p to be documented
+     * @param page to be documented
+     * @return to be documented
+     * @throws IOException to be documented
      */
     protected Value get(final DataPage page, final long p) throws IOException {
         final short tid = StorageAddress.tidFromPointer(p);
@@ -594,12 +602,12 @@ public class BFile extends BTree {
     /**
      * Put data under given key.
      *
-     * @param key
+     * @param key to be documented
      * @param data the data (value) to update
      * @param overwrite overwrite if set to true, value will be overwritten if it already exists
      *
      * @return on success the address of the stored value, else UNKNOWN_ADDRESS
-     * @throws ReadOnlyException 
+     * @throws ReadOnlyException to be documented
      */
     public long put(final Value key, final byte[] data, final boolean overwrite) throws ReadOnlyException {
         return put(null, key, data, overwrite);
@@ -908,18 +916,14 @@ public class BFile extends BTree {
     /**
      * Update the key/value pair with logical address p and stored in page.
      * 
-     * @param p
-     *                   Description of the Parameter
-     * @param page
-     *                   Description of the Parameter
-     * @param key
-     *                   Description of the Parameter
-     * @param value
-     *                   Description of the Parameter
-     * @exception BTreeException
-     *                        Description of the Exception
-     * @exception IOException
-     *                        Description of the Exception
+     * @param p Description of the Parameter
+     * @param page Description of the Parameter
+     * @param key Description of the Parameter
+     * @param value  Description of the Parameter
+     * @param transaction to be documented
+     * @exception BTreeException Description of the Exception
+     * @exception IOException Description of the Exception
+     * @return to be documented
      */
     protected long update(final Txn transaction, final long p, final DataPage page, final Value key, final ByteArray value)
             throws BTreeException, IOException {

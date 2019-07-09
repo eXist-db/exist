@@ -40,16 +40,6 @@ public class OverflowAppendLoggable extends AbstractBFileLoggable {
     protected int chunkSize;
     protected int startOffset;
 
-    /**
-     * 
-     * 
-     * @param page 
-     * @param chunk 
-     * @param startOffset 
-     * @param chunkSize 
-     * @param fileId 
-     * @param transaction 
-     */
     public OverflowAppendLoggable(byte fileId, Txn transaction, long page, 
             ByteArray chunk, int startOffset, int chunkSize) {
         super(BFile.LOG_OVERFLOW_APPEND, fileId, transaction);
@@ -59,10 +49,6 @@ public class OverflowAppendLoggable extends AbstractBFileLoggable {
         this.startOffset = startOffset;
     }
 
-    /**
-     * @param broker
-     * @param transactionId
-     */
     public OverflowAppendLoggable(DBBroker broker, long transactionId) {
         super(broker, transactionId);
     }

@@ -48,6 +48,12 @@ public interface XmlRpcCompiledXQueryFunction<R> extends Function2E<CompiledXQue
      * Signature for lambda function which takes a compiled XQuery
      *
      * @param compiledQuery The compiled XQuery
+     * @return to be documented
+     * @throws EXistException to be documented
+     * @throws PermissionDeniedException to be documented
+     * @throws XPathException to be documented
+
+     *
      */
     R applyXmlRpc(final CompiledXQuery compiledQuery) throws EXistException, PermissionDeniedException, XPathException;
 }

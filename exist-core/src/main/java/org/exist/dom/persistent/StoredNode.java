@@ -63,6 +63,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
      * Creates a new <code>StoredNode</code> instance.
      *
      * @param nodeType a <code>short</code> value
+     * return new StoredNode
      */
     protected StoredNode(final short nodeType) {
         this.nodeType = nodeType;
@@ -94,6 +95,8 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
 
     /**
      * Extracts just the details of the StoredNode
+     * @return details of the stored node
+     *
      */
     public StoredNode extract() {
         return new StoredNode(this) {
@@ -120,10 +123,11 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
      * This checks the node type and calls the {@link #deserialize(byte[], int, int, DocumentImpl, boolean)}
      * method of the corresponding node class.
      *
-     * @param data
-     * @param start
-     * @param len
-     * @param doc
+     * @param data the byte array to read a node from
+     * @param start where to start
+     * @param len how much to read
+     * @param doc the doc to store the result in
+     * @return StoredNode of given byte array
      */
     public static StoredNode deserialize(final byte[] data, final int start, final int len, final DocumentImpl doc) {
         return deserialize(data, start, len, doc, false);
@@ -136,10 +140,12 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
      * method of the corresponding node class. The node will be allocated in the pool
      * and should be released once it is no longer needed.
      *
-     * @param data
-     * @param start
-     * @param len
-     * @param doc
+     * @param data the byte array to read a node from
+      * @param start where to start
+     * @param len how much to read
+     * @param doc the doc to store the result in
+     * @param pooled if true the node will be allocated in the pool
+     * @return StoredNode of given byte array
      */
     public static StoredNode deserialize(final byte[] data, final int start, final int len, final DocumentImpl doc, boolean pooled) {
         final short type = Signatures.getType(data[start]);

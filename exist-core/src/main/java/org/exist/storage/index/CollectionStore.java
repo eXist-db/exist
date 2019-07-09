@@ -43,13 +43,6 @@ public class CollectionStore extends BFile {
     private Deque<Integer> freeResourceIds = new ArrayDeque<>();
     private Deque<Integer> freeCollectionIds = new ArrayDeque<>();
 
-    /**
-     * @param pool
-     * @param id
-     * @param dataDir
-     * @param config
-     * @throws DBException
-     */
     public CollectionStore(BrokerPool pool, byte id, Path dataDir, Configuration config) throws DBException {
         super(pool, id, FILE_FORMAT_VERSION_ID, true, dataDir.resolve(getFileName()),
                 pool.getCacheManager(), 1.25, 0.03);

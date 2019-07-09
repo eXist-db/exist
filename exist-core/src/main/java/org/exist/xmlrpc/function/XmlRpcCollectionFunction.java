@@ -56,6 +56,12 @@ public interface XmlRpcCollectionFunction<R> extends TriFunction2E<Collection, D
      * @param collection The database collection
      * @param broker The database broker for the XML-RPC function
      * @param transaction The transaction for the XML-RPC function
+     * @return to be documented
+     * @throws EXistException to be documented
+     * @throws PermissionDeniedException to be documented
+     * @throws IOException to be documented
+     * @throws SAXException to be documented
+     * @throws LockException to be documented
      */
     R applyXmlRpc(org.exist.collections.Collection collection, final DBBroker broker, final Txn transaction) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException;
 }

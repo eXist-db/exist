@@ -455,6 +455,8 @@ public class TransactionManager implements BrokerPoolService {
 
     /**
      * @deprecated This mixes concerns and should not be here!
+     * @param broker the  eXist-db DBBroker
+     * @throws IOException in response to an I/O error
      */
     @Deprecated
     public void reindex(final DBBroker broker) throws IOException {

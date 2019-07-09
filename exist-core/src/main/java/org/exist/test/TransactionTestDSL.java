@@ -81,16 +81,16 @@ import static org.exist.util.ThreadUtils.newInstanceSubThreadGroup;
  * its own thread but operationally linear
  * according to the schedule:
  *
- * <pre>{@code
+ * <pre>
  *
  * import static org.exist.test.TransactionTestDSL.TransactionOperation.*;
  * import static org.exist.test.TransactionTestDSL.TransactionScheduleBuilder.biSchedule;
  *
- * @Test
+ * {@code @Test}
  * public void getDocuments() throws ExecutionException, InterruptedException {
  *   final String documentUri = "/db/test/hamlet.xml";
  *
- *   final Tuple2<DocumentImpl, DocumentImpl> result = biSchedule()
+ *   final Tuple2{@code <DocumentImpl, DocumentImpl>} result = biSchedule()
  *       .firstT1(getDocument(documentUri))
  *                                            .andThenT2(getDocument(documentUri))
  *       .andThenT1(commit())
@@ -106,7 +106,7 @@ import static org.exist.util.ThreadUtils.newInstanceSubThreadGroup;
  *   assertEquals(documentUri, result._2.getURI().getCollectionPath());
  * }
  *
- * }</pre>
+ * </pre>
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */

@@ -34,22 +34,22 @@ public class CollectionConfigurationException extends Exception {
 	}
 
 	/**
-	 * @param message
+	 * @param message of the exception
 	 */
 	public CollectionConfigurationException(String message) {
 		super(message);
 	}
 
 	/**
-	 * @param cause
+	 * @param cause of the exception
 	 */
 	public CollectionConfigurationException(Throwable cause) {
 		super(cause);
 	}
 
 	/**
-	 * @param message
-	 * @param cause
+	 * @param message of the exception
+	 * @param cause of the exception
 	 */
 	public CollectionConfigurationException(String message, Throwable cause) {
 		super(message, cause);

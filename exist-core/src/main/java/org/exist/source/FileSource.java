@@ -53,6 +53,8 @@ public class FileSource extends AbstractSource {
 
     /**
      * Defaults to UTF-8 encoding for the path path
+     * @param path to file source
+     * @param checkXQEncoding enable / disable XQEncoding
      */
     public FileSource(final Path path, final boolean checkXQEncoding) {
         this(path, StandardCharsets.UTF_8, checkXQEncoding);

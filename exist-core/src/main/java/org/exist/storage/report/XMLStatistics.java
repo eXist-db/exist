@@ -45,9 +45,6 @@ public class XMLStatistics {
     public final static String PREFIX = "status";
     public ContentHandler contentHandler;
 
-    /**
-     * @param contentHandler
-     */
     public XMLStatistics(ContentHandler contentHandler) {
         this.contentHandler = contentHandler;
     }
@@ -133,9 +130,6 @@ public class XMLStatistics {
         this.contentHandler.endElement(NAMESPACE, elem, PREFIX + ':' + elem);
     }
 
-    /**
-     * @param contentHandler
-     */
     public void setContentHandler(ContentHandler contentHandler) {
         this.contentHandler = contentHandler;
     }

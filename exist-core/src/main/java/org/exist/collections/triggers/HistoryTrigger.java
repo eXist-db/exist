@@ -48,19 +48,19 @@ import org.exist.xquery.value.DateTimeValue;
  * resembles this:
  *
  * <pre>
- *   &lt;?xml version='1.0'?>
- *   &lt;collection xmlns='http://exist-db.org/collection-config/1.0'>
- *     &lt;triggers>
+ *   &lt;?xml version='1.0'?&gt;
+ *   &lt;collection xmlns='http://exist-db.org/collection-config/1.0'&gt;
+ *     &lt;triggers&gt;
  *       &lt;trigger 
  *         event='update'
  *         class='org.exist.collections.triggers.HistoryTrigger'
- *       />
+ *       /&gt;
  *       &lt;trigger
  *         event='remove'
  *         class='org.exist.collections.triggers.HistoryTrigger'
- *       />
- *     &lt;/triggers>
- *   &lt;/collection>
+ *       /&gt;
+ *     &lt;/triggers&gt;
+ *   &lt;/collection&gt;
  * </pre>
  *
  * @author Mark Spanbroek

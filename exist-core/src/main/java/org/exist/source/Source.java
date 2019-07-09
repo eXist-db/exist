@@ -57,7 +57,7 @@ public interface Source {
     /**
      * Returns a unique key to identify the source, usually
      * an URI.
-     * 
+     * @return unique key to identify the source, usually an URI
      */
     Object getKey();
     
@@ -71,7 +71,8 @@ public interface Source {
      * some implementations as they have to read
      * resources from the database.
      * 
-     * @param broker
+     * @param broker eXist-db broker
+     * @return Validity of the source object
      */
     Validity isValid(DBBroker broker);
     
@@ -84,15 +85,16 @@ public interface Source {
      * Use this method if {@link #isValid(DBBroker)}
      * return {@link Validity#UNKNOWN}.
      * 
-     * @param other
+     * @param other source
+     * @return Validity of the other source object
      */
     Validity isValid(Source other);
     
     /**
      * Returns a {@link Reader} to read the contents
      * of the source.
-     * 
-     * @throws IOException
+     * @return Reader to read the contents of the source
+     * @throws IOException in case of an I/O error
      */
     Reader getReader() throws IOException;
 
@@ -104,7 +106,7 @@ public interface Source {
      * Returns the character encoding of the underlying source or null if unknown.
      *
      * @return the character encoding
-     * @throws IOException
+     * @throws IOException in case of an I/O error
      */
     @Nullable Charset getEncoding() throws IOException;
 
@@ -113,7 +115,7 @@ public interface Source {
      * by {@link org.exist.storage.XQueryPool} to
      * check if a source has timed out.
      * 
-     * @param timestamp
+     * @param timestamp for the source
      */
     void setCacheTimestamp(long timestamp);
     
@@ -124,6 +126,7 @@ public interface Source {
      *
      * @param  subject The subject
      * @param  perm The requested permissions
+     * @throws PermissionDeniedException if user has not sufficient rights
      */
     void validate(Subject subject, int perm) throws PermissionDeniedException;
 

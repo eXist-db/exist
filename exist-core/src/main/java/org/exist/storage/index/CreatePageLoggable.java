@@ -34,14 +34,7 @@ import org.exist.storage.txn.Txn;
 public class CreatePageLoggable extends AbstractBFileLoggable {
 
     protected long newPage;
-    
-    /**
-     * 
-     * 
-     * @param transaction 
-     * @param fileId 
-     * @param newPage 
-     */
+
     public CreatePageLoggable(Txn transaction, byte fileId, long newPage) {
         super(BFile.LOG_CREATE_PAGE, fileId, transaction);
         this.newPage = newPage;

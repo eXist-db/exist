@@ -53,6 +53,12 @@ public interface XmlRpcFunction<R> extends BiFunction2E<DBBroker, Txn, R, EXistE
      *
      * @param broker The database broker for the XML-RPC function
      * @param transaction The transaction for the XML-RPC function
+     * @return to be documented
+     * @throws EXistException to be documented
+     * @throws PermissionDeniedException to be documented
+     * @throws SAXException to be documented
+     * @throws IOException to be documented
+     * @throws LockException to be documented
      */
     R applyXmlRpc(final DBBroker broker, final Txn transaction) throws EXistException, PermissionDeniedException, LockException, SAXException, IOException;
 }

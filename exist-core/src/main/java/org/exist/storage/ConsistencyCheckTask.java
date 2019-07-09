@@ -200,7 +200,7 @@ public class ConsistencyCheckTask implements SystemTask {
     }
 
     /**
-     * Gets the last exported backup
+     * @return path to the last exported backup
      */
     public Path getLastExportedBackup()
     {

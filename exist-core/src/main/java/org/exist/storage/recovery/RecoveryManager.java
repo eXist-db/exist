@@ -76,6 +76,7 @@ public class RecoveryManager {
 	 * recovery run is started beginning at the last checkpoint found.
 	 *  
 	 * @throws LogException Reading of journal failed.
+     * @return if recover was successful
 	 */
 	public boolean recover() throws LogException {
         boolean recoveryRun = false;

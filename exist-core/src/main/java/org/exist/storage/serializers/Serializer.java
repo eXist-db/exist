@@ -327,6 +327,7 @@ public abstract class Serializer implements XMLReader {
 	/**
 	 *  If an XSL stylesheet is present, plug it into
 	 *  the chain.
+	 * @param writer to be documented
 	 */
 	protected void applyXSLHandler(Writer writer) {
 		final StreamResult result = new StreamResult(writer);
@@ -354,14 +355,12 @@ public abstract class Serializer implements XMLReader {
 	/**
 	 * Set the current User. A valid user is required to
 	 * process XInclude elements.
+	 * @param user to be documented
 	 */
 	public void setUser(Subject user) {
 		this.user = user;
 	}
 
-	/**
-	 * Get the current User.
-	 */
 	public Subject getUser() {
 		return user;
 	}
@@ -442,6 +441,9 @@ public abstract class Serializer implements XMLReader {
 	
 	/**
 	 *  Serialize a document to the supplied writer.
+	 * @param writer to be documented
+	 * @param doc to be documented
+	 * @throws SAXException to be documented
 	 */
 	public void serialize(DocumentImpl doc, Writer writer) throws SAXException {
 		serialize(doc, writer, true);
@@ -547,7 +549,8 @@ public abstract class Serializer implements XMLReader {
 	/**
 	 *  Set the ContentHandler to be used during serialization.
 	 *
-	 *@param  contentHandler  The new contentHandler value
+	 * @param  contentHandler  The new contentHandler value
+	 * @param lexicalHandler to be documented
 	 */
 	public void setSAXHandlers(ContentHandler contentHandler, LexicalHandler lexicalHandler) {
 		ReceiverToSAX toSAX = new ReceiverToSAX(contentHandler);
@@ -699,6 +702,9 @@ public abstract class Serializer implements XMLReader {
 	/**
 	 *  Plug an XSL stylesheet into the processing pipeline.
 	 *  All output will be passed to this stylesheet.
+	 * @param doc to be documented
+	 * @param stylesheet to be documented
+	 * @throws TransformerConfigurationException to be documented
 	 */
 	public void setStylesheet(DocumentImpl doc, String stylesheet) throws TransformerConfigurationException {
 		if (stylesheet == null) {
@@ -777,9 +783,6 @@ public abstract class Serializer implements XMLReader {
         checkStylesheetParams();
 	}
 
-	/** 
-	 * Set stylesheet parameter
-	 **/
 	public void setStylesheetParam(String param, String value) {
 		if (xslHandler != null)
 			{xslHandler.getTransformer().setParameter(param, value);}
@@ -1107,7 +1110,7 @@ public abstract class Serializer implements XMLReader {
      * Check if the document has an xml-stylesheet processing instruction
      * that references an XSLT stylesheet. Return the link to the stylesheet.
      *  
-     * @param doc
+     * @param doc to be documented
      * @return link to the stylesheet
      */
 	public String hasXSLPi(Document doc) {
@@ -1146,7 +1149,7 @@ public abstract class Serializer implements XMLReader {
      * contained within the Database (not an in memory attribute).
      *
      * @param item a NodeValue
-     * @throws SAXException
+     * @throws SAXException to be documented
      * @author Charles Foster
      */
     protected void serializeTypeAttributeValue(NodeValue item) throws SAXException {
@@ -1162,7 +1165,7 @@ public abstract class Serializer implements XMLReader {
      * This is required for the XQJ API implementation.
      *
      * @param item a NodeValue which will be wrapped in a element.
-     * @throws SAXException
+     * @throws SAXException to be documented
      * @author Charles Foster
      */
     protected void serializeTypePreNode(NodeValue item) throws SAXException {
@@ -1214,7 +1217,7 @@ public abstract class Serializer implements XMLReader {
      * This is required for the XQJ API implementation.
      *
      * @param item the item which will be wrapped in an element.
-     * @throws SAXException
+     * @throws SAXException to be documented
      * @author Charles Foster
      */
     protected void serializeTypePostNode(NodeValue item) throws SAXException {

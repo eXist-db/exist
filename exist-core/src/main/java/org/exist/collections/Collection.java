@@ -35,7 +35,7 @@ import static org.exist.storage.lock.Lock.LockMode.WRITE_LOCK;
  * child Collections and documents, and provides the methods to store/remove resources.
  *
  * Collections are shared between {@link org.exist.storage.DBBroker} instances. The caller
- * is responsible to lock/unlock the collection. Call {@link DBBroker#openCollection(XmldbURI, LockMode)}
+ * is responsible to lock/unlock the collection. Call {@link org.exist.storage.DBBroker#openCollection(org.exist.xmldb.XmldbURI, org.exist.storage.lock.Lock.LockMode)}
  * to get a collection with a read or write lock and {@link #close()} to release the lock.
  */
 public interface Collection extends Resource, Comparable<Collection>, AutoCloseable {
@@ -97,6 +97,8 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param broker The database broker.
      * @param mode The unix like mode of the Collection permissions
+     * @throws LockException if dbbroker is locked
+     * @throws PermissionDeniedException if use does not have required permissions
      */
     void setPermissions(DBBroker broker, int mode) throws LockException, PermissionDeniedException;
 
@@ -121,6 +123,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * Get the Collection Configuration of this Collection
      *
      * @param broker The database broker
+     * @return CollectionConfiguration of this Collection
      */
     @Nullable CollectionConfiguration getConfiguration(DBBroker broker);
 
@@ -128,6 +131,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * Get the index configuration for this collection
      *
      * @param broker The database broker
+     * @return IndexSpec aka configuration for this collection
      */
     IndexSpec getIndexConfiguration(DBBroker broker);
 
@@ -192,6 +196,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param broker The database broker
      * @return true if the collection is empty, false otherwise
+     * @throws PermissionDeniedException if user has not sufficient rights
      */
     boolean isEmpty(DBBroker broker) throws PermissionDeniedException;
 
@@ -200,6 +205,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param broker The database broker
      * @return The number of documents in the Collection, or -1 if the collection could not be locked
+     * @throws PermissionDeniedException if user has not sufficient rights
      */
     int getDocumentCount(DBBroker broker) throws PermissionDeniedException;
 
@@ -208,6 +214,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param broker The database broker
      * @return The number of documents in the Collection
+     * @throws PermissionDeniedException if user has not sufficient rights
      * @deprecated Use {@link #getDocumentCount(DBBroker)}
      */
     @Deprecated
@@ -217,6 +224,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * Return the number of child Collections within this Collection.
      *
      * @param broker The database broker
+     * @throws PermissionDeniedException if user has not sufficient rights
      * @return The childCollectionCount value
      */
     int getChildCollectionCount(DBBroker broker) throws PermissionDeniedException;
@@ -226,6 +234,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param broker The database broker
      * @param name   the name (without path) of the document
+     * @throws PermissionDeniedException if user has not sufficient rights
      * @return true when the collection has the document, false otherwise
      */
     boolean hasDocument(DBBroker broker, XmldbURI name) throws PermissionDeniedException;
@@ -236,6 +245,8 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker The database broker
      * @param name   the name of the child Collection (without path)
      * @return true if the child Collection exists, false otherwise
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
      */
     boolean hasChildCollection(DBBroker broker, XmldbURI name) throws PermissionDeniedException, LockException;
 
@@ -245,6 +256,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker The database broker
      * @param name   the name of the child Collection (without path)
      * @return true if the child Collection exists, false otherwise
+     * @throws PermissionDeniedException if user has not sufficient rights
      * @deprecated Use {@link #hasChildCollection(DBBroker, XmldbURI)} instead
      */
     @Deprecated
@@ -255,6 +267,8 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param broker The database broker
      * @param child  The child Collection to add to this Collection
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
      */
     void addCollection(DBBroker broker, @EnsureLocked(mode=WRITE_LOCK) Collection child)
             throws PermissionDeniedException, LockException;
@@ -265,6 +279,9 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param broker The database broker
      * @return A list of entries in this Collection
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
      */
     List<CollectionEntry> getEntries(DBBroker broker)
             throws PermissionDeniedException, LockException, IOException;
@@ -275,6 +292,9 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker The database broker
      * @param name   The name of the child Collection
      * @return The child Collection entry
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
      */
     CollectionEntry getChildCollectionEntry(DBBroker broker, String name)
             throws PermissionDeniedException, LockException, IOException;
@@ -285,6 +305,9 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker The database broker
      * @param name   The name of the resource
      * @return The resource entry
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
      */
     CollectionEntry getResourceEntry(DBBroker broker, String name)
             throws PermissionDeniedException, LockException, IOException;
@@ -294,6 +317,8 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param broker The database broker
      * @param child  The child Collection to update
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
      */
     void update(DBBroker broker, @EnsureLocked(mode=WRITE_LOCK) Collection child) throws PermissionDeniedException, LockException;
 
@@ -303,6 +328,8 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param transaction The database transaction
      * @param broker      The database broker
      * @param doc         The document to add to the Collection
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
      */
     void addDocument(Txn transaction, DBBroker broker, DocumentImpl doc)
             throws PermissionDeniedException, LockException;
@@ -313,6 +340,8 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param broker The database broker
      * @param doc    The document to unlink from the Collection
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
      */
     void unlinkDocument(DBBroker broker, @EnsureLocked(mode=WRITE_LOCK) DocumentImpl doc) throws PermissionDeniedException, LockException;
 
@@ -324,6 +353,8 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param broker The database broker
      * @return An iterator over the child Collections
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
      */
     Iterator<XmldbURI> collectionIterator(DBBroker broker) throws PermissionDeniedException, LockException;
 
@@ -335,6 +366,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param broker The database broker
      * @return An iterator over the child Collections
+     * @throws PermissionDeniedException if user has not sufficient rights
      * @deprecated The creation of the stable iterator may
      * throw an {@link java.lang.IndexOutOfBoundsException},
      * use {@link #collectionIterator(DBBroker)} instead
@@ -347,6 +379,8 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param broker The database broker
      * @return A iterator of all the documents in the Collection.
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
      */
     Iterator<DocumentImpl> iterator(DBBroker broker) throws PermissionDeniedException, LockException;
 
@@ -355,6 +389,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param broker The database broker
      * @return A iterator of all the documents in the Collection.
+     * @throws PermissionDeniedException if user has not sufficient rights
      * @deprecated This is not an atomic operation and
      * so there are no guarantees about which docs will be available to
      * the iterator. Use {@link #iterator(DBBroker)} instead
@@ -371,6 +406,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker The database broker
      * @param user   The user that is performing the operation
      * @return The List of descendant Collections
+     * @throws PermissionDeniedException if user has not sufficient rights
      */
     List<Collection> getDescendants(DBBroker broker, Subject user) throws PermissionDeniedException;
 
@@ -381,6 +417,8 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param docs      A mutable document set which receives the documents
      * @param recursive true if we should get all descendants, false just retrieves the children
      * @return The mutable document set provided in {@code docs}
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
      */
     MutableDocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive)
             throws PermissionDeniedException, LockException;
@@ -393,6 +431,8 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param recursive true if we should get all descendants, false just retrieves the children
      * @param lockMap   A map that receives the locks we have taken on documents
      * @return The mutable document set provided in {@code docs}
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
      */
     MutableDocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive,
                                LockedDocumentMap lockMap) throws PermissionDeniedException, LockException;
@@ -406,6 +446,8 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param lockMap   A map that receives the locks we have taken on documents
      * @param lockType  The type of lock to acquire on the documents
      * @return The mutable document set provided in {@code docs}
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
      */
     DocumentSet allDocs(DBBroker broker, MutableDocumentSet docs, boolean recursive, LockedDocumentMap lockMap,
                         LockMode lockType) throws LockException, PermissionDeniedException;
@@ -416,6 +458,8 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker The database broker
      * @param docs   A mutable document set which receives the documents
      * @return The mutable document set provided in {@code docs}
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
      */
     DocumentSet getDocuments(DBBroker broker, MutableDocumentSet docs) throws PermissionDeniedException, LockException;
 
@@ -441,6 +485,8 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param lockMap  A map that receives the locks we have taken on documents
      * @param lockType The type of lock to acquire on the documents
      * @return The mutable document set provided in {@code docs}
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked*
      */
     DocumentSet getDocuments(DBBroker broker, MutableDocumentSet docs, LockedDocumentMap lockMap, LockMode lockType)
             throws LockException, PermissionDeniedException;
@@ -453,6 +499,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker The database broker
      * @param name   The name of the document (without collection path)
      * @return the document or null if it doesn't exist
+     * @throws PermissionDeniedException if user has not sufficient rights
      */
     @Nullable @EnsureUnlocked DocumentImpl getDocument(DBBroker broker, XmldbURI name) throws PermissionDeniedException;
 
@@ -463,8 +510,10 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker The database broker
      * @param name   The name of the document (without collection path)
      * @return The locked document or null if it doesn't exist
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
      *
-     * @deprecated Use {@link #getDocumentWithLock(DBBroker, XmldbURI, LockMode)}
+     * @deprecated Use {@link #getDocumentWithLock(org.exist.storage.DBBroker, org.exist.xmldb.XmldbURI, org.exist.storage.lock.Lock.LockMode)}
      */
     @Deprecated
     @Nullable LockedDocument getDocumentWithLock(DBBroker broker, XmldbURI name)
@@ -478,6 +527,8 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param name     The name of the document (without collection path)
      * @param lockMode The mode of the lock to acquire
      * @return The locked document or null if it doesn't exist
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked*
      */
     @Nullable LockedDocument getDocumentWithLock(DBBroker broker, XmldbURI name, LockMode lockMode)
             throws LockException, PermissionDeniedException;
@@ -490,6 +541,7 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker  The database broker
      * @param rawPath The path of the document
      * @return the document or null if it doesn't exist
+     * @throws PermissionDeniedException if user has not sufficient rights
      * @deprecated Use {@link #getDocument(DBBroker, XmldbURI)} instead
      */
     @Deprecated
@@ -500,6 +552,8 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      *
      * @param broker The database broker
      * @param name   the name of the child Collection (without path)
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
      */
     void removeCollection(DBBroker broker, XmldbURI name) throws LockException, PermissionDeniedException;
 
@@ -509,6 +563,10 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param transaction The database transaction
      * @param broker      The database broker
      * @param doc         The document to remove
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
      */
     void removeResource(Txn transaction, DBBroker broker, DocumentImpl doc)
             throws PermissionDeniedException, LockException, IOException, TriggerException;
@@ -519,6 +577,10 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param transaction The database transaction
      * @param broker      The database broker
      * @param name        the name (without path) of the document
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
      */
     void removeXMLResource(Txn transaction, DBBroker broker, XmldbURI name)
             throws PermissionDeniedException, TriggerException, LockException, IOException;
@@ -529,6 +591,9 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param transaction The database transaction
      * @param broker      The database broker
      * @param name        the name (without path) of the document
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws TriggerException in case of eXist-db trigger error
      */
     void removeBinaryResource(Txn transaction, DBBroker broker, XmldbURI name)
             throws PermissionDeniedException, LockException, TriggerException;
@@ -539,6 +604,9 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param transaction The database transaction
      * @param broker      The database broker
      * @param doc         the document to remove
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws TriggerException in case of eXist-db trigger error
      */
     void removeBinaryResource(Txn transaction, DBBroker broker, DocumentImpl doc)
             throws PermissionDeniedException, LockException, TriggerException;
@@ -554,6 +622,13 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param name        the name (without path) of the document
      * @param source      The source of the document to store
      * @return An {@link IndexInfo} with a write lock on the document
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception
+     * @throws SAXException internal SAXException
+     *
      */
     IndexInfo validateXMLResource(Txn transaction, DBBroker broker, XmldbURI name, InputSource source)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException;
@@ -571,6 +646,12 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param source      The source of the document to store
      * @param reader      The XML reader to use for reading the {@code source}
      * @return An {@link IndexInfo} with a write lock on the document
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception
+     * @throws SAXException internal SAXException
      */
     IndexInfo validateXMLResource(Txn transaction, DBBroker broker, XmldbURI name, InputSource source, XMLReader reader)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException;
@@ -586,6 +667,12 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param name        the name (without path) of the document
      * @param data        The data of the document to store
      * @return An {@link IndexInfo} with a write lock on the document
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception
+     * @throws SAXException internal SAXException
      */
     IndexInfo validateXMLResource(Txn transaction, DBBroker broker, XmldbURI name, String data)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException;
@@ -601,6 +688,12 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param name        the name (without path) of the document
      * @param node        The document node of the document to store
      * @return An {@link IndexInfo} with a write lock on the document
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception
+     * @throws SAXException internal SAXException
      */
     IndexInfo validateXMLResource(Txn transaction, DBBroker broker, XmldbURI name, Node node)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException;
@@ -615,6 +708,11 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker      The database broker
      * @param info        Tracks information between validate and store phases
      * @param source      The source of the document to store
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception
+     * @throws SAXException internal SAXException
      */
     void store(Txn transaction, DBBroker broker, IndexInfo info, InputSource source)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException;
@@ -630,6 +728,11 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param info        Tracks information between validate and store phases
      * @param source      The source of the document to store
      * @param reader      The XML reader to use for reading the {@code source}
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked*
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception
+     * @throws SAXException internal SAXException
      */
     void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source, final XMLReader reader)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException;
@@ -644,6 +747,11 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker      The database broker
      * @param info        Tracks information between validate and store phases
      * @param data        The data of the document to store
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception
+     * @throws SAXException internal SAXException
      */
     void store(Txn transaction, DBBroker broker, IndexInfo info, String data)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException;
@@ -658,6 +766,11 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker      The database broker
      * @param info        Tracks information between validate and store phases
      * @param node        The document node of the document to store
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception
+     * @throws SAXException internal SAXException
      */
     void store(Txn transaction, DBBroker broker, IndexInfo info, Node node)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException;
@@ -668,7 +781,10 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param transaction The database transaction
      * @param broker      The database broker
      * @param name        the name (without path) of the document
-     *
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
      * @return The Binary Document object
      */
     BinaryDocument validateBinaryResource(Txn transaction, DBBroker broker, XmldbURI name)
@@ -690,6 +806,11 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param size        The size in bytes of the document
      * @param created     The created timestamp of the document
      * @param modified    The modified timestamp of the document
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception*
      *
      * @return The stored Binary Document object
      */
@@ -710,7 +831,11 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param name        the name (without path) of the document
      * @param data        The content for the document
      * @param mimeType    The Internet Media Type of the document
-     *
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception
      * @return The stored Binary Document object
      *
      * @deprecated Use {@link #addBinaryResource(Txn, DBBroker, XmldbURI, InputStream, String, long)}
@@ -734,6 +859,11 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param mimeType    The Internet Media Type of the document
      * @param created     The created timestamp of the document
      * @param modified    The modified timestamp of the document
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception
      *
      * @return The stored Binary Document object
      *
@@ -758,6 +888,12 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param is          The content for the document
      * @param mimeType    The Internet Media Type of the document
      * @param size        The size in bytes of the document
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception
+
      *
      * @return The stored Binary Document object
      */
@@ -781,6 +917,12 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param size        The size in bytes of the document
      * @param created     The created timestamp of the document
      * @param modified    The modified timestamp of the document
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception
+
      *
      * @return The stored Binary Document object
      */
@@ -807,6 +949,12 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param preserve    In the case of a copy, cause the copy process to preserve the following attributes of each
      *                    source in the copy: modification time, file mode, user ID, and group ID, as allowed by
      *                    permissions. Access Control Lists (ACLs) will also be preserved.
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception
+
      *
      * @return The stored Binary Document object
      */
@@ -818,6 +966,9 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * Serializes the Collection to a variable byte representation
      *
      * @param outputStream The output stream to write the collection contents to
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+
      */
     @EnsureContainerLocked(mode=READ_LOCK) void serialize(final VariableByteOutputStream outputStream) throws IOException, LockException;
 

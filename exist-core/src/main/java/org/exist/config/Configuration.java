@@ -42,63 +42,72 @@ public interface Configuration {
 
     /**
      * Return sub configuration by name.
+     * @param name of the configuration
+     * @return Configuration
      */
     Configuration getConfiguration(String name);
 
     /**
      * Return list of sub configurations by name.
      * 
-     * @param name
+     * @param name of the sub configuration
+     * @return the selected sub configuration
      */
     List<Configuration> getConfigurations(String name);
 
     /**
-     * Return set of properties configuration have.
+     * Set of properties configuration have
+     * @return set of properties of the configuration
      * 
      */
     Set<String> getProperties();
 
     /**
-     * Check presents of setting by name.
-     * 
-     * @param name
+     * Check presents of setting by name
+     * @param name of the property
+     * @return true if the property is in the configuration  otherwise false
      */
     boolean hasProperty(String name);
 
     /**
      * Return property string value.
      * 
-     * @param property
+     * @param property to get the value for
+     * @return String value of the requested property
      */
     String getProperty(String property);
 
     /**
      * Return property map value.
      * 
-     * @param property
+     * @param property name of the property map
+     * @return property map
      */
     Map<String, String> getPropertyMap(String property);
 
     /**
      * Return property integer value.
      * 
-     * @param property
+     * @param property name
+     * @return property integer value
      *
      */
     Integer getPropertyInteger(String property);
 
     /**
      * Return property long value.
-     * 
-     * @param property
-     * 
+     *
+     * @param property name
+     * @return property long value
+     *
      */
     Long getPropertyLong(String property);
 
     /**
      * Return property boolean value.
-     * 
-     * @param property
+     *
+     * @param property name
+     * @return property boolean value
      * 
      */
     Boolean getPropertyBoolean(String property);
@@ -106,54 +115,59 @@ public interface Configuration {
     /**
      * Keep at internal map object associated with key.
      * 
-     * @param name
-     * @param object
+     * @param name of the object
+     * @param object to add
+     * @return the created object
      */
     Object putObject(String name, Object object);
 
     /**
      * Get object associated by key from internal map.
      * 
-     * @param name
+     * @param name of the object
+     * @return the according object
      */
     Object getObject(String name);
 
     /**
      * Configuration name.
+     * @return name of the Configuration
      */
     String getName();
 
     /**
      * Return configuration's String value.
+     * @return configuration's string value
      */
     String getValue();
 
     /**
      * Return element associated with configuration.
+     * @return element associated with configuration.
      */
     Element getElement();
 
     /**
      * Perform check for changers.
      * 
-     * @param document
+     * @param document to check for changes
      */
     void checkForUpdates(Element document);
 
     /**
      * Save configuration.
      * 
-     * @throws PermissionDeniedException
-     * @throws ConfigurationException
+     * @throws PermissionDeniedException if permission to save the configuration is denied
+     * @throws ConfigurationException if there is an error in the configuration
      */
     void save() throws PermissionDeniedException, ConfigurationException;
 
     /**
      * Save configuration.
      * 
-     * @param broker
-     * @throws PermissionDeniedException
-     * @throws ConfigurationException
+     * @param broker eXist-db DBBroker
+     * @throws PermissionDeniedException if permission to save the configuration is denied
+     * @throws ConfigurationException if there is an error in the configuration
      */
     void save(DBBroker broker) throws PermissionDeniedException, ConfigurationException;
 
@@ -163,6 +177,7 @@ public interface Configuration {
      * @param obj The Configured instance
      * @param property The name of the property to use for comparison, or
      *                 if empty, the {@link ConfigurationImpl#ID} is used.
+     * @return true if obj equals property otherwise false
      */
     boolean equals(Object obj, Optional<String> property);
     

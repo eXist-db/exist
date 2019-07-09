@@ -45,7 +45,7 @@ public class NodeListImpl extends ArrayList<Node> implements NodeList {
     /**
      * Add all elements of the other NodeList to
      * this NodeList
-     *
+     * @param other NodeList to add
      * @return true if all elements were added, false
      *   if none or only some were added.
      */

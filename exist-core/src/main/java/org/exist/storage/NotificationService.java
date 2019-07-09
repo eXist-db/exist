@@ -54,7 +54,7 @@ public class NotificationService implements BrokerPoolService {
     /**
      * Subscribe an {@link UpdateListener} to receive notifications.
      *
-     * @param listener
+     * @param listener to receive notifications for
      */
     public synchronized void subscribe(final UpdateListener listener) {
         listeners.put(listener, new Object());
@@ -63,7 +63,7 @@ public class NotificationService implements BrokerPoolService {
     /**
      * Unsubscribe an {@link UpdateListener}.
      *
-     * @param listener
+     * @param listener to stop receiving updates for
      */
     public synchronized void unsubscribe(final UpdateListener listener) {
         final Object i = listeners.remove(listener);
@@ -77,8 +77,8 @@ public class NotificationService implements BrokerPoolService {
      * Notify all subscribers that a document has been updated/removed or
      * a new document has been added.
      *
-     * @param document
-     * @param event
+     * @param document subscribers are listining to
+     * @param event that triggers the notify
      */
     public synchronized void notifyUpdate(final DocumentImpl document, final int event) {
         listeners.keySet().forEach(listener -> listener.documentUpdated(document, event));
@@ -87,6 +87,8 @@ public class NotificationService implements BrokerPoolService {
     /**
      * Notify all subscribers that a node has been moved. Nodes may be moved during a
      * defragmentation run.
+     * @param newNode the new node
+     * @param oldNodeId old node that have been moved
      */
     public synchronized void notifyMove(final NodeId oldNodeId, final IStoredNode newNode) {
         listeners.keySet().forEach(listener -> listener.nodeMoved(oldNodeId, newNode));

@@ -22,8 +22,8 @@ public interface UpdateListener {
 	 * Parameter event specifies the event type, i.e. one of {@link #ADD}, {@link #UPDATE} 
 	 * or {@link #REMOVE}.
 	 * 
-	 * @param document
-	 * @param event
+	 * @param document updated document
+	 * @param event update event
 	 */
 	public void documentUpdated(DocumentImpl document, int event);
 
@@ -32,8 +32,8 @@ public interface UpdateListener {
      * the address and the nodeId of a node may have changed. Defragmentation
      * may only occur after a node update.
      *
-     * @param oldNodeId
-     * @param newNode
+     * @param oldNodeId the oold node id
+     * @param newNode the new node the old node was move to
      */
     public void nodeMoved(NodeId oldNodeId, NodeHandle newNode);
 

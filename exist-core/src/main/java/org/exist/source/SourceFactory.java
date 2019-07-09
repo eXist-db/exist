@@ -63,6 +63,7 @@ public class SourceFactory {
      * As a special case, if the URL starts with "resource:", the resource
      * will be read from the current context class loader.
      *
+     * @param broker the eXist-db DBBroker
      * @param contextPath the context path of the resource.
      * @param location the location of the resource (relative to the {@code contextPath}).
      * @param checkXQEncoding where we need to check the encoding of the XQuery.

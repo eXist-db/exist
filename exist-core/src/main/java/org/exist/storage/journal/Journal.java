@@ -602,6 +602,7 @@ public final class Journal implements Closeable {
      * Find the journal file with the highest file number.
      *
      * @param files the journal files to consider.
+     * @return the journal file with the highest file number
      */
     public static int findLastFile(final Stream<Path> files) {
         return files
@@ -632,6 +633,7 @@ public final class Journal implements Closeable {
      * file number.
      *
      * @param fileNum the journal file number.
+     * @return the file corresponding to the specified file number.
      */
     public Path getFile(final int fileNum) {
         return dir.resolve(getFileName(fileNum));

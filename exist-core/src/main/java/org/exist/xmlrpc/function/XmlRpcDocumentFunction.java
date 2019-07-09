@@ -52,6 +52,13 @@ public interface XmlRpcDocumentFunction<R> extends TriFunction2E<DocumentImpl, D
      * Signature for lambda function which takes a document
      *
      * @param document The database collection
+     * @param transaction to be documented
+     * @param broker to be documented
+     * @return to be documented
+     * @throws EXistException to be documented
+     * @throws PermissionDeniedException to be documented
+     * @throws SAXException to be documented
+     * @throws IOException to be documented
      */
     R applyXmlRpc(final DocumentImpl document, final DBBroker broker, final Txn transaction) throws EXistException, PermissionDeniedException, SAXException, IOException;
 }

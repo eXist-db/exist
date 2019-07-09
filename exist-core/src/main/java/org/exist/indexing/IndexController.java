@@ -198,6 +198,8 @@ public class IndexController {
      *
      * @param collection the collection to remove
      * @param broker the broker that will perform the operation
+     * @param reindex enable or disable reindexing after removal
+     * @throws PermissionDeniedException in case user does not have sufficient rights
      */
     public void removeCollection(final Collection collection, final DBBroker broker, final boolean reindex)
             throws PermissionDeniedException {
@@ -250,6 +252,7 @@ public class IndexController {
      *
      * @param node the node to be modified.
      * @param path the NodePath of the node
+     * @param insert TODO: document
      * @return the top-most root node to be re-indexed
      */
     public IStoredNode getReindexRoot(final IStoredNode node, final NodePath path, final boolean insert) {
@@ -263,6 +266,7 @@ public class IndexController {
      *
      * @param node the node to be modified.
      * @param path path the NodePath of the node
+     * @param insert TODO: document
      * @param includeSelf if set to true, the current node itself will be included in the check
      * @return the top-most root node to be re-indexed
      */

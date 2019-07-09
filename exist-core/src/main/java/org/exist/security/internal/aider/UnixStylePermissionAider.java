@@ -62,9 +62,9 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
     /**
      * Construct a permission with given user, group and mode
      *
-     * @param  user
-     * @param  group
-     * @param  mode
+     * @param user name of the owner
+     * @param group name of the group
+     * @param mode mode for the resource.
      */
     public UnixStylePermissionAider(final String user, final String group, final int mode) {
         this.owner = new UserAider(user);

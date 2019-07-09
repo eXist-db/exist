@@ -105,7 +105,7 @@ public class BinaryDocument extends DocumentImpl {
      * Get the Blob Store id for the
      * content of this document.
      *
-     * @return
+     * @return the Blob Store id for the content of this document.
      */
     @Nullable public BlobId getBlobId() {
         return blobId;
@@ -136,6 +136,7 @@ public class BinaryDocument extends DocumentImpl {
      * @param istream the byte stream to read
      *
      * @return the document object.
+     * @throws IOException in case of an I/O error
      */
     public static BinaryDocument read(final BrokerPool pool, final VariableByteInput istream) throws IOException {
         final int docId = istream.readInt();

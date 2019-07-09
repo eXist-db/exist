@@ -93,7 +93,7 @@ public class DOMIndexer {
     /**
      * Scan the DOM tree once to determine its structure.
      *
-     * @throws EXistException
+     * @throws EXistException DOCUMENT ME
      */
     public void scan() throws EXistException {
         //Creates a dummy DOCTYPE

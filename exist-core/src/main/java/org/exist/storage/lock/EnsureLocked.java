@@ -42,21 +42,21 @@ import org.exist.storage.lock.Lock.LockType;
  *
  * For example we may indicate that Collection parameters to methods
  * must already be locked appropriately before the method is called:
- * <pre>{@code
+ * <pre>
  * public Result copyCollection(
- *         @EnsureLocked(mode=LockMode.READ_LOCK) final Collection srcCollection,
- *         @EnsureLocked(mode=LockMode.WRITE_LOCK) final Collection destCollection) {
+ *          {@code @EnsureLocked(mode=LockMode.READ_LOCK)} final Collection srcCollection,
+ *          {@code @EnsureLocked(mode=LockMode.WRITE_LOCK)} final Collection destCollection) {
  *
  *    ...
  *
  * }
- * }</pre>
+ * </pre>
  *
  * We may also indicate that objects returned from a function must have gained an appropriate
  * lock for the calling thread:
  *
- * <pre>{@code
- * public @EnsureLocked(mode=LockMode.READ_LOCK) Collection openCollection(final XmldbURI uri, final LockMode lockMode) {
+ * <pre>
+ * public {@code @EnsureLocked(mode=LockMode.READ_LOCK)} Collection openCollection(final XmldbURI uri, final LockMode lockMode) {
  *
  *    ...
  *
@@ -79,6 +79,7 @@ public @interface EnsureLocked {
      * single {@link Lock.LockMode} type parameter that can be used
      * then an IllegalArgumentException will be generated if {@link EnsureLockingAspect}
      * detects this situation.
+     * @return to be documented
      */
     Lock.LockMode mode() default LockMode.NO_LOCK;
 
@@ -88,6 +89,7 @@ public @interface EnsureLocked {
      *
      * The value of this attribute is the (zero-based) index
      * of the parameter within the method signature.
+     * @return to be documented
      */
     short modeParam() default NO_MODE_PARAM;
 
@@ -99,6 +101,7 @@ public @interface EnsureLocked {
      * Only needed if the annotation is not placed on a
      * {@link org.exist.collections.Collection} or {@link org.exist.dom.persistent.DocumentImpl}
      * parameter or return type.
+     * @return to be documented
      */
     Lock.LockType type() default LockType.UNKNOWN;
 }

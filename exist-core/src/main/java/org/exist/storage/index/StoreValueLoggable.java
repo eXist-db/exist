@@ -39,15 +39,6 @@ public class StoreValueLoggable extends AbstractBFileLoggable {
     protected short tid;
     protected ByteArray value;
 
-    /**
-     * 
-     * 
-     * @param transaction 
-     * @param fileId 
-     * @param page 
-     * @param tid 
-     * @param value 
-     */
     public StoreValueLoggable(Txn transaction, byte fileId, long page, short tid, ByteArray value) {
         super(BFile.LOG_STORE_VALUE, fileId, transaction);
         this.page = page;

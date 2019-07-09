@@ -160,7 +160,7 @@ public abstract class Paged implements AutoCloseable {
     /**
      * Close the underlying files.
      *
-     * @throws DBException
+     * @throws DBException to be documented
      */
     @Override
     public void close() throws DBException {
@@ -184,7 +184,7 @@ public abstract class Paged implements AutoCloseable {
     /**
      * createFileHeader must be implemented by a Paged implementation in order
      * to create an appropriate subclass instance of a FileHeader.
-     *
+     * @param pageSize to be documented
      * @return A new file header
      */
     public abstract FileHeader createFileHeader(int pageSize);
@@ -203,7 +203,7 @@ public abstract class Paged implements AutoCloseable {
 
     /** Flushes {@link org.exist.storage.btree.Paged#flush()} dirty data to the disk and cleans up the cache.
      * @return <code>true</code> if something has actually been cleaned
-     * @throws DBException
+     * @throws DBException to be documented
      */
     public boolean flush() throws DBException {
         boolean flushed = false;
@@ -223,8 +223,8 @@ public abstract class Paged implements AutoCloseable {
      * Backup the entire contents of the underlying file to 
      * an output stream.
      * 
-     * @param os
-     * @throws IOException
+     * @param os to be documented
+     * @throws IOException to be documented
      */
     public void backupToStream(final OutputStream os) throws IOException {
         raf.seek(0);
@@ -280,7 +280,7 @@ public abstract class Paged implements AutoCloseable {
      * concurrency conflicts within a transaction.
      *
      * @return a free page
-     * @throws IOException
+     * @throws IOException to be documented
      */
     protected final Page getFreePage(final boolean reuseDeleted) throws IOException {
         final Page page;
@@ -335,9 +335,6 @@ public abstract class Paged implements AutoCloseable {
         return true;
     }
 
-    /**
-     * @param requiredVersion The required version of the file
-     */
     public boolean open(final short requiredVersion) throws DBException {
         try {
             if (exists()) {
@@ -364,7 +361,7 @@ public abstract class Paged implements AutoCloseable {
 
     /**
      * Debug
-     *
+     * @param out to be documented
      * @exception IOException Description of the Exception
      */
     public void printFreeSpaceList(final PrintStream out) throws IOException {
@@ -385,6 +382,7 @@ public abstract class Paged implements AutoCloseable {
      * setFile sets the file object for this Paged.
      *
      * @param file The File
+     * @throws DBException to be documented
      */
     protected final void setFile(final Path file) throws DBException {
         this.file = file;
@@ -463,6 +461,7 @@ public abstract class Paged implements AutoCloseable {
      * Unfortunately this means we loose some space
      * that we will never recover, but it does mean
      * we are more likely to correctly recover.
+     * @throws IOException to be documented
      */
     protected void dropFreePageList() throws IOException {
         boolean updated = false;

@@ -46,6 +46,7 @@ public interface Reference<R, O> {
 
     /**
      * Get the name of the reference
+     * @return name of the reference
      */
     String getName();
 }
