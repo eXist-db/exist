@@ -45,6 +45,7 @@ public abstract class UserSwitchingBasicFunction extends BasicFunction {
     /**
      * Switches the current broker to the provided user
      *
+     * @param user the user to switch to
      */
     protected void switchUser(final Subject user) {
         context.getBroker().pushSubject(user);

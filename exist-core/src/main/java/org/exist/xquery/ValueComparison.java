@@ -129,6 +129,8 @@ public class ValueComparison extends GeneralComparison {
 	 * @param truncation should strings be truncated before comparison
 	 *                   ({@link StringTruncationOperator#NONE} by default)
 	 * @param relation the relation to compare by
+	 * @return the result of the comparison
+	 * @throws XPathException in case of dynamic error
 	 */
 	public static boolean compareAtomic(Collator collator, AtomicValue lv, AtomicValue rv, StringTruncationOperator truncation, Comparison relation) throws XPathException {
 		int ltype = lv.getType();
