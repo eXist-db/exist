@@ -63,11 +63,6 @@ public class Insert extends Modification {
 
     private int mode = INSERT_BEFORE;
 
-    /**
-     * @param context
-     * @param select
-     * @param value
-     */
     public Insert(XQueryContext context, Expression select, Expression value, int mode) {
         super(context, select, value);
         this.mode = mode;
