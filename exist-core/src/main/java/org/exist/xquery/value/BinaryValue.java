@@ -153,6 +153,7 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
      *
      * @param <T> either File or byte[]
      * @return the value converted to a corresponding java object
+     * @throws XPathException in case of dynamic error
      */
     public <T> T toJavaObject() throws XPathException {
         return (T) toJavaObject(byte[].class);
