@@ -50,8 +50,11 @@ public class JavaCall extends Function {
 	private List<AccessibleObject> candidateMethods = new ArrayList<AccessibleObject>(5);
 
 	/**
-	 * @param context
-	 * @param qname the of the function
+	 * Create new call on the Java method or constructor identified by the QName.
+	 *
+	 * @param context current context
+	 * @param qname the name of the function
+	 * @throws XPathException in case of a static error
 	 */
 	public JavaCall(XQueryContext context, QName qname) throws XPathException {
 		super(context, null);

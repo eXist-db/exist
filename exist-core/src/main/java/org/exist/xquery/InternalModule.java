@@ -52,7 +52,8 @@ public interface InternalModule extends Module {
 	 * by qname or null if it is not defined. Called by
 	 * {@link FunctionFactory}.
 	 * 
-	 * @param qname
+	 * @param qname function QName to get definition for
+	 * @param argCount arity of the function
 	 * @return implementing class for the function
 	 */
 	FunctionDef getFunctionDef(QName qname, int argCount);
@@ -61,7 +62,7 @@ public interface InternalModule extends Module {
 	 * Returns all functions defined in this module matching the
 	 * specified qname.
 	 * 
-	 * @param qname
+	 * @param qname function QName to match
 	 * @return all functions defined in this module
 	 */
 	List<FunctionSignature> getFunctionsByName(QName qname);

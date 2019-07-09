@@ -52,7 +52,7 @@ public class ForExpr extends BindingExpression {
      * A "for" expression may have an optional positional variable whose
      * QName can be set via this method.
      * 
-     * @param var
+     * @param var the name of the variable to set
      */
     public void setPositionalVariable(String var) {
         positionalVariable = var;

@@ -126,7 +126,7 @@ public interface Module {
 	/**
 	 * Reset the module's internal state for being reused.
 	 *
-	 * @param context the xquery context
+	 * @param xqueryContext the xquery context
 	 * @param keepGlobals true to keep global declarations
 	 */
 	public void reset(XQueryContext xqueryContext, boolean keepGlobals);

@@ -45,9 +45,6 @@ public abstract class LogicalOp extends BinaryOp {
 	
     protected Expression parent;
 
-    /**
-	 * @param context
-	 */
 	public LogicalOp(XQueryContext context) {
 		super(context);
 	}

@@ -45,7 +45,10 @@ public class CastExpression extends AbstractExpression {
 	 * Constructor. When calling {@link #eval(Sequence, Item)} 
 	 * the passed expression will be cast into the required type and cardinality.
 	 * 
-	 * @param context
+	 * @param context current context
+     * @param expr expression to cast
+     * @param requiredType the {@link Type} expected
+     * @param cardinality the {@link Cardinality} expected
 	 */
 	public CastExpression(XQueryContext context, Expression expr, int requiredType, int cardinality) {
 		super(context);

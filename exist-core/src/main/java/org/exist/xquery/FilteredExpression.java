@@ -44,9 +44,6 @@ public class FilteredExpression extends AbstractExpression {
     final protected List<Predicate> predicates = new ArrayList<Predicate>(2);
     private Expression parent;
 
-    /**
-     * @param context
-     */
     public FilteredExpression(XQueryContext context, Expression expr) {
         super(context);
         this.expression = expr.simplify();

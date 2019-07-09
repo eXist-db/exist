@@ -35,10 +35,7 @@ public class InstanceOfExpression extends AbstractExpression {
 
 	private final Expression expression;
 	private final SequenceType type;
-	
-	/**
-	 * @param context
-	 */
+
 	public InstanceOfExpression(XQueryContext context, Expression expr, SequenceType type) {
 		super(context);
 		this.expression = expr;
