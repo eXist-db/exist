@@ -65,7 +65,7 @@ public interface RpcAPI {
      * Shut down the database immediately.
      *
      * @return true if the shutdown succeeded, false otherwise
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws PermissionDeniedException If the current user does not have the permission to shut down the database
      */
     boolean shutdown() throws PermissionDeniedException;
 
@@ -74,7 +74,7 @@ public interface RpcAPI {
      *
      * @param delay The delay in milliseconds
      * @return true if the shutdown was scheduled, false otherwise
-     * @throws PermissionDeniedException
+     * @throws PermissionDeniedException If the current user does not have the permission to shut down the database
      * @deprecated Use {@link org.exist.xmlrpc.RpcAPI#shutdown(long)}
      */
     @Deprecated
@@ -85,7 +85,7 @@ public interface RpcAPI {
      *
      * @param delay The delay in milliseconds
      * @return true if the shutdown succeeded, false otherwise
-     * @throws PermissionDeniedException
+     * @throws PermissionDeniedException If the current user does not have the permission to shut down the database
      */
     boolean shutdown(long delay) throws PermissionDeniedException;
 
@@ -102,6 +102,8 @@ public interface RpcAPI {
      * @param digestAlgorithm the digest algorithm
      *
      * @return the message digest of the content
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to access the path
      */
     Map<String, Object> getContentDigest(final String path, final String digestAlgorithm) throws EXistException, PermissionDeniedException;
 
@@ -118,8 +120,8 @@ public interface RpcAPI {
      * @param prettyPrint pretty print XML if &gt;0.
      * @param encoding character encoding to use.
      * @return Document data as binary array.
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     byte[] getDocument(String name, String encoding, int prettyPrint)
             throws EXistException, PermissionDeniedException;
@@ -137,10 +139,10 @@ public interface RpcAPI {
      * @param name the document's name.
      * @param prettyPrint pretty print XML if &gt;0.
      * @param encoding character encoding to use.
-     * @param stylesheet
+     * @param stylesheet the stylesheet to apply
      * @return The document value
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     byte[] getDocument(String name, String encoding, int prettyPrint, String stylesheet)
             throws EXistException, PermissionDeniedException;
@@ -158,8 +160,8 @@ public interface RpcAPI {
      * @param name the document's name.
      * @param parameters Map of parameters.
      * @return The document value
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     byte[] getDocument(String name, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException;
@@ -177,11 +179,11 @@ public interface RpcAPI {
      * Retrieve the specified document, but limit the number of bytes
      * transmitted to avoid memory shortage on the server.
      *
-     * @param name
-     * @param parameters
-     * @return 
-     * @throws EXistException
-     * @throws PermissionDeniedException
+     * @param name the name of the document
+     * @param parameters the parameters
+     * @return document data
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     Map<String, Object> getDocumentData(String name, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException;
@@ -201,9 +203,9 @@ public interface RpcAPI {
      *
      * @param name Description of the Parameter
      * @return Description of the Return Value
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
-     * @throws java.net.URISyntaxException
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
+     * @throws URISyntaxException If the URI contains syntax errors
      */
     boolean hasDocument(String name) throws EXistException, PermissionDeniedException, URISyntaxException;
 
@@ -213,9 +215,9 @@ public interface RpcAPI {
      *
      * @param name Description of the Parameter
      * @return Description of the Return Value
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
-     * @throws java.net.URISyntaxException
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
+     * @throws URISyntaxException If the URI contains syntax errors
      */
     boolean hasCollection(String name) throws EXistException, PermissionDeniedException, URISyntaxException;
 
@@ -226,8 +228,8 @@ public interface RpcAPI {
      * Get a list of all documents contained in the database.
      *
      * @return list of document paths
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     List<String> getDocumentListing() throws EXistException, PermissionDeniedException;
 
@@ -236,9 +238,9 @@ public interface RpcAPI {
      *
      * @param collection the collection to use.
      * @return list of document paths
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
-     * @throws java.net.URISyntaxException
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
+     * @throws URISyntaxException If the URI contains syntax errors
      */
     List<String> getDocumentListing(String collection)
             throws EXistException, PermissionDeniedException, URISyntaxException;
@@ -255,11 +257,11 @@ public interface RpcAPI {
      *
      * @param collectionUri The URI of the collection of interest
      *
-     * @return true if the collection exists and the user can open it, false if
-     * the collection does not exist
-     * @throws org.exist.EXistException
-     * @throws PermissionDeniedException If the user does not have permission to
-     * open the collection
+     * @return  true, if the collection exists and the user can open it, and
+     *          false, if the collection does not exist
+     *
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     boolean existsAndCanOpenCollection(final String collectionUri) throws EXistException, PermissionDeniedException;
 
@@ -297,10 +299,10 @@ public interface RpcAPI {
      *	type					Type of the resource: either "XMLResource" or "BinaryResource"
      * </pre>
      *
-     * @param rootCollection Description of the Parameter
+     * @param rootCollection the path to the root collection
      * @return The collectionDesc value
-     * @exception EXistException Description of the Exception
-     * @exception PermissionDeniedException Description of the Exception
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     Map<String, Object> getCollectionDesc(String rootCollection)
             throws EXistException, PermissionDeniedException;
@@ -315,11 +317,11 @@ public interface RpcAPI {
      * Returns the number of resources in the collection identified by
      * collectionName.
      *
-     * @param collectionName
+     * @param collectionName the name fo the collection
      * @return Number of resources
-     * @throws EXistException
-     * @throws PermissionDeniedException
-     * @throws java.net.URISyntaxException
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
+     * @throws URISyntaxException If the URI contains syntax errors
      */
     int getResourceCount(String collectionName)
             throws EXistException, PermissionDeniedException, URISyntaxException;
@@ -331,8 +333,8 @@ public interface RpcAPI {
      * @param doc the document containing the node
      * @param id the node's internal id
      * @return Description of the Return Value
-     * @exception EXistException Description of the Exception
-     * @exception PermissionDeniedException Description of the Exception
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     byte[] retrieve(String doc, String id)
             throws EXistException, PermissionDeniedException;
@@ -343,10 +345,10 @@ public interface RpcAPI {
      *
      * @param doc the document containing the node
      * @param id the node's internal id
-     * @param parameters
+     * @param parameters A map of parameters, controlling the query execution.
      * @return Description of the Return Value
-     * @exception EXistException Description of the Exception
-     * @exception PermissionDeniedException Description of the Exception
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     byte[] retrieve(String doc, String id, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException;
@@ -358,10 +360,10 @@ public interface RpcAPI {
      *
      * @param doc the document containing the node
      * @param id the node's internal id
-     * @param parameters a <code>Map</code> value
+     * @param parameters A map of parameters, controlling the query execution.
      * @return Description of the Return Value
-     * @exception EXistException Description of the Exception
-     * @exception PermissionDeniedException Description of the Exception
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     Map<String, Object> retrieveFirstChunk(String doc, String id, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException;
@@ -379,6 +381,11 @@ public interface RpcAPI {
 
     /**
      * @deprecated Use {@link #queryPT(byte[], Map)} instead.
+     * @param xpath The XPath to execute
+     * @param parameters A map of parameters, controlling the query execution.
+     * @return the result of the query
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     @Deprecated
     Map<String, Object> queryP(byte[] xpath, Map<String, Object> parameters)
@@ -386,6 +393,15 @@ public interface RpcAPI {
 
     /**
      * @deprecated Use {@link #queryPT(byte[], String, String, Map)} instead.
+
+     * @param xpath The XPath to execute
+     * @param docName name of the context document
+     * @param s_id an id
+     * @param parameters A map of parameters, controlling the query execution.
+     * @return the result of the query
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
+     * @throws URISyntaxException If the URI contains syntax errors
      */
     @Deprecated
     Map<String, Object> queryP(byte[] xpath, String docName, String s_id, Map<String, Object> parameters)
@@ -395,7 +411,10 @@ public interface RpcAPI {
      * XQuery with typed response.
      *
      * @param xquery The XQuery (or XPath) to execute
-     * @param parameters Any parameters for controlling the query execution.
+     * @param parameters A map of parameters, controlling the query execution.
+     * @return the result of the query
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     Map<String, Object> queryPT(byte[] xquery, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException;
@@ -406,7 +425,11 @@ public interface RpcAPI {
      * @param xquery The XQuery (or XPath) to execute
      * @param docName The name of the document to set as the static context.
      * @param s_id The node if to set as the static context.
-     * @param parameters Any parameters for controlling the query execution.
+     * @param parameters A map of parameters, controlling the query execution.
+     * @return the result of the query
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
+     * @throws URISyntaxException If the URI contains syntax errors
      */
     Map<String, Object> queryPT(byte[] xquery, @Nullable String docName, @Nullable String s_id, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException, URISyntaxException;
@@ -417,15 +440,15 @@ public interface RpcAPI {
      * starting at position <code>start</code>. If <code>prettyPrint</code> is
      * set to &gt;0 (true), results are pretty printed.
      *
-     * @param xquery
+     * @param xquery The XQuery (or XPath) to execute
      * @param howmany maximum number of results to return.
      * @param start item in the result set to start with.
-     * @param parameters
+     * @param parameters A map of parameters, controlling the query execution.
      *
-     * @return Description of the Return Value
+     * @return the result of the query
      *
-     * @exception EXistException Description of the Exception
-     * @exception PermissionDeniedException Description of the Exception
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      *
      * @deprecated use {@link #queryPT(byte[], Map)} or int {@link #executeQuery(byte[], Map)} instead.
      */
@@ -466,10 +489,10 @@ public interface RpcAPI {
      * the following structure: docId (int), docName (string), hits (int) The
      * doctype entry has this structure: doctypeName (string), hits (int)
      *
-     * @param xquery Description of the Parameter
-     * @return Description of the Return Value
-     * @exception EXistException Description of the Exception
-     * @exception PermissionDeniedException Description of the Exception
+     * @param xquery The XQuery (or XPath) to execute
+     * @return result summary fragment
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      * @deprecated use List query() or int executeQuery() instead
      */
     Map<String, Object> querySummary(String xquery)
@@ -480,11 +503,11 @@ public interface RpcAPI {
      * query. The query is read from the query cache if it has already been run
      * before.
      *
-     * @param query
-     * @param parameters
-     * @return 
-     * @throws EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @param query The XQuery (or XPath) to execute
+     * @param parameters A map of parameters, controlling the query execution.
+     * @return a diagnostic of the compiled query
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     String printDiagnostics(String query, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException;
@@ -502,10 +525,10 @@ public interface RpcAPI {
      *
      * @param xmlData The document data
      * @param docName The path where the document will be stored
-     * @return 
-     * @exception EXistException
-     * @exception PermissionDeniedException
-     * @throws java.net.URISyntaxException
+     * @return true, if the document is valid XML
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
+     * @throws URISyntaxException If the URI contains syntax errors
      */
     boolean parse(byte[] xmlData, String docName)
             throws EXistException, PermissionDeniedException, URISyntaxException;
@@ -521,10 +544,10 @@ public interface RpcAPI {
      * @param xmlData The document data
      * @param docName The path where the document will be stored
      * @param overwrite Overwrite an existing document with the same path?
-     * @return 
-     * @exception EXistException
-     * @exception PermissionDeniedException
-     * @throws java.net.URISyntaxException
+     * @return true, if the document is valid XML
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
+     * @throws URISyntaxException If the URI contains syntax errors
      */
     boolean parse(byte[] xmlData, String docName, int overwrite)
             throws EXistException, PermissionDeniedException, URISyntaxException;
@@ -546,9 +569,9 @@ public interface RpcAPI {
      * @param chunk the current chunk
      * @param length total length of the file
      * @return the name of the file to which the chunk has been appended.
-     * @throws EXistException
-     * @throws PermissionDeniedException
-     * @throws java.io.IOException
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
+     * @throws IOException If an error occurs writing the file to the disk
      */
     String upload(byte[] chunk, int length)
             throws EXistException, PermissionDeniedException, IOException;
@@ -563,9 +586,9 @@ public interface RpcAPI {
      * This should be the file name returned by the first call to upload.
      * @param length total length of the file
      * @return the name of the file to which the chunk has been appended.
-     * @throws EXistException
-     * @throws PermissionDeniedException
-     * @throws java.io.IOException
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
+     * @throws IOException If an error occurs writing the file to the disk
      */
     String upload(String file, byte[] chunk, int length)
             throws EXistException, PermissionDeniedException, IOException;
@@ -581,15 +604,15 @@ public interface RpcAPI {
      *
      * The temporary file will be removed.
      *
-     * @param localFile
-     * @param docName
-     * @param replace
-     * @param mimeType
-     * @return 
-     * @throws EXistException
-     * @throws org.exist.security.PermissionDeniedException
-     * @throws org.xml.sax.SAXException
-     * @throws java.net.URISyntaxException
+     * @param localFile temporary file name
+     * @param docName target file name
+     * @param replace true, will replace an existing file
+     * @param mimeType the mimeType to check for
+     * @return true, if the file could be parsed into as being of the type specified
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
+     * @throws SAXException If the file is not valid XML
+     * @throws URISyntaxException If the URI contains syntax errors
      */
     boolean parseLocal(String localFile, String docName, boolean replace, String mimeType)
             throws EXistException, PermissionDeniedException, SAXException, URISyntaxException;
@@ -608,13 +631,13 @@ public interface RpcAPI {
      *
      * @param data the data to be stored
      * @param docName the path to the new document
-     * @param mimeType
+     * @param mimeType the mimeType to check for
      * @param replace if true, an old document with the same path will be
      * overwritten
-     * @return 
-     * @throws EXistException
-     * @throws PermissionDeniedException
-     * @throws java.net.URISyntaxException
+     * @return true if the file could be stored
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
+     * @throws URISyntaxException If the URI contains syntax errors
      */
     boolean storeBinary(byte[] data, String docName, String mimeType, boolean replace)
             throws EXistException, PermissionDeniedException, URISyntaxException;
@@ -626,10 +649,10 @@ public interface RpcAPI {
      * Remove a document from the database.
      *
      * @param docName path to the document to be removed
-     * @return 
-     * @exception EXistException
-     * @exception PermissionDeniedException
-     * @throws java.net.URISyntaxException
+     * @return true, if the document could be removed
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
+     * @throws URISyntaxException If the URI contains syntax errors
      */
     boolean remove(String docName) throws EXistException, PermissionDeniedException, URISyntaxException;
 
@@ -637,10 +660,10 @@ public interface RpcAPI {
      * Remove an entire collection from the database.
      *
      * @param name path to the collection to be removed.
-     * @return 
-     * @exception EXistException
-     * @exception PermissionDeniedException
-     * @throws java.net.URISyntaxException
+     * @return true, if the collection could be removed
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
+     * @throws URISyntaxException If the URI contains syntax errors
      */
     boolean removeCollection(String name)
             throws EXistException, PermissionDeniedException, URISyntaxException;
@@ -649,9 +672,9 @@ public interface RpcAPI {
      * Create a new collection on the database.
      *
      * @param name the path to the new collection.
-     * @return 
-     * @throws EXistException
-     * @throws PermissionDeniedException
+     * @return true, if the collection could be created
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     boolean createCollection(String name)
             throws EXistException, PermissionDeniedException;
@@ -671,8 +694,8 @@ public interface RpcAPI {
      * @param encoding Description of the Parameter
      * @param parameters a <code>Map</code> value
      * @return Description of the Return Value
-     * @exception EXistException Description of the Exception
-     * @exception PermissionDeniedException Description of the Exception
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     int executeQuery(byte[] xpath, String encoding, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException;
@@ -690,8 +713,8 @@ public interface RpcAPI {
      *
      * @return Either a reference to a node or the value if a non-node
      *
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      *
      * @deprecated Use {@link #executeT(String, Map)} instead.
      */
@@ -710,8 +733,8 @@ public interface RpcAPI {
      *
      * @return Details of items from the result, including type information.
      *
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      *
      * @deprecated Use {@link #executeT(String, Map)} instead.
      */
@@ -747,11 +770,11 @@ public interface RpcAPI {
      * the following structure: docId (int), docName (string), hits (int) The
      * doctype entry has this structure: doctypeName (string), hits (int)
      *
-     * @param resultId Description of the Parameter
-     * @return Description of the Return Value
-     * @exception EXistException Description of the Exception
-     * @exception PermissionDeniedException Description of the Exception
-     * @throws org.exist.xquery.XPathException
+     * @param resultId the ID of the resultset
+     * @return the summary document fragment
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
+     * @throws XPathException If an error occurs while running the query
      */
     Map<String, Object> querySummary(int resultId)
             throws EXistException, PermissionDeniedException, XPathException;
@@ -765,8 +788,8 @@ public interface RpcAPI {
      *
      * @param resultId Description of the Parameter
      * @return The hits value
-     * @exception EXistException Description of the Exception
-     * @exception PermissionDeniedException Description of the Exception
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     int getHits(int resultId) throws EXistException, PermissionDeniedException;
 
@@ -776,10 +799,10 @@ public interface RpcAPI {
      *
      * @param resultId Description of the Parameter
      * @param num Description of the Parameter
-     * @param parameters
+     * @param parameters controlling the execution and return of the query
      * @return Description of the Return Value
-     * @exception EXistException Description of the Exception
-     * @exception PermissionDeniedException Description of the Exception
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     byte[] retrieve(int resultId, int num, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException;
@@ -792,10 +815,10 @@ public interface RpcAPI {
      *
      * @param resultId Description of the Parameter
      * @param num Description of the Parameter
-     * @param parameters a <code>Map</code> value
+     * @param parameters controlling the execution and return of the query
      * @return Description of the Return Value
-     * @exception EXistException Description of the Exception
-     * @exception PermissionDeniedException Description of the Exception
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     Map<String, Object> retrieveFirstChunk(int resultId, int num, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException;
