@@ -64,7 +64,7 @@ public class AnalyzeContextInfo {
     /**
      * Create a new object as a clone of other.
      * 
-     * @param other
+     * @param other object to clone
      */
     public AnalyzeContextInfo(AnalyzeContextInfo other) {
         this.parent = other.parent;
@@ -112,7 +112,7 @@ public class AnalyzeContextInfo {
     /**
      * Sets the processing flags to be passed to a child expression.
      * 
-     * @param flags
+     * @param flags processing flags to be passed to child expression
      */
     public void setFlags(int flags) {
         this.flags = flags;
@@ -128,6 +128,8 @@ public class AnalyzeContextInfo {
 
     /**
      * Returns the parent of the current expression.
+     *
+     * @return the parent expression
      */
     public Expression getParent() {
         return parent;

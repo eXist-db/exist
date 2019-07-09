@@ -47,10 +47,7 @@ public class GroupDialog extends javax.swing.JFrame {
     private final String currentUser;
     
     private DefaultTableModel groupMembersTableModel = null;
-    
-    /**
-     * Creates new form GroupDialog
-     */
+
     public GroupDialog(final UserManagementService userManagementService, final String currentUser) {
         this.userManagementService = userManagementService;
         this.currentUser = currentUser;

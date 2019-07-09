@@ -54,7 +54,7 @@ public class DLN extends DLNBase implements NodeId {
      * In the string, levels are separated by a '.', sublevels by
      * a '/'. For example, '1.2/1' or '1.2/1.2' are valid ids.
      * 
-     * @param s
+     * @param s string represenation of a DLN
      */
     public DLN(final String s) {
         bits = new byte[1];
@@ -79,7 +79,7 @@ public class DLN extends DLNBase implements NodeId {
      * Constructs a new DLN, using the passed id as its
      * single level value.
      * 
-     * @param id
+     * @param id the value for the initial first level of this DLN
      */
     public DLN(final int id) {
         bits = new byte[1];
@@ -90,7 +90,7 @@ public class DLN extends DLNBase implements NodeId {
      * Constructs a new DLN by copying the data of the
      * passed DLN.
      * 
-     * @param other
+     * @param other the DLN to copy data from
      */
     public DLN(final DLN other) {
         super(other);
@@ -111,8 +111,9 @@ public class DLN extends DLNBase implements NodeId {
      * Reads a DLN from the given {@link VariableByteInput} stream.
      * 
      * @see #write(VariableByteOutputStream)
-     * @param is
-     * @throws IOException
+     * @param bitCnt total number of bits to read
+     * @param is the input stream to read from
+     * @throws IOException in case of an error reading the DLN
      */
     public DLN(final short bitCnt, final VariableByteInput is) throws IOException {
         super(bitCnt, is);
@@ -126,8 +127,8 @@ public class DLN extends DLNBase implements NodeId {
      * Create a new DLN by copying nbits bits from the given 
      * byte[].
      * 
-     * @param data
-     * @param nbits
+     * @param data the byte[] to read bits from
+     * @param nbits number of bits to read
      */
     protected DLN(final byte[] data, final int nbits) {
         super(data, nbits);
@@ -364,8 +365,8 @@ public class DLN extends DLNBase implements NodeId {
     /**
      * Write the node id to a {@link VariableByteOutputStream}.
      *
-     * @param os
-     * @throws IOException
+     * @param os the output stream to write to
+     * @throws IOException in case of write error
      */
     @Override
     public void write(final VariableByteOutputStream os) throws IOException {

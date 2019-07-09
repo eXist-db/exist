@@ -56,9 +56,6 @@ public class FunUnEscapeURI extends BasicFunction {
 			},
 			new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "the un-escaped string"));
 
-	/**
-	 * @param context
-	 */
 	public FunUnEscapeURI(XQueryContext context)
 	{
 		super(context, signature);

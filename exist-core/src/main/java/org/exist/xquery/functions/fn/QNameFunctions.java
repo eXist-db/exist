@@ -75,11 +75,7 @@ public class QNameFunctions extends BasicFunction {
 					new FunctionParameterSequenceType("arg", Type.QNAME, Cardinality.ZERO_OR_ONE, "The QName")
 				},
 				new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the namespace URI"));
-	
-	/**
-	 * @param context
-	 * @param signature
-	 */
+
 	public QNameFunctions(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}

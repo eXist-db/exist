@@ -102,7 +102,7 @@ public class GetFragmentBetween extends BasicFunction {
      *                        4. Display the namespace of the root node of the fragment (Default: false)
      * @return the fragment between the two nodes
      *
-     * @throws XPathException
+     * @throws XPathException in case of dynamic error
      */
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {

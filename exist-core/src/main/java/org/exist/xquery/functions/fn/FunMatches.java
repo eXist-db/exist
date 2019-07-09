@@ -121,9 +121,6 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
     private NodeSet preselectResult = null;
     private GeneralComparison.IndexFlags idxflags = new GeneralComparison.IndexFlags();
 
-    /**
-	 * @param context
-	 */
 	public FunMatches(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}

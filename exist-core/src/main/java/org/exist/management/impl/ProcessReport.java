@@ -133,7 +133,7 @@ public class ProcessReport implements ProcessReportMXBean {
      * Sets the time span (in milliseconds) for which the stats for an executed query should
      * be kept in the recent query history.
      *
-     * @param time
+     * @param time time span in milliseconds
      */
     @Override
     public void setHistoryTimespan(final long time) {
@@ -149,7 +149,7 @@ public class ProcessReport implements ProcessReportMXBean {
      * Sets the minimum execution time of queries recorded in the recent query history.
      * Queries faster than this are not recorded.
      *
-     * @param time
+     * @param time time span in milliseconds
      */
     @Override
     public void setMinTime(final long time) {
@@ -166,7 +166,7 @@ public class ProcessReport implements ProcessReportMXBean {
      * URL triggered it (if applicable). For performance reasons this is disabled by default,
      * though the overhead should be small.
      *
-     * @param track
+     * @param track should URLs be tracked?
      */
     @Override
     public void setTrackRequestURI(final boolean track) {

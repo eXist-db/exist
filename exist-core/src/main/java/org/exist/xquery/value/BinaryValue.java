@@ -150,6 +150,10 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
 
     /**
      * Return the underlying Java object for this binary value. Might be a File or byte[].
+     *
+     * @param <T> either File or byte[]
+     * @return the value converted to a corresponding java object
+     * @throws XPathException in case of dynamic error
      */
     public <T> T toJavaObject() throws XPathException {
         return (T) toJavaObject(byte[].class);
@@ -231,11 +235,16 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
 
     /**
      * Streams the raw binary data
+     *
+     * @param os the output to stream to
+     * @throws IOException if an error occurs while writing to the stream
      */
     public abstract void streamBinaryTo(OutputStream os) throws IOException;
 
     /**
      * Streams the encoded binary data
+     * @param os the output to stream to
+     * @throws IOException if an error occurs while writing to the stream
      */
     public void streamTo(OutputStream os) throws IOException {
 

@@ -67,9 +67,6 @@ public class FunId extends Function {
                     new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE, "the elements with IDs matching IDREFs from $idrefs in the same document as $node-in-document"))
     };
 
-	/**
-	 * Constructor for FunId.
-	 */
 	public FunId(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}

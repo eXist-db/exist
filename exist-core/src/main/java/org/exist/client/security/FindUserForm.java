@@ -43,9 +43,6 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
     private final Set<String> allUsernames;
     private DefaultComboBoxModel usernameModel;
 
-    /**
-     * Creates new form FindUserForm
-     */
     public FindUserForm(final UserManagementService userManagementService) throws XMLDBException {
         this.userManagementService = userManagementService;
         

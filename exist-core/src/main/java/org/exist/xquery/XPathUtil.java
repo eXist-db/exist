@@ -60,7 +60,7 @@ public class XPathUtil {
      * @param obj The java object
      * @param context XQuery context
      * @return XQuery sequence
-     * @throws XPathException
+     * @throws XPathException in case of an error
      */
     public final static Sequence javaObjectToXPath(Object obj, XQueryContext context)
             throws XPathException {

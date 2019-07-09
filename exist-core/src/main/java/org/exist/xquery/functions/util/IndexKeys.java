@@ -103,9 +103,6 @@ public class IndexKeys extends BasicFunction {
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the eval of the $function-reference")),
     };
 
-    /**
-     * @param context
-     */
     public IndexKeys(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }

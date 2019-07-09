@@ -84,6 +84,7 @@ public abstract class CombiningExpression extends AbstractExpression {
 	 * @param ls Left sequence
 	 * @param rs Right sequence
 	 *
+	 * @throws XPathException in case of a dynamic error
 	 * @return The combined result
 	 */
 	protected abstract Sequence combine(final Sequence ls, final Sequence rs) throws XPathException;

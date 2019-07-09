@@ -42,9 +42,6 @@ public class FindGroupForm extends javax.swing.JFrame implements DialogWithRespo
     private final Set<String> allGroupNames;
     private DefaultComboBoxModel groupNameModel;
 
-    /**
-     * Creates new form FindGroupForm
-     */
     public FindGroupForm(final UserManagementService userManagementService) throws XMLDBException {
         this.userManagementService = userManagementService;
         

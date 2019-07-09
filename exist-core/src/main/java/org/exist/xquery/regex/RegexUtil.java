@@ -40,6 +40,7 @@ public class RegexUtil {
      * @param strFlags The XQuery Regular Expression flags.
      *
      * @return The flags for a Java Regular Expression.
+     * @throws XPathException in case of invalid flag
      */
     public static int parseFlags(final Expression context, @Nullable final String strFlags) throws XPathException {
         int flags = 0;
@@ -112,6 +113,7 @@ public class RegexUtil {
      * Translates the Regular Expression from XPath3 syntax to Java regex
      * syntax.
      *
+     * @param context the context expression - used for error reporting
      * @param pattern a String containing a regular expression in the syntax of XPath Functions and Operators 3.0.
      * @param ignoreWhitespace true if whitespace is to be ignored ('x' flag)
      * @param caseBlind true if case is to be ignored ('i' flag)

@@ -51,10 +51,7 @@ public class FunXCollection extends ExtCollection {
             new SequenceType[] {
 		new FunctionParameterSequenceType("collection-uris", Type.STRING, Cardinality.ONE_OR_MORE, "The collection URIs")},
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the document nodes from the specified collections excluding sub-collections"));
-				
-	/**
-	 * @param context
-	 */
+
 	public FunXCollection(XQueryContext context) {
 		super(context, signature, false);
 	}

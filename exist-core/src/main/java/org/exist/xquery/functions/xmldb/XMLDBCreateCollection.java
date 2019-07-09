@@ -57,9 +57,6 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 			    new FunctionParameterSequenceType("new-collection", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the new collection to create")},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the path to the new collection if successfully created, otherwise the empty sequence"));
 
-    /**
-     * @param context
-     */
     public XMLDBCreateCollection(XQueryContext context) {
 	super(context, signature);
     }

@@ -66,6 +66,10 @@ public class TypeswitchExpression extends AbstractExpression {
     
     /**
      * Add a case clause with a sequence type and an optional variable declaration.
+     *
+     * @param types the sequence types to match
+     * @param var name of the variable to bind the current item to
+     * @param caseClause the expression to evaluate
      */
     public void addCase(SequenceType[] types, QName var, Expression caseClause) {
         cases.add(new Case(types, var, caseClause));
@@ -73,6 +77,9 @@ public class TypeswitchExpression extends AbstractExpression {
     
     /**
      * Set the default clause with an optional variable declaration.
+     *
+     * @param var the name of the variable to bind the current item to
+     * @param defaultClause the expression to evaluate
      */
     public void setDefault(QName var, Expression defaultClause) {
         this.defaultClause = new Case(null, var, defaultClause);

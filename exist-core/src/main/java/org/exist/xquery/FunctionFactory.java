@@ -387,10 +387,10 @@ public class FunctionFactory {
      * This is used to handle dynamic function calls or partial
      * function applications on built in functions.
      * 
-     * @param context
+     * @param context current context
      * @param call the function call to be wrapped
      * @return a new function call referencing an inline function
-     * @throws XPathException
+     * @throws XPathException in case of a static error
      */
     public static FunctionCall wrap(XQueryContext context, Function call) throws XPathException {
 		final int argCount = call.getArgumentCount();

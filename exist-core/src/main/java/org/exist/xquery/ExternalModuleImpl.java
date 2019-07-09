@@ -291,7 +291,7 @@ public class ExternalModuleImpl implements ExternalModule {
     /**
      * Set the root expression for this context.
      *
-     * @param  expr
+     * @param  expr the root expression
      */
     protected void setRootExpression(Expression expr) {
         rootExpression = expr;

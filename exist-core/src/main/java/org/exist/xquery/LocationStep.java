@@ -805,6 +805,7 @@ public class LocationStep extends Step {
      * @param context         a <code>XQueryContext</code> value
      * @param contextSequence a <code>NodeSet</code> value
      * @return a <code>NodeSet</code> value
+     * @throws XPathException in case of dynamic error
      */
     protected Sequence getSiblings(final XQueryContext context, final Sequence contextSequence) throws XPathException {
         if (!contextSequence.isPersistentSet()) {

@@ -58,9 +58,6 @@ public class XMLDBRegisterDatabase extends BasicFunction {
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if successfully registered, false() otherwise")
            );
 
-	/**
-	 * @param context
-	 */
 	public XMLDBRegisterDatabase(XQueryContext context) {
 		super(context, signature);
 	}

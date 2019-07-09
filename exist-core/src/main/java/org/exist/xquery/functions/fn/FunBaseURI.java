@@ -83,12 +83,6 @@ public class FunBaseURI extends BasicFunction {
         )
     };
 
-    /**
-     * 
-     * 
-     * @param context 
-     * @param signature 
-     */
     public FunBaseURI(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }

@@ -64,7 +64,7 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
     /**
 	 * Set the sequence type of the variable (as specified in the "as" clause).
 	 * 
-	 * @param type
+	 * @param type the {@link SequenceType} to set
 	 */
 	public void setSequenceType(SequenceType type) {
 		this.sequenceType = type;

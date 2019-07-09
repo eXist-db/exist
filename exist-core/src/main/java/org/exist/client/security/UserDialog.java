@@ -52,9 +52,6 @@ public class UserDialog extends javax.swing.JFrame {
     
     private MemberOfGroupsListCellRenderer memberOfGroupsListCellRenderer = null;
     
-    /**
-     * Creates new form UserDialog
-     */
     public UserDialog(final UserManagementService userManagementService) {
         this.userManagementService = userManagementService;
         this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());

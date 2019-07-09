@@ -203,6 +203,7 @@ public interface Sequence {
      * Convert the sequence to a string.
      *
      * @return the string value
+     * @throws XPathException in case of dynamic error
      */
     String getStringValue() throws XPathException;
 
@@ -270,6 +271,7 @@ public interface Sequence {
      * Convert the value into an instance of the specified
      * Java class.
      *
+     * @param <T> the class to which the instance is converted
      * @param target the target class
      *
      * @return the Java object.

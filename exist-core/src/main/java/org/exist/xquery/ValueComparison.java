@@ -44,18 +44,22 @@ import org.exist.xquery.value.Type;
 public class ValueComparison extends GeneralComparison {
 
 	/**
-	 * @param context
-	 * @param relation
+	 * Construct a ValueComparison using the given relation.
+	 *
+	 * @param context current context
+	 * @param relation the relation to compare by
 	 */
 	public ValueComparison(XQueryContext context, Comparison relation) {
 		super(context, relation);
 	}
 
 	/**
-	 * @param context
-	 * @param left
-	 * @param right
-	 * @param relation
+	 * Construct a ValueComparison comparing the given expressions using the given relation
+	 *
+	 * @param context current context
+	 * @param left left hand operand
+	 * @param right right hand operand
+	 * @param relation the relation to compare by
 	 */
 	public ValueComparison(XQueryContext context, Expression left, Expression right, Comparison relation) {
 		super(context, left, right, relation);
@@ -118,6 +122,15 @@ public class ValueComparison extends GeneralComparison {
     /**
 	 * Cast the atomic operands into a comparable type
 	 * and compare them.
+	 *
+	 * @param collator the collator to use
+	 * @param lv left hand operand value
+	 * @param rv right hand operand value
+	 * @param truncation should strings be truncated before comparison
+	 *                   ({@link StringTruncationOperator#NONE} by default)
+	 * @param relation the relation to compare by
+	 * @return the result of the comparison
+	 * @throws XPathException in case of dynamic error
 	 */
 	public static boolean compareAtomic(Collator collator, AtomicValue lv, AtomicValue rv, StringTruncationOperator truncation, Comparison relation) throws XPathException {
 		int ltype = lv.getType();

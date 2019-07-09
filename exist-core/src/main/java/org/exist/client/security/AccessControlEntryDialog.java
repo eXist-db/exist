@@ -53,10 +53,7 @@ public class AccessControlEntryDialog extends javax.swing.JFrame implements Dial
     private DefaultComboBoxModel groupNameModel = null;
     private final Set<String> allGroupNames;
     private final List<DialogCompleteWithResponse<ACEAider>> dialogCompleteWithResponseCallbacks = new ArrayList<DialogCompleteWithResponse<ACEAider>>();
-    
-    /**
-     * Creates new form AccessControlEntryDialog
-     */
+
     public AccessControlEntryDialog(final UserManagementService userManagementService, final String title) throws XMLDBException {
         this.userManagementService = userManagementService;
         this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());        

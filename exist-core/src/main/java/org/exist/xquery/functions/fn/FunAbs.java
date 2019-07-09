@@ -55,9 +55,6 @@ public class FunAbs extends Function {
                 "The absolute value of the argument")
         );
 
-    /**
-     * @param context
-     */
     public FunAbs(XQueryContext context) {
         super(context, signature);
     }

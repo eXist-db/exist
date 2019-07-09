@@ -258,6 +258,7 @@ public class FunctionCall extends Function {
      * @param contextItem the context item
      * @param seq the sequence
      * @throws XPathException if an error occurs whilst evaluation the function.
+     * @return the evaluation result
      */
     public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq) throws XPathException {
         return evalFunction(contextSequence, contextItem, seq, null);

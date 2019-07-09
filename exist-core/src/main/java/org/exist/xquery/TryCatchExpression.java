@@ -79,6 +79,12 @@ public class TryCatchExpression extends AbstractExpression {
 
     /**
      * Receive catch-clause data from parser.
+     *
+     * TODO: check if catchVars are still needed
+     *
+     * @param catchErrorList list of errors to catch
+     * @param catchVars variable names for caught errors: unused (from earlier version of the spec?)
+     * @param catchExpr the expression to be evaluated if error is caught
      */
     public void addCatchClause(final List<QName> catchErrorList, final List<QName> catchVars, final Expression catchExpr) {
         catchClauses.add( new CatchClause(catchErrorList, catchVars, catchExpr) );
@@ -556,6 +562,8 @@ public class TryCatchExpression extends AbstractExpression {
 
     /**
      * Data container
+     *
+     * TODO: catchVars is unused? Remove?
      */
     public static class CatchClause {
         private final List<QName> catchErrorList;

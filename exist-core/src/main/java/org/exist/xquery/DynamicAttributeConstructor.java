@@ -45,10 +45,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
     private Expression valueExpr;
     
     private boolean replaceAttribute = false;
-    
-    /**
-     * @param context
-     */
+
     public DynamicAttributeConstructor(XQueryContext context) {
         super(context);
     }

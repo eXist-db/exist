@@ -103,9 +103,6 @@ public class FunReplace extends FunMatches {
 		)
 	};
 
-	/**
-	 * @param context
-	 */
 	public FunReplace(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}

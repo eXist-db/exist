@@ -72,11 +72,7 @@ public class FunRoot extends Function {
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the root node of the tree to which $arg belongs")
                 )
     };
-    
-    /**
-     * @param context
-     * @param signature
-     */
+
     public FunRoot(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }

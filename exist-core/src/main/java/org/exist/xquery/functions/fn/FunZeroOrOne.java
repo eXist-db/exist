@@ -53,10 +53,7 @@ public class FunZeroOrOne extends Function {
 				 new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_MORE, "The sequence to be tested for cardinality")
 			},
 			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "the input sequence if it contains zero or one items."));
-				
-	/**
-	 * @param context
-	 */
+
 	public FunZeroOrOne(XQueryContext context) {
 		super(context, signature);
 	}

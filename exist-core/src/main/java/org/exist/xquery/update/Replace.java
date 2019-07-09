@@ -55,9 +55,6 @@ import org.w3c.dom.Node;
  */
 public class Replace extends Modification {
 
-    /**
-     * @param context
-     */
     public Replace(XQueryContext context, Expression select, Expression value) {
         super(context, select, value);
     }

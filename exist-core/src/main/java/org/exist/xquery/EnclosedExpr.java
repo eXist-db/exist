@@ -41,9 +41,6 @@ import java.io.IOException;
  */
 public class EnclosedExpr extends PathExpr {
 
-    /**
-     * 
-     */
     public EnclosedExpr(XQueryContext context) {
         super(context);
     }

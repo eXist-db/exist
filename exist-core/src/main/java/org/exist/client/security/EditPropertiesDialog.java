@@ -73,10 +73,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     private DefaultTableModel aclTableModel = null;
 
     private final static String ERROR_TITLE = "Edit Properties Error";
-    
-    /**
-     * Creates new form PropertiesDialog
-     */
+
     public EditPropertiesDialog(final UserManagementService userManagementService, final String currentUser, final Collection parent, final XmldbURI uri, final String internetMediaType, final Date created, @Nullable final Date lastModified, @Nullable final Long size, @Nullable final MessageDigest messageDigest, final PermissionAider permission, final List<ResourceDescriptor> applyTo) {
         this.userManagementService = userManagementService;
         this.currentUser = currentUser;

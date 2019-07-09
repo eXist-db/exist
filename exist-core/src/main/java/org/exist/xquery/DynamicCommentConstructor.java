@@ -38,9 +38,6 @@ public class DynamicCommentConstructor extends NodeConstructor {
 
     final private Expression content;
 
-    /**
-     * @param context
-     */
     public DynamicCommentConstructor(XQueryContext context, Expression contentExpr) {
         super(context);
         this.content = contentExpr;
