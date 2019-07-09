@@ -46,8 +46,8 @@ public class SequenceType {
      * Construct a new SequenceType using the specified
      * primary type and cardinality constants.
      *
-     * @param primaryType
-     * @param cardinality
+     * @param primaryType one of the constants defined in {@link Type}
+     * @param cardinality one of the constants defined in {@link Cardinality}
      */
     public SequenceType(int primaryType, int cardinality) {
         this.primaryType = primaryType;
@@ -57,6 +57,8 @@ public class SequenceType {
     /**
      * Returns the primary type as one of the
      * constants defined in {@link Type}.
+     *
+     * @return the primary type as one of the constants defined in {@link Type}
      */
     public int getPrimaryType() {
         return primaryType;
@@ -69,6 +71,8 @@ public class SequenceType {
     /**
      * Returns the expected cardinality. See the constants
      * defined in {@link Cardinality}.
+     *
+     * @return expected cardinality, one of {@link Cardinality}
      */
     public int getCardinality() {
         return cardinality;
@@ -89,9 +93,9 @@ public class SequenceType {
     /**
      * Check the specified sequence against this SequenceType.
      *
-     * @param seq
-     * @throws XPathException
-     * @throws XPathException
+     * @param seq sequence to check
+     * @throws XPathException if check fails for one item in the sequence
+     * @return true, if all items of the sequence have the same type as or a subtype of primaryType
      */
     public boolean checkType(Sequence seq) throws XPathException {
         if (nodeName != null) {
@@ -111,7 +115,8 @@ public class SequenceType {
     /**
      * Check a single item against this SequenceType.
      *
-     * @param item
+     * @param item the item to check
+     * @return true, if item is a subtype of primaryType
      */
     public boolean checkType(Item item) {
         Node realNode = null;
@@ -142,8 +147,8 @@ public class SequenceType {
      * Check the given type against the primary type
      * declared in this SequenceType.
      *
-     * @param type
-     * @throws XPathException
+     * @param type one of the constants defined in {@link Type}
+     * @throws XPathException if subtype check fails
      */
     public void checkType(int type) throws XPathException {
         if (type == Type.EMPTY || type == Type.ITEM) {
@@ -168,8 +173,8 @@ public class SequenceType {
      * Check if the given sequence has the cardinality required
      * by this sequence type.
      *
-     * @param seq
-     * @throws XPathException
+     * @param seq the sequence to check
+     * @throws XPathException if cardinality does not match
      */
     public void checkCardinality(Sequence seq) throws XPathException {
         if (!seq.isEmpty() && cardinality == Cardinality.EMPTY) {
