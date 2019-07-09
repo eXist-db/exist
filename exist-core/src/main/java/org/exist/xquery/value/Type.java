@@ -275,6 +275,7 @@ public class Type {
     }
 
     /**
+     * @param type the type constant
      * @param name The first name is the default name, any other names are aliases.
      */
     public static void defineBuiltInType(int type, String... name) {
@@ -287,7 +288,8 @@ public class Type {
     /**
      * Get the internal default name for the built-in type.
      *
-     * @param type
+     * @param type the type constant
+     * @return name of the type
      */
     public static String getTypeName(int type) {
         return typeNames.get(type)[0];
@@ -296,7 +298,8 @@ public class Type {
     /**
      * Get the internal aliases for the built-in type.
      *
-     * @param type
+     * @param type the type constant
+     * @return one or more alias names
      */
     public static String[] getTypeAliases(int type) {
         final String names[] = typeNames.get(type);
@@ -311,8 +314,9 @@ public class Type {
     /**
      * Get the type code for a type identified by its internal name.
      *
-     * @param name
-     * @throws XPathException
+     * @param name name of the type
+     * @return type constant
+     * @throws XPathException in case of dynamic error
      */
     public static int getType(String name) throws XPathException {
         //if (name.equals("node"))
@@ -327,8 +331,9 @@ public class Type {
     /**
      * Get the type code for a type identified by its QName.
      *
-     * @param qname
-     * @throws XPathException
+     * @param qname name of the type
+     * @return type constant
+     * @throws XPathException in case of dynamic error
      */
     public static int getType(QName qname) throws XPathException {
         final String uri = qname.getNamespaceURI();
@@ -345,8 +350,8 @@ public class Type {
     /**
      * Define supertype/subtype relation.
      *
-     * @param supertype
-     * @param subtype
+     * @param supertype type constant of the super type
+     * @param subtype the subtype
      */
     public static void defineSubType(int supertype, int subtype) {
         superTypes[subtype] = supertype;
@@ -355,8 +360,9 @@ public class Type {
     /**
      * Check if the given type code is a subtype of the specified supertype.
      *
-     * @param subtype
-     * @param supertype
+     * @param subtype the type constant of the subtype
+     * @param supertype type constant of the super type
+     * @return true if subtype is a sub type of supertype
      * @throws IllegalArgumentException When the type is invalid
      */
     public static boolean subTypeOf(int subtype, int supertype) {
@@ -385,7 +391,8 @@ public class Type {
     /**
      * Get the type code of the supertype of the specified subtype.
      *
-     * @param subtype
+     * @param subtype type code of the sub type
+     * @return type constant for the super type
      */
     public static int getSuperType(final int subtype) {
         if (subtype == ITEM || subtype == NODE) {
@@ -407,8 +414,9 @@ public class Type {
      * Type.ITEM is returned if no other common supertype
      * is found.
      *
-     * @param type1
-     * @param type2
+     * @param type1 type constant for the first type
+     * @param type2 type constant for the second type
+     * @return common super type or {@link Type#ITEM} if none
      */
     public static int getCommonSuperType(int type1, int type2) {
         //Super shortcut

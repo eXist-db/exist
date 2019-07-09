@@ -110,7 +110,8 @@ public class StringValue extends AtomicValue {
      * Collapses all sequences of adjacent whitespace chars in the input string
      * into a single space.
      *
-     * @param in
+     * @param in the input string
+     * @return the collapsed string
      */
     public static String collapseWhitespace(CharSequence in) {
         if (in == null) {
@@ -733,7 +734,9 @@ public class StringValue extends AtomicValue {
     /**
      * Serialize for the persistant storage
      *
-     * @param offset
+     * @param offset the byte offset at which to start encoding
+     * @param caseSensitive should the string be converted to lower case?
+     * @return new byte array containing the encoded string
      */
     public byte[] serializeValue(int offset, boolean caseSensitive) {
         final String val = caseSensitive ? value : value.toLowerCase();

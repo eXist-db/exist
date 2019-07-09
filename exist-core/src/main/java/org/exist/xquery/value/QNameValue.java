@@ -44,9 +44,9 @@ public class QNameValue extends AtomicValue {
      * Constructs a new QNameValue by parsing the given name using
      * the namespace declarations in context.
      *
-     * @param context
-     * @param name
-     * @throws XPathException
+     * @param context current context
+     * @param name name string to parse into QName
+     * @throws XPathException in case of dynamic error
      */
     public QNameValue(XQueryContext context, String name) throws XPathException {
         if (name.isEmpty()) {
@@ -75,6 +75,8 @@ public class QNameValue extends AtomicValue {
 
     /**
      * Returns the wrapped QName object.
+     *
+     * @return the wrapped QName
      */
     public QName getQName() {
         return qname;

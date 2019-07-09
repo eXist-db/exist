@@ -41,7 +41,8 @@ public class BooleanValue extends AtomicValue {
      * Returns one of the static fields TRUE or FALSE depending on
      * the value of the parameter.
      *
-     * @param bool
+     * @param bool the boolean value to map
+     * @return either {@link #TRUE} or {@link #FALSE}
      */
     public final static BooleanValue valueOf(boolean bool) {
         return bool ? TRUE : FALSE;
