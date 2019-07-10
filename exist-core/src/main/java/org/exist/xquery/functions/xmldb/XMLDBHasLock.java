@@ -77,14 +77,7 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
 	public XMLDBHasLock(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
-	
-	/**
-     * 
-     * @param contextSequence 
-     * @param collection 
-     * @param args 
-     * @throws XPathException 
-     */
+
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 	throws XPathException {
 

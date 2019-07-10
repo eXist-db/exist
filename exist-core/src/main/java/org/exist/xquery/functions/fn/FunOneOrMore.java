@@ -54,9 +54,6 @@ public class FunOneOrMore extends Function {
 			},
 			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ONE_OR_MORE, "the sequence passed in by $arg if it contains one or more items."));
 
-	/**
-	 * @param context
-	 */
 	public FunOneOrMore(XQueryContext context) {
 		super(context, signature);
 	}

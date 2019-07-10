@@ -23,7 +23,8 @@ package org.exist.management.impl;
 
 import java.util.List;
 
-public interface ProcessReportMXBean extends PerInstanceMBean {
+public interface
+ProcessReportMXBean extends PerInstanceMBean {
 
     List<Job> getScheduledJobs();
 

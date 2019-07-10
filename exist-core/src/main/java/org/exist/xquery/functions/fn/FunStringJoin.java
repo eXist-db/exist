@@ -73,10 +73,6 @@ public class FunStringJoin extends BasicFunction {
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the joined string"))
     };
-	
-	/**
-	 *
-	 */
 
 	public FunStringJoin(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);

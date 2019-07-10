@@ -181,7 +181,7 @@ public class Update extends Modification {
                 finishTriggers(transaction);
                 //commit the transaction
                 transaction.commit();
-            } catch (final LockException | PermissionDeniedException | EXistException | TriggerException e) {
+            } catch (final LockException | EXistException | TriggerException e) {
                 throw new XPathException(this, e.getMessage(), e);
             } finally {
                 unlockDocuments();

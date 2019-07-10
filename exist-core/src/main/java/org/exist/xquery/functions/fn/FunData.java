@@ -62,10 +62,6 @@ public class FunData extends Function {
                 Cardinality.ZERO_OR_MORE, "the atomic values of the items in $items")
         )
     };
-
-    /**
-     * @param context
-     */
     public FunData(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }

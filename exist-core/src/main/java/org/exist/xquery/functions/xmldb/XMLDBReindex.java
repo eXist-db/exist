@@ -72,9 +72,6 @@ public class XMLDBReindex extends XMLDBAbstractCollectionManipulator {
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if successfully reindexed, false() otherwise")
     );
 
-    /**
-     * @param context
-     */
     public XMLDBReindex(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature, false);
     }

@@ -55,9 +55,6 @@ public class FunDoctype extends Function {
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the document nodes"),
 			true);
 
-	/**
-	 * @param context
-	 */
 	public FunDoctype(XQueryContext context) {
 		super(context, signature);
 	}

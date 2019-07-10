@@ -140,10 +140,6 @@ public class Transform extends BasicFunction {
     private boolean stopOnError = true;
     private boolean stopOnWarn = false;
 
-    /**
-     * @param context
-     * @param signature
-     */
     public Transform(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }

@@ -63,10 +63,7 @@ public class GetNodeById extends BasicFunction {
 				new FunctionParameterSequenceType("node-id", Type.STRING, Cardinality.EXACTLY_ONE, "The internal node id")
 			},
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the node"));
-	
-	/**
-	 * @param context
-	 */
+
 	public GetNodeById(XQueryContext context) {
 		super(context, signature);
 	}
