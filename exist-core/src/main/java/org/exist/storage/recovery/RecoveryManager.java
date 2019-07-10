@@ -75,7 +75,7 @@ public class RecoveryManager {
 	 * the database was closed cleanly and is in a consistent state. If not, a
 	 * recovery run is started beginning at the last checkpoint found.
 	 *  
-	 * @throws LogException
+	 * @throws LogException Reading of journal failed.
 	 */
 	public boolean recover() throws LogException {
         boolean recoveryRun = false;

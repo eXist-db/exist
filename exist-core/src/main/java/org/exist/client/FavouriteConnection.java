@@ -53,16 +53,25 @@ public class FavouriteConnection extends Connection implements Comparable<Object
     /**
      * Creates a new connection favourite from the given parameters.
      *
-     * @param name the favourite's name
-     * @param username the username
+     * @param name the favourite's name.
+     * @param username the username.
      * @param password the password
-     * @param url the url
+     * @param ssl flag to have SSL connection.
+     * @param url the url.
      */
     public FavouriteConnection(final String name, final String username, final String password, final String url, final boolean ssl) {
         super(username, password, url, ssl);
         this.name = name;
     }
-    
+
+    /**
+     * Creates a new connection favourite from the given parameters.
+     *
+     * @param name the favourite's name.
+     * @param username the username.
+     * @param password the password.
+     * @param configuration location of configuration file.
+     */
     public FavouriteConnection(final String name, final String username, final String password, final String configuration) {
         super(username, password, configuration);
         this.name = name;
@@ -81,7 +90,7 @@ public class FavouriteConnection extends Connection implements Comparable<Object
      * Compares <code>o</code> to this favourite by comparing the
      * connection names to the object's toString() output.
      *
-     * @see java.util.Comparator#compareTo(Object)
+     * @see java.util.Comparator#compare(Object, Object)
      */
     @Override
     public int compareTo(final Object o) {

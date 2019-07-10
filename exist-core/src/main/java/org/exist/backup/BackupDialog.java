@@ -41,9 +41,9 @@ public class BackupDialog extends JDialog {
     /**
      * Creates a new BackupDialog object.
      *
-     * @param owner
-     * @param modal
-     * @throws HeadlessException
+     * @param owner Parent frame.
+     * @param modal Flag to have modal window.
+     * @throws HeadlessException Environment  does not support a keyboard, display, or mouse.
      */
     public BackupDialog(final Frame owner, final boolean modal) throws HeadlessException {
         super(owner, "Backup", modal);

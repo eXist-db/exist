@@ -60,7 +60,12 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
     }
 
     /**
-     * Creates new form ConnectionForm
+     *  Creates new form ConnectionForm
+     * @param parent Parent window.
+     * @param modal modality flag.
+     * @param defaultConnectionSettings Default connection settings.
+     * @param embeddedByDefault Set TRUE to have embedded mode selected by default.
+     * @param disableEmbeddedConnectionType Set to TRUE to force remote connections only.
      */
     public ConnectionDialog(final java.awt.Frame parent, final boolean modal, final DefaultConnectionSettings defaultConnectionSettings, final boolean embeddedByDefault, final boolean disableEmbeddedConnectionType) {
         super(parent, modal);

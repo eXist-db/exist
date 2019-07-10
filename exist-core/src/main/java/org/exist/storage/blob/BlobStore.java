@@ -167,6 +167,7 @@ public interface BlobStore extends Closeable {
      * Backup the Blob Store to the backup.
      *
      * @param backup the backup to write the Blob Store to.
+     * @throws IOException if an error occurs whilst creating a backup of the BLOB.
      */
     void backupToArchive(final RawDataBackup backup) throws IOException;
 
