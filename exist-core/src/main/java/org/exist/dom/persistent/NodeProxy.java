@@ -492,7 +492,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * Add all context nodes from the other NodeProxy to the
      * context of this NodeProxy.
      *
-     * @param other
+     * @param other NodePoxy to take context from
      */
     public void addContext(final NodeProxy other) {
         ContextItem next = other.context;

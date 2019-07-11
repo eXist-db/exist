@@ -151,10 +151,11 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      * Retrieve a shared QName instance from the temporary pool.
      *
      * TODO: make the namePool thread-local to avoid synchronization.
-     *
-     * @param namespaceURI
-     * @param localName
-     * @param prefix
+     * @param type qname type
+     * @param namespaceURI qname namespace uri
+     * @param localName qname localname
+     * @param prefix qname prefix
+     * @return qname from pool
      */
     public synchronized QName getQName(final short type, final String namespaceURI, final String localName, final String prefix) {
         final byte itype = type == Node.ATTRIBUTE_NODE ? ElementValue.ATTRIBUTE : ElementValue.ELEMENT;
@@ -168,7 +169,8 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     /**
      * Return a unique id for the local node name of the specified element.
      *
-     * @param element
+     * @param element the element to create a unique id for
+     * @return unique id for the local node name of the specified element.
      */
     //TODO the (short) cast is nasty - should consider using either short or int end to end
     public synchronized short getSymbol(final Element element) {
@@ -178,7 +180,8 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     /**
      * Return a unique id for the local node name of the specified attribute.
      *
-     * @param attr
+     * @param attr the attribute to create a unique id for
+     * @return unique id for the local node name of the specified attribute.
      */
     //TODO the (short) cast is nasty - should consider using either short or int end to end
     public synchronized short getSymbol(final Attr attr) {
@@ -190,7 +193,8 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      * Returns a unique id for the specified local name. If the name is
      * the local name of an attribute, it should start with a '@' character.
      *
-     * @param name
+     * @param name local name
+     * @return unique id for local name
      */
     //TODO the (short) cast is nasty - should consider using either short or int end to end
     public synchronized short getSymbol(final String name) {
@@ -203,7 +207,8 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     /**
      * Returns a unique id for the specified namespace URI.
      *
-     * @param ns
+     * @param ns namespace uri
+     * @return unique id for namespace uri
      */
     //TODO the (short) cast is nasty - should consider using either short or int end to end
     public synchronized short getNSSymbol(final String ns) {
@@ -218,8 +223,8 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     }
 
     /**
-     * Returns true if the symbol table needs to be saved
-     * to persistent storage.
+     * @return true if the symbol table needs to be saved to persistent storage.
+     *
      */
     public synchronized boolean hasChanged() {
         return changed;
@@ -229,7 +234,8 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      * Returns the local name registered for the id or
      * null if the name is not known.
      *
-     * @param id
+     * @param id identifier
+     * @return the local name registered for the id or null if the name is not known.
      */
     public synchronized String getName(final short id) {
         return localNameSymbols.getSymbol(id);
@@ -244,7 +250,8 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      * if the namespace URI is not known. Returns the empty string
      * if the namespace is empty.
      *
-     * @param id
+     * @param id identifier
+     * @return  the namespace URI registered for the id or null
      */
     public synchronized String getNamespace(final short id) {
         return namespaceSymbols.getSymbol(id);
@@ -255,7 +262,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      * a .dbx file from previous versions.
      *
      * @param os outputstream
-     * @throws IOException
+     * @throws IOException in response to an IO error
      */
     private synchronized void writeAll(final VariableByteOutputStream os) throws IOException {
         os.writeFixedInt(FILE_FORMAT_VERSION_ID);
@@ -268,8 +275,8 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     /**
      * Read the symbol table from disk.
      *
-     * @param is
-     * @throws IOException
+     * @param is input
+     * @throws IOException in response to an IO error
      */
     protected final void read(final VariableByteInput is) throws IOException {
         localNameSymbols.clear();
@@ -302,8 +309,8 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     /**
      * Legacy method: read a symbol table written by a previous eXist version.
      *
-     * @param istream
-     * @throws IOException
+     * @param istream input
+     * @throws IOException in response to an IO error
      */
     protected final void readLegacy(final VariableByteInput istream) throws IOException {
         istream.readShort(); //read max, not needed anymore
@@ -350,7 +357,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      * Save the entire symbol table. Will only be called when initializing an
      * empty database or when upgrading an older dbx file.
      *
-     * @throws EXistException
+     * @throws EXistException in response to eXist-db error
      */
     private void saveSymbols() throws EXistException {
         try(final VariableByteOutputStream os = new VariableByteOutputStream(256);
@@ -369,7 +376,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      * Read the global symbol table. The global symbol table stores QNames and
      * namespace/prefix mappings.
      *
-     * @throws EXistException
+     * @throws EXistException in response to eXist-db error
      */
     private synchronized void loadSymbols() throws EXistException {
         try(final InputStream fis = Files.newInputStream(getFile())) {
@@ -533,12 +540,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
             }
         }
 
-        /**
-         * Append a new entry to the .dbx file
-         *
-         * @param id
-         * @param key
-         */
+        // Append a new entry to the .dbx file
         private void write(final int id, final String key) {
             outBuffer.clear();
             try {

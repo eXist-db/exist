@@ -79,6 +79,7 @@ public abstract class NamedNode<T extends NamedNode> extends StoredNode<T> {
 
     /**
      * @deprecated use #setQName(qname) instead
+     * @param name qname of the node
      */
     @Deprecated
     public void setNodeName(final QName name) {

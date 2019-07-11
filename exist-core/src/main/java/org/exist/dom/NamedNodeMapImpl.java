@@ -83,7 +83,7 @@ public class NamedNodeMapImpl implements NamedNodeMap {
      *
      * The INode#getQName method is called
      * to get the name for the map item
-     *
+     * @param arg INode to add
      * @return The previous node of the same name if it exists
      */
     public Node setNamedItem(final INode arg) throws DOMException {

@@ -33,8 +33,9 @@ import java.util.Iterator;
 public interface NodeSetIterator extends Iterator<NodeProxy> {
 
     /**
-     * Look ahead: returns the node at the iterator's current position but
+     * @return Look ahead: returns the node at the iterator's current position but
      * does not move the iterator to the next node.
+     *
      */
     public NodeProxy peekNode();
 
@@ -44,7 +45,7 @@ public interface NodeSetIterator extends Iterator<NodeProxy> {
      * node does not exist in the node set, the iterator will be positioned
      * to the end of the set.
      *
-     * @param proxy
+     * @param proxy the node
      */
     public void setPosition(NodeProxy proxy);
 
