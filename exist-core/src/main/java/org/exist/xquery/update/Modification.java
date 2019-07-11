@@ -138,6 +138,7 @@ public abstract class Modification extends AbstractExpression
      *
      * @throws LockException in case locking failed
      * @throws TriggerException in case of error thrown by triggers
+     * @throws XPathException in case of dynamic error
      */
     protected StoredNode[] selectAndLock(Txn transaction, Sequence nodes) throws LockException,
             XPathException, TriggerException {
