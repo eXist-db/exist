@@ -124,9 +124,9 @@ import static java.nio.file.StandardOpenOption.*;
  * This class implements the actual methods defined by
  * {@link org.exist.xmlrpc.RpcAPI}.
  *
- * @author <a href="mailto:adam.retter@googlemail.com">Wolfgang Meier (wolfgang@exist-db.org)
+ * @author Wolfgang Meier (wolfgang@exist-db.org)
  *         Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
- * @author Adam Retter</a>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class RpcConnection implements RpcAPI {
 
@@ -290,6 +290,13 @@ public class RpcConnection implements RpcAPI {
 
     /**
      * @deprecated Use compileQuery lambda instead!
+     * @param broker the broker to use
+     * @param source the xquery to compile
+     * @param parameters context for the compilation of the query
+     * @return the compiled query
+     * @throws XPathException If the query contains errors
+     * @throws IOException If an error occurs reading of writing to the disk
+     * @throws PermissionDeniedException If the current user is not allowed to perform the action
      */
     @Deprecated
     private CompiledXQuery compile(final DBBroker broker, final Source source, final Map<String, Object> parameters) throws XPathException, IOException, PermissionDeniedException {
@@ -367,9 +374,9 @@ public class RpcConnection implements RpcAPI {
      * If yes, copy the corresponding settings to the current set of output
      * properties.
      *
-     * @param context
-     * @param parameters
-     * @throws org.exist.xquery.XPathException
+     * @param context the context
+     * @param parameters serialization options
+     * @throws XPathException If the query contains errors
      */
     protected void checkPragmas(final XQueryContext context, final Map<String, Object> parameters) throws XPathException {
         final Option pragma = context.getOption(Option.SERIALIZE_QNAME);
@@ -566,7 +573,8 @@ public class RpcConnection implements RpcAPI {
      *
      * @param collUri a <code>XmldbURI</code> value
      * @return a <code>Map</code> value
-     * @throws Exception if an error occurs
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     private Map<String, Object> describeCollection(final XmldbURI collUri)
             throws EXistException, PermissionDeniedException {
@@ -1004,7 +1012,10 @@ public class RpcConnection implements RpcAPI {
      * The name is based on a hex encoded string of a random integer and will
      * have the format xxxxxxxx.xml where x is in the range 0 to 9 and a to f
      *
+     * @param collUri URI of the collection to create the resource in
      * @return the unique resource name
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     private String createResourceId(final XmldbURI collUri) throws EXistException, PermissionDeniedException {
         return this.<String>readCollection(collUri).apply((collection, broker, transaction) -> {
@@ -1371,13 +1382,14 @@ public class RpcConnection implements RpcAPI {
      *
      * The temporary file will be removed.
      *
-     * @param localFile
-     * @param documentPath
-     * @param overwrite
-     * @param mimeType
-     * @return
-     * @throws EXistException
-     * @throws java.net.URISyntaxException
+     * @param localFile the name of the temporary, uploaded file
+     * @param documentPath target of the parsed file
+     * @param overwrite true, if an existing file should be overwritten
+     * @param mimeType the mimeType of the uploaded file
+     * @return true, if the file is valid
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
+     * @throws URISyntaxException if documentPath is not valid
      */
     public boolean parseLocal(final String localFile, final String documentPath,
                               final int overwrite, final String mimeType) throws EXistException, PermissionDeniedException, URISyntaxException {
@@ -1390,14 +1402,15 @@ public class RpcConnection implements RpcAPI {
      *
      * The temporary file will be removed.
      *
-     * @param localFile
-     * @param documentPath
-     * @param overwrite
-     * @param mimeType
-     * @param isXML
-     * @return
-     * @throws EXistException
-     * @throws java.net.URISyntaxException
+     * @param localFile the name of the temporary, uploaded file
+     * @param documentPath target of the parsed file
+     * @param overwrite true, if an existing file should be overwritten
+     * @param mimeType the mimeType of the uploaded file
+     * @param isXML true, if the file is XML
+     * @return true, if the file is valid
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
+     * @throws URISyntaxException if documentPath is not valid
      */
     public boolean parseLocalExt(final String localFile, final String documentPath,
                                  final int overwrite, final String mimeType, final int isXML) throws EXistException, PermissionDeniedException, URISyntaxException {
@@ -1725,6 +1738,14 @@ public class RpcConnection implements RpcAPI {
 
     /**
      * @deprecated Use {@link #queryPT(String, XmldbURI, String, Map)} instead.
+     * @param xpath the query to execute
+     * @param documentPath the collection to query
+     * @param s_id an id
+     * @param parameters map of options
+     * @return the result of the query
+     * @throws URISyntaxException if documentPath is invalid
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     public Map<String, Object> queryP(final String xpath, final String documentPath,
                                       final String s_id, final Map<String, Object> parameters) throws URISyntaxException, EXistException, PermissionDeniedException {
@@ -1735,6 +1756,13 @@ public class RpcConnection implements RpcAPI {
 
     /**
      * @deprecated Use {@link #queryPT(String, XmldbURI, String, Map)} instead.
+     * @param xpath the query to execute
+     * @param docUri the document to query
+     * @param s_id an id
+     * @param parameters map of options
+     * @return the result of the query
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     private Map<String, Object> queryP(final String xpath, final XmldbURI docUri,
                                        final String s_id, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
@@ -2787,12 +2815,12 @@ public class RpcConnection implements RpcAPI {
      *
      * This is called via RemoteUserManagementService.addUserGroup(Account)
      *
-     * @param name
-     * @return
-     * @throws org.exist.security.PermissionDeniedException
+     * @param name user name to update
+     * @param groups list of groups the user is added to
+     * @return true, if action succeeded
      */
     @Override
-    public boolean updateAccount(final String name, final List<String> groups) throws EXistException, PermissionDeniedException {
+    public boolean updateAccount(final String name, final List<String> groups) {
         try {
             return withDb((broker, transaction) -> {
                 final SecurityManager manager = broker.getBrokerPool().getSecurityManager();
@@ -2832,14 +2860,12 @@ public class RpcConnection implements RpcAPI {
      * This is called via RemoteUserManagementService.removeGroup(Account,
      * String)
      *
-     * @param name
-     * @param groups
-     * @param rgroup
-     * @return
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @param name username to update
+     * @param groups a list of groups
+     * @param rgroup the user will be removed from this group
+     * @return true, if the action succeeded
      */
-    public boolean updateAccount(final String name, final List<String> groups, final String rgroup) throws EXistException, PermissionDeniedException {
+    public boolean updateAccount(final String name, final List<String> groups, final String rgroup) {
 
         try {
             return withDb((broker, transaction) -> {
@@ -3254,10 +3280,10 @@ public class RpcConnection implements RpcAPI {
      * Validate if specified document is Valid.
      *
      * @param documentPath Path to XML document in database
-     * @return TRUE if document is valid, FALSE if not or errors or.....
-     * @throws java.net.URISyntaxException
-     * @throws PermissionDeniedException   User is not allowed to perform action.
-     * @throws org.exist.EXistException
+     * @return true, if document is valid, false if anything fails
+     * @throws URISyntaxException if the documentPath is invalid
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     @Override
     public boolean isValid(final String documentPath)
@@ -3265,7 +3291,7 @@ public class RpcConnection implements RpcAPI {
         return isValid(XmldbURI.xmldbUriFor(documentPath));
     }
 
-    private boolean isValid(final XmldbURI docUri) throws EXistException, PermissionDeniedException {
+    private boolean isValid(final XmldbURI docUri) throws EXistException {
 
         try {
             // Setup validator
@@ -3801,9 +3827,10 @@ public class RpcConnection implements RpcAPI {
      * Higher-order function for performing read locked operations on a collection
      *
      * @param uri The full XmldbURI of the collection
+     * @param <R> the return type of the function
      * @return A function to receive an operation to perform on the locked database collection
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     private <R> Function2E<XmlRpcCollectionFunction<R>, R, EXistException, PermissionDeniedException> readCollection(final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return readOp -> withDb((broker, transaction) -> this.<R>readCollection(broker, transaction, uri).apply(readOp));
@@ -3815,9 +3842,10 @@ public class RpcConnection implements RpcAPI {
      * @param broker      The broker to use for the operation
      * @param transaction The transaction to use for the operation
      * @param uri         The full XmldbURI of the collection
+     * @param <R> the return type of the function
      * @return A function to receive an operation to perform on the locked database collection
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     private <R> Function2E<XmlRpcCollectionFunction<R>, R, EXistException, PermissionDeniedException> readCollection(final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return withCollection(LockMode.READ_LOCK, broker, transaction, uri);
@@ -3827,9 +3855,10 @@ public class RpcConnection implements RpcAPI {
      * Higher-order function for performing write locked operations on a collection
      *
      * @param uri The full XmldbURI of the collection
+     * @param <R> the return type of the function
      * @return A function to receive an operation to perform on the locked database collection
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     private <R> Function2E<XmlRpcCollectionFunction<R>, R, EXistException, PermissionDeniedException> writeCollection(final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return writeOp -> withDb((broker, transaction) -> this.<R>writeCollection(broker, transaction, uri).apply(writeOp));
@@ -3841,9 +3870,10 @@ public class RpcConnection implements RpcAPI {
      * @param broker      The broker to use for the operation
      * @param transaction The transaction to use for the operation
      * @param uri         The full XmldbURI of the collection
+     * @param <R> the return type of the function
      * @return A function to receive an operation to perform on the locked database collection
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     private <R> Function2E<XmlRpcCollectionFunction<R>, R, EXistException, PermissionDeniedException> writeCollection(final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return withCollection(LockMode.WRITE_LOCK, broker, transaction, uri);
@@ -3852,13 +3882,14 @@ public class RpcConnection implements RpcAPI {
     /**
      * Higher-order function for performing lockable operations on a collection
      *
-     * @param lockMode
+     * @param lockMode    any of {@link LockMode}
      * @param broker      The broker to use for the operation
      * @param transaction The transaction to use for the operation
      * @param uri         The full XmldbURI of the collection
+     * @param <R> the return type of the function
      * @return A function to receive an operation to perform on the locked database collection
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     private <R> Function2E<XmlRpcCollectionFunction<R>, R, EXistException, PermissionDeniedException> withCollection(final LockMode lockMode, final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return readOp -> {
@@ -3880,8 +3911,8 @@ public class RpcConnection implements RpcAPI {
      *
      * @param uri The full XmldbURI of the document
      * @return A function to receive an operation to perform on the locked database document
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> readDocument(final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return readOp -> withDb((broker, transaction) -> this.<R>readDocument(broker, transaction, uri).apply(readOp));
@@ -3894,8 +3925,8 @@ public class RpcConnection implements RpcAPI {
      * @param transaction The transaction to use for the operation
      * @param uri         The full XmldbURI of the document
      * @return A function to receive an operation to perform on the locked database document
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> readDocument(final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return withDocument(LockMode.READ_LOCK, broker, transaction, uri);
@@ -3906,10 +3937,8 @@ public class RpcConnection implements RpcAPI {
      *
      * @param uri The full XmldbURI of the document
      * @return A function to receive an operation to perform on the locked database document
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
      */
-    private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> writeDocument(final XmldbURI uri) throws EXistException, PermissionDeniedException {
+    private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> writeDocument(final XmldbURI uri) {
         return writeOp -> withDb((broker, transaction) -> this.<R>writeDocument(broker, transaction, uri).apply(writeOp));
     }
 
@@ -3920,8 +3949,8 @@ public class RpcConnection implements RpcAPI {
      * @param transaction The transaction to use for the operation
      * @param uri         The full XmldbURI of the document
      * @return A function to receive an operation to perform on the locked database document
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> writeDocument(final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return withDocument(LockMode.WRITE_LOCK, broker, transaction, uri);
@@ -3935,8 +3964,8 @@ public class RpcConnection implements RpcAPI {
      * @param collection  The collection in which the document resides
      * @param uri         The full XmldbURI of the document
      * @return A function to receive an operation to perform on the locked database document
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> writeDocument(final DBBroker broker, final Txn transaction, final Collection collection, final XmldbURI uri) throws EXistException, PermissionDeniedException {
         return withDocument(LockMode.WRITE_LOCK, broker, transaction, collection, uri);
@@ -3947,31 +3976,27 @@ public class RpcConnection implements RpcAPI {
     /**
      * Higher-order function for performing lockable operations on a document
      *
-     * @param lockMode
+     * @param lockMode    any of {@link LockMode}
      * @param broker      The broker to use for the operation
      * @param transaction The transaction to use for the operation
      * @param uri         The full XmldbURI of the document
      * @return A function to receive an operation to perform on the locked database document
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
      */
-    private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> withDocument(final LockMode lockMode, final DBBroker broker, final Txn transaction, final XmldbURI uri) throws EXistException, PermissionDeniedException {
+    private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> withDocument(final LockMode lockMode, final DBBroker broker, final Txn transaction, final XmldbURI uri) {
         return withOp -> this.<R>readCollection(broker, transaction, uri.removeLastSegment()).apply((collection, broker1, transaction1) -> this.<R>withDocument(lockMode, broker1, transaction1, collection, uri).apply(withOp));
     }
 
     /**
      * Higher-order function for performing lockable operations on a document
      *
-     * @param lockMode
+     * @param lockMode    any of {@link LockMode}
      * @param broker      The broker to use for the operation
      * @param transaction The transaction to use for the operation
      * @param collection  The collection in which the document resides
      * @param uri         The full XmldbURI of the document
      * @return A function to receive an operation to perform on the locked database document
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
      */
-    private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> withDocument(final LockMode lockMode, final DBBroker broker, final Txn transaction, final Collection collection, final XmldbURI uri) throws EXistException, PermissionDeniedException {
+    private <R> Function2E<XmlRpcDocumentFunction<R>, R, EXistException, PermissionDeniedException> withDocument(final LockMode lockMode, final DBBroker broker, final Txn transaction, final Collection collection, final XmldbURI uri) {
         return readOp -> {
             try(final LockedDocument lockedDocument = collection.getDocumentWithLock(broker, uri.lastSegment(), lockMode)) {
 
@@ -3998,8 +4023,8 @@ public class RpcConnection implements RpcAPI {
      *
      * @param dbOperation The operation to perform on the database
      * @param <R>         The return type of the operation
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     private <R> R withDbAsSystem(final XmlRpcFunction<R> dbOperation) throws EXistException, PermissionDeniedException {
         return withDb(factory.getBrokerPool().getSecurityManager().getSystemSubject(), dbOperation);
@@ -4013,8 +4038,8 @@ public class RpcConnection implements RpcAPI {
      *
      * @param dbOperation The operation to perform on the database
      * @param <R>         The return type of the operation
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     private <R> R withDb(final XmlRpcFunction<R> dbOperation) throws EXistException, PermissionDeniedException {
         return withDb(user, dbOperation);
@@ -4027,8 +4052,8 @@ public class RpcConnection implements RpcAPI {
      * @param user        The user to execute the operation as
      * @param dbOperation The operation to perform on the database
      * @param <R>         The return type of the operation
-     * @throws org.exist.EXistException
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws EXistException if an internal error occurs
+     * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
     private <R> R withDb(final Subject user, final XmlRpcFunction<R> dbOperation) throws EXistException, PermissionDeniedException {
         try (final DBBroker broker = factory.getBrokerPool().get(Optional.of(user));
