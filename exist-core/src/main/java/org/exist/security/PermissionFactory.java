@@ -240,7 +240,7 @@ public class PermissionFactory {
                 if (!permission.isCurrentSubjectOwner()) {
                     throw new PermissionDeniedException("You cannot change the group ID of a file you do not own when posix-chown-restricted is in effect.");
                 }
-                // and, group equals either the effective group ID of the process or one of the processâs supplementary group IDs.
+                // and, group equals either the effective group ID of the process or one of the processes supplementary group IDs.
                 final int desiredGroupId = broker.getBrokerPool().getSecurityManager().getGroup(group.get()).getId();
                 if (!permission.isCurrentSubjectInGroup(desiredGroupId)) {
                     throw new PermissionDeniedException("You cannot change the group ID of a file to a group of which you are not a member when posix-chown-restricted is in effect.");
