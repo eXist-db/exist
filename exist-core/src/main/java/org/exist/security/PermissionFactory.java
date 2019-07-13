@@ -220,7 +220,7 @@ public class PermissionFactory {
         }
 
         final boolean changeOwner = owner.map(desiredOwner -> !permission.getOwner().getName().equals(desiredOwner)).orElse(false);
-        final boolean changeGroup = group.map(desiredGroup -> !permission.getGroup().getName().equals(desiredGroup)).orElse(false);
+        boolean changeGroup = group.map(desiredGroup -> !permission.getGroup().getName().equals(desiredGroup)).orElse(false);
 
         // enforce security checks
         final boolean posixChownRestricted = broker.getConfiguration().getProperty(POSIX_CHOWN_RESTRICTED_PROPERTY, true);
@@ -241,9 +241,15 @@ public class PermissionFactory {
                     throw new PermissionDeniedException("You cannot change the group ID of a file you do not own when posix-chown-restricted is in effect.");
                 }
                 // and, group equals either the effective group ID of the process or one of the processes supplementary group IDs.
-                final int desiredGroupId = broker.getBrokerPool().getSecurityManager().getGroup(group.get()).getId();
-                if (!permission.isCurrentSubjectInGroup(desiredGroupId)) {
-                    throw new PermissionDeniedException("You cannot change the group ID of a file to a group of which you are not a member when posix-chown-restricted is in effect.");
+                final Group desiredGroup = broker.getBrokerPool().getSecurityManager().getGroup(group.get());
+                if (desiredGroup == null) {
+                    // guard against attempting to change to a non-existent or removed group
+                    changeGroup = false;
+                } else {
+                    final int desiredGroupId = desiredGroup.getId();
+                    if (!permission.isCurrentSubjectInGroup(desiredGroupId)) {
+                        throw new PermissionDeniedException("You cannot change the group ID of a file to a group of which you are not a member when posix-chown-restricted is in effect.");
+                    }
                 }
             }
         } else {
