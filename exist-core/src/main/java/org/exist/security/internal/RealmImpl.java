@@ -200,18 +200,34 @@ public class RealmImpl extends AbstractRealm {
 
     @Override
     public boolean deleteGroup(final Group group) throws PermissionDeniedException, EXistException {
-        if(group == null)
-            {return false;}
+        if (group == null) {
+            return false;
+        }
         
         groupsByName.<PermissionDeniedException, EXistException>write2E(principalDb -> {
             final AbstractPrincipal remove_group = (AbstractPrincipal)principalDb.get(group.getName());
-            if(remove_group == null)
-                {throw new IllegalArgumentException("Group does '" + group.getName() + "' not exist!");}
+            if (remove_group == null) {
+                throw new IllegalArgumentException("Group does '" + group.getName() + "' not exist!");
+            }
 
             final DBBroker broker = getDatabase().getActiveBroker();
             final Subject subject = broker.getCurrentSubject();
 
             ((Group)remove_group).assertCanModifyGroup(subject);
+
+            // check that this is not an active primary group
+            final Optional<String> isPrimaryGroupOf = usersByName.read(usersDb -> {
+                for(final Account account : usersDb.values()) {
+                    final Group accountPrimaryGroup = account.getDefaultGroup();
+                    if (accountPrimaryGroup != null && accountPrimaryGroup.getId() == remove_group.getId()) {
+                        return Optional.of(account.getName());
+                    }
+                }
+                return Optional.empty();
+            });
+            if (isPrimaryGroupOf.isPresent()) {
+                throw new PermissionDeniedException("Account '" + isPrimaryGroupOf.get() + "' still has '" + group.getName() + "' as their primary group!");
+            }
 
             remove_group.setRemoved(true);
             remove_group.setCollection(broker, collectionRemovedGroups, XmldbURI.create(UUIDGenerator.getUUID() + ".xml"));
