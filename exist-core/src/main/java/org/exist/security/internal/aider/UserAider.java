@@ -49,8 +49,7 @@ public class UserAider implements Account {
     private final Map<SchemaType, String> metadata = new HashMap<>();
     private String password = null;
     private String passwordDigest = null;
-    private Group defaultRole = null;
-    private Map<String, Group> roles = new LinkedHashMap<>();
+    private Map<String, Group> groups = new LinkedHashMap<>();
     private int umask = Permission.DEFAULT_UMASK;
     private boolean enabled = true;
 
@@ -74,12 +73,12 @@ public class UserAider implements Account {
 
     public UserAider(final String realmId, final String name, final Group group) {
         this(realmId, name);
-        defaultRole = addGroup(group);
+        addGroup(group);
     }
 
     public UserAider(final String name, final Group group) {
         this(name);
-        defaultRole = addGroup(group);
+        addGroup(group);
     }
 
     @Override
@@ -99,9 +98,9 @@ public class UserAider implements Account {
 
     @Override
     public Group addGroup(final String name) {
-        final Group role = new GroupAider(realmId, name);	
-        roles.put(name, role);
-        return role;
+        final Group group = new GroupAider(realmId, name);
+        groups.put(name, group);
+        return group;
     }
 
     @Override
@@ -115,11 +114,11 @@ public class UserAider implements Account {
     @Override
     public void setPrimaryGroup(final Group group) throws PermissionDeniedException {
 
-        if(!roles.containsKey(group.getName())) {
+        if(!groups.containsKey(group.getName())) {
             addGroup(group);
         }
 
-        final List<Map.Entry<String, Group>> entries = new ArrayList<>(roles.entrySet());
+        final List<Map.Entry<String, Group>> entries = new ArrayList<>(groups.entrySet());
         Collections.sort(entries, (final Map.Entry<String, Group> o1, final Map.Entry<String, Group> o2) -> {
             if (o1.getKey().equals(group.getName())) {
                 return -1;
@@ -128,20 +127,20 @@ public class UserAider implements Account {
             }
         });
 
-        roles = new LinkedHashMap<>();
+        groups = new LinkedHashMap<>();
         for(final Map.Entry<String, Group> entry : entries) {
-            roles.put(entry.getKey(), entry.getValue());
+            groups.put(entry.getKey(), entry.getValue());
         }
     }
 
     @Override
     public void remGroup(final String role) {
-        roles.remove(role);
+        groups.remove(role);
     }
 
     @Override
     public void setGroups(final String[] names) {
-        roles = new HashMap<>();
+        groups = new HashMap<>();
 
         for (final String name : names) {
             addGroup(name);
@@ -150,7 +149,7 @@ public class UserAider implements Account {
 
     @Override
     public String[] getGroups() {
-        return roles.keySet().toArray(new String[0]);
+        return groups.keySet().toArray(new String[0]);
     }
 
     @Override
@@ -165,15 +164,17 @@ public class UserAider implements Account {
 
     @Override
     public String getPrimaryGroup() {
-        if(defaultRole == null) {
+        final Group defaultGroup = getDefaultGroup();
+        if (defaultGroup != null) {
+            return defaultGroup.getName();
+        } else {
             return null;
         }
-        return defaultRole.getName();
     }
 
     @Override
     public boolean hasGroup(final String group) {
-        return roles.containsKey(group);
+        return groups.containsKey(group);
     }
 
     @Override
@@ -203,7 +204,13 @@ public class UserAider implements Account {
 
     @Override
     public Group getDefaultGroup() {
-        return defaultRole;
+        if (groups != null && groups.size() > 0) {
+            final Iterator<Group> iterator = groups.values().iterator();
+            if (iterator.hasNext()) {
+                return iterator.next();
+            }
+        }
+        return null;
     }
 
     public void setEncodedPassword(final String passwd) {
