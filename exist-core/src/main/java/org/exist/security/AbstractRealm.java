@@ -358,6 +358,12 @@ public abstract class AbstractRealm implements Realm, Configurable {
             }
         }
 
+        // if the primary group has changed, then make sure to update it!
+        if (account.getPrimaryGroup() != null
+                && (!account.getPrimaryGroup().equals(updatingAccount.getPrimaryGroup()))) {
+            updatingAccount.setPrimaryGroup(getGroup(account.getPrimaryGroup()));
+        }
+
         final String passwd = account.getPassword();
         if (passwd != null) {
             // if password is empty, ignore it to keep the old one
