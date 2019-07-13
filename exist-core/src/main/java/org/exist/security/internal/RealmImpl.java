@@ -44,7 +44,6 @@ import org.exist.util.UUIDGenerator;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 
@@ -112,9 +111,13 @@ public class RealmImpl extends AbstractRealm {
         registerGroup(GROUP_GUEST);
 
         //unknown account and group
-        GROUP_UNKNOWN = new GroupImpl(broker, this, UNKNOWN_GROUP_ID, "");
-    	ACCOUNT_UNKNOWN = new AccountImpl(broker, this, UNKNOWN_ACCOUNT_ID, "", null, GROUP_UNKNOWN);
-        
+        GROUP_UNKNOWN = new GroupImpl(broker, this, UNKNOWN_GROUP_ID, SecurityManager.UNKNOWN_GROUP);
+        sm.registerGroup(GROUP_UNKNOWN);
+        registerGroup(GROUP_UNKNOWN);
+    	ACCOUNT_UNKNOWN = new AccountImpl(broker, this, UNKNOWN_ACCOUNT_ID, SecurityManager.UNKNOWN_USER, null, GROUP_UNKNOWN);
+        sm.registerAccount(ACCOUNT_UNKNOWN);
+        registerAccount(ACCOUNT_UNKNOWN);
+
         //XXX: GROUP_DBA._addManager(ACCOUNT_ADMIN);
     	//XXX: GROUP_GUEST._addManager(ACCOUNT_ADMIN);
     }

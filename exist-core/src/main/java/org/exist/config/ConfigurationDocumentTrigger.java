@@ -37,6 +37,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.sax.event.SAXEvent;
 import org.exist.util.sax.event.contenthandler.Characters;
 import org.exist.util.sax.event.contenthandler.Element;
+import org.exist.util.sax.event.contenthandler.EndElement;
 import org.exist.util.sax.event.contenthandler.StartElement;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.Attributes;
@@ -80,6 +81,12 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
     group elements
     */
     private boolean processingAccount = false;
+
+    /*
+     When processing an account this will be set to true
+     if the account has one or more group elements
+     */
+    private boolean accountHasPrimaryGroup = false;
 
 
     @Deprecated
@@ -235,6 +242,12 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
             processingAccount = localName.equals(PrincipalType.ACCOUNT.getElementName()); //set group account/group guard
             defer(true);
         }
+
+        // check that account has a group element
+        if (processingAccount && namespaceURI != null && namespaceURI.equals(Configuration.NS) && localName.equals(PrincipalType.GROUP.getElementName())) {
+            accountHasPrimaryGroup = true;
+        }
+
         super.startElement(namespaceURI, localName, qname, attributes);
     }
 
@@ -249,6 +262,11 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
             //so we can now process it in it's entirety
             if(processingAccount) {
                 processPrincipal(PrincipalType.fromElementName(localName));
+
+                // inject a primary group into the account if one is not present!
+                if (!accountHasPrimaryGroup) {
+                    setAccountPrimaryGroupToNoGroup();
+                }
             }
 
             //stop deferring events and apply
@@ -257,8 +275,33 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
             if(localName.equals(PrincipalType.ACCOUNT.getElementName())) {
                 //we are no longer processing an account
                 processingAccount = false; //reset account/group guard
+                accountHasPrimaryGroup = false;
             }
         }
+    }
+
+    private void setAccountPrimaryGroupToNoGroup() throws SAXException {
+        final SAXEvent firstEvent = deferred.peek();
+        if(!(firstEvent instanceof StartElement)) {
+            throw new SAXException("Unbalanced SAX Events");
+        }
+
+        StartElement start = ((StartElement)firstEvent);
+        if(start.namespaceURI == null || !start.namespaceURI.equals(Configuration.NS) || !start.localName.equals(PrincipalType.ACCOUNT.getElementName())) {
+            throw new SAXException("First element does not match ending '" + PrincipalType.ACCOUNT.getElementName() + "' element");
+        }
+
+        start = (StartElement)deferred.pop();
+
+        final AttributesImpl attrs = new AttributesImpl();
+        attrs.addAttribute("", "name", "name", "CDATA", SecurityManager.UNKNOWN_GROUP);
+        final StartElement startPrimaryGroup = new StartElement(start.namespaceURI, PrincipalType.GROUP.getElementName(), PrincipalType.GROUP.getElementName(), attrs);
+        final EndElement endPrimaryGroup = new EndElement(startPrimaryGroup.namespaceURI, startPrimaryGroup.localName, startPrimaryGroup.qname);
+
+        deferred.push(endPrimaryGroup);
+        deferred.push(startPrimaryGroup);
+
+        deferred.push(start);
     }
 
     /**
