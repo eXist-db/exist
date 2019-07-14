@@ -81,6 +81,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-suggest</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.evolvedbinary.j8fu</groupId>
             <artifactId>j8fu</artifactId>
         </dependency>

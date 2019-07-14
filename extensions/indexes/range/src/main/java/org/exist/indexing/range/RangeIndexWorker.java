@@ -532,7 +532,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 final short nodeType = qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node
                         .ELEMENT_NODE;
 
-                resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher.searcher, nodeType, query, null));
+                resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, nodeType, query, null));
             }
             return resultSet;
         });
@@ -564,7 +564,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 qu = clauses[0].getQuery();
             }
             final NodeSet resultSet = new NewArrayNodeSet();
-            resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher.searcher, Node.ELEMENT_NODE, qu, null));
+            resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher, Node.ELEMENT_NODE, qu, null));
             return resultSet;
         });
     }

@@ -25,10 +25,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.ReferenceManager;
+import org.apache.lucene.search.SearcherManager;
 import org.exist.indexing.IndexWorker;
+import org.exist.indexing.lucene.AbstractLuceneIndex;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.storage.DBBroker;
+import org.exist.util.DatabaseConfigurationException;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,7 +44,7 @@ import java.util.Map;
  *
  * @author Wolfgang Meier
  */
-public class RangeIndex extends LuceneIndex {
+public class RangeIndex extends AbstractLuceneIndex<IndexSearcher> {
 
     protected static final Logger LOG = LogManager.getLogger(RangeIndex.class);
 
@@ -64,7 +71,7 @@ public class RangeIndex extends LuceneIndex {
         private static final Map<String, Operator> LOOKUP_MAP;
 
         static {
-            LOOKUP_MAP = new HashMap<String, Operator>();
+            LOOKUP_MAP = new HashMap<>();
             for (Operator operator : Operator.values()) {
                 LOOKUP_MAP.put(operator.name, operator);
             }
@@ -108,5 +115,14 @@ public class RangeIndex extends LuceneIndex {
 
     public Analyzer getDefaultAnalyzer() {
         return defaultAnalyzer;
+    }
+
+    @Override
+    public ReferenceManager<IndexSearcher> createSearcherManager(IndexWriter writer) throws DatabaseConfigurationException {
+        try {
+            return new SearcherManager(writer, true, null);
+        } catch (IOException e) {
+            throw new DatabaseConfigurationException("IO error while creating searcher manager: " + e.getMessage(), e);
+        }
     }
 }

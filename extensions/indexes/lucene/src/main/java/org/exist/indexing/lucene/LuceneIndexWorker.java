@@ -49,6 +49,7 @@ import org.exist.indexing.*;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.PlainTextHighlighter.Offset;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextField;
+import org.exist.indexing.lucene.suggest.LuceneSuggest;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
@@ -136,13 +137,17 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return index.getIndexName();
     }
 
+    public LuceneSuggest getSuggesters() {
+        return index.suggestService;
+    }
+
     public QueryRewriter getQueryRewriter(XQueryContext context) {
         return null;
     }
 
     public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
         LOG.debug("Configuring lucene index...");
-        config = new LuceneConfig(configNodes, namespaces);
+        config = new LuceneConfig(index, configNodes, namespaces);
         return config;
     }
 

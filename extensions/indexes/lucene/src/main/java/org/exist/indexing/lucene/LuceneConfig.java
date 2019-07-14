@@ -52,6 +52,8 @@ public class LuceneConfig {
     private static final String ATTR_MODULE_PREFIX = "prefix";
     private static final String ATTR_MODULE_AT = "at";
 
+    protected LuceneIndex index;
+
     private Map<QName, LuceneIndexConfig> paths = new TreeMap<>();
     private List<LuceneIndexConfig> wildcardPaths = new ArrayList<>();
     private Map<String, LuceneIndexConfig> namedIndexes = new TreeMap<>();
@@ -73,7 +75,8 @@ public class LuceneConfig {
 
     protected FacetsConfig facetsConfig = new FacetsConfig();
 
-    public LuceneConfig(NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
+    public LuceneConfig(LuceneIndex index, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
+        this.index = index;
         parseConfig(configNodes, namespaces);
     }
 
@@ -84,6 +87,7 @@ public class LuceneConfig {
      * @param other
      */
     public LuceneConfig(LuceneConfig other) {
+        this.index = other.index;
     	this.paths = other.paths;
     	this.wildcardPaths = other.wildcardPaths;
     	this.namedIndexes = other.namedIndexes;
