@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.AttrImpl;
+import org.exist.indexing.lucene.suggest.LuceneSuggest;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
@@ -204,6 +205,15 @@ public class LuceneIndexConfig {
                             matchAttrs.put(qname, new MatchAttrData(qname, value, boost, onSibling));
                             break;
                         }
+                        case LuceneSuggest.ELEMENT_SUGGEST:
+                            String contentField;
+                            if (name == null) {
+                                contentField = LuceneUtil.encodeQName(getQName(), parent.index.getBrokerPool().getSymbols());
+                            } else {
+                                contentField = name;
+                            }
+                            parent.index.suggestService.configure(contentField, (Element) child, getAnalyzer());
+                            break;
                     }
                 }
             }
