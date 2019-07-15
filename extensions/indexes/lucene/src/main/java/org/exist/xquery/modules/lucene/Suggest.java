@@ -42,7 +42,7 @@ public class Suggest extends BasicFunction {
                             new FunctionParameterSequenceType("query", Type.STRING, Cardinality.EXACTLY_ONE,
                                     "The string to pass to the suggester")
                     },
-                    new FunctionReturnSequenceType(Type.MAP, Cardinality.EXACTLY_ONE,
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE,
                             "A map with each suggestion as key and the score as value")
             )
     };
@@ -62,13 +62,12 @@ public class Suggest extends BasicFunction {
                 // return empty sequence if no suggester is defined for the field
                 return Sequence.EMPTY_SEQUENCE;
             }
-            final MapType map = new MapType(context);
+            final ValueSequence result = new ValueSequence(lookup.size());
             lookup.forEach((lookupResult) -> {
                 final StringValue key = new StringValue(lookupResult.key.toString());
-                final IntegerValue score = new IntegerValue(lookupResult.value);
-                map.add(key, score);
+                result.add(key);
             });
-            return map;
+            return result;
         } catch (IOException e) {
             throw new XPathException(this, LuceneModule.EXXQDYFT0002, "exception caught reading suggestions: " + e.getMessage());
         }

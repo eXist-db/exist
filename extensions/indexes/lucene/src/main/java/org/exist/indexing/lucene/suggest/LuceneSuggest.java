@@ -36,12 +36,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class LuceneSuggest {
 
-    private final static String ATTR_ID = "id";
-    private final static String ATTR_TYPE = "type";
+    public final static String ELEMENT_SUGGEST = "suggest";
+    public final static String ATTR_ID = "id";
+    public final static String ATTR_TYPE = "type";
 
     private enum Suggesters {
         ANALYZING,
-        FUZZY
+        FUZZY,
+        FREETEXT
     }
 
     private Path indexDir;
@@ -56,6 +58,7 @@ public class LuceneSuggest {
 
     @Nullable
     public List<Lookup.LookupResult> lookup(String id, CharSequence key, boolean onlyMorePopular, int num) throws IOException {
+        parent.commit();
         final Suggester config = suggesters.get(id);
         return config == null ? null : config.lookup(key, onlyMorePopular, num);
     }
@@ -80,15 +83,18 @@ public class LuceneSuggest {
             }
         }
 
-        Suggester suggester = new AnalyzingInfixSuggesterWrapper(id, field, child, indexDir, analyzer == null ? parent.getDefaultAnalyzer() : analyzer);
-//        switch (type) {
-//            case FUZZY:
-//                suggester = new FuzzySuggesterWrapper(id, field, child, indexDir, analyzer == null ? parent.getDefaultAnalyzer() : analyzer);
-//                break;
-//            default:
-//                suggester = new AnalyzingInfixSuggesterWrapper(id, field, child, indexDir, analyzer == null ? parent.getDefaultAnalyzer() : analyzer);
-//                break;
-//        }
+        Suggester suggester;
+        switch (type) {
+            case FUZZY:
+                suggester = new FuzzySuggesterWrapper(id, field, child, indexDir, analyzer == null ? parent.getDefaultAnalyzer() : analyzer);
+                break;
+            case FREETEXT:
+                suggester = new FreetextSuggesterWrapper(id, field, child, indexDir, analyzer == null ? parent.getDefaultAnalyzer() : analyzer);
+                break;
+            default:
+                suggester = new AnalyzingInfixSuggesterWrapper(id, field, child, indexDir, analyzer == null ? parent.getDefaultAnalyzer() : analyzer);
+                break;
+        }
         suggesters.put(id, suggester);
     }
 

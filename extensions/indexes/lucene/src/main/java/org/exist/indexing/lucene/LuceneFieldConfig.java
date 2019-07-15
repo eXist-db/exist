@@ -25,6 +25,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.*;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
+import org.exist.indexing.lucene.suggest.LuceneSuggest;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -62,7 +63,6 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     private final static String ATTR_STORE = "store";
     private final static String ATTR_ANALYZER = "analyzer";
     private final static String ATTR_IF = "if";
-    private final static String ELEMENT_SUGGEST = "suggest";
 
     protected String fieldName;
     protected int type = Type.STRING;
@@ -110,7 +110,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         while (child != null) {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
                 final String localName = child.getLocalName();
-                if (ELEMENT_SUGGEST.equals(localName)) {
+                if (LuceneSuggest.ELEMENT_SUGGEST.equals(localName)) {
                     config.index.suggestService.configure(fieldName, (Element) child, analyzer);
                 }
             }

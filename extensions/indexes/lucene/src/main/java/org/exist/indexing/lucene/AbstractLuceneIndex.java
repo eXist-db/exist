@@ -254,7 +254,7 @@ public abstract class AbstractLuceneIndex<S> extends AbstractIndex implements Ra
         needsCommit = true;
     }
 
-    protected void commit() {
+    public void commit() {
         if (!needsCommit) {
             return;
         }

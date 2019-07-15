@@ -22,54 +22,53 @@ package org.exist.indexing.lucene.suggest;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.spell.Dictionary;
 import org.apache.lucene.search.suggest.Lookup;
-import org.apache.lucene.search.suggest.analyzing.AnalyzingInfixSuggester;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
-import org.exist.indexing.lucene.LuceneIndex;
+import org.apache.lucene.search.suggest.analyzing.FreeTextSuggester;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FileUtils;
 import org.w3c.dom.Element;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 
-public class AnalyzingInfixSuggesterWrapper extends Suggester {
+public class FreetextSuggesterWrapper extends Suggester {
 
-    private AnalyzingInfixSuggester suggester;
+    private final FreeTextSuggester suggester;
+    private final Path storage;
 
-    public AnalyzingInfixSuggesterWrapper(String id, String field, Element config, Path indexDir, Analyzer analyzer) throws DatabaseConfigurationException {
+    public FreetextSuggesterWrapper(String id, String field, Element config, Path indexDir, Analyzer analyzer) throws DatabaseConfigurationException {
         super(id, field, config, indexDir, analyzer);
 
-        final Path dir = indexDir.resolve("suggest_" + id);
+        suggester = new FreeTextSuggester(analyzer);
+
+        storage = indexDir.resolve("suggest_" + id);
         try {
-            if (Files.exists(dir)) {
-                if (!Files.isDirectory(dir)) {
-                    throw new DatabaseConfigurationException("Lucene suggestions location is not a directory: " +
-                            dir.toAbsolutePath().toString());
+            if (Files.exists(storage)) {
+                if (Files.isDirectory(storage)) {
+                    FileUtils.delete(storage);
+                } else {
+                    suggester.load(Files.newInputStream(storage, StandardOpenOption.READ));
                 }
-            } else {
-                Files.createDirectories(dir);
             }
-            final Directory directory = FSDirectory.open(dir.toFile());
-            suggester = new AnalyzingInfixSuggester(LuceneIndex.LUCENE_VERSION_IN_USE, directory, analyzer, analyzer, 4);
-        } catch(IOException e) {
-            throw new DatabaseConfigurationException("Error initializing lucene suggestions with id " + id + ": " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new DatabaseConfigurationException("Error initializing fuzzy suggester: " + e.getMessage(), e);
         }
     }
 
     @Override
     List<Lookup.LookupResult> lookup(CharSequence key, boolean onlyMorePopular, int num) throws IOException {
-        return suggester.lookup(key, onlyMorePopular, num);
+        return suggester.lookup(key, true, num);
     }
 
     @Override
-    public void build(Dictionary dictionary) throws IOException {
+    void build(Dictionary dictionary) throws IOException {
         suggester.build(dictionary);
+        suggester.store(Files.newOutputStream(storage, StandardOpenOption.WRITE, StandardOpenOption.CREATE));
     }
 
     @Override
-    public void close() throws IOException {
-        suggester.close();
+    void close() {
     }
 }
