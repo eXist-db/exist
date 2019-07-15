@@ -125,6 +125,27 @@ public class XMLDBRestoreTest {
         assertArrayEquals(new String[] { SecurityManager.UNKNOWN_GROUP }, account.getGroups());
     }
 
+    @Test
+    public void restoreUserWithNoSuchGroupIsPlacedInNoGroup() throws IOException, XMLDBException {
+        final String username = UUID.randomUUID().toString() + "-user";
+        final Path contentsFile = createBackupWithUserInNoSuchGroup(username);
+        final TestRestoreListener listener = new TestRestoreListener();
+        final XmldbURI rootUri = XmldbURI.create(getBaseUri()).append(XmldbURI.ROOT_COLLECTION_URI);
+
+        restoreBackup(rootUri, contentsFile, null, listener);
+
+        assertEquals(2, listener.restored.size());
+        assertEquals(0, listener.warnings.size());
+        assertEquals(0, listener.errors.size());
+
+        final Collection collection = DatabaseManager.getCollection(rootUri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        final EXistUserManagementService userManagementService = (EXistUserManagementService) collection.getService("UserManagementService", "1.0");
+        final Account account = userManagementService.getAccount(username);
+        assertNotNull(account);
+        assertEquals(SecurityManager.UNKNOWN_GROUP, account.getPrimaryGroup());
+        assertArrayEquals(new String[] { SecurityManager.UNKNOWN_GROUP }, account.getGroups());
+    }
+
     private static void restoreBackup(final XmldbURI uri, final Path backup, @Nullable final String backupPassword, final RestoreServiceTaskListener listener) throws XMLDBException {
         final Collection collection = DatabaseManager.getCollection(uri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final EXistRestoreService restoreService = (EXistRestoreService) collection.getService("RestoreService", "1.0");
@@ -203,14 +224,49 @@ public class XMLDBRestoreTest {
                         "</collection>";
 
         // account with no primary group!
+        final String backupPasswordHash = Base64.encodeBase64String(ripemd160(username));
+        final String backupPasswordDigest = MessageDigester.byteArrayToHex(ripemd160(username + ":exist:" + username));
         final String invalidUserDoc =
-                "<account xmlns=\"http://exist-db.org/Configuration\" id=\"999\">" +
-                    "<password>{RIPEMD160}EF2iMoMqNA2UXU9JARBuAQmMu2M=</password>\n" +
-                    "<expired>false</expired>" +
-                    "<enabled>true</enabled>" +
-                    "<umask>022</umask>" +
-                    "<name>" + username + "</name>" +
+                "<account xmlns=\"http://exist-db.org/Configuration\" id=\"999\">\n" +
+                        "<password>{RIPEMD160}" + backupPasswordHash + "</password>\n" +
+                        "<digestPassword>" + backupPasswordDigest + "</digestPassword>\n" +
+                        "<expired>false</expired>\n" +
+                        "<enabled>true</enabled>\n" +
+                        "<umask>022</umask>\n" +
+                        "<name>" + username + "</name>\n" +
                 "</account>";
+
+        final Path contentsFile = Files.write(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), contents.getBytes(UTF_8));
+        Files.write(accountsCol.resolve(username + ".xml"),  invalidUserDoc.getBytes(UTF_8));
+
+        return contentsFile;
+    }
+
+    private static Path createBackupWithUserInNoSuchGroup(final String username) throws IOException {
+        final Path backupDir = tempFolder.newFolder().toPath();
+        final Path accountsCol = Files.createDirectories(backupDir.resolve("db").resolve("system").resolve("security").resolve("exist").resolve("accounts"));
+
+        final String contents =
+                "<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db/system/security/exist/accounts\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2019-05-15T15:58:39.385+04:00\" deduplicate-blobs=\"false\" version=\"2\">\n" +
+                        "    <acl entries=\"0\" version=\"1\"/>\n" +
+                        "    <resource type=\"XMLResource\" name=\"" + username + ".xml\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2019-05-15T15:58:48.638+04:00\" modified=\"2019-05-15T15:58:48.638+04:00\" filename=\"" + username + ".xml\" mimetype=\"application/xml\">\n" +
+                        "        <acl entries=\"0\" version=\"1\"/>\n" +
+                        "    </resource>\n" +
+                        "</collection>";
+
+        // account with no primary group!
+        final String backupPasswordHash = Base64.encodeBase64String(ripemd160(username));
+        final String backupPasswordDigest = MessageDigester.byteArrayToHex(ripemd160(username + ":exist:" + username));
+        final String invalidUserDoc =
+                "<account xmlns=\"http://exist-db.org/Configuration\" id=\"999\">\n" +
+                        "<password>{RIPEMD160}" + backupPasswordHash + "</password>\n" +
+                        "<digestPassword>" + backupPasswordDigest + "</digestPassword>\n" +
+                        "<group name=\"no-such-group\"/>\n" +
+                        "<expired>false</expired>\n" +
+                        "<enabled>true</enabled>\n" +
+                        "<umask>022</umask>\n" +
+                        "<name>" + username + "</name>\n" +
+                "</account>\n";
 
         final Path contentsFile = Files.write(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), contents.getBytes(UTF_8));
         Files.write(accountsCol.resolve(username + ".xml"),  invalidUserDoc.getBytes(UTF_8));
