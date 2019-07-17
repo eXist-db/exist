@@ -56,7 +56,6 @@ package org.exist.storage.btree;
  * managing (creating, dropping) database objects such as Collections, Indexes,
  * and XMLObjects.
  */
-
 public class DBException extends Exception {
 	
 	private static final long serialVersionUID = 952318931514282901L;

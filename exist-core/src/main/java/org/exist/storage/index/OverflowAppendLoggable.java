@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
  */
 package org.exist.storage.index;
 
@@ -40,6 +38,15 @@ public class OverflowAppendLoggable extends AbstractBFileLoggable {
     protected int chunkSize;
     protected int startOffset;
 
+    /**
+     *
+     * @param transaction  the database transaction
+     * @param page the page number
+     * @param chunk the data chunk
+     * @param startOffset the starting offset
+     * @param chunkSize the size of the chunk
+     * @param fileId the file if
+     */
     public OverflowAppendLoggable(byte fileId, Txn transaction, long page, 
             ByteArray chunk, int startOffset, int chunkSize) {
         super(BFile.LOG_OVERFLOW_APPEND, fileId, transaction);
@@ -49,6 +56,10 @@ public class OverflowAppendLoggable extends AbstractBFileLoggable {
         this.startOffset = startOffset;
     }
 
+    /**
+     * @param broker the database broker
+     * @param transactionId the transaction id
+     */
     public OverflowAppendLoggable(DBBroker broker, long transactionId) {
         super(broker, transactionId);
     }

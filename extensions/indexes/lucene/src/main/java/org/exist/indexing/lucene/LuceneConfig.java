@@ -81,7 +81,7 @@ public class LuceneConfig {
      * Copy constructor. LuceneConfig is only configured once by database instance,
      * so to avoid concurrency issues when using e.g. iterator, we create a copy.
      * 
-     * @param other
+     * @param other the other LuceneConfig
      */
     public LuceneConfig(LuceneConfig other) {
     	this.paths = other.paths;
@@ -241,11 +241,12 @@ public class LuceneConfig {
      * Parse a configuration entry. The main configuration entries for this index
      * are the &lt;text&gt; elements. They may be enclosed by a &lt;lucene&gt; element.
      *
-     * @param configNodes
-     * @param namespaces
-     * @throws org.exist.util.DatabaseConfigurationException
+     * @param configNodes the configuration
+     * @param namespaces the namespaces
+     *
+     * @throws DatabaseConfigurationException if the configuration can't be parsed
      */
-    protected void parseConfig(NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
+    protected void parseConfig(final NodeList configNodes, final Map<String, String> namespaces) throws DatabaseConfigurationException {
         Node node;
         for(int i = 0; i < configNodes.getLength(); i++) {
             node = configNodes.item(i);

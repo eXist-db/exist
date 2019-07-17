@@ -30,7 +30,7 @@ import org.exist.xquery.*;
 /**
  * Module function definitions for transform module.
  *
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author ljo
  */
 public class RequestModule extends AbstractInternalModule {

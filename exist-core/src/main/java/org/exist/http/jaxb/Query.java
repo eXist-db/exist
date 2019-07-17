@@ -483,7 +483,8 @@ public class Query {
          *
          * Objects of the following type(s) are allowed in the list
          * {@link Query.Properties.Property }
-         * 
+         *
+         * @return the list of properties
          * 
          */
         public List<Query.Properties.Property> getProperty() {

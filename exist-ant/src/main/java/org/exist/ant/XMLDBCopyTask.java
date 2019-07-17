@@ -38,7 +38,7 @@ import java.net.URISyntaxException;
 /**
  * an ant task to copy a collection or resource.
  *
- * @author  peter.klotz@blue-elephant-systems.com
+ * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  */
 public class XMLDBCopyTask extends AbstractXMLDBTask
 {
@@ -47,9 +47,7 @@ public class XMLDBCopyTask extends AbstractXMLDBTask
     private String destination = null;
     private String name        = null;
 
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
+    @Override
     public void execute() throws BuildException
     {
         if( uri == null ) {
@@ -126,9 +124,9 @@ public class XMLDBCopyTask extends AbstractXMLDBTask
 
 
     /**
-     * DOCUMENT ME!
+     * Set the collection.
      *
-     * @param  collection
+     * @param collection the collection.
      */
     public void setCollection( String collection )
     {
@@ -137,9 +135,9 @@ public class XMLDBCopyTask extends AbstractXMLDBTask
 
 
     /**
-     * DOCUMENT ME!
+     * Set the resource.
      *
-     * @param  resource
+     * @param resource the resource
      */
     public void setResource( String resource )
     {

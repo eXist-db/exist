@@ -551,6 +551,8 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * thus be longer than the ngram size.
      *
      * @param text the text to tokenize
+     *
+     * @return the tokenized text
      */
     public String[] tokenize(final String text) {
         final int len = text.codePointCount(0, text.length());

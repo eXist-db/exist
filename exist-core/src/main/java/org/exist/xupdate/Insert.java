@@ -53,28 +53,35 @@ public class Insert extends Modification {
 
     /**
      * Constructor for Insert.
-     * 
-     * 
-     * @param broker 
-     * @param docs 
-     * @param namespaces 
-     * @param variables 
-     * @param selectStmt 
+     *
+     * @param broker the database broker.
+     * @param docs the document working set.
+     * @param selectStmt the select statement.
+     * @param namespaces the namespaces.
+     * @param variables the variables.
      */
     public Insert(DBBroker broker, DocumentSet docs, String selectStmt,
             Map<String, String> namespaces, Map<String, Object> variables) {
         super(broker, docs, selectStmt, namespaces,  variables);
     }
 
+    /**
+     * Constructor for Insert.
+     *
+     * @param broker the database broker.
+     * @param docs the document working set.
+     * @param selectStmt the select statement.
+     * @param mode the insert mode
+     * @param namespaces the namespaces.
+     * @param variables the variables.
+     */
     public Insert(DBBroker broker, DocumentSet docs, String selectStmt,
             int mode, Map<String, String> namespaces, Map<String, Object> variables) {
         this(broker, docs, selectStmt, namespaces, variables);
         this.mode = mode;
     }
 
-    /**
-     * @see org.exist.xupdate.Modification#process(org.exist.storage.txn.Txn)
-     */
+    @Override
     public long process(Txn transaction) throws PermissionDeniedException, LockException,
             EXistException, XPathException, TriggerException {
         final NodeList children = content;
@@ -112,9 +119,7 @@ public class Insert extends Modification {
         }
     }
 
-    /**
-     * @see org.exist.xupdate.Modification#getName()
-     */
+    @Override
     public String getName() {
         return (mode == INSERT_BEFORE ? "insert-before" : "insert-after");
     }

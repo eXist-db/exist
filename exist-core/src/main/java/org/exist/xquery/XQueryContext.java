@@ -100,7 +100,7 @@ import static org.exist.Namespaces.XML_NS;
  * The current XQuery execution context. Contains the static as well as the dynamic
  * XQuery context components.
  *
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class XQueryContext implements BinaryValueManager, Context {
 

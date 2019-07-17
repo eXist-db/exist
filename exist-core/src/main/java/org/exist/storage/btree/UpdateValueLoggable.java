@@ -38,7 +38,16 @@ public class UpdateValueLoggable extends BTAbstractLoggable {
     protected Value key;
     protected long pointer;
     protected long oldPointer;
-
+    
+    /**
+     * @param transaction the database transaction
+     * @param fileId the file id
+     * @param pageNum the page number
+     * @param idx the index
+     * @param key the key
+     * @param pointer the pointer
+     * @param oldPointer the old pointer
+     */
     public UpdateValueLoggable(Txn transaction, byte fileId, long pageNum, int idx, Value key, long pointer, long oldPointer) {
         super(BTree.LOG_UPDATE_VALUE, fileId, transaction);
         this.pageNum = pageNum;
@@ -48,13 +57,15 @@ public class UpdateValueLoggable extends BTAbstractLoggable {
         this.oldPointer = oldPointer;
     }
 
+    /**
+     * @param broker the database broker
+     * @param transactionId the transaction id
+     */
     public UpdateValueLoggable(DBBroker broker, long transactionId) {
         super(BTree.LOG_UPDATE_VALUE, broker, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
-     */
+    @Override
     public void write(ByteBuffer out) {
         super.write(out);
         out.putInt((int) pageNum);
@@ -65,9 +76,7 @@ public class UpdateValueLoggable extends BTAbstractLoggable {
         out.put(key.data(), key.start(), key.getLength());
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
-     */
+    @Override
     public void read(ByteBuffer in) {
         super.read(in);
         pageNum = in.getInt();
@@ -79,21 +88,22 @@ public class UpdateValueLoggable extends BTAbstractLoggable {
         key = new Value(data);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#getLogSize()
-     */
+    @Override
     public int getLogSize() {
         return super.getLogSize() + 24 + key.getLength();
     }
-    
+
+    @Override
     public void redo() throws LogException {
         getStorage().redoUpdateValue(this);
     }
-    
+
+    @Override
     public void undo() throws LogException {
         getStorage().undoUpdateValue(this);
     }
-    
+
+    @Override
     public String dump() {
         return super.dump() + " - update btree key on page: " + pageNum;
     }

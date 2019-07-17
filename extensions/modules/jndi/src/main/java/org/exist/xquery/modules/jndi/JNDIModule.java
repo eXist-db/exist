@@ -112,8 +112,9 @@ public class JNDIModule extends AbstractInternalModule
 	 * 
 	 * @param context 		The Context of the XQuery containing the JNDI Context
 	 * @param ctxID 		The ID of the JNDI Context to retrieve from the Context of the XQuery
+	 *
+	 * @return the JNDI context
 	 */
-	
 	public final static Context retrieveJNDIContext( XQueryContext context, long ctxID ) 
 	{
 		Context jndiContext = null;
@@ -137,8 +138,6 @@ public class JNDIModule extends AbstractInternalModule
 	 * 
 	 * @return 			A unique ID representing the connection
 	 */
-	
-	
 	public final static synchronized long storeJNDIContext( XQueryContext context, Context jndiContext ) 
 	{
 		// get the existing connections map from the context
@@ -168,7 +167,6 @@ public class JNDIModule extends AbstractInternalModule
 	 * @param context   	The context to close JNDI Contexts for
 	 * @param ctxID 		The ID of the JNDI Context to retrieve from the Context of the XQuery
 	 */
-
 	public final static void closeJNDIContext( XQueryContext context, long ctxID ) 
 	{
 		// get the existing connections map from the context
@@ -188,7 +186,6 @@ public class JNDIModule extends AbstractInternalModule
 	 * @param ctxID 			The ID of the JNDI Context to retrieve from the Context of the XQuery
 	 * @param contexts 			The contexts hashmap
 	 */
-
 	private final static void closeJNDIContext( XQueryContext context, long ctxID, HashMap contexts ) 
 	{
 		Context ctx = null;
@@ -217,7 +214,6 @@ public class JNDIModule extends AbstractInternalModule
 	 * 
 	 * @param xqueryContext 	The context to close JNDI Contexts for
 	 */
-
 	private final static void closeAllJNDIContexts( XQueryContext xqueryContext ) 
 	{
 		// get the existing connections map from the context
@@ -244,7 +240,6 @@ public class JNDIModule extends AbstractInternalModule
 	 * 
 	 * @return The Unique ID
 	 */
-	
 	private static synchronized long getID() 
 	{
 		return currentContextID++;
@@ -257,7 +252,6 @@ public class JNDIModule extends AbstractInternalModule
 	 * 
 	 * @param xqueryContext		The XQueryContext
 	 */
-	
 	public void reset( XQueryContext xqueryContext, boolean keepGlobals )
 	{
 		// reset the module context
@@ -274,7 +268,6 @@ public class JNDIModule extends AbstractInternalModule
 	 * @param arg				The attributes as a sequence of nodes
 	 * @return 					The BasicAttributes object
 	 */
-	
 	protected static BasicAttributes parseAttributes( Sequence arg ) 
 	{
 		BasicAttributes attributes = new BasicAttributes();

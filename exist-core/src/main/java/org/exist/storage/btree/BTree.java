@@ -250,8 +250,8 @@ public class BTree extends Paged implements Lockable {
      * @param  value               The Value to add
      * @param  pointer             The pointer to associate with it
      * @return                     The previous value for the pointer (or -1)
-     * @exception  IOException     Description of the Exception
-     * @exception  BTreeException  Description of the Exception
+     * @throws  IOException     Description of the Exception
+     * @throws  BTreeException  Description of the Exception
      */
     public long addValue(final Value value, final long pointer) throws IOException, BTreeException {
         return addValue(null, value, pointer);
@@ -267,8 +267,8 @@ public class BTree extends Paged implements Lockable {
      *
      * @param  value               The Value to remove
      * @return                     The pointer that was associated with it
-     * @exception  IOException     Description of the Exception
-     * @exception  BTreeException  Description of the Exception
+     * @throws  IOException     Description of the Exception
+     * @throws  BTreeException  Description of the Exception
      */
     public long removeValue(final Value value) throws IOException, BTreeException {
         return removeValue(null, value);
@@ -288,13 +288,14 @@ public class BTree extends Paged implements Lockable {
      * Search for keys matching the given {@link IndexQuery} and
      * remove them from the node. Every match is reported 
      * to the specified {@link BTreeCallback}.
-     * 
-     * @param query to be docuemnted
-     * @param callback to be docuemnted
-     * @param transaction to be docuemnted
-     * @throws IOException to be docuemnted
-     * @throws BTreeException to be docuemnted
-     * @throws TerminatedException to be docuemnted
+     *
+     * @param transaction the database transaction.
+     * @param query the query
+     * @param callback the callback
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws BTreeException if an error occurss with the tree
+     * @throws TerminatedException if the callback is terminated
      */
     public void remove(final Txn transaction, IndexQuery query, final BTreeCallback callback)
             throws IOException, BTreeException, TerminatedException {
@@ -344,8 +345,8 @@ public class BTree extends Paged implements Lockable {
      *
      * @param  value               The Value to find
      * @return                     The pointer that was associated with it
-     * @exception  IOException     Description of the Exception
-     * @exception  BTreeException  Description of the Exception
+     * @throws IOException if an I/O error occurs
+     * @throws BTreeException if an error occurss with the tree
      */
     public long findValue(final Value value) throws IOException, BTreeException {
         return getRootNode().findValue(value);
@@ -357,9 +358,9 @@ public class BTree extends Paged implements Lockable {
      *
      * @param  query               The IndexQuery to use (or null for everything)
      * @param  callback            The callback instance
-     * @throws IOException     to be documented
-     * @throws BTreeException  to be documented
-     * @throws TerminatedException to be documented
+     * @throws IOException if an I/O error occurs
+     * @throws BTreeException if an error occurss with the tree
+     * @throws TerminatedException if the callback is terminated
      */
     public void query(IndexQuery query, final BTreeCallback callback)
             throws IOException, BTreeException, TerminatedException {
@@ -384,10 +385,9 @@ public class BTree extends Paged implements Lockable {
      * @param  query The IndexQuery to use (or null for everything)
      * @param prefix a prefix value
      * @param  callback The callback instance
-     *
-     * @throws   IOException to be docuemnted
-     * @throws BTreeException to be docuemnted
-     * @throws TerminatedException to be documented
+     * @throws IOException if an I/O error occurs
+     * @throws BTreeException if an error occurss with the tree
+     * @throws TerminatedException if the callback is terminated
      */
     public void query(final IndexQuery query, final Value prefix, final BTreeCallback callback)
             throws IOException, BTreeException, TerminatedException {
@@ -420,9 +420,10 @@ public class BTree extends Paged implements Lockable {
     /**
      * Create a new node with the given status and parent.
      * 
-     * @param transaction to be docuemnted
-     * @param status to be docuemnted
-     * @param parent to be docuemnted
+     * @param transaction the database transaction
+     * @param status the status
+     * @param parent the parent
+     * @param reuseDeleted true if deleted pages should be reused
      * @return The BTree node
      */
     private BTreeNode createBTreeNode(final Txn transaction, final byte status, final BTreeNode parent, final boolean reuseDeleted) {
@@ -448,7 +449,7 @@ public class BTree extends Paged implements Lockable {
     /**
      * Read a node from the given page.
      * 
-     * @param pageNum
+     * @param pageNum the page number
      * @return The BTree node
      */
     private BTreeNode getBTreeNode(final long pageNum) {
@@ -471,8 +472,8 @@ public class BTree extends Paged implements Lockable {
     /**
      * Set the root node of the tree.
      * 
-     * @param rootNode to be docuemnted
-     * @throws IOException to be docuemnted
+     * @param rootNode the root node
+     * @throws IOException if an I/O error occurs
      */
     protected void setRootNode(final BTreeNode rootNode) throws IOException {
         fileHeader.setRootPage(rootNode.page.getPageNum());
@@ -483,9 +484,9 @@ public class BTree extends Paged implements Lockable {
     /**
      * Create the root node.
      * 
-     * @param transaction to be docuemnted
-     * @return The root node to be docuemnted
-     * @throws IOException to be docuemnted
+     * @param transaction the database transaction
+     * @return The root node
+     * @throws IOException if an I/O error occurs
      */
     protected long createRootNode(final Txn transaction) throws IOException {
         final BTreeNode root = createBTreeNode(transaction, LEAF, null, true);
@@ -514,9 +515,11 @@ public class BTree extends Paged implements Lockable {
 
     /**
      * Print a dump of the tree to the given writer. For debug only!
-     * @param writer to be docuemnted
-     * @throws IOException to be docuemnted
-     * @throws BTreeException to be docuemnted
+     *
+     * @param writer the writer
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws BTreeException if an error occurss with the tree
      */
     public void dump(final Writer writer) throws IOException, BTreeException {
         final BTreeNode root = getRootNode();
@@ -585,10 +588,11 @@ public class BTree extends Paged implements Lockable {
      * Optionally remove all inner (branch) pages and return the first leaf page (in order).
      * This method is used to rebuild the btree from the leaf pages.
      *
-     * @return to be docuemnted
-     * @throws IOException to be docuemnted
-     * @throws TerminatedException to be docuemnted
-     * @throws DBException to be docuemnted
+     * @param removeBranches, true if branches should be removed
+     * @return the tree info
+     * @throws IOException if an I/O error occurs
+     * @throws DBException if an error occurss with the tree
+     * @throws TerminatedException if the callback is terminated
      */
     private TreeInfo scanTree(final boolean removeBranches) throws IOException, TerminatedException, DBException {
         final Set<Long> pagePointers = new HashSet<>();
@@ -662,9 +666,9 @@ public class BTree extends Paged implements Lockable {
      * Rebuild the btree: removes all branches and rebuilds the tree by scanning
      * through leaf pages.
      *
-     * @throws TerminatedException to be docuemnted
-     * @throws IOException to be docuemnted
-     * @throws DBException to be docuemnted
+     * @throws IOException if an I/O error occurs
+     * @throws DBException if an error occurss with the tree
+     * @throws TerminatedException if the callback is terminated
      */
     public void rebuild() throws TerminatedException, IOException, DBException {
         final TreeInfo info  = scanTree(true);
@@ -715,9 +719,9 @@ public class BTree extends Paged implements Lockable {
      * Walk the tree to find the parent page to which key should
      * be promoted.
      *
-     * @param key to be docuemnted
-     * @return to be docuemnted
-     * @throws IOException to be docuemnted
+     * @param key the key
+     * @return the parent node
+     * @throws IOException if an I/O error occurs
      */
     private BTreeNode findParent(final Value key) throws IOException {
         BTreeNode node = getRootNode();
@@ -948,7 +952,7 @@ public class BTree extends Paged implements Lockable {
         /**
          * Set the link to the parent of this node.
          * 
-         * @param parent the parent node
+         * @param parent the parent
          */
         public void setParent(final BTreeNode parent) {
             if (parent != null) {
@@ -960,6 +964,8 @@ public class BTree extends Paged implements Lockable {
         }
 		
         /**
+         * Get the parent.
+         *
          * @return the parent of this node.
          */
         public BTreeNode getParent() {
@@ -1042,7 +1048,7 @@ public class BTree extends Paged implements Lockable {
         /**
          * Set the keys of this node.
          * 
-         * @param vals to be docuemnted
+         * @param vals the values
          */
         private void setValues(final Value[] vals) {
             keys = vals;
@@ -1054,7 +1060,7 @@ public class BTree extends Paged implements Lockable {
         /**
          * Set the array of pointers of this node.
          * 
-         * @param pointers to be docuemnted
+         * @param pointers the pointers
          */
         private void setPointers(final long[] pointers) {
             ptrs = pointers;
@@ -1107,7 +1113,8 @@ public class BTree extends Paged implements Lockable {
         /**
          * Add the raw data size required to store the value to the internal
          * data size of this node.
-         *  
+         *
+         * @param idx the index
          */
         private void adjustDataLen(final int idx) {
             if(currentDataLen < 0) {
@@ -1152,7 +1159,9 @@ public class BTree extends Paged implements Lockable {
         /**
          * Compute where to split a page: tries to split at half the data size
          *
-         * @return where page was split
+         * @param preferred preferred
+         *
+         * @return the pivot
          */
         private int getPivot(final int preferred) {
             if (nKeys == 2) {
@@ -1208,8 +1217,8 @@ public class BTree extends Paged implements Lockable {
 
         /**
          * Read the node from the underlying page.
-         * 
-         * @throws IOException to be docuemnted
+         *
+         * @throws IOException if an I/O error occurs
          */
         private void read() throws IOException {
             final byte[] data = page.read();
@@ -1271,8 +1280,8 @@ public class BTree extends Paged implements Lockable {
 
         /**
          * Write the node to the underlying page.
-         * 
-         * @throws IOException to be docuemnted
+         *
+         * @throws IOException if an I/O error occurs
          */
         private void write() throws IOException {
             if (nKeys != pageHeader.getValueCount()) {
@@ -1333,7 +1342,7 @@ public class BTree extends Paged implements Lockable {
          * 
          * @param idx The index
          * @return The BTree node
-         * @throws IOException to be docuemnted
+         * @throws IOException if an I/O error occurs
          */
         private BTreeNode getChildNode(final int idx) throws IOException {
             if (pageHeader.getStatus() == BRANCH && idx >= 0 && idx < nPtrs) {
@@ -1345,12 +1354,12 @@ public class BTree extends Paged implements Lockable {
 
         /**
          * Remove a key.
-         * @param transaction to be docuemnted
-         * @param key to be docuemnted
          *
-         * @return to be docuemnted
-         * @throws IOException to be docuemnted
-         * @throws BTreeException to be docuemnted
+         * @param transaction the database transaction
+         * @param key the key
+         *
+         * @throws IOException if an I/O error occurs
+         * @throws DBException if an error occurs with the tree
          */
         private long removeValue(final Txn transaction, final Value key) throws IOException, BTreeException {
             int idx = searchKey(key);
@@ -1388,12 +1397,12 @@ public class BTree extends Paged implements Lockable {
 
         /**
          * Add a key and the corresponding pointer to the node.
-         * @param transaction to be docuemnted
-         * @param pointer to be docuemnted
-         * @param value to be docuemnted
-         * @return to be docuemnted
-         * @throws IOException to be docuemnted
-         * @throws BTreeException to be docuemnted
+         *
+         * @param transaction the database transaction
+         * @param value the value
+         * @param pointer the pointer to the node
+         *
+         * @return the new storage address
          */
         private long addValue(final Txn transaction, final Value value, final long pointer)
                 throws IOException, BTreeException {
@@ -1457,12 +1466,10 @@ public class BTree extends Paged implements Lockable {
 
         /**
          * Promote a key to the parent node. Called by {@link #split(Txn)}.
-         * @param transaction to be docuemnted
-         * @param value to be docuemnted
-         * @param rightNode to be docuemnted
-         * @return to be docuemnted
-         * @throws IOException to be docuemnted
-         * @throws BTreeException to be docuemnted
+         *
+         * @param transaction the database transaction
+         * @param value the value
+         * @param rightNode the right-most node
          */
         private void promoteValue(final Txn transaction, final Value value, final BTreeNode rightNode)
                 throws IOException, BTreeException {
@@ -1487,10 +1494,12 @@ public class BTree extends Paged implements Lockable {
 
         /**
          * Split the node.
+         *
          * @param transaction the current transaction
-         * @param pivot to be docuemnted
-         * @throws IOException to be docuemnted
-         * @throws BTreeException to be docuemnted
+         * @param pivot the pivot value
+         *
+         * @throws IOException if an I/O error occurs
+         * @throws BTreeException if an error occurss with the tree
          */
         private void split(final Txn transaction, int pivot) throws IOException, BTreeException {
             final Value[] leftVals;
@@ -1633,7 +1642,9 @@ public class BTree extends Paged implements Lockable {
             }
         }
 
-        /** Set the parent-link in all child nodes to point to this node */
+        /**
+         * Set the parent-link in all child nodes to point to this node
+         */
         private void setAsParent() {
             if (pageHeader.getStatus() == BRANCH) {
                 for (int i = 0; i < nPtrs; i++) {
@@ -1647,11 +1658,13 @@ public class BTree extends Paged implements Lockable {
         /**
          * Locate the given value in the keys and return the
          * associated pointer.
-         * @param value to be documented
-         * @return to be documented
-         * @throws IOException to be documented
-         * @throws BTreeException to be documented
          *
+         * @param value the value
+         *
+         * @return the address of the value
+         *
+         * @throws IOException if an I/O error occurs
+         * @throws BTreeException if an error occurs with the tree
          */
         private long findValue(final Value value) throws IOException, BTreeException {
             int idx = searchKey(value);
@@ -1701,9 +1714,11 @@ public class BTree extends Paged implements Lockable {
 
         /**
          * Prints out a debug view of the node to the given writer.
-         * @param writer to be documented
-         * @throws IOException to be documented
-         * @throws BTreeException to be documented
+         *
+         * @param writer the writer
+         *
+         * @throws IOException if an I/O error occurs
+         * @throws BTreeException if an error occurs with the tree
          */
         private void dump(final Writer writer) throws IOException, BTreeException {
             //if (pageHeader.getStatus() == LEAF)
@@ -1750,11 +1765,11 @@ public class BTree extends Paged implements Lockable {
          * Search for keys matching the given {@link IndexQuery} and
          * report the to the specified {@link BTreeCallback}.
          * 
-         * @param query to be documented
-         * @param callback to be documented
-         * @throws IOException to be documented
-         * @throws BTreeException to be documented
-         * @throws TerminatedException to be documented
+         * @param query the query
+         * @param callback the callback
+         * @throws IOException if an I/O error occurs
+         * @throws BTreeException if an error occurs with the tree
+         * @throws TerminatedException if the callback is terminated
          */
         private void query(final IndexQuery query, final BTreeCallback callback)
                 throws IOException, BTreeException, TerminatedException {
@@ -1966,11 +1981,12 @@ public class BTree extends Paged implements Lockable {
          * report the to the specified {@link BTreeCallback}. This specialized
          * method only considers keys whose value starts with the specified keyPrefix.
          * 
-         * @param query to be documented
-         * @param callback to be documented
-         * @throws IOException to be documented
-         * @throws BTreeException to be documented
-         * @throws TerminatedException to be documented
+         * @param query the query
+         * @param keyPrefix the key prefix
+         * @param callback the callback
+         * @throws IOException if an I/O error occurs
+         * @throws BTreeException if an error occurs with the tree
+         * @throws TerminatedException if the callback is terminated
          */
         private void query(final IndexQuery query, final Value keyPrefix, final BTreeCallback callback)
                 throws IOException, BTreeException, TerminatedException {
@@ -2107,12 +2123,14 @@ public class BTree extends Paged implements Lockable {
          * Search for keys matching the given {@link IndexQuery} and
          * remove them from the node. Every match is reported 
          * to the specified {@link BTreeCallback}.
-         * 
-         * @param query to be documented
-         * @param callback to be documented
-         * @throws IOException to be documented
-         * @throws BTreeException to be documented
-         * @throws TerminatedException  to be documented
+         *
+         * @param transaction the database transaction
+         * @param query the query
+         * @param callback the callback
+         *
+         * @throws IOException if an I/O error occurs
+         * @throws BTreeException if an error occurs with the tree
+         * @throws TerminatedException if the callback is terminated
          */
         private void remove(final Txn transaction, final IndexQuery query, final BTreeCallback callback)
                 throws IOException, BTreeException, TerminatedException {
@@ -2477,8 +2495,9 @@ public class BTree extends Paged implements Lockable {
 
         /**
          * Insert a key into the array of keys.
-         * @param val to be documented
-         * @param idx to be documented
+         *
+         * @param val the value
+         * @param idx the index
          */
         private void insertKey(Value val, final int idx) {
             if (pageHeader.getStatus() == BRANCH) {
@@ -2503,7 +2522,8 @@ public class BTree extends Paged implements Lockable {
 
         /**
          * Remove a key from the array of keys.
-         * @param idx to be documented
+         *
+         * @param idx the index
          */
         private void removeKey(final int idx) {
             try {
@@ -2518,8 +2538,8 @@ public class BTree extends Paged implements Lockable {
         /**
          * Insert a pointer into the array of pointers.
          * 
-         * @param ptr to be documented
-         * @param idx to be documented
+         * @param ptr the pointer
+         * @param idx the index
          */
         private void insertPointer(final long ptr, final int idx) {
             resizePtrs(nPtrs + 1);
@@ -2531,7 +2551,8 @@ public class BTree extends Paged implements Lockable {
 
         /**
          * Remove a pointer from the array of pointers.
-         * @param idx to be documented
+         *
+         * @param idx the index
          */
         private void removePointer(final int idx) {
             System.arraycopy(ptrs, idx + 1, ptrs, idx, nPtrs - idx - 1);
@@ -2541,6 +2562,10 @@ public class BTree extends Paged implements Lockable {
 
         /**
          * Search for the given key in the keys of this node.
+         *
+         * @param key the key
+         *
+         * @return the position
          */
         private int searchKey(Value key) {
             if (pageHeader.getStatus() == BRANCH && prefix != null && prefix.getLength() > 0) {
@@ -2676,7 +2701,7 @@ public class BTree extends Paged implements Lockable {
         /**
          *  Set the root page of the storage tree
          *
-         *@param  rootPage The new rootPage value
+         * @param rootPage The new rootPage value
          */
         public final void setRootPage(final long rootPage) {
             this.rootPage = rootPage;
@@ -2686,7 +2711,7 @@ public class BTree extends Paged implements Lockable {
         /**
          *  Get the root page of the storage tree
          *
-         *@return The rootPage value
+         * @return The rootPage value
          */
         public final long getRootPage() {
             return rootPage;
@@ -2743,18 +2768,18 @@ public class BTree extends Paged implements Lockable {
         }
 
         /**
-         *  The number of values stored by this page
+         * The number of values stored by this page
          *
-         *@return    The valueCount value
+         * @return    The valueCount value
          */
         public final short getValueCount() {
             return valueCount;
         }
 
         /**
-         *  The number of pointers stored by this page
+         * The number of pointers stored by this page
          *
-         *@return    The pointerCount value
+         * @return    The pointerCount value
          */
         public final short getPointerCount() {
             if (getStatus() == BRANCH) {

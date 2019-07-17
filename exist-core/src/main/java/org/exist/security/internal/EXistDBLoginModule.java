@@ -102,11 +102,11 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 	 * @return true in all cases since this <code>LoginModule</code> should not
 	 *         be ignored.
 	 * 
-	 * @exception FailedLoginException
+	 * @throws FailedLoginException
 	 *                if the authentication fails.
 	 *
 	 * 
-	 * @exception LoginException
+	 * @throws LoginException
 	 *                if this <code>LoginModule</code> is unable to perform the
 	 *                authentication.
 	 */
@@ -180,7 +180,7 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 	 * 
 	 *
 	 * 
-	 * @exception LoginException
+	 * @throws LoginException
 	 *                if the commit fails.
 	 * 
 	 * @return true if this LoginModule's own login and commit attempts
@@ -219,7 +219,7 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 	 * 
 	 *
 	 * 
-	 * @exception LoginException
+	 * @throws LoginException
 	 *                if the abort fails.
 	 * 
 	 * @return false if this LoginModule's own login and/or commit attempts
@@ -249,7 +249,7 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 	 * 
 	 *
 	 * 
-	 * @exception LoginException
+	 * @throws LoginException
 	 *                if the logout fails.
 	 * 
 	 * @return true in all cases since this <code>LoginModule</code> should not

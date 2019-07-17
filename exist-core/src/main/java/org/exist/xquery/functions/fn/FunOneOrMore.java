@@ -40,7 +40,7 @@ import org.exist.xquery.value.Type;
 /**
  * Implements function fn:one-or-more.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunOneOrMore extends Function {
 

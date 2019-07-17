@@ -35,7 +35,7 @@ import org.exist.xquery.value.Type;
 import java.util.Optional;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author Loren Cahlander
  */
 public class Create extends SessionFunction {

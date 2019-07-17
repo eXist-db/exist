@@ -106,7 +106,7 @@ public class AnalyzerConfig {
     }
 
     /**
-     * Parse <analyzer/> element and register configured analyzer.
+     * Parse {@code <analyzer/>} element and register configured analyzer.
      *
      * @param config The analyzer element from .xconf file.
      *
@@ -142,7 +142,7 @@ public class AnalyzerConfig {
     }
 
     /**
-     * Parse <analyzer/> element from xconf and initialize an analyzer with the
+     * Parse {@code <analyzer/>} element from xconf and initialize an analyzer with the
      * parameters.
      *
      * @param config The analyzer element

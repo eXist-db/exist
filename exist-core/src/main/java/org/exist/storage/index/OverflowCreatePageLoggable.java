@@ -36,6 +36,12 @@ public class OverflowCreatePageLoggable extends AbstractBFileLoggable {
     protected long newPage;
     protected long prevPage;
 
+    /**
+     * @param transaction the database transaction
+     * @param fileId the file id
+     * @param newPage the new page number
+     * @param prevPage the pevious page number
+     */
     public OverflowCreatePageLoggable(Txn transaction, byte fileId, long newPage, long prevPage) {
         super(BFile.LOG_OVERFLOW_CREATE_PAGE, fileId, transaction);
         this.newPage = newPage;
@@ -46,9 +52,6 @@ public class OverflowCreatePageLoggable extends AbstractBFileLoggable {
         super(broker, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
-     */
     @Override
     public void write(ByteBuffer out) {
         super.write(out);
@@ -56,9 +59,6 @@ public class OverflowCreatePageLoggable extends AbstractBFileLoggable {
         out.putInt((int) prevPage);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
-     */
     @Override
     public void read(ByteBuffer in) {
         super.read(in);
@@ -66,9 +66,6 @@ public class OverflowCreatePageLoggable extends AbstractBFileLoggable {
         prevPage = in.getInt();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#getLogSize()
-     */
     @Override
     public int getLogSize() {
         return super.getLogSize() + 8;

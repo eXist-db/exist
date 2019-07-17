@@ -33,7 +33,7 @@ import org.exist.xquery.value.MemoryNodeSet;
  * foo//$x. The class is mainly used to wrap variable references inside
  * a path expression.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class SimpleStep extends Step {
 

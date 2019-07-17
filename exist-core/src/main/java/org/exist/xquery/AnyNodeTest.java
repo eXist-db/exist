@@ -32,7 +32,7 @@ import javax.xml.stream.XMLStreamReader;
 /**
  * The class <code>AnyNodeTest</code>
  *
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  *
  */
 public class AnyNodeTest implements NodeTest {

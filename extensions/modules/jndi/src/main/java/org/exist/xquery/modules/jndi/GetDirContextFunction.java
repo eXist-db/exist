@@ -58,7 +58,6 @@ import org.exist.xquery.value.Type;
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext,
  *      org.exist.xquery.FunctionSignature)
  */
-
 public class GetDirContextFunction extends BasicFunction 
 {
 	protected static final Logger logger = LogManager.getLogger(GetDirContextFunction.class);
@@ -74,31 +73,12 @@ public class GetDirContextFunction extends BasicFunction
 					new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "the directory context handle" ) )
 			};
 
-	/**
-	 * GetDirContextFunction Constructor
-	 * 
-	 * @param context
-	 *            The Context of the calling XQuery
-	 */
-	
 	public GetDirContextFunction( XQueryContext context, FunctionSignature signature ) 
 	{
 		super( context, signature );
 	}
 
-	
-	/**
-	 * evaluate the call to the xquery get-dir-context() function, it is really
-	 * the main entry point of this class
-	 * 
-	 * @param args				arguments from the get-connection() function call
-	 * @param contextSequence 	the Context Sequence to operate on (not used here internally!)
-	 * @return 					A xs:long representing a handle to the connection
-	 * 
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[],
-	 *      org.exist.xquery.value.Sequence)
-	 */
-	
+	@Override
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
 		// Were properties specified

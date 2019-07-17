@@ -30,7 +30,7 @@ import org.exist.xquery.util.ExpressionDumper;
  * Abstract base class for simple functions. Subclasses should overwrite
  * method {@link #eval(Sequence[], Sequence)}.
  *
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public abstract class BasicFunction extends Function {
 

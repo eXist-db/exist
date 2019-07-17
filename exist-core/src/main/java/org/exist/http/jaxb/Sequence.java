@@ -74,7 +74,7 @@ public class Sequence {
      * Objects of the following type(s) are allowed in the list
      * {@link Sequence.Value }
      * 
-     * 
+     * @return the sequence value
      */
     public List<Sequence.Value> getValue() {
         if (value == null) {

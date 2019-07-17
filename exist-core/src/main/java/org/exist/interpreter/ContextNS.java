@@ -186,7 +186,7 @@ public interface ContextNS {
 	 *
 	 * @return base URI of the evaluation context
 	 *
-	 * @exception XPathException if an error occurs whilst setting the base-uri
+	 * @throws XPathException if an error occurs whilst setting the base-uri
 	 */
 	public AnyURIValue getBaseURI() throws XPathException;
 

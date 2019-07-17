@@ -76,9 +76,9 @@ import java.util.*;
 /**
  * Class for handling all Lucene operations.
  *
- * @author Wolfgang Meier (wolfgang@exist-db.org)
- * @author Dannes Wessels (dannes@exist-db.org)
- * @author Leif-Jöran Olsson (ljo@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
+ * @author <a href="mailto:dannes@exist-db.org">Dannes Wessels</a>
+ * @author <a href="mailto:ljo@exist-db.org">Leif-Jöran Olsson</a>
  */
 public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
@@ -415,10 +415,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @param queryStr a lucene query string
      * @param axis which node is returned: the node in which a match was found or the corresponding ancestor
      *  from the contextSet
+     * @param options the query options
+     *
      * @return node set containing all matching nodes
      * 
-     * @throws IOException
-     * @throws ParseException
+     * @throws IOException if an I/O error occurs
+     * @throws ParseException if the query cannot be parsed
+     * @throws XPathException if an error occurs executing the query
      */
     public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet,
                          List<QName> qnames, String queryStr, int axis, QueryOptions options)
@@ -462,10 +465,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @param queryRoot an XML representation of the query, see {@link XMLToQuery}.
      * @param axis which node is returned: the node in which a match was found or the corresponding ancestor
      *  from the contextSet
+     * @param options the query options
+     *
      * @return node set containing all matching nodes
      *
-     * @throws IOException
-     * @throws ParseException
+     * @throws IOException if an I/O error occurs
+     * @throws ParseException if the query cannot be parsed
+     * @throws XPathException if an error occurs executing the query
      */
     public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet,
                          List<QName> qnames, Element queryRoot, int axis, QueryOptions options)
@@ -552,6 +558,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         /**
          * Compute facets based on the given {@link FacetsCollector}.
+         *
+         * @param reader the taxonomy reader
+         * @param config the facets configuration
+         * @param collector the facets collector
+         *
+         * @throws IOException if an I/O error occurs
          */
         public void compute(DirectoryTaxonomyReader reader, FacetsConfig config, FacetsCollector collector)
                 throws IOException {
@@ -666,10 +678,17 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     /**
-     *  SOLR
-     * @param toBeMatchedURIs
-     * @param queryText
+     * SOLR
+     *
+     * @param toBeMatchedURIs the URIs to match
+     * @param queryText the query
+     * @param fieldsToGet the fields to get
+     * @param options the search options
+     *
      * @return search report
+     *
+     * @throws XPathException if an error occurs executing the query
+     * @throws IOException if an I/O error occurs
      */
     public NodeImpl search(final List<String> toBeMatchedURIs, String queryText, String[] fieldsToGet, QueryOptions options) throws XPathException, IOException {
 
@@ -841,12 +860,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
     
     /**
-     *  Check if Lucene found document matches specified documents or collections.
+     * Check if Lucene found document matches specified documents or collections.
      * Collections should end with "/".
      * 
-     * @param docUri    The uri of the document found by lucene
-     * @param toBeMatchedUris     List of document and collection URIs
-     * @return TRUE if documenturi is matched or is in collection.
+     * @param docUri The uri of the document found by lucene
+     * @param toBeMatchedUris List of document and collection URIs
+     *
+     * @return true if {@code docUri} is matched or is in collection, false otherwise
      */
     private boolean isDocumentMatch(String docUri, List<String> toBeMatchedUris){
         
@@ -986,17 +1006,22 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * Check index configurations for all collection in the given DocumentSet and return
      * a list of QNames, which have indexes defined on them.
      *
+     * @param qnames the qnames to find the findexes for
+     *
      * @return List of QName objects on which indexes are defined
+     *
+     * @throws IOException if an I/O error occurs
      */
-    public List<QName> getDefinedIndexes(List<QName> qnames) throws IOException {
-        List<QName> indexes = new ArrayList<>(20);
+    public List<QName> getDefinedIndexes(final List<QName> qnames) throws IOException {
+        final List<QName> indexes = new ArrayList<>(20);
         if (qnames != null && !qnames.isEmpty()) {
-            for (QName qname : qnames) {
+            for (final QName qname : qnames) {
                 if (qname.getLocalPart() == null || qname.getLocalPart().equals(QName.WILDCARD)
-                        || qname.getNamespaceURI() == null || qname.getNamespaceURI().equals(QName.WILDCARD))
+                        || qname.getNamespaceURI() == null || qname.getNamespaceURI().equals(QName.WILDCARD)) {
                     getDefinedIndexesFor(qname, indexes);
-                else
+                } else {
                     indexes.add(qname);
+                }
             }
             return indexes;
         }
@@ -1030,24 +1055,37 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     /**
      * Return the analyzer to be used for the given field or qname. Either field
      * or qname should be specified.
+     *
+     * @param config the lucene config
+     * @param field the analyzer field
+     * @param qname the analyzer qname
+     *
+     * @return the analyzer or null
      */
-    protected Analyzer getAnalyzer(LuceneConfig config, String field, QName qname) {
+    @Nullable protected Analyzer getAnalyzer(LuceneConfig config, String field, QName qname) {
         if (config != null) {
             Analyzer analyzer;
-            if (field == null)
+            if (field == null) {
                 analyzer = config.getAnalyzer(qname);
-            else
+            } else {
                 analyzer = config.getAnalyzer(field);
-            if (analyzer != null)
+            }
+            if (analyzer != null) {
                 return analyzer;
+            }
         }
         return index.getDefaultAnalyzer();
     }
 
     /**
      * Return the first configuration found for documents in the document set.
+     *
+     * @param broker the database broker
+     * @param docs the document set
+     *
+     * @return the lucene config or null
      */
-    protected LuceneConfig getLuceneConfig(DBBroker broker, DocumentSet docs) {
+    @Nullable protected LuceneConfig getLuceneConfig(DBBroker broker, DocumentSet docs) {
         for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
             Collection collection = i.next();
             IndexSpec idxConf = collection.getIndexConfiguration(broker);
@@ -1220,12 +1258,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * the node. The qualified name is stored as a hex sequence pointing into the
      * global symbol table.
      *
-     * @param nodeId
-     * @param qname
-     * @param content
+     * @param nodeId the node if
+     * @param qname the qname of the node
+     * @param path the node path
+     * @param config the lucene index config
+     * @param content the content of the node
      */
-    protected void indexText(NodeId nodeId, QName qname, NodePath path, LuceneIndexConfig config, CharSequence content) {
-        PendingDoc pending = new PendingDoc(nodeId, qname, path, content, config.getBoost(), config);
+    protected void indexText(final NodeId nodeId, final QName qname, final NodePath path, final LuceneIndexConfig config, final CharSequence content) {
+        final PendingDoc pending = new PendingDoc(nodeId, qname, path, content, config.getBoost(), config);
         addPending(pending);
     }
 
@@ -1233,24 +1273,24 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * Adds the passed character sequence to the lucene index.
      * This version uses the AttrImpl for node specific attribute match boosting.
      *
-     * @param attribs
-     * @param nodeId
-     * @param qname
-     * @param path
-     * @param config
-     * @param content
+     * @param attribs the attributes
+     * @param nodeId the node id
+     * @param qname the qname of the node
+     * @param path the path of the node
+     * @param config the lucene index config
+     * @param content the content of the node
      */
-    protected void indexText(java.util.Collection<AttrImpl> attribs, NodeId nodeId, QName qname, NodePath path, LuceneIndexConfig config, CharSequence content) {
-        PendingDoc pending = new PendingDoc(nodeId, qname, path, content, config.getAttrBoost(attribs), config);
+    protected void indexText(final java.util.Collection<AttrImpl> attribs, final NodeId nodeId, final QName qname, final NodePath path, final LuceneIndexConfig config, final CharSequence content) {
+        final PendingDoc pending = new PendingDoc(nodeId, qname, path, content, config.getAttrBoost(attribs), config);
         addPending(pending);
     }
     
-    private void addPending(PendingDoc pending) {
+    private void addPending(final PendingDoc pending) {
         nodesToWrite.add(pending);
         cachedNodesSize += pending.text.length();
         if (cachedNodesSize > maxCachedNodesSize) {
             write();
-	}
+	    }
     }
 
     private static class PendingDoc {
@@ -1554,44 +1594,48 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             return LuceneIndexWorker.this;
         }
 
-        /*
-	 * delay indexing of attributes until we have them all to calculate boost
-	 */
+        /**
+         * Delay indexing of attributes until we have them all to calculate boost
+         *
+         * @param attr the attribute to be indexed
+         * @param path the node path
+         * @param conf the index config
+         */
         private void appendAttrToBeIndexedLater(AttrImpl attr, NodePath path, LuceneIndexConfig conf) {
             if (currentElement == null){
                 LOG.error("currentElement == null");
             } else {
                 pendingAttrs.add(new PendingAttr(attr, path, conf));
-	    }
+	        }
         }
 
-	/*
-	 * put pending attribute nodes in indexing cache
-	 * and then clear pending attributes
-	 */
-	private void indexPendingAttrs() {
-            try {
-                if (mode == ReindexMode.STORE && config != null) {
-                    for (PendingAttr pending : pendingAttrs) {
-                        AttrImpl attr = pending.attr;
-                        indexText(attributes, attr.getNodeId(), attr.getQName(), pending.path, pending.conf, attr.getValue());
+        /**
+         * Put pending attribute nodes in indexing cache
+         * and then clear pending attributes
+         */
+        private void indexPendingAttrs() {
+                try {
+                    if (mode == ReindexMode.STORE && config != null) {
+                        for (PendingAttr pending : pendingAttrs) {
+                            AttrImpl attr = pending.attr;
+                            indexText(attributes, attr.getNodeId(), attr.getQName(), pending.path, pending.conf, attr.getValue());
+                        }
                     }
+                } finally {
+                    pendingAttrs.clear();
+                    releaseAttributes();
+                }
+        }
+
+        private void releaseAttributes() {
+            try {
+                for (Attr attr : attributes) {
+                    NodePool.getInstance().returnNode((AttrImpl) attr);
                 }
             } finally {
-                pendingAttrs.clear();
-                releaseAttributes();
+                attributes.clear();
             }
-	}
-
-	private void releaseAttributes() {
-	    try {
-		for (Attr attr : attributes) {
-		    NodePool.getInstance().returnNode((AttrImpl) attr);
-		}
-	    } finally {
-		attributes.clear();
-	    }
-	}
+        }
     }
 
 }

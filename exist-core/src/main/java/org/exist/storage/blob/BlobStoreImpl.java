@@ -1406,7 +1406,7 @@ public class BlobStoreImpl implements BlobStore {
          * the operation will only be
          * applied once.
          *
-         * @exception IOException if an I/O error occurs.
+         * @throws IOException if an I/O error occurs.
          */
         @Override
         public void close() throws IOException {

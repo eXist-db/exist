@@ -42,7 +42,7 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  *
  */
 public class XMLDBMove extends XMLDBAbstractCollectionManipulator {

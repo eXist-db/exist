@@ -32,7 +32,7 @@ import org.w3c.dom.Node;
  * Represents a node value. May either be an in-memory node
  * or a persistent node.
  *
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public interface NodeValue extends Item, Sequence {
 

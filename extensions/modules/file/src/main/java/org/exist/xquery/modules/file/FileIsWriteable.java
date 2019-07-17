@@ -42,9 +42,9 @@ import org.exist.xquery.value.Type;
 
 /**
  * @see java.nio.file.Files#isWritable(Path)
- * @author Andrzej Taramina
- * @author Loren Cahlander
  *
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
+ * @author <a href="mailto:loren.cahlander@gmail.com">Loren Cahlander</a>
  */
 public class FileIsWriteable extends BasicFunction {
 
@@ -61,11 +61,7 @@ public class FileIsWriteable extends BasicFunction {
 			new FunctionReturnSequenceType( Type.BOOLEAN, 
                     Cardinality.EXACTLY_ONE, "true if the file has write permissions" ) )
 		};
-	
-	/**
-	 * @param context
-	 * @param signature
-	 */
+
 	public FileIsWriteable(final XQueryContext context, final FunctionSignature signature)
 	{
 		super(context, signature);

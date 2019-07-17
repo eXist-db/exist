@@ -253,7 +253,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      *                        to copy.
      * @param      dst        the destination array.
      * @param      dstBegin   the start offset in the destination array.
-     * @exception IndexOutOfBoundsException If any of the following
+     * @throws IndexOutOfBoundsException If any of the following
      *            is true:
      *            <ul><li><code>srcBegin</code> is negative.
      *            <li><code>srcBegin</code> is greater than <code>srcEnd</code>

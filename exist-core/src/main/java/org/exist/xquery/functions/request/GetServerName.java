@@ -36,7 +36,7 @@ import org.exist.xquery.value.Type;
 import javax.annotation.Nonnull;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class GetServerName extends StrictRequestFunction {
 

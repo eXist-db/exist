@@ -191,7 +191,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
      * The new settings are or'ed with the existing settings.
      *
      *@param  existSymbolicMode                  The new mode
-     *@exception  SyntaxException  Description of the Exception
+     *@throws  SyntaxException  Description of the Exception
      *
      * @deprecated setUnixSymbolicMode should be used instead
      */

@@ -53,9 +53,9 @@ import org.exist.xquery.value.Type;
  * Enumerate a list of files and directories, including their size and modification time, found in
  * a specified directory
  *
- * @author <a href="mailto:andrzej@chaeron.com">Dannes Wessels
- * @author Andrzej Taramina</a>
- * @author ljo
+ * @author <a href="mailto:dannes@exist-db.org">Dannes Wessels</a>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
+ * @author <a href="mailto:ljo@exist-db.org">Leif-Jöran Olsson</a>
  * @serial 2010-05-12
  * @version 1.2
  *
@@ -82,11 +82,6 @@ public class Directory extends BasicFunction {
                 "a node describing file and directory names and meta data."))
     };
 
-    /**
-     * DirectoryList Constructor
-     *
-     * @param context	The Context of the calling XQuery
-     */
     public Directory(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }

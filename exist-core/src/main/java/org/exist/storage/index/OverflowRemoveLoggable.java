@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
  */
 package org.exist.storage.index;
 
@@ -38,7 +36,17 @@ public class OverflowRemoveLoggable extends AbstractBFileLoggable {
     protected byte[] data;
     protected int length;
     protected long nextInChain;
-
+    
+    /**
+     *
+     * @param fileId the file id
+     * @param transaction the database transaction
+     * @param status the status
+     * @param pageNum the page number
+     * @param data the data
+     * @param length the length of the data
+     * @param nextInChain the next in chain
+     */
     public OverflowRemoveLoggable(byte fileId, Txn transaction, byte status, long pageNum, byte[] data, 
             int length, long nextInChain) {
         super(BFile.LOG_OVERFLOW_REMOVE, fileId, transaction);
@@ -49,13 +57,14 @@ public class OverflowRemoveLoggable extends AbstractBFileLoggable {
         this.nextInChain = nextInChain;
     }
 
+    /**
+     * @param broker the database broker
+     * @param transactionId thr transaction id
+     */
     public OverflowRemoveLoggable(DBBroker broker, long transactionId) {
         super(broker, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
-     */
     @Override
     public void write(ByteBuffer out) {
         super.write(out);
@@ -66,9 +75,6 @@ public class OverflowRemoveLoggable extends AbstractBFileLoggable {
         out.put(data, 0, length);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
-     */
     @Override
     public void read(ByteBuffer in) {
         super.read(in);
@@ -80,9 +86,6 @@ public class OverflowRemoveLoggable extends AbstractBFileLoggable {
         in.get(data);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#getLogSize()
-     */
     @Override
     public int getLogSize() {
         return super.getLogSize() + 13 + length;

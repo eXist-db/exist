@@ -27,7 +27,7 @@ import org.exist.xquery.XPathException;
 import com.ibm.icu.text.Collator;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public abstract class ComputableValue extends AtomicValue {
 

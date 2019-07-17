@@ -56,7 +56,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  *
  * @author wolf modified by:
- * @author peter.klotz@blue-elephant-systems.com
+ * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  */
 public class XMLDBXPathTask extends AbstractXMLDBTask {
     private String resource = null;
@@ -214,9 +214,9 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
     }
 
     /**
-     * DOCUMENT ME!
+     * Set the query.
      *
-     * @param query
+     * @param query the query.
      */
     public void setQuery(final String query) {
         this.query = query;

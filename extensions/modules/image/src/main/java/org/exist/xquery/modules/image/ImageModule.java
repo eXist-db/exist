@@ -86,7 +86,15 @@ public class ImageModule extends AbstractInternalModule {
     }
 	
     /**
+     * Create a thumbnail.
+     *
      * @author <a href="mailto:rtroilo@gmail.com">Rafael Troilo</a>
+     *
+     * @param image the image
+     * @param height the height of the thumbnail
+     * @param width the width of the thumbnail
+     *
+     * @return the thumbnail
      */
     protected static BufferedImage createThumb(Image image, int height, int width) {
         int thumbWidth = 0;

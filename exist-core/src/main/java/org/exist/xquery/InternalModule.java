@@ -32,7 +32,7 @@ import org.exist.dom.QName;
  * modules, a new function object is created from its class for each function reference in the
  * XQuery script.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public interface InternalModule extends Module {
 

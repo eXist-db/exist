@@ -34,14 +34,14 @@ import javax.servlet.http.HttpServletResponse;
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class HttpResponseWrapper implements ResponseWrapper {
 	
 	private HttpServletResponse response;
 	
 	/**
-	 * 
+	 * @param response the http response
 	 */
 	public HttpResponseWrapper(HttpServletResponse response) {
 		this.response = response;
@@ -117,43 +117,53 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	}
 	
 	/**
-	 * @param arg0
-	 * @param arg1
+	 * Add a date header.
+	 *
+	 * @param name the header name
+	 * @param value the value of the header
 	 */
-	public void addDateHeader(String arg0, long arg1) {
-		response.addDateHeader(arg0, arg1);
+	public void addDateHeader(String name, long value) {
+		response.addDateHeader(name, value);
 	}
 	
 	/**
-	 * @param arg0
-	 * @param arg1
+	 * Add a header.
+	 *
+	 * @param name the header name
+	 * @param value the value of the header
 	 */
-	public void addHeader(String arg0, String arg1) {
-		response.addHeader(arg0, encode(arg1));
+	public void addHeader(String name, String value) {
+		response.addHeader(name, encode(value));
 	}
 	
 	/**
-	 * @param arg0
-	 * @param arg1
+	 * Add a int header.
+	 *
+	 * @param name the header name
+	 * @param value the value of the header
 	 */
-	public void addIntHeader(String arg0, int arg1) {
-		response.addIntHeader(arg0, arg1);
+	public void addIntHeader(String name, int value) {
+		response.addIntHeader(name, value);
 	}
 	
 	/**
-	 * @param arg0
+	 * Returns true of the response contains the header.
+	 *
+	 * @param name the header name
 	 * @return a boolean indicating whether the header is present
 	 */
-	public boolean containsHeader(String arg0) {
-		return response.containsHeader(arg0);
+	public boolean containsHeader(String name) {
+		return response.containsHeader(name);
 	}
 	
 	/**
-	 * @param arg0
+	 * Encode a String as a URL.
+	 *
+	 * @param s the string to encode
 	 * @return the encoded value
 	 */
-	public String encodeURL(String arg0) {
-		return response.encodeURL(arg0);
+	public String encodeURL(String s) {
+		return response.encodeURL(s);
 	}
 	
 	public void flushBuffer() throws IOException
@@ -183,25 +193,36 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	}
 	
 	/**
-	 * @param arg0
-	 * @throws java.io.IOException
+	 * Send a HTTP Reedirect.
+	 *
+	 * @param url the URL to redirect to
+	 * @throws IOException if an I/O error occurs
 	 */
-	public void sendRedirect(String arg0) throws IOException {
-		response.sendRedirect(arg0);
+	public void sendRedirect(String url) throws IOException {
+		response.sendRedirect(url);
 	}
 	
 	/** used the feature "Guess last modification time for an XQuery result" */
 	private Map<String, Long> dateHeaders = new HashMap<String, Long>();
+
 	/**
-	 * @param name
-	 * @param arg1
+	 * Set a date header.
+	 *
+	 * @param name the header name
+	 * @param value the header value
 	 */
-	public void setDateHeader(String name, long arg1) {
-		dateHeaders.put(name, Long.valueOf(arg1) );
-		response.setDateHeader(name, arg1);
+	public void setDateHeader(String name, long value) {
+		dateHeaders.put(name, Long.valueOf(value) );
+		response.setDateHeader(name, value);
 	}
-	/** @return the value of Date Header corresponding to given name,
-	 * 0 if none has been set. */
+
+	/**
+	 * Get a date header.
+	 *
+	 * @param name the header name
+	 *
+	 * @return the value of Date Header corresponding to given name, 0 if none has been set.
+	 */
 	public long getDateHeader(String name) {
 		long ret = 0;
 		final Long val = dateHeaders.get(name);
@@ -211,19 +232,23 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	}
 	
 	/**
-	 * @param arg0
-	 * @param arg1
+	 * Set a header.
+	 *
+	 * @param name the header name
+	 * @param value the header value
 	 */
-	public void setHeader(String arg0, String arg1) {
-		response.setHeader(arg0, encode(arg1));
+	public void setHeader(String name, String value) {
+		response.setHeader(name, encode(value));
 	}
-	
+
 	/**
-	 * @param arg0
-	 * @param arg1
+	 * Set an int header.
+	 *
+	 * @param name the header name
+	 * @param value the header value
 	 */
-	public void setIntHeader(String arg0, int arg1) {
-		response.setIntHeader(arg0, arg1);
+	public void setIntHeader(String name, int value) {
+		response.setIntHeader(name, value);
 	}
 
 	@Override
@@ -237,17 +262,21 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	}
 
 	/**
-     * @param arg0
+	 * Set the HTP Status Code
+	 *
+     * @param statusCode the status code.
      */
-	public void setStatusCode(int arg0) {
-		response.setStatus(arg0);
+	public void setStatusCode(int statusCode) {
+		response.setStatus(statusCode);
 	}
 	
 	/**
-	 * @param arg0
+	 * Set the locale.
+	 *
+	 * @param locale the locale.
 	 */
-	public void setLocale(Locale arg0) {
-		response.setLocale(arg0);
+	public void setLocale(Locale locale) {
+		response.setLocale(locale);
 	}
 	
 	public OutputStream getOutputStream() throws IOException {

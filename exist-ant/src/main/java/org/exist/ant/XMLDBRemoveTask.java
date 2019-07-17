@@ -37,16 +37,14 @@ import org.xmldb.api.modules.CollectionManagementService;
  * @author  wolf
  *
  *          modified by
- * @author  peter.klotz@blue-elephant-systems.com
+ * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  */
 public class XMLDBRemoveTask extends AbstractXMLDBTask
 {
     private String resource   = null;
     private String collection = null;
 
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
+    @Override
     public void execute() throws BuildException
     {
         if( uri == null ) {
@@ -103,9 +101,9 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask
 
 
     /**
-     * DOCUMENT ME!
+     * Set the collection.
      *
-     * @param  collection
+     * @param collection the collection
      */
     public void setCollection( String collection )
     {
@@ -114,9 +112,9 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask
 
 
     /**
-     * DOCUMENT ME!
+     * Set the resource.
      *
-     * @param  resource
+     * @param resource the resource.
      */
     public void setResource( String resource )
     {

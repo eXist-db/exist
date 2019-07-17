@@ -66,7 +66,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * The query is either passed as nested text in the element, or via an attribute "query" or via a URL or via a query file. External variables
  * declared in the XQuery can be set via one or more nested &lt;variable&gt; elements.
  *
- * @author peter.klotz@blue-elephant-systems.com
+ * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  */
 public class XMLDBXQueryTask extends AbstractXMLDBTask {
     private String text = null;

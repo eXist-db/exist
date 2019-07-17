@@ -77,7 +77,7 @@ public class Collection {
      * Objects of the following type(s) are allowed in the list
      * {@link Collection }
      * 
-     * 
+     * @return the collections.
      */
     public List<Collection> getCollection() {
         if (collection == null) {

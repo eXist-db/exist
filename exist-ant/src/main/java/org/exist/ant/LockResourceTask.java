@@ -33,7 +33,7 @@ import org.exist.security.Account;
 /**
  * an ant task to lock a resource for a user.
  *
- * @author  peter.klotz@blue-elephant-systems.com
+ * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  */
 public class LockResourceTask extends UserTask
 {

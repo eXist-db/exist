@@ -84,7 +84,8 @@ public @interface EnsureContainerLocked {
      *
      * The value of this attribute is the (zero-based) index
      * of the parameter within the method signature.
-     * @return to be documented
+     *
+     * @return the mode
      */
     short modeParam() default NO_MODE_PARAM;
 

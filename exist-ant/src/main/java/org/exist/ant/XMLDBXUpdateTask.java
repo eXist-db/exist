@@ -32,18 +32,16 @@ import org.xmldb.api.modules.XUpdateQueryService;
 
 
 /**
- * an ant task to update a collection or resource using XUpdate.
+ * An ant task to update a collection or resource using XUpdate.
  *
- * @author  peter.klotz@blue-elephant-systems.com
+ * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  */
 public class XMLDBXUpdateTask extends AbstractXMLDBTask
 {
     private String resource = null;
     private String commands = null;
 
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
+    @Override
     public void execute() throws BuildException
     {
         if( uri == null ) {
@@ -105,9 +103,9 @@ public class XMLDBXUpdateTask extends AbstractXMLDBTask
 
 
     /**
-     * DOCUMENT ME!
+     * Set the resource.
      *
-     * @param  resource
+     * @param resource the resource.
      */
     public void setResource( String resource )
     {

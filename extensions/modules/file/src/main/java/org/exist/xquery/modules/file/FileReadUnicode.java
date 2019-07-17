@@ -47,8 +47,7 @@ import org.exist.xquery.value.Type;
 /**
  * @author Pierrick Brihaye
  * @author Dizzzz
- * @author Andrzej Taramina
- *
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  */
 public class FileReadUnicode extends BasicFunction {
 
@@ -79,11 +78,7 @@ public class FileReadUnicode extends BasicFunction {
 				new FunctionReturnSequenceType( Type.STRING, 
                         Cardinality.ZERO_OR_ONE, "the contents of the file" ) )
 		};
-	
-	/**
-	 * @param context
-	 * @param signature
-	 */
+
 	public FileReadUnicode(final XQueryContext context, final FunctionSignature signature) {
 		super(context, signature);
 	}

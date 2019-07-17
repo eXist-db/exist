@@ -447,7 +447,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
      * SAX parser.
      * 
      * @param obj the content value to set for the resource.
-     * @exception XMLDBException with expected error codes. See {@link ErrorCodes#VENDOR_ERROR}
+     * @throws XMLDBException with expected error codes. See {@link ErrorCodes#VENDOR_ERROR}
      *     for any vendor specific errors that occur.
      */
     @Override

@@ -58,7 +58,7 @@ public class PersistentLogin {
      * @param password the password
      * @param timeToLive timeout of the token
      * @return a first login token
-     * @throws XPathException
+     * @throws XPathException if a query error occurs
      */
     public LoginDetails register(String user, String password, DurationValue timeToLive) throws XPathException {
         DateTimeValue now = new DateTimeValue(new Date());

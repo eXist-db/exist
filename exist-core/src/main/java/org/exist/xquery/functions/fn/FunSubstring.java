@@ -202,7 +202,7 @@ public class FunSubstring extends Function {
      * @param end a <code>NumericValue</code> value
      * @param start a <code>NumericValue</code> value
      * @return true if the length is valid, false otherwise
-     * @exception XPathException if an error occurs
+     * @throws XPathException if an error occurs
      */
     private boolean validEndPosition(NumericValue end, NumericValue start)
         throws XPathException {

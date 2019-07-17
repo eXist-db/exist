@@ -188,6 +188,11 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 
 	/**
 	 * Constructor for XUpdateProcessor.
+	 *
+	 * @param broker the database broker
+	 * @param docs the document set
+	 *
+	 * @throws ParserConfigurationException if the parser can't be configured
 	 */
 	public XUpdateProcessor(DBBroker broker, DocumentSet docs)
 		throws ParserConfigurationException {
@@ -219,11 +224,13 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	/**
 	 * Parse the input source into a set of modifications.
 	 * 
-	 * @param is
+	 * @param is the input source
+	 *
 	 * @return an array of type Modification
-	 * @throws ParserConfigurationException
-	 * @throws IOException
-	 * @throws SAXException
+	 *
+	 * @throws ParserConfigurationException of the parser cannot be configured
+	 * @throws IOException if an I/O error occurs
+	 * @throws SAXException if an error occurs whilst parsing
 	 */
 	public Modification[] parse(InputSource is)
 		throws ParserConfigurationException, IOException, SAXException {
@@ -242,15 +249,11 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		}
 	}
 
-	/**
-	 * @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator)
-	 */
+	@Override
 	public void setDocumentLocator(Locator locator) {
 	}
 
-	/**
-	 * @see org.xml.sax.ContentHandler#startDocument()
-	 */
+	@Override
 	public void startDocument() throws SAXException {
         // The default...
         this.preserveWhitespace = preserveWhitespaceTemp;
@@ -258,30 +261,22 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
         this.spaceStack.push("default");
 	}
 
-	/**
-	 * @see org.xml.sax.ContentHandler#endDocument()
-	 */
+	@Override
 	public void endDocument() throws SAXException {
 	}
 
-	/**
-	 * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
-	 */
+	@Override
 	public void startPrefixMapping(String prefix, String uri)
 		throws SAXException {
 		namespaces.put(prefix, uri);
 	}
 
-	/**
-	 * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String)
-	 */
+	@Override
 	public void endPrefixMapping(String prefix) throws SAXException {
 		namespaces.remove(prefix);
 	}
 
-	/**
-	 * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-	 */
+	@Override
 	public void startElement(
 		String namespaceURI,
 		String localName,
@@ -560,9 +555,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					+ "not supported.");}
 	}
 
-	/**
-	 * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-	 */
+	@Override
 	public void endElement(String namespaceURI, String localName, String qName)
 		throws SAXException {
 		if (inModification && charBuf.length() > 0) {
@@ -609,9 +602,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
         }
 	}
 
-	/**
-	 * @see org.xml.sax.ContentHandler#characters(char[], int, int)
-	 */
+	@Override
 	public void characters(char[] ch, int start, int length)
 		throws SAXException {
 		if (inModification) {
@@ -629,9 +620,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		}
 	}
 
-	/**
-	 * @see org.xml.sax.ContentHandler#ignorableWhitespace(char[], int, int)
-	 */
+	@Override
 	public void ignorableWhitespace(char[] ch, int start, int length)
 		throws SAXException {
         if (this.preserveWhitespace) {
@@ -677,9 +666,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
         }
     }
 
-	/**
-	 * @see org.xml.sax.ContentHandler#processingInstruction(java.lang.String, java.lang.String)
-	 */
+	@Override
 	public void processingInstruction(String target, String data)
 		throws SAXException {
 		if (inModification && charBuf.length() > 0) {
@@ -711,9 +698,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		}
 	}
 
-	/**
-	 * @see org.xml.sax.ContentHandler#skippedEntity(java.lang.String)
-	 */
+	@Override
 	public void skippedEntity(String name) throws SAXException {
 	}
 
@@ -783,9 +768,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
         }
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ext.LexicalHandler#comment(char[], int, int)
-	 */
+	@Override
 	public void comment(char[] ch, int start, int length) throws SAXException {
 		if (inModification && charBuf.length() > 0) {
 			final String normalized =
@@ -813,40 +796,28 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ext.LexicalHandler#endCDATA()
-	 */
+	@Override
 	public void endCDATA() throws SAXException {
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ext.LexicalHandler#endDTD()
-	 */
+	@Override
 	public void endDTD() throws SAXException {
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ext.LexicalHandler#endEntity(java.lang.String)
-	 */
+	@Override
 	public void endEntity(String name) throws SAXException {
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ext.LexicalHandler#startCDATA()
-	 */
+	@Override
 	public void startCDATA() throws SAXException {
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ext.LexicalHandler#startDTD(java.lang.String, java.lang.String, java.lang.String)
-	 */
+	@Override
 	public void startDTD(String name, String publicId, String systemId)
 		throws SAXException {
 	}
 
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ext.LexicalHandler#startEntity(java.lang.String)
-	 */
+	@Override
 	public void startEntity(String name) throws SAXException {
 	}
 

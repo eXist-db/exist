@@ -15,8 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * $Id$
  */
 
 package org.exist.http.servlets;
@@ -93,8 +91,11 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
     /**
      * HttpServletRequestWrapper Constructor
      *
-     * @param request      The HttpServletRequest to wrap
+     * @param cacheConfiguration the cache configuration
+     * @param request The HttpServletRequest to wrap
      * @param formEncoding The encoding to use
+     *
+     * @throws IOException if an I/O error occurs
      */
     public HttpServletRequestWrapper(final FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration cacheConfiguration, final HttpServletRequest request, final String formEncoding) throws IOException {
         this.request = request;
@@ -165,7 +166,10 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
     }
 
     /**
-     * Parses Parameters into param objects and stores them in a vector in params
+     * Parses Parameters into param objects and stores them in a vector in params.
+     *
+     * @param parameters the parameters to parse
+     * @param type the type of the parameters
      */
     private void parseParameters(final String parameters, final RequestParameter.ParameterSource type) {
         //Split parameters into an array

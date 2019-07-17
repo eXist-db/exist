@@ -156,7 +156,7 @@ public class PlainTextIndexConfig {
     }
     
     /**
-     * Private class representing the <field> element (name, boost, content)
+     * Private class representing the &lt;field&gt; element (name, boost, content)
      */
     public static class PlainTextField {
 
@@ -199,7 +199,7 @@ public class PlainTextIndexConfig {
     }
     
     /**
-     * Private class representing the <doc> element (boost).
+     * Private class representing the &lt;doc&gt; element (boost).
      */
     public static class PlainTextDoc {
         private float boost = 1.0f;

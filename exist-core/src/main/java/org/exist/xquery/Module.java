@@ -40,7 +40,7 @@ import org.exist.xquery.value.Sequence;
  * during the initialization phase of the query engine (for the standard library modules) or
  * upon an "import module" directive. 
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public interface Module {
 	

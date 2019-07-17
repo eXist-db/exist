@@ -17,8 +17,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
- *  $Id$
  */
 package org.exist.http.servlets;
 
@@ -39,19 +37,23 @@ public interface Authenticator {
     /**
      * Try to authenticate the user specified in the HTTP request.
      * 
-     * @param request
-     * @param response
+     * @param request the http request
+     * @param response the http response
+	 * @param sendChallenge true if the challenge should be sent, false otherwise
+	 *
      * @return The authenticated user or null if the user isn't autenticated
-     * @throws IOException
+	 *
+     * @throws IOException if an I/O error occurs
      */
 	Subject authenticate(HttpServletRequest request, HttpServletResponse response, boolean sendChallenge) throws IOException;
 	
 	/**
 	 * Send an WWW-Authenticate header back to client.
-	 * 
-	 * @param request
-	 * @param response
-	 * @throws IOException
+	 *
+	 * @param request the http request
+	 * @param response the http response
+	 *
+	 * @throws IOException if an I/O error occurs
 	 */
 	void sendChallenge(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }

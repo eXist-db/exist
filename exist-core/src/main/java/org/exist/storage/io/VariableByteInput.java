@@ -47,9 +47,9 @@ public interface VariableByteInput {
     /**
      * Fill the provided byte array with data from the input.
      * 
-     * @param data to be documented
+     * @param data the buffer to read
      * @throws IOException in case of an I/O error
-     * @return to be documented
+     * @return the number of bytes read
      */
     public int read(byte[] data) throws IOException;
     
@@ -60,7 +60,7 @@ public interface VariableByteInput {
      * from the input.
      *
      * @throws IOException in case of an I/O error
-     * @return to be documented
+     * @return the number of bytes available
      */
     public int available() throws IOException;
     
@@ -69,7 +69,7 @@ public interface VariableByteInput {
      * more bytes are available.
      *
      * @throws IOException in case of an I/O error
-     * @return to be documented
+     * @return the byte read
      */
     public byte readByte() throws IOException;
 
@@ -77,7 +77,7 @@ public interface VariableByteInput {
      * Read a short value in variable byte encoding.
      *
      * @throws IOException in case of an I/O error
-     * @return to be documented
+     * @return the short read
      */
     public short readShort() throws IOException;
 
@@ -85,7 +85,7 @@ public interface VariableByteInput {
      * Read an integer value in variable byte encoding.
      *
      * @throws IOException in case of an I/O error
-     * @return to be documented
+     * @return the int read
      */
     public int readInt() throws IOException;
 
@@ -95,7 +95,7 @@ public interface VariableByteInput {
      * Read a long value in variable byte encoding.
      *
      * @throws IOException in case of an I/O error
-     * @return to be documented
+     * @return the long read
      */
     public long readLong() throws IOException;
 
@@ -105,7 +105,7 @@ public interface VariableByteInput {
      * Read the following count numeric values from the input
      * and drop them.
      * 
-     * @param count to be documented
+     * @param count the number of bytes to skip
      * @throws IOException in case of an I/O error
      */
     public void skip(int count) throws IOException;
@@ -116,7 +116,7 @@ public interface VariableByteInput {
      * Copy the next numeric value from the input to the
      * specified output stream.
      * 
-     * @param os to be documented
+     * @param os the output stream to copy the data to
      * @throws IOException in case of an I/O error
      */
     public void copyTo(VariableByteOutputStream os) throws IOException;
@@ -125,8 +125,8 @@ public interface VariableByteInput {
      * Copy the count next numeric values from the input to
      * the specified output stream.
      * 
-     * @param os to be documented
-     * @param count to be documented
+     * @param os the output stream to copy the data to
+     * @param count the number of bytes to copy
      * @throws IOException in case of an I/O error
      */
     public void copyTo(VariableByteOutputStream os, int count)

@@ -21,8 +21,7 @@ import org.exist.indexing.RawBackupSupport;
 import org.exist.util.FileUtils;
 
 /**
- * @author Jasper Linthorst (jasper.linthorst@gmail.com)
- *
+ * @author <a href="mailto:jasper.linthorst@gmail.com">Jasper Linthorst</a>
  */
 public class Counters implements RawBackupSupport {
 
@@ -43,6 +42,8 @@ public class Counters implements RawBackupSupport {
 
     /**
      * Loads data from the on-disk counter store
+     *
+     * @throws EXistException if an error occurs
      */
     private void loadStore() throws EXistException {
         try {
@@ -67,7 +68,13 @@ public class Counters implements RawBackupSupport {
     }
 
     /**
-     *  Get singleton of Counters object.
+     * Get singleton of Counters object.
+     *
+     * @param dataDir the data directory
+     *
+     * @return the counters instance
+     *
+     * @throws EXistException if an error occurs
      */
     public static Counters getInstance(final Path dataDir) throws EXistException {
         if (instance == null) {
@@ -84,9 +91,11 @@ public class Counters implements RawBackupSupport {
     /**
      * Creates a new Counter, initializes it to 0 and returns the current value in a long.
      * 
-     * @param counterName
+     * @param counterName the name of the counter
+     *
      * @return the initial value of the newly created counter
-     * @throws EXistException
+     *
+     * @throws EXistException if an error occurs
      */
     public long createCounter(final String counterName) throws EXistException {
         return createCounter(counterName, (long) 0);
@@ -96,10 +105,12 @@ public class Counters implements RawBackupSupport {
      * Creates a new Counter, initializes it to initValue and returns the current value in a long.
      * If there already is a counter with the same name, the current value of this counter is returned.
      * 
-     * @param counterName
-     * @param initValue
+     * @param counterName the name of the counter
+     * @param initValue the initial value for the counter
+     *
      * @return the current value of the named counter
-     * @throws EXistException 
+     *
+     * @throws EXistException if an error occurs
      */
     public synchronized long createCounter(final String counterName, final long initValue) throws EXistException {
         if (counters.containsKey(counterName)) {
@@ -119,10 +130,12 @@ public class Counters implements RawBackupSupport {
 
     /**
      * Removes a counter by the specified name.
-     * 
-     * @param counterName
+     *
+     * @param counterName the name of the counter
+     *
      * @return true if the counter is removed
-     * @throws EXistException 
+     *
+     * @throws EXistException if an error occurs
      */
     public synchronized boolean destroyCounter(final String counterName) throws EXistException {
         if (counters.containsKey(counterName)) {
@@ -142,10 +155,12 @@ public class Counters implements RawBackupSupport {
 
     /**
      * Retrieves the next value of a counter (specified by name).
-     * 
-     * @param counterName
+     *
+     * @param counterName the name of the counter
+     *
      * @return the next counter value or -1 if the counter does not exist.
-     * @throws EXistException
+     *
+     * @throws EXistException if an error occurs
      */
     public synchronized long nextValue(final String counterName) throws EXistException {
         if (!counters.containsKey(counterName)) {

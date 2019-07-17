@@ -52,7 +52,6 @@ import org.exist.xquery.value.Type;
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext,
  *      org.exist.xquery.FunctionSignature)
  */
-
 public class DeleteFunction extends BasicFunction 
 {
 	protected static final Logger logger = LogManager.getLogger(DeleteFunction.class);
@@ -73,30 +72,13 @@ public class DeleteFunction extends BasicFunction
 					new SequenceType( Type.ITEM, Cardinality.EMPTY ) )
 			};
 
-	/**
-	 * DeleteFunction Constructor
-	 * 
-	 * @param context 	The Context of the calling XQuery
-	 */
-	
 	public DeleteFunction( XQueryContext context, FunctionSignature signature ) 
 	{
 		super( context, signature );
 	}
 
 	
-	/**
-	 * evaluate the call to the xquery delete() function, it is really
-	 * the main entry point of this class
-	 * 
-	 * @param args				arguments from the get-connection() function call
-	 * @param contextSequence 	the Context Sequence to operate on (not used here internally!)
-	 * @return 					A xs:long representing a handle to the connection
-	 * 
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[],
-	 *      org.exist.xquery.value.Sequence)
-	 */
-	
+	@Override
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
 		// Was context handle or DN specified?
