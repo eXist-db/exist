@@ -5,18 +5,16 @@ WORKDIR /usr/local
 RUN apt-get update && apt-get install -y --no-install-recommends \
   expat \
   fontconfig \
-  libfreetype6 \
   liblcms2-2 \
-  libpng16-16 \
   ttf-dejavu-core
 
 FROM gcr.io/distroless/java:8
 
 # Copy over dependancies for Apache FOP, missing from gcr's JRE
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libfreetype.so.6.12.3 /usr/lib/x86_64-linux-gnu/libfreetype.so.6
-COPY --from=builder /usr/lib/x86_64-linux-gnu/liblcms2.so.2.0.8 /usr/lib/x86_64-linux-gnu/liblcms2.so.2
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libpng16.so.16.28.0 /usr/lib/x86_64-linux-gnu/libpng16.so.16
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libfontconfig.so.1.8.0 /usr/lib/x86_64-linux-gnu/libfontconfig.so.1
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libfreetype.so.6 /usr/lib/x86_64-linux-gnu/libfreetype.so.6
+COPY --from=builder /usr/lib/x86_64-linux-gnu/liblcms2.so.2 /usr/lib/x86_64-linux-gnu/liblcms2.so.2
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libpng16.so.16 /usr/lib/x86_64-linux-gnu/libpng16.so.16
+COPY --from=builder /usr/lib/x86_64-linux-gnu/libfontconfig.so.1 /usr/lib/x86_64-linux-gnu/libfontconfig.so.1
 
 # Copy dependancies for Apache Batik (used by Apache FOP to handle SVG rendering)
 COPY --from=builder /etc/fonts /etc/fonts
