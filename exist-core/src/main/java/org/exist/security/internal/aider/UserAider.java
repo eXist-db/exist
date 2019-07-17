@@ -134,7 +134,10 @@ public class UserAider implements Account {
     }
 
     @Override
-    public void remGroup(final String role) {
+    public void remGroup(final String role) throws PermissionDeniedException {
+        if (groups.containsKey(role) && groups.size() <= 1) {
+            throw new PermissionDeniedException("You cannot remove the primary group of an account.");
+        }
         groups.remove(role);
     }
 
