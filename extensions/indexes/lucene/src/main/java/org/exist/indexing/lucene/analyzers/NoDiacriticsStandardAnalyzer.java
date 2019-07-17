@@ -42,7 +42,9 @@ import java.io.Reader;
  */
 public class NoDiacriticsStandardAnalyzer extends StopwordAnalyzerBase {
 
-    /** Default maximum allowed token length */
+    /**
+     * Default maximum allowed token length
+     */
     public static final int DEFAULT_MAX_TOKEN_LENGTH = 255;
 
     private int maxTokenLength = DEFAULT_MAX_TOKEN_LENGTH;
@@ -53,11 +55,15 @@ public class NoDiacriticsStandardAnalyzer extends StopwordAnalyzerBase {
      */
     private final boolean replaceInvalidAcronym;
 
-    /** An unmodifiable set containing some common English words that are usually not
-     useful for searching. */
+    /**
+     * An unmodifiable set containing some common English words that are usually not
+     * useful for searching.
+     */
     public static final CharArraySet STOP_WORDS_SET = StopAnalyzer.ENGLISH_STOP_WORDS_SET;
 
-    /** Builds an analyzer with the given stop words.
+    /**
+     * Builds an analyzer with the given stop words.
+     *
      * @param stopWords stop words
      */
     public NoDiacriticsStandardAnalyzer(final CharArraySet stopWords) {
@@ -65,9 +71,10 @@ public class NoDiacriticsStandardAnalyzer extends StopwordAnalyzerBase {
         replaceInvalidAcronym = true;
     }
 
-    /** Builds an analyzer with the given stop words.
-     * @param matchVersion Lucene version to match See {@link
-     * <a href="#version">above</a>}
+    /**
+     * Builds an analyzer with the given stop words.
+     *
+     * @param matchVersion Lucene version to match, see {@link StopwordAnalyzerBase#version}
      * @param stopWords stop words
      *
      * @deprecated Use {@link #NoDiacriticsStandardAnalyzer(CharArraySet)}
@@ -78,18 +85,17 @@ public class NoDiacriticsStandardAnalyzer extends StopwordAnalyzerBase {
         replaceInvalidAcronym = matchVersion.onOrAfter(LuceneIndex.LUCENE_VERSION_IN_USE);
     }
 
-    /**
-     /** Builds an analyzer with the default stop words ({@link
-     * #STOP_WORDS_SET}).
-     */
+     /**
+      * Builds an analyzer with the default stop words. ({@link #STOP_WORDS_SET}).
+      */
     protected NoDiacriticsStandardAnalyzer() {
         this((CharArraySet)null);
     }
 
-    /** Builds an analyzer with the default stop words ({@link
-     * #STOP_WORDS_SET}).
-     * @param matchVersion Lucene version to match See {@link
-     * <a href="#version">above</a>}
+    /**
+     * Builds an analyzer with the default stop words ({@link #STOP_WORDS_SET}).
+     *
+     * @param matchVersion Lucene version to match See {@link StopwordAnalyzerBase#version}.
      *
      * @deprecated Use {@link #NoDiacriticsStandardAnalyzer()}
      */
@@ -98,11 +104,16 @@ public class NoDiacriticsStandardAnalyzer extends StopwordAnalyzerBase {
         this(matchVersion, STOP_WORDS_SET);
     }
 
-    /** Builds an analyzer with the stop words from the given reader.
-     * @see WordlistLoader#getWordSet(Reader, Version)
-     * @param matchVersion Lucene version to match See {@link
-     * <a href="#version">above</a>}
-     * @param stopwords Reader to read stop words from */
+    /**
+     * Builds an analyzer with the stop words from the given reader.
+     *
+     * See {@link WordlistLoader#getWordSet(Reader, Version)}
+     *
+     * @param matchVersion Lucene version to match See {@link StopwordAnalyzerBase#version}.
+     * @param stopwords Reader to read stop words from
+     *
+     * @throws IOException if an I/O error occurs
+     */
     public NoDiacriticsStandardAnalyzer(Version matchVersion, Reader stopwords) throws IOException {
         this(matchVersion, WordlistLoader.getWordSet(stopwords, matchVersion));
     }
@@ -112,13 +123,17 @@ public class NoDiacriticsStandardAnalyzer extends StopwordAnalyzerBase {
      * that exceeds this length then it is discarded.  This
      * setting only takes effect the next time tokenStream or
      * reusableTokenStream is called.
+     *
+     * @param length the max token length.
      */
     public void setMaxTokenLength(int length) {
         maxTokenLength = length;
     }
 
     /**
-     * @see #setMaxTokenLength
+     * Get the maximum allowed token depth.
+     *
+     * @return the maximum allowed token depth.
      */
     public int getMaxTokenLength() {
         return maxTokenLength;

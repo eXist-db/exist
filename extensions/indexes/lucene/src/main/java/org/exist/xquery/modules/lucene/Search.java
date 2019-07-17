@@ -35,8 +35,8 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- *  Class implementing the ft:search() method
- * @author Dannes Wessels (dannes@exist-db.org)
+ * Class implementing the ft:search() method
+ * @author <a href="mailto:dannes@exist-db.org">Dannes Wessels</a>
  */
 public class Search extends BasicFunction {
 
@@ -103,9 +103,6 @@ public class Search extends BasicFunction {
 					"All documents that are match by the query"))
     };
 
-    /**
-     * Constructor
-     */
     public Search(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }

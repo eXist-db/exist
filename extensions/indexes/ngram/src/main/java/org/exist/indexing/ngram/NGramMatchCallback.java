@@ -39,6 +39,9 @@ public interface NGramMatchCallback {
      * @param receiver the receiver to which the MatchListener is currently writing.
      * @param matchingText the matching text sequence
      * @param node the text node containing the match
+     *
+     * @throws XPathException if a query error occurs
+     * @throws SAXException if a parse error occurs
      */
     public void match(Receiver receiver, String matchingText, NodeProxy node) throws XPathException, SAXException;
 }

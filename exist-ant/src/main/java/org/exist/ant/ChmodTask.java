@@ -31,7 +31,7 @@ import org.xmldb.api.base.XMLDBException;
 /**
  * an ant task to change permissions on a resource.
  *
- * @author  peter.klotz@blue-elephant-systems.com
+ * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  * @author  andrzej@chaeron.com
  */
 public class ChmodTask extends UserTask

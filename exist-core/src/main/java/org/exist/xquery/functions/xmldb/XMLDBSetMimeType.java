@@ -47,7 +47,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * @author Dannes Wessels (dannes@exist-db.org)
+ * @author <a href="mailto:dannes@exist-db.org">Dannes Wessels</a>
  */
 public class XMLDBSetMimeType extends BasicFunction {
 	protected static final Logger logger = LogManager.getLogger(XMLDBSetMimeType.class);

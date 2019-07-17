@@ -33,7 +33,7 @@ import javax.xml.stream.XMLStreamReader;
 /**
  * Tests if a node is of a given node type.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class TypeTest implements NodeTest {
 

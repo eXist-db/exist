@@ -160,7 +160,7 @@ public abstract class Paged implements AutoCloseable {
     /**
      * Close the underlying files.
      *
-     * @throws DBException to be documented
+     * @throws DBException if an error occurs when closing
      */
     @Override
     public void close() throws DBException {
@@ -184,7 +184,8 @@ public abstract class Paged implements AutoCloseable {
     /**
      * createFileHeader must be implemented by a Paged implementation in order
      * to create an appropriate subclass instance of a FileHeader.
-     * @param pageSize to be documented
+     *
+     * @param pageSize the size of the page
      * @return A new file header
      */
     public abstract FileHeader createFileHeader(int pageSize);
@@ -201,9 +202,10 @@ public abstract class Paged implements AutoCloseable {
         return !fileIsNew;
     }
 
-    /** Flushes {@link org.exist.storage.btree.Paged#flush()} dirty data to the disk and cleans up the cache.
+    /**
+     * Flushes {@link org.exist.storage.btree.Paged#flush()} dirty data to the disk and cleans up the cache.
      * @return <code>true</code> if something has actually been cleaned
-     * @throws DBException to be documented
+     * @throws DBException if an error occurs
      */
     public boolean flush() throws DBException {
         boolean flushed = false;
@@ -223,8 +225,8 @@ public abstract class Paged implements AutoCloseable {
      * Backup the entire contents of the underlying file to 
      * an output stream.
      * 
-     * @param os to be documented
-     * @throws IOException to be documented
+     * @param os the output stream
+     * @throws IOException if an I/O error occurs
      */
     public void backupToStream(final OutputStream os) throws IOException {
         raf.seek(0);
@@ -279,8 +281,9 @@ public abstract class Paged implements AutoCloseable {
      * previously deleted page. This is required by btree page split operations to avoid 
      * concurrency conflicts within a transaction.
      *
+     * @param reuseDeleted true if deleted pages should be reused
      * @return a free page
-     * @throws IOException to be documented
+     * @throws IOException if an I/O error occurs
      */
     protected final Page getFreePage(final boolean reuseDeleted) throws IOException {
         final Page page;
@@ -335,6 +338,11 @@ public abstract class Paged implements AutoCloseable {
         return true;
     }
 
+    /**
+     * @param requiredVersion The required version of the file
+     * @return true if opened
+     * @throws DBException if the paged file cannot be opened
+     */
     public boolean open(final short requiredVersion) throws DBException {
         try {
             if (exists()) {
@@ -360,9 +368,11 @@ public abstract class Paged implements AutoCloseable {
     }
 
     /**
-     * Debug
-     * @param out to be documented
-     * @exception IOException Description of the Exception
+     * Debug.
+     *
+     * @param out the output print stream
+     *
+     * @throws IOException Description of the Exception
      */
     public void printFreeSpaceList(final PrintStream out) throws IOException {
         long pageNum = fileHeader.firstFreePage;
@@ -382,7 +392,8 @@ public abstract class Paged implements AutoCloseable {
      * setFile sets the file object for this Paged.
      *
      * @param file The File
-     * @throws DBException to be documented
+     *
+     * @throws DBException if a database error occurs
      */
     protected final void setFile(final Path file) throws DBException {
         this.file = file;
@@ -461,7 +472,8 @@ public abstract class Paged implements AutoCloseable {
      * Unfortunately this means we loose some space
      * that we will never recover, but it does mean
      * we are more likely to correctly recover.
-     * @throws IOException to be documented
+     *
+     * @throws IOException if an exception occurs
      */
     protected void dropFreePageList() throws IOException {
         boolean updated = false;
@@ -871,7 +883,7 @@ public abstract class Paged implements AutoCloseable {
          *
          * @param pageNum Description of the Parameter
          *
-         * @exception IOException Description of the Exception
+         * @throws IOException Description of the Exception
          */
         public Page(final long pageNum) throws IOException {
             this();
@@ -1061,9 +1073,9 @@ public abstract class Paged implements AutoCloseable {
         }
 
         /**
-         *  Gets the dirty attribute of the PageHeader object
+         * Gets the dirty attribute of the PageHeader object
          *
-         *@return    The dirty value
+         * @return    The dirty value
          */
         public final boolean isDirty() {
             return dirty;
@@ -1116,7 +1128,7 @@ public abstract class Paged implements AutoCloseable {
         /**
          * The length of the Data
          *
-         * @param  dataLen  The new dataLen value
+         * @param dataLen The new dataLen value
          */
         public final void setDataLen(final int dataLen) {
             this.dataLen = dataLen;

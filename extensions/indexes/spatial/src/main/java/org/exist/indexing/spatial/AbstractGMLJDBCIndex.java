@@ -165,21 +165,21 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
     /**
      * Shuts down the JDBC database that contains the indexed spatial data.
      * 
-     * @throws DBException
+     * @throws DBException if an error occurs with the database
      */
     protected abstract void shutdownDatabase() throws DBException;
 
     /**
      * Deletes the JDBC database that contains the indexed spatial data.
-     * 
-     * @throws DBException
+     *
+     * @throws DBException if an error occurs with the database
      */
     protected abstract void deleteDatabase() throws DBException;
 
     /**
      * Deletes the spatial data contained in the JDBC database.
-     * 
-     * @throws DBException
+     *
+     * @throws DBException if an error occurs with the database
      */
     protected abstract void removeIndexContent() throws DBException;
 
@@ -188,7 +188,10 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
      * to the JDBC database that contains the indexed spatial data.
      * 
      * @param broker the broker that will use th connection
+     *
      * @return the connection
+     *
+     * @throws SQLException if a JDBC error occurs
      */
     protected abstract Connection acquireConnection(DBBroker broker) throws SQLException;
 
@@ -198,7 +201,8 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
      * previously acquired by {@link org.exist.indexing.spatial.AbstractGMLJDBCIndex#acquireConnection(DBBroker)} 
      * 
      * @param broker the broker that will use th connection
-     * 
+     *
+     * @throws SQLException if a JDBC error occurs
      */
     protected abstract void releaseConnection(DBBroker broker) throws SQLException;
 }

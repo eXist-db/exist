@@ -41,8 +41,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * @author Andrzej Taramina
- *
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  */
 public class FileReadBinary extends BasicFunction {
 
@@ -59,11 +58,7 @@ public class FileReadBinary extends BasicFunction {
 			new FunctionReturnSequenceType( Type.BASE64_BINARY, 
                     Cardinality.ZERO_OR_ONE, "the file contents" ) )
 		};
-	
-	/**
-	 * @param context
-	 * @param signature
-	 */
+
 	public FileReadBinary(final XQueryContext context, final FunctionSignature signature)
 	{
 		super(context, signature);

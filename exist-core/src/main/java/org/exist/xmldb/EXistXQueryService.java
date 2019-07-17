@@ -37,7 +37,7 @@ import org.xmldb.api.modules.XQueryService;
  * can be executed repeatedly. Since XQuery scripts can be very large, compiling an expression
  * in advance can save a lot of time.
  *
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public interface EXistXQueryService extends XQueryService {
 

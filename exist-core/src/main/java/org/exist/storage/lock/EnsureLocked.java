@@ -79,7 +79,8 @@ public @interface EnsureLocked {
      * single {@link Lock.LockMode} type parameter that can be used
      * then an IllegalArgumentException will be generated if {@link EnsureLockingAspect}
      * detects this situation.
-     * @return to be documented
+     *
+     * @return the lock mode
      */
     Lock.LockMode mode() default LockMode.NO_LOCK;
 
@@ -89,7 +90,8 @@ public @interface EnsureLocked {
      *
      * The value of this attribute is the (zero-based) index
      * of the parameter within the method signature.
-     * @return to be documented
+     *
+     * @return the mode
      */
     short modeParam() default NO_MODE_PARAM;
 
@@ -101,7 +103,8 @@ public @interface EnsureLocked {
      * Only needed if the annotation is not placed on a
      * {@link org.exist.collections.Collection} or {@link org.exist.dom.persistent.DocumentImpl}
      * parameter or return type.
-     * @return to be documented
+     *
+     * @return the lock type
      */
     Lock.LockType type() default LockType.UNKNOWN;
 }

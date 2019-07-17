@@ -266,12 +266,15 @@ public class RESTServer {
      * </ul>
      *
      * @param broker the database broker
+     * @param transaction the database transaction
      * @param request the request
      * @param response the response
      * @param path the path of the request
+     *
      * @throws BadRequestException if a bad request is made
      * @throws PermissionDeniedException if the request has insufficient permissions
      * @throws NotFoundException if the request resource cannot be found
+     * @throws IOException if an I/O error occurs
      */
     public void doGet(final DBBroker broker, final Txn transaction, final HttpServletRequest request,
             final HttpServletResponse response, final String path)
@@ -612,13 +615,16 @@ public class RESTServer {
      * by the XQuery engine. Otherwise, the request content is loaded and parsed
      * as XML. It may either contain an XUpdate or a query request.
      *
-     * @param broker
-     * @param request
-     * @param response
-     * @param path
-     * @throws BadRequestException
-     * @throws PermissionDeniedException
-     * @throws NotFoundException
+     * @param broker the database broker
+     * @param transaction the database transaction
+     * @param request the request
+     * @param response the response
+     * @param path the path of the request
+     *
+     * @throws BadRequestException if a bad request is made
+     * @throws PermissionDeniedException if the request has insufficient permissions
+     * @throws NotFoundException if the request resource cannot be found
+     * @throws IOException if an I/O error occurs
      */
     public void doPost(final DBBroker broker, final Txn transaction, final HttpServletRequest request,
             final HttpServletResponse response, final String path)
@@ -1024,12 +1030,16 @@ public class RESTServer {
      * the corresponding mime type is not a know XML mime type, the resource
      * will be stored as a binary resource.
      *
-     * @param broker
-     * @param path The path to which the file should be stored
-     * @param request
-     * @param response
-     * @throws BadRequestException
-     * @throws PermissionDeniedException
+     * @param broker the database broker
+     * @param transaction the database transaction
+     * @param request the request
+     * @param response the response
+     * @param path the path of the request
+     *
+     * @throws BadRequestException if a bad request is made
+     * @throws PermissionDeniedException if the request has insufficient permissions
+     * @throws NotFoundException if the request resource cannot be found
+     * @throws IOException if an I/O error occurs
      */
     public void doPut(final DBBroker broker, final Txn transaction, final XmldbURI path,
             final HttpServletRequest request, final HttpServletResponse response)
@@ -1246,7 +1256,24 @@ public class RESTServer {
     /**
      * TODO: pass request and response objects to XQuery.
      *
-     * @throws XPathException
+     * @param broker the database broker
+     * @param transaction the database transaction
+     * @param query the XQuery
+     * @param path the path of the request
+     * @param namespaces any XQuery namespace bindings
+     * @param variables any XQuery variable bindings
+     * @param howmany the number of items in the results to return
+     * @param start the start position in the results to return
+     * @param typed whether the result nodes should be typed
+     * @param outputProperties the serialization properties
+     * @param wrap true to wrap the result of the XQuery in an exist:result
+     * @param cache whether to cache the results
+     * @param request the request
+     * @param response the response
+     *
+     * @throws BadRequestException if a bad request is made
+     * @throws PermissionDeniedException if the request has insufficient permissions
+     * @throws XPathException if the XQuery raises an error
      */
     protected void search(final DBBroker broker, final Txn transaction, final String query,
         final String path, final List<Namespace> namespaces,
@@ -1853,9 +1880,13 @@ public class RESTServer {
     }
 
     /**
-     * @param response
-     * @param encoding
-     * @param updateCount
+     * Writes the XUpdate results to the http response.
+     *
+     * @param response the http response to write the result to
+     * @param encoding the character encoding
+     * @param updateCount the number of updates performed
+     *
+     * @throws IOException if an I/O error occurs
      */
     private void writeXUpdateResult(final HttpServletResponse response,
         final String encoding, final long updateCount) throws IOException {
@@ -1876,10 +1907,16 @@ public class RESTServer {
     }
 
     /**
-     * @param response
-     * @param encoding
-     * @param broker
-     * @param collection
+     * Write the details of a Collection to the http response.
+     *
+     * @param response the http response to write the result to
+     * @param encoding the character encoding
+     * @param broker the database broker
+     * @param collection the collection to write
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws PermissionDeniedException if there are insufficient privildged for the caller
+     * @throws LockException if a lock error occurs
      */
     protected void writeCollection(final HttpServletResponse response,
         final String encoding, final DBBroker broker, final Collection collection)

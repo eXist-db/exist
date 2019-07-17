@@ -17,8 +17,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
- *  $Id$
  */
 package org.exist.xupdate;
 
@@ -53,7 +51,13 @@ public class Append extends Modification {
     
 	/**
 	 * Constructor for Append.
-	 * @param selectStmt
+	 *
+	 * @param broker the database broker.
+	 * @param docs the document working set.
+	 * @param selectStmt the select statement.
+	 * @param childAttr the child attribute.
+	 * @param namespaces the namespaces.
+	 * @param variables the variables.
 	 */
 	public Append(DBBroker broker, DocumentSet docs, String selectStmt, 
 	        String childAttr, Map<String, String> namespaces, Map<String, Object> variables) {
@@ -63,10 +67,8 @@ public class Append extends Modification {
 		else
 		    {child = Integer.parseInt(childAttr);}
 	}
-	
-	/*
-	 * @see org.exist.xupdate.Modification#process()
-	 */
+
+	@Override
 	public long process(Txn transaction) throws PermissionDeniedException, LockException,
 		EXistException, XPathException, TriggerException {
 	    final NodeList children = content;
@@ -96,6 +98,7 @@ public class Append extends Modification {
 	    }
 	}
 
+	@Override
 	public String getName() {
 		return "append";
 	}

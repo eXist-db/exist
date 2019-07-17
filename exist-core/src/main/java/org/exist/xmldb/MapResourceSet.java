@@ -140,7 +140,7 @@ public class MapResourceSet implements ResourceSet
      *
      * @param pos position &gt; 0
      * @return The resource value
-     * @exception XMLDBException thrown if pos is out of range
+     * @throws XMLDBException thrown if pos is out of range
      */
     @Override
     public Resource getResource(final long pos) throws XMLDBException {
@@ -159,7 +159,7 @@ public class MapResourceSet implements ResourceSet
      *
      * @return The size value
      *
-     * @exception XMLDBException if an error occurs getting the size.
+     * @throws XMLDBException if an error occurs getting the size.
      */
     @Override
     public long getSize() throws XMLDBException {
@@ -170,7 +170,7 @@ public class MapResourceSet implements ResourceSet
      * Removes the resource at a given position.
      *
      * @param pos position &gt; 0
-     * @exception XMLDBException thrown if pos is out of range
+     * @throws XMLDBException thrown if pos is out of range
      */
     @Override
     public void removeResource(final long pos) throws XMLDBException {
@@ -206,7 +206,7 @@ public class MapResourceSet implements ResourceSet
          * Classical loop test.
          *
          * @return Description of the Return Value
-         * @exception XMLDBException Description of the Exception
+         * @throws XMLDBException Description of the Exception
          */
         @Override
         public boolean hasMoreResources() throws XMLDBException {
@@ -217,7 +217,7 @@ public class MapResourceSet implements ResourceSet
          * Classical accessor to next Resource
          *
          * @return the next Resource
-         * @exception XMLDBException
+         * @throws XMLDBException
          */
         @Override
         public Resource nextResource() throws XMLDBException {

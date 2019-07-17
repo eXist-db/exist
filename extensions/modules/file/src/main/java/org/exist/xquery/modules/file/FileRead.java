@@ -46,8 +46,8 @@ import org.exist.xquery.value.Type;
 /**
  * @author Pierrick Brihaye
  * @author Dizzzz
- * @author Andrzej Taramina
- * @author Loren Cahlander
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
+ * @author <a href="mailto:loren.cahlander@gmail.com">Loren Cahlander</a>
  */
 public class FileRead extends BasicFunction {
 
@@ -76,11 +76,7 @@ public class FileRead extends BasicFunction {
 				new FunctionReturnSequenceType( Type.STRING, 
                         Cardinality.ZERO_OR_ONE, "the file contents" ) )
 		};
-	
-	/**
-	 * @param context
-	 * @param signature
-	 */
+
 	public FileRead(final XQueryContext context, final FunctionSignature signature)
 	{
 		super(context, signature);

@@ -90,13 +90,6 @@ public class RenderFunction extends BasicFunction {
         )
     };
 
-    /**
-     * Constructor for RenderFunction, which returns a new instance of this
-     * class.
-     *
-     * @param context
-     * @param signature
-     */
     public RenderFunction(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }

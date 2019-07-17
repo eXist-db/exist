@@ -769,9 +769,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      * Run a database recovery if required. This method is called once during
      * startup from {@link org.exist.storage.BrokerPool}.
      *
-     * @param broker that will perform the operation
-     * @return true if successfull
-     * @throws EXistException in case of an eXist-db error
+     * @param broker the database broker
+     * @return true if recovery was run, false otherwise
+     * @throws EXistException if a database error occurs
      */
     public boolean runRecovery(final DBBroker broker) throws EXistException {
         final boolean forceRestart = conf.getProperty(PROPERTY_RECOVERY_FORCE_RESTART, false);
@@ -795,7 +795,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     }
 
     /**
-     * @return the class loader used when this BrokerPool was configured.
+     * Returns the class loader used when this BrokerPool was configured.
+     *
+     * @return the classloader
      */
     public ClassLoader getClassLoader() {
         return this.classLoader;
@@ -1090,7 +1092,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      * Creates an inactive broker for the database instance.
      *
      * @return The broker
-     * @throws EXistException in case of an eXist-db error
+     * @throws EXistException if the broker cannot be created
      */
     protected DBBroker createBroker() throws EXistException {
         //TODO : in the future, don't pass the whole configuration, just the part relevant to brokers

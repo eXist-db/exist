@@ -43,7 +43,7 @@ import org.exist.xquery.value.Type;
 /**
  * Implements function fn:exactly-one().
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunExactlyOne extends Function {
 	protected static final Logger logger = LogManager.getLogger(FunExactlyOne.class);

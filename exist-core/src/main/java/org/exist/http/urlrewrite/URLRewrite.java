@@ -116,7 +116,11 @@ public abstract class URLRewrite {
     /**
      * Resolve the target of this rewrite rule against the current request context.
      *
+     * @param request the request wrapper
+     *
      * @return the new target path excluding context path
+     *
+     * @throws ServletException if an error occurs
      */
     protected String resolve(final XQueryURLRewrite.RequestWrapper request) throws ServletException {
         final String path = request.getInContextPath();

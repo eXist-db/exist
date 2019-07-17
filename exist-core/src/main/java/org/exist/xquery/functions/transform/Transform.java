@@ -56,7 +56,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class Transform extends BasicFunction {
 

@@ -42,7 +42,6 @@ public class BufferStats {
 		this.pageFails = fails;
 	}
 
-
 	public int getPageFails() {
 		return pageFails;
 	}

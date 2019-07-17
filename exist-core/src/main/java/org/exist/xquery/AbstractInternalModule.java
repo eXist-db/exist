@@ -34,7 +34,7 @@ import org.exist.xquery.value.Sequence;
  * in name or the number of expected arguments. It is thus possible to implement
  * similar XQuery functions in one single class.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author ljo
  *
  */

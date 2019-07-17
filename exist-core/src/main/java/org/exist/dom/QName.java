@@ -477,7 +477,7 @@ public class QName implements Comparable<QName> {
          * @param prefix The namepspace prefix
          * @param defaultNS the default namespace to use if no namespace prefix is present.
          * @return WildcardLocalPartQName
-         * @exception IllegalQNameException if no namespace URI is mapped to the prefix
+         * @throws IllegalQNameException if no namespace URI is mapped to the prefix
          */
         public static WildcardLocalPartQName parseFromPrefix(final Context context, final String prefix,
                                                              final String defaultNS) throws IllegalQNameException {
@@ -503,7 +503,7 @@ public class QName implements Comparable<QName> {
          * @param context the xquery context
          * @param prefix The namepspace prefix
          * @return WildcardLocalPartQName
-         * @exception IllegalQNameException if no namespace URI is mapped to the prefix
+         * @throws IllegalQNameException if no namespace URI is mapped to the prefix
          */
         public static WildcardLocalPartQName parseFromPrefix(final Context context, final String prefix)
                 throws IllegalQNameException {

@@ -58,7 +58,7 @@ public interface SystemTask {
 	 * 
 	 * @param broker a DBBroker object that can be used
 	 * 
-	 * @throws EXistException in case of an eXist-db error
+	 * @throws EXistException if a database error occurs
 	 */
 	void execute(DBBroker broker) throws EXistException;
 	

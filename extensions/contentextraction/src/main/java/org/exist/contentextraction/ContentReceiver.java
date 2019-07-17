@@ -77,9 +77,9 @@ public class ContentReceiver implements Receiver {
     }
 
     /**
-     *  Get the result of the content extraction
+     * Get the result of the content extraction.
      * 
-     * @return 
+     * @return the result sequence.
      */
     public Sequence getResult() {
         return result;

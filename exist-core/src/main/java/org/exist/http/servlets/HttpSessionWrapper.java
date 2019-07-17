@@ -17,8 +17,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
  */
 package org.exist.http.servlets;
 
@@ -28,32 +26,34 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class HttpSessionWrapper implements SessionWrapper {
 
 	private HttpSession session;
 
 	/**
-	 * @return the javax.servlet.ServletContext
+	 * Get the Servlet Context
+	 *
+	 * @return the servlet context
 	 */
 	public ServletContext getServletContext() {
 		return session.getServletContext();
 	}
 
 	/**
-	 * 
+	 * @param session The HTTP Session
 	 */
 	public HttpSessionWrapper(HttpSession session) {
 		this.session = session;
 	}
 
 	/**
-	 * @param arg0
+	 * @param name the name of the attribute
 	 * @return Returns the session attribute object or null
 	 */
-	public Object getAttribute(String arg0) {
-		return session.getAttribute(arg0);
+	public Object getAttribute(String name) {
+		return session.getAttribute(name);
 	}
 
 	/**
@@ -92,7 +92,7 @@ public class HttpSessionWrapper implements SessionWrapper {
 	}
 
 	/**
-	 * 
+	 * Invalidate the session.
 	 */
 	public void invalidate() {
 		session.invalidate();
@@ -106,25 +106,25 @@ public class HttpSessionWrapper implements SessionWrapper {
     }
 
 	/**
-	 * @param arg0
+	 * @param name the name of the attribute
 	 */
-	public void removeAttribute(String arg0) {
-		session.removeAttribute(arg0);
+	public void removeAttribute(String name) {
+		session.removeAttribute(name);
 	}
 
 	/**
-	 * @param arg0
-	 * @param arg1
+	 * @param name the name of the attribute
+	 * @param value the value of the attribute
 	 */
-	public void setAttribute(String arg0, Object arg1) {
-		session.setAttribute(arg0, arg1);
+	public void setAttribute(String name, Object value) {
+		session.setAttribute(name, value);
 	}
 
 	/**
-	 * @param arg0
+	 * @param interval the maximum inactive interval
 	 */
-	public void setMaxInactiveInterval(int arg0) {
-		session.setMaxInactiveInterval(arg0);
+	public void setMaxInactiveInterval(int interval) {
+		session.setMaxInactiveInterval(interval);
 	}
 
 }

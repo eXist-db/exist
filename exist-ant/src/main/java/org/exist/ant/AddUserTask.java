@@ -34,7 +34,7 @@ import java.net.URISyntaxException;
 /**
  * an ant task to add a user.
  *
- * @author  peter.klotz@blue-elephant-systems.com
+ * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  */
 public class AddUserTask extends UserTask {
     private String name;

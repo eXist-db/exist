@@ -154,26 +154,12 @@ public class MessageListFunctions extends BasicFunction
 		"X-Priority"
 	};
 
-	/**
-	 * MessageListFunctions Constructor
-	 * 
-	 * @param context	The Context of the calling XQuery
-	 */
 	public MessageListFunctions( XQueryContext context, FunctionSignature signature )
 	{
 		super( context, signature );
     }
 
-	/**
-	 * evaluate the call to the xquery get-message-list function,
-	 * it is really the main entry point of this class
-	 * 
-	 * @param args		arguments from the get-message-list() function call
-	 * @param contextSequence	the Context Sequence to operate on (not used here internally!)
-	 * @return		A sequence representing the result of the get-message-list() function call
-	 * 
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
+	@Override
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
 		if( isCalledAs( "get-message-list" ) ) {
@@ -224,8 +210,7 @@ public class MessageListFunctions extends BasicFunction
 			
 		return( new IntegerValue( MailModule.storeMessageList( context, msgList, folderHandle ) ) );
 	}
-	
-	
+
 	private Sequence searchMessageList( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
 		Message[] msgList;
@@ -257,8 +242,7 @@ public class MessageListFunctions extends BasicFunction
 			
 		return( new IntegerValue( MailModule.storeMessageList( context, msgList, folderHandle ) ) );
 	}
-	
-	
+
 	private void prefetchMessages( Folder folder, Message[] msgList ) throws MessagingException
 	{
 		// Prefetch all the key information and headers
@@ -271,7 +255,6 @@ public class MessageListFunctions extends BasicFunction
         }
 		folder.fetch( msgList, fp );
 	}
-
 
 	private Sequence getMessageListAsXML( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
@@ -450,7 +433,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		return( ret );
 	}
-	
+
 	private String formatDate( Date date ) 
 	{
 		String formatted = "";
@@ -463,8 +446,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		return( formatted );
 	}
-	
-	
+
 	private Sequence closeMessageList( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
 		// was a msgList handle specified?
@@ -531,8 +513,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		return( st );
 	}
-	
-	
+
 	private SearchTerm parseChildSearchTerm( Node terms ) throws XPathException
 	{
 		// Parent only allows a single child search term
@@ -551,8 +532,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		return( st );
 	}
-	
-	
+
 	private SearchTerm[] parseChildSearchTerms( Node terms ) throws XPathException
 	{
 		// Parent allows multiple child search terms
@@ -573,8 +553,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		return st.toArray(new SearchTerm[st.size()]);
 	}
-	
-	
+
 	private SearchTerm parseFromTerm( Node terms ) throws XPathException
 	{
 		SearchTerm	st = null;
@@ -589,8 +568,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		return( st );
 	}
-	
-	
+
 	private SearchTerm parseSubjectTerm( Node terms ) throws XPathException
 	{
 		SearchTerm	st = null;
@@ -605,8 +583,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		return( st );
 	}
-	
-	
+
 	private SearchTerm parseBodyTerm( Node terms ) throws XPathException
 	{
 		SearchTerm	st = null;
@@ -621,8 +598,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		return( st );
 	}
-	
-	
+
 	private SearchTerm parseRecipientTerm( Node terms ) throws XPathException
 	{
 		SearchTerm	st = null;
@@ -654,8 +630,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		return( st );
 	}
-	
-	
+
 	private SearchTerm parseHeaderTerm( Node terms ) throws XPathException
 	{
 		SearchTerm	st = null;
@@ -675,8 +650,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		return( st );
 	}
-	
-	
+
 	private SearchTerm parseFlagTerm( Node terms ) throws XPathException
 	{
 		SearchTerm	st = null;
@@ -712,8 +686,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		return( st );
 	}
-	
-	
+
 	private SearchTerm parseSentDateTerm( Node terms ) throws XPathException
 	{
 		SearchTerm	st = null;
@@ -744,8 +717,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		return( st );
 	}
-	
-	
+
 	private SearchTerm parseReceivedDateTerm( Node terms ) throws XPathException
 	{
 		SearchTerm	st = null;
@@ -776,8 +748,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		return( st );
 	}
-	
-	
+
 	private int parseComparisonAttribute( Node terms ) throws XPathException
 	{
 		int  cp = ComparisonTerm.EQ;
@@ -806,5 +777,4 @@ public class MessageListFunctions extends BasicFunction
 		
 		return( cp );
 	}
-	
 }

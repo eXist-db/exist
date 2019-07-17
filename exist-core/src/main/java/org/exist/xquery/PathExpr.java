@@ -40,7 +40,7 @@ import org.xmldb.api.base.CompiledExpression;
  * PathExpr is just a sequence of XQuery/XPath expressions, which will be called
  * step by step.
  *
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author perig
  * @author ljo
  */

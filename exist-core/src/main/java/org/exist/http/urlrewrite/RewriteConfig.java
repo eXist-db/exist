@@ -92,9 +92,11 @@ public class RewriteConfig {
     /**
      * Lookup the given path in the static mappings table.
      *
-     * @param path          path to look up
-     * @param staticMapping don't return redirects to other controllers, just static mappings
-     *                      to servlets.
+     * @param path the path to look up
+     * @param serverName the servers name
+     * @param staticMapping don't return redirects to other controllers, just static mappings to servlets.
+     * @param copyFrom the urlrewrite rule to copy from or null
+     *
      * @return the URLRewrite instance for the mapping or null if none was found
      */
     public synchronized URLRewrite lookup(String path, final String serverName, final boolean staticMapping, final URLRewrite copyFrom) {

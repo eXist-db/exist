@@ -34,12 +34,21 @@ import org.exist.storage.txn.Txn;
 public class RemoveEmptyPageLoggable extends AbstractBFileLoggable {
 
     protected long page;
-
+    
+    /**
+     * @param fileId the file id
+     * @param transaction the database transaction
+     * @param pageNum the page number
+     */
     public RemoveEmptyPageLoggable(Txn transaction, byte fileId, long pageNum) {
         super(BFile.LOG_REMOVE_PAGE, fileId, transaction);
         this.page = pageNum;
     }
 
+    /**
+     * @param broker the database broker
+     * @param transactionId the transaction id
+     */
     public RemoveEmptyPageLoggable(DBBroker broker, long transactionId) {
         super(broker, transactionId);
     }

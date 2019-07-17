@@ -55,7 +55,7 @@ import java.util.ArrayList;
  * @author wolf
  *
  *         slightly modified by:
- * @author peter.klotz@blue-elephant-systems.com
+ * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  */
 public class XMLDBStoreTask extends AbstractXMLDBTask {
     private File mimeTypesFile = null;

@@ -31,20 +31,18 @@ import org.w3c.dom.NodeList;
 public class Replace extends Modification {
 
 	/**
-	 * @param broker
-	 * @param docs
-	 * @param selectStmt
-	 * @param namespaces
-	 * @param variables
+     * @param broker the database broker.
+     * @param docs the document working set.
+     * @param selectStmt the select statement.
+     * @param namespaces the namespaces.
+     * @param variables the variables.
 	 */
 	public Replace(DBBroker broker, DocumentSet docs, String selectStmt,
 			Map<String, String> namespaces, Map<String, Object> variables) {
 		super(broker, docs, selectStmt, namespaces, variables);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xupdate.Modification#process()
-	 */
+	@Override
 	public long process(Txn transaction) throws PermissionDeniedException, LockException,
 			EXistException, XPathException, TriggerException {
 		final NodeList children = content;
@@ -110,9 +108,7 @@ public class Replace extends Modification {
         return modifications;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xupdate.Modification#getName()
-	 */
+	@Override
 	public String getName() {
 		return XUpdateProcessor.REPLACE;
 	}

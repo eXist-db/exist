@@ -32,7 +32,7 @@ import org.exist.storage.DBBroker;
 /**
  * Default implementation of an {@link org.exist.xquery.ExternalModule}.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class ExternalModuleImpl implements ExternalModule {
 

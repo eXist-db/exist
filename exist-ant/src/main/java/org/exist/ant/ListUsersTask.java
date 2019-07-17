@@ -32,7 +32,7 @@ import org.exist.security.Account;
 /**
  * an ant task to list users.
  *
- * @author  peter.klotz@blue-elephant-systems.com
+ * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  */
 public class ListUsersTask extends UserTask
 {

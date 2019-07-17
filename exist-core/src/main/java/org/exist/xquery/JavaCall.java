@@ -40,7 +40,7 @@ import org.exist.xquery.value.Type;
  * This class handles all function calls who's namespace URI
  * starts with "java:".
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class JavaCall extends Function {
 

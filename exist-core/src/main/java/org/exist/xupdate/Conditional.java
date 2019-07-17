@@ -50,10 +50,11 @@ public class Conditional extends Modification {
 	private List<Modification> modifications = new ArrayList<Modification>(5);
 	
 	/**
-	 * @param broker
-	 * @param docs
-	 * @param selectStmt
-	 * @param namespaces
+	 * @param broker the database broker.
+	 * @param docs the document working set.
+	 * @param selectStmt the select statement.
+	 * @param namespaces the namespaces.
+	 * @param variables the variables.
 	 */
 	public Conditional(DBBroker broker, DocumentSet docs, String selectStmt,
 			Map<String, String> namespaces, Map<String, Object> variables) {
@@ -64,9 +65,7 @@ public class Conditional extends Modification {
 		modifications.add(mod);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xupdate.Modification#process()
-	 */
+	@Override
 	public long process(Txn transaction) throws PermissionDeniedException, LockException,
 			EXistException, XPathException, TriggerException {
 		LOG.debug("Processing xupdate:if ...");
@@ -114,9 +113,7 @@ public class Conditional extends Modification {
 			{return 0;}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xupdate.Modification#getName()
-	 */
+	@Override
 	public String getName() {
 		return "if";
 	}

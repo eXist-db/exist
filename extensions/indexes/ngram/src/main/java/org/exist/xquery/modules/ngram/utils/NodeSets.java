@@ -41,7 +41,8 @@ public final class NodeSets {
      * @param transform
      *            the function to be applied to all NodeProxys in nodes
      * @return a new NodeSet containing the non-null results of f applied to the NodeProxys in nodes
-     * @throws XPathException
+     *
+     * @throws XPathException if an error occurs with the query.
      */
     public static NodeSet transformNodes(final NodeSet nodes, final Function<NodeProxy, NodeProxy> transform) throws XPathException {
         final NodeSet result = new ExtArrayNodeSet();

@@ -82,7 +82,7 @@ public abstract class Modification extends AbstractExpression
         super(context);
         this.select = select;
         this.value = value;
-        this.triggers = new Int2ObjectOpenHashMap<>(10);
+        this.triggers = new Int2ObjectOpenHashMap<>();
     }
 
     public int getCardinality() {

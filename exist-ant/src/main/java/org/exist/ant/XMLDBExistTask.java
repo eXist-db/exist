@@ -32,23 +32,15 @@ import org.xmldb.api.base.XMLDBException;
 
 
 /**
- * an ant task to check for the existence of a collection or resource to be used as a ant condition.
+ * An ant task to check for the existence of a collection or resource to be used as a ant condition.
  *
- * @author  peter.klotz@blue-elephant-systems.com
+ * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  */
 public class XMLDBExistTask extends AbstractXMLDBTask implements Condition
 {
     private String resource = null;
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return  returns true if the eval is successful.
-     *
-     * @throws  BuildException
-     *
-     * @see     org.apache.tools.ant.taskdefs.condition.Condition#eval()
-     */
+    @Override
     public boolean eval() throws BuildException
     {
         boolean exist = false;
@@ -91,9 +83,9 @@ public class XMLDBExistTask extends AbstractXMLDBTask implements Condition
 
 
     /**
-     * DOCUMENT ME!
+     * Set the resource.
      *
-     * @param  resource
+     * @param resource the resource.
      */
     public void setResource( String resource )
     {

@@ -33,7 +33,7 @@ import java.util.Map;
  * An external library module implemented in XQuery and loaded
  * through the "import module" directive.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public interface ExternalModule extends Module {
 

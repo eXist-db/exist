@@ -39,7 +39,17 @@ public class UpdatePageLoggable extends BTAbstractLoggable {
     protected long pageNum;
     protected int nValues;
     protected int nPointers;
-
+    
+    /**
+     * @param transaction the database transaction
+     * @param fileId the file id
+     * @param pageNum the page number
+     * @param prefix the prefix
+     * @param values the values
+     * @param nValues the number of values
+     * @param pointers the pointers
+     * @param nPointers the number of pointers
+     */
     public UpdatePageLoggable(Txn transaction, byte fileId, long pageNum, Value prefix, Value values[], int nValues,
             long pointers[], int nPointers) {
         super(BTree.LOG_UPDATE_PAGE, fileId, transaction);
@@ -51,13 +61,15 @@ public class UpdatePageLoggable extends BTAbstractLoggable {
         this.nPointers = nPointers;
     }
 
+    /**
+     * @param broker the database broker
+     * @param transactionId the transaction id
+     */
     public UpdatePageLoggable(DBBroker broker, long transactionId) {
         super(BTree.LOG_UPDATE_PAGE, broker, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
-     */
+    @Override
     public void write(ByteBuffer out) {
         super.write(out);
         out.putLong(pageNum);
@@ -80,9 +92,7 @@ public class UpdatePageLoggable extends BTAbstractLoggable {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
-     */
+    @Override
     public void read(ByteBuffer in) {
         super.read(in);
         pageNum = in.getLong();
@@ -111,9 +121,7 @@ public class UpdatePageLoggable extends BTAbstractLoggable {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#getLogSize()
-     */
+    @Override
     public int getLogSize() {
         int len = super.getLogSize() + 14 + (nPointers * 8) + prefix.getLength();
         for (int i = 0; i < nValues; i++)
@@ -121,10 +129,12 @@ public class UpdatePageLoggable extends BTAbstractLoggable {
         return len;
     }
 
+    @Override
     public void redo() throws LogException {
         getStorage().redoUpdatePage(this);
     }
-    
+
+    @Override
     public String dump() {
         return super.dump() + " - updated page " + pageNum;
     }

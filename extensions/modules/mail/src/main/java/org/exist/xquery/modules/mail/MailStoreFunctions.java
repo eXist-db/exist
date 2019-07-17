@@ -79,26 +79,12 @@ public class MailStoreFunctions extends BasicFunction
 			)
 		};
 
-	/**
-	 * MailStoreFunctions Constructor
-	 * 
-	 * @param context	The Context of the calling XQuery
-	 */
 	public MailStoreFunctions( XQueryContext context, FunctionSignature signature )
 	{
 		super( context, signature );
     }
 
-	/**
-	 * evaluate the call to the xquery get-store function,
-	 * it is really the main entry point of this class
-	 * 
-	 * @param args		arguments from the get-store() function call
-	 * @param contextSequence	the Context Sequence to operate on (not used here internally!)
-	 * @return		A sequence representing the result of the get-store() function call
-	 * 
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
+	@Override
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
 		if( isCalledAs( "get-mail-store" ) ) {
@@ -110,7 +96,6 @@ public class MailStoreFunctions extends BasicFunction
 		throw( new XPathException( this, "Invalid function name" ) );	
 	}
 
-		
 	private Sequence getMailStore( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
 		Store store;
@@ -146,7 +131,6 @@ public class MailStoreFunctions extends BasicFunction
 			
 		return( new IntegerValue( MailModule.storeStore( context, store ) ) );
 	}
-
 
 	private Sequence closeMailStore( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{

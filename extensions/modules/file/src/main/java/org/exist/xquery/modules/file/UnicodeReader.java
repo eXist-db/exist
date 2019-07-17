@@ -97,10 +97,11 @@ public class UnicodeReader extends Reader
 	
 	
 	/**
-    * Get stream encoding or NULL if stream is uninitialized.
-    * Call init() or read() method to initialize it.
-    */
-	
+     * Get stream encoding or NULL if stream is uninitialized.
+     * Call init() or read() method to initialize it.
+	 *
+	 * @return the encoding
+     */
 	public String getEncoding() 
 	{
 		String ret = null;
@@ -114,10 +115,11 @@ public class UnicodeReader extends Reader
 	
 	
 	/**
-    * Read-ahead four bytes and check for BOM marks. Extra bytes are
-    * unread back to the stream, only BOM bytes are skipped.
-    */
-	
+     * Read-ahead four bytes and check for BOM marks. Extra bytes are
+     * unread back to the stream, only BOM bytes are skipped.
+	 *
+	 * @throws IOException if an I/O error occurs
+     */
 	protected void init() throws IOException 
 	{
 		if( internalIn2 == null ) {

@@ -33,6 +33,12 @@ import java.util.Map;
  */
 public class Statistics {
 
+    /**
+     * Generate index statistics.
+     *
+     * @param conf the configuration
+     * @param indexStats the index stats
+     */
     public static void generateIndexStatistics(Configuration conf, Map<String, IndexStats> indexStats) {
         final DOMFile dom = (DOMFile) conf.getProperty(DOMFile.CONFIG_KEY_FOR_FILE);
         if(dom != null)

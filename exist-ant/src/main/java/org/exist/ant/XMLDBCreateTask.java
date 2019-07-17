@@ -35,17 +35,15 @@ import java.net.URISyntaxException;
 
 
 /**
- * an ant task to create a empty collection.
+ * An ant task to create a empty collection.
  *
- * @author  peter.klotz@blue-elephant-systems.com
+ * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  */
 public class XMLDBCreateTask extends AbstractXMLDBTask
 {
     private String collection = null;
 
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
+    @Override
     public void execute() throws BuildException
     {
         if( uri == null ) {
@@ -108,9 +106,9 @@ public class XMLDBCreateTask extends AbstractXMLDBTask
 
 
     /**
-     * DOCUMENT ME!
+     * Set the Collection.
      *
-     * @param  collection
+     * @param collection the collection.
      */
     public void setCollection( String collection )
     {

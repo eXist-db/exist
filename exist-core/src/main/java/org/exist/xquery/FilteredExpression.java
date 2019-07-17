@@ -35,7 +35,7 @@ import org.exist.xquery.value.*;
  * for $i in (1 to 10)[$i mod 2 = 0], $a[1], (doc("test.xml")//section)[2]. Other predicate
  * expressions are handled by class {@link org.exist.xquery.LocationStep}.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FilteredExpression extends AbstractExpression {
 
