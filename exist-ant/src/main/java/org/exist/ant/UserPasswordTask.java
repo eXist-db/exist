@@ -24,6 +24,7 @@ package org.exist.ant;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 
+import org.exist.security.internal.Password;
 import org.xmldb.api.base.XMLDBException;
 
 import org.exist.security.Account;
@@ -39,9 +40,7 @@ public class UserPasswordTask extends UserTask
     private String name;
     private String secret;
 
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
+    @Override
     public void execute() throws BuildException
     {
         super.execute();
@@ -58,8 +57,8 @@ public class UserPasswordTask extends UserTask
                 log( "Setting password for user " + name, Project.MSG_INFO );
 
                 if( secret != null ) {
-                    usr.setPassword( secret );
-                    this.service.updateUser(usr);
+                    usr.setCredential(new Password(usr, secret));
+                    this.service.updateAccount(usr);
                 }
 
             } else {

@@ -152,6 +152,11 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
 
                 group.assertCanModifyGroup(subject);
 
+
+                if (groups.size() <= 1) {
+                    throw new PermissionDeniedException("You cannot remove the primary group of an account.");
+                }
+
                 //remove from the group
                 groups.remove(group);
                 break;

@@ -51,6 +51,8 @@ public interface SecurityManager extends Configurable {
    String DBA_USER = "admin";
    String GUEST_GROUP = "guest";
    String GUEST_USER = "guest";
+   String UNKNOWN_GROUP = "nogroup";
+   String UNKNOWN_USER = "nobody";
 
    void attach(DBBroker broker, Txn transaction) throws EXistException;
    

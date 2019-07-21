@@ -833,7 +833,6 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
                 } else if(name != null) {
                 	if (realm.hasAccount(name)) {
                 		final Integer oldId = saving.get(document.getURI());
-                		
             			final Integer newId = conf.getPropertyInteger("id");
             			
             			//XXX: resolve conflicts on ids!!! 
@@ -849,6 +848,13 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             			}
                 	} else {
                 		final Account account = new AccountImpl( realm, conf );
+                		if (account.getGroups().length == 0) {
+                		    try {
+                                account.setPrimaryGroup(realm.getGroup(SecurityManager.UNKNOWN_GROUP));
+                            } catch (final PermissionDeniedException e) {
+                		        throw new ConfigurationException("Account has no group, unable to default to " + SecurityManager.UNKNOWN_GROUP + ": " + e.getMessage(), e);
+                            }
+                        }
                         registerAccount(account);
                 		realm.registerAccount(account);
                 	}

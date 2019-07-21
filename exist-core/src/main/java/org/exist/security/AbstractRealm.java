@@ -164,6 +164,15 @@ public abstract class AbstractRealm implements Realm, Configurable {
                         final Account account;
                         try {
                             account = new AccountImpl(r, conf);
+
+                            // ensure that the account has at least a primary group
+                            if (account.getGroups().length == 0) {
+                                try {
+                                    account.setPrimaryGroup(getGroup(SecurityManager.UNKNOWN_GROUP));
+                                } catch (final PermissionDeniedException e) {
+                                    throw new ConfigurationException("Account has no group, unable to default to " + SecurityManager.UNKNOWN_GROUP + ": " + e.getMessage(), e);
+                                }
+                            }
                         } catch (Throwable e) {
                             LOG.error("Account object can't be built from '" + doc.getFileURI() + "'", e);
                             return;
@@ -175,6 +184,15 @@ public abstract class AbstractRealm implements Realm, Configurable {
                         //set collection
                         if(account.getId() > 0) {
                             ((AbstractPrincipal)account).setCollection(broker, collectionAccounts);
+
+                            // ensure that the account has at least a primary group
+                            if (account.getGroups().length == 0) {
+                                try {
+                                    account.setPrimaryGroup(getGroup(SecurityManager.UNKNOWN_GROUP));
+                                } catch (final PermissionDeniedException e) {
+                                    throw new ConfigurationException("Account has no group, unable to default to " + SecurityManager.UNKNOWN_GROUP + ": " + e.getMessage(), e);
+                                }
+                            }
                         }
                     }
                 });
@@ -356,6 +374,12 @@ public abstract class AbstractRealm implements Realm, Configurable {
             if (!(account.hasGroup(group))) {
                 updatingAccount.remGroup(group);
             }
+        }
+
+        // if the primary group has changed, then make sure to update it!
+        if (account.getPrimaryGroup() != null
+                && (!account.getPrimaryGroup().equals(updatingAccount.getPrimaryGroup()))) {
+            updatingAccount.setPrimaryGroup(getGroup(account.getPrimaryGroup()));
         }
 
         final String passwd = account.getPassword();
