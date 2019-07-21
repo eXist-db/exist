@@ -88,7 +88,7 @@ public class SecurityManagerModule extends AbstractInternalModule {
 
         new FunctionDef(FindGroupFunction.FNS_LIST_GROUPS, FindGroupFunction.class),
         new FunctionDef(FindGroupFunction.FNS_FIND_GROUPS_BY_GROUPNAME, FindGroupFunction.class),
-        new FunctionDef(FindGroupFunction.FNS_FIND_GROUPS_WHERE_GROUPNAME_CONTANINS, FindGroupFunction.class),
+        new FunctionDef(FindGroupFunction.FNS_FIND_GROUPS_WHERE_GROUPNAME_CONTAINS, FindGroupFunction.class),
         new FunctionDef(FindGroupFunction.FNS_GET_USER_GROUPS, FindGroupFunction.class),
         new FunctionDef(FindGroupFunction.FNS_GET_USER_PRIMARY_GROUP, FindGroupFunction.class),
         new FunctionDef(FindGroupFunction.FNS_GROUP_EXISTS, FindGroupFunction.class),

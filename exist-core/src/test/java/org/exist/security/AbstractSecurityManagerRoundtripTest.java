@@ -71,9 +71,18 @@ public abstract class AbstractSecurityManagerRoundtripTest {
 
         } finally {
             //cleanup
-            try { ums.removeGroup(group1); } catch(Exception e) {}
-            try { ums.removeGroup(group2); } catch(Exception e) {}
-            try { ums.removeAccount(user); } catch(Exception e) {}
+            final Account u1 = ums.getAccount(userName);
+            if (u1 != null) {
+                ums.removeAccount(u1);
+            }
+            final Group g1 = ums.getGroup(group1Name);
+            if (g1 != null) {
+                ums.removeGroup(g1);
+            }
+            final Group g2 = ums.getGroup(group2Name);
+            if (g2 != null) {
+                ums.removeGroup(g2);
+            }
         }
     }
 
@@ -124,9 +133,18 @@ public abstract class AbstractSecurityManagerRoundtripTest {
 
         } finally {
             //cleanup
-            try { ums.removeGroup(group1); } catch(Exception e) {}
-            try { ums.removeGroup(group2); } catch(Exception e) {}
-            try { ums.removeAccount(user); } catch(Exception e) {}
+            final Account u1 = ums.getAccount(userName);
+            if (u1 != null) {
+                ums.removeAccount(u1);
+            }
+            final Group g1 = ums.getGroup(group1Name);
+            if (g1 != null) {
+                ums.removeGroup(g1);
+            }
+            final Group g2 = ums.getGroup(group2Name);
+            if (g2 != null) {
+                ums.removeGroup(g2);
+            }
         }
     }
 
@@ -175,9 +193,18 @@ public abstract class AbstractSecurityManagerRoundtripTest {
 
         } finally {
             //cleanup
-            try { ums.removeGroup(group1); } catch(Exception e) {}
-            try { ums.removeGroup(group2); } catch(Exception e) {}
-            try { ums.removeAccount(user); } catch(Exception e) {}
+            final Account u1 = ums.getAccount(userName);
+            if (u1 != null) {
+                ums.removeAccount(u1);
+            }
+            final Group g1 = ums.getGroup(group1Name);
+            if (g1 != null) {
+                ums.removeGroup(g1);
+            }
+            final Group g2 = ums.getGroup(group2Name);
+            if (g2 != null) {
+                ums.removeGroup(g2);
+            }
         }
     }
 }

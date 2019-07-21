@@ -337,6 +337,24 @@ public class UserDialog extends javax.swing.JFrame {
     }//GEN-LAST:event_btnCreateActionPerformed
 
     protected void createUser() {
+
+        //0 - determine the primary group
+        final GroupAider primaryGroup;
+        if (getPrimaryGroup() == null) {
+            if (cbPersonalGroup.isSelected()) {
+                primaryGroup = new GroupAider(txtUsername.getText());
+            } else {
+                final String firstGroup = memberOfGroupsModel.firstElement();
+                if (firstGroup != null) {
+                    primaryGroup = new GroupAider(firstGroup);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Could not determine primary group for user '" + txtUsername.getText() + "'. User must create personal group or belong to at least one existing group", "Create User Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
+        } else {
+            primaryGroup = new GroupAider(getPrimaryGroup());
+        }
         
         //1 - create personal group
         GroupAider groupAider = null;
@@ -373,7 +391,7 @@ public class UserDialog extends javax.swing.JFrame {
         
         //set the primary group
         try {
-            userAider.setPrimaryGroup(new GroupAider(getPrimaryGroup()));
+            userAider.setPrimaryGroup(primaryGroup);
         } catch(final PermissionDeniedException pde) {
             JOptionPane.showMessageDialog(this, "Could not set primary group '" + getPrimaryGroup() + "' of user '" + txtUsername.getText() + "': " + pde.getMessage(), "Create User Error", JOptionPane.ERROR_MESSAGE);
             return;
@@ -408,7 +426,7 @@ public class UserDialog extends javax.swing.JFrame {
             availableGroupsModel.removeElement(value.toString());
             
             //is this the first group added to the user?
-            if(getMemberOfGroupsListModel().getSize() == 1) { 
+            if(getMemberOfGroupsListModel().getSize() == 1 && !cbPersonalGroup.isSelected()) {
                 final String firstGroup = (String)getMemberOfGroupsListModel().getElementAt(0);
                 setPrimaryGroup(firstGroup);
                 getMemberOfGroupsListCellRenderer().setCellOfInterest(getPrimaryGroup());
@@ -423,21 +441,28 @@ public class UserDialog extends javax.swing.JFrame {
             memberOfGroupsModel.removeElement(group);
             
             //are we removing the users primary group?
-            if(getPrimaryGroup().equals(group)) {
-                if(getMemberOfGroupsListModel().getSize() == 0) { 
+            if(group.equals(getPrimaryGroup())) {
+                if(getMemberOfGroupsListModel().getSize() == 0 || cbPersonalGroup.isSelected()) {
                     setPrimaryGroup(null);
                 } else {
                     //default to the first group
                     final String firstGroup = (String)getMemberOfGroupsListModel().getElementAt(0);
                     setPrimaryGroup(firstGroup);
                 }
-                getMemberOfGroupsListCellRenderer().setCellOfInterest(getPrimaryGroup());
             }
+            getMemberOfGroupsListCellRenderer().setCellOfInterest(getPrimaryGroup());
         }
     }//GEN-LAST:event_btnRemoveGroupActionPerformed
 
     private void cbmiPrimaryGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbmiPrimaryGroupActionPerformed
-        this.primaryGroup = (String)getMemberOfGroupsListModel().getElementAt(lstMemberOfGroups.getSelectedIndex());
+        final String newPrimaryGroup = (String)getMemberOfGroupsListModel().getElementAt(lstMemberOfGroups.getSelectedIndex());
+        if (newPrimaryGroup.equals(this.primaryGroup)) {
+            // deselect existing primary group
+            this.primaryGroup = null;
+        } else {
+            // select new primary group
+            this.primaryGroup = newPrimaryGroup;
+        }
         getMemberOfGroupsListCellRenderer().setCellOfInterest(primaryGroup);
     }//GEN-LAST:event_cbmiPrimaryGroupActionPerformed
 

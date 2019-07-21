@@ -6,6 +6,8 @@ import org.easymock.EasyMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.verify;
 import static org.easymock.EasyMock.replay;
+import static org.junit.Assert.assertEquals;
+
 import org.exist.Database;
 import org.exist.config.ConfigurationException;
 import org.exist.storage.BrokerPool;
@@ -45,11 +47,11 @@ public class AbstractAccountTest {
 
         verify(mockRealm, mockDatabase, mockBroker, mockGroup, partialMockAccount);
 
-        //TODO calls on assert from AbstractAccountXQuerty
+        //TODO calls on assert from AbstractAccountXQuery
     }
 
     @Test
-    public void remGroup_calls_assertCanModifyGroupForEachGroup() throws PermissionDeniedException, NoSuchMethodException, ConfigurationException {
+    public void remGroup_calls_assertCanModifyGroupForEachGroup() throws PermissionDeniedException, ConfigurationException {
         DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
         AbstractRealm mockRealm = EasyMock.createMock(AbstractRealm.class);
         Database mockDatabase = EasyMock.createMock(Database.class);
@@ -72,7 +74,11 @@ public class AbstractAccountTest {
         replay(mockRealm, mockDatabase, mockBroker, mockGroup);
 
         //test
-        partialMockAccount.remGroup(groupName);
+        try {
+            partialMockAccount.remGroup(groupName);
+        } catch (final PermissionDeniedException e) {
+            assertEquals("You cannot remove the primary group of an account.", e.getMessage());
+        }
 
         verify(mockRealm, mockDatabase, mockBroker, mockGroup);
 

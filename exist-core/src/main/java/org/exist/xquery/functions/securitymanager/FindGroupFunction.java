@@ -65,7 +65,7 @@ public class FindGroupFunction extends BasicFunction {
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching group names")
     );
     
-    public final static FunctionSignature FNS_FIND_GROUPS_WHERE_GROUPNAME_CONTANINS = new FunctionSignature(
+    public final static FunctionSignature FNS_FIND_GROUPS_WHERE_GROUPNAME_CONTAINS = new FunctionSignature(
         qnFindGroupsWhereGroupnameContains,
         "Finds groups whoose group name contains the string fragment",
         new SequenceType[] {

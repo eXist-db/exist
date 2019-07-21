@@ -76,7 +76,7 @@ public class GroupManagementFunction extends BasicFunction {
 
     public final static FunctionSignature FNS_REMOVE_GROUP = new FunctionSignature(
         qnRemoveGroup,
-        "Remove a User Group. Any resources owned by the group will be moved to the 'guest' group.",
+        "Remove a User Group.",
         new SequenceType[]{
             new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The group-id to delete")
         },
