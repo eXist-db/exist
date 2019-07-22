@@ -53,10 +53,10 @@ declare function local:join($value){
 };
 
 let $map := map {
-    "args" := [
+    "args": [
         "'a'",
         map {
-            "args":=["'x'","'y'"]
+            "args": ["'x'","'y'"]
         },
         "'b'"]
 }
