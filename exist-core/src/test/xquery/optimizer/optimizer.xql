@@ -366,7 +366,7 @@ declare
     %test:assertXPath("$result//stats:index[@type = 'range'][@optimization = 2]")
 function ot:optimize-map($name as xs:string) {
     let $map := map {
-        "key" := collection($ot:COLLECTION)//address[name = $name]/city/text()
+        "key": collection($ot:COLLECTION)//address[name = $name]/city/text()
     }
     return
         $map("key")
