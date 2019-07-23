@@ -9,9 +9,9 @@ declare namespace test="http://exist-db.org/xquery/xqsuite";
 declare variable $c:cache-name := "test" ;
 declare variable $c:simple-options := map {};
 declare variable $c:maximumSize := 5;
-declare variable $c:maximumSize-options := map { "maximumSize" := $c:maximumSize };
+declare variable $c:maximumSize-options := map { "maximumSize": $c:maximumSize };
 declare variable $c:expireAfterAccess := 1000;
-declare variable $c:expireAfterAccess-options := map { "expireAfterAccess" := $c:expireAfterAccess };
+declare variable $c:expireAfterAccess-options := map { "expireAfterAccess": $c:expireAfterAccess };
 
 declare function c:_create-simple() {
     cache:create($c:cache-name, $c:simple-options)

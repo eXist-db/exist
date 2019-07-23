@@ -1338,7 +1338,13 @@ mapConstructor throws XPathException
 
 mapAssignment throws XPathException
 	:
-	exprSingle COLON^ ( EQ! )? exprSingle
+    (exprSingle COLON! EQ!) => exprSingle COLON^ eq:EQ^ exprSingle
+    {
+        throw new XPathException(#eq.getLine(), #eq.getColumn(), ErrorCodes.XPST0003,
+               "The ':=' notation is no longer accepted in map expressions: use ':' instead.");
+    }
+    |
+	exprSingle COLON^ exprSingle
 	;
 
 arrayConstructor throws XPathException
