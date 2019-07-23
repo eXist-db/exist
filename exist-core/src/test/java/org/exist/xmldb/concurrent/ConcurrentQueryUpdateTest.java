@@ -29,7 +29,7 @@ public class ConcurrentQueryUpdateTest extends ConcurrentTestBase {
 		final Collection col = getTestCollection();
 		final XQueryService service = (XQueryService) col.getService("XQueryService", "1.0");
 		final ResourceSet result = service.query("distinct-values(//node/@id)");
-		assertEquals(result.getSize(), 41);
+		assertEquals(41, result.getSize());
 		for (int i = 0; i < result.getSize(); i++) {
 			final XMLResource next = (XMLResource) result.getResource((long)i);
 			next.getContent();

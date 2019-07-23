@@ -1641,7 +1641,10 @@ public class PermissionsFunctionChownTest {
 
         try (final DBBroker broker = pool.get(Optional.of(sm.getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+
             removeUser(sm, USERRM_NAME);
+
+            transaction.commit();
         }
     }
 
