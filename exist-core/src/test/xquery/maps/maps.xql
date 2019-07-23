@@ -2,10 +2,9 @@ xquery version "3.0";
 
 module namespace mt="http://exist-db.org/xquery/test/maps";
 
-import module namespace map="http://www.w3.org/2005/xpath-functions/map";
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
 
-declare variable $mt:daysOfWeek :=
+declare %private function mt:getMapFixture () {
     map {
         "Su" : "Sunday",
         "Mo" : "Monday",
@@ -14,13 +13,32 @@ declare variable $mt:daysOfWeek :=
         "Th" : "Thursday",
         "Fr" : "Friday",
         "Sa" : "Saturday"
-    };
+    }
+};
 
-declare %test:assertEquals("Wednesday") function mt:createLiteral1() {
+declare variable $mt:daysOfWeek := mt:getMapFixture();
+
+declare variable $mt:integerKeys := map {
+    1 : "Sunday",
+    2 : "Monday",
+    3 : "Tuesday",
+    4 : "Wednesday",
+    5 : "Thursday",
+    6 : "Friday",
+    7 : "Saturday"
+};
+
+declare variable $mt:mapOfSequences := map {0: (), 1 : ("One", "Two") };
+
+declare
+    %test:assertEquals("Wednesday")
+function mt:createLiteral1() {
     $mt:daysOfWeek("We")
 };
 
-declare %test:assertEquals("Wednesday") function mt:createWithIntKeys() {
+declare
+    %test:assertEquals("Wednesday")
+function mt:createWithIntKeys() {
     let $map := map {
         1 : "Sunday",
         2 : "Monday",
@@ -34,24 +52,44 @@ declare %test:assertEquals("Wednesday") function mt:createWithIntKeys() {
         $map(4)
 };
 
-declare %test:assertEquals(20) function mt:createWithFunctionValue() {
+declare
+    %test:assertError("err:XPST0003")
+function mt:draftSyntaxNotAllowed () {
+    (: this needs to be evaled, to catch the static compilation error :)
+    util:eval('map { 1 := 1 }')
+};
+
+declare
+    %test:assertEquals(20)
+function mt:createWithFunctionVariable() {
     let $fn := function($p) { $p * 2 }
     let $map := map { "callback" : $fn }
     return
         map:get($map, "callback")(10)
 };
 
-declare %test:assertEquals("Sunday") function mt:createWithEntry() {
+declare
+    %test:assertEquals(2)
+function mt:createWithFunctionValue() {
+    let $map := map { "callback" : function($p) { $p * 2 } }
+    return
+        map:get($map, "callback")(1)
+};
+
+declare
+    %test:assertEquals("Sunday")
+function mt:createWithEntry() {
     let $days := ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
     let $map := map:merge($days ! map:entry(substring(., 1, 2), .))
     return
         $map("Su")
 };
 
-declare %test:assertXPath("count($result) = 8") %test:assertXPath("7 = $result")
+declare
+    %test:assertXPath("count($result) = 8")
+    %test:assertXPath("8 = $result")
 function mt:createFromTwoMaps() {
-    let $week := map{0: "Sonntag", 1: "Montag", 2: "Dienstag", 3: "Mittwoch", 4: "Donnerstag", 5: "Freitag", 6: "Samstag"}
-    let $map := map:merge(($week, map { 7 : "Sonntag" }))
+    let $map := map:merge(($mt:integerKeys, map { 8 : "Caturday" }))
     return
         map:keys($map)
 };
@@ -98,68 +136,79 @@ declare
     %test:assertEquals(4)
 function mt:size() {
     let $m := map {
-      "Cats" : "Good",
-      "Dogs" : "Bad",
-      1 : "Chicken",
-      2 : "Duck"
+        "Cats": "Good",
+        "Dogs": "Bad",
+        1: "Chicken",
+        2: "Duck"
     }
     return
-      map:size($m)
+        map:size($m)
 };
 
 declare
-    %test:assertEquals("Sonntag", "Dienstag", "Donnerstag", "Samstag")
+    %test:assertEquals("Sunday", "Tuesday", "Thursday", "Saturday")
 function mt:for-each() {
-    let $week := map{0: "Sonntag", 1: "Montag", 2: "Dienstag", 3: "Mittwoch", 4: "Donnerstag", 5: "Freitag", 6: "Samstag"}
-    return
-        map:for-each($week, function($key, $value) {
-            if ($key mod 2 = 0) then
-                $value
-            else
-                ()
-        })
+    map:for-each($mt:integerKeys, function($key, $value) {
+        if ($key mod 2) then ($value) else ()
+    })
 };
 
 declare
     %test:assertEquals(3)
 function mt:for-each2() {
-    let $nm := map:merge(map:for-each(map{"a":1, "b":2}, function($k, $v){map:entry($k, $v+1)}))
+    let $nm := map:merge(
+        map:for-each(
+            map { "a": 1, "b": 2 },
+            function($k, $v) { map:entry($k, $v + 1) }
+        )
+    )
+
     return
         $nm?b
 };
 
-declare %test:assertEquals("Sunday") function mt:createWithSingleKey() {
-    let $map := map:entry("Su", "Sunday")
+declare
+    %test:assertEquals("Sunday")
+function mt:createWithSingleKey() {
+    let $map := map { "Su": "Sunday" }
     return
         $map("Su")
 };
 
-declare %test:assertEquals("Samstag", "Sonnabend") function mt:overwriteKeyInNewMap() {
-    let $week := map {0: "Sonntag", 1: "Montag", 2: "Dienstag", 3: "Mittwoch", 4: "Donnerstag", 5: "Freitag", 6: "Samstag"}
-    let $map := map:merge(($week, map { 6 :  "Sonnabend" }))
+declare
+    %test:assertEquals("Saturday", "Caturday")
+function mt:overwriteKeyInNewMap() {
+    let $specialWeek := map:merge(($mt:integerKeys, map { 7 : "Caturday" }))
     return
-        ($week(6), $map(6))
+        ($mt:integerKeys(7), $specialWeek(7))
 };
 
-declare %test:assertEmpty function mt:mapEmptyValue() {
-    let $map := map {0: (), 1 : ("One", "Two") }
+declare
+    %test:assertEmpty
+function mt:mapEmptyValue() {
+    let $map := $mt:mapOfSequences
     return
         $map(0)
 };
 
-declare %test:assertEquals("One", "Two") function mt:mapSequenceValue() {
-    let $map := map {0: (), 1 : ("One", "Two") }
+declare
+    %test:assertEquals("One", "Two")
+function mt:mapSequenceValue() {
+    let $map := $mt:mapOfSequences
     return
         $map(1)
 };
 
-declare %test:assertEquals("Heinz", "Roland", "Uschi", "Verona") function mt:keyTypeDate () {
+declare
+    %test:assertEquals("Heinz", "Roland", "Uschi", "Verona")
+function mt:orderBzKeyTypeDate () {
     let $map := map {
-        xs:date("1975-03-19") : "Uschi",
-        xs:date("1980-01-22") : "Verona",
-        xs:date("1960-06-14") : "Heinz",
-        xs:date("1963-10-21") : "Roland"
+        xs:date("1975-03-19"): "Uschi",
+        xs:date("1980-01-22"): "Verona",
+        xs:date("1960-06-14"): "Heinz",
+        xs:date("1963-10-21"): "Roland"
     }
+
     for $key in map:keys($map)
     let $name := $map($key)
     order by $name ascending
@@ -167,140 +216,150 @@ declare %test:assertEquals("Heinz", "Roland", "Uschi", "Verona") function mt:key
         $name
 };
 
-declare %test:assertEquals(0, "One") function mt:mixedKeyTypes() {
-    let $map := map{ "Zero" : 0, 1 : "One" }
+declare
+    %test:assertEquals(0, "One")
+function mt:mixedKeyTypes() {
+    let $map := map{ "Zero": 0, 1: "One" }
     return
         ($map("Zero"), $map(1))
 };
 
-declare %test:assertTrue function mt:containsOnEmptyValue() {
-    let $map := map{0: () }
+declare
+    %test:assertTrue
+function mt:containsOnEmptyValue() {
+    let $map := map{ 0: () }
     return
         map:contains($map, 0)
 };
 
-declare %test:assertEquals("Fr", "Mo", "Sa", "Su", "Th", "Tu", "We") function mt:keys() {
-    let $days := ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-    let $map := map:merge($days ! map:entry(substring(., 1, 2), .))
-    for $day in map:keys($map)
+declare
+    %test:assertEquals("Fr", "Mo", "Sa", "Su", "Th", "Tu", "We")
+function mt:keysInFor() {
+    for $day in map:keys(mt:getMapFixture())
     order by $day ascending
     return
         $day
 };
 
-declare %test:assertEquals("Su") function mt:keysOnMapWithSingleKey() {
+declare
+    %test:assertEquals("Su")
+function mt:keysOnMapWithSingleKey() {
     let $map := map:entry("Su", "Sunday")
     return
         map:keys($map)
 };
 
-declare %test:assertEquals("Fr", "Mo", "Sa", "Su", "Th") function mt:remove() {
-    let $days := ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-    let $map := map:merge($days ! map:entry(substring(., 1, 2), .))
+declare
+    %test:assertFalse
+function mt:remove() {
+    let $map := mt:getMapFixture()
+    return
+        map:contains(map:remove($map, "Tu"), "Tu")
+};
+
+declare
+    %test:assertEquals("Fr", "Mo", "Sa", "Su", "Th")
+function mt:remove2() {
+    let $map := mt:getMapFixture()
     for $day in map:keys(map:remove(map:remove($map, "We"), "Tu"))
     order by $day
     return
         $day
 };
 
-declare %test:assertFalse function mt:remove() {
-    let $days := ("Monday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-    let $map := map:merge($days ! map:entry(substring(., 1, 2), .))
-    return
-        map:contains(map:remove($map, "Tu"), "Tu")
-};
 
-declare %test:assertEmpty function mt:removeSingleKey() {
-    let $map := map:entry("Su", "Sunday")
-    let $empty := map:remove($map, "Su")
+declare
+    %test:assertEmpty
+function mt:removeSingleKey() {
+    let $empty := map:remove(map { "Su": "Sunday" }, "Su")
     return
         map:keys($empty)
 };
 
-declare %test:assertTrue function mt:contains() {
+declare
+    %test:assertTrue
+function mt:contains() {
     map:contains($mt:daysOfWeek, "We")
 };
 
-declare %test:assertFalse function mt:containsOnMissingKey() {
+declare
+    %test:assertFalse
+function mt:containsOnMissingKey() {
     map:contains($mt:daysOfWeek, "Al")
 };
 
-declare %test:assertTrue function mt:containsSingleKey() {
-    let $map := map:entry("Su", "Sunday")
-    return
-        map:contains($map, "Su")
+declare
+    %test:assertTrue
+function mt:containsSingleKey() {
+    map:contains(map { "Su": "Sunday" }, "Su")
 };
 
-declare %test:assertEquals("Hello world") function mt:computedKeyValue() {
+declare
+    %test:assertEquals("Hello world")
+function mt:computedKeyValue() {
     let $map := map { 2 + 1 : concat("Hello ", "world") }
     return
         $map(3)
 };
 
-declare %test:assertEquals("false", "true") function mt:immutability() {
-    let $map := map {
-        "Su" : "Sunday",
-        "Mo" : "Monday",
-        "Tu" : "Tuesday",
-        "We" : "Wednesday",
-        "Th" : "Thursday",
-        "Fr" : "Friday"
-    }
-    let $map2 := map:merge(($map, map:entry("Sa", "Saturday")))
-    return
-        (map:contains($map, "Sa"), map:contains($map2, "Sa"))
+declare
+    %test:assertEquals("false", "true")
+function mt:immutabilityMerge() {
+    let $original := mt:getMapFixture()
+    let $derived := map:merge(($original, map:entry("Ca", "Caturday")))
+    return (
+        map:contains($original, "Ca"),
+        map:contains($derived, "Ca")
+    )
 };
 
-declare %test:assertTrue function mt:immutability2() {
-    let $map := map {
-        "Su" : "Sunday",
-        "Mo" : "Monday",
-        "Tu" : "Tuesday",
-        "We" : "Wednesday",
-        "Th" : "Thursday",
-        "Fr" : "Friday"
-    }
-    let $map2 := map:remove($map, "Fr")
-    return
-        map:contains($map, "Fr")
+declare
+    %test:assertEquals("true", "false")
+function mt:immutabilityRemove() {
+    let $original := mt:getMapFixture()
+    let $derived := map:remove($original, "Fr")
+    return (
+        map:contains($original, "Fr"),
+        map:contains($derived, "Fr")
+    )
 };
 
-declare %test:assertFalse function mt:immutability3() {
-    let $map := map {
-        "Su" : "Sunday",
-        "Mo" : "Monday",
-        "Tu" : "Tuesday",
-        "We" : "Wednesday",
-        "Th" : "Thursday",
-        "Fr" : "Friday"
-    }
-    let $map2 := map:remove($map, "Fr")
-    return
-        map:contains($map2, "Fr")
+declare
+    %test:assertEquals("false", "true")
+function mt:immutabilityPut() {
+    let $original := mt:getMapFixture()
+    let $derived := map:put($original, "Ca", "Caturday")
+    return (
+        map:contains($original, "Ca"),
+        map:contains($derived, "Ca")
+    )
 };
 
-declare %test:assertTrue function mt:immutability4() {
-
-    let $daysOfWeek :=  map {   "Sunday" : 1,
-                                 "Monday" : 2,
-                                 "Tuesday" : 3,
-                                 "Wednesday" : 4,
-                                 "Thursday" : 5,
-                                 "Friday" : 6,
-                                 "Saturday" : 7
-                             }
-    let $workDays := map:remove($daysOfWeek, "Sunday")
-
-    return map:contains($workDays,"Monday")
-};
-
-declare %test:assertEquals("Sunday") function mt:sequenceType1() {
+declare
+    %test:assertEquals("Sunday")
+function mt:sequenceType1() {
     let $map := map { 1 : "Sunday" }
     return
         map:get(mt:mapTest($map), 1)
 };
 
-declare %private function mt:mapTest($map as map(*)) as map(xs:integer, xs:string) {
+declare
+    %test:assertEquals("Sunday")
+function mt:sequenceType2() {
+    let $map := map { 1 : "Sunday" }
+    return
+        map:get(mt:mapTestFail($map), 1)
+};
+
+declare
+    %private
+function mt:mapTest($map as map(*)) as map(xs:integer, xs:string) {
+    $map
+};
+
+declare
+    %private
+function mt:mapTestFail($map as map(*)) as map(xs:date, xs:string) {
     $map
 };
 
@@ -403,7 +462,10 @@ function mt:lookupMultipleMaps() {
 declare
     %test:assertEquals("W0342", "M0535")
 function mt:lookupMultipleMaps2() {
-    ( map { "id" : "W0342" }, map { "id" : "M0535" } )?id
+    (
+        map { "id" : "W0342" },
+        map { "id" : "M0535" }
+    )?id
 };
 
 declare
@@ -425,6 +487,15 @@ function mt:lookupParenthesized($key as xs:string) {
     let $map := map { "one": 1, "two": "2" }
     return
         $map?(lower-case($key))
+};
+
+declare
+    %test:assertEquals(1)
+function mt:lookupParenthesized() {
+    let $f := function () { "one" }
+    let $map := map { "one": 1 }
+    return
+        $map($f())
 };
 
 declare
@@ -474,13 +545,13 @@ declare
     %test:assertEquals(5)
 function mt:qname() {
     let $a := 1
-    let $m := map {  $a: fn:string-length("hello") }
+    let $m := map { $a: fn:string-length("hello") }
     return
-            $m?1
+        $m?1
 };
 
 declare
     %test:assertEmpty
 function mt:no-such-entry() {
-    map:get(map:entry("foo", "bar"), "baz")
+    map:get(map {"foo": "bar"}, "baz")
 };

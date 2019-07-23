@@ -15,7 +15,7 @@
     <!-- 
     <test output="text" id="inline-function-001">
         <task>Try to call a %public function</task>
-        <code><![CDATA[xquery version "3.0";
+        <code><![CDATA[xquery version "3.1";
 
 declare function local:external-func($data) {
         let $case := function ($result-generator) {
@@ -29,14 +29,14 @@ declare function local:external-func($data) {
 
 local:external-func(
 map {
-	'string' := 'some string'
+	"string": "some string"
 })]]></code>
         <expected>error</expected>
     </test>
     -->
     <test output="text" id="inline-function-002">
         <task></task>
-        <code><![CDATA[xquery version "3.0";
+        <code><![CDATA[xquery version "3.1";
 
 declare function local:external-func($data) {
         let $case := function ($result-generator) {
@@ -44,13 +44,13 @@ declare function local:external-func($data) {
         }
 
         return $case(function ($data) {
-                $data('string')
+                $data("string")
         })
 };
 
 local:external-func(
 map {
-	'string' := 'some string'
+	"string": "some string"
 })]]></code>
         <expected>some string</expected>
     </test>
