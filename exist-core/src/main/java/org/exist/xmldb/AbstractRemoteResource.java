@@ -104,7 +104,13 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     }
 
     /**
-     * @deprecated Here for backward compatibility, instead use {@see org.xmldb.api.base.Resource#getContent()}
+     * Get the data.
+     *
+     * @return the data
+     *
+     * @throws XMLDBException if an error occurs whilst retrieving the data.
+     *
+     * @deprecated instead use {@link org.xmldb.api.base.Resource#getContent()}
      */
     @Deprecated
     protected byte[] getData()

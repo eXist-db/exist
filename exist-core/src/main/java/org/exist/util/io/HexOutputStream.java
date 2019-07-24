@@ -37,7 +37,7 @@ import org.apache.commons.codec.binary.Hex;
  *
  * Based on org.apache.commons.codec.binary.Base64OutputStream
  *
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class HexOutputStream extends FilterOutputStream {
 
@@ -47,8 +47,8 @@ public class HexOutputStream extends FilterOutputStream {
     /**
      * Creates a HexOutputStream such that all data written is Hex-encoded to the original provided OutputStream.
      *
-     * @param out
-     *            OutputStream to wrap.
+     * @param out the OutputStream to wrap.
+     * @param doEncode true to encode
      */
     public HexOutputStream(final OutputStream out, final boolean doEncode) {
         super(out);
@@ -58,10 +58,8 @@ public class HexOutputStream extends FilterOutputStream {
     /**
      * Writes the specified <code>byte</code> to this output stream.
      *
-     * @param i
-     *            source byte
-     * @throws IOException
-     *             if an I/O error occurs.
+     * @param i source byte
+     * @throws IOException if an I/O error occurs.
      */
     @Override
     public void write(final int i) throws IOException {

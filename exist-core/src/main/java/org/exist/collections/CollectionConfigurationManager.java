@@ -97,15 +97,12 @@ public class CollectionConfigurationManager implements BrokerPoolService {
      * Add a new collection configuration. The XML document is passed as a
      * string.
      * 
-     * @param txn
-     *            The transaction that will hold the WRITE locks until they are
+     * @param txn The transaction that will hold the WRITE locks until they are
      *            released by commit()/abort()
-     * @param broker
-     * @param collection
-     *            the collection to which the configuration applies.
-     * @param config
-     *            the xconf document as a String.
-     * @throws CollectionConfigurationException
+     * @param broker the eXist-db broker
+     * @param collection  the collection to which the configuration applies.
+     * @param config the xconf document as a String.
+     * @throws CollectionConfigurationException if config is invalid
      */
     public void addConfiguration(final Txn txn, final DBBroker broker, final Collection collection, final String config) throws CollectionConfigurationException {
         try {
@@ -147,12 +144,9 @@ public class CollectionConfigurationManager implements BrokerPoolService {
      * settings depend on the current environment, in particular the
      * availability of trigger or index classes.
      * 
-     * @param broker
-     *            DBBroker
-     * @param config
-     *            the configuration to test
-     * @throws CollectionConfigurationException
-     *             if errors were detected
+     * @param broker DBBroker
+     * @param config the configuration to test
+     * @throws CollectionConfigurationException if errors were detected
      */
     public void testConfiguration(DBBroker broker, String config) throws CollectionConfigurationException {
         try {
@@ -200,7 +194,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
      * This creates a new CollectionConfiguration object and recursively scans
      * the collection hierarchy for available configurations.
      *
-     * @param collection
+     * @param collection to retrieve configuration for
      * @return The collection configuration
      */
     protected CollectionConfiguration getConfiguration(final Collection collection) {
@@ -313,7 +307,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
      * configurations for the corresponding collection and its sub-collections
      * will be cleared.
      * 
-     * @param collectionPath
+     * @param collectionPath to the collection for which configuration will be invalidated
      */
     public void invalidateAll(final XmldbURI collectionPath) {
 
@@ -349,7 +343,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
      * Called by the collection cache if a collection is removed from the cache.
      * This will delete the cached configuration instance for this collection.
      * 
-     * @param collectionPath
+     * @param collectionPath to the collection for which configuration will be invalidated
      * @param pool if not null: clear query cache
      */
     public void invalidate(final XmldbURI collectionPath, final BrokerPool pool) {
@@ -370,9 +364,10 @@ public class CollectionConfigurationManager implements BrokerPoolService {
      * Check if the collection exists below the system collection. If not,
      * create it.
      * 
-     * @param broker
-     * @param uri
-     * @throws EXistException
+     * @param broker eXist-db broker
+     * @param txn according transaction
+     * @param uri to the collection to create
+     * @throws EXistException if something goes wrong
      */
     private void checkCreateCollection(final DBBroker broker, final Txn txn, final XmldbURI uri) throws EXistException {
         try {
@@ -390,9 +385,9 @@ public class CollectionConfigurationManager implements BrokerPoolService {
     /**
      * Create a stored default configuration document for the root collection
      * 
-     * @param broker
-     *            The broker which will do the operation
-     * @throws EXistException
+     * @param broker The broker which will do the operation
+     * @throws EXistException if something goes wrong
+     * @throws PermissionDeniedException if user does not have sufficient rights
      */
     public void checkRootCollectionConfig(DBBroker broker) throws EXistException, PermissionDeniedException {
         // Copied from the legacy conf.xml in order to make the test suite work

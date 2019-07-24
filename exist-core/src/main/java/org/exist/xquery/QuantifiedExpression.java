@@ -34,7 +34,7 @@ import org.exist.xquery.value.Type;
  * Represents a quantified expression: "some ... in ... satisfies", 
  * "every ... in ... satisfies".
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class QuantifiedExpression extends BindingExpression {
 	
@@ -42,10 +42,7 @@ public class QuantifiedExpression extends BindingExpression {
 	public final static int EVERY = 1;
 	
 	private final int mode;
-	
-	/**
-	 * @param context
-	 */
+
 	public QuantifiedExpression(XQueryContext context, int mode) {
 		super(context);
 		switch (mode) {

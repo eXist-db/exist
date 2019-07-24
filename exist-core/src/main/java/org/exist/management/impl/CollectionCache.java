@@ -28,7 +28,7 @@ import javax.management.ObjectName;
 /**
  * JMX MXBean for examining the CollectionCache
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class CollectionCache implements CollectionCacheMXBean {
 

@@ -36,7 +36,7 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 /**
  * Module function definitions for xmldb module.
  *
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author Luigi P. Bai, finder@users.sf.net, 2004
  * @author ljo
  */

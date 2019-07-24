@@ -121,6 +121,8 @@ public class ExistCollection extends ExistResource {
 
     /**
      * Retrieve full URIs of all Collections in this collection.
+     *
+     * @return All collections URIs in the current collection.
      */
     public List<XmldbURI> getCollectionURIs() {
         final List<XmldbURI> collectionURIs = new ArrayList<>();
@@ -144,6 +146,8 @@ public class ExistCollection extends ExistResource {
 
     /**
      * Retrieve full URIs of all Documents in the collection.
+     *
+     * @return  All document URIs in the current collection.
      */
     public List<XmldbURI> getDocumentURIs() {
         final List<XmldbURI> documentURIs = new ArrayList<>();

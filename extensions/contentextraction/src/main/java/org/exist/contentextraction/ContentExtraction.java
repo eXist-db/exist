@@ -38,7 +38,7 @@ import org.xml.sax.SAXException;
 
 
 /**
- * @author Dulip Withanage <dulip.withanage@gmail.com>
+ * @author <a href="mailto:dulip.withanage@gmail.com">Dulip Withanage</a>
  * @version 1.0
  */
 public class ContentExtraction {

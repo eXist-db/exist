@@ -52,7 +52,7 @@ import java.lang.annotation.Target;
  * </pre>
 
  *
- * @author <a href="mailto:adam@evolvedbinary.com>Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = {ElementType.METHOD, ElementType.PARAMETER})
@@ -64,6 +64,7 @@ public @interface EnsureUnlocked {
      * Only needed if the annotation is not placed on a
      * {@link org.exist.collections.Collection} or {@link org.exist.dom.persistent.DocumentImpl}
      * parameter or return type.
+     * @return the lock type
      */
     Lock.LockType type() default Lock.LockType.UNKNOWN;
 }

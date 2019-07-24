@@ -460,6 +460,8 @@ public class DoubleValue extends NumericValue {
 
     /**
      * size writen by {link #serialize(short, boolean)}
+     *
+     * @return the size in number of bytes
      */
     public int getSerializedSize() {
         return 1 + 8;

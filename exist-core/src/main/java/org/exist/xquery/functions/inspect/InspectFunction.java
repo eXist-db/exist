@@ -64,7 +64,7 @@ public class InspectFunction extends BasicFunction {
      *             and list all functions called from the current function.
      * @param builder builder used to create the XML
      * @return nodeNr of the generated element
-     * @throws XPathException
+     * @throws XPathException in case of dynamic error
      */
     public static int generateDocs(FunctionSignature sig, UserDefinedFunction func, MemTreeBuilder builder) throws XPathException {
         XQDocHelper.parse(sig);
@@ -157,8 +157,8 @@ public class InspectFunction extends BasicFunction {
      * Inspect the provided function implementation and return an XML fragment listing all
      * functions called from the function.
      *
-     * @param function
-     * @param builder
+     * @param function the function to inspect
+     * @param builder to write output to
      */
     public static void generateDependencies(UserDefinedFunction function, MemTreeBuilder builder) {
         FunctionCallVisitor visitor = new FunctionCallVisitor();

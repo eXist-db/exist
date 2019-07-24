@@ -115,6 +115,7 @@ public interface Permission {
      * Set the owner group by group id
      *
      * @param  id  The group id
+     * @throws PermissionDeniedException is user has not sufficient rights
      */
     void setGroup(int id) throws PermissionDeniedException;
 
@@ -122,6 +123,7 @@ public interface Permission {
      * Set the owner group
      *
      * @param  group  The group value
+     * @throws PermissionDeniedException is user has not sufficient rights
      */
     void setGroup(Group group) throws PermissionDeniedException;
 
@@ -129,6 +131,7 @@ public interface Permission {
      * Set the owner group
      *
      * @param  name The group's name
+     * @throws PermissionDeniedException is user has not sufficient rights
      */
     void setGroup(String name) throws PermissionDeniedException;
 
@@ -143,6 +146,7 @@ public interface Permission {
      * This is typically used in setGID situations.
      * 
      * @param other Another permissions object
+     * @throws PermissionDeniedException is user has not sufficient rights
      */
     void setGroupFrom(Permission other) throws PermissionDeniedException;
     
@@ -150,6 +154,7 @@ public interface Permission {
      * Sets mode for group
      *
      * @param  perm  The new group mode value
+     * @throws PermissionDeniedException is user has not sufficient rights
      */
     void setGroupMode(int perm) throws PermissionDeniedException;
 
@@ -157,6 +162,7 @@ public interface Permission {
      * Set the owner passed as account id
      *
      * @param  id  The new owner id
+     * @throws PermissionDeniedException is user has not sufficient rights
      */
     void setOwner(int id) throws PermissionDeniedException;
 
@@ -164,13 +170,16 @@ public interface Permission {
      * Set the owner passed as User object
      *
      * @param  user  The new owner value
+     * @throws PermissionDeniedException is user has not sufficient rights
      */
     void setOwner(Account user) throws PermissionDeniedException;
+
 
     /**
      * Set the owner
      *
      * @param  user  The new owner value
+     * @throws PermissionDeniedException is user has not sufficient rights
      */
     void setOwner(String user) throws PermissionDeniedException;
 
@@ -187,28 +196,32 @@ public interface Permission {
      * in new applications as it is deprecated
      * 
      * @param modeStr The new mode
-     * @exception  SyntaxException  Description of the Exception
+     * @throws PermissionDeniedException is user has not sufficient rights
+     * @throws SyntaxException  Description of the Exception
      */
     void setMode(String modeStr) throws SyntaxException, PermissionDeniedException;
 
     /**
      *  Set mode
      *
-     *@param  mode  The new mode value
+     * @param  mode  The new mode value
+     * @throws PermissionDeniedException is user has not sufficient rights
      */
     void setMode(int mode) throws PermissionDeniedException;
 
     /**
      *  Set mode for others
      *
-     *@param  perm  The new mode value
+     * @param  perm  The new mode value
+     * @throws PermissionDeniedException is user has not sufficient rights
      */
     void setOtherMode(int perm) throws PermissionDeniedException;
 
     /**
      *  Set mode for the owner
      *
-     *@param  other  The new mode value
+     * @param  other  The new mode value
+     * @throws PermissionDeniedException is user has not sufficient rights
      */
     void setOwnerMode(int other) throws PermissionDeniedException;
 

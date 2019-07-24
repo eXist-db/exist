@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class NamedNodeMapImpl implements NamedNodeMap {
 
@@ -83,7 +83,7 @@ public class NamedNodeMapImpl implements NamedNodeMap {
      *
      * The INode#getQName method is called
      * to get the name for the map item
-     *
+     * @param arg INode to add
      * @return The previous node of the same name if it exists
      */
     public Node setNamedItem(final INode arg) throws DOMException {

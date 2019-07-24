@@ -34,7 +34,7 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.http.Cookie;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
  public interface RequestWrapper {
 

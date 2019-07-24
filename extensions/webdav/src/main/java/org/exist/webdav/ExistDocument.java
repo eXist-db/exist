@@ -146,6 +146,10 @@ public class ExistDocument extends ExistResource {
 
     /**
      * Stream document to framework.
+     *
+     * @param os Outputstream.
+     * @throws IOException IO exception
+     * @throws PermissionDeniedException permission is denied.
      */
     public void stream(OutputStream os) throws IOException, PermissionDeniedException {
 
@@ -286,6 +290,8 @@ public class ExistDocument extends ExistResource {
 
     /**
      * Get lock token from database.
+     *
+     * @return current lock token.
      */
     public LockToken getCurrentLock() {
 
@@ -344,6 +350,12 @@ public class ExistDocument extends ExistResource {
 
     /**
      * Lock document.
+     *
+     * @param inputToken Lock token.
+     * @return Input lock token.
+     * @throws PermissionDeniedException Permission denied
+     * @throws DocumentAlreadyLockedException Document is already locked
+     * @throws EXistException Generic existdb exception
      */
     public LockToken lock(LockToken inputToken) throws PermissionDeniedException,
             DocumentAlreadyLockedException, EXistException {

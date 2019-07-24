@@ -39,21 +39,21 @@ import org.apache.commons.io.input.ClosedInputStream;
  * access; as such this class is not thread-safe.
  * It also adds the method {@link FastByteArrayOutputStream#toFastByteInputStream()}.
  *
- * Modified by Adam Retter <adam@exist-db.org>.
+ * Modified by <a href="adam@exist-db.org">Adam Retter</a>
  * Original Apache class header continues below:
  *
  *
  * This class implements an output stream in which the data is
  * written into a byte array. The buffer automatically grows as data
  * is written to it.
- * <p>
+ *
  * The data can be retrieved using <code>toByteArray()</code> and
  * <code>toString()</code>.
- * <p>
+ *
  * Closing a {@code ByteArrayOutputStream} has no effect. The methods in
  * this class can be called after the stream has been closed without
  * generating an {@code IOException}.
- * <p>
+ *
  * This is an alternative implementation of the {@link java.io.ByteArrayOutputStream}
  * class. The original implementation only allocates 32 bytes at the beginning.
  * As this class is designed for heavy duty it starts at 1024 bytes. In contrast
@@ -281,7 +281,7 @@ public class FastByteArrayOutputStream extends OutputStream {
     /**
      * Fetches entire contents of an <code>InputStream</code> and represent
      * same data as result InputStream.
-     * <p>
+     *
      * This method is useful where,
      * <ul>
      * <li>Source InputStream is slow.</li>
@@ -307,7 +307,7 @@ public class FastByteArrayOutputStream extends OutputStream {
     /**
      * Fetches entire contents of an <code>InputStream</code> and represent
      * same data as result InputStream.
-     * <p>
+     *
      * This method is useful where,
      * <ul>
      * <li>Source InputStream is slow.</li>
@@ -367,6 +367,8 @@ public class FastByteArrayOutputStream extends OutputStream {
      * Similar to {@link #toInputStream()}
      * but utilises {@link FastByteArrayInputStream}
      * as opposed to {@link java.io.ByteArrayInputStream}.
+     *
+     * @return the input stream
      */
     public /*synchronized*/ InputStream toFastByteInputStream() {
         int remaining = count;

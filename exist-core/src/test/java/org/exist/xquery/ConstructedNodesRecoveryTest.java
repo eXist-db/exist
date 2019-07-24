@@ -44,7 +44,7 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * Tests for recovery of database corruption after constructed node operations (in-memory nodes)
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  */
 public class ConstructedNodesRecoveryTest {
 

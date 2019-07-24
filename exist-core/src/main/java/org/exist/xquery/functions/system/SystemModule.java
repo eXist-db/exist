@@ -27,7 +27,7 @@ import org.exist.xquery.FunctionDef;
 /**
  * Module function definitions for system module.
  *
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author ljo
  */
 public class SystemModule extends AbstractInternalModule {

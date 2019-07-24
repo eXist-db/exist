@@ -78,7 +78,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * 
  * Data pages are buffered.
  * 
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class BFile extends BTree {
 
@@ -179,11 +179,13 @@ public class BFile extends BTree {
      * with the key. A new entry is created if the key does not
      * yet exist in the database.
      * 
-     * @param key
-     * @param value
+     * @param key the key
+     * @param value the value
      *
-     * @throws ReadOnlyException
-     * @throws IOException
+     * @return the pointer to the storage address
+     *
+     * @throws ReadOnlyException if the BFile is read-only
+     * @throws IOException if an I/O error occurs whilst writing to the BFile
      */
     public long append(final Value key, final ByteArray value)
             throws ReadOnlyException, IOException {
@@ -300,11 +302,11 @@ public class BFile extends BTree {
     /**
      * Remove all entries matching the given query.
      *
-     * @param transaction
-     * @param query
+     * @param transaction the database transaction
+     * @param query the removal query
      *
-     * @throws IOException
-     * @throws BTreeException
+     * @throws IOException if an I/O error occurs whilst writing to the BFile
+     * @throws BTreeException if an error occurs with the tree
      */
     public void removeAll(final Txn transaction, final IndexQuery query) throws IOException, BTreeException {
         // first collect the values to remove, then sort them by their page number
@@ -411,7 +413,9 @@ public class BFile extends BTree {
      * Get the value data associated with the specified key
      * or null if the key could not be found.
      * 
-     * @param key
+     * @param key the key
+     *
+     * @return the value associated with the key, or null if there is no association.
      */
     public Value get(final Value key) {
         try {
@@ -434,8 +438,9 @@ public class BFile extends BTree {
      * Get the value data for the given key as a variable byte
      * encoded input stream.
      * 
-     * @param key
-     * @throws IOException
+     * @param key the key
+     * @return the stream
+     * @throws IOException if an I/O error occurs
      */
     public VariableByteInput getAsStream(final Value key) throws IOException {
         try {
@@ -459,8 +464,9 @@ public class BFile extends BTree {
      * Get the value located at the specified address as a
      * variable byte encoded input stream.
      * 
-     * @param pointer
-     * @throws IOException
+     * @param pointer the pointer to the value
+     * @return the stream
+     * @throws IOException if an I/O error occurs
      */
     public VariableByteInput getAsStream(final long pointer) throws IOException {
         final DataPage page = getDataPage(StorageAddress.pageFromPointer(pointer));
@@ -488,14 +494,14 @@ public class BFile extends BTree {
     /**
      * Returns the value located at the specified address.
      * 
-     * @param p
+     * @param pointer the pointer to the value
      * @return value located at the specified address
      */
-    public Value get(final long p) {
+    public Value get(final long pointer) {
         try {
-            final long pnum = StorageAddress.pageFromPointer(p);
+            final long pnum = StorageAddress.pageFromPointer(pointer);
             final DataPage page = getDataPage(pnum);
-            return get(page, p);
+            return get(page, pointer);
         } catch (final IOException e) {
             LOG.error(e);
         }
@@ -503,10 +509,17 @@ public class BFile extends BTree {
     }
 
     /**
-     * Retrieve value at logical address p from page
+     * Retrieve value at logical address pointer from page
+     *
+     * @param page the data page
+     * @param pointer the pointer to the value
+     *
+     * @return the value or null if there is no value
+     *
+     * @throws IOException if an I/O error occurs
      */
-    protected Value get(final DataPage page, final long p) throws IOException {
-        final short tid = StorageAddress.tidFromPointer(p);
+    protected Value get(final DataPage page, final long pointer) throws IOException {
+        final short tid = StorageAddress.tidFromPointer(pointer);
         final int offset = page.findValuePosition(tid);
         final byte[] data = page.getData();
         if (offset < 0 || offset > data.length) {
@@ -524,7 +537,7 @@ public class BFile extends BTree {
         }
         dataCache.add(page.getFirstPage());
         final Value v = new Value(data, offset + 4, l);
-        v.setAddress(p);
+        v.setAddress(pointer);
         return v;
     }
 
@@ -594,19 +607,18 @@ public class BFile extends BTree {
     /**
      * Put data under given key.
      *
-     * @param key
+     * @param key the key
      * @param data the data (value) to update
      * @param overwrite overwrite if set to true, value will be overwritten if it already exists
      *
      * @return on success the address of the stored value, else UNKNOWN_ADDRESS
-     * @throws ReadOnlyException 
+     * @throws ReadOnlyException if the BFile is read-only
      */
     public long put(final Value key, final byte[] data, final boolean overwrite) throws ReadOnlyException {
         return put(null, key, data, overwrite);
     }
 
-    public long put(final Txn transaction, final Value key, final byte[] data, final boolean overwrite)
-            /* throws ReadOnlyException */ {
+    public long put(final Txn transaction, final Value key, final byte[] data, final boolean overwrite) {
         SanityCheck.THROW_ASSERT(key.getLength() <= fileHeader.getWorkSize(), "Key length exceeds page size!");
         final FixedByteArray buf = new FixedByteArray(data, 0, data.length);
         return put(transaction, key, buf, overwrite);
@@ -907,19 +919,17 @@ public class BFile extends BTree {
 
     /**
      * Update the key/value pair with logical address p and stored in page.
-     * 
-     * @param p
-     *                   Description of the Parameter
-     * @param page
-     *                   Description of the Parameter
-     * @param key
-     *                   Description of the Parameter
-     * @param value
-     *                   Description of the Parameter
-     * @exception BTreeException
-     *                        Description of the Exception
-     * @exception IOException
-     *                        Description of the Exception
+     *
+     * @param transaction the database transaction
+     * @param p the pointer address
+     * @param page the data page
+     * @param key the key
+     * @param value the value
+     *
+     * @return the new pointer
+     *
+     * @throws BTreeException if an error occurs updating the tree
+     * @throws IOException if an I/O error occurs
      */
     protected long update(final Txn transaction, final long p, final DataPage page, final Value key, final ByteArray value)
             throws BTreeException, IOException {
@@ -960,6 +970,9 @@ public class BFile extends BTree {
     
     /**
      * Write loggable to the journal and update the LSN in the page header.
+     *
+     * @param loggable the log entry
+     * @param page the data page
      */
     private void writeToLog(final Loggable loggable, final DataPage page) {
         if(logManager.isPresent()) {
@@ -1821,9 +1834,8 @@ public class BFile extends BTree {
         /**
          * Append a new chunk of data to the page
          *
-         * @param transaction
-         * @param chunk
-         *                   chunk of data to append
+         * @param transaction the database transaction
+         * @param chunk chunk of data to append
          */
         public void append(final Txn transaction, final ByteArray chunk) throws IOException {
             SinglePage nextPage;
@@ -2458,7 +2470,7 @@ public class BFile extends BTree {
     /**
      * Represents a single data page (as opposed to a overflow page).
      * 
-     * @author Wolfgang Meier <wolfgang@exist-db.org>
+     * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
      */
     private final class SinglePage extends DataPage {
 

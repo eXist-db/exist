@@ -40,9 +40,9 @@ public class QueryRewriter {
      * Rewrite the expression to make use of indexes. The method may also return an additional
      * pragma to be added to the extension expression which is inserted by the optimizer.
      *
-     * @param locationStep
-     * @return
-     * @throws XPathException
+     * @param locationStep the location step to rewrite
+     * @return a pragma expression to replace the step or null if not applicable
+     * @throws XPathException in case of a static error
      */
     public Pragma rewriteLocationStep(LocationStep locationStep) throws XPathException {
         return null;

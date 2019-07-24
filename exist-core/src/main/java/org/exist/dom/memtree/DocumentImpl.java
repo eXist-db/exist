@@ -69,10 +69,10 @@ import static org.exist.dom.QName.Validity.ILLEGAL_FORMAT;
 
 /**
  * An in-memory implementation of Document.
- * <p/>
- * <p>This implementation stores all node data in the document object. Nodes from another document, i.e. a persistent document in the database, can be
+ *
+ * This implementation stores all node data in the document object. Nodes from another document, i.e. a persistent document in the database, can be
  * stored as reference nodes, i.e. the nodes are not copied into this document object. Instead a reference is inserted which will only be expanded
- * during serialization.</p>
+ * during serialization.
  *
  * @author wolf
  */
@@ -1015,8 +1015,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     /**
      * Copy the document fragment starting at the specified node to the given document builder.
      *
-     * @param node
-     * @param receiver
+     * @param node node to provide document fragment
+     * @param receiver document builder
      * @throws SAXException DOCUMENT ME!
      */
     public void copyTo(final NodeImpl node, final DocumentBuilderReceiver receiver) throws SAXException {
@@ -1128,8 +1128,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     /**
      * Expand all reference nodes in the current document, i.e. replace them by real nodes. Reference nodes are just pointers to nodes from other
      * documents stored in the database. The XQuery engine uses reference nodes to speed up the creation of temporary doc fragments.
-     * <p/>
-     * <p>This method creates a new copy of the document contents and expands all reference nodes.</p>
+     *
+     * This method creates a new copy of the document contents and expands all reference nodes.
      *
      * @throws DOMException DOCUMENT ME!
      */
@@ -1255,10 +1255,10 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
      * Stream the specified document fragment to a receiver. This method
      * is called by the serializer to output in-memory nodes.
      *
-     * @param serializer
-     * @param node
-     * @param receiver
-     * @throws SAXException
+     * @param serializer the serializer
+     * @param node node to be serialized
+     * @param receiver the receiveer
+     * @throws SAXException DOCUMENT ME
      */
     public void streamTo(final Serializer serializer, NodeImpl node, final Receiver receiver)
         throws SAXException {

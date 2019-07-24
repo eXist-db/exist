@@ -40,7 +40,7 @@ import java.util.GregorianCalendar;
 /**
  * Generic class representing a Milton Resource.
  *
- * @author Dannes Wessels <dannes@exist-db.org>
+ * @author <a href="mailto:dannes@exist-db.org">Dannes Wessels</a>
  */
 public class MiltonResource implements Resource {
 
@@ -174,7 +174,10 @@ public class MiltonResource implements Resource {
     }
 
     /**
-     * Converts an org.exist.dom.persistent.LockToken into com.bradmcevoy.http.LockToken.
+     *  Converts an org.exist.dom.persistent.LockToken into com.bradmcevoy.http.LockToken.
+     * @param timeout Lock time out
+     * @param lockInfo Lock info
+     * @return The lock token
      */
     protected org.exist.dom.persistent.LockToken convertToken(final LockTimeout timeout, final LockInfo lockInfo) {
 
@@ -246,7 +249,10 @@ public class MiltonResource implements Resource {
 
 
     /**
-     * Convert % encoded string back to text
+     * Convert % encoded string back to text.
+     *
+     * @param uri URI pf path
+     * @return decoded path
      */
     protected XmldbURI decodePath(XmldbURI uri) {
 
@@ -267,6 +273,9 @@ public class MiltonResource implements Resource {
 
     /**
      * Convert % encoded string back to text
+     *
+     * @param uri URI of path
+     * @return encoded path
      */
     protected String decodePath(String uri) {
 

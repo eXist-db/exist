@@ -38,10 +38,7 @@ public class ValueOccurrences {
 	private AtomicValue value;
 	private int occurrences = 0;
 	private MutableDocumentSet docs = new DefaultDocumentSet();
-	
-	/**
-	 * 
-	 */
+
 	public ValueOccurrences(AtomicValue value) {
 		this.value = value;
 	}
@@ -53,6 +50,8 @@ public class ValueOccurrences {
 	/**
      * Returns the overall frequency of this term
      * in the document set.
+	 *
+	 * @return the occurrences
      */
 	public int getOccurrences() {
 		return occurrences;
@@ -75,6 +74,8 @@ public class ValueOccurrences {
     /**
      * Returns the number of documents from the set in
      * which the term has been found.
+	 *
+	 * @return the number of documents
      */
     public int getDocuments() {
         return docs.getDocumentCount();

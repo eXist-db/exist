@@ -32,7 +32,7 @@ import org.xmldb.api.base.XMLDBException;
 /**
  * an ant task to list the sub-collections or resources in a collection.
  *
- * @author  peter.klotz@blue-elephant-systems.com
+ * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  */
 public class XMLDBListTask extends AbstractXMLDBTask
 {

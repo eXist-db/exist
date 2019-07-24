@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 /**
  * Implements the fn:subsequence function.
  *
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunSubSequence extends Function {
 
@@ -120,6 +120,7 @@ public class FunSubSequence extends Function {
     /**
      * Creates a Subsequence from a sequence
      *
+     * @param sequence the input sequence
      * @param startLoc the starting location value as passed to {@code fn:subsequence}
      * @param length the length value as passed to {@code fn:subsequence}, or null for all items
      *

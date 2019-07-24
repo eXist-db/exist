@@ -231,6 +231,8 @@ public class IntRangeSet implements Serializable {
 
     /**
      * Get an iterator over the values
+     *
+     * @return value iterator
      */
 
     public IntRangeSetIterator iterator() {
@@ -248,6 +250,9 @@ public class IntRangeSet implements Serializable {
     /**
      * Test whether this set has exactly the same members as another set. Note that
      * IntRangeSet values are <b>NOT</b> comparable with other implementations of IntSet
+     *
+     * @param other object to compare with
+     * @return true if other is an IntRangeSet and has the same members
      */
 
     public boolean equals(Object other) {
@@ -262,6 +267,8 @@ public class IntRangeSet implements Serializable {
 
     /**
      * Construct a hash key that supports the equals() test
+     *
+     * @return hash key
      */
 
     public int hashCode() {
@@ -278,6 +285,9 @@ public class IntRangeSet implements Serializable {
 
     /**
      * Test if this set is a superset of another set
+     *
+     * @param other the subset
+     * @return true if this is a superset of other
      */
 
     public boolean containsAll(IntRangeSet other) {
@@ -323,6 +333,8 @@ public class IntRangeSet implements Serializable {
 
     /**
      * Get the start points of the ranges
+     *
+     * @return array of start points
      */
 
     public int[] getStartPoints() {
@@ -331,6 +343,8 @@ public class IntRangeSet implements Serializable {
 
     /**
      * Get the end points of the ranges
+     *
+     * @return array of end points
      */
 
     public int[] getEndPoints() {
@@ -339,6 +353,8 @@ public class IntRangeSet implements Serializable {
 
     /**
      * Get the number of ranges actually in use
+     *
+     * @return number of ranges in use
      */
 
     public int getNumberOfRanges() {

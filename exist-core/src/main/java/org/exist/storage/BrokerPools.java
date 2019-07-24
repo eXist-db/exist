@@ -42,9 +42,9 @@ import static org.exist.util.ThreadUtils.newGlobalThread;
  * complexity when understanding the concurrency
  * constraints between one and many BrokerPools
  *
- * @author Adam Retter <adam@exist-db.org>
- * @author Wolfgang Meier <wolfgang@exist-db.org>
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  */
 abstract class BrokerPools {
 
@@ -84,6 +84,7 @@ abstract class BrokerPools {
      * @param config     The configuration object for the database instance
      *
      * @throws EXistException If the initialization fails.
+     * @throws DatabaseConfigurationException If configuration fails.
      */
     public static void configure(final int minBrokers, final int maxBrokers, final Configuration config)
             throws EXistException, DatabaseConfigurationException {
@@ -101,6 +102,7 @@ abstract class BrokerPools {
      * @param statusObserver    Observes the status of this database instance
      *
      * @throws EXistException If the initialization fails.
+     * @throws DatabaseConfigurationException If configuration fails.
      */
     public static void configure(final int minBrokers, final int maxBrokers, final Configuration config,
             final Optional<Observer> statusObserver)  throws EXistException, DatabaseConfigurationException {

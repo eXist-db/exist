@@ -28,7 +28,7 @@ import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
 
 /**
- * @author Dulip Withanage <dulip.withanage@gmail.com>
+ * @author <a href="mailto:dulip.withanage@gmail.com">Dulip Withanage</a>
  * @version 1.0
  */
 public class ContentExtractionModule extends AbstractInternalModule {

@@ -35,7 +35,7 @@ import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertTrue;
 
 /**
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @RunWith(ParallelRunner.class)
 public class DefaultDocumentSetTest {

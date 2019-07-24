@@ -17,8 +17,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
  */
 package org.exist.storage.index;
 
@@ -41,15 +39,14 @@ public class OverflowStoreLoggable extends AbstractBFileLoggable {
     protected int size;
 
     /**
-     * 
-     * 
-     * @param page 
-     * @param prevPage 
-     * @param chunk 
-     * @param startOffset 
-     * @param chunkSize 
-     * @param fileId 
-     * @param transaction 
+     *
+     * @param fileId the file id
+     * @param transaction the database transaction
+     * @param page  the page
+     * @param prevPage the previous page
+     * @param chunk the chunk
+     * @param startOffset the start offset in the chunk
+     * @param chunkSize the size of the chunk
      */
     public OverflowStoreLoggable(byte fileId, Txn transaction, long page, long prevPage, 
             byte[] chunk, int startOffset, int chunkSize) {
@@ -62,8 +59,8 @@ public class OverflowStoreLoggable extends AbstractBFileLoggable {
     }
 
     /**
-     * @param broker
-     * @param transactionId
+     * @param broker the database broker
+     * @param transactionId the transaction id
      */
     public OverflowStoreLoggable(DBBroker broker, long transactionId) {
         super(broker, transactionId);

@@ -43,8 +43,7 @@ import org.exist.xquery.value.Type;
 /**
  * @see org.exist.util.FileUtils#deleteQuietly(Path)
  *
- * @author Andrzej Taramina
- *
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  */
 public class FileDelete extends BasicFunction {
 	
@@ -61,11 +60,7 @@ public class FileDelete extends BasicFunction {
 			new FunctionReturnSequenceType( Type.BOOLEAN, 
                     Cardinality.EXACTLY_ONE, "true if successful, false otherwise" ) )
 		};
-	
-	/**
-	 * @param context
-	 * @param signature
-	 */
+
 	public FileDelete(final XQueryContext context, final FunctionSignature signature )
 	{
 		super( context, signature );

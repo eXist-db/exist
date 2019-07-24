@@ -31,7 +31,7 @@ import org.xml.sax.SAXException;
  * XML-RPC type serializer for sub-classes of
  * {@link com.evolvedbinary.j8fu.tuple.Tuple}.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 class TupleSerializer extends TypeSerializerImpl {
     public static final String TUPLE_TAG = "tuple";

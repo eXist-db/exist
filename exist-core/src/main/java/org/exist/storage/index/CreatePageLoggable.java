@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
  */
 package org.exist.storage.index;
 
@@ -36,11 +34,9 @@ public class CreatePageLoggable extends AbstractBFileLoggable {
     protected long newPage;
     
     /**
-     * 
-     * 
-     * @param transaction 
-     * @param fileId 
-     * @param newPage 
+     * @param transaction the database transaction
+     * @param fileId the file if
+     * @param newPage the new page number
      */
     public CreatePageLoggable(Txn transaction, byte fileId, long newPage) {
         super(BFile.LOG_CREATE_PAGE, fileId, transaction);
@@ -51,27 +47,18 @@ public class CreatePageLoggable extends AbstractBFileLoggable {
         super(broker, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
-     */
     @Override
     public void write(ByteBuffer out) {
         super.write(out);
         out.putInt((int) newPage);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
-     */
     @Override
     public void read(ByteBuffer in) {
         super.read(in);
         newPage = in.getInt();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#getLogSize()
-     */
     @Override
     public int getLogSize() {
         return super.getLogSize() + 4;

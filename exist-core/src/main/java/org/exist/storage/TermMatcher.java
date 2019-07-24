@@ -22,7 +22,7 @@ package org.exist.storage;
 /**
  * Check if an index entry matches a given search term.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public interface TermMatcher {
 	

@@ -34,7 +34,7 @@ import java.util.function.Function;
 /**
  * Inspired by Guava's com.google.common.util.concurrent.Striped#lazyWeakReadWriteLock(int)
  * implementation.
- * {@see https://google.github.io/guava/releases/21.0/api/docs/com/google/common/util/concurrent/Striped.html#lazyWeakReadWriteLock-int-}
+ * See <a href="https://google.github.io/guava/releases/21.0/api/docs/com/google/common/util/concurrent/Striped.html#lazyWeakReadWriteLock-int-">https://google.github.io/guava/releases/21.0/api/docs/com/google/common/util/concurrent/Striped.html#lazyWeakReadWriteLock-int-</a>.
  *
  * However this is much simpler, and there is no hashing; we
  * will always return the same object (stripe) for the same key.
@@ -66,7 +66,7 @@ import java.util.function.Function;
  * @param <K> The type of the key for the stripe.
  * @param <S> The type of the stripe.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @ThreadSafe
 public class WeakLazyStripes<K, S> {
@@ -162,7 +162,7 @@ public class WeakLazyStripes<K, S> {
      * Get the stripe for the given key
      *
      * If the stripe does not exist, it will be created by
-     * calling {@link Function#apply(Object)} on {@link this#creator}
+     * calling {@link Function#apply(Object)} on {@link #creator}
      *
      * @param key the key for the stripe
      * @return the stripe

@@ -80,11 +80,7 @@ public class XMLDBURIFunctions extends BasicFunction {
 				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the decoded $uri as xs:string")
 		)
 	};
-	
-	/**
-	 * @param context
-	 * @param signature
-	 */
+
 	public XMLDBURIFunctions(XQueryContext context, FunctionSignature signature)
 	{
 		super(context, signature);

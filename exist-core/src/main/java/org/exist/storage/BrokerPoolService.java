@@ -26,7 +26,7 @@ import org.exist.util.Configuration;
  * Interface for a class which provides
  * services to a BrokerPool instance
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public interface BrokerPoolService {
 

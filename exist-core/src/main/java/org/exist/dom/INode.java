@@ -29,7 +29,7 @@ package org.exist.dom;
  * @param <T> The type of the persistent
  * or in-memory document
  * 
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public interface INode<D extends org.w3c.dom.Document, T extends INode> extends org.w3c.dom.Node,
     INodeHandle<D>, Comparable<T> {

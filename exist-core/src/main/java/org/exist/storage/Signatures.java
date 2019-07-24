@@ -57,8 +57,9 @@ public final class Signatures {
     public final static int shortContent = 0x2;
 
     /**
-     *  Returns the storage size of the given type as
+     *  @return the storage size of the given type as
      *  number of bytes required.
+     * @param type given type
      */
     public final static int getLength(int type) {
         switch (type) {
@@ -78,6 +79,8 @@ public final class Signatures {
      *  Returns one of IntContent, ShortContent, ByteContent
      *  or NoContent based on the number of bytes required
      *  to store the integer value given in length.
+     * @param length number of bytes required
+     * @return one of IntContent, ShortContent, ByteContent or NoContent
      */
     public final static byte getSizeType( int length ) {
         if (length > Short.MAX_VALUE)
@@ -95,6 +98,9 @@ public final class Signatures {
      *  From the signature in byte 0 of the node data,
      *  extract the node type and return a constant
      *  as defined in {@link Node}.
+     *
+     * @param signature in byte 0 of the node data
+     * @return a constant as defined in {@link Node}.
      */
     public final static short getType(byte signature) {
         final byte type = (byte)((signature & 0xE0) >> 0x5);

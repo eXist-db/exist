@@ -32,14 +32,22 @@ public interface ExpressionVisitor {
      * Default fallback method if no other method matches
      * the object's type.
      * 
-     * @param expression
+     * @param expression the expression to visit
      */
     void visit(Expression expression);
 
-    /** Found a PathExpr */
+    /**
+     * Found a PathExpr
+     *
+     * @param expression the expression found
+     */
     void visitPathExpr(PathExpr expression);
 
-    /** Found a LocationStep */
+    /**
+     * Found a LocationStep
+     *
+     * @param locationStep the expression to visit
+     */
     void visitLocationStep(LocationStep locationStep);
 
     void visitFilteredExpr(FilteredExpression filtered);

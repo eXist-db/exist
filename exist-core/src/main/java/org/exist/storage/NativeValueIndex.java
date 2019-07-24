@@ -67,22 +67,22 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Maintains an index on typed node values (optionally by QName).
  *
- * <p>Algorithm:</p>
- * <p>When a node is stored, an entry is added or updated in the {@link #pendingGeneric} and/or {@link #pendingQName}
+ * Algorithm:
+ * When a node is stored, an entry is added or updated in the {@link #pendingGeneric} and/or {@link #pendingQName}
  * maps, with either {@link SimpleValue#SimpleValue(int, Indexable)} or
  * {@link QNameValue#QNameValue(int, QName, Indexable, SymbolTable)} respectively as the key.
- * This way, the index entries are easily put in the persistent BFile storage by {@link #flush()}.</p>
+ * This way, the index entries are easily put in the persistent BFile storage by {@link #flush()}.
  *
  *
  * There are two types of key/value pairs stored into the Value Index:
  *
  * 1) SimpleValue, which represents the classic path based range index:
- *  key => [indexType, collectionId, atomicValue]
- *  value => [documentNodes+]
+ *  key =&gt; [indexType, collectionId, atomicValue]
+ *  value =&gt; [documentNodes+]
  *
  * 2) QNameValue, which represents the qname based reange index:
- *  key => [indexType, collectionId, qNameType, nsSymbolId, localPartSymbolId, atomicValue]
- *  Value => [documentNodes+]
+ *  key =&gt; [indexType, collectionId, qNameType, nsSymbolId, localPartSymbolId, atomicValue]
+ *  Value =&gt; [documentNodes+]
  *
  *
  * indexType - 0x0 = Generic, 0x1 = QName
@@ -111,8 +111,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * units: variable with encoded short, The number of units of this DLN
  * nodeIdDeltaData: byte[], The delta bits of this DLN from `deltaOffset` of the previous DLN
  *
- * @author Wolfgang Meier <wolfgang@exist-db.org>
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class NativeValueIndex implements ContentLoadingObserver {
 
@@ -781,6 +781,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @param result             DOCUMENT ME!
      * @param collator           DOCUMENT ME!
      * @param truncation         The type of string truncation to apply
+     * @param watchDog  the watchdog
      * @return DOCUMENT ME!
      * @throws TerminatedException DOCUMENT ME!
      * @throws EXistException      DOCUMENT ME!

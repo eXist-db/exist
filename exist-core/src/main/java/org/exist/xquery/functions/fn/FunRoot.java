@@ -44,7 +44,7 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunRoot extends Function {
 	
@@ -72,11 +72,7 @@ public class FunRoot extends Function {
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the root node of the tree to which $arg belongs")
                 )
     };
-    
-    /**
-     * @param context
-     * @param signature
-     */
+
     public FunRoot(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }

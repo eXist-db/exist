@@ -35,22 +35,22 @@ public class TriggerException extends SAXException {
 	}
 
 	/**
-	 * @param message
+	 * @param message of the exception
 	 */
 	public TriggerException(String message) {
 		super(message);
 	}
 
 	/**
-	 * @param cause
+	 * @param cause of the exception
 	 */
 	public TriggerException(Exception cause) {
 		super(cause);
 	}
 
 	/**
-	 * @param message
-	 * @param cause
+	 * @param message of the exception
+	 * @param cause of the exception
 	 */
 	public TriggerException(String message, Exception cause) {
 		super(message, cause);

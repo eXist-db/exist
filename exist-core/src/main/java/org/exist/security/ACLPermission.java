@@ -23,7 +23,7 @@ package org.exist.security;
 
 /**
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public interface ACLPermission {
 
@@ -98,6 +98,8 @@ public interface ACLPermission {
     /**
      * Convenience method for getting the name of the user or group
      * of which this ace is applied to
+     * @param index of the ACE
+     * @return user or group the ace is applied to
      */
     String getACEWho(int index);
    
@@ -105,6 +107,7 @@ public interface ACLPermission {
 
     /**
      * Clears all ACE's
+     * @throws PermissionDeniedException is user has not sufficient rights
      */
     void clear() throws PermissionDeniedException;
     

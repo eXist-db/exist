@@ -35,7 +35,7 @@ import org.xmldb.api.base.XMLDBException;
 
 /**
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class GroupDialog extends javax.swing.JFrame {
 
@@ -47,10 +47,7 @@ public class GroupDialog extends javax.swing.JFrame {
     private final String currentUser;
     
     private DefaultTableModel groupMembersTableModel = null;
-    
-    /**
-     * Creates new form GroupDialog
-     */
+
     public GroupDialog(final UserManagementService userManagementService, final String currentUser) {
         this.userManagementService = userManagementService;
         this.currentUser = currentUser;

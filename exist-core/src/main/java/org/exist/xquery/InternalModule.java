@@ -32,7 +32,7 @@ import org.exist.dom.QName;
  * modules, a new function object is created from its class for each function reference in the
  * XQuery script.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public interface InternalModule extends Module {
 
@@ -40,6 +40,8 @@ public interface InternalModule extends Module {
 	 * Prepare the module for use.
 	 *
 	 * @param context The XQuery Context.
+	 *
+	 * @throws XPathException if an XPath error occurs
 	 */
 	default void prepare(final XQueryContext context) throws XPathException {
 		// no-op
@@ -50,7 +52,8 @@ public interface InternalModule extends Module {
 	 * by qname or null if it is not defined. Called by
 	 * {@link FunctionFactory}.
 	 * 
-	 * @param qname
+	 * @param qname function QName to get definition for
+	 * @param argCount arity of the function
 	 * @return implementing class for the function
 	 */
 	FunctionDef getFunctionDef(QName qname, int argCount);
@@ -59,7 +62,7 @@ public interface InternalModule extends Module {
 	 * Returns all functions defined in this module matching the
 	 * specified qname.
 	 * 
-	 * @param qname
+	 * @param qname function QName to match
 	 * @return all functions defined in this module
 	 */
 	List<FunctionSignature> getFunctionsByName(QName qname);

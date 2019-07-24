@@ -37,7 +37,7 @@ import org.exist.storage.DBBroker;
  * with a subject which is potentially a composite
  * of a user and/or group
  * 
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class EffectiveSubject implements Subject {
     private final Account account;

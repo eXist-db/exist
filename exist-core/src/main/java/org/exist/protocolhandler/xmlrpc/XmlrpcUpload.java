@@ -58,10 +58,9 @@ public class XmlrpcUpload {
      * 
      * @param xmldbURL URL pointing to location on eXist-db server.
      * @param is Document stream
-     * @throws Exception When something is wrong.
+     * @throws IOException When something is wrong.
      */
-    public void stream(XmldbURL xmldbURL, InputStream is)
-    throws IOException {
+    public void stream(XmldbURL xmldbURL, InputStream is) throws IOException {
         LOG.debug("Begin document upload");
         try {
             // Setup xmlrpc client

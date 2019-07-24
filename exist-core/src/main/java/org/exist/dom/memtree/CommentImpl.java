@@ -31,12 +31,6 @@ import org.w3c.dom.Node;
 
 public class CommentImpl extends AbstractCharacterData implements Comment {
 
-    /**
-     * Creates a new CommentImpl object.
-     *
-     * @param doc
-     * @param nodeNumber
-     */
     public CommentImpl(final DocumentImpl doc, final int nodeNumber) {
         super(doc, nodeNumber);
     }

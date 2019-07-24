@@ -94,8 +94,9 @@ public class FunEscapeURI extends BasicFunction {
      * Does the actual escaping. This method is copied from Michael Kay's
      * saxon (see http://saxon.sf.net).
      * 
-     * @param s
-     * @param escapeReserved
+     * @param s the string to escape
+     * @param escapeReserved  also escape reserved characters
+     * @return the escaped uri string
      */
     public static String escape(CharSequence s, boolean escapeReserved) {
         //TODO : use dedidated URIUtils... -pb

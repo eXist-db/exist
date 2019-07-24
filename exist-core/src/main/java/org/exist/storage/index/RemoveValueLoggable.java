@@ -40,15 +40,13 @@ public class RemoveValueLoggable extends AbstractBFileLoggable {
     protected int len;
 
     /**
-     * 
-     * 
-     * @param page 
-     * @param tid 
-     * @param oldData 
-     * @param offset 
-     * @param len 
-     * @param fileId 
-     * @param transaction 
+     * @param transaction the transaction
+     * @param fileId the file id
+     * @param page the page
+     * @param tid the transaction id
+     * @param oldData the old data
+     * @param offset the offset in the old data
+     * @param len the length of the old data
      */
     public RemoveValueLoggable(Txn transaction, byte fileId, long page, short tid, byte[] oldData, int offset, int len) {
         super(BFile.LOG_REMOVE_VALUE, fileId, transaction);
@@ -60,8 +58,8 @@ public class RemoveValueLoggable extends AbstractBFileLoggable {
     }
 
     /**
-     * @param broker
-     * @param transactionId
+     * @param broker the database broker
+     * @param transactionId the transaction id
      */
     public RemoveValueLoggable(DBBroker broker, long transactionId) {
         super(broker, transactionId);

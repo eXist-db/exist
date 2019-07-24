@@ -56,7 +56,7 @@ public class FreeList {
      * Append a new {@link FreeSpace} object to the list,
      * describing the amount of free space available on a page.
      *  
-     * @param free
+     * @param free the free space
      */
     public void add( FreeSpace free ) {
         if(header == null) {
@@ -73,7 +73,7 @@ public class FreeList {
     /**
      * Remove a record from the list.
      * 
-     * @param node
+     * @param node the free space
      */
     public void remove(FreeSpace node) {
         --size;
@@ -95,7 +95,8 @@ public class FreeList {
     /**
      * Retrieve the record stored for the given page number.
      * 
-     * @param pageNum
+     * @param pageNum the page number
+     * @return the free space
      */
     public FreeSpace retrieve(long pageNum) {
         FreeSpace next = header;
@@ -113,7 +114,9 @@ public class FreeList {
      * possible space. This guarantees that all pages will be filled before
      * creating a new page. 
      * 
-     * @param requiredSize
+     * @param requiredSize the required size
+     *
+     * @return the free space
      */
     public FreeSpace find(int requiredSize) {
         FreeSpace next = header;
@@ -143,10 +146,10 @@ public class FreeList {
     /**
      * Read the list from a {@link RandomAccessFile}.
      * 
-     * 
-     * @param buf 
-     * @param offset 
-     * @throws IOException 
+     * @param buf the buffer to read from
+     * @param offset the position in the buffer to read from
+     * @return the offset after reading
+     * @throws IOException if an error occurs whilst reading
      */
     public int read(byte[] buf, int offset) throws IOException {
         final int fsize = ByteConversion.byteToInt(buf, offset);
@@ -171,10 +174,11 @@ public class FreeList {
      * {@link #MAX_FREE_LIST_LEN} entries and throw away the 
      * rest. Usually, this should not happen very often, so it is ok to
      * waste some space.
-     * 
-     * @param buf 
-     * @param offset 
-     * @throws IOException 
+     *
+     * @param buf the buffer to write to
+     * @param offset the position in the buffer to write to
+     * @return the offset after writing
+     * @throws IOException if an error occurs whilst writing
      */
     public int write(byte[] buf, int offset) throws IOException {
         //does the free-space list fit into the file header?

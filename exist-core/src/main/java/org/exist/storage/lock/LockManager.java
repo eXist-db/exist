@@ -42,8 +42,7 @@ import java.util.function.Consumer;
  * receive different locks.
  *
  * The locking protocol for Collection locks is taken from the paper:
- *     Granularity of Locks in a Shared Data Base - Gray, Lorie and Putzolu 1975
- *     {@see https://pdfs.semanticscholar.org/5acd/43c51fa5e677b0c242b065a64f5948af022c.pdf}
+ *     <a href="https://pdfs.semanticscholar.org/5acd/43c51fa5e677b0c242b065a64f5948af022c.pdf">Granularity of Locks in a Shared Data Base - Gray, Lorie and Putzolu 1975</a>.
  * specifically we have adopted the acquisition algorithm from Section 3.2 of the paper.
  *
  * Our adaptions enable us to specify either a multi-writer/multi-reader approach between Collection
@@ -58,7 +57,7 @@ import java.util.function.Consumer;
  * If it becomes necessary to eliminate such Collection/Document deadlock scenarios, Document locks
  * could be acquired using the same protocol as Collection locks (as really they are all just URI paths in a hierarchy)!
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class LockManager {
 
@@ -163,6 +162,7 @@ public class LockManager {
      * @param collectionPath The path of the Collection for which a lock is requested.
      *
      * @return A READ_LOCK on the Collection.
+     * @throws LockException if a lock error occurs
      */
     public ManagedCollectionLock acquireCollectionReadLock(final XmldbURI collectionPath) throws LockException {
         final XmldbURI[] segments = collectionPath.getPathSegments();
@@ -285,6 +285,7 @@ public class LockManager {
      * @param collectionPath The path of the Collection for which a lock is requested.
      *
      * @return A WRITE_LOCK on the Collection.
+     * @throws LockException if a lock error occurs
      */
     public ManagedCollectionLock acquireCollectionWriteLock(final XmldbURI collectionPath) throws LockException {
         return acquireCollectionWriteLock(collectionPath, false);

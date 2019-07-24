@@ -73,14 +73,17 @@ public class Marshaller {
     public final static QName ROOT_ELEMENT_QNAME = new QName(SEQ_ELEMENT, NAMESPACE, PREFIX);
     
     /**
-     * Marshall a sequence in an xml based string representation
-     * @param broker
+     * Marshall a sequence in an xml based string representation.
+     *
+     * @param broker the database broker
      * @param seq Sequence to be marshalled
      * @param handler Content handler for building the resulting string
-     * @throws XPathException
-     * @throws SAXException
+     *
+     * @throws XPathException if an XPath error occurs
+     * @throws SAXException if a SAX parsing exception occurs
      */
-    public static void marshall(DBBroker broker, Sequence seq, ContentHandler handler) throws XPathException, SAXException {
+    public static void marshall(final DBBroker broker, final Sequence seq, final ContentHandler handler)
+            throws XPathException, SAXException {
         final AttributesImpl attrs = new AttributesImpl();
         attrs.addAttribute("", ATTR_ITEM_TYPE, ATTR_ITEM_TYPE, "CDATA", Type.getTypeName(seq.getItemType()));
         handler.startElement(NAMESPACE, SEQ_ELEMENT, SEQ_ELEMENT_QNAME, attrs);
@@ -92,16 +95,19 @@ public class Marshaller {
     
     
     /**
-     * Marshall the items of a sequence in  an xml based string representation
-     * @param broker
+     * Marshall the items of a sequence in  an xml based string representation.
+     *
+     * @param broker the database broker
      * @param seq Sequence which items are to be marshalled
      * @param start index of first item to be marshalled
      * @param howmany number of items following and including the first to be marshalled
-     * @param handler
-     * @throws XPathException
-     * @throws SAXException
+     * @param handler Content handler for building the resulting string
+     *
+     * @throws XPathException if an XPath error occurs
+     * @throws SAXException if a SAX parsing exception occurs
      */
-    public static void marshall(DBBroker broker, Sequence seq,int start,int howmany, ContentHandler handler) throws XPathException, SAXException {
+    public static void marshall(final DBBroker broker, final Sequence seq, final int start, final int howmany,
+            final ContentHandler handler) throws XPathException, SAXException {
         final AttributesImpl attrs = new AttributesImpl();
         attrs.addAttribute("", ATTR_ITEM_TYPE, ATTR_ITEM_TYPE, "CDATA", Type.getTypeName(seq.getItemType()));
         handler.startElement(NAMESPACE, SEQ_ELEMENT, SEQ_ELEMENT_QNAME, attrs);
@@ -113,14 +119,17 @@ public class Marshaller {
     }
 
     /**
-     * Marshall an item in an xml based string representation
-     * @param broker
+     * Marshall an item in an xml based string representation.
+     *
+     * @param broker the database broker
      * @param item Sequence(or Item) to me marshalled
-     * @param handler
-     * @throws SAXException
-     * @throws XPathException
+     * @param handler Content handler for building the resulting string
+     *
+     * @throws XPathException if an XPath error occurs
+     * @throws SAXException if a SAX parsing exception occurs
      */
-    public static void marshallItem(DBBroker broker, Item item, ContentHandler handler) throws SAXException, XPathException {
+    public static void marshallItem(final DBBroker broker, final Item item, final ContentHandler handler)
+            throws SAXException, XPathException {
         final AttributesImpl attrs = new AttributesImpl();
         int type = item.getType();
         if (type == Type.NODE)
@@ -256,10 +265,13 @@ public class Marshaller {
     }
 
     /**
-     * Creates an Item from a streamed representation
+     * Creates an Item from a streamed representation.
+     *
+     * @param rootType the type of the root node
      * @param parser Parser to read xml elements from
-     * @return item
-     * @throws XMLStreamException
+     * @return item the item
+     *
+     * @throws XMLStreamException if an error occurs during streaming.
      */
     public static Item streamToDOM(int rootType, XMLStreamReader parser) throws XMLStreamException {
         final MemTreeBuilder builder = new MemTreeBuilder();
@@ -304,10 +316,14 @@ public class Marshaller {
     
     
     /**
-     * Creates an Item from a streamed representation
-     * @param reader
-     * @return item
-     * @throws XMLStreamException
+     * Creates an Item from a streamed representation.
+     *
+     * @param reader the reader.
+     * @param type the type of the item.
+     * @return item the result item
+     *
+     * @throws XMLStreamException if an error occurs during streaming.
+     * @throws XQException if any other error occurs.
      */
     public static Item streamToDOM(Reader reader, XQItemType type) throws XMLStreamException, XQException {
     	final XMLInputFactory factory = XMLInputFactory.newInstance();
@@ -321,10 +337,12 @@ public class Marshaller {
     
     
     /**
-     * Creates a node from a string representation
-     * @param content
-     * @return node
-     * @throws XMLStreamException
+     * Creates a node from a string representation.
+     *
+     * @param content the content
+     * @return node the result node.
+     *
+     * @throws XMLStreamException if an error occurs during streaming.
      */
     public static Node streamToNode(String content) throws XMLStreamException {
     	final StringReader reader = new StringReader(content);
@@ -334,10 +352,12 @@ public class Marshaller {
     
    
     /**
-     * Creates a node from a streamed representation
-     * @param reader
-     * @return item
-     * @throws XMLStreamException
+     * Creates a node from a streamed representation.
+     *
+     * @param reader the reader.
+     * @return item the result item.
+     *
+     * @throws XMLStreamException if an error occurs during streaming.
      */
     public static Node streamToNode(Reader reader) throws XMLStreamException {
     	final XMLInputFactory factory = XMLInputFactory.newInstance();

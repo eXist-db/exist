@@ -67,16 +67,10 @@ public class FunDoc extends Function {
     // fixit! - security warning
     private UpdateListener listener = null;
 
-    /**
-     * @param context
-     */
     public FunDoc(XQueryContext context) {
         super(context, signature);
     }
 
-    /**
-     * @see org.exist.xquery.Expression#eval(Sequence, Item)
-     */
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
         if (context.getProfiler().isEnabled()) {
@@ -154,10 +148,6 @@ public class FunDoc extends Function {
         }
     }
 
-    /**
-     * @see org.exist.xquery.Expression#resetState(boolean)
-     * @param postOptimization
-     */
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         if (!postOptimization) {

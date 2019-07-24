@@ -30,7 +30,7 @@ import org.exist.xquery.XPathException;
  * XML-RPC server operations; Predominantly converts exceptions
  * from the database into EXistException types
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 @FunctionalInterface
 public interface XmlRpcCompiledXQueryFunction<R> extends Function2E<CompiledXQuery, R, EXistException, PermissionDeniedException> {
@@ -48,6 +48,12 @@ public interface XmlRpcCompiledXQueryFunction<R> extends Function2E<CompiledXQue
      * Signature for lambda function which takes a compiled XQuery
      *
      * @param compiledQuery The compiled XQuery
+     *
+     * @return the result of the function
+     *
+     * @throws EXistException if an error occurs with the database
+     * @throws PermissionDeniedException if the caller has insufficient priviledges
+     * @throws XPathException if executing the XQuery raises an error
      */
     R applyXmlRpc(final CompiledXQuery compiledQuery) throws EXistException, PermissionDeniedException, XPathException;
 }

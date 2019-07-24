@@ -447,9 +447,8 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
      * SAX parser.
      * 
      * @param obj the content value to set for the resource.
-     * @exception XMLDBException with expected error codes. <br />
-     *     <code>ErrorCodes.VENDOR_ERROR</code> for any vendor specific errors
-     *     that occur. <br />
+     * @throws XMLDBException with expected error codes. See {@link ErrorCodes#VENDOR_ERROR}
+     *     for any vendor specific errors that occur.
      */
     @Override
     public void setContent(final Object obj) throws XMLDBException {
@@ -531,7 +530,14 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
     /**
      * Similar to {@link org.exist.xmldb.LocalXMLResource#getNode()}
      * but useful for operations within the XML:DB Local API
-     * that are already working within a transaction
+     * that are already working within a transaction.
+     *
+     * @param broker the database broker.
+     * @param transaction the database transaction.
+     *
+     * @return a proxy to the node.
+     *
+     * @throws XMLDBException if an error occurs whilst getting the node
      */
     public NodeProxy getNode(final DBBroker broker, final Txn transaction) throws XMLDBException {
         if(proxy != null) {

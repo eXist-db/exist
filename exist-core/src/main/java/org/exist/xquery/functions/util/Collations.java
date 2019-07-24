@@ -56,10 +56,7 @@ public class Collations extends BasicFunction {
 			FunctionSignature.NO_ARGS,
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the sequence of strings containing all collation locales that might be " +
 			"specified in the '?lang=' parameter of a collation URI."));
-	
-	/**
-	 * @param context
-	 */
+
 	public Collations(XQueryContext context) {
 		super(context, signature);
 	}

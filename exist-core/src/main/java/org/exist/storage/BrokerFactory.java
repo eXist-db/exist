@@ -37,7 +37,7 @@ import static com.evolvedbinary.j8fu.Either.Right;
 import static java.lang.invoke.MethodType.methodType;
 
 /**
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class BrokerFactory {
 
@@ -63,8 +63,7 @@ public class BrokerFactory {
      *
      * @return DBBroker an instance of a sub-class of {@link DBBroker}.
      *
-     * @throws IllegalArgumentException if the configuration does not define a broker ID.
-     * @throws IllegalStateException if there is no database backend defined for the broker ID.
+     * @throws EXistException in case of an eXist-db error
      * @throws RuntimeException if the database backend cannot be constructed.
      */
     public static DBBroker getInstance(final BrokerPool brokerPool, final Configuration configuration) throws RuntimeException, EXistException {

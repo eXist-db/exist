@@ -27,17 +27,21 @@ import java.io.OutputStream;
 import java.util.Locale;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public interface ResponseWrapper {
 	
 	/**
+	 * Add a cookie.
+	 *
 	 * @param name	Name of the Cookie
 	 * @param value	Value of the Cookie
 	 */
 	public void addCookie(String name, String value);
 
 	/**
+	 * Add a cookie.
+	 *
 	 * @param name	Name of the Cookie
 	 * @param value	Value of the Cookie
 	 * @param maxAge maxAge of the Cookie
@@ -45,6 +49,8 @@ public interface ResponseWrapper {
 	public void addCookie(String name, String value, int maxAge);
 	
 	/**
+	 * Add a cookie.
+	 *
 	 * @param name	Name of the Cookie
 	 * @param value	Value of the Cookie
 	 * @param maxAge maxAge of the Cookie
@@ -53,7 +59,7 @@ public interface ResponseWrapper {
 	public void addCookie(String name, String value, int maxAge, boolean secure);
 	
 	/**
-	 * The method <code>addCookie</code>
+	 * Add a cookie.
 	 *
 	 * @param name Name of the Cookie
 	 * @param value Value of the Cookie
@@ -63,40 +69,59 @@ public interface ResponseWrapper {
 	 * @param path path scope of the cookie
 	 */
 	public void addCookie(String name, String value, int maxAge, boolean secure, String domain, String path);
-	
+
 	/**
-	 * @param arg0
-	 * @param arg1
+	 * Add a date header.
+	 *
+	 * @param name the header name
+	 * @param value the value of the header
 	 */
-	public void addDateHeader(String arg0, long arg1);
+	public void addDateHeader(String name, long value);
+
 	/**
-	 * @param arg0
-	 * @param arg1
+	 * Add a header.
+	 *
+	 * @param name the header name
+	 * @param value the value of the header
 	 */
-	public void addHeader(String arg0, String arg1);
+	public void addHeader(String name, String value);
+
 	/**
-	 * @param arg0
-	 * @param arg1
+	 * Add a int header.
+	 *
+	 * @param name the header name
+	 * @param value the value of the header
 	 */
-	public void addIntHeader(String arg0, int arg1);
+	public void addIntHeader(String name, int value);
+
 	/**
-	 * @param arg0 The name of the header.
-	 * @return A boolean value indicating whether it contains the header name.
+	 * Returns true of the response contains the header.
+	 *
+	 * @param name the header name
+	 * @return a boolean indicating whether the header is present
 	 */
-	public boolean containsHeader(String arg0);
+	public boolean containsHeader(String name);
+
 	/**
-	 * @param arg0
-	 * @return The encoded value
+	 * Encode a String as a URL.
+	 *
+	 * @param s the string to encode
+	 * @return the encoded value
 	 */
-	public String encodeURL(String arg0);
-	/***/
+	public String encodeURL(String s);
+
+
 	public void flushBuffer() throws IOException;
+
 	/**
-	 * @return Returns the default character encoding
+	 * Get the character encoding.
+	 *
+	 * @return returns the default character encoding
 	 */
 	public String getCharacterEncoding();
+
 	/**
-	 * @return Returns the default locale
+	 * @return returns the default locale
 	 */
 	public Locale getLocale();
 	
@@ -109,40 +134,58 @@ public interface ResponseWrapper {
 	 * @param contentType Content Type of the response
 	 */
 	public void setContentType(String contentType);
-	
+
 	/**
-	 * @param arg0
-	 * @param arg1
+	 * Set a date header.
+	 *
+	 * @param name the header name
+	 * @param value the header value
 	 */
-	public void setDateHeader(String arg0, long arg1);
+	public void setDateHeader(String name, long value);
+
 	/**
-	 * @param arg0
-	 * @param arg1
+	 * Set a header.
+	 *
+	 * @param name the header name
+	 * @param value the header value
 	 */
-	public void setHeader(String arg0, String arg1);
+	public void setHeader(String name, String value);
+
 	/**
-	 * @param arg0
-	 * @param arg1
+	 * Set an int header.
+	 *
+	 * @param name the header name
+	 * @param value the header value
 	 */
-	public void setIntHeader(String arg0, int arg1);
+	public void setIntHeader(String name, int value);
 
 	void sendError(final int code) throws IOException;
 
 	void sendError(final int code, final String msg) throws IOException;
 
-    /**
-     * @param arg0
-     */
-    public void setStatusCode(int arg0);
 	/**
-	 * @param arg0
+	 * Set the HTP Status Code
+	 *
+	 * @param statusCode the status code.
 	 */
-	public void setLocale(Locale arg0);
+    public void setStatusCode(int statusCode);
+
+	/**
+	 * Set the locale.
+	 *
+	 * @param locale the locale.
+	 */
+	public void setLocale(Locale locale);
 	
-	public void sendRedirect(String arg0) throws IOException;
+	public void sendRedirect(String url) throws IOException;
 	
-	/** @return the value of Date Header corresponding to given name,
-	 * 0 if none has been set. */
+	/**
+	 * Get a date header.
+	 *
+	 * @param name the header name
+	 *
+	 * @return the value of Date Header corresponding to given name,0 if none has been set.
+	 */
 	public long getDateHeader(String name);
     
     public OutputStream getOutputStream() throws IOException;

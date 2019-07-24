@@ -37,13 +37,10 @@ import java.io.IOException;
  * content. Enclosed expressions within attribute values are processed by
  * {@link org.exist.xquery.AttributeConstructor}.
  *  
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class EnclosedExpr extends PathExpr {
 
-    /**
-     * 
-     */
     public EnclosedExpr(XQueryContext context) {
         super(context);
     }

@@ -49,7 +49,7 @@ import org.exist.dom.persistent.NodeHandle;
 
 /**
  * Processes all location path steps (like descendant::*, ancestor::XXX).
- * <p>
+ *
  * The results of the first evaluation of the expression are cached for the
  * lifetime of the object and only reloaded if the context sequence (as passed
  * to the {@link #eval(Sequence, Item)} method) has changed.
@@ -805,6 +805,7 @@ public class LocationStep extends Step {
      * @param context         a <code>XQueryContext</code> value
      * @param contextSequence a <code>NodeSet</code> value
      * @return a <code>NodeSet</code> value
+     * @throws XPathException in case of dynamic error
      */
     protected Sequence getSiblings(final XQueryContext context, final Sequence contextSequence) throws XPathException {
         if (!contextSequence.isPersistentSet()) {

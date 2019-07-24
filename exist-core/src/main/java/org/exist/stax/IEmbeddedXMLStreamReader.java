@@ -37,10 +37,11 @@ public interface IEmbeddedXMLStreamReader extends ExtendedXMLStreamReader {
      *
      * NOTE: This maybe in a different document!
      *
+     * @param broker the database broker.
      * @param node the new start node.
      * @param reportAttributes if set to true, attributes will be reported as top-level events.
      *
-     * @throws java.io.IOException
+     * @throws java.io.IOException if an error occurs whilst repositioning the stream
      */
     void reposition(final DBBroker broker, final NodeHandle node, final boolean reportAttributes) throws IOException;
 
@@ -65,14 +66,20 @@ public interface IEmbeddedXMLStreamReader extends ExtendedXMLStreamReader {
      * Iterates over each node until
      * the filter returns false
      *
-     * @param filter
+     * @param filter the filter
+     *
+     * @throws XMLStreamException if an error occurs whilst iterating.
      */
     void filter(StreamFilter filter) throws XMLStreamException;
 
     /**
      * Get the Node Type
      * as used in the persistent
-     * DOM {@see org.exist.storage.Signatures}
+     * DOM.
+     *
+     * Types are defined in {@link org.exist.storage.Signatures}
+     *
+     * @return the node type
      */
     short getNodeType();
 

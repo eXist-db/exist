@@ -173,6 +173,10 @@ public class JMXtoXML {
     /**
      * Retrieve JMX output for the given categories and return a string of XML. Valid categories are "memory",
      * "instances", "disk", "system", "caches", "locking", "processes", "sanity", "all".
+     *
+     * @param categories array of categories to include in the report
+     * @throws TransformerException in case of serialization errors
+     * @return string containing an XML report
      */
     public String generateReport(final String categories[]) throws TransformerException {
         final Element root = generateXMLReport(null, categories);

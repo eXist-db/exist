@@ -45,7 +45,7 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  */
 public class XMLDBGetMimeType extends BasicFunction {
 	protected static final Logger logger = LogManager.getLogger(XMLDBGetMimeType.class);

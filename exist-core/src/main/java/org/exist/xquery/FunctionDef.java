@@ -29,7 +29,7 @@ package org.exist.xquery;
  * can be mapped to more than one function signature, given that the signatures differ
  * in name or the number of expected arguments.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunctionDef {
 

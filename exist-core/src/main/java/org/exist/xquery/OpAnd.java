@@ -30,7 +30,7 @@ import org.exist.xquery.value.Sequence;
 /**
  * Boolean operator "and".
  * 
- * @author Wolfgang <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang</a>
  */
 public class OpAnd extends LogicalOp {
 

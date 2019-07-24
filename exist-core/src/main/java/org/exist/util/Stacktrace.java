@@ -24,7 +24,7 @@ import java.util.Arrays;
 /**
  * Utility methods for dealing with stack traces
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class Stacktrace {
 
@@ -50,6 +50,8 @@ public class Stacktrace {
     /**
      * Formats the stack trace as a String
      *
+     * @param stack the stack trace
+     *
      * @return A formatted string showing the stack trace
      */
     public static String asString(final StackTraceElement[] stack) {
@@ -59,8 +61,10 @@ public class Stacktrace {
     /**
      * Formats the stack trace as a String
      *
+     * @param stack the stack trace
      * @param from The most recent frame to start from
      * @param until The least recent frame to format until
+     *
      * @return A formatted string showing the stack trace
      */
     public static String asString(final StackTraceElement[] stack, final int from, final int until) {

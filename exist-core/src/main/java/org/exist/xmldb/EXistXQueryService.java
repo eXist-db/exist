@@ -37,7 +37,7 @@ import org.xmldb.api.modules.XQueryService;
  * can be executed repeatedly. Since XQuery scripts can be very large, compiling an expression
  * in advance can save a lot of time.
  *
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public interface EXistXQueryService extends XQueryService {
 
@@ -92,7 +92,8 @@ public interface EXistXQueryService extends XQueryService {
      * @return a compiled representation of the query
      *
      * @throws XMLDBException if an error occurs whilst compiling the query,
-     *     or a static error is detected
+     *     or a static error is detected.
+     * @throws XPathException if an error occurs whilst executing the query.
      */
     CompiledExpression compileAndCheck(String query) throws XMLDBException, XPathException;
 
@@ -236,6 +237,8 @@ public interface EXistXQueryService extends XQueryService {
 
     /**
      * Clears any previously declared variables
+     *
+     * @throws XMLDBException if an error occurs whilst clearning the variables.
      */
     void clearVariables() throws XMLDBException;
 

@@ -81,7 +81,7 @@ public class Accounting {
      * Set the current size of the cache. Should be called by the
      * cache whenever it changes its size.
      * 
-     * @param totalSize
+     * @param totalSize of the cache
      */
     public void setTotalSize(int totalSize) {
         this.totalSize = totalSize;
@@ -123,7 +123,7 @@ public class Accounting {
      * Called by the cache to signal that a page was replaced
      * in order to store the Cacheable object passed.
      * 
-     * @param cacheable
+     * @param cacheable object
      */
     public void replacedPage(Cacheable cacheable) {
         if (System.currentTimeMillis() - checkPeriodStart > checkPeriod) {

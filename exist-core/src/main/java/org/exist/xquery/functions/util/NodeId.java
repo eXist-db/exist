@@ -57,10 +57,7 @@ public class NodeId extends BasicFunction {
 				new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE, "The node to get the internal node-id from"),
 			},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the internal node-id"));
-	
-	/**
-	 * @param context
-	 */
+
 	public NodeId(XQueryContext context) {
 		super(context, signature);
 	}

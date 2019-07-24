@@ -38,7 +38,7 @@ import org.exist.xquery.value.Type;
 import javax.annotation.Nonnull;
 
 /**
- * @author Dannes Wessels <dannes@exist-db.org>
+ * @author <a href="mailto:dannes@exist-db.org">Dannes Wessels</a>
  */
 public class IsMultiPartContent extends StrictRequestFunction {
 

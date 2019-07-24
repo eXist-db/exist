@@ -36,7 +36,7 @@ import java.io.IOException;
  * local XMLDB operations; Predominantly converts exceptions
  * from the database into XMLDBException types
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 @FunctionalInterface
 public interface LocalXmldbDocumentFunction<R> extends TriFunctionE<DocumentImpl, DBBroker, Txn, R, XMLDBException> {
@@ -55,9 +55,20 @@ public interface LocalXmldbDocumentFunction<R> extends TriFunctionE<DocumentImpl
     }
 
     /**
-     * Signature for lambda function which takes a document
+     * Signature for lambda function which takes a document.
      *
      * @param document The database collection
+     * @param broker the database broker
+     * @param transaction the database transaction
+     *
+     * @return the result of apply the function.
+     *
+     * @throws XMLDBException if an error occurs whilst applying the function
+     * @throws PermissionDeniedException if the user has insufficient permissions
+     * @throws LockException if an error occurs whilst locking a collection or document
+     * @throws IOException if an IO error occurs
+     * @throws SyntaxException if a syntax error occurs
      */
-    R applyXmldb(final DocumentImpl document, final DBBroker broker, final Txn transaction) throws XMLDBException, PermissionDeniedException, LockException, IOException, SyntaxException;
+    R applyXmldb(final DocumentImpl document, final DBBroker broker, final Txn transaction)
+            throws XMLDBException, PermissionDeniedException, LockException, IOException, SyntaxException;
 }

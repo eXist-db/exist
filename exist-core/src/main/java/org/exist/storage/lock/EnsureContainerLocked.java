@@ -40,7 +40,6 @@ import java.lang.annotation.Target;
  * when calling the method accessors on their internal state.
  *
  * <pre>
- * {@code
  * public class MyCollectonImpl implements Collection {
  *     final XmldbURI uri;
  *     public MyCollectionImpl(@EnsureLocked(mode=LockMode.READ_LOCK, type=LockType.COLLECTION) final XmldbURI uri) {
@@ -53,15 +52,13 @@ import java.lang.annotation.Target;
  *
  *     ...
  *
- *     @EnsureContainerLocked(mode=LockMode.READ_LOCK)
+ *     <code>@EnsureContainerLocked(mode=LockMode.READ_LOCK)</code>
  *     public int countDocuments() {
  *         return documents.size();
  *     }
- * }
- * }
- * </pre>
+ * }</pre>
  *
- * @author <a href="mailto:adam@evolvedbinary.com>Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = {ElementType.METHOD})
@@ -77,6 +74,7 @@ public @interface EnsureContainerLocked {
      * single {@link Lock.LockMode} type parameter that can be used
      * then an IllegalArgumentException will be generated if {@link EnsureLockingAspect}
      * detects this situation.
+     * @return  the lock mode
      */
     Lock.LockMode mode() default Lock.LockMode.NO_LOCK;
 
@@ -86,6 +84,8 @@ public @interface EnsureContainerLocked {
      *
      * The value of this attribute is the (zero-based) index
      * of the parameter within the method signature.
+     *
+     * @return the mode
      */
     short modeParam() default NO_MODE_PARAM;
 

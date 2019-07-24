@@ -44,7 +44,7 @@ import org.exist.xquery.value.Type;
 /**
  * @see java.nio.file.Files#exists(Path, LinkOption...)
  *
- * @author Andrzej Taramina
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  *
  */
 public class FileExists extends BasicFunction { 
@@ -62,11 +62,7 @@ public class FileExists extends BasicFunction {
 			new FunctionReturnSequenceType(Type.BOOLEAN, 
                     Cardinality.EXACTLY_ONE, "the boolean value true if the file exists, false otherwise" ) )
 		};
-	
-	/**
-	 * @param context
-	 * @param signature
-	 */
+
 	public FileExists(final XQueryContext context, final FunctionSignature signature )
 	{
 		super( context, signature );

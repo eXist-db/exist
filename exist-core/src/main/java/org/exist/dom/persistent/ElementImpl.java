@@ -103,7 +103,7 @@ public class ElementImpl extends NamedNode implements Element {
 
     /**
      * Constructor for the ElementImpl object
-     *
+     * @param symbols for ElementImpl
      * @param nodeName Description of the Parameter
      */
     public ElementImpl(final QName nodeName, final SymbolTable symbols) throws DOMException {
@@ -203,14 +203,14 @@ public class ElementImpl extends NamedNode implements Element {
      * namespacePrefixLength = [short] (2 bytes)
      * elementNamespacePrefix = eUtf8
      *
-     * eUtf8 = {@see org.exist.util.UTF8#encode(java.lang.String, byte[], int)}
+     * eUtf8 = {@link org.exist.util.UTF8#encode(java.lang.String, byte[], int)}
      *
      * prefixData = namespaceMappingsCount namespaceMapping+
      * namespaceMappingsCount = [short] (2 bytes)
      * namespaceMapping = namespacePrefix namespaceUriId
      * namespacePrefix = jUtf8
      *
-     * jUtf8 = {@see java.io.DataOutputStream#writeUTF(java.lang.String)}
+     * jUtf8 = {@link java.io.DataOutputStream#writeUTF(java.lang.String)}
      *
      * @return the returned byte array after use must be returned to the ByteArrayPool
      *     by calling {@link ByteArrayPool#releaseByteArray(byte[])}
@@ -461,9 +461,10 @@ public class ElementImpl extends NamedNode implements Element {
     /**
      * Append a child to this node. This method does not rearrange the
      * node tree and is only used internally by the parser.
+     * @param prevNode node to append child to
+     * @param child node to append
      *
-     * @param child
-     * @throws DOMException
+     * @throws DOMException in case of a DOM error
      */
     public void appendChildInternal(final IStoredNode prevNode, final NodeHandle child) throws DOMException {
         final NodeId childId;
@@ -1526,6 +1527,10 @@ public class ElementImpl extends NamedNode implements Element {
     /**
      * Insert a list of nodes at the position following the reference
      * child.
+     * @param transaction the transaction
+     * @param nodes to be inserted
+     * @param refChild nodes will be added after
+     * @throws DOMException in case of a DOM error
      */
     @Override
     public void insertAfter(final Txn transaction, final NodeList nodes, final Node refChild) throws DOMException {
@@ -1569,9 +1574,9 @@ public class ElementImpl extends NamedNode implements Element {
     /**
      * Update the contents of this element. The passed list of nodes
      * becomes the new content.
-     *
-     * @param newContent
-     * @throws DOMException
+     * @param transaction the transaction
+     * @param newContent the context
+     * @throws DOMException in case of a DOM exception
      */
     public void update(final Txn transaction, final NodeList newContent) throws DOMException {
         final NodePath path = getPath();
@@ -1630,9 +1635,9 @@ public class ElementImpl extends NamedNode implements Element {
      * Update a child node. This method will only update the child node
      * but not its potential descendant nodes.
      *
-     * @param oldChild
-     * @param newChild
-     * @throws DOMException
+     * @param oldChild to be replace
+     * @param newChild to be added
+     * @throws DOMException in case of a DOM error
      */
     @Override
     public IStoredNode updateChild(final Txn transaction, final Node oldChild, final Node newChild) throws DOMException {
@@ -1828,10 +1833,11 @@ public class ElementImpl extends NamedNode implements Element {
     /**
      * Replaces the oldNode with the newChild
      *
-     * @param transaction
-     * @param newChild
-     * @param oldChild
+     * @param transaction the transaction
+     * @param newChild to replace oldChild
+     * @param oldChild to be replace by newChild
      * @return The new node (this differs from the {@link org.w3c.dom.Node#replaceChild(Node, Node)} specification)
+     * @throws DOMException in case of a DOM error
      * @see org.w3c.dom.Node#replaceChild(org.w3c.dom.Node, org.w3c.dom.Node)
      */
     @Override

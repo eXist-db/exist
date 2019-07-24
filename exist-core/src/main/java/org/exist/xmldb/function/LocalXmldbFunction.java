@@ -35,7 +35,7 @@ import java.io.IOException;
  * local XMLDB operations; Predominantly converts exceptions
  * from the database into XMLDBException types
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 @FunctionalInterface
 public interface LocalXmldbFunction<R> extends BiFunctionE<DBBroker, Txn, R, XMLDBException> {
@@ -58,6 +58,15 @@ public interface LocalXmldbFunction<R> extends BiFunctionE<DBBroker, Txn, R, XML
      *
      * @param broker The database broker for the XMLDB function
      * @param transaction The transaction for the XMLDB function
+     *
+     * @return the result of the function
+     *
+     * @throws XMLDBException if an error occurs whilst applying the function
+     * @throws PermissionDeniedException if the user has insufficient permissions
+     * @throws IOException if an IO error occurs
+     * @throws XPathException if an error occurs whilst executing an XPath
+     * @throws EXistException if any other error occurs
      */
-    R applyXmldb(final DBBroker broker, final Txn transaction) throws XMLDBException, PermissionDeniedException, IOException, XPathException, EXistException;
+    R applyXmldb(final DBBroker broker, final Txn transaction)
+            throws XMLDBException, PermissionDeniedException, IOException, XPathException, EXistException;
 }

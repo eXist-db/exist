@@ -46,9 +46,9 @@ import java.sql.SQLException;
 /**
  * eXist SQL Module Extension PrepareFunction.
  *
- * <p>Prepare a SQL statement against a SQL capable Database</p>
+ * Prepare a SQL statement against a SQL capable Database
  *
- * @author   Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @version  1.0
  * @see      org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  * @serial   2010-03-17

@@ -33,7 +33,7 @@ import java.util.Random;
 /**
  * Test case - given a sort() method and an algorithm via a checker, do a variety
  * of tests that rely on the comparator methods.
- * <p>
+ *
  * This work was undertaken as part of the development of the taxonomic
  * repository at http://biodiversity.org.au . See <A
  * href="ghw-at-anbg.gov.au">Greg&nbsp;Whitbread</A> for further details.

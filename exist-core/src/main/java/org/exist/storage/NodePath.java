@@ -64,9 +64,6 @@ public class NodePath implements Comparable<NodePath> {
         this.includeDescendants = includeDescendants;
     }
 
-    /**
-     * 
-     */
     public NodePath(final Map<String, String> namespaces, final String path) {
         init(namespaces, path);
     }
@@ -123,9 +120,6 @@ public class NodePath implements Comparable<NodePath> {
         return pos;
     }
 
-    /**
-     * @throws ArrayIndexOutOfBoundsException
-     */
     public QName getComponent(final int at) {
         if (at < 0 || at >= pos) {
             throw new ArrayIndexOutOfBoundsException(at);

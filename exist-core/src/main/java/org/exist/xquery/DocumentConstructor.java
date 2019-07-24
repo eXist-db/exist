@@ -42,9 +42,6 @@ public class DocumentConstructor extends NodeConstructor {
 
     private final Expression content;
 
-    /**
-     * @param context
-     */
     public DocumentConstructor(XQueryContext context, Expression contentExpr) {
         super(context);
         this.content = contentExpr;

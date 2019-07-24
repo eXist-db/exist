@@ -20,7 +20,7 @@ package org.exist.storage.blob;
 import org.exist.storage.journal.Loggable;
 
 /**
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public interface BlobLoggable extends Loggable {
     byte LOG_STORE_BLOB_FILE = 0x50;

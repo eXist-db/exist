@@ -51,7 +51,7 @@ public class XmlrpcDownload {
      *
      * @param xmldbURL Document location in database.
      * @param os Stream to which the document is written.
-     * @throws IOException
+     * @throws IOException An IO error occurred.
      */
     public void stream(final XmldbURL xmldbURL, final OutputStream os) throws IOException {
         LOG.debug("Begin document download");

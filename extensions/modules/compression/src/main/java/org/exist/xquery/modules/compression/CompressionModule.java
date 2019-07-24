@@ -31,7 +31,7 @@ import static org.exist.xquery.FunctionDSL.functionDefs;
 /**
  * XQuery Extension module for compression and de-compression functions
  * 
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @author ljo
  */
 public class CompressionModule extends AbstractInternalModule {

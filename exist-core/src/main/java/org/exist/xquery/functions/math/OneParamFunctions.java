@@ -134,10 +134,7 @@ public class OneParamFunctions extends BasicFunction {
         new SequenceType[] { new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The radians") },
         new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the tangent")
     );
-    
-    /**
-     * @param context
-     */
+
     public OneParamFunctions(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }

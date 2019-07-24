@@ -28,7 +28,7 @@ import org.xml.sax.SAXException;
  * SAXAdapter which disables startDocument and endDocument
  * so that you can always append to the Adapter
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class AppendingSAXAdapter extends SAXAdapter {
 

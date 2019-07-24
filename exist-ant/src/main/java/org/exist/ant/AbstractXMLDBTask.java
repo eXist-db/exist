@@ -62,9 +62,9 @@ public abstract class AbstractXMLDBTask extends Task
     private final String	UNIX_PERMS_REGEX 	= "([r-][w-][x-]){3}";
 
     /**
-     * DOCUMENT ME!
+     * Set the driver.
      *
-     * @param  driver
+     * @param driver the driver
      */
     public void setDriver( String driver )
     {
@@ -73,9 +73,9 @@ public abstract class AbstractXMLDBTask extends Task
 
 
     /**
-     * DOCUMENT ME!
+     * Set the password.
      *
-     * @param  password
+     * @param password the password
      */
     public void setPassword( String password )
     {
@@ -84,9 +84,9 @@ public abstract class AbstractXMLDBTask extends Task
 
 
     /**
-     * DOCUMENT ME!
+     * Set the user.
      *
-     * @param  user
+     * @param user
      */
     public void setUser( String user )
     {
@@ -95,9 +95,9 @@ public abstract class AbstractXMLDBTask extends Task
 
 
     /**
-     * DOCUMENT ME!
+     * Set the URI.
      *
-     * @param  uri
+     * @param uri the URI
      */
     public void setUri( String uri )
     {
@@ -106,9 +106,9 @@ public abstract class AbstractXMLDBTask extends Task
 
 
     /**
-     * DOCUMENT ME!
+     * Set whether to use SSL
      *
-     * @param  ssl
+     * @param ssl true to use SSL, false otherwise
      */
     public void setSsl( boolean ssl )
     {
@@ -117,9 +117,9 @@ public abstract class AbstractXMLDBTask extends Task
 
 
     /**
-     * DOCUMENT ME!
+     * Set whether to initialise the database.
      *
-     * @param  create
+     * @param create true to initialise the database, false otherwise.
      */
     public void setInitdb( boolean create )
     {

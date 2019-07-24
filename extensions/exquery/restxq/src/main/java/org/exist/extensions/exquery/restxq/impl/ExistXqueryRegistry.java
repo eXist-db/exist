@@ -55,7 +55,7 @@ import org.exquery.restxq.RestXqServiceRegistry;
 
 /**
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class ExistXqueryRegistry {
 
@@ -79,6 +79,7 @@ public class ExistXqueryRegistry {
 
     /**
      * Returns a copy of the known dependency tree
+     * @return copy of the known dependency tree
      */
     public Map<String, Set<String>> getDependenciesTree() {
         final Map<String, Set<String>> copy = new HashMap<>();
@@ -96,6 +97,7 @@ public class ExistXqueryRegistry {
 
     /**
      * Returns a copy of the current known missing dependencies
+     * @return copy of the current known missing dependencies
      */
     public Map<String, Set<String>> getMissingDependencies() {
         final Map<String, Set<String>> copy = new HashMap<>();
@@ -113,6 +115,7 @@ public class ExistXqueryRegistry {
 
     /**
      * Returns a copy of the current known invalid queries
+     * @return a copy of the current known invalid queries
      */
     public Set<String> getInvalidQueries() {
         return new HashSet<>(invalidQueries);

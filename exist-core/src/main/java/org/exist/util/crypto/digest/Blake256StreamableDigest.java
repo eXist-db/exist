@@ -30,7 +30,7 @@ import static org.exist.util.crypto.digest.DigestType.BLAKE_256;
 /**
  * Implementation of Blake2b 256 bit streamable digest.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class Blake256StreamableDigest implements StreamableDigest {
     private final ExtendedDigest ed = new Blake2bDigest(BLAKE_256.getDigestLength());

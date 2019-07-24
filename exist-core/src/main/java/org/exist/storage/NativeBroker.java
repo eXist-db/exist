@@ -105,16 +105,10 @@ import static org.exist.util.io.InputStreamUtil.copy;
  * Provides access to all low-level operations required by
  * the database. Extends {@link DBBroker}.
  *
- * Observer Design Pattern: role : this class is the subject (alias observable)
- * for various classes that generate indices for the database content :
+ * This class dispatches the various events (defined by the methods
+ * of {@link org.exist.storage.ContentLoadingObserver}) to indexing classes.
  *
  * @author Wolfgang Meier
- * @link org.exist.storage.NativeElementIndex
- * @link org.exist.storage.NativeValueIndex
- * @link org.exist.storage.NativeValueIndexByQName
- *
- * This class dispatches the various events (defined by the methods
- * of @link org.exist.storage.ContentLoadingObserver) to indexing classes.
  */
 public class NativeBroker extends DBBroker {
 
@@ -191,7 +185,7 @@ public class NativeBroker extends DBBroker {
 
     private boolean incrementalDocIds = false;
 
-    /** initialize database; read configuration, etc. */
+    // initialize database; read configuration, etc.
     public NativeBroker(final BrokerPool pool, final Configuration config) throws EXistException {
         super(pool, config);
         this.lockManager = pool.getLockManager();
@@ -1777,9 +1771,10 @@ public class NativeBroker extends DBBroker {
 
     /**
      * Get the next available unique collection id.
-     *
+     * @param transaction the transaction
      * @return next available unique collection id
-     * @throws ReadOnlyException
+     * @throws ReadOnlyException in response to an readonly error
+     * @throws LockException in case of a lock error
      */
     public int getNextCollectionId(final Txn transaction) throws ReadOnlyException, LockException {
         int nextCollectionId = collectionsDb.getFreeCollectionId();
@@ -2524,8 +2519,12 @@ public class NativeBroker extends DBBroker {
      * Preserves attributes when copying a resource.
      * e.g. `cp --preserve`
      *
+     * @param broker the eXist-db DBBroker
      * @param srcDocument The source document.
      * @param destDocument The destination document.
+     * @param overwrittingDest if true it overwrites the destination resource
+     * @throws PermissionDeniedException if user does not have sufficient rights
+     *
      */
     public static void copyResource_preserve(final DBBroker broker, final DocumentImpl srcDocument, final DocumentImpl destDocument, final boolean overwrittingDest) throws PermissionDeniedException {
         final Permission srcPermissions = srcDocument.getPermissions();

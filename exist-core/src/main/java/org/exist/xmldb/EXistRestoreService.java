@@ -28,7 +28,7 @@ import javax.annotation.Nullable;
 /**
  * XML:DB API Backup Restore Service
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public interface EXistRestoreService extends Service {
     void restore(String backup, @Nullable String newAdminPassword, RestoreServiceTaskListener restoreListener)

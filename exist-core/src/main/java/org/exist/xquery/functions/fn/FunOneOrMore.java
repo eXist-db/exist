@@ -40,7 +40,7 @@ import org.exist.xquery.value.Type;
 /**
  * Implements function fn:one-or-more.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunOneOrMore extends Function {
 
@@ -54,9 +54,6 @@ public class FunOneOrMore extends Function {
 			},
 			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ONE_OR_MORE, "the sequence passed in by $arg if it contains one or more items."));
 
-	/**
-	 * @param context
-	 */
 	public FunOneOrMore(XQueryContext context) {
 		super(context, signature);
 	}

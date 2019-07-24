@@ -24,7 +24,7 @@ package org.exist.util;
  *
  * @param <T> the type held.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public final class Holder<T> {
     public T value;

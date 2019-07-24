@@ -139,7 +139,7 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     /**
      * Add member. Modifies the array! Don't use unless you're constructing a new array.
      *
-     * @param seq
+     * @param seq the member sequence to add
      */
     public void add(Sequence seq) {
         vector = vector.cons(seq);
@@ -148,8 +148,8 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     /**
      * Return a new array with a member appended.
      *
-     * @param seq
-     * @return
+     * @param seq the member sequence to append
+     * @return new array
      */
     public ArrayType append(Sequence seq) {
         return new ArrayType(this.context, vector.cons(seq));
@@ -297,9 +297,9 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     /**
      * Flatten the given sequence by recursively replacing arrays with their member sequence.
      *
-     * @param input
-     * @return
-     * @throws XPathException
+     * @param input the sequence to flatten
+     * @return flattened sequence
+     * @throws XPathException in case of dynamic error
      */
     public static Sequence flatten(Sequence input) throws XPathException {
         if (input.hasOne()) {

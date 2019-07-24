@@ -49,7 +49,7 @@ import org.exist.xquery.value.Type;
 import static org.exist.xquery.regex.RegexUtil.*;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunReplace extends FunMatches {
 	
@@ -103,9 +103,6 @@ public class FunReplace extends FunMatches {
 		)
 	};
 
-	/**
-	 * @param context
-	 */
 	public FunReplace(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}

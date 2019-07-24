@@ -12,10 +12,9 @@ import org.w3c.dom.NodeList;
 
 /**
  * Utility class for extracting parameters from 
- * DOM representation into a Map
+ * DOM representation into a Map.
  *
- *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class ParametersExtractor {
 
@@ -25,7 +24,11 @@ public class ParametersExtractor {
     private final static String PARAMETER_VALUE_ATTRIBUTE = "value";
 
     /**
+     * Extract the parameters.
+     *
      * @param parameters A "parameters" element, which may contain "parameter" child elements
+     *
+     * @return the parameters
      */
     public static Map<String, List<? extends Object>> extract(final Element parameters) {
 
@@ -45,7 +48,11 @@ public class ParametersExtractor {
     }
 
     /**
+     * Extract the parameters.
+     *
      * @param nlParameter A NodeList of "parameter" elements
+     *
+     * @return the parameters
      */
     public static Map<String, List<? extends Object>> extract(final NodeList nlParameter) {
 
@@ -140,8 +147,15 @@ public class ParametersExtractor {
     }
 
     /**
-     * Parses a structure like <parameters><param name="a" value="1"/><param
-     * name="b" value="2"/></parameters> into a set of Properties
+     * Parses a structure like:
+     * <pre>
+     * {@code
+     *  <parameters>
+     *    <param name="a" value="1"/><param name="b" value="2"/>
+     *  </parameters>
+     * }
+     * </pre>
+     * into a set of Properties.
      *
      * @param nParameters
      *            The parameters Node
@@ -153,8 +167,16 @@ public class ParametersExtractor {
     }
 
     /**
-     * Parses a structure like <properties><property name="a" value="1"/><property
-     * name="b" value="2"/></properties> into a set of Properties
+     * Parses a structure like:
+     * <pre>
+     * {@code
+     *   <properties>
+     *     <property name="a" value="1"/>
+     *     <property name="b" value="2"/>
+     *   </properties>
+     * }
+     * </pre>
+     * into a set of Properties
      *
      * @param nProperties
      *            The properties Node
@@ -166,8 +188,16 @@ public class ParametersExtractor {
     }
 
     /**
-     * Parses a structure like <features><feature name="a" value="1"/><feature
-     * name="b" value="2"/></features> into a set of Properties
+     * Parses a structure like:
+     * <pre>
+     * {@code
+     *   <features>
+     *     <feature name="a" value="1"/>
+     *     <feature name="b" value="2"/>
+     *   </features>
+     * }
+     * </pre>
+     * into a set of Properties
      *
      * @param nFeatures
      *            The features Node
@@ -179,8 +209,16 @@ public class ParametersExtractor {
     }
 
     /**
-     * Parses a structure like <properties><property name="a" value="1"/><property
-     * name="b" value="2"/></properties> into a set of Properties
+     * Parses a structure like:
+     * <pre>
+     * {@code
+     *   <properties>
+     *     <property name="a" value="1"/>
+     *     <property name="b" value="2"/>
+     *   </properties>
+     * }
+     * </pre>
+     * into a set of Properties
      *
      * @param container
      *            The container of the properties

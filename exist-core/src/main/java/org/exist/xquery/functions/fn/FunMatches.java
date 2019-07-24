@@ -53,7 +53,7 @@ import static org.exist.xquery.regex.RegexUtil.*;
  * 
  * Based on the java.util.regex package for regular expression support.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunMatches extends Function implements Optimizable, IndexUseReporter {
 
@@ -121,9 +121,6 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
     private NodeSet preselectResult = null;
     private GeneralComparison.IndexFlags idxflags = new GeneralComparison.IndexFlags();
 
-    /**
-	 * @param context
-	 */
 	public FunMatches(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}

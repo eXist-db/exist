@@ -40,13 +40,11 @@ public class StoreValueLoggable extends AbstractBFileLoggable {
     protected ByteArray value;
 
     /**
-     * 
-     * 
-     * @param transaction 
-     * @param fileId 
-     * @param page 
-     * @param tid 
-     * @param value 
+     * @param transaction the database transaction
+     * @param fileId the file id
+     * @param page the page
+     * @param tid the transaction id
+     * @param value the value
      */
     public StoreValueLoggable(Txn transaction, byte fileId, long page, short tid, ByteArray value) {
         super(BFile.LOG_STORE_VALUE, fileId, transaction);
@@ -59,9 +57,6 @@ public class StoreValueLoggable extends AbstractBFileLoggable {
         super(broker, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
-     */
     @Override
     public void write(ByteBuffer out) {
         super.write(out);
@@ -71,9 +66,6 @@ public class StoreValueLoggable extends AbstractBFileLoggable {
         value.copyTo(out);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
-     */
     @Override
     public void read(ByteBuffer in) {
         super.read(in);
@@ -85,9 +77,6 @@ public class StoreValueLoggable extends AbstractBFileLoggable {
         value = new FixedByteArray(data, 0, len);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#getLogSize()
-     */
     @Override
     public int getLogSize() {
         return super.getLogSize() + 8 + value.size();

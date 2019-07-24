@@ -77,6 +77,8 @@ public class MimeTable {
     
     /**
      * Returns the singleton.
+     *
+     * @return the mimetable
      */
     public static MimeTable getInstance() {
         if(instance == null) {
@@ -87,6 +89,10 @@ public class MimeTable {
     
     /**
      * Returns the singleton, using a custom mime-types.xml file
+     *
+     * @param path the path to the mime-types.xml file.
+     *
+     * @return the mimetable
      */
     public static MimeTable getInstance(final Path path) {
         if (instance == null) {
@@ -98,6 +104,11 @@ public class MimeTable {
     /**
      * Returns the singleton, using a custom mime-types.xml stream,
      * like for instance an internal database resource.
+     *
+     * @param stream the input stream
+     * @param src the name of the input
+     *
+     * @return the mimetable
      */
     public static MimeTable getInstance(final InputStream stream, final String src) {
         if (instance == null) {
@@ -134,7 +145,9 @@ public class MimeTable {
     }
     
     /**
-     * Inform from where a mime-table is loaded
+     * Inform from where a mime-table is loaded.
+     *
+     * @return the source.
      */
     public String getSrc() {
         return this.src;
@@ -201,7 +214,7 @@ public class MimeTable {
      * Determine if the passed mime type is text, i.e. may require a charset
      * declaration.
      * 
-     * @param mimeType
+     * @param mimeType the mimetype
      * @return TRUE if mimetype is for text content else FALSE
      */
     public boolean isTextContent(String mimeType) {

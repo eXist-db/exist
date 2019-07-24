@@ -34,18 +34,24 @@ public interface FunctionCall extends Function {
 	 * yet been declared. XQueryContext remembers all calls to undeclared functions
 	 * and tries to resolve them after parsing has completed.
 	 * 
-	 * @param functionDef
-	 * @throws XPathException
+	 * @param functionDef the function definition.
+	 *
+	 * @throws XPathException if an error occurs whilst resolving the forward references
 	 */
 	public void resolveForwardReference(Function functionDef) throws XPathException;
 
 	public QName getQName();
 
 	/**
-	 * @param contextSequence
-	 * @param contextItem
-	 * @param seq
-	 * @throws XPathException
+	 * Evaluate the function.
+	 *
+	 * @param contextSequence the context sequence.
+	 * @param contextItem the context item
+	 * @param seq the sequence
+	 *
+	 * @return the result sequence.
+	 *
+	 * @throws XPathException if an error occurs during evaluatiion
 	 */
 	public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq) throws XPathException;
 

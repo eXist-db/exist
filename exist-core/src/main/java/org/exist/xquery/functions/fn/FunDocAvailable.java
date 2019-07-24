@@ -40,7 +40,7 @@ import java.net.URISyntaxException;
 /**
  * Implements the XQuery's fn:doc-available() function.
  *
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  * @author wolf
  */
 public class FunDocAvailable extends Function {

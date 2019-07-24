@@ -28,7 +28,7 @@ import org.exist.security.Permission;
 
 /**
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class BasicPermissionsTableModel extends DefaultTableModel {
     
@@ -74,7 +74,7 @@ public class BasicPermissionsTableModel extends DefaultTableModel {
     /**
      * Get the Mode described by the table model
      * 
-     * The Unix mode of the permissions
+     * @return The Unix mode of the permissions
      */
     public int getMode() {
         int mode = 0;

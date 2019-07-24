@@ -40,7 +40,7 @@ import org.xml.sax.SAXException;
 import static com.evolvedbinary.j8fu.Try.TaggedTryUnchecked;
 
 /**
- * @author Dulip Withanage <dulip.withanage@gmail.com>
+ * @author <a href="mailto:dulip.withanage@gmail.com">Dulip Withanage</a>
  * @version 1.0
  */
 public class MetadataFunctions extends BasicFunction {

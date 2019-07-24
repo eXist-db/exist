@@ -139,11 +139,7 @@ public class ModuleInfo extends BasicFunction {
 	private static final QName MODULE_SOURCE_ATTR = new QName("source", XMLConstants.NULL_NS_URI);
 	private static final QName MODULE_DESC_QNAME = new QName("description", XMLConstants.NULL_NS_URI);
 	private static final QName MODULES_QNAME = new QName("modules", XMLConstants.NULL_NS_URI);
-	
-	/**
-	 * @param context
-	 * @param signature
-	 */
+
 	public ModuleInfo(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}

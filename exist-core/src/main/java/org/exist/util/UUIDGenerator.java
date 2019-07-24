@@ -28,11 +28,11 @@ import com.fasterxml.uuid.impl.NameBasedGenerator;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
 
 /**
- *  UUID generator.
+ * UUID generator.
  *
- * {@see http://en.wikipedia.org/wiki/UUID}
+ * See <a href="http://en.wikipedia.org/wiki/UUID">UUID</a>
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author Dannes Wessels
  */
 public class UUIDGenerator {
@@ -52,7 +52,7 @@ public class UUIDGenerator {
 
     
     /**
-     *  Generate random UUID code.
+     * Generate random UUID code.
      *
      * @return UUID code, formatted as f271ec43-bf1f-4030-a269-b11576538f71
      */
@@ -62,7 +62,8 @@ public class UUIDGenerator {
 
     /**
      * Generate a version 4 UUID.
-     * {@see http://en.wikipedia.org/wiki/Universally_Unique_Identifier#Version_4_.28random.29}
+     *
+     * See <a href="http://en.wikipedia.org/wiki/Universally_Unique_Identifier#Version_4_.28random.29">http://en.wikipedia.org/wiki/Universally_Unique_Identifier#Version_4_.28random.29</a>.
      *
      * @return a Version 4 UUID
      */
@@ -72,7 +73,8 @@ public class UUIDGenerator {
 
     /**
      * Generate a version 3 UUID code.
-     * {@see http://en.wikipedia.org/wiki/Universally_Unique_Identifier#Version_3_.28MD5_hash.29}
+     *
+     * See <a href="http://en.wikipedia.org/wiki/Universally_Unique_Identifier#Version_3_.28MD5_hash.29">http://en.wikipedia.org/wiki/Universally_Unique_Identifier#Version_3_.28MD5_hash.29</a>
      *
      * @param name the name to generate a UUID for.
      *

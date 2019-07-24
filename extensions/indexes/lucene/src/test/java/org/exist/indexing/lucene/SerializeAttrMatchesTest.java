@@ -68,12 +68,12 @@ public class SerializeAttrMatchesTest {
                     "</collection>";
 
     private static final String XML =
-            "<p><s><w xml:id=\"VSK.P13.t1.p3.w231\">нас</w>\n" +
+            "<s><w xml:id=\"VSK.P13.t1.p3.w231\">нас</w>\n" +
             "<w xml:id=\"VSK.P13.t1.p3.w233\">свакога</w>\n" +
             "<w xml:id=\"VSK.P13.t1.p3.w235\">Божића</w>\n" +
             "<w xml:id=\"VSK.P13.t1.p3.w237\">новом</w>\n" +
             "<w xml:id=\"VSK.P13.t1.p3.w239\" lemma=\"књига\">књигом</w>\n" +
-            "<w xml:id=\"VSK.P13.t1.p3.w241\">пешкешите</w>. –</s></p>";
+            "<w xml:id=\"VSK.P13.t1.p3.w241\">пешкешите</w>. –</s>";
 
     private Collection test = null;
 

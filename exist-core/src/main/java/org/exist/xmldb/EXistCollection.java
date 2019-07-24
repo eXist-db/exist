@@ -36,10 +36,20 @@ public interface EXistCollection extends Collection {
 
     /**
      * Returns the time of creation of the collection.
+     *
+     * @return the creation time
+     *
+     * @throws XMLDBException if an error occurs whilst retrieving the creation time.
      */
     Date getCreationTime() throws XMLDBException;
 
-    /* Alternative methods, especially to be used from jsp */
+    /**
+     * Alternative methods, especially to be used from JSP.
+     *
+     * @return the child collections.
+     *
+     * @throws XMLDBException if an error occurs whilst retrieving the child collections.
+     */
     String[] getChildCollections() throws XMLDBException;
 
     String[] getResources() throws XMLDBException;

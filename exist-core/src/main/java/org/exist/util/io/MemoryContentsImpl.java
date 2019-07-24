@@ -34,7 +34,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ManagedLock;
 
 /**
- * @author Patrick Reinhart <patrick@reini.net>
+ * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
  */
 public final class MemoryContentsImpl implements MemoryContents {
     private static final Logger LOG = LogManager.getLogger(MemoryContentsImpl.class);

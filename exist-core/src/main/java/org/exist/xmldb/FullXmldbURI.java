@@ -47,7 +47,10 @@ public class FullXmldbURI extends XmldbURI {
     /**
      * Feeds private members
      *
-     * @throws URISyntaxException
+     * @param xmldbURI the xmldb URI.
+     * @param hadXmldbPrefix if the xmldb URI has an xmldb prefix.
+     *
+     * @throws URISyntaxException if the URI is invalid.
      */
     @Override
     protected void parseURI(final URI xmldbURI, final boolean hadXmldbPrefix) throws URISyntaxException {
@@ -137,7 +140,7 @@ public class FullXmldbURI extends XmldbURI {
      * To be called each time a private member that interacts with the wrapped
      * URI is modified.
      *
-     * @throws URISyntaxException
+     * @throws URISyntaxException if the URI is invalid.
      */
     @Override
     protected void recomputeURI() throws URISyntaxException {

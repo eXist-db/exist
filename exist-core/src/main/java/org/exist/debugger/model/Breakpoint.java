@@ -115,7 +115,7 @@ public interface Breakpoint {
 
 	/**
 	 * A string indicating a condition to use to compare hit_count and hit_value. The following values are legal: 
-	 * >= break if hit_count is greater than or equal to hit_value [default] 
+	 * &gt;= break if hit_count is greater than or equal to hit_value [default]
 	 * == break if hit_count is equal to hit_value 
 	 * %  break if hit_count is a multiple of hit_value
 	 *  

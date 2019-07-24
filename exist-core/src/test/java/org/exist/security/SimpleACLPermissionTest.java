@@ -24,7 +24,7 @@ import static org.junit.Assert.assertEquals;
 
 /**
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 @RunWith(ParallelRunner.class)
 public class SimpleACLPermissionTest {

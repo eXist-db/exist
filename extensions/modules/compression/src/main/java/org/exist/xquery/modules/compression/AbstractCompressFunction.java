@@ -60,8 +60,8 @@ import java.util.zip.ZipOutputStream;
 /**
  * Compresses a sequence of resources and/or collections
  * 
- * @author Adam Retter <adam@exist-db.org>
- * @author Leif-Jöran Olsson <ljo@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
+ * @author <a href="mailto:ljo@exist-db.org">Leif-Jöran Olsson</a>
  * @version 1.0
  */
 public abstract class AbstractCompressFunction extends BasicFunction

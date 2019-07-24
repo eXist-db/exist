@@ -13,7 +13,7 @@ import org.exist.security.internal.aider.PermissionAiderFactory;
 /**
  * Base class for Remote XMLDB classes
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public abstract class AbstractRemote {
 

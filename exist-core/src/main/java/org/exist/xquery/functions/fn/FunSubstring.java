@@ -44,8 +44,8 @@ import org.exist.xquery.value.ValueSequence;
 /**
  * Built-in function fn:substring().
  *
- *	@author Adam Retter <adam.retter@devon.gov.uk>
- *	@author ljo <ellefj@gmail.com>
+ *	@author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
+ *	@author <a href="mailto:ellefj@gmail.com">ljo</a>
  */
 public class FunSubstring extends Function {
 	
@@ -202,7 +202,7 @@ public class FunSubstring extends Function {
      * @param end a <code>NumericValue</code> value
      * @param start a <code>NumericValue</code> value
      * @return true if the length is valid, false otherwise
-     * @exception XPathException if an error occurs
+     * @throws XPathException if an error occurs
      */
     private boolean validEndPosition(NumericValue end, NumericValue start)
         throws XPathException {

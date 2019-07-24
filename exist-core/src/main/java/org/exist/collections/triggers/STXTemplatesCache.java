@@ -47,7 +47,7 @@ import org.xml.sax.SAXException;
  * The cache is concurrent, however requests
  * for each stylesheet use a READ_LOCK per document.
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 @ThreadSafe
 public class STXTemplatesCache {
@@ -77,6 +77,9 @@ public class STXTemplatesCache {
      *
      * @param broker Database broker for accessing the serializer pool
      * @param stylesheet The stylesheet document
+     * @throws TransformerConfigurationException if there is an error in the transformations
+     * @throws SAXException if a SAX error comes up
+     * @throws LockException if dbbroker is locked
      *
      * @return The compiled stylesheet
      */

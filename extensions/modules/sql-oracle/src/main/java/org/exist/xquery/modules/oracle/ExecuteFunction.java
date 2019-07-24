@@ -67,7 +67,7 @@ import org.w3c.dom.NodeList;
  * 
  * Execute a PL/SQL stored procedure within an Oracle RDBMS.
  * 
- * @author Robert Walpole <robert.walpole@metoffice.gov.uk>
+ * @author <a href="mailto:robert.walpole@metoffice.gov.uk">Robert Walpole</a>
  * @serial 2009-03-23
  * @version 1.0
  * 

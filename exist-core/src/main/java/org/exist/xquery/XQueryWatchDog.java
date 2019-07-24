@@ -60,9 +60,6 @@ public class XQueryWatchDog {
 
     private String runningThread = null;
 
-    /**
-     * 
-     */
     public XQueryWatchDog(XQueryContext context) {
         this.context = context;
         configureDefaults();
@@ -73,7 +70,7 @@ public class XQueryWatchDog {
      * Track the name of the thread currently running this query.
      * Used for JMX stats.
      *
-     * @param name
+     * @param name name of the thread
      */
     public void setRunningThread(String name) {
         this.runningThread = name;
@@ -82,7 +79,7 @@ public class XQueryWatchDog {
     /**
      * Get the name of last thread which has been running this query.
      *
-     * @return
+     * @return name of the last thread
      */
     public String getRunningThread() {
         return runningThread;

@@ -125,7 +125,6 @@ public class FunStringToCodepoints extends BasicFunction {
      * @param seq a <code>ValueSequence</code> value
      * @param start an <code>int</code> value
      * @return a <code>ValueSequence</code> value
-     * @exception XPathException if an error occurs
      */
     public static String subSequence(final ValueSequence seq, final int start) {
         final StringBuilder substring = new StringBuilder(seq.getItemCount());
@@ -148,7 +147,7 @@ public class FunStringToCodepoints extends BasicFunction {
      * @param start an <code>int</code> value
      * @param end an <code>int</code> value
      * @return a <code>ValueSequence</code> value
-     * @exception XPathException if an error occurs
+     * @throws XPathException if an error occurs
      */
     public static String subSequence(final ValueSequence seq, final int start, final int end) 
         throws XPathException {
@@ -173,8 +172,8 @@ public class FunStringToCodepoints extends BasicFunction {
      * The method <code>codePointToString</code>
      *
      * @param value an <code>IntegerValue</code> value
+     *
      * @return a <code>String</code> value
-     * @exception XPathException if an error occurs
      */
     public static String codePointToString(final IntegerValue value) {
         final StringBuilder string = new StringBuilder(2);

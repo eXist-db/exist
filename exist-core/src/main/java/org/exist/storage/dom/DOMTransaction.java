@@ -85,7 +85,7 @@ public abstract class DOMTransaction {
      * The method <code>start</code>
      *
      * @return an <code>Object</code> value
-     * @exception ReadOnlyException if an error occurs
+     * @throws ReadOnlyException if an error occurs
      */
     public abstract Object start() throws ReadOnlyException;
 

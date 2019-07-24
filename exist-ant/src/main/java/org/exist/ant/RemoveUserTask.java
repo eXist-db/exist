@@ -32,7 +32,7 @@ import org.exist.security.Account;
 /**
  * an ant task to remove a name.
  *
- * @author  peter.klotz@blue-elephant-systems.com
+ * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  */
 public class RemoveUserTask extends UserTask
 {

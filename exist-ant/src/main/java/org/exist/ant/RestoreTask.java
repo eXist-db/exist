@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.ant;
 
@@ -38,7 +36,7 @@ import java.nio.file.Path;
 
 
 /**
- * DOCUMENT ME!
+ * Restore Backup Task.
  *
  * @author  wolf
  */
@@ -49,9 +47,7 @@ public class RestoreTask extends AbstractXMLDBTask
     private DirSet dirSet          = null;
     private String restorePassword = null;
 
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
+    @Override
     public void execute() throws BuildException
     {
         if( uri == null ) {
@@ -166,9 +162,9 @@ public class RestoreTask extends AbstractXMLDBTask
 
 
     /**
-     * DOCUMENT ME!
+     * Set the directory.
      *
-     * @param  dir
+     * @param dir the directory
      */
     public void setDir( File dir )
     {

@@ -30,7 +30,7 @@ import java.net.URISyntaxException;
 /**
  * XAR Source for Binary Documents
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 class BinaryDocumentXarSource implements XarSource {
     private final BrokerPool pool;

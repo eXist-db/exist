@@ -47,11 +47,6 @@ import org.w3c.dom.Node;
  */
 public class Rename extends Modification {
 
-    /**
-     * @param context
-     * @param select
-     * @param value
-     */
     public Rename(XQueryContext context, Expression select, Expression value) {
         super(context, select, value);
     }

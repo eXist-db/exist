@@ -76,6 +76,7 @@ public interface IndexWorker {
      * with each collection. It can later be retrieved from the collection configuration, e.g. to
      * check if a given node should be indexed or not.
      *
+     * @param controller the IndexController
      * @param configNodes lists the top-level child nodes below the &lt;index&gt; element in collection.xconf
      * @param namespaces the active prefix/namespace map
      * @return an arbitrary configuration object to be kept for this index in the collection configuration
@@ -135,6 +136,7 @@ public interface IndexWorker {
      *               will be called with the parent node as first argument. Usually a reindex is
      *               not required unless the index is defined on the parent node or an ancestor of it.
      * @param includeSelf if set to true, the current node itself will be included in the check
+     * @param <T> class of the node returned
      * @return the top-most root node to be reindexed
      */
     <T extends IStoredNode> IStoredNode getReindexRoot(IStoredNode<T> node, NodePath path, boolean insert, boolean includeSelf);
@@ -156,6 +158,7 @@ public interface IndexWorker {
      * query results. The method should return null if the implementation is not interested
      * in receiving serialization events.
      *
+     * @param broker The broker that will perform the operation
      * @param proxy the NodeProxy which is being serialized
      * @return a MatchListener or null if the implementation does not want to receive
      * serialization events
@@ -175,6 +178,8 @@ public interface IndexWorker {
      *
      * @param collection The collection to remove
      * @param broker The broker that will perform the operation
+     * @param reindex enable or disable reindex
+     * @throws PermissionDeniedException in case user does not have sufficient rights
      */
     void removeCollection(Collection collection, DBBroker broker, boolean reindex) throws PermissionDeniedException;
 
@@ -191,9 +196,9 @@ public interface IndexWorker {
      * the index entries can be compared, i.e. if the index implements 
      * {@link org.exist.indexing.OrderedValuesIndex}, otherwise each entry will be considered
      * as a single occurrence.
-     * @param context 
+     * @param context the XQuery context
      * @param docs The documents to which the index entries belong
-     * @param contextSet
+     * @param contextSet the contextSet to opereate on
      * @param hints Some "hints" for retrieving the index entries. See such hints in
      * {@link org.exist.indexing.OrderedValuesIndex} and {@link org.exist.indexing.QNamedKeysIndex}.
      * @return Occurrences objects that contain :

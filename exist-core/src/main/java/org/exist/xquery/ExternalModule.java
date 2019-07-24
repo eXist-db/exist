@@ -33,7 +33,7 @@ import java.util.Map;
  * An external library module implemented in XQuery and loaded
  * through the "import module" directive.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public interface ExternalModule extends Module {
 
@@ -49,7 +49,7 @@ public interface ExternalModule extends Module {
      * Declare a new function. Called by the XQuery compiler
      * when parsing a library module for every function declaration.
      * 
-     * @param func
+     * @param func the function to add
      */
     public void declareFunction(UserDefinedFunction func);
 
@@ -57,7 +57,12 @@ public interface ExternalModule extends Module {
      * Try to find the function identified by qname. Returns null
      * if the function is undefined.
      * 
-     * @param qname
+     * @param qname the name of the function to look for
+     * @param arity arity of the function to look for
+     * @param callerContext context of the caller - needed to check if
+     *                      found function should be visible
+     * @throws XPathException in case of a dynamic error
+     * @return the function found
      */
     public UserDefinedFunction getFunction(QName qname, int arity, XQueryContext callerContext) throws XPathException;
 
@@ -66,7 +71,7 @@ public interface ExternalModule extends Module {
     /**
      * Analyze declared variables. Needs to be called when the module was imported dynamically.
      *
-     * @throws XPathException
+     * @throws XPathException in case of static errors
      */
     public void analyzeGlobalVars() throws XPathException;
 
@@ -84,7 +89,7 @@ public interface ExternalModule extends Module {
      * Set the source object this module has been read from.
      * 
      * This is required to check the validity of a compiled expression.
-     * @param source
+     * @param source the source instance
      */
     public void setSource(Source source);
 
@@ -94,12 +99,15 @@ public interface ExternalModule extends Module {
      * Set the XQueryContext of this module. This will be a sub-context
      * of the main context as parts of the static context are shared. 
      * 
-     * @param context
+     * @param context the context to set
      */
     public void setContext(XQueryContext context);
 
     /**
      * Is this module still valid or should it be reloaded from its source?
+     *
+     * @param broker the broker to use for checking
+     * @return true if module should be reloaded
      */
     public boolean moduleIsValid(DBBroker broker);
 

@@ -36,26 +36,71 @@ import org.xmldb.api.modules.CollectionManagementService;
 public interface EXistCollectionManagementService extends CollectionManagementService {
 
     /**
-     * @deprecated Use XmldbURI version instead
+     * Move a Collection.
+     *
+     * @param collection the source collection.
+     * @param destination the destination collection.
+     * @param newName the new name in the destination collection.
+     *
+     * @deprecated Use XmldbURI version instead.
+     *
+     * @throws XMLDBException if an error occurs when moving the collection.
      */
+    @Deprecated
     void move(String collection, String destination, String newName) throws XMLDBException;
 
     /**
-     * @deprecated Use XmldbURI version instead
+     * Move a Resource.
+     *
+     * @param resourcePath the source resource.
+     * @param destinationPath the destination collection.
+     * @param newName the new name in the destination collection.
+     *
+     * @deprecated Use XmldbURI version instead.
+     *
+     * @throws XMLDBException if an error occurs when moving the resource.
      */
+    @Deprecated
     void moveResource(String resourcePath, String destinationPath, String newName) throws XMLDBException;
 
     /**
-     * @deprecated Use XmldbURI version instead
+     * Copy a Resource.
+     *
+     * @param resourcePath the source resource.
+     * @param destinationPath the destination collection.
+     * @param newName the new name in the destination collection.
+     *
+     * @deprecated Use XmldbURI version instead.
+     *
+     * @throws XMLDBException if an error occurs when copying the resource.
      */
+    @Deprecated
     void copyResource(String resourcePath, String destinationPath, String newName) throws XMLDBException;
 
     /**
-     * @deprecated Use XmldbURI version instead
+     * Copy a Collection.
+     *
+     * @param collection the source collection.
+     * @param destination the destination collection.
+     * @param newName the new name in the destination collection.
+     *
+     * @deprecated Use XmldbURI version instead.
+     *
+     * @throws XMLDBException if an error occurs when copying the collection.
      */
+    @Deprecated
     void copy(String collection, String destination, String newName) throws XMLDBException;
 
     /**
+     * Create a Collection.
+     *
+     * @param collName the name of the collection.
+     * @param created the created time of the collection.
+     *
+     * @return the newly created collection.
+     *
+     * @throws XMLDBException if an error occurs when creating the collection.
+     *
      * @deprecated Use XmldbURI version instead
      */
     @Deprecated
@@ -66,45 +111,91 @@ public interface EXistCollectionManagementService extends CollectionManagementSe
     void moveResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName) throws XMLDBException;
 
     /**
+     * Copy a Resource.
+     *
+     * @param resourcePath the source resource.
+     * @param destinationPath the destination collection.
+     * @param newName the new name in the destination collection.
+     *
      * @deprecated Use {@link #copyResource(XmldbURI, XmldbURI, XmldbURI, String)}
+     *
+     * @throws XMLDBException if an error occurs when copying the resource.
      */
     @Deprecated
     void copyResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName) throws XMLDBException;
 
     /**
+     * Copy a Resource.
+     *
      * @param resourcePath The source document
      * @param destinationPath The destination collection
      * @param newName The new name of the copied source in the destination collection
      * @param preserveType one of either "DEFAULT", "NO_PRESERVE", "PRESERVE"
+     *
+     * @throws XMLDBException if an error occurs when copying the resource.
      */
     void copyResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName, String preserveType) throws XMLDBException;
 
     /**
+     * Copy a Collection.
+     *
+     * @param collection the source collection.
+     * @param destination the destination collection.
+     * @param newName the new name in the destination collection.
+     *
+     * @throws XMLDBException if an error occurs when copying the resource.
+     *
      * @deprecated Use {@link #copy(XmldbURI, XmldbURI, XmldbURI, String)}
      */
     @Deprecated
     void copy(XmldbURI collection, XmldbURI destination, XmldbURI newName) throws XMLDBException;
 
-    /**
+    /** Copy a Collection
+     *
      * @param collection The source collection
      * @param destination The destination collection
      * @param newName The new name of the copied source in the destination collection
      * @param preserveType one of either "DEFAULT", "NO_PRESERVE", "PRESERVE"
+     *
+     * @throws XMLDBException if an error occurs when copying the resource.
      */
     void copy(XmldbURI collection, XmldbURI destination, XmldbURI newName, String preserveType) throws XMLDBException;
 
     Collection createCollection(XmldbURI collName, Date created) throws XMLDBException;
 
     /**
+     * Create a Collection.
+     *
+     * @param collName the collection name.
+     *
+     * @return the newly created collection.
+     *
+     * @throws XMLDBException if an error occurs when creating the collection.
+     *
      * @deprecated Use XmldbURI version instead
      */
     @Deprecated
     @Override
     Collection createCollection(String collName) throws XMLDBException;
 
+    /**
+     * Create a Collection.
+     *
+     * @param collName the collection name.
+     *
+     * @return the newly created collection.
+     *
+     * @throws XMLDBException if an error occurs when creating the collection.
+     */
     Collection createCollection(XmldbURI collName) throws XMLDBException;
 
     /**
+     * Remove a Collection.
+     *
+     * @param collName the name of the collection.
+     *
+     * @throws XMLDBException if an error occurs when removing the collection.
+     *
      * @deprecated Use XmldbURI version instead
      */
     @Override

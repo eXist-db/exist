@@ -37,7 +37,7 @@ import org.exist.storage.txn.Txn;
  * where the user account will be SYSTEM and has read access to
  * all queries
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class RestXqStartupTrigger implements StartupTrigger {
     

@@ -34,7 +34,7 @@ import javax.swing.JComboBox;
  * for buttons, JPasswordFields, JTextFields and JComboBoxes,
  * whereby it sends doClick() to the affected or specified source.
  *
- * @author ljo <ljo@exist-db.org>
+ * @author <a href="mailto:ljo@exist-db.org">ljo</a>
  */
 public class EnterKeyAdapter extends KeyAdapter {
     private AbstractButton button;

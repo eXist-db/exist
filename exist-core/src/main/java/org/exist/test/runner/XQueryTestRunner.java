@@ -59,6 +59,9 @@ public class XQueryTestRunner extends AbstractTestRunner {
 
     /**
      * @param path The path to the XQuery file containing the XQSuite tests
+     * @param parallel whether the tests should be run in parallel.
+     *
+     * @throws InitializationError if the test runner could not be constructed.
      */
     public XQueryTestRunner(final Path path, final boolean parallel) throws InitializationError {
         super(path, parallel);

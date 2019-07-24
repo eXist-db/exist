@@ -44,9 +44,9 @@ import org.exist.xquery.value.*;
 /**
  * XQuery 3.0 try {...} catch{...} expression.
  * 
- * @author Adam Retter <adam@exist-db.org>
- * @author Leif-Jöran Olsson <ljo@exist-db.org>
- * @author Dannes Wessels <dannes@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
+ * @author <a href="mailto:ljo@exist-db.org">Leif-Jöran Olsson</a>
+ * @author <a href="mailto:dannes@exist-db.org">Dannes Wessels</a>
  */
 public class TryCatchExpression extends AbstractExpression {
 
@@ -79,6 +79,12 @@ public class TryCatchExpression extends AbstractExpression {
 
     /**
      * Receive catch-clause data from parser.
+     *
+     * TODO: check if catchVars are still needed
+     *
+     * @param catchErrorList list of errors to catch
+     * @param catchVars variable names for caught errors: unused (from earlier version of the spec?)
+     * @param catchExpr the expression to be evaluated if error is caught
      */
     public void addCatchClause(final List<QName> catchErrorList, final List<QName> catchVars, final Expression catchExpr) {
         catchClauses.add( new CatchClause(catchErrorList, catchVars, catchExpr) );
@@ -556,6 +562,8 @@ public class TryCatchExpression extends AbstractExpression {
 
     /**
      * Data container
+     *
+     * TODO: catchVars is unused? Remove?
      */
     public static class CatchClause {
         private final List<QName> catchErrorList;

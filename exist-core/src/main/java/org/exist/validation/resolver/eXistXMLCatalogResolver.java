@@ -70,7 +70,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
      * Constructs a catalog resolver with the given list of entry files.
      *
      * @param catalogs List of Strings
-     *                 <p>
+     *
      *                 TODO: check for non-String and NULL values.
      */
     public void setCatalogs(List<String> catalogs) {

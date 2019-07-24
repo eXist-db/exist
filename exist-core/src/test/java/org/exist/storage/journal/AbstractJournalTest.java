@@ -69,7 +69,7 @@ import static org.junit.Assert.assertNull;
  * are written to the journal during
  * various operations.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public abstract class AbstractJournalTest<T> {
 

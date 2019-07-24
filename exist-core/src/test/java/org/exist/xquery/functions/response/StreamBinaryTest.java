@@ -18,7 +18,7 @@ import org.junit.Test;
 /**
  * Tests expected behaviour of response:stream-binary() XQuery function
  * 
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @version 1.0
  */
 public class StreamBinaryTest extends RESTTest {

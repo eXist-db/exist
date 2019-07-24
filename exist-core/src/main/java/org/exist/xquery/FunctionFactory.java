@@ -62,6 +62,17 @@ public class FunctionFactory {
      * functions. It also deals with constructor functions and
      * optimizes some function calls like starts-with, ends-with or
      * contains.
+     *
+     * @param context the XQuery context
+     * @param qname the name of the function
+     * @param ast the AST node of the function
+     * @param parent the parent expression of the function
+     * @param params the parameters to the function
+     * @param optimizeStrFuncs true if string functions be optimized
+     *
+     * @return the function expression
+     *
+     * @throws XPathException if an error occurs creating the function
      */
     public static Expression createFunction(XQueryContext context, QName qname, XQueryAST ast, PathExpr parent, List<Expression> params,
         boolean optimizeStrFuncs) throws XPathException {
@@ -376,10 +387,10 @@ public class FunctionFactory {
      * This is used to handle dynamic function calls or partial
      * function applications on built in functions.
      * 
-     * @param context
+     * @param context current context
      * @param call the function call to be wrapped
      * @return a new function call referencing an inline function
-     * @throws XPathException
+     * @throws XPathException in case of a static error
      */
     public static FunctionCall wrap(XQueryContext context, Function call) throws XPathException {
 		final int argCount = call.getArgumentCount();

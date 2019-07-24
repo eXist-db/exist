@@ -40,7 +40,7 @@ import org.exist.xquery.value.Type;
 /**
  * Implements function fn:exists.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunExists extends Function {
 
@@ -53,10 +53,7 @@ public class FunExists extends Function {
                 new FunctionParameterSequenceType("items", Type.ITEM, Cardinality.ZERO_OR_MORE, "The item sequence")
 			},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if not the empty-sequence, false() otherwise"));
-				
-	/**
-	 * @param context
-	 */
+
 	public FunExists(XQueryContext context) {
 		super(context, signature);
 	}

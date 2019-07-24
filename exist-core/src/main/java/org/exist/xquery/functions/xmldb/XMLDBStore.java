@@ -144,10 +144,6 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
                     RETURN_TYPE)
     };
 
-    /**
-     * @param context
-     * @param signature
-     */
     public XMLDBStore(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }

@@ -58,8 +58,8 @@ import static com.evolvedbinary.j8fu.Try.Try;
 /**
  * Utilities for XPath doc related functions
  *
- * @author wolf
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">wolf
+ * @author Pierrick Brihaye</a>
  */
 //TODO : many more improvements to handle efficiently any URI
 public class DocUtils {
@@ -198,7 +198,7 @@ public class DocUtils {
      * @param context The XQuery context
      * @param is      The input stream to parse from
      * @return document The document that was parsed
-     * @throws XPathException
+     * @throws XPathException in case of dynamic error
      */
     public static org.exist.dom.memtree.DocumentImpl parse(final XQueryContext context, final InputStream is) throws XPathException {
         return parse(context.getBroker().getBrokerPool(), context, is);
@@ -211,7 +211,7 @@ public class DocUtils {
      * @param context The XQuery context
      * @param is      The input stream to parse from
      * @return document The document that was parsed
-     * @throws XPathException
+     * @throws XPathException in case of dynamic error
      */
     public static org.exist.dom.memtree.DocumentImpl parse(final BrokerPool pool, final XQueryContext context,
             final InputStream is) throws XPathException {

@@ -58,6 +58,15 @@ public interface StructuralIndex {
     /**
      * Find all nodes matching a given node test, axis and type. Used to evaluate wildcard
      * expressions like //*, //pfx:*.
+     *
+     * @param type node type
+     * @param contextId the context id
+     * @param axis the xpath axis
+     * @param test  node test
+     * @param useSelfAsContext use self as context or not
+     * @param docs the docs to execute the test against
+     * @param contextSet  the NodeSet contextSet
+     * @return all nodes matching the given node test, axis and type
      */
     public NodeSet scanByType(byte type, int axis, NodeTest test, boolean useSelfAsContext, 
             DocumentSet docs, NodeSet contextSet, int contextId);

@@ -22,7 +22,7 @@ package org.exist.scheduler;
 /**
  * Interface defined requirements for a Scheduleable job.
  *
- * @author  Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public interface JobDescription {
 

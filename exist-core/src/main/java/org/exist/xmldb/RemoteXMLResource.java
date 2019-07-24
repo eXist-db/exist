@@ -92,6 +92,15 @@ public class RemoteXMLResource
     private LexicalHandler lexicalHandler = null;
 
     /**
+     * Construct a remote XML Resource.
+     *
+     * @param xmlRpcClientLease the XML-RPC Client lease
+     * @param parent the parent collection
+     * @param docId the document if of the remote resource
+     * @param id the id of the remote resource
+     *
+     * @throws XMLDBException if an error occurs during construction
+     *
      * @deprecated Use {@link #RemoteXMLResource(Leasable.Lease, RemoteCollection, XmldbURI, Optional, Optional)}.
      */
     @Deprecated
@@ -100,13 +109,37 @@ public class RemoteXMLResource
         this(xmlRpcClientLease, parent, -1, -1, docId, id, Optional.empty());
     }
 
+    /**
+     * Construct a remote XML Resource.
+     *
+     * @param xmlRpcClientLease the XML-RPC Client lease
+     * @param parent the parent collection
+     * @param docId the document if of the remote resource
+     * @param id the id of the remote resource
+     * @param type the type of the remote resource
+     *
+     * @throws XMLDBException if an error occurs during construction
+     *
+     * @deprecated Use {@link #RemoteXMLResource(Leasable.Lease, RemoteCollection, int, int, XmldbURI, Optional, Optional)}.
+     */
     public RemoteXMLResource(final Leasable<XmlRpcClient>.Lease xmlRpcClientLease, final RemoteCollection parent, final XmldbURI docId, final Optional<String> id, final Optional<String> type)
             throws XMLDBException {
         this(xmlRpcClientLease, parent, -1, -1, docId, id, type);
     }
 
     /**
-     * @deprecared Use {@link #RemoteXMLResource(Leasable.Lease, RemoteCollection, int, int, XmldbURI, Optional, Optional)}.
+     * Construct a remote XML Resource.
+     *
+     * @param xmlRpcClientLease the XML-RPC Client lease
+     * @param parent the parent collection
+     * @param handle the handle to the remote resource
+     * @param pos the position of the remote resource
+     * @param docId the document if of the remote resource
+     * @param id the id of the remote resource
+     *
+     * @throws XMLDBException if an error occurs during construction
+     *
+     * @deprecated Use {@link #RemoteXMLResource(Leasable.Lease, RemoteCollection, int, int, XmldbURI, Optional, Optional)}.
      */
     @Deprecated
     public RemoteXMLResource(

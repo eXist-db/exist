@@ -45,24 +45,24 @@ import java.util.*;
 
 /**
  * A fast node set implementation, based on arrays to store nodes and documents.
- * <p/>
+ *
  * The class uses an array to store all nodes belonging to one document. Another sorted
  * array is used to keep track of the document ids. For each document, we maintain an inner
  * class, Part, which stores the array of nodes.
- * <p/>
+ *
  * Nodes are just appended to the nodes array. No order is guaranteed and calls to
  * get/contains may fail although a node is present in the array (get/contains
  * do a binary search and thus assume that the set is sorted). Also, duplicates
  * are allowed. If you have to ensure that calls to get/contains return valid
  * results at any time and no duplicates occur, use class
  * {@link org.exist.dom.persistent.AVLTreeNodeSet}.
- * <p/>
+ *
  * Use this class, if you can either ensure that items are added in order, or
  * no calls to contains/get are required during the creation phase. Only after
  * a call to one of the iterator methods, the set will get sorted and
  * duplicates removed.
  *
- * @author Wolfgang <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang</a>
  * @since 0.9.3
  */
 public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet {
@@ -703,11 +703,11 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
         /**
          * Check if the node identified by its node id has an ancestor
          * contained in this node set and return the ancestor found.
-         * <p/>
+         *
          * If directParent is true, only immediate ancestors (parents) are
          * considered. Otherwise the method will call itself recursively for
          * all the node's parents.
-         * <p/>
+         *
          * If includeSelf is true, the method returns also true if the node
          * itself is contained in the node set.
          *

@@ -31,7 +31,7 @@ import org.exist.xmldb.XmldbURI;
 /**
  * Utilities for URI related functions
  * 
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  */
 
 public class URIUtils {

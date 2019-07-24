@@ -38,7 +38,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunAbs extends Function {
 
@@ -55,9 +55,6 @@ public class FunAbs extends Function {
                 "The absolute value of the argument")
         );
 
-    /**
-     * @param context
-     */
     public FunAbs(XQueryContext context) {
         super(context, signature);
     }

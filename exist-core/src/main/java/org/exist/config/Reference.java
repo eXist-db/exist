@@ -21,7 +21,7 @@ package org.exist.config;
 
 /**
  * Forward reference resolution pattern
- * <p>
+ *
  * Delayed object resolution, usually because of cross references,
  * Such a reference is not possible to resolve at initialization time,
  * because the target is not yet loaded
@@ -46,6 +46,7 @@ public interface Reference<R, O> {
 
     /**
      * Get the name of the reference
+     * @return name of the reference
      */
     String getName();
 }

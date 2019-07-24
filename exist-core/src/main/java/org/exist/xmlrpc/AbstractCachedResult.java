@@ -87,6 +87,8 @@ public abstract class AbstractCachedResult implements Closeable {
     /**
      * Returns true if the Cached Result
      * has been closed.
+     *
+     * @return true if the cached result has been closed.
      */
     public final boolean isClosed() {
         return closed;

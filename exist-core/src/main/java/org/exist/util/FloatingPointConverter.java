@@ -4,7 +4,7 @@ import java.math.BigInteger;
 
 /**
  * This is a utility class that handles formatting of numbers as strings.
- * <p>
+ *
  * The algorithm for converting a floating point number to a string is taken from Guy L. Steele and
  * Jon L. White, <i>How to Print Floating-Point Numbers Accurately</i>, ACM SIGPLAN 1990. It is algorithm
  * (FPP)<sup>2</sup> from that paper. There are three separate implementations of the algorithm:
@@ -13,14 +13,14 @@ import java.math.BigInteger;
  * <li>One using BigInteger arithmetic and generating non-exponential output representation
  * <li>One using BigInteger arithmetic and generating exponential output representations
  * </ul>
- * <p>
+ *
  * The choice of method depends on the value of the number being formatted.
- * <p>
+ *
  * The module contains some residual code (mainly the routine for formatting integers) from the class
  * AppenderHelper by Jack Shirazi in the O'Reilly book <i>Java Performance Tuning</i>. The floating point routines
  * in that module were found to be unsuitable, since they used floating point arithmetic which introduces
  * rounding errors.
- * <p>
+ *
  * There are several reasons for doing this conversion within Saxon, rather than leaving it all to Java.
  * Firstly, there are differences in the required output format, notably the absence of ".0" when formatting
  * whole numbers, and the different rules for the range of numbers where exponential notation is used.

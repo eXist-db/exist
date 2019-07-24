@@ -31,7 +31,7 @@ public interface User extends Principal {
      *
      * @param group The group to add the user to
      * @return The group the user was added to
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws PermissionDeniedException is user has not sufficient rights
      */
     public Group addGroup(String group) throws PermissionDeniedException;
 
@@ -40,7 +40,7 @@ public interface User extends Principal {
      *
      * @param group The group to add the user to
      * @return The group the user was added to
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws PermissionDeniedException is user has not sufficient rights
      */
     public Group addGroup(Group group) throws PermissionDeniedException;
 
@@ -48,7 +48,7 @@ public interface User extends Principal {
      * Remove the user to a group
      *
      * @param group The group to remove the user from
-     * @throws org.exist.security.PermissionDeniedException
+     * @throws PermissionDeniedException is user has not sufficient rights
      */
     public void remGroup(String group) throws PermissionDeniedException;
 
@@ -83,7 +83,7 @@ public interface User extends Principal {
      * Sets the password attribute of the User object
      *
      * @param passwd The new password value
-     * @deprecated {@see org.exist.security.User#setCredential(org.exist.security.Credential)}
+     * @deprecated See {@link org.exist.security.User#setCredential(org.exist.security.Credential)}
      */
     @Deprecated
     public void setPassword(String passwd);

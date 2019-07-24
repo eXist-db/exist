@@ -35,9 +35,6 @@ public class VariableByteInputStream extends AbstractVariableByteInput {
 
     private InputStream is;
     
-    /**
-     * 
-     */
     public VariableByteInputStream(InputStream is) {
         super();
         this.is = is;

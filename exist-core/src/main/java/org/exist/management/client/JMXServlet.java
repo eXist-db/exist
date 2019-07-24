@@ -56,17 +56,17 @@ import org.w3c.dom.Element;
  * A servlet to monitor the database. It returns status information for the database based on the JMX interface. For
  * simplicity, the JMX beans provided by eXist are organized into categories. One calls the servlet with one or more
  * categories in parameter "c", e.g.:
- * <p>
- * /exist/jmx?c=instances&c=memory
- * <p>
+ *
+ * /exist/jmx?c=instances&amp;c=memory
+ *
  * If no parameter is specified, all categories will be returned. Valid categories are "memory", "instances", "disk",
  * "system", "caches", "locking", "processes", "sanity", "all".
- * <p>
+ *
  * The servlet can also be used to test if the database is responsive by using parameter "operation=ping" and a timeout
  * (t=timeout-in-milliseconds). For example, the following call
- * <p>
- * /exist/jmx?operation=ping&t=1000
- * <p>
+ *
+ * /exist/jmx?operation=ping&amp;t=1000
+ *
  * will wait for a response within 1000ms. If the ping returns within the specified timeout, the servlet returns the
  * attributes of the SanityReport JMX bean, which will include an element &lt;jmx:Status&gt;PING_OK&lt;/jmx:Status&gt;.
  * If the ping takes longer than the timeout, you'll instead find an element &lt;jmx:error&gt; in the returned XML. In

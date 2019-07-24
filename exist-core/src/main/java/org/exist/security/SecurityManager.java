@@ -121,39 +121,49 @@ public interface SecurityManager extends Configurable {
 
    /**
     * Find users by their personal name
+    * @param startsWith string the user name begins with
+    * @return list of usernames
     */
    List<String> findUsernamesWhereNameStarts(String startsWith);
 
    /**
     * Find users by their username
+    * @param startsWith  the user name
+    * @return list of usernames
     */
    List<String> findUsernamesWhereUsernameStarts(String startsWith);
 
    /**
     * Find all groups visible to the invokingUser
+    * @return list of all group names
     */
    List<String> findAllGroupNames();
    
    /**
     * Find all users visible to the invokingUser
+    * @return list of all user names
     */
    List<String> findAllUserNames();
 
    /**
     * Find groups by their group name
+    * @param startsWith string the group name starts with
+    * @return list of group names that math startsWith
     */
    List<String> findGroupnamesWhereGroupnameStarts(String startsWith);
    
    /**
     * Find all members of a group
+    * @param groupName group name to find members of
+    * @return list of users belonging to the specified group
     */
    List<String> findAllGroupMembers(String groupName);
 
    /**
     * Process document, possible new sub-instance.
-    *  
-    * @param document
-    * @throws ConfigurationException 
+    * @param broker  eXist-db broker
+    * @param document to process
+    * @throws ConfigurationException if there is an error
     */
    void processParameter(DBBroker broker, DocumentImpl document) throws ConfigurationException;
    void processParameterBeforeSave(DBBroker broker, DocumentImpl document) throws ConfigurationException;
@@ -190,6 +200,8 @@ public interface SecurityManager extends Configurable {
     * Pre-allocates a new account id
     *
     * @param receiver A receiver that will receive the new account id
+    * @throws EXistException in case of an eXist-db error
+    * @throws PermissionDeniedException in case user has not sufficient rights
     */
    void preAllocateAccountId(PrincipalIdReceiver receiver) throws PermissionDeniedException, EXistException;
 
@@ -197,6 +209,8 @@ public interface SecurityManager extends Configurable {
     * Pre-allocates a new group id
     *
     * @param receiver A receiver that will receive the new group id
+    * @throws EXistException in case of an eXist-db error
+    * @throws PermissionDeniedException in case user has not sufficient rights
     */
    void preAllocateGroupId(PrincipalIdReceiver receiver) throws PermissionDeniedException, EXistException;
 }

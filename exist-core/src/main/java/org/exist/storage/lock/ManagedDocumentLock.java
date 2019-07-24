@@ -23,7 +23,7 @@ package org.exist.storage.lock;
 import org.exist.xmldb.XmldbURI;
 
 /**
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class ManagedDocumentLock extends ManagedLock<java.util.concurrent.locks.Lock> {
 

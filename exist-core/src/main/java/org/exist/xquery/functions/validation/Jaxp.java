@@ -173,12 +173,8 @@ public class Jaxp extends BasicFunction {
         brokerPool = context.getBroker().getBrokerPool();
     }
 
-    /**
-     * @throws org.exist.xquery.XPathException 
-     * @see BasicFunction#eval(Sequence[], Sequence)
-     */
-    public Sequence eval(Sequence[] args, Sequence contextSequence)
-            throws XPathException {
+
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
         XMLEntityResolver entityResolver = null;
         GrammarPool grammarPool = null;

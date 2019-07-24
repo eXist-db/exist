@@ -48,7 +48,7 @@ import org.exist.xquery.value.Type;
  * 
  * Get a mail store
  * 
- * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  * @serial 2009-03-12
  * @version 1.3
  *
@@ -82,26 +82,12 @@ public class MailFolderFunctions extends BasicFunction
 			)
 		};
 
-	/**
-	 * MailFolderFunctions Constructor
-	 * 
-	 * @param context	The Context of the calling XQuery
-	 */
 	public MailFolderFunctions( XQueryContext context, FunctionSignature signature )
 	{
 		super( context, signature );
     }
 
-	/**
-	 * evaluate the call to the xquery get-folder function,
-	 * it is really the main entry point of this class
-	 * 
-	 * @param args		arguments from the get-folder() function call
-	 * @param contextSequence	the Context Sequence to operate on (not used here internally!)
-	 * @return		A sequence representing the result of the get-folder() function call
-	 * 
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
+	@Override
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
 		if( isCalledAs( "get-mail-folder" ) ) {
@@ -112,7 +98,6 @@ public class MailFolderFunctions extends BasicFunction
 			
 		throw( new XPathException(this, "Invalid function name" ) );	
 	}
-	
 	
 	private Sequence getMailFolder( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
@@ -146,7 +131,6 @@ public class MailFolderFunctions extends BasicFunction
 			
 		return( new IntegerValue( MailModule.storeFolder( context, folder ) ) );
 	}
-	
 	
 	private Sequence closeMailFolder( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{

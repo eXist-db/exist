@@ -30,6 +30,9 @@ public class XMLNames {
     /**
      * Determines if a character is an XML name start character.
      * See https://www.w3.org/TR/REC-xml/#NT-Name.
+     *
+     * @param codePoint the code point
+     * @return true if the character is an XML Name start character
      */
     public static boolean isXMLNameStartCharacter(final int codePoint) {
         return codePoint == ':'
@@ -54,6 +57,9 @@ public class XMLNames {
     /**
      * Determines if a character is an XML name character.
      * See https://www.w3.org/TR/REC-xml/#NT-Name.
+     *
+     * @param codePoint the code point
+     * @return true if the character is an XML Name character
      */
     public static boolean isXMLNameChar(final int codePoint) {
         return isXMLNameStartCharacter(codePoint)
@@ -70,6 +76,9 @@ public class XMLNames {
      * Deterimines if a character is an NCName start character.
      *
      * See https://www.w3.org/TR/REC-xml-names/#NT-NCName
+     *
+     * @param codePoint the code point
+     * @return true if the character is an XML NCName start character
      */
     public static boolean isNCNameStartChar(final int codePoint) {
         return codePoint != ':' && isXMLNameStartCharacter(codePoint);
@@ -79,6 +88,9 @@ public class XMLNames {
      * Deterimines if a character is an NCName (Non-Colonised Name) character.
      *
      * See https://www.w3.org/TR/REC-xml-names/#NT-NCName
+     *
+     * @param codePoint the code point
+     * @return true if the character is an XML NCName character
      */
     public static boolean isNCNameChar(final int codePoint) {
         return codePoint != ':' && isXMLNameChar(codePoint);
@@ -88,6 +100,9 @@ public class XMLNames {
      * Check if the provided string is a valid xs:NCName.
      *
      * See https://www.w3.org/TR/REC-xml-names/#NT-NCName
+     *
+     * @param s the string
+     * @return true if the string is a valid XML NCName
      */
     public static  boolean isNCName(final CharSequence s) {
         if (s == null || s.length() == 0) {

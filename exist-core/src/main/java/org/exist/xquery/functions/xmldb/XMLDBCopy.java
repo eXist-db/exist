@@ -42,7 +42,7 @@ import static org.exist.xquery.functions.xmldb.XMLDBModule.functionSignature;
 import static org.exist.xquery.functions.xmldb.XMLDBModule.functionSignatures;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
     private static final Logger logger = LogManager.getLogger(XMLDBCopy.class);

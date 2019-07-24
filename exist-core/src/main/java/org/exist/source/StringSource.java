@@ -43,9 +43,6 @@ public class StringSource extends AbstractSource {
 
     private String data;
     
-    /**
-     * 
-     */
     public StringSource(String content) {
         this.data = content;
     }

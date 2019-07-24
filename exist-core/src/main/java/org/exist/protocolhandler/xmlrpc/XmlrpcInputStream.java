@@ -44,7 +44,6 @@ public class XmlrpcInputStream extends InputStream {
      *
      * @param threadGroup the group for the threads created by this stream.
      * @param url         Location of document in database.
-     * @throws MalformedURLException Thrown for illegal URLs.
      */
     public XmlrpcInputStream(final ThreadGroup threadGroup, final XmldbURL url) {
         this.bis = new BlockingInputStream();

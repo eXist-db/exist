@@ -44,11 +44,12 @@ public class CollectionStore extends BFile {
     private Deque<Integer> freeCollectionIds = new ArrayDeque<>();
 
     /**
-     * @param pool
-     * @param id
-     * @param dataDir
-     * @param config
-     * @throws DBException
+     * @param pool the broker pool
+     * @param id the if of the collection store
+     * @param dataDir the data directory for the collection store
+     * @param config the database configuration
+     *
+     * @throws DBException if the collection store cannot be constructed.
      */
     public CollectionStore(BrokerPool pool, byte id, Path dataDir, Configuration config) throws DBException {
         super(pool, id, FILE_FORMAT_VERSION_ID, true, dataDir.resolve(getFileName()),
@@ -64,9 +65,6 @@ public class CollectionStore extends BFile {
         return FILE_KEY_IN_CONFIG;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.store.BFile#getDataSyncPeriod()
-     */
     @Override
     protected long getDataSyncPeriod() {
         return 1000;

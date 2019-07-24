@@ -16,8 +16,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- * 
- *  $Id$
  */
 package org.exist.storage.btree;
 
@@ -27,13 +25,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.journal.LogException;
 import org.exist.storage.txn.Txn;
 
-/**
- * Created by IntelliJ IDEA.
- * User: wolf
- * Date: 17.03.2007
- * Time: 21:55:45
- * To change this template use File | Settings | File Templates.
- */
 public class SetPageLinkLoggable extends BTAbstractLoggable {
 
     protected long nextPage;
@@ -45,32 +36,35 @@ public class SetPageLinkLoggable extends BTAbstractLoggable {
         this.nextPage = nextPage;
     }
 
-
     public SetPageLinkLoggable(DBBroker broker, long transactionId) {
         super(BTree.LOG_SET_LINK, broker, transactionId);
     }
 
-
+    @Override
     public void read(ByteBuffer in) {
         super.read(in);
         pageNum = in.getLong();
         nextPage = in.getLong();
     }
 
+    @Override
     public void write(ByteBuffer out) {
         super.write(out);
         out.putLong(pageNum);
         out.putLong(nextPage);
     }
 
+    @Override
     public int getLogSize() {
         return super.getLogSize() + 16;
     }
 
+    @Override
     public void redo() throws LogException {
         getStorage().redoSetPageLink(this);
     }
 
+    @Override
     public String dump() {
         return super.dump() + " - set next page link for page: " + pageNum + ": " + nextPage;
     }

@@ -47,8 +47,8 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 /**
- * @author Craig Goodyer <craiggoodyer@gmail.com>
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:craiggoodyer@gmail.com">Craig Goodyer</a>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class RenderFunction extends BasicFunction {
 
@@ -90,13 +90,6 @@ public class RenderFunction extends BasicFunction {
         )
     };
 
-    /**
-     * Constructor for RenderFunction, which returns a new instance of this
-     * class.
-     *
-     * @param context
-     * @param signature
-     */
     public RenderFunction(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }

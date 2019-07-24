@@ -40,7 +40,7 @@ import java.util.function.Function;
  * A fluent lambda API for working
  * with Documents and Collections.
  *
- * @author <a href="mailto:adam@evolvedbinary.com>Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class FluentBrokerAPI {
 
@@ -146,6 +146,9 @@ public class FluentBrokerAPI {
                 /**
                  * Executes the Collection operation and returns the result.
                  *
+                 * @throws PermissionDeniedException in case user does not have sufficent rights
+                 * @throws LockException in case the database is locked
+                 * @throws EXistException in case of an eXist-db error
                  * @return The result of the Collection operation.
                  */
                 public CR doAll() throws PermissionDeniedException, LockException, EXistException {
@@ -204,6 +207,11 @@ public class FluentBrokerAPI {
                          *
                          * @return A tuple, where the first entry is the result of the Collection operation,
                          *     and the second entry is the result of the Collection and Document operation.
+                         *
+                         * @throws PermissionDeniedException in case user does not have sufficent rights
+                         * @throws LockException in case the database is locked
+                         * @throws EXistException in case of an eXist-db error
+
                          */
                         public Tuple2<CR, CDR> doAll() throws PermissionDeniedException, LockException, EXistException {
                             final Tuple3<Optional<CR>, Optional<CDR>, Optional<Void>> result = FluentBrokerAPIBuilder.this.doAll(collectionUri, collectionLockMode, Optional.of(collectionOp), documentLookupFun, Optional.of(collectionDocumentOp), Optional.empty());
@@ -241,6 +249,10 @@ public class FluentBrokerAPI {
                              * @return A triple, where the first entry is the result of the Collection operation,
                              *     the second entry is the result of the Collection and Document operation,
                              *     and the third entry is the result of the Document operation.
+                             * @throws PermissionDeniedException in case user does not have sufficent rights
+                             * @throws LockException in case the database is locked
+                             * @throws EXistException in case of an eXist-db error
+
                              */
                             public Tuple3<CR, CDR, DR> doAll() throws PermissionDeniedException, LockException, EXistException {
                                 final Tuple3<Optional<CR>, Optional<CDR>, Optional<DR>> result = FluentBrokerAPIBuilder.this.doAll(collectionUri, collectionLockMode, Optional.of(collectionOp), documentLookupFun, Optional.of(collectionDocumentOp), Optional.of(documentOp));
@@ -270,6 +282,9 @@ public class FluentBrokerAPI {
                          * Executes the Collection operation and returns the result.
                          *
                          * @return The result of the Collection operation.
+                         * @throws PermissionDeniedException if user has not sufficient rights
+                         * @throws LockException in response to an lock error
+                         * @throws EXistException generic eXist-db Exception
                          */
                         public CR doAll() throws PermissionDeniedException, LockException, EXistException {
                             final Tuple3<Optional<CR>, Optional<Void>, Optional<Void>> result = FluentBrokerAPIBuilder.this.doAll(collectionUri, collectionLockMode, Optional.of(collectionOp), documentLookupFun, Optional.empty(), Optional.empty());
@@ -288,6 +303,9 @@ public class FluentBrokerAPI {
                              *
                              * @return A tuple, where the first entry is the result of the Collection operation,
                              *     and the second entry is the result of the Document operation.
+                             * @throws PermissionDeniedException if user has not sufficient rights
+                             * @throws LockException in response to an lock error
+                             * @throws EXistException generic eXist-db Exception
                              */
                             public Tuple2<CR, DR> doAll() throws PermissionDeniedException, LockException, EXistException {
                                 final Tuple3<Optional<CR>, Optional<Void>, Optional<DR>> result = FluentBrokerAPIBuilder.this.doAll(collectionUri, collectionLockMode, Optional.of(collectionOp), documentLookupFun, Optional.empty(), Optional.of(documentOp));
@@ -348,6 +366,9 @@ public class FluentBrokerAPI {
                      * Executes the Collection and Document operation and returns the result.
                      *
                      * @return The result of the Collection and Document operation.
+                     * @throws PermissionDeniedException if user has not sufficient rights
+                     * @throws LockException in response to an lock error
+                     * @throws EXistException generic eXist-db Exception
                      */
                     public CDR doAll() throws PermissionDeniedException, LockException, EXistException {
                         final Tuple3<Optional<Void>, Optional<CDR>, Optional<Void>> result = FluentBrokerAPIBuilder.this.doAll(collectionUri, collectionLockMode, Optional.empty(), documentLookupFun, Optional.of(collectionDocumentOp), Optional.empty());
@@ -385,6 +406,9 @@ public class FluentBrokerAPI {
                          *
                          * @return A tuple, where the first entry is the result of the Collection and Document operation,
                          *     and the second entry is the result of the Document operation.
+                         * @throws PermissionDeniedException if user has not sufficient rights
+                         * @throws LockException in response to an lock error
+                         * @throws EXistException generic eXist-db Exception
                          */
                         public Tuple2<CDR, DR> doAll() throws PermissionDeniedException, LockException, EXistException {
                             final Tuple3<Optional<Void>, Optional<CDR>, Optional<DR>> result = FluentBrokerAPIBuilder.this.doAll(collectionUri, collectionLockMode, Optional.empty(), documentLookupFun, Optional.of(collectionDocumentOp), Optional.of(documentOp));
@@ -421,6 +445,9 @@ public class FluentBrokerAPI {
                          * Executes the Document operation and returns the result.
                          *
                          * @return The result of the Document operation.
+                         * @throws PermissionDeniedException if user has not sufficient rights
+                         * @throws LockException in response to an lock error
+                         * @throws EXistException generic eXist-db Exception
                          */
                         public DR doAll() throws PermissionDeniedException, LockException, EXistException {
                             final Tuple3<Optional<Void>, Optional<Void>, Optional<DR>> result = FluentBrokerAPIBuilder.this.doAll(collectionUri, collectionLockMode, Optional.empty(), documentLookupFun, Optional.empty(), Optional.of(documentOp));

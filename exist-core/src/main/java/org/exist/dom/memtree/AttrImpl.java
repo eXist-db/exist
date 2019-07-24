@@ -40,12 +40,7 @@ public class AttrImpl extends NodeImpl implements Attr {
     public static final int ATTR_IDREF_TYPE = 2;
     public static final int ATTR_IDREFS_TYPE = 3;
 
-    /**
-     * Creates a new AttributeImpl object.
-     *
-     * @param doc
-     * @param nodeNumber
-     */
+
     public AttrImpl(final DocumentImpl doc, final int nodeNumber) {
         super(doc, nodeNumber);
     }

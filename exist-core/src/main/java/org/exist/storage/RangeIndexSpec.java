@@ -125,6 +125,9 @@ public abstract class RangeIndexSpec {
      * Replace subtypes of string and integer with their
      * base type for the index. Using xs:int instead of xs:integer
      * for an index does not have any advantage.
+	 *
+	 * @param type type to search super type for
+	 * @return the super type
      */
     protected static final int getSuperType(int type) {
         if (Type.subTypeOf(type, Type.INTEGER))

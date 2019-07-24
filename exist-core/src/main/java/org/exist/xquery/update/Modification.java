@@ -78,14 +78,11 @@ public abstract class Modification extends AbstractExpression
     protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
     protected final Int2ObjectMap<DocumentTrigger> triggers;
 
-    /**
-     * @param context
-     */
     public Modification(XQueryContext context, Expression select, Expression value) {
         super(context);
         this.select = select;
         this.value = value;
-        this.triggers = new Int2ObjectOpenHashMap<>(10);
+        this.triggers = new Int2ObjectOpenHashMap<>();
     }
 
     public int getCardinality() {
@@ -135,13 +132,16 @@ public abstract class Modification extends AbstractExpression
      * We have to avoid that node positions change during the
      * operation.
      *
-     * @param nodes
+     * @param nodes sequence containing nodes from documents to lock
+     * @param transaction current transaction
+     * @return array of nodes for which lock was acquired
      *
-     * @throws LockException
-     * @throws TriggerException
+     * @throws LockException in case locking failed
+     * @throws TriggerException in case of error thrown by triggers
+     * @throws XPathException in case of dynamic error
      */
-    protected StoredNode[] selectAndLock(Txn transaction, Sequence nodes) throws LockException, PermissionDeniedException,
-        XPathException, TriggerException {
+    protected StoredNode[] selectAndLock(Txn transaction, Sequence nodes) throws LockException,
+            XPathException, TriggerException {
         final java.util.concurrent.locks.Lock globalLock = context.getBroker().getBrokerPool().getGlobalUpdateLock();
         globalLock.lock();
         try {
@@ -263,7 +263,11 @@ public abstract class Modification extends AbstractExpression
      * Defragmentation will take place if the number of split pages in the
      * document exceeds the limit defined in the configuration file.
      *
-     * @param docs
+     * @param context current context
+     * @param docs document set to check
+     * @param splitCount number of page splits
+     * @throws EXistException on general errors during defrag
+     * @throws LockException in case locking failed
      */
     public static void checkFragmentation(XQueryContext context, DocumentSet docs, int splitCount) throws EXistException, LockException {
         final DBBroker broker = context.getBroker();

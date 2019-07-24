@@ -32,7 +32,7 @@ import org.exist.xquery.FunctionDef;
  * An extension module for the eXist Native XML Database that allows various file-oriented
  * activities.
  * 
- * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  * @author ljo
  * @serial 2008-03-06
  * @version 1.0

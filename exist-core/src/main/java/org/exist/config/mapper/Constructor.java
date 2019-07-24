@@ -51,6 +51,10 @@ public class Constructor {
 
     /**
      * Create new java object by mapping instructions.
+     * @param newClazz object
+     * @param instance to load
+     * @param conf configuration
+     * @return new java object by mapping instructions.
      */
     public static Object load(final NewClass newClazz,
             final Configurable instance, final Configuration conf) {

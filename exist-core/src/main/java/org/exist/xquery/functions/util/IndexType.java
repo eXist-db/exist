@@ -56,9 +56,6 @@ public class IndexType extends BasicFunction {
                     },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the range index type"));
 
-    /**
-     * @param context
-     */
     public IndexType(XQueryContext context) {
         super(context, signature);
     }

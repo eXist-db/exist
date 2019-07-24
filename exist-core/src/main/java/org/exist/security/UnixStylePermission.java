@@ -40,7 +40,7 @@ import static org.exist.security.PermissionRequired.*;
  * [userId(20),setUid(1),userMode(rwx)(3),groupId(20),setGid(1),groupMode(rwx)(3),sticky(1),otherMode(rwx)(3)]
  * @see UnixStylePermission#encodeAsBitVector(int, int, int) for more details
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class UnixStylePermission extends AbstractUnixStylePermission implements Permission {
 
@@ -67,6 +67,11 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     
     /**
      * Construct a permission with given user, group and permissions
+     * @param sm the security manager
+     * @param ownerId the owner
+     * @param groupId id of the group
+     * @param mode mode for the resource.
+
      */
     public UnixStylePermission(final SecurityManager sm, final int ownerId, final int groupId, final int mode) {
         this(sm);
@@ -452,6 +457,10 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
     /**
      * should return max of 52 bits - e.g. The maximum numeric value - 4503599627370495
      * exact encoding is [userId(20),setUid(1),userMode(rwx)(3),groupId(20),setGid(1),groupMode(rwx)(3),sticky(1),otherMode(rwx)(3)]
+     * @param userId id of the user
+     * @param groupId id of the group
+     * @param mode mode for the resource.
+     * @return the encoded bit vector
      */
     protected final long encodeAsBitVector(int userId, int groupId, int mode) {
 

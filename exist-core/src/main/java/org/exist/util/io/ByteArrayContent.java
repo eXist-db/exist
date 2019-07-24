@@ -23,7 +23,7 @@ package org.exist.util.io;
 import java.nio.charset.StandardCharsets;
 
 /**
- * @author Patrick Reinhart <patrick@reini.net>
+ * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
  */
 public final class ByteArrayContent implements ContentFile {
     private static final byte[] EMPTY_BUFFER = new byte[0];

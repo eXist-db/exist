@@ -41,7 +41,7 @@ import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
 /**
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class EXistElement implements Element {
 
