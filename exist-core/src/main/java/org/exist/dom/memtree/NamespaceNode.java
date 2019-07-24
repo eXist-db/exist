@@ -41,12 +41,6 @@ import org.w3c.dom.TypeInfo;
  */
 public class NamespaceNode extends NodeImpl implements Attr {
 
-    /**
-     * Creates a new NamespaceNode object.
-     *
-     * @param doc
-     * @param nodeNumber
-     */
     public NamespaceNode(final DocumentImpl doc, final int nodeNumber) {
         super(doc, nodeNumber);
     }

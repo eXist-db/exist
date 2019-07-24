@@ -40,12 +40,13 @@ public class CastableExpression extends AbstractExpression {
 	private final int requiredType;
 	
 	/**
+     * Wrap a CastableExpression around an expression, expecting the given type and
+	 * cardinality.
      * 
-     * 
-     * @param requiredCardinality 
-     * @param context 
-     * @param expr 
-     * @param requiredType 
+     * @param requiredCardinality the {@link Cardinality} expected
+     * @param context current context
+     * @param expr the expression to be wrapped
+     * @param requiredType the {@link Type} expected
      */
 	public CastableExpression(XQueryContext context, Expression expr, int requiredType, int requiredCardinality) {
 		super(context);

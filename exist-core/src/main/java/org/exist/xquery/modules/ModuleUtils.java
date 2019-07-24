@@ -52,7 +52,7 @@ import org.xml.sax.*;
 /**
  * Utility Functions for XQuery Extension Modules
  * 
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @serial 200805202059
  * @version 1.1
  */
@@ -71,6 +71,8 @@ public class ModuleUtils {
 	 *            The String of XML
 	 * 
 	 * @return The NodeValue of XML
+     * @throws SAXException in case of a SAX error
+     * @throws IOException in case of error reading input source
 	 */
 	public static NodeValue stringToXML(XQueryContext context, String str) throws SAXException, IOException {
         try (final Reader reader = new StringReader(str)) {
@@ -89,7 +91,9 @@ public class ModuleUtils {
 	 *            The InputStream of XML
 	 * 
 	 * @return The NodeValue of XML
-	 */
+     * @throws SAXException in case of a SAX error
+     * @throws IOException in case of error reading input source
+     */
 	public static NodeValue streamToXML(XQueryContext context, InputStream is) throws SAXException, IOException {
             return inputSourceToXML(context, new InputSource(is));
 	}
@@ -104,7 +108,9 @@ public class ModuleUtils {
 	 *            The Source of XML
 	 * 
 	 * @return The NodeValue of XML
-	 */
+     * @throws SAXException in case of a SAX error
+     * @throws IOException in case of error reading input source
+     */
         public static NodeValue sourceToXML(XQueryContext context, Source src) throws SAXException, IOException {
             if(src instanceof SAXSource && ((SAXSource)src).getXMLReader() != null) {
                 //Handles the case where a SAXSource may already have an
@@ -132,7 +138,9 @@ public class ModuleUtils {
 	 *            The InputSource of XML
 	 * 
 	 * @return The NodeValue of XML
-	 */
+     * @throws SAXException in case of a SAX error
+     * @throws IOException in case of error reading input source
+     */
 	public static NodeValue inputSourceToXML(XQueryContext context, InputSource inputSource) throws SAXException, IOException  {
             context.pushDocumentContext();
 
@@ -169,8 +177,10 @@ public class ModuleUtils {
 	 *            The Context of the calling XQuery
 	 * @param src
 	 *            The InputSource of XML
-	 * 
-	 * @return The NodeValue of XML
+	 *
+     * @throws SAXException in case of a SAX error
+     * @throws IOException in case of error reading input source
+     * @return The NodeValue of XML
 	 */
 	private static NodeValue inputSourceToXML(XQueryContext context, SAXSource src) throws SAXException, IOException  {
             if(src.getXMLReader() == null) {
@@ -208,8 +218,10 @@ public class ModuleUtils {
      *            The features to set on the Parser
      * @param parserProperties
      *            The properties to set on the Parser
-	 * 
-	 * @return An in-memory Document representing the XML'ised HTML
+	 *
+     * @throws SAXException in case of a SAX error
+     * @throws IOException in case of error reading input source
+     * @return An in-memory Document representing the XML'ised HTML
 	 */
 	public static DocumentImpl htmlToXHtml(final XQueryContext context, final Source srcHtml, final Map<String, Boolean> parserFeatures, final Map<String, String>parserProperties) throws IOException, SAXException {
         final InputSource inputSource = SAXSource.sourceToInputSource(srcHtml);
@@ -234,6 +246,8 @@ public class ModuleUtils {
      * @param parserProperties
      *            The properties to set on the Parser
      *
+     * @throws SAXException in case of a SAX error
+     * @throws IOException in case of error reading input source
      * @return An in-memory Document representing the XML'ised HTML
      */
     public static DocumentImpl htmlToXHtml(final XQueryContext context, final InputSource srcHtml, final Map<String, Boolean> parserFeatures, final Map<String, String>parserProperties) throws IOException, SAXException {
@@ -307,8 +321,8 @@ public class ModuleUtils {
      * @param   context         The Context of the XQuery containing the Object
      * @param   contextMapName  DOCUMENT ME!
      * @param   objectUID       The UID of the Object to retrieve from the Context of the XQuery
-     *
-     * @return  DOCUMENT ME!
+     * @param <T> class of the object stored in the context
+     * @return  the object stored in the context or null
      */        
     public static <T> T retrieveObjectFromContextMap(XQueryContext context, String contextMapName, long objectUID) {
         try(final ManagedLock<ReadWriteLock> readLock = ManagedLock.acquire(contextMapLocks.getLock(contextMapName), LockMode.READ_LOCK)){
@@ -362,7 +376,7 @@ public class ModuleUtils {
      * @param   context         The Context of the XQuery to store the Object in
      * @param   contextMapName  The name of the context map
      * @param   o               The Object to store
-     *
+     * @param <T> the class of the object being stored
      * @return  A unique ID representing the Object
      */
     public static <T> long storeObjectInContextMap(XQueryContext context, String contextMapName, T o) {

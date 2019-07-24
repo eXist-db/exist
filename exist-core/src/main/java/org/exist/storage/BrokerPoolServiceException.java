@@ -22,7 +22,7 @@ package org.exist.storage;
 /**
  * Exception caused by a BrokerPoolService
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class BrokerPoolServiceException extends Exception {
     public BrokerPoolServiceException(final String message, final Throwable cause) {

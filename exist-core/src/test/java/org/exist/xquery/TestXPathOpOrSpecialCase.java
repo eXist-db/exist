@@ -12,7 +12,7 @@ import org.xmldb.api.modules.XMLResource;
 
 
 /**
- * This is the simplest test that demonstrates the <tt>Predicate</tt>/<tt>OpOr</tt>
+ * This is the simplest test that demonstrates the <code>Predicate</code>/<code>OpOr</code>
  * bug. Right now, there is only one test - at the very bottom of the 
  * source code. 
  * @author Jason Smith
@@ -24,7 +24,7 @@ public class TestXPathOpOrSpecialCase extends Assert {
 	@ClassRule
 	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-	/** Database test collection (<tt>/db/blah</tt>). */
+	/** Database test collection (<code>/db/blah</code>). */
 	private Collection testCollection;
 	
 	@Before
@@ -46,9 +46,9 @@ public class TestXPathOpOrSpecialCase extends Assert {
 	}
 
 	/**
-	 * Given an essentially empty XML document at path <tt>/db/blah/blah.xml</tt>,
-	 * query the document with a bogus predicate containing an <tt>or<tt> operation;
-	 * expect <tt>org.exist.xquery.XPathException: exerr:ERROR cannot convert xs:boolean('false') to a node set</tt>.
+	 * Given an essentially empty XML document at path <code>/db/blah/blah.xml</code>,
+	 * query the document with a bogus predicate containing an <code>or<code> operation;
+	 * expect <code>org.exist.xquery.XPathException: exerr:ERROR cannot convert xs:boolean('false') to a node set</code>.
 	 */
 	@Test
 	public void verifyOpOrInPredicate() throws Exception

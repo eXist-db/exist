@@ -39,7 +39,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunCurrentDateTime extends Function {
 

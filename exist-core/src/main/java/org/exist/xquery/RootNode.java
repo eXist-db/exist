@@ -40,7 +40,7 @@ import java.util.Iterator;
  * Reads a set of document root nodes from the context. Used for
  * absolute path expression that do not start with fn:doc() or fn:collection().
  * 
- * @author Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ * @author <a href="mailto:meier@ifs.tu-darmstadt.de">Wolfgang Meier</a>
  */
 public class RootNode extends Step {
 
@@ -51,8 +51,7 @@ public class RootNode extends Step {
 	private DocumentSet cachedDocs = null;
 
     private UpdateListener listener = null;
-    
-    /** Constructor for the RootNode object */
+
     public RootNode(XQueryContext context) {
         super(context, Constants.SELF_AXIS);
     }

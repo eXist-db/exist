@@ -98,6 +98,8 @@ public final class Base64Encoder {
      * using the base64 encoding.  If there are bytes in `out' already, the
      * new bytes are appended, so the caller should do `out.setLength(0)'
      * first if that's desired.
+     *
+     * @param in the input array
      */
     public final void translate(byte[] in) {
         final int in_length = in.length;

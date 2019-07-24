@@ -30,7 +30,7 @@ public interface Account extends User {
      * they will also be added
      *
      * @param group The primary group
-     * @throws PermissionDeniedException
+     * @throws PermissionDeniedException is user has not sufficient rights
      */
     void setPrimaryGroup(Group group) throws PermissionDeniedException;
     

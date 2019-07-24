@@ -70,7 +70,7 @@ import java.util.function.Function;
  * operations like storing, removing or index access are provided by subclasses
  * of this class.
  * 
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public abstract class DBBroker implements AutoCloseable {
 
@@ -246,13 +246,21 @@ public abstract class DBBroker implements AutoCloseable {
         contentLoadingObservers.clear();
     }    
 
-    /** Observer Design Pattern: add an observer. */
+    /**
+     * Observer Design Pattern: add an observer.
+     *
+     * @param observer the observer
+     */
     public void addContentLoadingObserver(ContentLoadingObserver observer) {
         if (!contentLoadingObservers.contains(observer))
             {contentLoadingObservers.add(observer);}
     }
 
-    /** Observer Design Pattern: remove an observer. */
+    /**
+     * Observer Design Pattern: remove an observer.
+     *
+     * @param observer the observer
+     */
     public void removeContentLoadingObserver(ContentLoadingObserver observer) {
         if (contentLoadingObservers.contains(observer))
             {contentLoadingObservers.remove(observer);}
@@ -265,6 +273,9 @@ public abstract class DBBroker implements AutoCloseable {
      * accessing every document.
      *
      * @param docs a (possibly empty) document set to which the found documents are added.
+     * @return all XML resources as MutableDocumentSet
+     * @throws PermissionDeniedException when one collection can not be accessed
+     * @throws LockException when one collection is locked
      */
     public abstract MutableDocumentSet getAllXMLResources(MutableDocumentSet docs) throws PermissionDeniedException, LockException;
 
@@ -286,8 +297,10 @@ public abstract class DBBroker implements AutoCloseable {
      * be performed on a Collection retrieved by this function.
      * If you are uncertain whether this function is safe for you to use, you should always
      * use {@link #openCollection(XmldbURI, LockMode)} instead.
-     * 
+     *
+     * @param uri The Collection's path
      * @return the Collection, or null if no Collection matches the path
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
      */
     @Nullable @EnsureUnlocked public abstract Collection getCollection(XmldbURI uri) throws PermissionDeniedException;
 
@@ -304,6 +317,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @param lockMode the mode for locking the Collection, as specified in {@link LockMode}
      *
      * @return the Collection, or null if no Collection matches the path
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
      */
     @Nullable @EnsureLocked public abstract Collection openCollection(XmldbURI uri,
             LockMode lockMode) throws PermissionDeniedException;
@@ -340,9 +354,9 @@ public abstract class DBBroker implements AutoCloseable {
      * @param uri The collection's URI
      * @param creationAttributes the attributes to use if the collection needs to be created.
      * @return The collection or <code>null</code> if no collection matches the path
-     * @throws PermissionDeniedException
-     * @throws IOException
-     * @throws TriggerException
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
+     * @throws IOException If an error occurs whilst reading (get) or writing (create) a Collection to disk
+     * @throws TriggerException If a CollectionTrigger throws an exception
      */
     public abstract Collection getOrCreateCollection(Txn transaction, XmldbURI uri, Optional<Tuple2<Permission, Long>> creationAttributes)
             throws PermissionDeniedException, IOException, TriggerException;
@@ -350,6 +364,8 @@ public abstract class DBBroker implements AutoCloseable {
     /**
      * Returns the configuration object used to initialize the current database
      * instance.
+     *
+     * @return the configuration
      */
     public Configuration getConfiguration() {
         return config;
@@ -359,22 +375,23 @@ public abstract class DBBroker implements AutoCloseable {
      * Return a {@link org.exist.storage.dom.NodeIterator} starting at the
      * specified node.
      * 
-     * @param node
+     * @param node the NodeHandle
      * @return NodeIterator of node.
+     * @throws RuntimeException not implemented
      */
-    public INodeIterator getNodeIterator(NodeHandle node) {
+    public INodeIterator getNodeIterator(NodeHandle node) throws RuntimeException {
         throw new RuntimeException("not implemented for this storage backend");
     }
 
     /**
      * Return the document stored at the specified path. The path should be
      * absolute, e.g. /db/shakespeare/plays/hamlet.xml.
-     * 
+     *
+     * @param docURI the XmldbURI to the resource
      * @return the document or null if no document could be found at the
      *         specified location.
-     * 
-     * public abstract Document getXMLResource(String path) throws
-     * PermissionDeniedException;
+     *
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
      */
     public abstract @EnsureUnlocked Document getXMLResource(XmldbURI docURI) throws PermissionDeniedException;
 
@@ -383,9 +400,10 @@ public abstract class DBBroker implements AutoCloseable {
      * identify a document.
      *
      * @param docURI absolute file name in the database;
-     *                 name can be given with or without the leading path /db/shakespeare.
+     *                 name can be given with or without the leading path
      * @param accessType The access mode for the resource e.g. {@link org.exist.security.Permission#READ}
      * @return The document value or null if no document could be found
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
      */
     public abstract @EnsureUnlocked DocumentImpl getResource(XmldbURI docURI, int accessType) throws PermissionDeniedException;
 
@@ -394,16 +412,28 @@ public abstract class DBBroker implements AutoCloseable {
     /**
      * Return the document stored at the specified path. The path should be
      * absolute, e.g. /db/shakespeare/plays/hamlet.xml, with the specified lock.
-     * 
+     *
+     * @param docURI absolute file name in the database;
+     *                 name can be given with or without the leading path.
+     * @param lockMode one of the modes in {@link LockMode}
+     *
      * @return the document or null if no document could be found at the
      *         specified location.
+     *
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
      */
     @Nullable @EnsureLocked public abstract LockedDocument getXMLResource(XmldbURI docURI, LockMode lockMode)
         throws PermissionDeniedException;
 
     /**
      * Get a new document id that does not yet exist within the collection.
-     * @throws EXistException 
+     *
+     * @param transaction the transaction
+     *
+     * @return next resource ID
+     *
+     * @throws EXistException when something went wrong
+     * @throws LockException when the resource or collection is locked
      */
     public abstract int getNextResourceId(Txn transaction) throws EXistException, LockException;
 
@@ -412,6 +442,12 @@ public abstract class DBBroker implements AutoCloseable {
      * 
      * If addWhitespace is set to true, an extra space character will be added
      * between adjacent elements in mixed content nodes.
+     * @param node the node
+     * @param addWhitespace to add whitespace or not
+     *
+     * @return the node value as String
+     *
+     * @throws RuntimeException not implemented
      */
     public String getNodeValue(IStoredNode node, boolean addWhitespace) {
         throw new RuntimeException("not implemented for this storage backend");
@@ -421,6 +457,7 @@ public abstract class DBBroker implements AutoCloseable {
      * Get an instance of the Serializer used for converting nodes back to XML.
      * Subclasses of DBBroker may have specialized subclasses of Serializer to
      * convert a node into an XML-string
+     * @return the {@link Serializer}
      */
     public abstract Serializer getSerializer();
 
@@ -433,10 +470,10 @@ public abstract class DBBroker implements AutoCloseable {
     /**
      * Get a node with given owner document and id from the database.
      * 
-     * @param doc
-     *            the document the node belongs to
-     * @param nodeId
-     *            the node's unique identifier
+     * @param doc the document the node belongs to
+     * @param nodeId the node's unique identifier
+     *
+     * @return the IStoredNode
      */
     public abstract IStoredNode objectWith(@EnsureLocked(mode=LockMode.READ_LOCK) Document doc, NodeId nodeId);
 
@@ -469,6 +506,11 @@ public abstract class DBBroker implements AutoCloseable {
     /**
      * Remove a document from the database.
      *
+     * @param tx the transaction
+     * @param doc the document
+     *
+     * @throws IOException If an error occurs whilst removing the Collection from disk
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
      */
     public abstract void removeResource(Txn tx, @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl doc)
             throws IOException, PermissionDeniedException;
@@ -480,6 +522,11 @@ public abstract class DBBroker implements AutoCloseable {
      * only for use from {@link Collection#removeXMLResource(Txn, DBBroker, XmldbURI)}
      * or {@link DBBroker}.
      *
+     * @param transaction the transaction
+     * @param document the document
+     *
+     * @throws IOException If an error occurs whilst removing the Collection from disk
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
      */
     public void removeXMLResource(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl document)
             throws PermissionDeniedException, IOException {
@@ -493,6 +540,12 @@ public abstract class DBBroker implements AutoCloseable {
      * only for use from {@link Collection#removeXMLResource(Txn, DBBroker, XmldbURI)}
      * or {@link DBBroker}.
      *
+     * @param transaction the transaction
+     * @param document the document
+     * @param freeDocId true, if the document ID can be freed
+     *
+     * @throws IOException If an error occurs whilst removing the Collection from disk
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
      */
     public abstract void removeXMLResource(Txn transaction,
         @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl document, boolean freeDocId) throws PermissionDeniedException, IOException;
@@ -509,7 +562,7 @@ public abstract class DBBroker implements AutoCloseable {
      * NOTE: Read locks will be taken in a top-down, left-right manner
      *     on Collections as they are indexed
      *
-     * @param transaction
+     * @param transaction the transaction
      * @param collectionUri The URI of the Collection to reindex
      *
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
@@ -572,13 +625,15 @@ public abstract class DBBroker implements AutoCloseable {
      * Store a node into the database. This method is called by the parser to
      * write a node to the storage backend.
      * 
-     * @param node
-     *            the node to be stored
+     * @param transaction the current transaction
+     * @param node the node to be stored
      * @param currentPath
      *            path expression which points to this node's element-parent or
      *            to itself if it is an element.
+     * @param indexSpec the IndexSpec
+     * @param <T> the return type
      */
-    public abstract <T extends IStoredNode> void storeNode(Txn transaction, IStoredNode<T> node, NodePath currentPath,IndexSpec indexSpec);
+    public abstract <T extends IStoredNode> void storeNode(Txn transaction, IStoredNode<T> node, NodePath currentPath, IndexSpec indexSpec);
 
     public <T extends IStoredNode> void endElement(final IStoredNode<T> node, NodePath currentPath, String content) {
         endElement(node, currentPath, content, false);
@@ -588,7 +643,8 @@ public abstract class DBBroker implements AutoCloseable {
 
     /**
      * Store a document (descriptor) into the database.
-     * 
+     *
+     * @param transaction the current transaction
      * @param doc
      *            the document's metadata to store.
      */
@@ -600,10 +656,13 @@ public abstract class DBBroker implements AutoCloseable {
      * Stores the given data under the given binary resource descriptor
      * (BinaryDocument).
      *
+     * @param transaction the current transaction
      * @param blob
      *            the binary document descriptor
      * @param data
      *            the document binary data
+     *
+     * @throws IOException If an error occurs whilst writing the binary resource to disk
      */
     @Deprecated
     public abstract void storeBinaryResource(Txn transaction,
@@ -612,11 +671,14 @@ public abstract class DBBroker implements AutoCloseable {
     /**
      * Stores the given data under the given binary resource descriptor
      * (BinaryDocument).
-     * 
+     *
+     * @param transaction the current transaction
      * @param blob
      *            the binary document descriptor
      * @param is
      *            the document binary data as input stream
+     *
+     * @throws IOException If an error occurs whilst writing the binary resource to disk
      */
     public abstract void storeBinaryResource(Txn transaction,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) BinaryDocument blob, InputStream is) throws IOException;
@@ -625,6 +687,10 @@ public abstract class DBBroker implements AutoCloseable {
 
     /**
      * @deprecated use {@link #readBinaryResource(Txn, BinaryDocument, OutputStream)}
+     * @param blob
+     *            the binary document descriptor
+     * @param os the OutputStream to use
+     * @throws IOException If an error occurs whilst reading the binary resource from disk
      */
     @Deprecated
     public abstract void readBinaryResource(@EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob,
@@ -635,6 +701,10 @@ public abstract class DBBroker implements AutoCloseable {
 
     /**
      * @deprecated use {@link #withBinaryFile(Txn, BinaryDocument, Function)}
+     * @param blob
+     *            the binary document descriptor
+     * @return the path to the binary document
+     * @throws IOException If an error occurs whilst reading the binary resource from disk
      */
     @Deprecated
     public abstract Path getBinaryFile(@EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob) throws IOException;
@@ -668,6 +738,7 @@ public abstract class DBBroker implements AutoCloseable {
      *     The Path will be null if the Blob does not exist in the Blob Store.
      *     If you wish to handle exceptions in your function you should consider
      *     {@link com.evolvedbinary.j8fu.Try} or similar.
+     * @return T
      *
      * @throws IOException if an error occurs whilst retrieving the BLOB file.
      */
@@ -676,6 +747,10 @@ public abstract class DBBroker implements AutoCloseable {
 
     /**
      * @deprecated use {@link #getBinaryResource(Txn, BinaryDocument)}
+     * @param blob
+     *            the binary document descriptor
+     * @return the InputStream
+     * @throws IOException if an error occurs whilst retrieving the binary resource.
      */
     @Deprecated
 	public abstract InputStream getBinaryResource(@EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob)
@@ -686,6 +761,10 @@ public abstract class DBBroker implements AutoCloseable {
 
     /**
      * @deprecated use {@link BinaryDocument#getContentLength()}
+     * @param blob
+     *            the binary document descriptor
+     * @return the size of the binary resource
+     * @throws IOException if an error occurs whilst retrieving the binary resource.
      */
     @Deprecated
     public abstract long getBinaryResourceSize(@EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob)
@@ -699,17 +778,19 @@ public abstract class DBBroker implements AutoCloseable {
      * @param digestType the type of the digest
      *
      * @return the message digest of the content of the Binary Document
+     * @throws IOException if an error occurs whilst retrieving the digest.
      */
     public abstract MessageDigest getBinaryResourceContentDigest(final Txn transaction,
             final BinaryDocument binaryDocument, final DigestType digestType) throws IOException;
     
     /**
      * Completely delete this binary document (descriptor and binary data).
-     * 
-     * @param blob
-     *            the binary document descriptor
-     * @throws PermissionDeniedException
-     *             if you don't have the right to do this
+     *
+     * @param transaction The current transaction
+     * @param blob the binary document descriptor
+     *
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
+     * @throws IOException if an error occurs whilst removing the binary resource.
      */
     public abstract void removeBinaryResource(Txn transaction,
         @EnsureLocked(mode=LockMode.WRITE_LOCK) BinaryDocument blob) throws PermissionDeniedException,IOException;
@@ -766,13 +847,14 @@ public abstract class DBBroker implements AutoCloseable {
 	 *
 	 * @param transaction The transaction, which registers the acquired write locks. The locks should be released on commit/abort.
 	 * @param sourceCollection The origin collection
-	 * @param targetCollection The destination parent collection
+	 * @param destination The destination parent collection
 	 * @param newName The new name of the collection
 	 *
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
      * @throws LockException If an exception occurs whilst acquiring locks
      * @throws IOException If an error occurs whilst copying the Collection on disk
      * @throws TriggerException If a CollectionTrigger throws an exception
+     * @throws EXistException If an internal error occurs
      *
      * @deprecated Use {@link #copyCollection(Txn, Collection, Collection, XmldbURI, PreserveType)}
 	 */
@@ -799,6 +881,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws LockException If an exception occurs whilst acquiring locks
      * @throws IOException If an error occurs whilst copying the Collection on disk
      * @throws TriggerException If a CollectionTrigger throws an exception
+     * @throws EXistException If an internal error occurs
      */
     public abstract void copyCollection(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) Collection sourceCollection,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) Collection targetCollection, XmldbURI newName, final PreserveType preserve)
@@ -812,13 +895,16 @@ public abstract class DBBroker implements AutoCloseable {
      *     `sourceDocument` and its parent Collection,
      *     and a {@link LockMode#WRITE_LOCK} on the `targetCollection`
 	 *
-	 * @param sourceDocumet the resource to copy
+     * @param transaction The current transaction
+	 * @param sourceDocument the resource to copy
 	 * @param targetCollection the destination collection
 	 * @param newName the new name the resource should have in the destination collection
      *
-	 * @throws PermissionDeniedException
-	 * @throws LockException
-	 * @throws EXistException
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
+     * @throws LockException If an exception occurs whilst acquiring locks
+     * @throws IOException If an error occurs whilst copying the Collection on disk
+     * @throws TriggerException If a CollectionTrigger throws an exception
+     * @throws EXistException If an internal error occurs
      *
      * @deprecated Use {@link #copyResource(Txn, DocumentImpl, Collection, XmldbURI, PreserveType)}
 	 */
@@ -835,6 +921,7 @@ public abstract class DBBroker implements AutoCloseable {
      *     `sourceDocument` and its parent Collection,
      *     and a {@link LockMode#WRITE_LOCK} on the `targetCollection`
      *
+     * @param transaction The current transaction
      * @param sourceDocument the resource to copy
      * @param targetCollection the destination collection
      * @param newName the new name the resource should have in the destination collection
@@ -842,9 +929,11 @@ public abstract class DBBroker implements AutoCloseable {
      *     modification time, file mode, user ID, and group ID, as allowed by permissions. Access Control Lists (ACLs)
      *     will also be preserved.
      *
-     * @throws PermissionDeniedException
-     * @throws LockException
-     * @throws EXistException
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
+     * @throws LockException If an exception occurs whilst acquiring locks
+     * @throws IOException If an error occurs whilst copying the Collection on disk
+     * @throws TriggerException If a CollectionTrigger throws an exception
+     * @throws EXistException If an internal error occurs
      */
     public abstract void copyResource(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) DocumentImpl sourceDocument,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) Collection targetCollection, XmldbURI newName, final PreserveType preserve)
@@ -853,9 +942,9 @@ public abstract class DBBroker implements AutoCloseable {
 	/**
 	 * Defragment pages of this document. This will minimize the number of split
 	 * pages.
-	 * 
-	 * @param doc
-	 *            to defrag
+	 *
+     * @param transaction The current transaction
+	 * @param doc to defrag
 	 */
 	public abstract void defragXMLResource(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl doc);
 
@@ -864,7 +953,7 @@ public abstract class DBBroker implements AutoCloseable {
 	 * 
 	 * This checks if the DOM tree is consistent.
 	 * 
-	 * @param doc
+	 * @param doc the document to check the XML tree in
 	 */
 	public abstract void checkXMLResourceTree(@EnsureLocked(mode=LockMode.READ_LOCK) DocumentImpl doc);
 
@@ -876,7 +965,7 @@ public abstract class DBBroker implements AutoCloseable {
 	 * {@link org.exist.storage.sync.Sync#MAJOR}, sync all states (dom,
 	 * collection, text and element) to disk.
 	 * 
-	 * @param syncEvent
+	 * @param syncEvent the event
 	 */
 	public abstract void sync(Sync syncEvent);
 
@@ -884,9 +973,11 @@ public abstract class DBBroker implements AutoCloseable {
 	 * Update a node's data. To keep nodes in a correct sequential order, it is
 	 * sometimes necessary to update a previous written node. Warning: don't use
 	 * it for other purposes.
-	 * 
-	 * @param node
-	 *            Description of the Parameter
+	 *
+     * @param transaction the current transaction
+	 * @param node the node to update
+     * @param reindex true will trigger a reindex
+     * @param <T> the type to return
 	 */
 	public abstract <T extends IStoredNode> void updateNode(Txn transaction, IStoredNode<T> node, boolean reindex);
 
@@ -929,10 +1020,12 @@ public abstract class DBBroker implements AutoCloseable {
 	 * Create a temporary document in the temp collection and store the supplied
 	 * data.
 	 * 
-	 * @param doc
-	 * @throws EXistException
-	 * @throws PermissionDeniedException
-	 * @throws LockException
+	 * @param doc the document to store
+     * @return the temporary document
+     *
+     * @throws EXistException If an internal error occurs
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
+     * @throws LockException If an exception occurs whilst acquiring locks
 	 */
 	public abstract @EnsureUnlocked DocumentImpl storeTempResource(
 			org.exist.dom.memtree.DocumentImpl doc) throws EXistException,
@@ -942,6 +1035,7 @@ public abstract class DBBroker implements AutoCloseable {
 	 * Clean up temporary resources. Called by the sync daemon.
 	 * 
 	 * @param forceRemoval Should temporary resources be forcefully removed
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
 	 */
 	public abstract void cleanUpTempResources(boolean forceRemoval) throws PermissionDeniedException;
 	
@@ -961,6 +1055,9 @@ public abstract class DBBroker implements AutoCloseable {
      * @param result a (possibly empty) document set to which the found documents are added.
      *
      * @return The result
+     *
+     * @throws PermissionDeniedException If the current user does not have appropriate permissions
+     * @throws LockException If an exception occurs whilst acquiring locks
      */
 	public abstract MutableDocumentSet getXMLResourcesByDoctype(String doctype, MutableDocumentSet result) throws PermissionDeniedException, LockException;
 
@@ -1072,6 +1169,7 @@ public abstract class DBBroker implements AutoCloseable {
      *
      * @deprecated This is a stepping-stone; Transactions should be explicitly passed
      *   around. This will be removed in the near future.
+     * @return the transaction
      */
     @Deprecated
     public synchronized Txn continueOrBeginTransaction() {

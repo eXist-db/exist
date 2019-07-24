@@ -43,7 +43,7 @@ import org.xmldb.api.base.XMLDBException;
 
 /**
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class UserManagerDialog extends javax.swing.JFrame {
 
@@ -55,10 +55,7 @@ public class UserManagerDialog extends javax.swing.JFrame {
     
     private DefaultTableModel usersTableModel = null;
     private DefaultTableModel groupsTableModel = null;
-    
-    /**
-     * Creates new form UserManagerDialog
-     */
+
     public UserManagerDialog(final UserManagementService userManagementService, final String currentUser, final ClientFrame client) {
         this.userManagementService = userManagementService;
         this.currentUser = currentUser;

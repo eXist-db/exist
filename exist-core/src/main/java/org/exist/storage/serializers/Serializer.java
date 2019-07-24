@@ -111,7 +111,7 @@ import org.xml.sax.ext.LexicalHandler;
  *  Output can be configured through properties. Property keys are defined in classes
  * {@link javax.xml.transform.OutputKeys} and {@link org.exist.storage.serializers.EXistOutputKeys}
  *
- *@author     Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public abstract class Serializer implements XMLReader {
 
@@ -327,6 +327,8 @@ public abstract class Serializer implements XMLReader {
 	/**
 	 *  If an XSL stylesheet is present, plug it into
 	 *  the chain.
+	 *
+	 * @param writer the writer
 	 */
 	protected void applyXSLHandler(Writer writer) {
 		final StreamResult result = new StreamResult(writer);
@@ -339,9 +341,9 @@ public abstract class Serializer implements XMLReader {
 	}
 
 	/**
-	 *  Return my internal EntityResolver
+	 * Return my internal EntityResolver
 	 *
-	 *@return    The entityResolver value
+	 * @return The entityResolver value
 	 */
 	public EntityResolver getEntityResolver() {
 		return entityResolver;
@@ -354,6 +356,8 @@ public abstract class Serializer implements XMLReader {
 	/**
 	 * Set the current User. A valid user is required to
 	 * process XInclude elements.
+	 *
+	 * @param user the user
 	 */
 	public void setUser(Subject user) {
 		this.user = user;
@@ -361,6 +365,8 @@ public abstract class Serializer implements XMLReader {
 
 	/**
 	 * Get the current User.
+	 *
+	 * @return the user
 	 */
 	public Subject getUser() {
 		return user;
@@ -442,6 +448,10 @@ public abstract class Serializer implements XMLReader {
 	
 	/**
 	 *  Serialize a document to the supplied writer.
+	 *
+	 * @param doc the document
+	 * @param writer the output writer
+	 * @throws SAXException if an error occurs during serialization
 	 */
 	public void serialize(DocumentImpl doc, Writer writer) throws SAXException {
 		serialize(doc, writer, true);
@@ -508,11 +518,13 @@ public abstract class Serializer implements XMLReader {
 	}
 	
 	/**
-	 *  Serialize a single NodeProxy.
+	 * Serialize a single NodeProxy.
 	 *
-	 *@param  p                 Description of the Parameter
-	 *@return                   Description of the Return Value
-	 *@exception  SAXException  Description of the Exception
+	 * @param  p the node proxy
+	 *
+	 * @return the serialized result
+	 *
+	 * @throws SAXException if a SAX error occurs
 	 */
 	public String serialize(NodeProxy p) throws SAXException {
 		final StringWriter out = new StringWriter();
@@ -545,9 +557,10 @@ public abstract class Serializer implements XMLReader {
 	}
 	
 	/**
-	 *  Set the ContentHandler to be used during serialization.
+	 * Set the ContentHandler to be used during serialization.
 	 *
-	 *@param  contentHandler  The new contentHandler value
+	 * @param  contentHandler the content handler
+	 * @param lexicalHandler the lexical handle
 	 */
 	public void setSAXHandlers(ContentHandler contentHandler, LexicalHandler lexicalHandler) {
 		ReceiverToSAX toSAX = new ReceiverToSAX(contentHandler);
@@ -575,47 +588,41 @@ public abstract class Serializer implements XMLReader {
         return xinclude;
     }
     
-	/* (non-Javadoc)
-	 * @see org.xml.sax.XMLReader#setContentHandler(org.xml.sax.ContentHandler)
-	 */
+	@Override
 	public void setContentHandler(ContentHandler handler) {
 		setSAXHandlers(handler, null);
 	}
-	
-	/**
-	 * Required by interface XMLReader. Always returns null.
-	 * 
-	 * @see org.xml.sax.XMLReader#getContentHandler()
-	 */
+
+	@Override
 	public ContentHandler getContentHandler() {
 		return null;
 	}
 	
 	/**
-	 *  Sets the entityResolver attribute of the Serializer object
+	 * Sets the entityResolver attribute of the Serializer object
 	 *
-	 *@param  resolver  The new entityResolver value
+	 * @param  resolver  The new entityResolver value
 	 */
 	public void setEntityResolver(EntityResolver resolver) {
 		entityResolver = resolver;
 	}
 
 	/**
-	 *  Sets the errorHandler attribute of the Serializer object
+	 * Sets the errorHandler attribute of the Serializer object
 	 *
-	 *@param  handler  The new errorHandler value
+	 * @param  handler  The new errorHandler value
 	 */
 	public void setErrorHandler(ErrorHandler handler) {
 		errorHandler = handler;
 	}
 
 	/**
-	 *  Sets the feature attribute of the Serializer object
+	 * Sets the feature attribute of the Serializer object
 	 *
-	 *@param  name                           The new feature value
-	 *@param  value                          The new feature value
-	 *@exception  SAXNotRecognizedException  Description of the Exception
-	 *@exception  SAXNotSupportedException   Description of the Exception
+	 * @param  name The new feature name
+	 * @param  value The new feature value
+	 * @throws  SAXNotRecognizedException  Description of the Exception
+	 * @throws  SAXNotSupportedException   Description of the Exception
 	 */
 	public void setFeature(String name, boolean value)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
@@ -699,6 +706,11 @@ public abstract class Serializer implements XMLReader {
 	/**
 	 *  Plug an XSL stylesheet into the processing pipeline.
 	 *  All output will be passed to this stylesheet.
+	 *
+	 * @param doc the document
+	 * @param stylesheet the stylesheet
+	 *
+	 * @throws TransformerConfigurationException if the stylesheet cannot be set
 	 */
 	public void setStylesheet(DocumentImpl doc, String stylesheet) throws TransformerConfigurationException {
 		if (stylesheet == null) {
@@ -779,10 +791,13 @@ public abstract class Serializer implements XMLReader {
 
 	/** 
 	 * Set stylesheet parameter
-	 **/
-	public void setStylesheetParam(String param, String value) {
+	 *
+	 * @param name the parameter name
+	 * @param value the parameter value
+	 */
+	public void setStylesheetParam(String name, String value) {
 		if (xslHandler != null)
-			{xslHandler.getTransformer().setParameter(param, value);}
+			{xslHandler.getTransformer().setParameter(name, value);}
 	}
 
 	protected void setXSLHandler(NodeProxy root, boolean applyFilters) {
@@ -878,7 +893,7 @@ public abstract class Serializer implements XMLReader {
 	 * wrap is set to true, output a wrapper element to enclose the serialized items. The
 	 * wrapper element will be in namespace {@link org.exist.Namespaces#EXIST_NS} and has the following form:
 	 * 
-	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count">
+	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count"&gt;
 	 * 
 	 * @param seq The sequence to serialize
 	 * @param start The position in the sequence to start serialization from
@@ -935,7 +950,7 @@ public abstract class Serializer implements XMLReader {
 	 * wrap is set to true, output a wrapper element to enclose the serialized items. The
 	 * wrapper element will be in namespace {@link org.exist.Namespaces#EXIST_NS} and has the following form:
 	 * 
-	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count">
+	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count"&gt;
 	 *
 	 * @param seq The sequence to serialize
 	 *
@@ -1086,19 +1101,11 @@ public abstract class Serializer implements XMLReader {
 		}
 	}
 	
-	/**
-	 * Inherited from XMLReader. Ignored.
-	 * 
-	 * @see org.xml.sax.XMLReader#setDTDHandler(org.xml.sax.DTDHandler)
-	 */
+	@Override
 	public void setDTDHandler(DTDHandler handler) {
 	}
-	
-	/**
-	 * Inherited from XMLReader. Ignored. Returns always null.
-	 * 
-	 * @see org.xml.sax.XMLReader#getDTDHandler()
-	 */
+
+	@Override
 	public DTDHandler getDTDHandler() {
 		return null;
 	}
@@ -1107,7 +1114,7 @@ public abstract class Serializer implements XMLReader {
      * Check if the document has an xml-stylesheet processing instruction
      * that references an XSLT stylesheet. Return the link to the stylesheet.
      *  
-     * @param doc
+     * @param doc the document
      * @return link to the stylesheet
      */
 	public String hasXSLPi(Document doc) {
@@ -1140,13 +1147,13 @@ public abstract class Serializer implements XMLReader {
     /**
      * Quick code fix for the remote XQJ API implementation.
      *
-     * attribute name { "value" } ---> goes through fine.
+     * attribute name { "value" } ---&gt; goes through fine.
      *
-     * fn:doc($expr)/element()/attribute() ---> fails, as this is
+     * fn:doc($expr)/element()/attribute() ---&gt; fails, as this is
      * contained within the Database (not an in memory attribute).
      *
      * @param item a NodeValue
-     * @throws SAXException
+     * @throws SAXException if the attribute can't be serialized
      * @author Charles Foster
      */
     protected void serializeTypeAttributeValue(NodeValue item) throws SAXException {
@@ -1162,7 +1169,7 @@ public abstract class Serializer implements XMLReader {
      * This is required for the XQJ API implementation.
      *
      * @param item a NodeValue which will be wrapped in a element.
-     * @throws SAXException
+	 * @throws SAXException if the element can't be serialized
      * @author Charles Foster
      */
     protected void serializeTypePreNode(NodeValue item) throws SAXException {
@@ -1214,7 +1221,7 @@ public abstract class Serializer implements XMLReader {
      * This is required for the XQJ API implementation.
      *
      * @param item the item which will be wrapped in an element.
-     * @throws SAXException
+	 * @throws SAXException if the element can't be serialized
      * @author Charles Foster
      */
     protected void serializeTypePostNode(NodeValue item) throws SAXException {
@@ -1237,7 +1244,7 @@ public abstract class Serializer implements XMLReader {
 	 *  URIResolver is called by the XSL transformer to handle <xsl:include>,
 	 *  <xsl:import> ...
 	 *
-	 *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+	 *@author     <a href="mailto:meier@ifs.tu-darmstadt.de">Wolfgang Meier</a>
 	 */
 	private class InternalURIResolver implements URIResolver {
 

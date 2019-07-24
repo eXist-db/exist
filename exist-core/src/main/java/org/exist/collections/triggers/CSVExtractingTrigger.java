@@ -39,45 +39,45 @@ import org.xml.sax.SAXException;
  *
  * Example configuration -
  *
- * <collection xmlns="http://exist-db.org/collection-config/1.0">
- *   <triggers>
- *       <trigger event="store" class="org.exist.collections.triggers.CSVExtractingTrigger">
+ * &lt;collection xmlns="http://exist-db.org/collection-config/1.0"&gt;
+ *   &lt;triggers&gt;
+ *       &lt;trigger event="store" class="org.exist.collections.triggers.CSVExtractingTrigger"&gt;
  *
- *           <parameter name="separator" value="|"/>
+ *           &lt;parameter name="separator" value="|"/&gt;
  *
- *           <parameter name="path">
- *               <xpath>/content/properties/value[@key eq "product_model"]</xpath>
- *               <extract index="0" element-name="product_name"/>
- *               <extract index="1" element-name="product_code"/>
- *           </parameter>
+ *           &lt;parameter name="path"&gt;
+ *               &lt;xpath&gt;/content/properties/value[@key eq "product_model"]&lt;/xpath&gt;
+ *               &lt;extract index="0" element-name="product_name"/&gt;
+ *               &lt;extract index="1" element-name="product_code"/&gt;
+ *           &lt;/parameter&gt;
  *
- *       </trigger>
- *   </triggers>
- * </collection>
+ *       &lt;/trigger&gt;
+ *   &lt;/triggers&gt;
+ * &lt;/collection&gt;
  *
  * Currently the configuration of this trigger only supports basic attribute predicates or a name eq value syntax.
  *
  *
  * So for example, when storing a Document with content like the following -
  *
- * <content>
- *      <properties>
- *          <value key="product_model">SomeName|SomeCode12345</value>
- *      </properties>
- * </content>
+ * &lt;content&gt;
+ *      &lt;properties&gt;
+ *          &lt;value key="product_model"&gt;SomeName|SomeCode12345&lt;/value&gt;
+ *      &lt;/properties&gt;
+ * &lt;/content&gt;
  *
  * The document will be translated at insertion time into -
  *
- * <content>
- *      <properties>
- *          <value key="product_model">
- *              <product_name>SomeName</product_name>
- *              <product_code>SomeCode12345</product_code>
- *          </value>
- *      </properties>
- * </content>
+ * &lt;content&gt;
+ *      &lt;properties&gt;
+ *          &lt;value key="product_model"&gt;
+ *              &lt;product_name&gt;SomeName&lt;/product_name&gt;
+ *              &lt;product_code&gt;SomeCode12345&lt;/product_code&gt;
+ *          &lt;/value&gt;
+ *      &lt;/properties&gt;
+ * &lt;/content&gt;
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class CSVExtractingTrigger extends FilteringTrigger {
 

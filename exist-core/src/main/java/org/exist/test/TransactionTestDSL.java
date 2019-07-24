@@ -74,7 +74,7 @@ import static org.exist.util.ThreadUtils.newInstanceSubThreadGroup;
  * the DSL by the user much simpler and safer.
  *
  * The recursive type implementation was
- * inspired by {@see https://apocalisp.wordpress.com/2008/10/23/heterogeneous-lists-and-the-limits-of-the-java-type-system/}.
+ * inspired by <a href="https://apocalisp.wordpress.com/2008/10/23/heterogeneous-lists-and-the-limits-of-the-java-type-system/">https://apocalisp.wordpress.com/2008/10/23/heterogeneous-lists-and-the-limits-of-the-java-type-system/</a>.
  *
  * Example usage for creating a schedule of
  * two transactions, where each will execute in
@@ -82,16 +82,15 @@ import static org.exist.util.ThreadUtils.newInstanceSubThreadGroup;
  * according to the schedule:
  *
  * <pre>
- * {@code
  *
  * import static org.exist.test.TransactionTestDSL.TransactionOperation.*;
  * import static org.exist.test.TransactionTestDSL.TransactionScheduleBuilder.biSchedule;
  *
- * @Test
+ * {@code @Test}
  * public void getDocuments() throws ExecutionException, InterruptedException {
  *   final String documentUri = "/db/test/hamlet.xml";
  *
- *   final Tuple2<DocumentImpl, DocumentImpl> result = biSchedule()
+ *   final Tuple2{@code <DocumentImpl, DocumentImpl>} result = biSchedule()
  *       .firstT1(getDocument(documentUri))
  *                                            .andThenT2(getDocument(documentUri))
  *       .andThenT1(commit())
@@ -107,10 +106,9 @@ import static org.exist.util.ThreadUtils.newInstanceSubThreadGroup;
  *   assertEquals(documentUri, result._2.getURI().getCollectionPath());
  * }
  *
- * }
  * </pre>
  *
- * @author <a href="mailto:adam@evolvedbinary.com>Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public interface TransactionTestDSL {
 
@@ -243,6 +241,8 @@ public interface TransactionTestDSL {
              *            <pre>operation</pre> has executed
              *
              * @param operation An operation on either Transaction T1 or T2
+             *
+             * @return the builder
              */
             public static <T1, U1, T2, U2> BiTransactionScheduleBuilderOperation<T1, U1, T2, U2, NilOperation> first(final Either<TransactionOperation<T1, U1>, TransactionOperation<T2, U2>> operation) {
                 if(operation.isLeft()) {
@@ -435,6 +435,9 @@ public interface TransactionTestDSL {
          * @param brokerPool The database
          *
          * @return The result of executing the schedule.
+         *
+         * @throws ExecutionException if the execution fails.
+         * @throws InterruptedException if the execution is interrupted.
          */
         default U execute(final BrokerPool brokerPool) throws ExecutionException, InterruptedException {
             return execute(brokerPool, NULL_SCHEDULE_LISTENER);
@@ -447,8 +450,12 @@ public interface TransactionTestDSL {
          * @param executionListener A listener which receives execution events.
          *
          * @return The result of executing the schedule.
+         *
+         * @throws ExecutionException if the execution fails.
+         * @throws InterruptedException if the execution is interrupted.
          */
-        U execute(final BrokerPool brokerPool, final ExecutionListener executionListener) throws ExecutionException, InterruptedException;
+        U execute(final BrokerPool brokerPool, final ExecutionListener executionListener)
+                throws ExecutionException, InterruptedException;
     }
 
     /**
@@ -543,7 +550,7 @@ public interface TransactionTestDSL {
     /**
      * A function which describes an operation on the database with a Transaction.
      *
-     * You can think of this as a function <pre>f(T) -> U</pre>
+     * You can think of this as a function <pre>f(T) -&gt; U</pre>
      * where the database and transaction are available to the
      * function <pre>f</pre>.
      *
@@ -683,7 +690,9 @@ public interface TransactionTestDSL {
          * on the input type {@code <T>} and returns
          * the results as a tuple.
          *
-         * e.g. Tuple2(f(T) -> U, other(T) -> U2)
+         * e.g. <pre>Tuple2(f(T) -&gt; U, other(T) -&gt; U2)</pre>
+         *
+         * @param <U2> thr result of the other operation.
          *
          * @param other another transaction operation which also operates on T
          *
@@ -699,6 +708,8 @@ public interface TransactionTestDSL {
          *
          * See {@link Function#andThen(Function)}
          *
+         * @param <V> the result of the after operation.
+         *
          * @param after the after function
          *
          * @return the composed function
@@ -713,6 +724,8 @@ public interface TransactionTestDSL {
          *
          * See {@link Function#compose(Function)}
          *
+         * @param <V> the input type of the before operation.
+         *
          * @param before the before function.
          *
          * @return the composed function
@@ -726,6 +739,8 @@ public interface TransactionTestDSL {
          * Returns a function that always returns its input argument.
          *
          * See {@link Function#identity()}
+         *
+         * @param <T> the result of the identity operation.
          *
          * @return the identity operation
          */

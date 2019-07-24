@@ -81,8 +81,8 @@ public class Error {
      * and adds a single argument to the argument list for the
      * error message.
      * 
-     * @param errCode
-     * @param arg1
+     * @param errCode the message id for this error
+     * @param arg1 additional argument
      */
     public Error(String errCode, Object arg1) {
         this.errCode = errCode;
@@ -97,7 +97,7 @@ public class Error {
     /**
      * Add an argument to the argument list for the error message.
      * 
-     * @param arg
+     * @param arg the argument to add
      */
     public void addArg(Object arg) {
         addArgs(new Object[] { arg });

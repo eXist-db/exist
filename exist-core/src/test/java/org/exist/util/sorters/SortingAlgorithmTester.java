@@ -29,7 +29,7 @@ import org.exist.dom.persistent.NodeProxy;
 
 /**
  * Interface to some sorting algorithm.
- * <p>
+ *
  * This work was undertaken as part of the development of the taxonomic
  * repository at http://biodiversity.org.au . See <A
  * href="ghw-at-anbg.gov.au">Greg&nbsp;Whitbread</A> for further details.

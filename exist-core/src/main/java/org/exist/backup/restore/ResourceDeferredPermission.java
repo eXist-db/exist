@@ -39,7 +39,7 @@ import java.util.Optional;
 
 /**
  * 
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 class ResourceDeferredPermission extends AbstractDeferredPermission {
 

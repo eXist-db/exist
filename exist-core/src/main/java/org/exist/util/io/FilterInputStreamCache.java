@@ -32,8 +32,8 @@ import java.io.IOException;
 /**
  * Interface for Cache Implementations for use by the CachingFilterInputStream
  *
- * @author Adam Retter <adam.retter@googlemail.com>
- * @author Tobi Krebs <tobi.krebs AT gmail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
+ * @author <a href="tobi.krebsATgmail.com">Tobi Krebs</a>
  * @version 1.1
  */
 public interface FilterInputStreamCache extends Closeable {
@@ -115,44 +115,20 @@ public interface FilterInputStreamCache extends Closeable {
      */
     public void invalidate() throws IOException;
 
-    /**
-     * @see java.io.InputStream
-     */
     public int available() throws IOException;
 
-    /**
-     * @see java.io.InputStream
-     */
     public void mark(int readlimit);
 
-    /**
-     * @see java.io.InputStream
-     */
     public boolean markSupported();
 
-    /**
-     * @see java.io.InputStream
-     */
     public abstract int read() throws IOException;
 
-    /**
-     * @see java.io.InputStream
-     */
     public int read(byte[] b) throws IOException;
 
-    /**
-     * @see java.io.InputStream
-     */
     public int read(byte[] b, int off, int len) throws IOException;
 
-    /**
-     * @see java.io.InputStream
-     */
     public void reset() throws IOException;
 
-    /**
-     * @see java.io.InputStream
-     */
     public long skip(long n) throws IOException;
 
     public int getSrcOffset();

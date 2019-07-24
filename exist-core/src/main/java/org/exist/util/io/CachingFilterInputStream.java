@@ -42,8 +42,8 @@ import java.io.InputStream;
  *
  * @version 1.1
  *
- * @author Adam Retter <adam.retter@googlemail.com>
- * @author Tobi Krebs <tobi.krebs AT gmail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
+ * @author <a href="tobi.krebsATgmail.com">Tobi Krebs</a>
  */
 @NotThreadSafe
 public class CachingFilterInputStream extends FilterInputStream {
@@ -59,7 +59,9 @@ public class CachingFilterInputStream extends FilterInputStream {
      * Constructor which uses an existing Cache from a CachingFilterInputStream,
      * if inputStream is a CachingFilterInputStream.
      *
-     * @param inputStream
+     * @param inputStream the input stream
+     *
+     * @throws InstantiationException if the construction fails
      */
     public CachingFilterInputStream(InputStream inputStream) throws InstantiationException {
         super(null);
@@ -87,6 +89,8 @@ public class CachingFilterInputStream extends FilterInputStream {
      * Gets the cache implementation for
      * sharing with another source. This is done
      * by incrementing its shared reference count.
+     *
+     * @return the cache implementation
      */
     FilterInputStreamCache shareCache() {
         cache.incrementSharedReferences();

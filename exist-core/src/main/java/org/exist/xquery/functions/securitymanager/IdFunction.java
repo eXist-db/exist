@@ -32,7 +32,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
 /**
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  *
  */
 public class IdFunction extends BasicFunction {

@@ -25,7 +25,7 @@ import java.util.function.Supplier;
  * An enumeration of message digest types
  * used by eXist-db.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public enum DigestType {
     MD_2((byte)0x01, 128, MD2StreamableDigest::new, "MD2"),
@@ -70,6 +70,8 @@ public enum DigestType {
      *
      * @param id the id of the digest type
      *
+     * @return the digest type
+     *
      * @throws IllegalArgumentException if the id is invalid.
      */
     public static DigestType forId(final byte id) {
@@ -94,6 +96,8 @@ public enum DigestType {
      * Get the digest type by common name.
      *
      * @param commonName the common name of the digest type
+     *
+     * @return the digest type
      *
      * @throws IllegalArgumentException if the common name is invalid.
      */

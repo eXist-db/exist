@@ -57,7 +57,7 @@ import java.util.Properties;
 
 /**
  * Placeholder class for DOM nodes.
- * <p/>
+ *
  * NodeProxy is an internal proxy class, acting as a placeholder for all types of persistent XML nodes
  * during query processing. NodeProxy just stores the node's unique id and the document it belongs to.
  * Query processing deals with these proxys most of the time. Using a NodeProxy is much cheaper
@@ -71,7 +71,7 @@ import java.util.Properties;
  * a sequence, NodeProxy does itself extend NodeSet. It thus represents a node set containing
  * just one, single node.
  *
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, Comparable<Object> {
 
@@ -103,7 +103,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     /**
      * The first {@link Match} object associated with this node.
      * Match objects are used to track hits throughout query processing.
-     * <p/>
+     *
      * Matches are stored as a linked list.
      */
     private Match match = null;
@@ -333,7 +333,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     /**
      * Gets the node from the broker, i.e. fom the underlying file system
-     * Call this method <string>only</strong> when necessary
+     * Call this method <em>only</em> when necessary
      * @see org.exist.xquery.value.NodeValue#getNode()
      */
     @Override
@@ -492,7 +492,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * Add all context nodes from the other NodeProxy to the
      * context of this NodeProxy.
      *
-     * @param other
+     * @param other NodePoxy to take context from
      */
     public void addContext(final NodeProxy other) {
         ContextItem next = other.context;

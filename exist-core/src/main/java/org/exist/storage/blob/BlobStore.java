@@ -35,7 +35,7 @@ import java.util.function.Function;
 /**
  * Store for BLOBs (Binary Large Objects).
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public interface BlobStore extends Closeable {
 
@@ -149,7 +149,10 @@ public interface BlobStore extends Closeable {
      *     If you wish to handle exceptions in your function you should consider
      *     {@link com.evolvedbinary.j8fu.Try} or similar.
      *
+     * @return the result of the {@code fnFile} function.
+     *
      * @throws IOException if an error occurs whilst retrieving the BLOB file.
+     * @return the result of the {@code fnFile} function
      */
     <T> T with(final Txn transaction, final BlobId blobId, final Function<Path, T> fnFile) throws IOException;
 
@@ -167,6 +170,7 @@ public interface BlobStore extends Closeable {
      * Backup the Blob Store to the backup.
      *
      * @param backup the backup to write the Blob Store to.
+     * @throws IOException if an error occurs whilst creating a backup of the BLOB.
      */
     void backupToArchive(final RawDataBackup backup) throws IOException;
 

@@ -31,7 +31,7 @@ import org.exist.xquery.value.Type;
  * Abstract base class for the XQuery/XPath combining operators "union", "intersect"
  * and "except".
  * 
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public abstract class CombiningExpression extends AbstractExpression {
 
@@ -84,6 +84,7 @@ public abstract class CombiningExpression extends AbstractExpression {
 	 * @param ls Left sequence
 	 * @param rs Right sequence
 	 *
+	 * @throws XPathException in case of a dynamic error
 	 * @return The combined result
 	 */
 	protected abstract Sequence combine(final Sequence ls, final Sequence rs) throws XPathException;

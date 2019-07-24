@@ -35,20 +35,20 @@ public interface CollectionTrigger extends Trigger {
      * This method is called once before the database will actually create, remove or rename a collection. You may 
      * take any action here, using the supplied broker instance.
      * 
-     * @param broker
-     * @param txn
-     * @param uri
-     * @throws TriggerException
+     * @param broker eXist-db broker
+     * @param txn the transaction
+     * @param uri of the collection the trigger listens on
+     * @throws TriggerException if an error in the trigger function is thrown
      */
     public void beforeCreateCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException;
     
     /**
      * This method is called after the operation has completed.
-     * 
-     * @param broker
-     * @param txn
-     * @param collection
-     * @throws TriggerException
+     *
+     * @param broker eXist-db broker
+     * @param txn the transaction
+     * @param collection the trigger listens on
+     * @throws TriggerException if an error in the trigger function is thrown
      */
     public void afterCreateCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException;
 

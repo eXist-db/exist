@@ -50,7 +50,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * an ant task to extract the content of a collection or resource.
  *
- * @author peter.klotz@blue-elephant-systems.com
+ * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  * @author jim.fuller at webcomposite.com to handle binary file extraction
  */
 public class XMLDBExtractTask extends AbstractXMLDBTask {
@@ -132,10 +132,11 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
     /**
      * Create directory from a collection.
      *
-     * @param base DOCUMENT ME!
-     * @param path DOCUMENT ME!
-     * @throws XMLDBException DOCUMENT ME!
-     * @throws IOException    DOCUMENT ME!
+     * @param base the collection
+     * @param path the path
+     *
+     * @throws XMLDBException if a database error occurs
+     * @throws IOException if an I/O error occurs
      */
     private void extractResources(final Collection base, final String path) throws XMLDBException, IOException {
         final String[] resources = base.listResources();
@@ -167,10 +168,11 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
     /**
      * Extract multiple resources from a collection.
      *
-     * @param base DOCUMENT ME!
-     * @param path DOCUMENT ME!
-     * @throws XMLDBException DOCUMENT ME!
-     * @throws IOException    DOCUMENT ME!
+     * @param base the collection
+     * @param path the path
+     *
+     * @throws XMLDBException if a database error occurs
+     * @throws IOException if an I/O error occurs
      */
     private void extractSubCollections(final Collection base, final String path) throws XMLDBException, IOException {
         final String[] childCols = base.listChildCollections();
@@ -208,10 +210,11 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
     /**
      * Extract single resource.
      *
-     * @param res  DOCUMENT ME!
-     * @param dest DOCUMENT ME!
-     * @throws XMLDBException DOCUMENT ME!
-     * @throws IOException    DOCUMENT ME!
+     * @param res the resource
+     * @param dest the destination file.
+     *
+     * @throws XMLDBException if a database error occurs
+     * @throws IOException if an I/O error occurs
      */
     private void writeResource(final Resource res, final File dest) throws XMLDBException, IOException {
         if (res instanceof XMLResource) {
@@ -224,10 +227,11 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
     /**
      * Extract XML resource.
      *
-     * @param res  DOCUMENT ME!
-     * @param dest DOCUMENT ME!
-     * @throws IOException    DOCUMENT ME!
-     * @throws XMLDBException DOCUMENT ME!
+     * @param res the resource
+     * @param dest the destination file
+     *
+     * @throws XMLDBException if a database error occurs
+     * @throws IOException if an I/O error occurs
      */
     private void writeXMLResource(final XMLResource res, final File dest) throws IOException, XMLDBException {
         if (createdirectories) {
@@ -272,10 +276,11 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
     /**
      * Extract single binary resource.
      *
-     * @param res  DOCUMENT ME!
-     * @param dest DOCUMENT ME!
-     * @throws XMLDBException DOCUMENT ME!
-     * @throws IOException    DOCUMENT ME!
+     * @param res the resource
+     * @param dest the destination file
+     *
+     * @throws XMLDBException if a database error occurs
+     * @throws IOException if an I/O error occurs
      */
     private void writeBinaryResource(final Resource res, File dest) throws XMLDBException, IOException {
         if (createdirectories == true) {
@@ -322,6 +327,10 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
 
 
     /**
+     * Set the type.
+     *
+     * @param the type
+     *
      * @deprecated Not used anymore
      */
     @Deprecated

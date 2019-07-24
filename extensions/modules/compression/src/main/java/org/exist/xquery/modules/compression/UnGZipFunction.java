@@ -43,7 +43,7 @@ import org.exist.xquery.value.Type;
 /**
  * Compression into a GZip file
  * 
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @version 1.1
  */
 public class UnGZipFunction extends BasicFunction

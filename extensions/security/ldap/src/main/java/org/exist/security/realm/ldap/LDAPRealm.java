@@ -65,7 +65,7 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 @ConfigurationClass("realm") //TODO: id = LDAP
 public class LDAPRealm extends AbstractRealm {
@@ -538,9 +538,9 @@ public class LDAPRealm extends AbstractRealm {
      * byte[1] - count of sub-authorities
      * byte[2-7] - 48 bit authority (big-endian)
      * and then count x 32 bit sub authorities (little-endian)
-     * <p>
+     *
      * The String value is: S-Revision-Authority-SubAuthority[n]...
-     * <p>
+     *
      * http://forums.oracle.com/forums/thread.jspa?threadID=1155740&tstart=0
      */
     private static String decodeSID(final byte[] sid) {

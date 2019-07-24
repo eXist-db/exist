@@ -76,7 +76,7 @@ import java.util.function.Supplier;
  * {@link EnsureContainerUnlocked} on a method, ensures that the encapsulating object on which the method operates holds
  * no locks before the method is called.
  *
- * @author <a href="mailto:adam@evolvedbinary.com>Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @Aspect
 public class EnsureLockingAspect {
@@ -124,6 +124,8 @@ public class EnsureLockingAspect {
      * Ensures that the parameters to a method
      * annotated by {@link EnsureLocked} hold
      * the indicated locks.
+     *
+     @param joinPoint the join point of the aspect
      *
      * @throws LockException if the appropriate locks are not held and
      *  the System property `exist.ensurelocking.enforce=true` is set.
@@ -202,8 +204,13 @@ public class EnsureLockingAspect {
      * Ensures that the object returned by a method
      * has an lock taken upon it before it is returned.
      *
+     * @param joinPoint the join point of the aspect
+     *
+     * @param result the result of the instrumented method
+     *
      * @throws LockException if the appropriate locks are not held and
      *  the System property `exist.ensurelocking.enforce=true` is set.
+     *
      */
     @AfterReturning(value = "methodWithEnsureLockedReturnType()", returning = "result")
     public void enforceEnsureLockedReturnType(final JoinPoint joinPoint, final Object result) throws Throwable {
@@ -271,7 +278,10 @@ public class EnsureLockingAspect {
      * Ensures that the appropriate lock is held on the container
      * object which houses the method before the method is called.
      *
-     * @throws LockException if the appropriate locks are not held and
+     * @param joinPoint the join point of the aspect
+     * @param container the object containing the instrumented method
+     *
+     * @throws LockException if any locks are held and
      *  the System property `exist.ensurelocking.enforce=true` is set.
      */
     @Before("methodWithEnsureContainerLocked() && target(container)")
@@ -348,6 +358,7 @@ public class EnsureLockingAspect {
      * annotated by {@link EnsureUnlocked} do not hold
      * any locks.
      *
+     * @param joinPoint the join point of the aspect
      * @throws LockException if any locks are held and
      *  the System property `exist.ensurelocking.enforce=true` is set.
      */
@@ -423,7 +434,8 @@ public class EnsureLockingAspect {
     /**
      * Ensures that the object returned by a method
      * has no lock held upon it before it is returned.
-     *
+     * @param joinPoint the join point of the aspect
+     * @param result the result of the instrumented method
      * @throws LockException if any locks are held and
      *  the System property `exist.ensurelocking.enforce=true` is set.
      */
@@ -492,7 +504,9 @@ public class EnsureLockingAspect {
     /**
      * Ensures that the no locks are held on the container
      * object which houses the method before the method is called.
-     *
+     * @param joinPoint the join point of the aspect
+     * @param container the object containing the instrumented method
+
      * @throws LockException if any locks are held and
      *  the System property `exist.ensurelocking.enforce=true` is set.
      */

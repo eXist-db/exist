@@ -88,7 +88,7 @@ public class PersistentDomTest {
 
     private static final XmldbURI TEST_CDATA_XML_COLLECTION = XmldbURI.create("/db/persistent-dom-cdata-test");
     private static final XmldbURI CDATA_XML_NAME = XmldbURI.create("cdata.xml");
-    private static final String CDATA_CONTENT = "<p>Hello there \"Bob?\"</p>";
+    private static final String CDATA_CONTENT = "Hello there \"Bob?\"";
     private static final String CDATA_XML =
             "<cdataText><![CDATA[" + CDATA_CONTENT + "]]></cdataText>";
 

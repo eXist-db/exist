@@ -65,7 +65,7 @@ public class CDataIntergationTest {
     @ClassRule
     public static final TemporaryFolder tempFolder = new TemporaryFolder();
 
-    private final static String cdata_content = "<p>Hello there \"Bob?\"</p>";
+    private final static String cdata_content = "Hello there \"Bob?\"";
     private final static String cdata_xml = "<elem1><![CDATA[" + cdata_content + "]]></elem1>";
 
     @Test

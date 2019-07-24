@@ -29,7 +29,7 @@ import java.io.InputStream;
  * An Input Stream filter which executes a callback
  * after the stream has been closed.
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class CloseNotifyingInputStream extends FilterInputStream {
 

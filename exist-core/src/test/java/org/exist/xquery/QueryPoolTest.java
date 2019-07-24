@@ -48,8 +48,8 @@ public class QueryPoolTest {
         EXistXQueryService service = (EXistXQueryService) testCollection.getService("XQueryService", "1.0");
         for (int i = 0; i < 1000; i++) {
             String query = "update insert <node id='id" + Integer.toHexString(i) + "'>" +
-                    "<p>Some longer text <b>content</b> in this node. Some longer text <b>content</b> in this node. " +
-                    "Some longer text <b>content</b> in this node. Some longer text <b>content</b> in this node.</p>" +
+                    "Some longer text <b>content</b> in this node. Some longer text <b>content</b> in this node. " +
+                    "Some longer text <b>content</b> in this node. Some longer text <b>content</b> in this node." +
                     "</node> " +
                     "into //test[@id = 't1']";
             service.execute(new StringSource(query));

@@ -34,7 +34,7 @@ import org.exist.xquery.value.Sequence;
  * in name or the number of expected arguments. It is thus possible to implement
  * similar XQuery functions in one single class.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author ljo
  *
  */
@@ -72,7 +72,11 @@ public abstract class AbstractInternalModule implements InternalModule {
     }
 
     /**
-     * returns a module parameter
+     * Get a parameter.
+     *
+     * @param paramName the name of the parameter
+     *
+     * @return the value of tyhe parameter
      */
     protected List<? extends Object> getParameter(final String paramName) {
         return parameters.get(paramName);

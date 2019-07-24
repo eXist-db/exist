@@ -45,7 +45,7 @@ import org.xmldb.api.base.XMLDBException;
 /**
  * Class to represent a collection.xconf which holds the configuration data for a collection
  * 
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  * @serial 2006-08-25
  * @version 1.2
  */
@@ -201,6 +201,7 @@ public class CollectionXConf
 	 * Update the details of a Range Index
 	 *
 	 * @param index		The numeric index of the range index to update
+	 * @param type		The type of the index, either {@link #TYPE_PATH} or {@link #TYPE_QNAME}
 	 * @param XPath		The new XPath, or null to just set the type
 	 * @param xsType	The new type of the path, a valid xs:type, or just null to set the path
 	 */
@@ -221,6 +222,7 @@ public class CollectionXConf
 	/**
 	 * Add a Range Index
 	 *
+	 * @param type		The type of the index, either {@link #TYPE_PATH} or {@link #TYPE_QNAME}
 	 * @param XPath		The XPath to index
 	 * @param xsType	The type of the path, a valid xs:type
 	 */
@@ -321,7 +323,7 @@ public class CollectionXConf
 	 *
 	 * @param index		The numeric index of the range index to update
 	 * @param triggerClass	The name of the new class for the trigger
-         * @param parameters The parameters to the trigger
+	 * @param parameters The parameters to the trigger
 	 * 
 	 */
 	public void updateTrigger(int index, String triggerClass, Properties parameters)
@@ -339,6 +341,7 @@ public class CollectionXConf
 	 * Add a Trigger
 	 *
 	 * @param triggerClass The class for the Trigger
+	 * @param parameters Parameters to pass to trigger
 	 * 
 	 */
 	public void addTrigger(String triggerClass, Properties parameters)
@@ -566,7 +569,8 @@ public class CollectionXConf
 		
 		/**
 		 * Constructor
-		 * 
+		 *
+		 * @param type type of the index, either "qname" or "path"
 		 * @param XPath		The XPath to create a range index on
 		 * @param xsType	The data type pointed to by the XPath as an xs:type 
 		 */

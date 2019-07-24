@@ -2342,7 +2342,7 @@ options {
 
 /**
  * The following definition differs from the spec by allowing the
- * '&' character, which is handled by the constructor classes.
+ * ampersand character, which is handled by the constructor classes.
  *
  * TODO: Allow escaped quotes in attribute content. Doesn't work.
  */
@@ -2366,7 +2366,7 @@ protected ESCAPE_QUOT
 
 /**
  * The following definition differs from the spec by allowing the
- * '&' character, which is handled by the constructor classes.
+ * ampersand character, which is handled by the constructor classes.
  *
  * TODO: Allow escaped quotes in attribute content. Doesn't work.
  */

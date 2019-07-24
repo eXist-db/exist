@@ -35,7 +35,7 @@ import org.xmldb.api.base.XMLDBException;
 
 /**
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class FindUserForm extends javax.swing.JFrame implements DialogWithResponse<String> {
     private final UserManagementService userManagementService;
@@ -43,9 +43,6 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
     private final Set<String> allUsernames;
     private DefaultComboBoxModel usernameModel;
 
-    /**
-     * Creates new form FindUserForm
-     */
     public FindUserForm(final UserManagementService userManagementService) throws XMLDBException {
         this.userManagementService = userManagementService;
         

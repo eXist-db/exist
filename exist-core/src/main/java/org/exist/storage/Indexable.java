@@ -84,6 +84,7 @@ public interface Indexable extends Comparable {
      * 
      * @param offset starting index for writing in array data
      * @return the size actually writen in the array argument
+     * @throws EXistException in reponse to an eXist-db error
      */
     //TODO : better exception ?
 	public byte[] serializeValue(int offset) throws EXistException;

@@ -25,7 +25,7 @@ package org.exist.http.servlets;
 import java.util.Enumeration;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public interface SessionWrapper {
 	

@@ -39,10 +39,10 @@ public class RestoreDialog extends JDialog {
     /**
      * Creates a new RestoreDialog object.
      *
-     * @param owner
-     * @param title
-     * @param modal
-     * @throws HeadlessException
+     * @param owner Parent window.
+     * @param title Window title.
+     * @param modal Flag to have modal window.
+     * @throws HeadlessException Environment  does not support a keyboard, display, or mouse.
      */
     public RestoreDialog(final Frame owner, final String title, final boolean modal) throws HeadlessException {
         super(owner, title, modal);

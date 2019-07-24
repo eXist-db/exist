@@ -19,7 +19,7 @@ import org.exist.xquery.value.StringValue;
 
 /**
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class XMLDBMatchCollection extends BasicFunction {
 

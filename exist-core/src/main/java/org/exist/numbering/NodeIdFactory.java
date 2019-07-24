@@ -48,8 +48,8 @@ public interface NodeIdFactory {
      * Create a new NodeId, initialized with the given
      * base id.
      * 
-     * @param id
-     * @return nodeId
+     * @param id the initial, first level value to initialize the NodeId with
+     * @return nodeId a new NodeId instance
      */
     NodeId createInstance(int id);
 
@@ -106,9 +106,9 @@ public interface NodeIdFactory {
      * similar to {@link #createFromData(int, byte[], int)}, but it
      * just returns the number of bytes.
      *
-     * @param units
-     * @param data
-     * @param startOffset
+     * @param units the number of units to be read
+     * @param data the byte array containing the data
+     * @param startOffset offset into the byte array to start reading from
      * @return number of bytes
      */
     int lengthInBytes(int units, byte[] data, int startOffset);

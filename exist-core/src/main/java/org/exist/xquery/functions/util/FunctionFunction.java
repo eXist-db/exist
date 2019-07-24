@@ -57,10 +57,7 @@ public class FunctionFunction extends BasicFunction {
         );
     
     private FunctionCall resolvedFunction = null;
-    
-    /**
-     * @param context
-     */
+
     public FunctionFunction(XQueryContext context) {
         super(context, signature);
     }

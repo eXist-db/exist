@@ -67,10 +67,14 @@ public class LogEntryTypes {
     /**
      * Create a new loggable for the given type.
      *
+     * @param broker The broker that will perform the operation
      * @param type The type of the loggable
+     * @param broker the database broker
      * @param transactionId the id of the current transaction
      *
-     * @retun The loggable for the type, or null if no loggable for the type is known
+     * @return The loggable for the type, or null if no loggable for the type is known
+     *
+     * @throws LogException if the entry could not be created
      */
     public final static Loggable create(final byte type, final DBBroker broker, final long transactionId) throws LogException {
         final BiFunction<DBBroker, Long, Loggable> cstr = entryTypes.get(type);

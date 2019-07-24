@@ -42,7 +42,7 @@ import org.exist.xquery.value.ValueSequence;
 /**
  * This is an example module showing how to create a function module.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author Loren Cahlander (loren@syntactica.com)
  */
 public class EchoFunction extends BasicFunction {

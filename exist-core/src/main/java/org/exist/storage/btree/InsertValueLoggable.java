@@ -53,9 +53,7 @@ public class InsertValueLoggable extends BTAbstractLoggable {
         super(BTree.LOG_INSERT_VALUE, broker, transactionId);
     }
     
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
-     */
+    @Override
     public void write(ByteBuffer out) {
         super.write(out);
         out.putInt((int) pageNum);
@@ -66,9 +64,7 @@ public class InsertValueLoggable extends BTAbstractLoggable {
         out.put(key.data(), key.start(), key.getLength());
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
-     */
+    @Override
     public void read(ByteBuffer in) {
         super.read(in);
         pageNum = in.getInt();
@@ -80,21 +76,22 @@ public class InsertValueLoggable extends BTAbstractLoggable {
         key = new Value(data);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#getLogSize()
-     */
+    @Override
     public int getLogSize() {
         return super.getLogSize() + 18 + key.getLength();
     }
-	
+
+    @Override
     public void redo() throws LogException {
         getStorage().redoInsertValue(this);
     }
-    
+
+    @Override
     public void undo() throws LogException {
         getStorage().undoInsertValue(this);
     }
-    
+
+    @Override
 	public String dump() {
 		return super.dump() + " - insert btree key on page: " + pageNum + ": " + Paged.hexDump(key.data());
 	}

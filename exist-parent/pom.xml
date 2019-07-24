@@ -581,6 +581,13 @@
                                 <Implementation-URL>${project.url}</Implementation-URL>
                             </manifestEntries>
                         </archive>
+                        <additionalJOptions>
+                            <additionalJOption>-Xmaxerrs</additionalJOption>
+                            <additionalJOption>65536</additionalJOption>
+                            <additionalJOption>-Xmaxwarns</additionalJOption>
+                            <additionalJOption>65536</additionalJOption>
+                        </additionalJOptions>
+                        <excludePackageNames>org.exist.xquery.parser:org.exist.xquery.xqdoc.parser</excludePackageNames>
                     </configuration>
                 </plugin>
                 <plugin>

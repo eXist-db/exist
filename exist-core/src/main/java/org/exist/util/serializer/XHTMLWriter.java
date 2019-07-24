@@ -110,7 +110,9 @@ public class XHTMLWriter extends IndentingXMLWriter {
     }
 
     /**
-     * @param writer
+     * @param writer the writer
+     * @param emptyTags tags that are allowed to be empty
+     * @param inlineTags tags that should be written inline
      */
     public XHTMLWriter(final Writer writer, ObjectSet<String> emptyTags, ObjectSet<String> inlineTags) {
         super(writer);

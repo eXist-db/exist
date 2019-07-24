@@ -36,7 +36,7 @@ import org.exist.xquery.value.Type;
 import java.util.Optional;
 
 /**
- * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  * @author Loren Cahlander
  */
 public class GetExists extends SessionFunction {

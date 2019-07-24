@@ -51,7 +51,7 @@ import static org.junit.Assert.*;
  * Tests to ensure that collection content and attributes
  * are correctly copied under various circumstances.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class CopyCollectionTest {
 

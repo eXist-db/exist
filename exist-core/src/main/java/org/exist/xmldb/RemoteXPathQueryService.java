@@ -53,9 +53,11 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
     private boolean protectedMode = false;
 
     /**
-     * Creates a new <code>RemoteXPathQueryService</code> instance.
+     * Creates a new RemoteXPathQueryService instance.
      *
-     * @param collection a <code>RemoteCollection</code> value
+     * @param leasableXmlRpcClient the XML-RPC client lease
+     * @param xmlRpcClient the XML-RPC client
+     * @param collection a RemoteCollection value
      */
     public RemoteXPathQueryService(final Leasable<XmlRpcClient> leasableXmlRpcClient, final XmlRpcClient xmlRpcClient, final RemoteCollection collection) {
         super(collection);
@@ -361,7 +363,7 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
      * Calling this method has no effect. The server loads modules
      * relative to its own context.
      *
-     * @see org.exist.xmldb.XQueryService#setModuleLoadPath(java.lang.String)
+     * @param path the module load path.
      */
     @Override
     public void setModuleLoadPath(final String path) {

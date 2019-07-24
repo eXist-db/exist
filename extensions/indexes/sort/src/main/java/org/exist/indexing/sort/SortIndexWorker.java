@@ -73,8 +73,9 @@ public class SortIndexWorker implements IndexWorker {
      *
      * @param name  the name by which the index will be identified
      * @param items ordered list of items to store
-     * @throws EXistException
-     * @throws LockException
+     *
+     * @throws EXistException if an error occurs with the database
+     * @throws LockException if a locking error occurs
      */
     public void createIndex(final String name, final List<SortItem> items) throws EXistException, LockException {
         // get an id for the new index
@@ -100,9 +101,11 @@ public class SortIndexWorker implements IndexWorker {
      *
      * @param name  the name of the index
      * @param proxy the node
+     *
      * @return the original position of the node in the ordered set
-     * @throws EXistException
-     * @throws LockException
+     *
+     * @throws EXistException if an error occurs with the database
+     * @throws LockException if a locking error occurs
      */
     public long getIndex(final String name, final NodeProxy proxy) throws EXistException, LockException {
         final short id = getId(name);
@@ -118,8 +121,9 @@ public class SortIndexWorker implements IndexWorker {
      * Completely remove the index identified by its name.
      *
      * @param name the name of the index
-     * @throws EXistException
-     * @throws LockException
+     *
+     * @throws EXistException if an error occurs with the database
+     * @throws LockException if a locking error occurs
      */
     public void remove(final String name) throws EXistException, LockException {
         final short id = getId(name);
@@ -175,9 +179,11 @@ public class SortIndexWorker implements IndexWorker {
      * Register the given index name and return a short id for it.
      *
      * @param name the name of the index
+     *
      * @return a unique id to be used for the index entries
-     * @throws EXistException
-     * @throws LockException
+     *
+     * @throws EXistException if an error occurs with the database
+     * @throws LockException if a locking error occurs
      */
     private short getOrRegisterId(final String name) throws EXistException, LockException {
         short id = getId(name);

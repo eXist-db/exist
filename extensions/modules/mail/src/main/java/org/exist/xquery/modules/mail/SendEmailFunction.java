@@ -56,10 +56,10 @@ import java.util.*;
  * The email sending functionality of the eXist Mail Module Extension that
  * allows email to be sent from XQuery using either SMTP or Sendmail.  
  * 
- * @author Adam Retter <adam@exist-db.org>
- * @author Robert Walpole <robert.walpole@devon.gov.uk>
- * @author Andrzej Taramina <andrzej@chaeron.com>
- * @author José María Fernández <josemariafg@gmail.com>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
+ * @author <a href="mailto:robert.walpole@devon.gov.uk">Robert Walpole</a>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
+ * @author <a href="mailto:josemariafg@gmail.com">José María Fernández</a>
  * @serial 2011-08-02
  * @version 1.6
  *
@@ -105,26 +105,12 @@ public class SendEmailFunction extends BasicFunction
         )
     };
 
-    /**
-     * SendEmail Constructor
-     *
-     * @param context	The Context of the calling XQuery
-     */
     public SendEmailFunction(XQueryContext context, FunctionSignature signature)
     {
             super( context, signature );
     }
 
-    /**
-     * evaluate the call to the xquery send-email function,
-     * it is really the main entry point of this class
-     *
-     * @param args		arguments from the send-email() function call
-     * @param contextSequence	the Context Sequence to operate on (not used here internally!)
-     * @return		A sequence representing the result of the send-email() function call
-     *
-     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-     */
+    @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
     {
     	if(args.length==3) {
@@ -258,7 +244,7 @@ public class SendEmailFunction extends BasicFunction
      * Sends an email using the Operating Systems sendmail application
      *
      * @param mail representation of the email to send
-     * @return		boolean value of true of false indicating success or failure to send email
+     * @return boolean value of true of false indicating success or failure to send email
      */
     private boolean sendBySendmail(Mail mail)
     {
@@ -335,9 +321,11 @@ public class SendEmailFunction extends BasicFunction
     /**
      * Sends an email using SMTP
      *
-     * @param mails		A list of mail object representing the email to send
-     * @param SMTPServer	The SMTP Server to send the email through
-     * @return		boolean value of true of false indicating success or failure to send email
+     * @param mails A list of mail object representing the email to send
+     * @param SMTPServer The SMTP Server to send the email through
+     * @return boolean value of true of false indicating success or failure to send email
+     *
+     * @throws SMTPException if an I/O error occurs
      */
     private List<Boolean> sendBySMTP(List<Mail> mails, String SMTPServer) throws SMTPException
     {
@@ -502,8 +490,10 @@ public class SendEmailFunction extends BasicFunction
     /**
      * Writes an email payload (Headers + Body) from a mail object
      *
-     * @param out		A PrintWriter to receive the email
-     * @param aMail		A mail object representing the email to write out
+     * @param out A PrintWriter to receive the email
+     * @param aMail A mail object representing the email to write out
+     *
+     * @throws IOException if an I/O error occurs
      */
     private void writeMessage(PrintWriter out, Mail aMail) throws IOException
     {
@@ -699,7 +689,9 @@ public class SendEmailFunction extends BasicFunction
      * Get's the version of eXist we are running
      * The eXist version is used as part of the multipart separator
      *
-     * @return		The eXist Version
+     * @return The eXist Version
+     *
+     * @throws IOException if an I/O error occurs
      */
     private String eXistVersion() throws IOException
     {
@@ -728,6 +720,8 @@ public class SendEmailFunction extends BasicFunction
      *
      * @param mailElements	The XML mail Node
      * @return		A mail Object representing the XML mail Node
+     *
+     * @throws TransformerException if a transformation error occurs
      */
     private List<Mail> parseMailElement(List<Element> mailElements) throws TransformerException
     {
@@ -833,6 +827,10 @@ public class SendEmailFunction extends BasicFunction
      *
      * @param mailElements	The XML mail Node
      * @return		A mail Object representing the XML mail Node
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws MessagingException if an email error occurs
+     * @throws TransformerException if a transformation error occurs
      */
     private List<Message> parseMessageElement(Session session, List<Element> mailElements)
             throws IOException, MessagingException, TransformerException {
@@ -1209,6 +1207,8 @@ public class SendEmailFunction extends BasicFunction
      *
      * @param str	The String to encode
      * @return		The encoded String
+     *
+     * @throws java.io.UnsupportedEncodingException if the encocding is unsupported
      */
     private String encode64 (String str) throws java.io.UnsupportedEncodingException
     {
@@ -1226,6 +1226,8 @@ public class SendEmailFunction extends BasicFunction
      *
      * @param str	The email address as a String to encode
      * @return		The encoded email address String
+     *
+     * @throws java.io.UnsupportedEncodingException if the encocding is unsupported
      */
     private String encode64Address (String str) throws java.io.UnsupportedEncodingException
     {

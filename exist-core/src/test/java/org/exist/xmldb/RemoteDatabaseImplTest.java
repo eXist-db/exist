@@ -35,8 +35,8 @@ import org.xmldb.api.modules.CollectionManagementService;
 import static org.junit.Assert.fail;
 
 /** A test case for accessing user management service remotely ? 
- * @author Sebastian Bossung, Technische Universitaet Hamburg-Harburg
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Sebastian Bossung, Technische Universitaet Hamburg-Harburg
+ * @author Pierrick Brihaye</a>
  */
 public class RemoteDatabaseImplTest extends RemoteDBTest {
 

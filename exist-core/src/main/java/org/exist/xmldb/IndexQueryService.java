@@ -36,7 +36,7 @@ public interface IndexQueryService extends Service {
      * Reindex the current collection, i.e. the collection from which
      * this service has been retrieved.
      *
-     * @throws XMLDBException
+     * @throws XMLDBException if the operation fails.
      */
     void reindexCollection() throws XMLDBException;
 
@@ -45,24 +45,26 @@ public interface IndexQueryService extends Service {
      * this service has been retrieved.
      *
      * @param name The name of the document
-     * @throws XMLDBException
+     *
+     * @throws XMLDBException if the operation fails.
      */
     void reindexDocument(final String name) throws XMLDBException;
 
     /**
      * Reindex the collection specified by its path.
      *
-     * @param collectionPath
-     * @throws XMLDBException
+     * @param collectionPath the collection path to reindex.
+     * @throws XMLDBException if the operation fails.
      * @deprecated Use XmldbURI version instead
      */
+    @Deprecated
     void reindexCollection(String collectionPath) throws XMLDBException;
 
     /**
      * Reindex the collection specified by its path.
      *
-     * @param collectionPath
-     * @throws XMLDBException
+     * @param collectionPath the collection path to reindex.
+     * @throws XMLDBException if the operation fails.
      */
     void reindexCollection(XmldbURI collectionPath) throws XMLDBException;
 
@@ -70,8 +72,9 @@ public interface IndexQueryService extends Service {
      * Returns frequency statistics on all elements and attributes contained in the
      * structure index for the current collection.
      *
-     * @param inclusive
-     * @throws XMLDBException
+     * @param inclusive true if we are inclusive.
+     * @return the occurences.
+     * @throws XMLDBException if the operation fails.
      */
     Occurrences[] getIndexedElements(boolean inclusive) throws XMLDBException;
 }

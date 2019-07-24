@@ -46,9 +46,9 @@ import javax.annotation.Nullable;
  * which provides methods to manage users and
  * permissions.
  *
- * @author Wolfgang Meier <meier@ifs.tu-darmstadt.de>
- * @author Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:meier@ifs.tu-darmstadt.de">Wolfgang Meier</a>
+ * @author <a href="mailto:adam@exist-db.org">Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+ * @author Adam Retter</a>
  */
 public class LocalUserManagementService extends AbstractLocalService implements EXistUserManagementService {
 

@@ -33,9 +33,6 @@ public class AtomicToString extends AbstractExpression {
 
     Expression expression;
 
-    /**
-     * @param context
-     */
     public AtomicToString(XQueryContext context, Expression expr) {
         super(context);
         this.expression = expr;

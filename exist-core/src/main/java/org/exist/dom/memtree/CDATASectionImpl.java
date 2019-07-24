@@ -35,12 +35,6 @@ import org.exist.xquery.value.Type;
  */
 public class CDATASectionImpl extends AbstractCharacterData implements CDATASection {
 
-    /**
-     * Creates a new CDATASectionImpl object.
-     *
-     * @param doc
-     * @param nodeNumber
-     */
     public CDATASectionImpl(final DocumentImpl doc, final int nodeNumber) {
         super(doc, nodeNumber);
     }

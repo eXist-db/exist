@@ -33,7 +33,7 @@ import java.util.GregorianCalendar;
 /**
  * Represents a value of type xs:dateTime.
  *
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
 public class DateTimeValue extends AbstractDateTimeValue {

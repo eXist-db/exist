@@ -25,7 +25,7 @@ import org.exist.storage.CacheManager;
  * Base interface for all cache implementations that are used for
  * buffering btree and data pages.
  * 
- * @author Wolfgang <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang</a>
  *
  * @param <T> The type that implements {@link Cacheable}
  */
@@ -98,7 +98,9 @@ public interface Cache<T extends Cacheable> {
      * 
      * This gives the items a chance to write all
      * unwritten data to disk.
+     * @return true if flush was successful otherwise false
      */
+
     boolean flush();
 
     /**
@@ -140,12 +142,15 @@ public interface Cache<T extends Cacheable> {
 
     /**
      * Get the number of buffers currently used.
-     * 
+     * @return number of buffers currently used.
      */
     int getUsedBuffers();
 
     /**
      * Get the number of times where an object has been successfully
+     * loaded from the cache.
+     *
+     * @return number of times where an object has been successfully
      * loaded from the cache.
      */
     int getHits();

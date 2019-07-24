@@ -58,6 +58,7 @@ public interface SequenceIterator {
     /**
      * Skip forward over {@code n} items from the current position.
      *
+     * @param n number of items to skip
      * @return the number of items actually skipped over, zero
      *     if no items could be skipped, or -1 if this sequence
      *     does not support skipping.

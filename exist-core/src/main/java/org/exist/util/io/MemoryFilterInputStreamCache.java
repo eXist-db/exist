@@ -35,8 +35,8 @@ import java.io.InputStream;
  *
  * @version 1.1
  *
- * @author Adam Retter <adam.retter@googlemail.com>
- * @author Tobi Krebs <tobi.krebs AT gmail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
+ * @author <a href="tobi.krebsATgmail.com">Tobi Krebs</a>
  */
 public class MemoryFilterInputStreamCache extends AbstractFilterInputStreamCache {
 

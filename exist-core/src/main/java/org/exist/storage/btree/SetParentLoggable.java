@@ -37,10 +37,10 @@ public class SetParentLoggable extends BTAbstractLoggable {
     protected long parentNum;
     
     /**
-     * @param fileId 
-     * @param pageNum 
-     * @param parentNum 
-     * @param transaction 
+     * @param transaction the database transaction
+     * @param fileId the file id
+     * @param pageNum the page number
+     * @param parentNum the parent numbe
      */
     public SetParentLoggable(Txn transaction, byte fileId, long pageNum, long parentNum) {
         super(BTree.LOG_SET_PARENT, fileId, transaction);
@@ -49,42 +49,38 @@ public class SetParentLoggable extends BTAbstractLoggable {
     }
 
     /**
-     * @param broker 
-     * @param transactionId 
+     * @param broker the database broker
+     * @param transactionId the transaction id
      */
     public SetParentLoggable(DBBroker broker, long transactionId) {
         super(BTree.LOG_SET_PARENT, broker, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
-     */
+    @Override
     public void write(ByteBuffer out) {
         super.write(out);
         out.putLong(pageNum);
         out.putLong(parentNum);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
-     */
+    @Override
     public void read(ByteBuffer in) {
         super.read(in);
         pageNum = in.getLong();
         parentNum = in.getLong();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#getLogSize()
-     */
+    @Override
     public int getLogSize() {
         return super.getLogSize() + 16;
     }
 
+    @Override
     public void redo() throws LogException {
         getStorage().redoSetParent(this);
     }
-    
+
+    @Override
     public String dump() {
         return super.dump() + " - set parent for page: " + pageNum + ": " + parentNum;
     }

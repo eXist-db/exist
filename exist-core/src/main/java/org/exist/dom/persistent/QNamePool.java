@@ -59,10 +59,10 @@ public class QNamePool extends AbstractHashSet<QName> {
      * Return a QName object for the given local name, namespace and
      * prefix. Return null if the QName has not yet been added to the pool.
      *
-     * @param type
-     * @param namespaceURI
-     * @param localName
-     * @param prefix
+     * @param type qname type
+     * @param namespaceURI qname namespace uri
+     * @param localName qname local name
+     * @param prefix qname prefix
      * @return QName object
      */
     public final QName get(final byte type, final String namespaceURI, final String localName, final String prefix) {
@@ -94,6 +94,11 @@ public class QNamePool extends AbstractHashSet<QName> {
     /**
      * Add a QName, consisting of namespace, local name and prefix, to the
      * pool.
+     * @param namespaceURI qname namespace uri
+     * @param localName qname local name
+     * @param prefix qname prefix
+     * @param type qname type
+     * @return QName object
      */
     public final QName add(final byte type, final String namespaceURI, final String localName, final String prefix) {
         final QName qn = new QName(localName, namespaceURI, prefix, type);
@@ -180,7 +185,7 @@ public class QNamePool extends AbstractHashSet<QName> {
 
     /**
      * Used to calculate a hashCode for a QName
-     * <p/>
+     *
      * This varies from {@see org.exist.dom.QName#hashCode()} in so far
      * as it also includes the prefix in the hash calculation
      *
@@ -198,7 +203,7 @@ public class QNamePool extends AbstractHashSet<QName> {
 
     /**
      * Used to calculate equality for a QName and it's constituent components
-     * <p/>
+     *
      * This varies from {@see org.exist.dom.QName#equals(Object)} in so far
      * as it also includes the prefix in the equality test
      *

@@ -33,7 +33,7 @@ public interface IRawNodeIterator extends Closeable {
      * Reposition the iterator to the start of the specified node.
      *
      * @param node the start node where the iterator will be positioned.
-     * @throws java.io.IOException
+     * @throws IOException if an I/O error occurs
      */
     public void seek(NodeHandle node) throws IOException;
 

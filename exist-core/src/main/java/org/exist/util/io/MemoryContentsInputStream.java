@@ -28,7 +28,7 @@ import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 
 /**
- * @author Patrick Reinhart <patrick@reini.net>
+ * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
  */
 final class MemoryContentsInputStream extends InputStream {
 

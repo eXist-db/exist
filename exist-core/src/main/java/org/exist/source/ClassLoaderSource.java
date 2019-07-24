@@ -38,8 +38,9 @@ public class ClassLoaderSource extends URLSource {
     /**
      * @param source The resource name (e.g. url).
      *
-     *               <p> The name of a resource is a '<tt>/</tt>'-separated path name that
-     *               identifies the resource. Preceding "/" and "resource:"" are removed.
+     *  The name of a resource is a '<code>/</code>'-separated path name that
+     *  identifies the resource. Preceding "/" and "resource:"" are removed.
+     * @throws IOException in case of an I/O error
      */
     public ClassLoaderSource(String source) throws IOException {
         this.source = source;

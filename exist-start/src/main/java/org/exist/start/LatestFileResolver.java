@@ -61,6 +61,7 @@ public class LatestFileResolver {
      * 
      * @param filename Path relative to exist home dir of
      * a jar file that should be added to the classpath.
+     * @return Resolved filename.
      */
     public String getResolvedFileName(final String filename) {
         final Matcher matches = latestVersionPattern.matcher(filename);

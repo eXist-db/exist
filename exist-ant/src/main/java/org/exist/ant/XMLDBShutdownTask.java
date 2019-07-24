@@ -36,8 +36,8 @@ import org.exist.xmldb.DatabaseInstanceManager;
  *
  * @author  Wolfgang Meier (wolfgang@exist-db.org)
  *
- *          <p>slightly modified by:</p>
- * @author  peter.klotz@blue-elephant-systems.com
+ *          slightly modified by:
+ * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  */
 public class XMLDBShutdownTask extends AbstractXMLDBTask
 {

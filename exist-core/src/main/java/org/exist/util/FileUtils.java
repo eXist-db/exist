@@ -45,7 +45,7 @@ import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 
 /**
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  * @author alex
  */
 public class FileUtils {
@@ -146,6 +146,8 @@ public class FileUtils {
      * and so if an error occurs during removal, some of the directories
      * descendants may have already been removed
      *
+     * @param path the path to delete
+     *
      * @return false if an error occurred, true otherwise
      */
     public static boolean deleteQuietly(final Path path) {
@@ -219,7 +221,9 @@ public class FileUtils {
     }
 
     /**
-     * Determine the size of a collection of files and/or directories
+     * Determine the size of a collection of files and/or directories.
+     *
+     * @param paths the paths to determine the size of
      *
      * @return The size of the files and directories, or -1 if the file size cannot be determined
      */
@@ -231,7 +235,9 @@ public class FileUtils {
     }
 
     /**
-     * Determine the size of a file or directory
+     * Determine the size of a file or directory.
+     *
+     * @param path the path to determine the size of
      *
      * @return The size of the file or directory, or -1 if the file size cannot be determined
      */
@@ -268,9 +274,11 @@ public class FileUtils {
     }
 
     /**
-     * Determine the last modified time of a file or directory
+     * Determine the last modified time of a file or directory.
      *
-     * @return Eitehr an IOException or the last modified time of the file or directory
+     * @param path get the last modified time of the path.
+     *
+     * @return Either an IOException or the last modified time of the file or directory
      */
     public static Either<IOException, FileTime> lastModifiedQuietly(final Path path) {
         try {
@@ -306,6 +314,8 @@ public class FileUtils {
      * and so if an error occurs during creation, some of the directories
      * descendants may have already been created
      *
+     * @param dir the path to create
+     *
      * @return false if an error occurred, true otherwise
      */
     public static boolean mkdirsQuietly(final Path dir) {
@@ -327,6 +337,9 @@ public class FileUtils {
      * If there is no parent, then the child
      * is resolved relative to the CWD
      *
+     * @param parent the parent to resolve the {@code child} from
+     * @param child the child to resolve from the parent
+     *
      * @return The resolved path
      */
     public static Path resolve(final Optional<Path> parent, final String child) {
@@ -335,6 +348,8 @@ public class FileUtils {
 
     /**
      * Get just the filename part of the path
+     *
+     * @param path the path to get the filename from
      *
      * @return The filename
      */
@@ -348,6 +363,8 @@ public class FileUtils {
      * @param directory The directory to list the entries for
      *
      * @return The list of entries
+     *
+     * @throws IOException if an IO error occurs
      */
     public static List<Path> list(final Path directory) throws IOException {
         try(final Stream<Path> entries = Files.list(directory)) {
@@ -361,6 +378,8 @@ public class FileUtils {
      * @param directory The directory to list the entries for
      * @param filter A filter to be applied to the list
      * @return The list of entries
+     *
+     * @throws IOException if an IO error occurs
      */
     public static List<Path> list(final Path directory, final Predicate<Path> filter) throws IOException {
         try(final Stream<Path> entries = Files.list(directory).filter(filter)) {
@@ -369,6 +388,8 @@ public class FileUtils {
     }
 
     /**
+     * Get the directory name from the path.
+     *
      * @param path a path or uri
      * @return the directory portion of a path by stripping the last '/' and
      * anything following, unless the path has no '/', in which case '.' is returned,
@@ -387,8 +408,11 @@ public class FileUtils {
     }
 
     /**
-     * @param path1
-     * @param path2
+     * Concenate two paths with a path separator.
+     *
+     * @param path1 the first path.
+     * @param path2 the second path.
+     *
      * @return path1 + path2, joined by a single file separator (or /, if a slash is already present).
      */
     public static String addPaths(final String path1, final String path2) {
@@ -415,6 +439,8 @@ public class FileUtils {
      * @param src the source file.
      * @param dst the destination file
      * @param streamableDigest the digest
+     *
+     * @throws IOException if an IO error occurs
      */
     public static void copyWithDigest(final Path src, final Path dst, final StreamableDigest streamableDigest) throws IOException {
         copyWithDigest(src, dst, streamableDigest, WRITE, TRUNCATE_EXISTING);
@@ -426,8 +452,12 @@ public class FileUtils {
      * @param src the source file.
      * @param dst the destination file
      * @param streamableDigest the digest
+     * @param dstOptions options for writing the destination file
+     *
+     * @throws IOException if an IO error occurs
      */
-    public static void copyWithDigest(final Path src, final Path dst, final StreamableDigest streamableDigest, final OpenOption... dstOptions) throws IOException {
+    public static void copyWithDigest(final Path src, final Path dst, final StreamableDigest streamableDigest,
+            final OpenOption... dstOptions) throws IOException {
         try (final InputStream is = Files.newInputStream(src, READ)) {
             copyWithDigest(is, dst, streamableDigest);
         }
@@ -441,6 +471,8 @@ public class FileUtils {
      * @param is the source data.
      * @param dst the destination file
      * @param streamableDigest the digest
+     *
+     * @throws IOException if an IO error occurs
      */
     public static void copyWithDigest(final InputStream is, final Path dst, final StreamableDigest streamableDigest) throws IOException {
         copyWithDigest(is, dst, streamableDigest, WRITE, TRUNCATE_EXISTING);
@@ -452,6 +484,9 @@ public class FileUtils {
      * @param is the source data.
      * @param dst the destination file
      * @param streamableDigest the digest
+     * @param dstOptions options for writing the destination file
+     *
+     * @throws IOException if an IO error occurs
      */
     public static void copyWithDigest(final InputStream is, final Path dst, final StreamableDigest streamableDigest, final OpenOption... dstOptions) throws IOException {
         try (final OutputStream os = new DigestOutputStream(Files.newOutputStream(dst, dstOptions), streamableDigest)) {
@@ -469,6 +504,8 @@ public class FileUtils {
      *
      * @param path the file to calculate the digest for.
      * @param streamableDigest the digest.
+     *
+     * @throws IOException if an IO error occurs
      */
     public static void digest(final Path path, final StreamableDigest streamableDigest) throws IOException {
         try (final InputStream is = Files.newInputStream(path, READ)) {
@@ -484,9 +521,8 @@ public class FileUtils {
     /**
      * Provides a filter for entries in a directory.
      *
-     * @param path the entry to be filtered.
      * @param prefix the prefix used for filtering.
-     * @param prefix the suffix used for filtering.
+     * @param suffix the suffix used for filtering.
      * 
      * @return The filter.
      */

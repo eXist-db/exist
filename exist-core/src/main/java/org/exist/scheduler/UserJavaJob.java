@@ -28,9 +28,9 @@ import org.quartz.JobExecutionException;
 /**
  * Class to represent a User's Java Job.
  *
- * <p>Should be extended by all classes wishing to schedule as a Job that perform user defined functionality</p>
+ * Should be extended by all classes wishing to schedule as a Job that perform user defined functionality
  *
- * @author  Adam Retter <adam.retter@devon.gov.uk>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  */
 public abstract class UserJavaJob extends UserJob {
     /**

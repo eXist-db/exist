@@ -26,11 +26,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A pool for char arrays.
- * <p>
+ *
  * This pool is used by class XMLString. Whenever an XMLString needs to
  * reallocate the backing char[], the old array is released into the pool. However,
  * only char[] with length &lt; MAX are kept in the pool. Larger char[] are rarely reused.
- * <p>
+ *
  * The pool is bound to the current thread.
  */
 @ThreadSafe

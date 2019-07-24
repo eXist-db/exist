@@ -33,7 +33,7 @@ import java.util.concurrent.Executors;
 /**
  * Schedulable Task for shutting down the database
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class ShutdownTask implements SystemTask {
 

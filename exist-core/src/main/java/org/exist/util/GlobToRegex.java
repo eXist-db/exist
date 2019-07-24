@@ -93,12 +93,12 @@ import java.util.regex.Pattern;
  * <li> All other characters match themselves.
  * </ul>
  * 
- * <p>Please remember that the when you construct a Java string in Java code,
+ * Please remember that the when you construct a Java string in Java code,
  * the backslash character is itself a special Java character, and it must
  * be double backslashed to represent single backslash in a regular
- * expression.</p>
+ * expression.
  * 
- * <p>The original code is adapted from the jakarta ORO package.</p>
+ * The original code is adapted from the jakarta ORO package.
  * 
  */
 public class GlobToRegex {
@@ -121,7 +121,7 @@ public class GlobToRegex {
      * purposes. However, the GlobCompiler compile methods work by converting
      * the glob pattern to a Perl5 pattern using this method, and then invoking
      * the compile() method of an internally stored Perl5Compiler instance.
-     * <p>
+     *
      * 
      * @param pattern
      *            A character array representation of a Glob pattern.
@@ -204,7 +204,7 @@ public class GlobToRegex {
     }
 
     /**
-     * @param args
+     * @param args the arguments
      */
     public static void main(String[] args) {
         final String glob = "[gG]enerate? ";

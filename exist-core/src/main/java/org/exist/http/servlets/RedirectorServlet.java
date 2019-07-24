@@ -59,48 +59,48 @@ import java.util.*;
  *
  * <pre>
  *  &lt;exist:dispatch xmlns:exist="http://exist.sourceforge.net/NS/exist"
- *      path="/preview.xql" servlet-name="MyServlet" redirect="path">
- *       &lt;exist:add-parameter name="new-param" value="new-param-value"/>
- *   &lt;/exist:dispatch>
+ *      path="/preview.xql" servlet-name="MyServlet" redirect="path"&gt;
+ *       &lt;exist:add-parameter name="new-param" value="new-param-value"/&gt;
+ *   &lt;/exist:dispatch&gt;
  * </pre>
- * <p>
+ *
  * The element should have one of three attributes: <em>path</em>, <em>servlet-name</em> or
  * <em>redirect</em>.
- * <p>
+ *
  * If the servlet-name attribute is present, the request will be forwarded to the named servlet
  * (name as specified in web.xml). Alternatively, path can point to an arbitrary resource. It can be either absolute or relative.
  * Relative paths are resolved relative to the original request.
- * <p>
+ *
  * The request is forwarded via {@link javax.servlet.RequestDispatcher#forward(javax.servlet.ServletRequest, javax.servlet.ServletResponse)}.
  * Contrary to HTTP forwarding, there is no additional roundtrip to the client. It all happens on
  * the server. The client will not notice the redirect.
- * <p>
+ *
  * When forwarding to other servlets, the fields in {@link javax.servlet.http.HttpServletRequest} will be
  * updated to point to the new, redirected URI. However, the original request URI is stored in the
  * request attribute org.exist.forward.request-uri.
- * <p>
+ *
  * If present, the "redirect" attribute causes the server to send a redirect request to the client, which will usually respond
  * with a new request to the redirected location. Note that this is quite different from a forwarding via RequestDispatcher,
  * which is completely transparent to the client.
- * <p>
+ *
  * RedirectorServlet takes a single parameter in web.xml: "xquery". This parameter should point to an
  * XQuery script. It should be relative to the current web context.
  *
  * <pre>
- * &lt;servlet>
- *       &lt;servlet-name>RedirectorServlet</servlet-name>
- *       &lt;servlet-class>org.exist.http.servlets.RedirectorServlet</servlet-class>
+ * &lt;servlet&gt;
+ *       &lt;servlet-name&gt;RedirectorServlet&lt;/servlet-name&gt;
+ *       &lt;servlet-class&gt;org.exist.http.servlets.RedirectorServlet&lt;/servlet-class&gt;
  *
- *       &lt;init-param>
- *           &lt;param-name>xquery</param-name>
- *           &lt;param-value>dispatcher.xql</param-value>
- *       &lt;/init-param>
- *   &lt;/servlet>
+ *       &lt;init-param&gt;
+ *           &lt;param-name&gt;xquery&lt;/param-name&gt;
+ *           &lt;param-value&gt;dispatcher.xql&lt;/param-value&gt;
+ *       &lt;/init-param&gt;
+ *   &lt;/servlet&gt;
  *
- * &lt;servlet-mapping>
- *       &lt;servlet-name>RedirectorServlet</servlet-name>
- *       &lt;url-pattern>/wiki/*</url-pattern>
- *   &lt;/servlet-mapping>
+ * &lt;servlet-mapping&gt;
+ *       &lt;servlet-name&gt;RedirectorServlet&lt;/servlet-name&gt;
+ *       &lt;url-pattern&gt;/wiki/*&lt;/url-pattern&gt;
+ *   &lt;/servlet-mapping&gt;
  * </pre>
  */
 @Deprecated

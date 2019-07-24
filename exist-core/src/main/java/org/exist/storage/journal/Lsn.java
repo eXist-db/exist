@@ -33,7 +33,7 @@ import java.util.Arrays;
  * are the fileNumber. The LSN is in <i>big-endian</i> byte-order: the
  * most significant byte is in the zeroth element.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class Lsn implements Comparable<Lsn> {
 

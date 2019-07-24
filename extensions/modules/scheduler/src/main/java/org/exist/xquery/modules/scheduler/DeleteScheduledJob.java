@@ -42,9 +42,9 @@ import org.exist.xquery.value.Type;
 /**
  * eXist Scheduler Module Extension DeleteScheduledJob.
  *
- * <p>Removes a Job from the Scheduler</p>
+ * Removes a Job from the Scheduler
  *
- * @author   Adam Retter <adam.retter@devon.gov.uk>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  * @version  1.0
  * @see      org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  * @serial   2006-11-15

@@ -61,11 +61,11 @@ public class CommentImpl extends AbstractCharacterData implements Comment {
      * signature = [byte] 0x60
      *
      * nodeIdUnitsLength = [short] (2 bytes) The number of units of the comment's NodeId
-     * nodeId = {@see org.exist.numbering.DLNBase#serialize(byte[], int)}
+     * nodeId = {@link org.exist.numbering.DLNBase#serialize(byte[], int)}
      *
      * cdata = jUtf8
      *
-     * jUtf8 = {@see java.io.DataOutputStream#writeUTF(java.lang.String)}
+     * jUtf8 = {@link java.io.DataOutputStream#writeUTF(java.lang.String)}
      */
     @Override
     public byte[] serialize() {

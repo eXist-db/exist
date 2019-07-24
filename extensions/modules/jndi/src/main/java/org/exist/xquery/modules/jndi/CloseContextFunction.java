@@ -42,14 +42,13 @@ import org.exist.xquery.value.Type;
  * 
  * Close a JNDI Directory context
  * 
- * @author Andrzej Taramina <andrzej@chaeron.com>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  * @serial 2008-12-02
  * @version 1.0
  * 
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext,
  *      org.exist.xquery.FunctionSignature)
  */
-
 public class CloseContextFunction extends BasicFunction 
 {
 	protected static final Logger logger = LogManager.getLogger(CloseContextFunction.class);
@@ -65,31 +64,13 @@ public class CloseContextFunction extends BasicFunction
 					new SequenceType( Type.ITEM, Cardinality.EMPTY ) )
 			};
 
-	/**
-	 * GetDirContextFunction Constructor
-	 * 
-	 * @param context
-	 *            The Context of the calling XQuery
-	 */
-	
 	public CloseContextFunction( XQueryContext context, FunctionSignature signature ) 
 	{
 		super( context, signature );
 	}
 
 	
-	/**
-	 * evaluate the call to the xquery close-context() function, it is really
-	 * the main entry point of this class
-	 * 
-	 * @param args				arguments from the get-connection() function call
-	 * @param contextSequence 	the Context Sequence to operate on (not used here internally!)
-	 * @return 					A xs:long representing a handle to the connection
-	 * 
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[],
-	 *      org.exist.xquery.value.Sequence)
-	 */
-	
+	@Override
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
 		// Was a Dir Context handle specified

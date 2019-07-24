@@ -32,7 +32,7 @@ import org.exist.xquery.value.*;
 /**
  * Abstract superclass for the variable binding expressions "for" and "let".
  * 
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public abstract class BindingExpression extends AbstractFLWORClause implements RewritableExpression {
 
@@ -64,7 +64,7 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
     /**
 	 * Set the sequence type of the variable (as specified in the "as" clause).
 	 * 
-	 * @param type
+	 * @param type the {@link SequenceType} to set
 	 */
 	public void setSequenceType(SequenceType type) {
 		this.sequenceType = type;

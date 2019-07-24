@@ -29,8 +29,10 @@ public abstract class NumberFormatter {
 
     /**
      * Get the zero digit corresponding to the digit family of the given value.
-     * This method was taken from saxon {@link <a href="http://saxon.sourceforge.net/">http://saxon.sourceforge.net/</a>}.
+     * This method was taken from saxon, see <a href="http://saxon.sourceforge.net/">http://saxon.sourceforge.net/</a>.
      *
+     * @param val an integer value
+     * @return the zero digit
      */
     public static int getZeroDigit(int val) {
         for (int z = 0; z < zeroDigits.length; z++) {

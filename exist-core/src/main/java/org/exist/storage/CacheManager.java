@@ -27,7 +27,7 @@ public interface CacheManager {
      * Register a cache, i.e. put it under control of
      * the cache manager.
      *
-     * @param cache
+     * @param cache cache to register
      */
     void registerCache(Cache cache);
 
@@ -41,7 +41,7 @@ public interface CacheManager {
      * of pages by which the cache will grow is determined by the cache's
      * growthFactor: {@link org.exist.storage.cache.Cache#getGrowthFactor()}.
      *
-     * @param cache
+     * @param cache cache to grow
      * @return new cache size, or -1 if no free pages available.
      */
     int requestMem(Cache cache);

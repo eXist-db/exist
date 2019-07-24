@@ -27,7 +27,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * Instantiates an appropriate Permission class based on the current configuration
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class PermissionAiderFactory {
 

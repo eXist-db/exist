@@ -32,7 +32,7 @@ import org.exist.storage.DBBroker;
 /**
  * Default implementation of an {@link org.exist.xquery.ExternalModule}.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class ExternalModuleImpl implements ExternalModule {
 
@@ -291,7 +291,7 @@ public class ExternalModuleImpl implements ExternalModule {
     /**
      * Set the root expression for this context.
      *
-     * @param  expr
+     * @param  expr the root expression
      */
     protected void setRootExpression(Expression expr) {
         rootExpression = expr;

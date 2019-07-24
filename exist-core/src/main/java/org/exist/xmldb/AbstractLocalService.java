@@ -29,7 +29,7 @@ import org.xmldb.api.base.XMLDBException;
 /**
  * Base class for Local XMLDB Services
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public abstract class AbstractLocalService extends AbstractLocal implements Service {
 

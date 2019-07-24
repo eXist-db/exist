@@ -11,6 +11,10 @@ public abstract class EXistInputSource extends InputSource implements Closeable 
 	private boolean closed = false;
 
 	/**
+	 * Get the length of the byte stream.
+	 *
+	 * @return the length of the byte stream.
+	 *
 	 * @deprecated Should be avoided, trying to get the length of a stream may involve buffering
 	 */
 	@Deprecated

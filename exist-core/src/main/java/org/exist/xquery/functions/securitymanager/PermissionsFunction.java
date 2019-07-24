@@ -55,7 +55,7 @@ import java.util.Optional;
 
 /**
  *
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class PermissionsFunction extends BasicFunction {
     

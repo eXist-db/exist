@@ -35,13 +35,15 @@ public interface Function extends IPathExpr {
 	 * Set the parent expression of this function, i.e. the
 	 * expression from which the function is called.
 	 * 
-	 * @param parent
+	 * @param parent the parent expression.
 	 */
 	public void setParent(Expression parent);
 
 	/**
 	 * Returns the expression from which this function
 	 * gets called.
+	 *
+	 * @return the parent expression.
 	 */
 	public Expression getParent();
 
@@ -51,8 +53,9 @@ public interface Function extends IPathExpr {
 	 * This will also check the type and cardinality of the
 	 * passed argument expressions.
 	 * 
-	 * @param arguments
-	 * @throws XPathException
+	 * @param arguments the statis arguments to the function.
+	 *
+	 * @throws XPathException if an error occurs whilst setting the arguments.
 	 */
 	public void setArguments(List<Expression> arguments) throws XPathException;
 
@@ -62,7 +65,9 @@ public interface Function extends IPathExpr {
 	 * Get an argument expression by its position in the
 	 * argument list.
 	 * 
-	 * @param pos
+	 * @param pos the position of the argument
+	 *
+	 * @return the argument at the position
 	 */
 	public Expression getArgument(int pos);
 

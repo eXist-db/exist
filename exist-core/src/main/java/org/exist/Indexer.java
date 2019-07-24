@@ -149,12 +149,10 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
      * Create a new parser using the given database broker and user to store the
      * document.
      * 
-     * @param broker
-     *            The database broker to use.
-     * @param transaction
-     *            The transaction to use for indexing
-     *            privileged access to the db.
-     * @@throws EXistException
+     * @param broker The database broker to use.
+     * @param transaction The transaction to use for indexing privileged access to the db.
+     *
+     * @throws EXistException if an error orccurs when constructing the indexer.
      */
     public Indexer(final DBBroker broker, final Txn transaction)
             throws EXistException {

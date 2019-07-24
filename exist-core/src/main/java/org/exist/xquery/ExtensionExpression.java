@@ -55,7 +55,7 @@ public class ExtensionExpression extends AbstractExpression {
     }
 
     /**
-     * For every pragma in the list, calls {@link Pragma#before(XQueryContext, Expression)} before evaluation.
+     * For every pragma in the list, calls {@link Pragma#before(XQueryContext, Expression, Sequence)} before evaluation.
      * The method then tries to call {@link Pragma#eval(Sequence, Item)} on every pragma.
      * If a pragma does not return null for this call, the returned Sequence will become the result
      * of the extension expression. If more than one pragma returns something for eval, an exception

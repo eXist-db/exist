@@ -33,7 +33,7 @@ import java.io.OutputStream;
  *
  * Same as org.apache.commons.codec.binary.Base64OutputStream but disabled chunking of output
  *
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class Base64OutputStream extends org.apache.commons.codec.binary.Base64OutputStream {
     

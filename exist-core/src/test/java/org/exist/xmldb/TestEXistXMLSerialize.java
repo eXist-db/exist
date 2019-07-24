@@ -82,7 +82,7 @@ public class TestEXistXMLSerialize {
 		"<xsl:param name=\"testparam\"/>" +
 		"<xsl:template match=\"test\"><test><xsl:apply-templates/></test></xsl:template>" +
 		"<xsl:template match=\"para\">" +
-		"<p><xsl:value-of select=\"$testparam\"/>: <xsl:apply-templates/></p></xsl:template>" +
+		"<xsl:value-of select=\"$testparam\"/>: <xsl:apply-templates/></xsl:template>" +
 		"</xsl:stylesheet>";
     
     private final URL testFile = getClass().getResource("PerformanceTest.xml");

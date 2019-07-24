@@ -64,9 +64,9 @@ import org.exist.xquery.value.StringValue;
  * <code>xxx:event</code> : the kind of triggered event
  * xxx is the namespace prefix within the XQuery, can be set by the variable "bindingPrefix"
  * 
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
- * @author Adam Retter <adam.retter@devon.gov.uk>
- * @author Evgeny Gazdovsky <gazdovsky@gmail.com>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
+ * @author <a href="mailto:gazdovsky@gmail.com">Evgeny Gazdovsky</a>
 */
 public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, CollectionTrigger {
 
@@ -135,7 +135,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
     public final static String PREPARE_EXCEPTION_MESSAGE = "Error during trigger prepare";
 	
 	/**
-	 * @link org.exist.collections.Trigger#configure(org.exist.storage.DBBroker, org.exist.collections.Collection, java.util.Map)
+	 * {@link org.exist.collections.triggers.Trigger#configure(DBBroker, Txn, Collection, Map)}
 	 */
     @Override
 	public void configure(DBBroker broker, Txn transaction, Collection parent, Map<String, List<?>> parameters) throws TriggerException

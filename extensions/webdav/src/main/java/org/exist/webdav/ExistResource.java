@@ -35,7 +35,7 @@ import java.util.Properties;
 /**
  * Generic class representing an eXist Resource.
  *
- * @author Dannes Wessels <dannes@exist-db.org>
+ * @author <a href="mailto:dannes@exist-db.org">Dannes Wessels</a>
  */
 public abstract class ExistResource {
 
@@ -109,6 +109,10 @@ public abstract class ExistResource {
     /**
      * Authenticate subject with password. NULL is returned when
      * the subject could not be authenticated.
+     *
+     * @param username Username
+     * @param password Password
+     * @return Authenticated subject, or NULL when authentication failed.
      */
     protected Subject authenticate(String username, String password) {
 

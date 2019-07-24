@@ -169,6 +169,8 @@ public class SequencedLongHashMap<V> extends AbstractHashtable<Long, V> {
      * is not in the map.
      *
      * @param key The key to retrieve the value for
+     *
+     * @return the value associated with the key, or null if the key is absent
      */
     public V get(final long key) {
         int idx = hash(key) % tabSize;
@@ -191,6 +193,8 @@ public class SequencedLongHashMap<V> extends AbstractHashtable<Long, V> {
 
     /**
      * Returns the first entry added to the map.
+     *
+     * @return the first entry
      */
     public Entry<V> getFirstEntry() {
         return first;
@@ -200,6 +204,8 @@ public class SequencedLongHashMap<V> extends AbstractHashtable<Long, V> {
      * Remove the entry specified by key from the map.
      *
      * @param key The key
+     *
+     * @return the previous value
      */
     public V remove(final long key) {
         final Entry<V> entry = removeFromHashtable(key);
@@ -244,6 +250,8 @@ public class SequencedLongHashMap<V> extends AbstractHashtable<Long, V> {
 
     /**
      * Remove the first entry added to the map.
+     *
+     * @return the first entry from the map, or null if the map is empty
      */
     public Entry<V> removeFirst() {
         if (first == null) {

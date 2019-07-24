@@ -34,15 +34,12 @@ import org.exist.xquery.value.Type;
 /**
  * Implements node comparisons: is, isnot, &lt;&lt;, &gt;&gt;.
  * 
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class NodeComparison extends BinaryOp {
 
     private final NodeComparisonOperator relation;
 
-    /**
-     * @param context
-     */
     public NodeComparison(XQueryContext context, Expression left, Expression right, NodeComparisonOperator relation) {
         super(context);
         this.relation = relation;

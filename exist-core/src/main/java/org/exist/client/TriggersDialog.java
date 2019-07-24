@@ -50,7 +50,7 @@ import org.xmldb.api.base.XMLDBException;
 /**
  * Dialog for viewing and editing Triggers in the Admin Client 
  * 
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  * @serial 2012-11-24
  * @version 1.1
  */

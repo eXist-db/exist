@@ -46,7 +46,7 @@ import org.w3c.dom.Text;
  * its underlying typed node which is available
  * through NodeProxy.getNode()
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 class DomEnhancingNodeProxyAdapter {
     

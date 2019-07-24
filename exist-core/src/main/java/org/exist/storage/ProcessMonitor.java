@@ -377,8 +377,8 @@ public class ProcessMonitor implements BrokerPoolService {
      * Request tracking is not enabled unless {@link #setTrackRequestURI(boolean)}
      * is called.
      *
-     * @param watchdog
-     * @return
+     * @param watchdog XQuery WatchDog
+     * @return HTTP request URI by which a query was called
      */
     public static String getRequestURI(XQueryWatchDog watchdog) {
         final RequestModule reqModule = (RequestModule)watchdog.getContext().getModule(RequestModule.NAMESPACE_URI);

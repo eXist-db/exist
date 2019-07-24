@@ -77,7 +77,7 @@ import static org.exist.storage.lock.Lock.LockMode.WRITE_LOCK;
  * Represents a persistent document object in the database;
  * it can be an XML_FILE , a BINARY_FILE, or Xquery source code.
  *
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 @NotThreadSafe
 public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Document {
@@ -234,7 +234,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     }
 
     /**
-     * Returns the type of this resource, either  {@link #XML_FILE} or
+     * @return the type of this resource, either  {@link #XML_FILE} or
      * {@link #BINARY_FILE}.
      */
     public byte getResourceType() {
@@ -324,9 +324,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      * Copy the relevant internal fields from the specified document object.
      * This is called by {@link Collection} when replacing a document.
      *
+     * @param broker eXist-db DBBroker
      * @param other    a <code>DocumentImpl</code> value
      * @param prev if there was an existing document which we are replacing,
      *     we will copy the mode, ACL, and birth time from the existing document.
+     * @throws PermissionDeniedException in case user has not sufficient privileges
      */
     public void copyOf(final DBBroker broker, final DocumentImpl other, @EnsureLocked(mode=READ_LOCK) @Nullable final DocumentImpl prev) throws PermissionDeniedException {
         copyOf(broker, other, prev == null ? null : new Tuple2<>(prev.getPermissions(), prev.getMetadata().getCreated()));
@@ -335,10 +337,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     /**
      * Copy the relevant internal fields from the specified document object.
      * This is called by {@link Collection} when replacing a document.
-     *
+     * @param broker eXist-db DBBroker
      * @param other a <code>DocumentImpl</code> value
      * @param prev if there was an existing document which we are replacing,
      *     we will copy the mode, ACL, and birth time from the existing document.
+     * @throws PermissionDeniedException in case user has not sufficient privileges
      */
     public void copyOf(final DBBroker broker, final DocumentImpl other, @Nullable final Collection.CollectionEntry prev) throws PermissionDeniedException {
         copyOf(broker, other, prev == null ? null : new Tuple2<>(prev.getPermissions(), prev.getCreated()));
@@ -449,9 +452,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     /**
      * Returns the estimated size of the data in this document.
-     * <p/>
+     *
      * As an estimation, the number of pages occupied by the document
      * is multiplied with the current page size.
+     * @return the estimated size of the data in this document.
+     *
      */
     @EnsureContainerLocked(mode=READ_LOCK)
     public long getContentLength() {

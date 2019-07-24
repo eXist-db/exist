@@ -60,10 +60,10 @@ public class RepoBackup {
     /**
      * Zip up a directory path
      *
-     * @param directory
-     * @param zos
-     * @param path
-     * @throws IOException
+     * @param directory the directory to zip
+     * @param zos output stream for the zip entries
+     * @param path prefix path to be prepended to entries
+     * @throws IOException in case of an io error zipping the directory
      */
     public static void zipDir(final Path directory, final ZipOutputStream zos, final String path) throws IOException {
         // get a listing of the directory content
@@ -88,6 +88,7 @@ public class RepoBackup {
      * @param fileUri the file URI
      * @param file Input .zip file
      * @param outdir Output directory
+     * @throws IOException in case of an error unzipping the file
      */
     public static void unzip(final XmldbURI fileUri, final InputStream file, final Path outdir) throws IOException {
         try (final ZipInputStream zin = new ZipInputStream(file)) {

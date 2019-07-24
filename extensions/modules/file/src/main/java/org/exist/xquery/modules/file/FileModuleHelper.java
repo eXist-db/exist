@@ -30,7 +30,7 @@ import org.exist.xquery.XPathException;
 /**
  *  Helper class for FileModule
  * 
- * @author Dannes Wessels (dannes@exist-db.org)
+ * @author <a href="mailto:dannes@exist-db.org">Dannes Wessels</a>
  */
 
 

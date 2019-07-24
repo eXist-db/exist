@@ -32,23 +32,20 @@ public class AssertFailure extends RuntimeException {
 
 	private static final long serialVersionUID = -4753385398634599386L;
 
-	/**
-     * 
-     */
     public AssertFailure() {
         super();
     }
 
     /**
-     * @param message
+     * @param message the error message
      */
     public AssertFailure(String message) {
         super(message);
     }
 
     /**
-     * @param message
-     * @param cause
+     * @param message the error message
+     * @param cause the cause of the error
      */
     public AssertFailure(String message, Throwable cause) {
         super(message, cause);

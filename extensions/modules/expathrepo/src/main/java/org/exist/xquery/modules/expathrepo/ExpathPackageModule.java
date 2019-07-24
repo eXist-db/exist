@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  * XQuery Extension module for expath expathrepo
  *
- * @author James Fuller <jim.fuller@exist-db.org>
+ * @author <a href="mailto:jim.fuller@exist-db.org">James Fuller</a>
  * @author Wolfgang Meier
  * @author cutlass
  * @version 1.0

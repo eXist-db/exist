@@ -41,7 +41,7 @@ import java.util.stream.Stream;
 /**
  * A sequence that sorts its entries in the order specified by the order specs of
  * an "order by" clause. Used by {@link org.exist.xquery.ForExpr}.
- * <p>
+ *
  * Contrary to class {@link org.exist.xquery.value.PreorderedValueSequence},
  * all order expressions are evaluated once for each item in the sequence
  * <b>while</b> items are added.

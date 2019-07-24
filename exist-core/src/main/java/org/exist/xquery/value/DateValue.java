@@ -31,7 +31,7 @@ import javax.xml.namespace.QName;
 import java.util.GregorianCalendar;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
 public class DateValue extends AbstractDateTimeValue {

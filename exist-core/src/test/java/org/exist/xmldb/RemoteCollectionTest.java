@@ -38,8 +38,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
 /** A test case for accessing collections remotely
- * @author jmv
- * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">jmv
+ * @author Pierrick Brihaye</a>
  */
 public class RemoteCollectionTest extends RemoteDBTest {
 

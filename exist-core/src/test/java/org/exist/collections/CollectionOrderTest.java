@@ -48,7 +48,7 @@ import static org.junit.Assert.assertEquals;
  * Tests around the ordering of Collections and Documents
  * within a Collection
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class CollectionOrderTest {
 

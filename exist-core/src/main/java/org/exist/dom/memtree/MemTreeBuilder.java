@@ -39,7 +39,7 @@ import java.util.Arrays;
 /**
  * Use this class to build a new in-memory DOM document.
  *
- * @author Wolfgang <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang</a>
  */
 public class MemTreeBuilder {
 

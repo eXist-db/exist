@@ -30,7 +30,7 @@ import static org.exist.util.crypto.digest.DigestType.SHA_512;
 /**
  * Implementation of SHA-512 streamable digest.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class SHA512StreamableDigest implements StreamableDigest {
     private final ExtendedDigest ed = new SHA512Digest();

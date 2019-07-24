@@ -64,7 +64,7 @@ public interface Index extends AutoCloseable {
      * @param pool the BrokerPool representing the current database instance.
      * @param dataDir the main data directory where eXist stores its files (if relevant).
      * @param config the module element which configures this index, as found in conf.xml
-     * @throws DatabaseConfigurationException
+     * @throws DatabaseConfigurationException in case of an database configuration error
      */
     void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException;
 
@@ -72,14 +72,14 @@ public interface Index extends AutoCloseable {
      * Opens the index for writing and reading. Will be called during initialization, but also
      * if the database has to be restarted.
      *
-     * @throws DatabaseConfigurationException
+     * @throws DatabaseConfigurationException in case of an database configuration error
      */
     void open() throws DatabaseConfigurationException;
 
     /**
      * Closes the index and all associated resources.
      *
-     * @throws DBException
+     * @throws DBException in case of an eXist-db error
      */
     @Override
     void close() throws DBException;
@@ -89,7 +89,7 @@ public interface Index extends AutoCloseable {
      * It will be called during checkpoint events and the system relies on the index to materialize
      * all data.
      *
-     * @throws DBException
+     * @throws DBException in case of an eXist-db error
      */
     void sync() throws DBException;
 
@@ -97,6 +97,7 @@ public interface Index extends AutoCloseable {
      * Closes the index and removes it completely, including all resources and files
      * associated to it. This method is called during database repair before the
      * db contents are re-indexed.
+     * @throws DBException in case of an eXist-db error
      */
     void remove() throws DBException;
 

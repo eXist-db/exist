@@ -32,7 +32,7 @@ import org.exist.util.SyntaxException;
  * and not carry state, thus ensuring that thus class
  * can be used in a local or remote scenario
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public abstract class AbstractUnixStylePermission implements Permission {
 
@@ -191,7 +191,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
      * The new settings are or'ed with the existing settings.
      *
      *@param  existSymbolicMode                  The new mode
-     *@exception  SyntaxException  Description of the Exception
+     *@throws  SyntaxException  Description of the Exception
      *
      * @deprecated setUnixSymbolicMode should be used instead
      */

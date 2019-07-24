@@ -36,6 +36,8 @@ import org.exist.xquery.value.NodeValue;
 import org.xml.sax.SAXException;
 
 /**
+ * Node serializer.
+ *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class NodeSerializer {

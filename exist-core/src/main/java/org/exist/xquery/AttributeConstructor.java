@@ -116,6 +116,8 @@ public class AttributeConstructor extends NodeConstructor {
 	/**
 	 * If this is a namespace declaration attribute, return
 	 * the single string value of the attribute.
+	 *
+	 * @return the string value
 	 */
 	public String getLiteralValue() {
 		if(contents.size() == 0)

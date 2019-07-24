@@ -47,9 +47,9 @@ import org.exist.storage.DBBroker;
 /**
  * Represents a user within the database.
  * 
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
- * @author Adam retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam retter</a>
  */
 @ConfigurationClass("account")
 public class AccountImpl extends AbstractAccount {
@@ -102,12 +102,12 @@ public class AccountImpl extends AbstractAccount {
 
     /**
      * Create a new user with name and password
-     *
-     * @param realm
-     * @param id
-     * @param name
-     * @param password
-     * @throws ConfigurationException
+     * @param broker the eXist-db DBBroker
+     * @param realm the security realm
+     * @param id of the account
+     * @param name of the account
+     * @param password of the account
+     * @throws ConfigurationException if there is an configuration error
      */
     public AccountImpl(final DBBroker broker, final AbstractRealm realm, final int id, final String name,final  String password) throws ConfigurationException {
         super(broker, realm, id, name);
@@ -130,10 +130,11 @@ public class AccountImpl extends AbstractAccount {
     /**
      * Create a new user with name
      *
-     * @param realm
-     * @param name
+     * @param broker the eXist-db DBBroker
+     * @param realm the security realm
+     * @param name of the account
      *            The account name
-     * @throws ConfigurationException
+     * @throws ConfigurationException if there is an configuration error
      */
     public AccountImpl(final DBBroker broker, final AbstractRealm realm, final String name) throws ConfigurationException {
         super(broker, realm, Account.UNDEFINED_ID, name);

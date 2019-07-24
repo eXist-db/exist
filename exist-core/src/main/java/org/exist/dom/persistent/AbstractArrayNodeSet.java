@@ -30,7 +30,7 @@ import org.w3c.dom.Node;
  * Removes duplication between NewArrayNodeSet
  * and ExtArrayNodeSet
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public abstract class AbstractArrayNodeSet extends AbstractNodeSet implements DocumentSet {
 
@@ -102,6 +102,8 @@ public abstract class AbstractArrayNodeSet extends AbstractNodeSet implements Do
      * Just add the node to this set
      * all of the checks have been
      * done in @see AbstractArrayNodeSet#add(NodeProxy, int)
+     * @param proxy  node to add
+     * @param sizeHint hint about the size
      */
     protected abstract void addInternal(final NodeProxy proxy, final int sizeHint);
 

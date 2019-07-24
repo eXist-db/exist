@@ -50,6 +50,9 @@ public class EmbeddedURLConnection extends URLConnection {
 
     /**
      * Constructs a URL connection to the specified URL.
+     *
+     * @param threadGroup Thread group
+     * @param url URL
       */
     protected EmbeddedURLConnection(final ThreadGroup threadGroup, final URL url) {
         super(url);

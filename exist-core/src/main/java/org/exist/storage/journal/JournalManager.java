@@ -82,6 +82,8 @@ public class JournalManager implements BrokerPoolService {
      * @see Journal#writeToLog(Loggable)
      *
      * @param loggable The entry to write in the journal
+     *
+     * @throws JournalException of the journal entry cannot be written
      */
     public synchronized void journal(final Loggable loggable) throws JournalException {
         if(!journallingDisabled) {
@@ -96,6 +98,8 @@ public class JournalManager implements BrokerPoolService {
      * @see Journal#flushToLog(boolean)
      *
      * @param loggable The entry to write in the journalGroup
+     *
+     * @throws JournalException of the journal group cannot be written
      */
     public synchronized void journalGroup(final Loggable loggable) throws JournalException {
         if(!journallingDisabled) {
@@ -120,7 +124,7 @@ public class JournalManager implements BrokerPoolService {
      * @param transactionId The id of the transaction for the checkpoint
      * @param switchFiles Whether a new journal file should be started
      *
-     * @throws JournalException
+     * @throws JournalException of the journal checkpoint cannot be written
      */
     public synchronized void checkpoint(final long transactionId, final boolean switchFiles) throws JournalException {
         if(!journallingDisabled) {
@@ -136,7 +140,12 @@ public class JournalManager implements BrokerPoolService {
     }
 
     /**
+     * @param fsync true to use fsync
+     * @param forceSync true to force an fsync
+     *
      * @see Journal#flushToLog(boolean, boolean)
+     * @param forceSync en-/disable forced sync
+     * @param fsync en- / disable file system sync
      */
     public synchronized void flush(final boolean fsync, final boolean forceSync) {
         journal.flushToLog(fsync, forceSync);
@@ -161,6 +170,8 @@ public class JournalManager implements BrokerPoolService {
 
     /**
      * @see Journal#lastWrittenLsn()
+     *
+     * @return the last written LSN
      */
     public Lsn lastWrittenLsn() {
         return journal.lastWrittenLsn();

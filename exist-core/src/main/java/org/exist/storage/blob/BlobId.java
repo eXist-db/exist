@@ -24,7 +24,7 @@ import static org.exist.util.HexEncoder.bytesToHex;
 /**
  * Identifier for a BLOB.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public final class BlobId {
     private final byte[] id;

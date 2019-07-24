@@ -49,8 +49,8 @@ import org.exist.xquery.value.Type;
  * 
  * Get a mail session
  * 
- * @author Andrzej Taramina <andrzej@chaeron.com>
- * @author José María Fernández <josemariafg@gmail.com>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
+ * @author <a href="mailto:josemariafg@gmail.com">José María Fernández</a>
  * @serial 2009-03-12
  * @version 1.3
  *
@@ -72,26 +72,12 @@ public class MailSessionFunctions extends BasicFunction
 			)
 		};
 
-	/**
-	 * MailSessionFunctions Constructor
-	 * 
-	 * @param context	The Context of the calling XQuery
-	 */
 	public MailSessionFunctions( XQueryContext context, FunctionSignature signature )
 	{
 		super( context, signature );
     }
 
-	/**
-	 * evaluate the call to the xquery get-session function,
-	 * it is really the main entry point of this class
-	 * 
-	 * @param args		arguments from the get-session() function call
-	 * @param contextSequence	the Context Sequence to operate on (not used here internally!)
-	 * @return		A sequence representing the result of the get-session() function call
-	 * 
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
+	@Override
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
 	{
 		Properties props = new Properties();

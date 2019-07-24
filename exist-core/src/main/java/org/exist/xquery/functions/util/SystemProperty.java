@@ -52,11 +52,7 @@ public class SystemProperty extends BasicFunction {
         },
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the value of the named system property")
     );
-	
-    /**
-     * @param context
-     * @param signature
-     */
+
     public SystemProperty(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }

@@ -37,7 +37,7 @@ import java.io.IOException;
  * local XMLDB operations; Predominantly converts exceptions
  * from the database into XMLDBException types
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 @FunctionalInterface
 public interface LocalXmldbCollectionFunction<R> extends TriFunctionE<Collection, DBBroker, Txn, R, XMLDBException> {
@@ -61,6 +61,16 @@ public interface LocalXmldbCollectionFunction<R> extends TriFunctionE<Collection
      * @param collection The database collection
      * @param broker The database broker for the XMLDB function
      * @param transaction The transaction for the XMLDB function
+     *
+     * @return the result of apply the function.
+     *
+     * @throws XMLDBException if an error occurs whilst applying the function
+     * @throws PermissionDeniedException if the user has insufficient permissions
+     * @throws LockException if an error occurs whilst locking a collection or document
+     * @throws TriggerException if a  trigger raises an error
+     * @throws IOException if an IO error occurs
+     * @throws SyntaxException if a syntax error occurs
      */
-    R applyXmldb(org.exist.collections.Collection collection, final DBBroker broker, final Txn transaction) throws XMLDBException, PermissionDeniedException, LockException, TriggerException, IOException, SyntaxException;
+    R applyXmldb(org.exist.collections.Collection collection, final DBBroker broker, final Txn transaction)
+            throws XMLDBException, PermissionDeniedException, LockException, TriggerException, IOException, SyntaxException;
 }

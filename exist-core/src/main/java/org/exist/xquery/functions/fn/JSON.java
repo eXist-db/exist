@@ -173,8 +173,8 @@ public class JSON extends BasicFunction {
      * @param parser parser to use
      * @param handleDuplicates string indicating how to handle duplicate property names
      * @return the top item read
-     * @throws IOException
-     * @throws XPathException
+     * @throws IOException in case of an error reading the JSON
+     * @throws XPathException in case of dynamic error
      */
     public static Item readValue(XQueryContext context, JsonParser parser, String handleDuplicates) throws IOException, XPathException {
         return readValue(context, parser, null, handleDuplicates);

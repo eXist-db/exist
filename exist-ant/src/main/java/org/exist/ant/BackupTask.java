@@ -40,9 +40,7 @@ public class BackupTask extends AbstractXMLDBTask
     private String dir = null;
     private boolean deduplicateBlobs = false;
 
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
+    @Override
     public void execute() throws BuildException
     {
         if( uri == null ) {
@@ -76,9 +74,9 @@ public class BackupTask extends AbstractXMLDBTask
 
 
     /**
-     * DOCUMENT ME!
+     * Set the directory.
      *
-     * @param  dir
+     * @param dir the directory.
      */
     public void setDir( String dir )
     {

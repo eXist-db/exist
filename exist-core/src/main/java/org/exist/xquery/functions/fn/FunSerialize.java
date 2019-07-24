@@ -106,8 +106,11 @@ public class FunSerialize extends BasicFunction {
      * http://www.w3.org/TR/xslt-xquery-serialization-30/#serdm
      *
      * @param input non-normalized sequence
+     * @param context current context
+     * @param callingExpr the expression from which the function is called.
+     *                    needed for error reporting
      * @return normalized sequence
-     * @throws XPathException
+     * @throws XPathException in case of dynamic error
      */
     public static Sequence normalize(final Expression callingExpr, final XQueryContext context, final Sequence input) throws XPathException {
         if (input.isEmpty())

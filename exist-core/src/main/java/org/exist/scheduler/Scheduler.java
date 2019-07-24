@@ -25,7 +25,7 @@ import java.util.Properties;
 /**
  * A Scheduler to trigger Startup, System and User defined jobs.
  *
- * @author  Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public interface Scheduler {
 
@@ -34,7 +34,7 @@ public interface Scheduler {
     /**
      * Shutdown the running Scheduler.
      *
-     * <p>Asynchronous method. use isShutdown() to determine if the Scheduler has Shutdown</p>
+     * Asynchronous method. use isShutdown() to determine if the Scheduler has Shutdown
      *
      * @param  waitForJobsToComplete Should we wait for currently executing jobs
      * to complete before shutting down?
@@ -48,7 +48,7 @@ public interface Scheduler {
      *
      * @param   period  The period, in milliseconds.
      * @param   job     The job to trigger after each period
-     * @param   delay   <= 0, start now, otherwise start in specified number of milliseconds
+     * @param   delay   &lt;= 0, start now, otherwise start in specified number of milliseconds
      *
      * @return  true if the job was successfully scheduled, false otherwise
      */
@@ -59,7 +59,7 @@ public interface Scheduler {
      *
      * @param   period  The period, in milliseconds.
      * @param   job     The job to trigger after each period
-     * @param   delay   <= 0, start now, otherwise start in specified number of milliseconds
+     * @param   delay   &lt;= 0, start now, otherwise start in specified number of milliseconds
      * @param   params  Any parameters to pass to the job
      *
      * @return  true if the job was successfully scheduled, false otherwise
@@ -71,7 +71,7 @@ public interface Scheduler {
      *
      * @param   period       The period, in milliseconds.
      * @param   job          The job to trigger after each period
-     * @param   delay        <= 0, start now, otherwise start in specified number of milliseconds
+     * @param   delay        &lt;= 0, start now, otherwise start in specified number of milliseconds
      * @param   params       Any parameters to pass to the job
      * @param   repeatCount  Number of times to repeat this job.
      *
@@ -84,7 +84,7 @@ public interface Scheduler {
      *
      * @param   period       The period, in milliseconds.
      * @param   job          The job to trigger after each period
-     * @param   delay        <= 0, start now, otherwise start in specified number of milliseconds
+     * @param   delay        &lt;= 0, start now, otherwise start in specified number of milliseconds
      * @param   params       Any parameters to pass to the job
      * @param   repeatCount  Number of times to repeat this job.
      * @param   unschedule   Unschedule job on XPathException?

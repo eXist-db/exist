@@ -25,7 +25,7 @@ package org.exist.util;
  * @param <S> Information about the state which was modified
  * @param <C> the change which was applied to the state
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public abstract class TraceableStateChange<S, C> {
     private final C change;

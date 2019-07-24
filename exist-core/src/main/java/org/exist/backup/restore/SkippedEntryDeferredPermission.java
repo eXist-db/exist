@@ -30,7 +30,7 @@ import org.exist.xmldb.XmldbURI;
 /**
  * Represents the permissions for a skipped entry in the restore process, e.g. apply() does nothing
  *
- * @author  Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class SkippedEntryDeferredPermission implements DeferredPermission {
 

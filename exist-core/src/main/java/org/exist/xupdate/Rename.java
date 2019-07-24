@@ -45,22 +45,18 @@ import org.w3c.dom.NodeList;
 public class Rename extends Modification {
 
     /**
-     * @param broker 
-     * @param docs 
-     * @param namespaces 
-     * @param variables 
-     * @param selectStmt 
+     * @param broker the database broker.
+     * @param docs the document working set.
+     * @param selectStmt the select statement.
+     * @param namespaces the namespaces.
+     * @param variables the variables.
      */
     public Rename(DBBroker broker, DocumentSet docs, String selectStmt,
             Map<String, String> namespaces, Map<String, Object> variables) {
         super(broker, docs, selectStmt, namespaces, variables);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.exist.xupdate.Modification#process(org.exist.dom.persistent.DocumentSet)
-     */
+    @Override
     public long process(Txn transaction) throws PermissionDeniedException, LockException,
             EXistException, XPathException, TriggerException {
         final NodeList children = content;
@@ -109,11 +105,7 @@ public class Rename extends Modification {
         return modificationCount;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.exist.xupdate.Modification#getName()
-     */
+    @Override
     public String getName() {
         return "rename";
     }

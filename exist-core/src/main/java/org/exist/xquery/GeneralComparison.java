@@ -67,8 +67,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
      * Truncation flags: when comparing with a string value, the search string may be truncated with a single * wildcard. See the constants declared
      * in class {@link Constants}.
      *
-     * <p>The standard functions starts-with, ends-with and contains are transformed into a general comparison with wildcard. Hence the need to
-     * consider wildcards here.</p>
+     * The standard functions starts-with, ends-with and contains are transformed into a general comparison with wildcard. Hence the need to
+     * consider wildcards here.
      */
     protected StringTruncationOperator          truncation            = StringTruncationOperator.NONE;
 
@@ -504,12 +504,12 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     /**
      * Generic, slow implementation. Applied if none of the possible optimizations can be used.
      *
-     * @param   contextSequence
-     * @param   contextItem
+     * @param   contextSequence the context sequence
+     * @param   contextItem optional context item
      *
      * @return  The Sequence resulting from the comparison
      *
-     * @throws  XPathException
+     * @throws  XPathException in case of dynamic error
      */
     protected Sequence genericCompare( Sequence contextSequence, Item contextItem ) throws XPathException
     {

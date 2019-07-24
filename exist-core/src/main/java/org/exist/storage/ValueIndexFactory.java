@@ -128,23 +128,11 @@ public class ValueIndexFactory {
         }
     }
 
-    /**
-     * @param value
-     * @param offset
-     * @throws EXistException
-     */
     public final static byte[] serialize(final Indexable value, final int offset) throws EXistException {
         // TODO : refactor (only strings are case sensitive)
         return serialize(value, offset, true);
     }
 
-    /**
-     * @param value
-     * @param offset
-     * @param caseSensitive
-     * @throws EXistException
-     * @deprecated
-     */
     public final static byte[] serialize(final Indexable value, final int offset, final boolean caseSensitive) throws EXistException {
         /* xs:string */
         if (Type.subTypeOf(value.getType(), Type.STRING)) {

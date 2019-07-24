@@ -29,7 +29,7 @@ import java.util.Optional;
  * Abstract for functions in the {@link RequestModule}
  * which need access to the http request.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public abstract class RequestFunction extends BasicFunction {
 

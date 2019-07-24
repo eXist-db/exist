@@ -43,7 +43,7 @@ public class Compressor {
      *
      * @return the compressed data.
      *
-     * @exception IOException if an error occurs
+     * @throws IOException if an error occurs
      */
     public static byte[] compress(final byte[] buf) throws IOException {
         return compress(buf, buf.length);
@@ -63,7 +63,7 @@ public class Compressor {
      *
      * @return the compressed data.
      *
-     * @exception IOException if an error occurs
+     * @throws IOException if an error occurs
      */
     public static byte[] compress(final byte[] buf, final int len) throws IOException {
         try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream(len);
@@ -81,7 +81,7 @@ public class Compressor {
      *
      * @return the uncompressed data.
      *
-     * @exception IOException if an error occurs
+     * @throws IOException if an error occurs
      */
     public static byte[] uncompress(final byte[] buf) throws IOException {
         try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
@@ -96,8 +96,9 @@ public class Compressor {
      * @param buf the data to uncompress.
      * @param os the destination for the uncompressed data;
      *
+     * @return the number of bytes uncompressed
      *
-     * @exception IOException if an error occurs
+     * @throws IOException if an error occurs
      */
     public static int uncompress(final byte[] buf, final OutputStream os) throws IOException {
         int written = 0;

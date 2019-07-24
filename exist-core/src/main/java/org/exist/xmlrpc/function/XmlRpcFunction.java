@@ -34,7 +34,7 @@ import java.io.IOException;
  * XML-RPC server operations; Predominantly converts exceptions
  * from the database into EXistException types
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 @FunctionalInterface
 public interface XmlRpcFunction<R> extends BiFunction2E<DBBroker, Txn, R, EXistException, PermissionDeniedException> {
@@ -53,6 +53,14 @@ public interface XmlRpcFunction<R> extends BiFunction2E<DBBroker, Txn, R, EXistE
      *
      * @param broker The database broker for the XML-RPC function
      * @param transaction The transaction for the XML-RPC function
+     *
+     * @return the result of the function
+     *
+     * @throws EXistException if an error occurs with the database
+     * @throws PermissionDeniedException if the caller has insufficient priviledges
+     * @throws IOException if an I/O error occurs
+     * @throws SAXException if a SAX error occurs
+     * @throws LockException if a lock error occurs
      */
     R applyXmlRpc(final DBBroker broker, final Txn transaction) throws EXistException, PermissionDeniedException, LockException, SAXException, IOException;
 }

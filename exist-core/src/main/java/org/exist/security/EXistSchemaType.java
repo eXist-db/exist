@@ -23,7 +23,7 @@ package org.exist.security;
 
 /**
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public enum EXistSchemaType implements SchemaType {
     DESCRIPTION("http://exist-db.org/security/description", "Description");

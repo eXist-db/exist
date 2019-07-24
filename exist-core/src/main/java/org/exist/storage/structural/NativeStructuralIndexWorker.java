@@ -96,11 +96,11 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
      * It will be fast for bulk-loading a large node set, but slow if you need to operate on a small
      * context set.
      *
-     * @param type
-     * @param docs
-     * @param qname
-     * @param selector
-     * @return nodeset
+     * @param type the type of the element
+     * @param docs the document working set
+     * @param qname the name
+     * @param selector the selector
+     * @return nodeset the matching nodeset
      */
     public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector) {
         return findElementsByTagName(type, docs, qname, selector, null);
@@ -132,7 +132,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     /**
      * Scan the document set to find document id ranges to query
      *
-     * @param docs
+     * @param docs the document set
      * @return List of contiguous document id ranges
      */
     List<Range> getDocIdRanges(final DocumentSet docs) {
@@ -176,6 +176,15 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
      * This implementation does one btree lookup for every node in contextSet. It offers superior performance
      * if the number of nodes in contextSet is rather small compared to the overall number of nodes in
      * the index.
+     * @param type the type of node to find
+     * @param qname the node name
+     * @param axis the node axis
+     * @param docs the document set
+     * @param contextSet the context set
+     * @param contextId the id of the context
+     *
+     * @return the matching decendants
+     *
      */
     public NodeSet findDescendantsByTagName(byte type, QName qname, int axis, DocumentSet docs, NodeSet contextSet, int contextId) {
         return findDescendantsByTagName(type, qname, axis, docs, contextSet, contextId, null);
@@ -577,12 +586,12 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     /**
      * Collect index statistics. Used by functions like util:index-keys.
      *
-     * @param context
+     * @param context the xquery context
      * @param docs The documents to which the index entries belong
      * @param contextSet ignored by this index
      * @param hints Some "hints" for retrieving the index entries. See such hints in
      * {@link org.exist.indexing.OrderedValuesIndex} and {@link org.exist.indexing.QNamedKeysIndex}.
-     * @return
+     * @return the matching occurrences
      */
     public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
         final Map<String, Occurrences> occurrences = new TreeMap<String, Occurrences>();

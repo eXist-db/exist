@@ -39,12 +39,12 @@ public class RemoveValueLoggable extends BTAbstractLoggable {
     protected long oldPointer;
     
     /**
-     * @param fileId 
-     * @param pageNum 
-     * @param idx 
-     * @param oldValue 
-     * @param oldPointer 
-     * @param transaction 
+     * @param transaction the database transaction
+     * @param fileId the file id
+     * @param pageNum the page number
+     * @param idx the index
+     * @param oldValue the old value
+     * @param oldPointer the old pointer
      */
     public RemoveValueLoggable(Txn transaction, byte fileId, long pageNum, int idx, Value oldValue, long oldPointer) {
         super(BTree.LOG_REMOVE_VALUE, fileId, transaction);
@@ -55,16 +55,14 @@ public class RemoveValueLoggable extends BTAbstractLoggable {
     }
 
     /**
-     * @param broker 
-     * @param transactionId 
+     * @param broker the database broker
+     * @param transactionId the transaction id
      */
     public RemoveValueLoggable(DBBroker broker, long transactionId) {
         super(BTree.LOG_REMOVE_VALUE, broker, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
-     */
+    @Override
     public void write(ByteBuffer out) {
         super.write(out);
         out.putInt((int) pageNum);
@@ -74,9 +72,7 @@ public class RemoveValueLoggable extends BTAbstractLoggable {
         out.putLong(oldPointer);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
-     */
+    @Override
     public void read(ByteBuffer in) {
         super.read(in);
         pageNum = in.getInt();
@@ -88,21 +84,22 @@ public class RemoveValueLoggable extends BTAbstractLoggable {
         oldPointer = in.getLong();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.storage.log.Loggable#getLogSize()
-     */
+    @Override
     public int getLogSize() {
         return super.getLogSize() + 16 + oldValue.getLength();
     }
 
+    @Override
     public void redo() throws LogException {
         getStorage().redoRemoveValue(this);
     }
-    
+
+    @Override
     public void undo() throws LogException {
         getStorage().undoRemoveValue(this);
     }
-    
+
+    @Override
     public String dump() {
         return super.dump() + " - removed btree key on page: " + pageNum;
     }

@@ -21,6 +21,9 @@
  */
 package org.exist.validation;
 
+/**
+ * Helper class for validation (error) messages.
+ */
 public class ValidationReportItem {
     
     public static final int WARNING = 1;

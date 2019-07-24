@@ -33,7 +33,7 @@ import org.exist.util.SyntaxException;
 /**
  * Unix style permission details.
  * 
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public class UnixStylePermissionAider extends AbstractUnixStylePermission implements PermissionAider {
@@ -62,9 +62,9 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
     /**
      * Construct a permission with given user, group and mode
      *
-     * @param  user
-     * @param  group
-     * @param  mode
+     * @param user name of the owner
+     * @param group name of the group
+     * @param mode mode for the resource.
      */
     public UnixStylePermissionAider(final String user, final String group, final int mode) {
         this.owner = new UserAider(user);

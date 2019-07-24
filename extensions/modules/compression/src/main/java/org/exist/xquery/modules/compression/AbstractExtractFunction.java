@@ -52,7 +52,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 /**
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @version 1.0
  */
 public abstract class AbstractExtractFunction extends BasicFunction
@@ -120,6 +120,9 @@ public abstract class AbstractExtractFunction extends BasicFunction
      *
      * @param compressedData the compressed data to extract
      * @return Sequence of results
+     *
+     * @throws XPathException if a query error occurs
+     * @throws XMLDBException if a database error occurs
      */
     protected abstract Sequence processCompressedData(BinaryValue compressedData, Charset encoding) throws XPathException, XMLDBException;
 
@@ -131,7 +134,12 @@ public abstract class AbstractExtractFunction extends BasicFunction
      * @param is an InputStream for reading the uncompressed data of the entry
      * @param filterParam is an additional param for entry filtering function  
      * @param storeParam is an additional param for entry storing function
-     * @throws XMLDBException 
+     *
+     * @return the result of processing the compressed entry.
+     *
+     * @throws XPathException if a query error occurs
+     * @throws XMLDBException if a database error occurs
+     * @throws IOException if an I/O error occurs
      */
     protected Sequence processCompressedEntry(String name, boolean isDirectory, InputStream is, Sequence filterParam, Sequence storeParam) throws IOException, XPathException, XMLDBException
     {

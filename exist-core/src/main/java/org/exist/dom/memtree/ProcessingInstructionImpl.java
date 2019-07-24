@@ -36,12 +36,6 @@ import org.exist.xquery.value.Type;
 
 public class ProcessingInstructionImpl extends NodeImpl implements ProcessingInstruction {
 
-    /**
-     * Creates a new ProcessingInstructionImpl object.
-     *
-     * @param doc
-     * @param nodeNumber
-     */
     public ProcessingInstructionImpl(final DocumentImpl doc, final int nodeNumber) {
         super(doc, nodeNumber);
     }

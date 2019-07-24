@@ -41,7 +41,7 @@ import org.expath.pkg.repo.tui.BatchUserInteraction;
 /**
  * Remove Function: Remove package from repository
  *
- * @author James Fuller <jim.fuller@exist-db.org>
+ * @author <a href="mailto:jim.fuller@exist-db.org">James Fuller</a>
  * @author cutlass
  * @author ljo
  */

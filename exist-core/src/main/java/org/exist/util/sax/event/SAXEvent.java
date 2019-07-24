@@ -32,7 +32,7 @@ import org.xml.sax.SAXException;
  * in a queue and then applying them at a later
  * date to a SAX Handler
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public interface SAXEvent<T> {
 
@@ -40,6 +40,8 @@ public interface SAXEvent<T> {
      * Apply the event to a handler
      *
      * @param handler The handler to receive the event
+     *
+     * @throws SAXException if the application causes an error
      */
     public void apply(final T handler) throws SAXException;
 }

@@ -62,7 +62,7 @@ import static org.hamcrest.Matchers.allOf;
  * Tests to ensure that document content and attributes
  * are correctly copied under various circumstances.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class CopyResourceTest {
 

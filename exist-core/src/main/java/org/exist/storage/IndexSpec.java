@@ -73,8 +73,10 @@ public class IndexSpec {
      * The node should have zero or more "create" nodes.
      * The "create" elements add a {@link GeneralRangeIndexSpec} to the current configuration.
      *  
-     * @param index
-     * @throws DatabaseConfigurationException
+     * @param index index configuration
+     * @param broker the eXist-db DBBroker
+     * @throws DatabaseConfigurationException in response to an eXist-db configuration error
+     *
      */
     public void read(DBBroker broker, Element index) throws DatabaseConfigurationException {
         final Map<String, String> namespaces = getNamespaceMap(index);
@@ -119,10 +121,10 @@ public class IndexSpec {
     }
 
     /**
-     * Returns the {@link GeneralRangeIndexSpec} defined for the given
+     * @return the {@link GeneralRangeIndexSpec} defined for the given
      * node path or null if no index has been configured.
      * 
-     * @param path
+     * @param path given node path
      */
     public GeneralRangeIndexSpec getIndexByPath(NodePath path) {
         if(specs != null) {

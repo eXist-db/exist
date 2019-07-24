@@ -36,7 +36,7 @@ import static se.softhouse.jargo.Arguments.*;
 /**
  * Command Line Options for the {@link InteractiveClient}
  *
- * @author Adam Retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  * @author wessels
  */
 public class CommandlineOptions {

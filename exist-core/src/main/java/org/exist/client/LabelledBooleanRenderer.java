@@ -34,7 +34,7 @@ import javax.swing.table.TableCellRenderer;
 /**
  * Renders a LabelledBoolean as a JCheckBox
  *
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class LabelledBooleanRenderer extends JCheckBox
         implements TableCellRenderer, UIResource {

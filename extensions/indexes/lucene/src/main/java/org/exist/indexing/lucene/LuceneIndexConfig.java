@@ -244,12 +244,16 @@ public class LuceneIndexConfig {
      * Get boost by matching the config with given attributes
      * (e.g. sibling or child atributes)
      * if no match, the value from getBoost() is returned
+     *
+     * @param attributes the attributes
+     *
+     * @return the boost, or 0 if there is no boost
      */
-    public float getAttrBoost(Collection<AttrImpl> attributes) {
+    public float getAttrBoost(final Collection<AttrImpl> attributes) {
         float boost = 0;
         boolean hasBoost = false;
 
-        for (Attr attr : attributes) {
+        for (final Attr attr : attributes) {
             Collection<MatchAttrData> matchAttrData
                     = (Collection<MatchAttrData>) matchAttrs.get(attr.getName());
 
@@ -272,9 +276,9 @@ public class LuceneIndexConfig {
 
         if (hasBoost) {
             return boost;
-	} else {
+	    } else {
             return getBoost();
-	}
+	    }
     }
 
     public void setName(String name) {

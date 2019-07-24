@@ -63,7 +63,7 @@ public class IndexerTest2 {
     private final static String XML =
             "<?xml version=\"1.0\"?>\n" +
             "<TEI xmlns=\"http://www.tei-c.org/ns/1.0\">\n" +
-            "<p>Government of new Territory of Nevada—Governor <name>Nye</name> <lb/>and the practical jokers—<name>Mr. Clemens</name> begins journalistic life <lb/>on <name>Virginia City</name> <name>Enterprise</name>.</p>\n" +
+            "Government of new Territory of Nevada—Governor <name>Nye</name> <lb/>and the practical jokers—<name>Mr. Clemens</name> begins journalistic life <lb/>on <name>Virginia City</name> <name>Enterprise</name>.\n" +
             "</TEI>\n";
 
     private final static String XQUERY =
@@ -78,7 +78,7 @@ public class IndexerTest2 {
             "}; " +
             "let $in-memory := " +
             "<TEI xmlns=\"http://www.tei-c.org/ns/1.0\">\n" +
-            "<p>Government of new Territory of Nevada—Governor <name>Nye</name> <lb/>and the practical jokers—<name>Mr. Clemens</name> begins journalistic life <lb/>on <name>Virginia City</name> <name>Enterprise</name>.</p>\n" +
+            "Government of new Territory of Nevada—Governor <name>Nye</name> <lb/>and the practical jokers—<name>Mr. Clemens</name> begins journalistic life <lb/>on <name>Virginia City</name> <name>Enterprise</name>.\n" +
             "</TEI>" +
             "let $stored := doc('" + TestConstants.TEST_COLLECTION_URI.toString() + "/"+ TestConstants.TEST_XML_URI2.toString() + "') " +
             "return " +

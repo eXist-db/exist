@@ -31,7 +31,7 @@ public interface FLWORClause extends Expression {
     /**
      * Get the return expression of the clause.
      *
-     * @return
+     * @return the return expression
      */
     Expression getReturnExpression();
 
@@ -39,7 +39,7 @@ public interface FLWORClause extends Expression {
      * Set the previous FLWOR clause if this is not the
      * top clause.
      *
-     * @param clause
+     * @param clause the previous clause
      */
     void setPreviousClause(FLWORClause clause);
 
@@ -58,7 +58,7 @@ public interface FLWORClause extends Expression {
      *
      * @param seq the sequence of items to be iterated by the current for
      * @return post-processed result sequence
-     * @throws XPathException
+     * @throws XPathException if an error occurs during pre-evaluation
      */
     Sequence preEval(Sequence seq) throws XPathException;
 
@@ -69,7 +69,7 @@ public interface FLWORClause extends Expression {
      *
      * @param seq the return sequence of the top FLWOR expression
      * @return post-processed result sequence
-     * @throws XPathException
+     * @throws XPathException if an error occurs during post-evaluation
      */
     Sequence postEval(Sequence seq) throws XPathException;
 
@@ -79,7 +79,7 @@ public interface FLWORClause extends Expression {
      *
      * @param name the name of the variable
      * @return a new local variable, registered in the context
-     * @throws XPathException
+     * @throws XPathException if an error occurs whilst creating the variable
      */
     LocalVariable createVariable(String name) throws XPathException;
 

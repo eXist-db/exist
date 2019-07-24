@@ -32,6 +32,8 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.value.NodeValue;
 
 /**
+ * Node serializer (threaded).
+ *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class NodeSerializerRunnable implements Runnable {
@@ -41,9 +43,13 @@ public class NodeSerializerRunnable implements Runnable {
     private final Serializer serializer;
     private final NodeValue node;
     private final BlockingOutputStream bos;
-    
+
     /**
-     * Creates a new instance of NodeSerializerRunnable
+     * Creates a new instance of NodeSerializerRunnable.
+     *
+     * @param serializer The serializer.
+     * @param node       The node to be serialized.
+     * @param bos        Blocking outputstream.
      */
     public NodeSerializerRunnable(final Serializer serializer, final NodeValue node, final  BlockingOutputStream bos) {
         this.serializer = serializer;

@@ -238,7 +238,8 @@ public class IndexManager implements BrokerPoolService {
      * Shutdowns all registered indexes by calling {@link org.exist.indexing.Index#close()}
      * on them.
      *
-     * @throws DBException
+     * @param systemBroker The broker that will perform the operation
+     * @throws BrokerPoolServiceException in case of an error in the BrookerPoolService
      */
     @Override
     public void stop(final DBBroker systemBroker) throws BrokerPoolServiceException {
@@ -255,7 +256,7 @@ public class IndexManager implements BrokerPoolService {
     /**
      * Call indexes to flush all data to disk.
      *
-     * @throws DBException
+     * @throws DBException in case of an eXist-db error
      */
     public void sync() throws DBException {
         for (final Iterator<Index> i = iterator(); i.hasNext(); ) {
@@ -268,7 +269,7 @@ public class IndexManager implements BrokerPoolService {
      * Physically destroy the registered indexes by calling {@link org.exist.indexing.Index#remove()}
      * on them.
      *
-     * @throws DBException
+     * @throws DBException in case of an eXist-db error
      */
     public void removeIndexes() throws DBException {
         for (final Iterator<Index> i = iterator(); i.hasNext(); ) {
@@ -282,7 +283,7 @@ public class IndexManager implements BrokerPoolService {
      * such as {@link org.exist.indexing.Index#close()} by calling {@link org.exist.indexing.Index#open()}
      * on them.
      *
-     * @throws DatabaseConfigurationException
+     * @throws DatabaseConfigurationException in cse of an database configuration error
      */
     public void reopenIndexes() throws DatabaseConfigurationException {
         for (final Iterator<Index> i = iterator(); i.hasNext(); ) {

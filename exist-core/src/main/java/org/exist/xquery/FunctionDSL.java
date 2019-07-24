@@ -94,7 +94,7 @@ import java.util.stream.Stream;
  * }
  * </pre>
  *
- * @author <a href="mailto: adam@evolvedbinary.com">Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class FunctionDSL {
 
@@ -232,9 +232,9 @@ public class FunctionDSL {
     }
 
     /**
-     * Specifies the specific parameter types for an arity of a function signature
+     * Specifies the specific parameter types for an arity of a function signature.
      *
-     * A DSL convenience method to be used inside {@link #arities(FunctionParameterSequenceType[]...)}
+     * A DSL convenience method to be used inside {@link #arities(FunctionParameterSequenceType[][])}.
      *
      * @param paramTypes A convenience Varargs for the parameter types for a function arity
      *

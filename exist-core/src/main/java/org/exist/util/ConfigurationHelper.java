@@ -53,6 +53,8 @@ public class ConfigurationHelper {
      *   <li>classpath entry : if exists, with a conf.xml file
      * </ol>
      *
+     * @param config the path to the config file.
+     *
      * @return the path to exist home if known
      */
     public static Optional<Path> getExistHome(final String config) {
@@ -169,7 +171,7 @@ public class ConfigurationHelper {
     
     
     /**
-     * Resolves the given path by means of eventually replacing <tt>~</tt> with the users
+     * Resolves the given path by means of eventually replacing <code>~</code> with the users
      * home directory, taken from the system property <code>user.home</code>.
      *
      * @param path the path to resolve

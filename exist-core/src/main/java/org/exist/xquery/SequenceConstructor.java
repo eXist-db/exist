@@ -35,9 +35,6 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class SequenceConstructor extends PathExpr {
 
-    /**
-     * @param context
-     */
     public SequenceConstructor(XQueryContext context) {
         super(context);
     }

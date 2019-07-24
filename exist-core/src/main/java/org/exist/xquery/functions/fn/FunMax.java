@@ -49,7 +49,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunMax extends CollatingFunction {
 
@@ -112,10 +112,6 @@ public class FunMax extends CollatingFunction {
 			)
 	};
 
-	/**
-	 * @param context
-	 * @param signature
-	 */
 	public FunMax(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}

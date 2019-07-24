@@ -42,9 +42,6 @@ public class DynamicPIConstructor extends NodeConstructor {
     private Expression name;
     private Expression content;
 
-    /**
-     * @param context
-     */
     public DynamicPIConstructor(XQueryContext context) {
         super(context);
     }

@@ -5,7 +5,7 @@ import org.exist.dom.QName;
 /**
  * Represents an XQuery 3.0 Annotation
  *
- * @author Adam Retter <adam@exist-db.org>
+ * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class Annotation {
     
@@ -34,6 +34,8 @@ public class Annotation {
     /**
      * Get the signature of the function on which this
      * annotation was placed
+     *
+     * @return the function signature
      */
     public FunctionSignature getFunctionSignature() {
         return signature;

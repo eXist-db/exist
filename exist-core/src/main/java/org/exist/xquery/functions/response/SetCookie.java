@@ -44,7 +44,7 @@ import javax.xml.datatype.Duration;
 /**
  * Set's a HTTP Cookie on the HTTP Response.
  *
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  * @author José María Fernández (jmfg@users.sourceforge.net)
  * @see org.exist.xquery.Function
  */

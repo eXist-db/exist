@@ -15,8 +15,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * $Id$
  */
 
 package org.exist.http.servlets;
@@ -60,19 +58,19 @@ import org.exist.util.io.FilterInputStreamCacheFactory;
  * A wrapper for HttpServletRequest
  * - differentiates between POST parameters in the URL or Content Body
  * - caches content Body of the POST request as read, making it available many times
- * <p>
+ *
  * A method of differentiating between POST parameters in the URL or Content Body of the request was needed.
  * The standard javax.servlet.http.HTTPServletRequest does not differentiate between URL or content body parameters,
  * this class does, the type is indicated in RequestParameter.type.
- * <p>
+ *
  * To differentiate manually we need to read the URL (getQueryString()) and the Content body (getInputStream()),
  * this is problematic with the standard javax.servlet.http.HTTPServletRequest as parameter functions (getParameterMap(), getParameterNames(), getParameter(String), getParameterValues(String))
  * affect the  input stream functions (getInputStream(), getReader()) and vice versa.
- * <p>
+ *
  * This class solves this by reading the Request Parameters initially from both the URL and the Content Body of the Request
  * and storing them in the private variable params for later use.
  *
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  * @version 1.2
  * @serial 2018-04-03
  */
@@ -93,8 +91,11 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
     /**
      * HttpServletRequestWrapper Constructor
      *
-     * @param request      The HttpServletRequest to wrap
+     * @param cacheConfiguration the cache configuration
+     * @param request The HttpServletRequest to wrap
      * @param formEncoding The encoding to use
+     *
+     * @throws IOException if an I/O error occurs
      */
     public HttpServletRequestWrapper(final FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration cacheConfiguration, final HttpServletRequest request, final String formEncoding) throws IOException {
         this.request = request;
@@ -165,7 +166,10 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
     }
 
     /**
-     * Parses Parameters into param objects and stores them in a vector in params
+     * Parses Parameters into param objects and stores them in a vector in params.
+     *
+     * @param parameters the parameters to parse
+     * @param type the type of the parameters
      */
     private void parseParameters(final String parameters, final RequestParameter.ParameterSource type) {
         //Split parameters into an array

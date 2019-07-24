@@ -65,7 +65,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * There's only one TransactionManager per database instance, it can be
  * accessed via {@link BrokerPool#getTransactionManager()}.
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author wolf
  */
 @ThreadSafe
@@ -455,6 +455,8 @@ public class TransactionManager implements BrokerPoolService {
 
     /**
      * @deprecated This mixes concerns and should not be here!
+     * @param broker the  eXist-db DBBroker
+     * @throws IOException in response to an I/O error
      */
     @Deprecated
     public void reindex(final DBBroker broker) throws IOException {

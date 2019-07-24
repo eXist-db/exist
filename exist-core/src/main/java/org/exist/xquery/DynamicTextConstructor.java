@@ -38,10 +38,7 @@ import org.exist.xquery.value.SequenceIterator;
 public class DynamicTextConstructor extends NodeConstructor {
 
     final private Expression content;
-    
-    /**
-     * @param context
-     */
+
     public DynamicTextConstructor(XQueryContext context, Expression contentExpr) {
         super(context);
         this.content = contentExpr;

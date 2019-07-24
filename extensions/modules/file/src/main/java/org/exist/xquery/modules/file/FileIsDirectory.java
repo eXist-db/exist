@@ -43,9 +43,9 @@ import org.exist.xquery.value.Type;
 
 /**
  * @see java.nio.file.Files#isDirectory(Path, LinkOption...)
- * @author Andrzej Taramina
- * @author Loren Cahlander
  *
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
+ * @author <a href="mailto:loren.cahlander@gmail.com">Loren Cahlander</a>
  */
 public class FileIsDirectory extends BasicFunction {
 	
@@ -62,11 +62,7 @@ public class FileIsDirectory extends BasicFunction {
 			new FunctionReturnSequenceType( Type.BOOLEAN, 
                     Cardinality.EXACTLY_ONE, "true if the path is a directory" ) )
 		};
-	
-	/**
-	 * @param context
-	 * @param signature
-	 */
+
 	public FileIsDirectory(final XQueryContext context, final FunctionSignature signature)
 	{
 		super(context, signature);

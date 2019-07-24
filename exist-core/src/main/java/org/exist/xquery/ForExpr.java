@@ -30,7 +30,7 @@ import org.exist.xquery.value.*;
 /**
  * Represents an XQuery "for" expression.
  * 
- * @author Wolfgang Meier <wolfgang@exist-db.org>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class ForExpr extends BindingExpression {
 
@@ -52,7 +52,7 @@ public class ForExpr extends BindingExpression {
      * A "for" expression may have an optional positional variable whose
      * QName can be set via this method.
      * 
-     * @param var
+     * @param var the name of the variable to set
      */
     public void setPositionalVariable(String var) {
         positionalVariable = var;

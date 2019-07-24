@@ -38,27 +38,36 @@ public interface DebuggingSource {
 
 	/**
 	 * Starts or resumes the script until a new breakpoint is reached, or the end of the script is reached.
+	 *
+	 * @param listener the response listener
 	 */
 	public void run(ResponseListener listener);
 
 	/**
-	 * Steps to the next statement, if there is a function call involved it will break on the first statement in that function
-	 * @param listener 
+	 * Steps to the next statement, if there is a function call involved it will break on the first statement in that function.
+	 *
+	 * @param listener the response listener
 	 */
 	public void stepInto(ResponseListener listener);
 
 	/**
-	 * Steps to the next statement, if there is a function call on the line from which the step_over is issued then the debugger engine will stop at the statement after the function call in the same scope as from where the command was issued
+	 * Steps to the next statement, if there is a function call on the line from which the step_over is issued then the debugger engine will stop at the statement after the function call in the same scope as from where the command was issued.
+	 *
+	 * @param listener the response listener
 	 */
 	public void stepOver(ResponseListener listener);
 
 	/**
 	 * Steps out of the current scope and breaks on the statement after returning from the current function. (Also called 'finish' in GDB)
+	 *
+	 * @param listener the response listener
 	 */
 	public void stepOut(ResponseListener listener);
 
 	/**
 	 * Ends execution of the script immediately, the debugger engine may not respond, though if possible should be designed to do so. The script will be terminated right away and be followed by a disconnection of the network connection from the IDE (and debugger engine if required in multi request apache processes).
+	 *
+	 * @param listener the response listener
 	 */
 	public void stop(ResponseListener listener);
 

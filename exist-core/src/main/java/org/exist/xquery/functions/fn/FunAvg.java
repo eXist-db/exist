@@ -47,7 +47,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunAvg extends Function {
 
@@ -66,9 +66,6 @@ public class FunAvg extends Function {
             new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE,
                 "The average of the values in the input sequence"));
 
-    /**
-     * @param context
-     */
     public FunAvg(XQueryContext context) {
         super(context, signature);
     }

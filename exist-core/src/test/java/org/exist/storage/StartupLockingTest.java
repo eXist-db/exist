@@ -45,7 +45,7 @@ import static org.junit.Assert.assertNotNull;
  * Simple test that Starts the database and checks that no Collection Locks are still held
  * once the database is at rest
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class StartupLockingTest {
 

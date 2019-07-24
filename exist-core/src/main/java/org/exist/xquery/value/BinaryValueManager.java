@@ -3,7 +3,7 @@ package org.exist.xquery.value;
 import java.util.function.Predicate;
 
 /**
- * @author Adam Retter <adam@existsolutions.com>
+ * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public interface BinaryValueManager {
 

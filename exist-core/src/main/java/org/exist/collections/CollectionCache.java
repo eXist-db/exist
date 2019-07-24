@@ -46,7 +46,7 @@ import javax.annotation.Nullable;
  * on the actual collections when manipulating the
  * CollectionCache
  *
- * @author Adam Retter <adam@evolvedbinary.com>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @ThreadSafe
 public class CollectionCache implements BrokerPoolService {
@@ -139,7 +139,7 @@ public class CollectionCache implements BrokerPoolService {
      * If an existing Collection object for the same URI exists
      * in the Cache it will be overwritten
      *
-     * @param collection
+     * @param collection to put into the cache
      */
     public void put(final Collection collection) {
         //NOTE: We must not store LockedCollections in the CollectionCache! So we call LockedCollection#unwrapLocked

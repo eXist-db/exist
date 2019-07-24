@@ -45,7 +45,6 @@ public class TriggerStatePerThread {
 	    }
 	};
 
-	/** */
 	public static boolean verifyUniqueTriggerPerThreadBeforePrepare(
 			DocumentTrigger trigger, XmldbURI modifiedDocument) {
 		if (getTriggerRunningState() == NO_TRIGGER_RUNNING) {
@@ -58,8 +57,9 @@ public class TriggerStatePerThread {
 	}
 	
 	/**
-	 * @param modifiedDocument
-	 *            the document whose modification triggered the trigger
+	 * @param trigger the trigger that got modified
+	 * @param modifiedDocument the document whose modification triggered the trigger
+	 * @return true if successfully validated otherwise false
 	 */
 	public static boolean verifyUniqueTriggerPerThreadBeforeFinish(
 			DocumentTrigger trigger, XmldbURI modifiedDocument) {

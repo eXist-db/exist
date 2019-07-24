@@ -60,6 +60,8 @@ public class XSuite extends ParentRunner<Runner> {
 
     /**
      * Returns an empty suite.
+     *
+     * @return a runner for an empty suite.
      */
     public static Runner emptySuite() {
         try {
@@ -116,6 +118,8 @@ public class XSuite extends ParentRunner<Runner> {
      *
      * @param klass the root class
      * @param builder builds runners for classes in the suite
+     *
+     * @throws InitializationError if the XSuite cannot be constructed
      */
     public XSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
         this(builder, klass, getAnnotatedDirectories(klass));
@@ -127,6 +131,8 @@ public class XSuite extends ParentRunner<Runner> {
      *
      * @param builder builds runners for classes in the suite
      * @param suites the directories/files in the suite
+     *
+     * @throws InitializationError if the XSuite cannot be constructed
      */
     public XSuite(final RunnerBuilder builder, final String[] suites) throws InitializationError {
         this(builder, null, suites);
@@ -137,27 +143,33 @@ public class XSuite extends ParentRunner<Runner> {
      *
      * @param klass the root of the suite
      * @param suites the directories/files in the suite
+     *
+     * @throws InitializationError if the XSuite cannot be constructed
      */
     protected XSuite(final Class<?> klass, final String[] suites) throws InitializationError {
         this(null, klass, suites);
     }
 
     /**
-     * Called by this class and subclasses once the classes making up the suite have been determined
+     * Called by this class and subclasses once the classes making up the suite have been determined.
      *
      * @param builder builds runners for classes in the suite
      * @param klass the root of the suite
      * @param suites the directories/files in the suite
+     *
+     * @throws InitializationError if the XSuite cannot be constructed
      */
     protected XSuite(final RunnerBuilder builder, final Class<?> klass, final String[] suites) throws InitializationError {
         this(klass, getRunners(suites, hasParallelAnnotation(klass)));
     }
 
     /**
-     * Called by this class and subclasses once the runners making up the suite have been determined
+     * Called by this class and subclasses once the runners making up the suite have been determined.
      *
      * @param klass root of the suite
      * @param runners for each class in the suite, a {@link Runner}
+     *
+     * @throws InitializationError if the XSuite cannot be constructed
      */
     protected XSuite(final Class<?> klass, final List<Runner> runners) throws InitializationError {
         super(klass);
@@ -169,6 +181,8 @@ public class XSuite extends ParentRunner<Runner> {
      *
      * @param suites/files the directories in the suite
      * @param parallel should a runner execute tests in parallel
+     *
+     * @throws InitializationError if the runners cannot be retrieved
      */
     private static List<Runner> getRunners(final String[] suites, final boolean parallel) throws InitializationError {
         if(suites == null) {

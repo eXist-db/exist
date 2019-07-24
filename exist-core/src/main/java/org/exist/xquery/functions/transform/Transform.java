@@ -56,7 +56,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 /**
- * @author Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class Transform extends BasicFunction {
 
@@ -140,10 +140,6 @@ public class Transform extends BasicFunction {
     private boolean stopOnError = true;
     private boolean stopOnWarn = false;
 
-    /**
-     * @param context
-     * @param signature
-     */
     public Transform(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
@@ -202,60 +198,48 @@ public class Transform extends BasicFunction {
         if (isCalledAs("transform")) {
             //transform:transform()
 
-            final Transformer transformer = handler.getTransformer();
-            if ("org.exist.xslt.TransformerImpl".equals(transformer.getClass().getName())) {
-                context.pushDocumentContext();
+            final ValueSequence seq = new ValueSequence();
+            context.pushDocumentContext();
 
-                final Sequence seq = ((org.exist.xslt.Transformer) transformer).transform(args[0]);
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            final DocumentBuilderReceiver builderReceiver = new DocumentBuilderReceiver(builder, true);
+            final SAXResult result = new SAXResult(builderReceiver);
+            result.setLexicalHandler(builderReceiver);        //preserve comments etc... from xslt output
+            handler.setResult(result);
+            final Receiver receiver = new ReceiverToSAX(handler);
+            final Serializer serializer = context.getBroker().getSerializer();
+            serializer.reset();
 
-                context.popDocumentContext();
-                return seq;
-
-            } else {
-
-                final ValueSequence seq = new ValueSequence();
-                context.pushDocumentContext();
-
-                final MemTreeBuilder builder = context.getDocumentBuilder();
-                final DocumentBuilderReceiver builderReceiver = new DocumentBuilderReceiver(builder, true);
-                final SAXResult result = new SAXResult(builderReceiver);
-                result.setLexicalHandler(builderReceiver);        //preserve comments etc... from xslt output
-                handler.setResult(result);
-                final Receiver receiver = new ReceiverToSAX(handler);
-                final Serializer serializer = context.getBroker().getSerializer();
-                serializer.reset();
-
-                try {
-                    serializer.setProperties(serializationProps);
-                    serializer.setReceiver(receiver, true);
-                    if (expandXIncludes) {
-                        String xiPath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
-                        if(xiPath != null && !xiPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
-                            final Path f = Paths.get(xiPath).normalize();
-                            if (!f.isAbsolute()) {
-                                xiPath = Paths.get(context.getModuleLoadPath(), xiPath).normalize().toAbsolutePath().toString();
-                            }
-                        } else {
-                            xiPath = context.getModuleLoadPath();
+            try {
+                serializer.setProperties(serializationProps);
+                serializer.setReceiver(receiver, true);
+                if (expandXIncludes) {
+                    String xiPath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
+                    if(xiPath != null && !xiPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+                        final Path f = Paths.get(xiPath).normalize();
+                        if (!f.isAbsolute()) {
+                            xiPath = Paths.get(context.getModuleLoadPath(), xiPath).normalize().toAbsolutePath().toString();
                         }
-                        serializer.getXIncludeFilter().setModuleLoadPath(xiPath);
+                    } else {
+                        xiPath = context.getModuleLoadPath();
                     }
-                    serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false, 0, 0);
-
-                } catch (final Exception e) {
-                    throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
+                    serializer.getXIncludeFilter().setModuleLoadPath(xiPath);
                 }
+                serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false, 0, 0);
 
-                errorListener.checkForErrors();
-                Node next = builder.getDocument().getFirstChild();
-                while (next != null) {
-                    seq.add((NodeValue) next);
-                    next = next.getNextSibling();
-                }
-
-                context.popDocumentContext();
-                return seq;
+            } catch (final Exception e) {
+                throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
             }
+
+            errorListener.checkForErrors();
+            Node next = builder.getDocument().getFirstChild();
+            while (next != null) {
+                seq.add((NodeValue) next);
+                next = next.getNextSibling();
+            }
+
+            context.popDocumentContext();
+            return seq;
 
         } else {
             //transform:stream-transform()

@@ -73,10 +73,7 @@ public class TwoParamFunctions extends BasicFunction {
         },
         new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the result")
     );
-    
-    /**
-     * @param context
-     */
+
     public TwoParamFunctions(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }

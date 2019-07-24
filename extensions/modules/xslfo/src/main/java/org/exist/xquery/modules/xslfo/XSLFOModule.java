@@ -29,8 +29,8 @@ import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
 /**
- * @author Craig Goodyer <craiggoodyer@gmail.com>
- * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author <a href="mailto:craiggoodyer@gmail.com">Craig Goodyer</a>
+ * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  * @author ljo
  */
 public class XSLFOModule extends AbstractInternalModule {

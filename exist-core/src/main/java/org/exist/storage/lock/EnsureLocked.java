@@ -43,14 +43,12 @@ import org.exist.storage.lock.Lock.LockType;
  * For example we may indicate that Collection parameters to methods
  * must already be locked appropriately before the method is called:
  * <pre>
- * {@code
  * public Result copyCollection(
- *         @EnsureLocked(mode=LockMode.READ_LOCK) final Collection srcCollection,
- *         @EnsureLocked(mode=LockMode.WRITE_LOCK) final Collection destCollection) {
+ *          {@code @EnsureLocked(mode=LockMode.READ_LOCK)} final Collection srcCollection,
+ *          {@code @EnsureLocked(mode=LockMode.WRITE_LOCK)} final Collection destCollection) {
  *
  *    ...
  *
- * }
  * }
  * </pre>
  *
@@ -58,16 +56,14 @@ import org.exist.storage.lock.Lock.LockType;
  * lock for the calling thread:
  *
  * <pre>
- * {@code
- * public @EnsureLocked(mode=LockMode.READ_LOCK) Collection openCollection(final XmldbURI uri, final LockMode lockMode) {
+ * public {@code @EnsureLocked(mode=LockMode.READ_LOCK)} Collection openCollection(final XmldbURI uri, final LockMode lockMode) {
  *
  *    ...
  *
  * }
- * }
- * </pre>
+ * }</pre>
  *
- * @author <a href="mailto:adam@evolvedbinary.com>Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = {ElementType.METHOD, ElementType.PARAMETER})
@@ -83,6 +79,8 @@ public @interface EnsureLocked {
      * single {@link Lock.LockMode} type parameter that can be used
      * then an IllegalArgumentException will be generated if {@link EnsureLockingAspect}
      * detects this situation.
+     *
+     * @return the lock mode
      */
     Lock.LockMode mode() default LockMode.NO_LOCK;
 
@@ -92,6 +90,8 @@ public @interface EnsureLocked {
      *
      * The value of this attribute is the (zero-based) index
      * of the parameter within the method signature.
+     *
+     * @return the mode
      */
     short modeParam() default NO_MODE_PARAM;
 
@@ -103,6 +103,8 @@ public @interface EnsureLocked {
      * Only needed if the annotation is not placed on a
      * {@link org.exist.collections.Collection} or {@link org.exist.dom.persistent.DocumentImpl}
      * parameter or return type.
+     *
+     * @return the lock type
      */
     Lock.LockType type() default LockType.UNKNOWN;
 }
