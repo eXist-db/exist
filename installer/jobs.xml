@@ -5,7 +5,7 @@
         <os family="windows"/>
         <executefile name="java">
             <arg>-cp</arg>
-            <arg>$INSTALL_PATH\lib\endorsed\Saxon-HE-Saxon-HE-9.6.0-7.jar</arg>
+            <arg>$INSTALL_PATH\lib\endorsed\Saxon-HE-9.6.0-7.jar</arg>
             <arg>net.sf.saxon.Transform</arg>
             <arg>-s:$INSTALL_PATH\conf.xml</arg>
             <arg>-xsl:$INSTALL_PATH\bin\conf.xslt</arg>
