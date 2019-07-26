@@ -30,6 +30,7 @@ import org.exist.util.FastStringBuffer;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Stanislav Jordanov <stenlee@gmail.com>
@@ -77,7 +78,7 @@ public class NodePathPattern {
         @Override
         public boolean evaluate(NodePath2 nodePath, int elementIdx) {
             String val = nodePath.attribs(elementIdx).get(attrName);
-            return val != null ? val.equals(attrVal) : attrVal == null;
+            return Objects.equals(val, attrVal);
         }
     }
 
