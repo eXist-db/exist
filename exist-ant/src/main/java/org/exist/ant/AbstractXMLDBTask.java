@@ -86,7 +86,7 @@ public abstract class AbstractXMLDBTask extends Task
     /**
      * Set the user.
      *
-     * @param user
+     * @param user the user.
      */
     public void setUser( String user )
     {
