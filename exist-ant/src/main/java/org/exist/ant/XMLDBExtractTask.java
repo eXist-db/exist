@@ -329,7 +329,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
     /**
      * Set the type.
      *
-     * @param the type
+     * @param type the type
      *
      * @deprecated Not used anymore
      */
