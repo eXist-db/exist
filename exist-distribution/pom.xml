@@ -936,18 +936,19 @@
                             <goal>upload</goal>
                         </goals>
                         <configuration>
-                            <!-- Bintray oranization name. -->
+                            <restApiUrl>https://api.bintray.com</restApiUrl>
                             <subject>existdb</subject>
                             <repository>releases</repository>
                             <bintrayPackage>exist</bintrayPackage>
+                            <targetFolder>/</targetFolder>
 
                             <packageLicenses>GNU Lesser General Public License, version 2.1</packageLicenses>
 
-                            <!-- Bintray credentials must be in ~/.m2/settings.xml for server id -->
+                            <!-- Bintray API credentials must be in ~/.m2/settings.xml for server id -->
                             <serverId>exist-bintray</serverId>
 
                             <sourceFolder>${project.build.directory}</sourceFolder>
-                            <uploadRegex>${project.artifactId}-${project.version}\.(dmg)|(-unix\.tar\.bz2)|(-win\.zip)</uploadRegex>
+                            <uploadRegex>.+/${project.artifactId}-${project.version}((\.dmg)|(-unix\.tar\.bz2)|(-win\.zip))$</uploadRegex>
                         </configuration>
                     </execution>
                 </executions>
