@@ -32,8 +32,10 @@ import java.util.List;
 public abstract class Suggester {
 
     private final String field;
+    private final String id;
 
     public Suggester(String id, String field, Element config, Path indexDir, Analyzer analyzer) throws DatabaseConfigurationException {
+        this.id = id;
         this.field = field;
     }
 
@@ -46,4 +48,6 @@ public abstract class Suggester {
     abstract void build(Dictionary dictionary) throws IOException;
 
     abstract void close() throws IOException;
+
+    abstract void remove() throws IOException;
 }

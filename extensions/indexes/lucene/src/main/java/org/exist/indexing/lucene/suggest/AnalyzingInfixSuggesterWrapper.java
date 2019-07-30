@@ -26,7 +26,9 @@ import org.apache.lucene.search.suggest.analyzing.AnalyzingInfixSuggester;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.exist.indexing.lucene.LuceneIndex;
+import org.exist.indexing.lucene.analyzers.MetaAnalyzer;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FileUtils;
 import org.w3c.dom.Element;
 
 import java.io.IOException;
@@ -37,22 +39,23 @@ import java.util.List;
 public class AnalyzingInfixSuggesterWrapper extends Suggester {
 
     private AnalyzingInfixSuggester suggester;
+    private Path dataDir;
 
     public AnalyzingInfixSuggesterWrapper(String id, String field, Element config, Path indexDir, Analyzer analyzer) throws DatabaseConfigurationException {
         super(id, field, config, indexDir, analyzer);
 
-        final Path dir = indexDir.resolve("suggest_" + id);
+        dataDir = indexDir.resolve("suggest_" + id);
         try {
-            if (Files.exists(dir)) {
-                if (!Files.isDirectory(dir)) {
+            if (Files.exists(dataDir)) {
+                if (!Files.isDirectory(dataDir)) {
                     throw new DatabaseConfigurationException("Lucene suggestions location is not a directory: " +
-                            dir.toAbsolutePath().toString());
+                            dataDir.toAbsolutePath().toString());
                 }
             } else {
-                Files.createDirectories(dir);
+                Files.createDirectories(dataDir);
             }
-            final Directory directory = FSDirectory.open(dir.toFile());
-            suggester = new AnalyzingInfixSuggester(LuceneIndex.LUCENE_VERSION_IN_USE, directory, analyzer, analyzer, 4);
+            final Directory directory = FSDirectory.open(dataDir.toFile());
+            suggester = new AnalyzingInfixSuggester(LuceneIndex.LUCENE_VERSION_IN_USE, directory, analyzer);
         } catch(IOException e) {
             throw new DatabaseConfigurationException("Error initializing lucene suggestions with id " + id + ": " + e.getMessage(), e);
         }
@@ -60,7 +63,7 @@ public class AnalyzingInfixSuggesterWrapper extends Suggester {
 
     @Override
     List<Lookup.LookupResult> lookup(CharSequence key, boolean onlyMorePopular, int num) throws IOException {
-        return suggester.lookup(key, onlyMorePopular, num);
+        return suggester.lookup(key, num, false, false);
     }
 
     @Override
@@ -71,5 +74,11 @@ public class AnalyzingInfixSuggesterWrapper extends Suggester {
     @Override
     public void close() throws IOException {
         suggester.close();
+    }
+
+    @Override
+    void remove() throws IOException {
+        suggester.close();
+        FileUtils.delete(dataDir);
     }
 }

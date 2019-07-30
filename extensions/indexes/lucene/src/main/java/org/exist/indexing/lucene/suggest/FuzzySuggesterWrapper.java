@@ -71,4 +71,9 @@ public class FuzzySuggesterWrapper extends Suggester {
     @Override
     void close() {
     }
+
+    @Override
+    void remove() throws IOException {
+        Files.deleteIfExists(storage);
+    }
 }

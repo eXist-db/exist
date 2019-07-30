@@ -71,4 +71,9 @@ public class FreetextSuggesterWrapper extends Suggester {
     @Override
     void close() {
     }
+
+    @Override
+    void remove() throws IOException {
+        Files.deleteIfExists(storage);
+    }
 }

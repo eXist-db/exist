@@ -22,8 +22,10 @@ package org.exist.indexing.lucene.suggest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.spell.LuceneDictionary;
+import org.apache.lucene.search.suggest.DocumentDictionary;
 import org.apache.lucene.search.suggest.Lookup;
 import org.exist.indexing.lucene.LuceneIndex;
+import org.exist.indexing.lucene.analyzers.MetaAnalyzer;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 
@@ -34,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+// TODO: make configurable when rebuild is triggered
+// TODO: phrases?
 public class LuceneSuggest {
 
     public final static String ELEMENT_SUGGEST = "suggest";
@@ -69,8 +73,13 @@ public class LuceneSuggest {
             throw new DatabaseConfigurationException("Child element <suggest> lacks required id attribute");
         }
 
-        if (suggesters.containsKey(id)) {
-            return;
+        final Suggester oldSuggester = suggesters.get(id);
+        if (oldSuggester != null) {
+            try {
+                oldSuggester.remove();
+            } catch (IOException e) {
+                throw new DatabaseConfigurationException("Failed to stop and delete existing suggester: " + e.getMessage(), e);
+            }
         }
 
         Suggesters type = Suggesters.ANALYZING;
@@ -83,16 +92,20 @@ public class LuceneSuggest {
             }
         }
 
+        Analyzer suggestAnalyzer = analyzer == null ? parent.getDefaultAnalyzer() : analyzer;
+        if (suggestAnalyzer instanceof MetaAnalyzer) {
+            suggestAnalyzer = ((MetaAnalyzer)suggestAnalyzer).getWrappedAnalyzer(field);
+        }
         Suggester suggester;
         switch (type) {
             case FUZZY:
-                suggester = new FuzzySuggesterWrapper(id, field, child, indexDir, analyzer == null ? parent.getDefaultAnalyzer() : analyzer);
+                suggester = new FuzzySuggesterWrapper(id, field, child, indexDir, suggestAnalyzer);
                 break;
             case FREETEXT:
-                suggester = new FreetextSuggesterWrapper(id, field, child, indexDir, analyzer == null ? parent.getDefaultAnalyzer() : analyzer);
+                suggester = new FreetextSuggesterWrapper(id, field, child, indexDir, suggestAnalyzer);
                 break;
             default:
-                suggester = new AnalyzingInfixSuggesterWrapper(id, field, child, indexDir, analyzer == null ? parent.getDefaultAnalyzer() : analyzer);
+                suggester = new AnalyzingInfixSuggesterWrapper(id, field, child, indexDir, suggestAnalyzer);
                 break;
         }
         suggesters.put(id, suggester);
@@ -101,6 +114,7 @@ public class LuceneSuggest {
     public void rebuild() throws IOException {
         for (Suggester entry : suggesters.values()) {
             parent.withReader((reader) -> {
+                // final DocumentDictionary dictionary = new DocumentDictionary(reader, entry.getField(), null);
                 final LuceneDictionary dictionary = new LuceneDictionary(reader, entry.getField());
                 entry.build(dictionary);
                 return null;
