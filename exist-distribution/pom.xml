@@ -28,7 +28,7 @@
         <expath.pkg.dir>${project.build.directory}/expath-pkgs</expath.pkg.dir>
         <mac.bundle.dir>${project.build.directory}/${project.artifactId}-${project.version}.app</mac.bundle.dir>
         <mac.bundle.resources.dir>${mac.bundle.dir}/Contents/Resources</mac.bundle.resources.dir>
-        <mac.dmg>${project.build.directory}/${project.artifactId}-${project.version}.dmg</mac.dmg>
+        <mac.dmg>${project.build.directory}/eXist-db-${project.version}.dmg</mac.dmg>
         <mac.codesign.identity>Developer ID Application: Evolved Binary Ltd</mac.codesign.identity>
     </properties>
 
@@ -948,7 +948,7 @@
                             <serverId>exist-bintray</serverId>
 
                             <sourceFolder>${project.build.directory}</sourceFolder>
-                            <uploadRegex>.+/${project.artifactId}-${project.version}((\.dmg)|(-unix\.tar\.bz2)|(-win\.zip))$</uploadRegex>
+                            <uploadRegex>.+/((${project.artifactId})|(eXist-db))-${project.version}((\.dmg)|(-unix\.tar\.bz2)|(-win\.zip))$</uploadRegex>
                         </configuration>
                     </execution>
                 </executions>
