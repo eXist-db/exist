@@ -136,7 +136,8 @@ public class LuceneConfig {
         return analyzers.getDefaultAnalyzer();
     }
 
-    public Analyzer getAnalyzer(NodePath nodePath) {
+    // Notice: this method is never used!
+    public Analyzer __getAnalyzer(NodePath nodePath) {
         if (nodePath.length() == 0)
             throw new RuntimeException();
         LuceneIndexConfig idxConf = paths.get(nodePath.getLastComponent());
@@ -161,12 +162,24 @@ public class LuceneConfig {
 
     public Analyzer getAnalyzer(String field) {
         LuceneIndexConfig config = namedIndexes.get(field);
-        if (config != null) {
-            String id = config.getAnalyzerId();
-            if (id != null)
-                return analyzers.getAnalyzerById(config.getAnalyzerId());
+        if (config == null)
+            return analyzers.getDefaultAnalyzer();
+
+        String id = config.getAnalyzerId();
+        if (id == null)
+            return analyzers.getDefaultAnalyzer();
+
+        final String indexSuffix = ":index";
+        if (id.endsWith(indexSuffix)) {
+            // Substitute <analyzer-id>:index with <analyzer-id>:query
+            String qid = id.substring(0, id.length() - indexSuffix.length()) + ":query";
+            Analyzer queryAnalyzer = analyzers.getAnalyzerById(qid);
+            if (queryAnalyzer != null)
+                return queryAnalyzer;
+
+            LOG.warn(String.format("Failed to substitute %s with %s analyzer", id, qid));
         }
-        return analyzers.getDefaultAnalyzer();
+        return analyzers.getAnalyzerById(config.getAnalyzerId());
     }
 
     public Analyzer getAnalyzerById(String id) {
