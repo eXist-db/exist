@@ -250,6 +250,8 @@ Central (staging), Docker images to Docker Hub, and eXist-db distributions and i
 
 6.  Login to the blog at [http://exist-db.org/exist/apps/wiki/blogs/eXist/](http://exist-db.org/exist/apps/wiki/blogs/eXist/) and add a new news item which announces the release and holds the release notes. It should be named like [http://exist-db.org/exist/apps/wiki/blogs/eXist/eXistdb500](http://exist-db.org/exist/apps/wiki/blogs/eXist/eXistdb500)
 
+    6.1. Warning: there is a know issue in Atomic-Wiki where your release notes might suddenly disappear. In case this happens your data is not lost but stored in  /db/apps/wiki/data/blogs/eXist/.md. You can rename it or move the content to a eXistdb<VERSION>.md file and create an according eXistdb<VERSION>.atom for it. Once these two files are available the blog entry will become visible on the eXist-db homepage and it will be visible in the eXist-db blog. 
+
 7.  Visit the GitHub releases page [https://github.com/eXist-db/exist/releases](https://github.com/eXist-db/exist/releases) and create a new release, enter the tag you previously created and link the release notes from the blog and the binaries from BinTray.
 
 8.  Send an email to the `exist-open` mailing list announcing the release with a title similar to `[ANN] Release of eXist 5.0.0`, copy and paste the release notes from the blog into the email and reformat appropriately (see past emails).
