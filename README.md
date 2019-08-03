@@ -12,7 +12,8 @@
 [![Java 8](https://img.shields.io/badge/java-8-blue.svg)](http://java.oracle.com)
 [![License](https://img.shields.io/badge/license-LGPL%202.1-blue.svg)](https://www.gnu.org/licenses/lgpl-2.1.html)
 [![Download](https://api.bintray.com/packages/existdb/releases/exist/images/download.svg)](https://bintray.com/existdb/releases/exist/_latestVersion)
-[![Slack](https://img.shields.io/badge/exist--db-slack-3e103f.svg)](https://exist-db.slack.com)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.exist-db/exist/badge.svg)](https://search.maven.org/search?q=g:org.exist-db)
+[!Slack](https://img.shields.io/badge/exist--db-slack-3e103f.svg)](https://exist-db.slack.com)
 
 [![Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-contributor%20covenant-%235e0d73.svg)](http://contributor-covenant.org/version/1/4/)
 
