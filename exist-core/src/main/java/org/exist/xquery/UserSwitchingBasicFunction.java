@@ -33,10 +33,10 @@ import org.exist.security.Subject;
 public abstract class UserSwitchingBasicFunction extends BasicFunction {
 
     /**
-     * Flag which indicates that we have pushed a subject and so we must later
-     * pop the subject when the expression is reset, see {@link UserSwitchingBasicFunction#resetState(boolean)}
+     * Flag which indicates how many subjects we have pushed, and so we must later
+     * pop the same number of subjects when the expression is reset, see {@link UserSwitchingBasicFunction#resetState(boolean)}
      */
-    private boolean pushedSubject = false;
+    private int pushedSubjects = 0;
 
     public UserSwitchingBasicFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
@@ -48,7 +48,7 @@ public abstract class UserSwitchingBasicFunction extends BasicFunction {
      */
     protected void switchUser(final Subject user) {
         context.getBroker().pushSubject(user);
-        pushedSubject = true;
+        pushedSubjects++;
     }
 
     /**
@@ -58,12 +58,9 @@ public abstract class UserSwitchingBasicFunction extends BasicFunction {
     @Override
     public void resetState(final boolean postOptimization) {
         //if we pushed a subject, we must pop it
-        if(this.pushedSubject) {
-            try {
-                context.getBroker().popSubject();
-            } finally {
-                this.pushedSubject = false;
-            }
+        while (pushedSubjects > 0) {
+            context.getBroker().popSubject();
+            pushedSubjects--;
         }
 
         super.resetState(postOptimization);
