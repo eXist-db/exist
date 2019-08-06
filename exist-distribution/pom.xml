@@ -846,6 +846,104 @@
                         </configuration>
 
                     </execution>
+
+                    <execution>
+                        <id>appassembler-booter-for-mac</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>generate-daemons</goal>
+                        </goals>
+                        <configuration>
+                            <repositoryName>../Java</repositoryName>
+                            <generateRepository>false</generateRepository>
+                            <target>${mac.bundle.resources.dir}</target>
+                            <separateTargetPlatforms>false</separateTargetPlatforms>
+                            <daemons>
+                                <daemon>
+                                    <id>client</id>
+                                    <mainClass>org.exist.start.Main</mainClass>
+                                    <commandLineArguments>
+                                        <commandLineArgument>client</commandLineArgument>
+                                    </commandLineArguments>
+                                    <platforms>
+                                        <platform>booter-unix</platform>
+                                    </platforms>
+                                </daemon>
+                                <daemon>
+                                    <id>startup</id>
+                                    <mainClass>org.exist.start.Main</mainClass>
+                                    <commandLineArguments>
+                                        <commandLineArgument>jetty</commandLineArgument>
+                                        <commandLineArgument>@BASEDIR@/etc/conf.xml</commandLineArgument>
+                                    </commandLineArguments>
+                                    <platforms>
+                                        <platform>booter-unix</platform>
+                                    </platforms>
+                                </daemon>
+                                <daemon>
+                                    <id>shutdown</id>
+                                    <mainClass>org.exist.start.Main</mainClass>
+                                    <commandLineArguments>
+                                        <commandLineArgument>shutdown</commandLineArgument>
+                                    </commandLineArguments>
+                                    <platforms>
+                                        <platform>booter-unix</platform>
+                                    </platforms>
+                                </daemon>
+                                <daemon>
+                                    <id>launcher</id>
+                                    <mainClass>org.exist.start.Main</mainClass>
+                                    <!-- No arguments needed! Default is to start the launcher -->
+                                    <platforms>
+                                        <platform>booter-unix</platform>
+                                    </platforms>
+                                </daemon>
+                                <daemon>
+                                    <id>backup</id>
+                                    <mainClass>org.exist.start.Main</mainClass>
+                                    <commandLineArguments>
+                                        <commandLineArgument>backup</commandLineArgument>
+                                    </commandLineArguments>
+                                    <platforms>
+                                        <platform>booter-unix</platform>
+                                    </platforms>
+                                </daemon>
+                                <daemon>
+                                    <id>export</id>
+                                    <mainClass>org.exist.start.Main</mainClass>
+                                    <commandLineArguments>
+                                        <commandLineArgument>org.exist.backup.ExportMain</commandLineArgument>
+                                        <commandLineArgument>-x</commandLineArgument>
+                                        <commandLineArgument>-z</commandLineArgument>
+                                    </commandLineArguments>
+                                    <platforms>
+                                        <platform>booter-unix</platform>
+                                    </platforms>
+                                </daemon>
+                                <daemon>
+                                    <id>export-gui</id>
+                                    <mainClass>org.exist.start.Main</mainClass>
+                                    <commandLineArguments>
+                                        <commandLineArgument>org.exist.backup.ExportGUI</commandLineArgument>
+                                    </commandLineArguments>
+                                    <platforms>
+                                        <platform>booter-unix</platform>
+                                    </platforms>
+                                </daemon>
+                                <daemon>
+                                    <id>jmxclient</id>
+                                    <mainClass>org.exist.start.Main</mainClass>
+                                    <commandLineArguments>
+                                        <commandLineArgument>org.exist.management.client.JMXClient</commandLineArgument>
+                                    </commandLineArguments>
+                                    <platforms>
+                                        <platform>booter-unix</platform>
+                                    </platforms>
+                                </daemon>
+                            </daemons>
+                        </configuration>
+
+                    </execution>
                 </executions>
             </plugin>
 
@@ -874,7 +972,7 @@
             <plugin>
                 <groupId>com.evolvedbinary.appbundler</groupId>
                 <artifactId>appbundler-maven-plugin</artifactId>
-                <version>1.0.5</version>
+                <version>1.0.6</version>
                 <executions>
                     <execution>
                         <id>exist-db-mac-app</id>
