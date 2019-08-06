@@ -500,7 +500,11 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             return;
         }
 
-        final Properties oldProps = properties;
+        // make a backup of the current properties
+        final Properties oldProps = new Properties();
+        oldProps.putAll(properties);
+
+        // update the properties with the new login data
         properties.putAll(loginData);
         statusbar.setText(Messages.getString("ClientFrame.71") + properties.getProperty(InteractiveClient.USER) + "@" + properties.getProperty(InteractiveClient.URI)); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 
@@ -510,8 +514,11 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             client.reloadCollection();
         } catch (final Exception u) {
             showErrorMessage(Messages.getString("ClientFrame.75") + properties.getProperty(InteractiveClient.URI) + Messages.getString("ClientFrame.77"), u); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+
+            // restore the previous properties
             properties = oldProps;
             try {
+                // attempt to re-connect with previous login data
                 client.connect();
             } catch (final Exception uu) {
                 showErrorMessage(Messages.getString("ClientFrame.78") + properties.getProperty(InteractiveClient.URI), uu); //$NON-NLS-1$ //$NON-NLS-2$
