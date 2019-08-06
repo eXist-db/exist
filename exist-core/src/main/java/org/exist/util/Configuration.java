@@ -175,13 +175,13 @@ public class Configuration implements ErrorHandler
                 
                 configFilePath = Optional.of(configFile.toAbsolutePath());
                 is = Files.newInputStream(configFile);
-
-                // set dbHome to parent of the conf file found, to resolve relative
-                // path from conf file
-                existHomeDirname = Optional.of(configFile.getParent());
-                LOG.info("Reading configuration from file " + configFile);
             }
 
+            LOG.info("Reading configuration from file " + configFilePath.map(Path::toString).orElse("Unknown"));
+
+            // set dbHome to parent of the conf file found, to resolve relative
+            // path from conf file
+            existHomeDirname = configFilePath.map(Path::getParent);
 
             // initialize xml parser
             // we use eXist's in-memory DOM implementation to work
