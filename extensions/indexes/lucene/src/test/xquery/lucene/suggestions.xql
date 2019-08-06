@@ -40,9 +40,6 @@ declare variable $suggest:XCONF1 :=
                 <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer" id="standard"/>
                 <text qname="document">
                     <suggest id="document-content"/>
-                    <field name="content">
-                        <suggest id="document-text" type="freetext"/>
-                    </field>
                     <field name="title" expression="title">
                         <suggest id="document-title" type="fuzzy"/>
                     </field>

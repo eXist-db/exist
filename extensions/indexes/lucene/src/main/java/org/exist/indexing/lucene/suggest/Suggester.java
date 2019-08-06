@@ -42,7 +42,7 @@ public abstract class Suggester {
     private final String id;
     private boolean entireContent = false;
 
-    public Suggester(String id, String field, Element config, Path indexDir, Analyzer analyzer) throws DatabaseConfigurationException {
+    public Suggester(String id, String field, Element config, Path indexDir, Analyzer analyzer) {
         this.id = id;
         this.field = field;
 
