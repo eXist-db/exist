@@ -20,7 +20,7 @@
 package org.exist.indexing.lucene.suggest;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.search.spell.Dictionary;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.suggest.Lookup;
 import org.apache.lucene.search.suggest.analyzing.FreeTextSuggester;
 import org.exist.util.DatabaseConfigurationException;
@@ -63,8 +63,8 @@ public class FreetextSuggesterWrapper extends Suggester {
     }
 
     @Override
-    void build(Dictionary dictionary) throws IOException {
-        suggester.build(dictionary);
+    void build(IndexReader reader, String field) throws IOException {
+        suggester.build(getDictionary(reader, field));
         suggester.store(Files.newOutputStream(storage, StandardOpenOption.WRITE, StandardOpenOption.CREATE));
     }
 

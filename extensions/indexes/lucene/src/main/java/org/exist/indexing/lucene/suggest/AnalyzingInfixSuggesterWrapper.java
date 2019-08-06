@@ -20,13 +20,12 @@
 package org.exist.indexing.lucene.suggest;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.search.spell.Dictionary;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.suggest.Lookup;
 import org.apache.lucene.search.suggest.analyzing.AnalyzingInfixSuggester;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.exist.indexing.lucene.LuceneIndex;
-import org.exist.indexing.lucene.analyzers.MetaAnalyzer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
 import org.w3c.dom.Element;
@@ -63,12 +62,12 @@ public class AnalyzingInfixSuggesterWrapper extends Suggester {
 
     @Override
     List<Lookup.LookupResult> lookup(CharSequence key, boolean onlyMorePopular, int num) throws IOException {
-        return suggester.lookup(key, num, false, false);
+        return suggester.lookup(key, num, true, false);
     }
 
     @Override
-    public void build(Dictionary dictionary) throws IOException {
-        suggester.build(dictionary);
+    public void build(IndexReader reader, String field) throws IOException {
+        suggester.build(getDictionary(reader, field));
     }
 
     @Override

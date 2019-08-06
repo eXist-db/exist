@@ -24,7 +24,6 @@ import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.xquery.*;
-import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
 
 import java.io.IOException;
@@ -43,7 +42,7 @@ public class Suggest extends BasicFunction {
                                     "The string to pass to the suggester")
                     },
                     new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE,
-                            "A map with each suggestion as key and the score as value")
+                            "Sequence of suggestion terms or empty sequence if none")
             )
     };
 

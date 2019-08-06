@@ -21,8 +21,6 @@ package org.exist.indexing.lucene.suggest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.search.spell.LuceneDictionary;
-import org.apache.lucene.search.suggest.DocumentDictionary;
 import org.apache.lucene.search.suggest.Lookup;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.analyzers.MetaAnalyzer;
@@ -114,9 +112,7 @@ public class LuceneSuggest {
     public void rebuild() throws IOException {
         for (Suggester entry : suggesters.values()) {
             parent.withReader((reader) -> {
-                // final DocumentDictionary dictionary = new DocumentDictionary(reader, entry.getField(), null);
-                final LuceneDictionary dictionary = new LuceneDictionary(reader, entry.getField());
-                entry.build(dictionary);
+                entry.build(reader, entry.getField());
                 return null;
             });
         }
