@@ -150,6 +150,7 @@ public class InteractiveClient {
 
     protected LineReader console = null;
 
+    private Database database = null;
     protected Collection current = null;
     protected int nextInSet = 1;
     protected Properties properties;
@@ -281,7 +282,7 @@ public class InteractiveClient {
 
         // Create database
         final Class<?> cl = Class.forName(properties.getProperty(DRIVER));
-        final Database database = (Database) cl.newInstance();
+        database = (Database) cl.newInstance();
 
         // Configure database
         database.setProperty(CREATE_DATABASE, "true");
@@ -564,6 +565,7 @@ public class InteractiveClient {
                         properties.getProperty(USER),
                         properties.getProperty(PASSWORD));
                 if (temp != null) {
+                    current.close();
                     current = temp;
                     newPath = collectionPath.toCollectionPathURI();
                     if (options.startGUI) {
@@ -2454,8 +2456,19 @@ public class InteractiveClient {
                 mgr.shutdown();
             }
         } catch (final XMLDBException e) {
-            System.err.println("database shutdown failed: ");
+            System.err.println("database shutdown failed: " + e.getMessage());
             e.printStackTrace();
+        } finally {
+            try {
+                current.close();
+                current = null;
+
+                DatabaseManager.deregisterDatabase(database);
+                database = null;
+            } catch (final XMLDBException e) {
+                System.err.println("unable to close collection: " + e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 
