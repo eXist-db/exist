@@ -533,8 +533,8 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         }
         
         final AbstractRealm registeredRealm = (AbstractRealm)findRealmForRealmId(group.getRealmId());
-        if (registeredRealm.hasGroup(group.getName())) {
-            throw new ConfigurationException("The group '" + group.getName() + "' at realm '" + group.getRealmId() + "' already exist.");
+        if (registeredRealm.hasGroupLocal(group.getName())) {
+            throw new ConfigurationException("The group '" + group.getName() + "' at realm '" + group.getRealmId() + "' already exists.");
         }
         
         final GroupImpl newGroup = new GroupImpl(broker, registeredRealm, id, group.getName(), group.getManagers());
@@ -578,8 +578,11 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         }
 
         final AbstractRealm registeredRealm = (AbstractRealm) findRealmForRealmId(account.getRealmId());
-        final AccountImpl newAccount = new AccountImpl(broker, registeredRealm, id, account);
+        if (registeredRealm.hasAccountLocal(account.getName())) {
+            throw new ConfigurationException("The account '" + account.getName() + "' at realm '" + account.getRealmId() + "' already exists.");
+        }
 
+        final AccountImpl newAccount = new AccountImpl(broker, registeredRealm, id, account);
         try (final ManagedLock<ReadWriteLock> lock = ManagedLock.acquire(accountLocks.getLock(newAccount), LockMode.WRITE_LOCK)) {
             registerAccount(newAccount);
             registeredRealm.registerAccount(newAccount);
