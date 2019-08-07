@@ -273,13 +273,23 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     @Override
-    public final boolean hasAccount(final String accountName) {
-        return usersByName.read(principalDb -> principalDb.containsKey(accountName));
+    public boolean hasAccount(final String accountName) {
+        return hasAccountLocal(accountName);
     }
 
     @Override
-    public final boolean hasAccount(Account account) {
-        return hasAccount(account.getName());
+    public final boolean hasAccount(final Account account) {
+        return hasAccountLocal(account);
+    }
+
+    @Override
+    public boolean hasAccountLocal(final Account account) {
+        return hasAccountLocal(account.getName());
+    }
+
+    @Override
+    public boolean hasAccountLocal(final String accountName) {
+        return usersByName.read(principalDb -> principalDb.containsKey(accountName));
     }
 
     @Override
@@ -288,14 +298,25 @@ public abstract class AbstractRealm implements Realm, Configurable {
     }
 
     //Groups management methods
+
     @Override
-    public final boolean hasGroup(final String groupName) {
+    public boolean hasGroup(final Group group) {
+        return hasGroupLocal(group);
+    }
+
+    @Override
+    public boolean hasGroup(final String name) {
+        return hasGroupLocal(name);
+    }
+
+    @Override
+    public boolean hasGroupLocal(final String groupName) {
         return groupsByName.read(principalDb -> principalDb.containsKey(groupName));
     }
 
     @Override
-    public final boolean hasGroup(Group role) {
-        return hasGroup(role.getName());
+    public final boolean hasGroupLocal(final Group role) {
+        return hasGroupLocal(role.getName());
     }
 
     @Override
