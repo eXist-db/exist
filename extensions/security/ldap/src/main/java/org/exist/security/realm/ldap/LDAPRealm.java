@@ -532,6 +532,11 @@ public class LDAPRealm extends AbstractRealm {
         }
     }
 
+    @Override
+    public boolean hasAccount(final String name) {
+        return getAccount(name) != null;
+    }
+
     /**
      * The binary data is in form:
      * byte[0] - revision level
@@ -653,6 +658,11 @@ public class LDAPRealm extends AbstractRealm {
                 return null;
             }
         }
+    }
+
+    @Override
+    public boolean hasGroup(final String name) {
+        return getGroup((Subject)null, getSecurityManager().getDatabase().getActiveBroker(), name) != null;
     }
 
     private String addDomainPostfix(final String principalName) {
