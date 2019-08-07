@@ -9,6 +9,7 @@ module namespace ct="http://exist-db.org/xquery/test/question-marks-in-contains-
 
 declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace test="http://exist-db.org/xquery/xqsuite";
+declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 declare variable $ct:test :=
     <root>
