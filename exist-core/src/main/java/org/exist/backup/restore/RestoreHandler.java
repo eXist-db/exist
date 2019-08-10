@@ -87,6 +87,7 @@ public class RestoreHandler extends DefaultHandler {
     private boolean deduplicateBlobs = false;
     private XmldbURI currentCollectionUri = null;
     private final Deque<DeferredPermission> deferredPermissions = new ArrayDeque<>();
+    private final Set<String> pathsToIgnore;
 
     /**
      * @param broker the database broker
@@ -97,11 +98,12 @@ public class RestoreHandler extends DefaultHandler {
      * @param listener the listener to report restore events to
      */
     public RestoreHandler(final DBBroker broker, @Nullable final Txn transaction, final BackupDescriptor descriptor,
-            final RestoreListener listener) {
+            final RestoreListener listener, final Set<String> pathsToIgnore) {
         this.broker = broker;
         this.transaction = transaction;
         this.descriptor = descriptor;
         this.listener = listener;
+        this.pathsToIgnore = pathsToIgnore;
     }
 
     /**
@@ -405,7 +407,11 @@ public class RestoreHandler extends DefaultHandler {
         //parse the sub-collection descriptor and restore
         final BackupDescriptor subDescriptor = descriptor.getChildBackupDescriptor(name);
         if(subDescriptor != null) {
-
+            if (pathsToIgnore != null && pathsToIgnore.contains(subDescriptor.getSymbolicPath())) {
+                listener.info("Skipping app path " + subDescriptor.getSymbolicPath() + ". Newer version " +
+                        "is already installed.");
+                return;
+            }
             final XMLReaderPool parserPool = broker.getBrokerPool().getParserPool();
             XMLReader reader = null;
             try {
@@ -414,7 +420,7 @@ public class RestoreHandler extends DefaultHandler {
                 final EXistInputSource is = subDescriptor.getInputSource();
                 is.setEncoding(UTF_8.displayName());
 
-                final RestoreHandler handler = new RestoreHandler(broker, transaction, subDescriptor, listener);
+                final RestoreHandler handler = new RestoreHandler(broker, transaction, subDescriptor, listener, pathsToIgnore);
 
                 reader.setContentHandler(handler);
                 reader.parse(is);

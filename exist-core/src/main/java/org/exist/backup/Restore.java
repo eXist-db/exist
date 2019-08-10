@@ -22,6 +22,7 @@
 package org.exist.backup;
 
 import org.exist.EXistException;
+import org.exist.backup.restore.AppRestoreUtils;
 import org.exist.backup.restore.RestoreHandler;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.security.Account;
@@ -56,7 +57,7 @@ public class Restore {
     private static final byte[] ZIP_FILE_MAGIC_NUMBER = {0x50, 0x4B, 0x03, 0x04};
 
     public void restore(final DBBroker broker, @Nullable final Txn transaction, final String newAdminPass, final Path f,
-                        final RestoreListener listener) throws EXistException, IOException, SAXException, PermissionDeniedException {
+                        final RestoreListener listener, boolean overwriteApps) throws EXistException, IOException, SAXException, PermissionDeniedException {
         
         //set the admin password
         if (newAdminPass != null) {
@@ -65,6 +66,11 @@ public class Restore {
 
         //get the backup descriptors, can be more than one if it was an incremental backup
         final Deque<BackupDescriptor> descriptors = getBackupDescriptors(f);
+
+        Set<String> appsToSkip = null;
+        if (!overwriteApps) {
+            appsToSkip = AppRestoreUtils.checkApps(broker, descriptors);
+        }
 
         // count all files
         long totalNrOfFiles = 0;
@@ -82,13 +88,18 @@ public class Restore {
 
             while(!descriptors.isEmpty()) {
                 final BackupDescriptor descriptor = descriptors.pop();
-                final EXistInputSource is = descriptor.getInputSource();
-                is.setEncoding(UTF_8.displayName());
+                if (appsToSkip != null && appsToSkip.contains(descriptor.getSymbolicPath())) {
+                    listener.info("Skipping app path " + descriptor.getSymbolicPath() + ". Newer version " +
+                            "is already installed.");
+                } else {
+                    final EXistInputSource is = descriptor.getInputSource();
+                    is.setEncoding(UTF_8.displayName());
 
-                final RestoreHandler handler = new RestoreHandler(broker, transaction, descriptor, listener);
-                
-                reader.setContentHandler(handler);
-                reader.parse(is);
+                    final RestoreHandler handler = new RestoreHandler(broker, transaction, descriptor, listener, appsToSkip);
+
+                    reader.setContentHandler(handler);
+                    reader.parse(is);
+                }
             }
 
         } finally {
