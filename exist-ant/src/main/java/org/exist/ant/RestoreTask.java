@@ -46,7 +46,7 @@ public class RestoreTask extends AbstractXMLDBTask
     private Path   dir             = null;
     private DirSet dirSet          = null;
     private String restorePassword = null;
-    private Boolean overwriteApps = null;
+    private boolean overwriteApps = false;
 
     @Override
     public void execute() throws BuildException
