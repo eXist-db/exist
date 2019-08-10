@@ -145,7 +145,7 @@ public class CollectionConfiguration {
                     for (int j = 0; j < triggers.getLength(); j++) {
                         node = triggers.item(j);
                         if (node.getNodeType() == Node.ELEMENT_NODE && node.getLocalName().equals(TRIGGER_ELEMENT)) {
-                            configureTrigger((Element) node, srcCollectionURI, checkOnly);
+                            configureTrigger(broker.getBrokerPool().getClassLoader(), (Element) node, srcCollectionURI, checkOnly);
                         }
                     }
                 } else if (INDEX_ELEMENT.equals(node.getLocalName())) {
@@ -299,14 +299,14 @@ public class CollectionConfiguration {
         return indexSpec;
     }
 
-    private void configureTrigger(final Element triggerElement, final XmldbURI collectionConfigurationURI, final boolean testOnly) throws CollectionConfigurationException {
+    private void configureTrigger(ClassLoader cl, final Element triggerElement, final XmldbURI collectionConfigurationURI, final boolean testOnly) throws CollectionConfigurationException {
 
         //TODO : rely on schema-driven validation -pb
 
         final String classname = triggerElement.getAttributes().getNamedItem(CLASS_ATTRIBUTE).getNodeValue();
 
         try {
-            final Class clazz = Class.forName(classname);
+            final Class clazz = Class.forName(classname, true, cl);
             if (!Trigger.class.isAssignableFrom(clazz)) {
                 throwOrLog("Trigger's class '" + classname + "' is not assignable from '" + Trigger.class + "'", testOnly);
                 return;
