@@ -167,9 +167,9 @@ public class AppRestoreUtils {
     }
 
     final static class AppDetail {
-        final String path;
-        final String name;
-        final Semver version;
+        protected final String path;
+        protected final String name;
+        protected final Semver version;
 
         AppDetail(String path, String name, Semver version) {
             this.path = path;

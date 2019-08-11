@@ -7,7 +7,6 @@ import org.exist.repo.ExistRepository;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.expath.pkg.repo.PackageException;
@@ -20,9 +19,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.xml.sax.SAXException;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -155,7 +152,7 @@ public class RestoreAppsTest {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         Optional<ExistRepository> repo = pool.getExpathRepo();
         if (!repo.isPresent()) {
-            throw new RuntimeException("expath repository not available for test");
+            throw new EXistException("expath repository not available for test");
         }
         XarSource xar = new XarFileSource(xarFile);
         Deployment deployment = new Deployment();
@@ -172,21 +169,22 @@ public class RestoreAppsTest {
 
         @Override
         public void started(long numberOfFiles) {
-
+            // unused
         }
 
         @Override
         public void processingDescriptor(String backupDescriptor) {
-
+            // unused
         }
 
         @Override
         public void createdCollection(String collection) {
-
+            // unused
         }
 
         @Override
         public void restoredResource(String resource) {
+            // unused
         }
 
         @Override
@@ -197,17 +195,17 @@ public class RestoreAppsTest {
 
         @Override
         public void warn(String message) {
-
+            // unused
         }
 
         @Override
         public void error(String message) {
-
+            // unused
         }
 
         @Override
         public void finished() {
-
+            // unused
         }
     }
 }
