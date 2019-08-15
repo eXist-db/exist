@@ -84,7 +84,7 @@
         <icu.version>59.1</icu.version>
         <izpack.version>5.1.3</izpack.version>
         <jaxb.version>2.3.1</jaxb.version>
-        <jetty.version>9.4.19.v20190610</jetty.version>
+        <jetty.version>9.4.20.v20190813</jetty.version>
         <log4j.version>2.12.1</log4j.version>
         <lucene.version>4.10.4</lucene.version>
         <milton.version>1.8.1.3</milton.version>
