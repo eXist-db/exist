@@ -19,6 +19,7 @@
  */
 package org.exist.storage.lock;
 
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -256,7 +257,7 @@ public class LockTable {
         private @Nullable Entry findEntry(final Entry entry) {
             // optimistic read
             long stamp = entriesLock.tryOptimisticRead();
-            for (int i = 0; i < entries.size(); i++) {
+            for (int i = entries.size() - 1; i > -1; i--) {
                 final Entry local = entries.get(i);
                 if (local.equals(entry)) {
                     if (entriesLock.validate(stamp)) {
@@ -268,7 +269,7 @@ public class LockTable {
             // otherwise... pessimistic read
             stamp = entriesLock.readLock();
             try {
-                for (int i = 0; i < entries.size(); i++) {
+                for (int i = entries.size() - 1; i > -1; i--) {
                     final Entry local = entries.get(i);
                     if (local.equals(entry)) {
                         return entry;
@@ -310,7 +311,7 @@ public class LockTable {
         public Entry unmerge(final String id, final LockType lockType, final LockMode lockMode) {
             // optimistic read
             long stamp = entriesLock.tryOptimisticRead();
-            for (int i = 0; i < entries.size(); i++) {
+            for (int i = entries.size() - 1; i > -1; i--) {
                 final Entry local = entries.get(i);
                 if (local.id.equals(id) && local.lockType == lockType && local.lockMode == lockMode) {
 
@@ -349,7 +350,7 @@ public class LockTable {
             int foundIdx = -1;
             stamp = entriesLock.readLock();
             try {
-                for (int i = 0; i < entries.size(); i++) {
+                for (int i = entries.size() - 1; i > -1; i--) {
                     final Entry local = entries.get(i);
                     if (local.id.equals(id) && local.lockType == lockType && local.lockMode == lockMode) {
 
