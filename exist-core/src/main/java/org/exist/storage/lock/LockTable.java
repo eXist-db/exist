@@ -307,7 +307,7 @@ public class LockTable {
             Entry local = entries.get(key);
             // if count is equal to 1 we can just remove from the list rather than decrementing
             if (local.count == 1) {
-                long writeStamp = entriesLock.tryConvertToWriteLock(stamp);
+                final long writeStamp = entriesLock.tryConvertToWriteLock(stamp);
                 if (writeStamp != 0l) {
                     try {
                         //TODO(AR) we need to recycle the entry here!    ... nope do it in the caller!
@@ -343,9 +343,9 @@ public class LockTable {
                 // if count is equal to 1 we can just remove from the list rather than decrementing
                 if (local.count == 1) {
 
-                    long writeStamp = entriesLock.tryConvertToWriteLock(stamp);
+                    final long writeStamp = entriesLock.tryConvertToWriteLock(stamp);
                     if (writeStamp != 0l) {
-                        stamp = writeStamp;
+                        stamp = writeStamp;  // NOTE: this causes the write lock to be released in the finally further down
                         //TODO(AR) we need to recycle the entry here!    ... nope do it in the caller!
                         entries.remove(local);
                         local.count--;
