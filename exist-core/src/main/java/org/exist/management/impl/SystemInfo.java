@@ -39,12 +39,17 @@ public class SystemInfo implements SystemInfoMXBean {
     public static final String OBJECT_NAME = "org.exist.management:type=SystemInfo";
 
     @Override
-    public String getExistVersion() {
+    public String getProductName() {
+        return SystemProperties.getInstance().getSystemProperty("product-name","eXist");
+    }
+
+    @Override
+    public String getProductVersion() {
         return SystemProperties.getInstance().getSystemProperty("product-version","unknown");
     }
 
     @Override
-    public String getExistBuild() {
+    public String getProductBuild() {
         return SystemProperties.getInstance().getSystemProperty("product-build","unknown");
     }
 
