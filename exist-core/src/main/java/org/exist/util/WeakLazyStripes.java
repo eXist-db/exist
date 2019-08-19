@@ -20,15 +20,17 @@
 
 package org.exist.util;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
+import javax.annotation.Nullable;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.StampedLock;
 import java.util.function.Function;
 
 /**
@@ -40,12 +42,12 @@ import java.util.function.Function;
  * will always return the same object (stripe) for the same key.
  *
  * This class basically couples Weak References with a
- * ConcurrentHashMap and manages draining expired Weak
+ * thread safe HashMap and manages draining expired Weak
  * References from the HashMap.
  *
  * Weak References will be cleaned up from the internal map
  * after they have been cleared by the GC. Two cleanup policies
- * are provided: "Batch" and "Amoritize". The policy is chosen
+ * are provided: "Batch" and "Amortize". The policy is chosen
  * by the constructor parameter {@code amortizeCleanup}.
  *
  * Batch Cleanup
@@ -95,7 +97,9 @@ public class WeakLazyStripes<K, S> {
     private static final int DRAIN_MAX = 16;
 
     private final ReferenceQueue<S> referenceQueue;
-    private final ConcurrentMap<K, WeakValueReference<K, S>> stripes;
+
+    private final StampedLock stripesLock = new StampedLock();
+    @GuardedBy("stripesLock") private final Object2ObjectOpenHashMap<K, WeakValueReference<K, S>> stripes;
 
     /**
      * The number of reads on {@link #stripes} which have returned
@@ -152,7 +156,7 @@ public class WeakLazyStripes<K, S> {
      *     and apportioned to a particular caller at a threshold
      */
     public WeakLazyStripes(final int concurrencyLevel, final Function<K, S> creator, final boolean amortizeCleanup) {
-        this.stripes = new ConcurrentHashMap<>(INITIAL_CAPACITY, LOAD_FACTOR, concurrencyLevel);
+        this.stripes = new Object2ObjectOpenHashMap<>(INITIAL_CAPACITY, LOAD_FACTOR);
         this.referenceQueue = new ReferenceQueue<>();
         this.creator = creator;
         this.amortizeCleanup = amortizeCleanup;
@@ -168,24 +172,13 @@ public class WeakLazyStripes<K, S> {
      * @return the stripe
      */
     public S get(final K key) {
+
         final Holder<Boolean> written = new Holder<>(false);
-        final WeakValueReference<K, S> stripeRef = stripes.compute(key, (k, valueRef) -> {
-            if(valueRef == null) {
-                written.value = true;
-                return new WeakValueReference<>(k, creator.apply(k), referenceQueue);
-            } else if(valueRef.get() == null) {
-                written.value = true;
-                if (!amortizeCleanup) {
-                    expiredReferenceReadCount.incrementAndGet();
-                }
-                return new WeakValueReference<>(k, creator.apply(k), referenceQueue);
-            } else {
-                if (amortizeCleanup) {
-                    readCount.incrementAndGet();
-                }
-                return valueRef;
-            }
-        });
+
+        WeakValueReference<K, S> stripeRef = getOptimistic(key, written);
+        if (stripeRef == null) {
+            stripeRef = getPessimistic(key, written);
+        }
 
         if (amortizeCleanup) {
             if (written.value) {
@@ -216,6 +209,79 @@ public class WeakLazyStripes<K, S> {
     }
 
     /**
+     * @return null if we could not perform an optimistic read, or a new object needed to be
+     *     created and we could not take the {@link #stripesLock} write lock immediately.
+     */
+    private @Nullable WeakValueReference<K, S> getOptimistic(final K key, final Holder<Boolean> written) {
+        // optimistic read
+        final long stamp = stripesLock.tryOptimisticRead();
+        WeakValueReference<K, S> stripeRef = stripes.get(key);
+        if (stripeRef == null || stripeRef.get() == null) {
+            final long writeStamp = stripesLock.tryConvertToWriteLock(stamp);
+            if (writeStamp != 0l) {
+                try {
+                    stripeRef = new WeakValueReference<>(key, creator.apply(key), referenceQueue);
+                    stripes.put(key, stripeRef);
+                } finally {
+                    stripesLock.unlockWrite(writeStamp);
+                }
+
+                written.value = true;
+
+                if (stripeRef.get() == null && !amortizeCleanup) {
+                    expiredReferenceReadCount.incrementAndGet();
+                }
+            }
+        } else {
+            if (stripesLock.validate(stamp)) {
+                if (amortizeCleanup) {
+                    readCount.incrementAndGet();
+                }
+            } else {
+                // invalid optimistic read
+                stripeRef = null;
+            }
+        }
+
+        return stripeRef;
+    }
+
+    /**
+     * @return null if a new object needed to be created and we could not take the {@link #stripesLock}
+     *     write lock immediately.
+     */
+    private @Nullable WeakValueReference<K, S> getPessimistic(final K key, final Holder<Boolean> written) {
+        // otherwise... pessimistic read
+        long stamp = stripesLock.readLock();
+        try {
+            WeakValueReference<K, S> stripeRef = stripes.get(key);
+            if (stripeRef == null || stripeRef.get() == null) {
+                final long writeStamp = stripesLock.tryConvertToWriteLock(stamp);
+                if (writeStamp != 0l) {
+                    stamp = writeStamp;  // NOTE: this causes the write lock to be released in the finally further down
+                    stripeRef = new WeakValueReference<>(key, creator.apply(key), referenceQueue);
+                    stripes.put(key, stripeRef);
+
+                    written.value = true;
+
+                    if (stripeRef.get() == null && !amortizeCleanup) {
+                        expiredReferenceReadCount.incrementAndGet();
+                    }
+                }
+            } else {
+                if (amortizeCleanup) {
+                    readCount.incrementAndGet();
+                }
+            }
+
+            return stripeRef;
+
+        } finally {
+            stripesLock.unlock(stamp);
+        }
+    }
+
+    /**
      * Removes cleared WeakReferences
      * from the stripes map.
      *
@@ -229,7 +295,14 @@ public class WeakLazyStripes<K, S> {
             int i = 0;
             while ((ref = referenceQueue.poll()) != null) {
                 @SuppressWarnings("unchecked") final WeakValueReference<K, S> stripeRef = (WeakValueReference<K, S>) ref;
-                stripes.remove(stripeRef.key);
+
+                final long writeStamp = stripesLock.writeLock();
+                try {
+                    stripes.remove(stripeRef.key);
+                } finally {
+                    stripesLock.unlockWrite(writeStamp);
+                }
+
                 if (amortizeCleanup && ++i == DRAIN_MAX) {
                     break;
                 }
