@@ -257,7 +257,6 @@ public class LockTable {
             // optimistic read
             long stamp = entriesLock.tryOptimisticRead();
 
-            //TODO(AR) attempt optimisation for most recently added entry with entries.last()
             final Entry local = entries.get(entry);
             if (entriesLock.validate(stamp)) {
                 return local;
@@ -308,7 +307,6 @@ public class LockTable {
                 final long writeStamp = entriesLock.tryConvertToWriteLock(stamp);
                 if (writeStamp != 0l) {
                     try {
-                        //TODO(AR) we need to recycle the entry here!    ... nope do it in the caller!
                         entries.remove(local);
                         local.count--;
                         return local;
@@ -344,7 +342,6 @@ public class LockTable {
                     final long writeStamp = entriesLock.tryConvertToWriteLock(stamp);
                     if (writeStamp != 0l) {
                         stamp = writeStamp;  // NOTE: this causes the write lock to be released in the finally further down
-                        //TODO(AR) we need to recycle the entry here!    ... nope do it in the caller!
                         entries.remove(local);
                         local.count--;
                         return local;
