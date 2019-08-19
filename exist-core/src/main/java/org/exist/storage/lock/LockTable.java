@@ -201,8 +201,7 @@ public class LockTable {
                 Entries acquiredEntries = acquired.get(currentThread);
 
                 if (acquiredEntries == null) {
-                    final Entry acquiredEntry = new Entry();
-                    acquiredEntry.setFrom(attemptEntry);
+                    final Entry acquiredEntry = new Entry(attemptEntry);
 
                     acquiredEntries = new Entries(acquiredEntry);
                     acquired.put(currentThread, acquiredEntries);
@@ -286,8 +285,7 @@ public class LockTable {
             }
 
             // else, add it
-            final Entry acquiredEntry = new Entry();
-            acquiredEntry.setFrom(attemptEntry);
+            final Entry acquiredEntry = new Entry(attemptEntry);
 
             final long stamp = entriesLock.writeLock();
             try {
@@ -764,6 +762,20 @@ public class LockTable {
             }
             // write last to ensure reader visibility of above fields!
             this.count = 1;
+        }
+
+        private Entry(final Entry other) {
+            this.id = other.id;
+            this.lockType = other.lockType;
+            this.lockMode = other.lockMode;
+            this.owner = other.owner;
+            if (other.stackTraces != null) {
+                this.stackTraces = (ArrayList)((ArrayList)other.stackTraces).clone();
+            } else {
+                this.stackTraces = null;
+            }
+            // write last to ensure reader visibility of above fields!
+            this.count = other.count;
         }
 
         public void setFrom(final Entry entry) {
