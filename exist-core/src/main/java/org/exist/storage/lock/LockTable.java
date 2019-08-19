@@ -253,45 +253,68 @@ public class LockTable {
             entries.add(entry);
         }
 
-        private @Nullable Entry findEntry(final Entry entry) {
-            // optimistic read
-            long stamp = entriesLock.tryOptimisticRead();
-
-            final Entry local = entries.get(entry);
-            if (entriesLock.validate(stamp)) {
-                return local;
-            }
-
-            // otherwise... pessimistic read
-            stamp = entriesLock.readLock();
-            try {
-                return entries.get(entry);
-            } finally {
-                entriesLock.unlockRead(stamp);
-            }
-        }
-
         public Entry merge(final Entry attemptEntry) {
-            final Entry local = findEntry(attemptEntry);
-
-            // if found, do the merge
-            if (local != null) {
-                if (attemptEntry.stackTraces != null) {
-                    local.stackTraces.addAll(attemptEntry.stackTraces);
-                }
-                local.count += attemptEntry.count;
-                return local;
-            }
-
-            // else, add it
-            final Entry acquiredEntry = new Entry(attemptEntry);
-
-            final long stamp = entriesLock.writeLock();
+            // try optimistic read
+            long optReadStamp = entriesLock.tryOptimisticRead();
+            long readStamp = -1;
+            long stamp = -1;
             try {
+
+                Entry local = entries.get(attemptEntry);
+                if (!entriesLock.validate(optReadStamp)) {
+
+                    // otherwise... pessimistic read
+                    readStamp = entriesLock.readLock();
+                    stamp = readStamp;
+                    local = entries.get(attemptEntry);
+                } else {
+                    stamp = optReadStamp;
+                }
+
+                // if found, do the merge
+                if (local != null) {
+                    if (attemptEntry.stackTraces != null) {
+                        local.stackTraces.addAll(attemptEntry.stackTraces);
+                    }
+                    local.count += attemptEntry.count;
+                    return local;
+                }
+
+                // try to upgrade optimistic-read or read lock to write lock
+                stamp = entriesLock.tryConvertToWriteLock(stamp);
+                if (stamp == 0l) {
+
+                    // failed to upgrade
+                    if (readStamp != -1) {
+                        // release the read lock before taking the write lock
+                        entriesLock.unlockRead(readStamp);
+                    }
+
+                    // take the write lock (blocking)
+                    stamp = entriesLock.writeLock();
+
+                    // we must refresh the `local` as it could have changed between releasing the readLock and obtaining the write lock
+                    local = entries.get(attemptEntry);
+
+                    // if found, do the merge
+                    if (local != null) {
+                        if (attemptEntry.stackTraces != null) {
+                            local.stackTraces.addAll(attemptEntry.stackTraces);
+                        }
+                        local.count += attemptEntry.count;
+                        return local;
+                    }
+                }
+
+                // we have a write lock, add it
+                final Entry acquiredEntry = new Entry(attemptEntry);
                 entries.add(acquiredEntry);
                 return acquiredEntry;
             } finally {
-                entriesLock.unlockWrite(stamp);
+                // we don't need to unlock if it was just an optimistic read
+                if (stamp != optReadStamp) {
+                    entriesLock.unlock(stamp);
+                }
             }
         }
 
