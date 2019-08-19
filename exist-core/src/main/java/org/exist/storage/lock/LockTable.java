@@ -785,9 +785,9 @@ public class LockTable {
             if (this == o) return true;
             if (o == null || Entry.class != o.getClass()) return false;
             Entry entry = (Entry) o;
-            return id.equals(entry.id) &&
-                    lockType == entry.lockType &&
-                    lockMode == entry.lockMode;
+            return lockType == entry.lockType &&
+                    lockMode == entry.lockMode
+                    && id.equals(entry.id);
         }
 
         @Override
