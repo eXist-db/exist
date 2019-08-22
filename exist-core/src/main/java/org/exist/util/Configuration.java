@@ -27,6 +27,8 @@ import org.exist.collections.CollectionCache;
 import org.exist.repo.Deployment;
 
 import org.exist.start.Main;
+import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.LockTable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -75,6 +77,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 
+import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -224,6 +227,12 @@ public class Configuration implements ErrorHandler
                 configureBackend(existHomeDirname, (Element)dbcon.item(0));
             }
 
+            // lock-table settings
+            final NodeList lockManager = doc.getElementsByTagName("lock-manager");
+            if(lockManager.getLength() > 0) {
+                configureLockManager((Element) lockManager.item(0));
+            }
+
             // repository settings
             final NodeList repository = doc.getElementsByTagName("repository");
             if(repository.getLength() > 0) {
@@ -284,6 +293,40 @@ public class Configuration implements ErrorHandler
                     LOG.error(ioe);
                 }
             }
+        }
+    }
+
+    private void configureLockManager(final Element lockManager) throws DatabaseConfigurationException {
+        final boolean upgradeCheck = parseBoolean(getConfigAttributeValue(lockManager, "upgrade-check"), false);
+        final boolean warnWaitOnReadForWrite = parseBoolean(getConfigAttributeValue(lockManager, "warn-wait-on-read-for-write"), false);
+
+        config.put(LockManager.CONFIGURATION_UPGRADE_CHECK, upgradeCheck);
+        config.put(LockManager.CONFIGURATION_WARN_WAIT_ON_READ_FOR_WRITE, warnWaitOnReadForWrite);
+
+        final NodeList nlLockTable = lockManager.getElementsByTagName("lock-table");
+        if(nlLockTable.getLength() > 0) {
+            final Element lockTable = (Element)nlLockTable.item(0);
+            final boolean lockTableDisabled = parseBoolean(getConfigAttributeValue(lockTable, "disabled"), false);
+            final int lockTableTraceStackDepth = parseInt(getConfigAttributeValue(lockTable, "trace-stack-depth"), 0);
+
+            config.put(LockTable.CONFIGURATION_DISABLED, lockTableDisabled);
+            config.put(LockTable.CONFIGURATION_TRACE_STACK_DEPTH, lockTableTraceStackDepth);
+        }
+
+        final NodeList nlCollection = lockManager.getElementsByTagName("collection");
+        if(nlCollection.getLength() > 0) {
+            final Element collection = (Element)nlCollection.item(0);
+            final boolean collectionMultipleWriters = parseBoolean(getConfigAttributeValue(collection, "multiple-writers"), false);
+
+            config.put(LockManager.CONFIGURATION_COLLECTION_MULTI_WRITER, collectionMultipleWriters);
+        }
+
+        final NodeList nlDocument = lockManager.getElementsByTagName("document");
+        if(nlDocument.getLength() > 0) {
+            final Element document = (Element)nlDocument.item(0);
+            final boolean documentMultiLock = parseBoolean(getConfigAttributeValue(document, "multi-lock"), false);
+
+            config.put(LockManager.CONFIGURATION_DOCUMENT_MULTI_LOCK, documentMultiLock);
         }
     }
 
