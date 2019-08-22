@@ -237,13 +237,31 @@
                 <xs:element name="parser">
                     <xs:complexType>
                         <xs:sequence>
+                            <xs:element name="xml" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="features" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="feature" minOccurs="0" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:attribute name="name" use="required" type="xs:string"/>
+                                                            <xs:attribute name="value" use="required" type="xs:boolean"/>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
                             <xs:element name="html-to-xml" minOccurs="0">
                                 <xs:complexType>
                                     <xs:sequence>
                                         <xs:element name="properties" minOccurs="0">
                                             <xs:complexType>
                                                 <xs:sequence>
-                                                    <xs:element name="property" maxOccurs="unbounded">
+                                                    <xs:element name="property" minOccurs="0" maxOccurs="unbounded">
                                                         <xs:complexType>
                                                             <xs:attribute name="name" use="required" type="xs:string"/>
                                                             <xs:attribute name="value" use="required" type="xs:string"/>
@@ -255,7 +273,7 @@
                                         <xs:element name="features" minOccurs="0">
                                             <xs:complexType>
                                                 <xs:sequence>
-                                                    <xs:element name="feature" maxOccurs="unbounded">
+                                                    <xs:element name="feature" minOccurs="0" maxOccurs="unbounded">
                                                         <xs:complexType>
                                                             <xs:attribute name="name" use="required" type="xs:string"/>
                                                             <xs:attribute name="value" use="required" type="xs:boolean"/>
