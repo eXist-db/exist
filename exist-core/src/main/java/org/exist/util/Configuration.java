@@ -224,11 +224,13 @@ public class Configuration implements ErrorHandler
                 configureBackend(existHomeDirname, (Element)dbcon.item(0));
             }
 
+            // repository settings
             final NodeList repository = doc.getElementsByTagName("repository");
             if(repository.getLength() > 0) {
                 configureRepository((Element) repository.item(0));
             }
 
+            // binary manager settings
             final NodeList binaryManager = doc.getElementsByTagName("binary-manager");
             if(binaryManager.getLength() > 0) {
                 configureBinaryManager((Element)binaryManager.item(0));
@@ -286,7 +288,7 @@ public class Configuration implements ErrorHandler
     }
 
     private void configureRepository(Element element) {
-        String root = element.getAttribute("root");
+        String root = getConfigAttributeValue(element, "root");
         if (root != null && root.length() > 0) {
             if (!root.endsWith("/"))
                 {root += "/";}
@@ -294,12 +296,11 @@ public class Configuration implements ErrorHandler
         }
     }
 
-
     private void configureBinaryManager(Element binaryManager) throws DatabaseConfigurationException {
         final NodeList nlCache = binaryManager.getElementsByTagName("cache");
         if(nlCache.getLength() > 0) {
             final Element cache = (Element)nlCache.item(0);
-            final String binaryCacheClass = cache.getAttribute("class");
+            final String binaryCacheClass = getConfigAttributeValue(cache, "class");
             config.put(BINARY_CACHE_CLASS_PROPERTY, binaryCacheClass);
             LOG.debug(BINARY_CACHE_CLASS_PROPERTY + ": " + config.get(BINARY_CACHE_CLASS_PROPERTY));
         }
@@ -941,7 +942,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        final String docIds = con.getAttribute(BrokerPool.DOC_ID_MODE_ATTRIBUTE);
+        final String docIds = getConfigAttributeValue(con, BrokerPool.DOC_ID_MODE_ATTRIBUTE);
         if (docIds != null) {
         	config.put(BrokerPool.DOC_ID_MODE_PROPERTY, docIds);
         }
