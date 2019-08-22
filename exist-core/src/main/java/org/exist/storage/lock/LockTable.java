@@ -28,6 +28,7 @@ import org.exist.storage.NativeBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.Lock.LockType;
 import org.exist.storage.txn.Txn;
+import org.exist.util.Configuration;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -51,6 +52,12 @@ import static org.exist.storage.lock.LockTable.LockEventType.*;
  */
 public class LockTable {
 
+    // org.exist.util.Configuration properties
+    public static final String CONFIGURATION_DISABLED = "lock-table.disabled";
+    public static final String CONFIGURATION_TRACE_STACK_DEPTH = "lock-table.trace-stack-depth";
+
+    //TODO(AR) remove eventually!
+    // legacy properties for overriding the config
     public static final String PROP_DISABLE = "exist.locktable.disable";
     public static final String PROP_TRACE_STACK_DEPTH = "exist.locktable.trace.stack.depth";
 
@@ -60,14 +67,13 @@ public class LockTable {
     /**
      * Set to false to disable all events
      */
-    private volatile boolean disableEvents = Boolean.getBoolean(PROP_DISABLE);
+    private final boolean disableEvents;
 
     /**
      * Whether we should try and trace the stack for the lock event, -1 means all stack,
      * 0 means no stack, n means n stack frames, 5 is a reasonable value
      */
-    private volatile int traceStackDepth = Optional.ofNullable(Integer.getInteger(PROP_TRACE_STACK_DEPTH))
-            .orElse(0);
+    private int traceStackDepth;
 
     /**
      * Lock event listeners
@@ -86,7 +92,10 @@ public class LockTable {
     private final Map<Thread, Entries> acquired = new ConcurrentHashMap<>(60);
 
 
-    LockTable() {
+    LockTable(final Configuration configuration) {
+        this.disableEvents = LockManager.getLegacySystemPropertyOrConfigPropertyBool(PROP_DISABLE, configuration, CONFIGURATION_DISABLED, false);
+        this.traceStackDepth = LockManager.getLegacySystemPropertyOrConfigPropertyInt(PROP_TRACE_STACK_DEPTH, configuration, CONFIGURATION_TRACE_STACK_DEPTH, 0);
+
         // add a log listener if trace level logging is enabled
         if(LOG.isTraceEnabled()) {
             registerListener(new LockEventLogListener(LOG, Level.TRACE));

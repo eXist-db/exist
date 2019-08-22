@@ -454,7 +454,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     }
 
     private void _initialize() throws EXistException, DatabaseConfigurationException {
-        this.lockManager = new LockManager(concurrencyLevel);
+        this.lockManager = new LockManager(conf, concurrencyLevel);
 
         //Flag to indicate that we are initializing
         status.process(Event.INITIALIZE);
