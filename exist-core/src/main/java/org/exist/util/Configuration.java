@@ -1573,7 +1573,7 @@ public class Configuration implements ErrorHandler
      /**
      * Gets the value of a configuration attribute
      *
-     * The value typically is specified in the conf.xml file, but can be overriden with using a System Property
+     * The value typically is specified in the conf.xml file, but can be overridden with using a System Property
      *
      * @param   element        The attribute's parent element
      * @param   attributeName  The name of the attribute
@@ -1592,7 +1592,7 @@ public class Configuration implements ErrorHandler
     		// If the value has not been overriden in a system property, then get it from the configuration
     		
     		if( value != null ) {
-    			LOG.warn( "Configuration value overriden by system property: " + property + ", with value: " + value );
+    			LOG.warn( "Configuration value overridden by system property: " + property + ", with value: " + value );
     		} else {
     			value = element.getAttribute( attributeName );
     		}
@@ -1675,10 +1675,32 @@ public class Configuration implements ErrorHandler
      *
      * @return  The parsed <code>Boolean</code>
      */
-    public static boolean parseBoolean(final String value, final boolean defaultValue) {
+    public static boolean parseBoolean(@Nullable final String value, final boolean defaultValue) {
         return Optional.ofNullable(value)
                 .map(v -> v.equalsIgnoreCase("yes") || v.equalsIgnoreCase("true"))
                 .orElse(defaultValue);
+    }
+
+    /**
+     * Takes the passed string and converts it to a non-null <code>int</code> value. If value is null, the specified default value is used.
+     * Otherwise, Boolean.TRUE is returned if and only if the passed string equals &quot;yes&quot; or &quot;true&quot;, ignoring case.
+     *
+     * @param   value         The string to parse
+     * @param   defaultValue  The default if the string is null or empty
+     *
+     * @return  The parsed <code>int</code>
+     */
+    public static int parseInt(@Nullable final String value, final int defaultValue) {
+        if (value == null || value.isEmpty()) {
+            return defaultValue;
+        }
+
+        try {
+            return Integer.parseInt(value);
+        } catch (final NumberFormatException e) {
+            LOG.warn("Could not parse: " + value + ", as an int: " + e.getMessage());
+            return defaultValue;
+        }
     }
 
     public int getInteger(final String name) {
