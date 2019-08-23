@@ -27,6 +27,8 @@ import org.exist.collections.CollectionCache;
 import org.exist.repo.Deployment;
 
 import org.exist.start.Main;
+import org.exist.storage.lock.LockManager;
+import org.exist.storage.lock.LockTable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -75,6 +77,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 
+import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -224,11 +227,19 @@ public class Configuration implements ErrorHandler
                 configureBackend(existHomeDirname, (Element)dbcon.item(0));
             }
 
+            // lock-table settings
+            final NodeList lockManager = doc.getElementsByTagName("lock-manager");
+            if(lockManager.getLength() > 0) {
+                configureLockManager((Element) lockManager.item(0));
+            }
+
+            // repository settings
             final NodeList repository = doc.getElementsByTagName("repository");
             if(repository.getLength() > 0) {
                 configureRepository((Element) repository.item(0));
             }
 
+            // binary manager settings
             final NodeList binaryManager = doc.getElementsByTagName("binary-manager");
             if(binaryManager.getLength() > 0) {
                 configureBinaryManager((Element)binaryManager.item(0));
@@ -285,8 +296,42 @@ public class Configuration implements ErrorHandler
         }
     }
 
+    private void configureLockManager(final Element lockManager) throws DatabaseConfigurationException {
+        final boolean upgradeCheck = parseBoolean(getConfigAttributeValue(lockManager, "upgrade-check"), false);
+        final boolean warnWaitOnReadForWrite = parseBoolean(getConfigAttributeValue(lockManager, "warn-wait-on-read-for-write"), false);
+
+        config.put(LockManager.CONFIGURATION_UPGRADE_CHECK, upgradeCheck);
+        config.put(LockManager.CONFIGURATION_WARN_WAIT_ON_READ_FOR_WRITE, warnWaitOnReadForWrite);
+
+        final NodeList nlLockTable = lockManager.getElementsByTagName("lock-table");
+        if(nlLockTable.getLength() > 0) {
+            final Element lockTable = (Element)nlLockTable.item(0);
+            final boolean lockTableDisabled = parseBoolean(getConfigAttributeValue(lockTable, "disabled"), false);
+            final int lockTableTraceStackDepth = parseInt(getConfigAttributeValue(lockTable, "trace-stack-depth"), 0);
+
+            config.put(LockTable.CONFIGURATION_DISABLED, lockTableDisabled);
+            config.put(LockTable.CONFIGURATION_TRACE_STACK_DEPTH, lockTableTraceStackDepth);
+        }
+
+        final NodeList nlCollection = lockManager.getElementsByTagName("collection");
+        if(nlCollection.getLength() > 0) {
+            final Element collection = (Element)nlCollection.item(0);
+            final boolean collectionMultipleWriters = parseBoolean(getConfigAttributeValue(collection, "multiple-writers"), false);
+
+            config.put(LockManager.CONFIGURATION_COLLECTION_MULTI_WRITER, collectionMultipleWriters);
+        }
+
+        final NodeList nlDocument = lockManager.getElementsByTagName("document");
+        if(nlDocument.getLength() > 0) {
+            final Element document = (Element)nlDocument.item(0);
+            final boolean documentMultiLock = parseBoolean(getConfigAttributeValue(document, "multi-lock"), false);
+
+            config.put(LockManager.CONFIGURATION_DOCUMENT_MULTI_LOCK, documentMultiLock);
+        }
+    }
+
     private void configureRepository(Element element) {
-        String root = element.getAttribute("root");
+        String root = getConfigAttributeValue(element, "root");
         if (root != null && root.length() > 0) {
             if (!root.endsWith("/"))
                 {root += "/";}
@@ -294,12 +339,11 @@ public class Configuration implements ErrorHandler
         }
     }
 
-
     private void configureBinaryManager(Element binaryManager) throws DatabaseConfigurationException {
         final NodeList nlCache = binaryManager.getElementsByTagName("cache");
         if(nlCache.getLength() > 0) {
             final Element cache = (Element)nlCache.item(0);
-            final String binaryCacheClass = cache.getAttribute("class");
+            final String binaryCacheClass = getConfigAttributeValue(cache, "class");
             config.put(BINARY_CACHE_CLASS_PROPERTY, binaryCacheClass);
             LOG.debug(BINARY_CACHE_CLASS_PROPERTY + ": " + config.get(BINARY_CACHE_CLASS_PROPERTY));
         }
@@ -941,7 +985,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        final String docIds = con.getAttribute(BrokerPool.DOC_ID_MODE_ATTRIBUTE);
+        final String docIds = getConfigAttributeValue(con, BrokerPool.DOC_ID_MODE_ATTRIBUTE);
         if (docIds != null) {
         	config.put(BrokerPool.DOC_ID_MODE_PROPERTY, docIds);
         }
@@ -1572,7 +1616,7 @@ public class Configuration implements ErrorHandler
      /**
      * Gets the value of a configuration attribute
      *
-     * The value typically is specified in the conf.xml file, but can be overriden with using a System Property
+     * The value typically is specified in the conf.xml file, but can be overridden with using a System Property
      *
      * @param   element        The attribute's parent element
      * @param   attributeName  The name of the attribute
@@ -1591,7 +1635,7 @@ public class Configuration implements ErrorHandler
     		// If the value has not been overriden in a system property, then get it from the configuration
     		
     		if( value != null ) {
-    			LOG.warn( "Configuration value overriden by system property: " + property + ", with value: " + value );
+    			LOG.warn( "Configuration value overridden by system property: " + property + ", with value: " + value );
     		} else {
     			value = element.getAttribute( attributeName );
     		}
@@ -1674,10 +1718,32 @@ public class Configuration implements ErrorHandler
      *
      * @return  The parsed <code>Boolean</code>
      */
-    public static boolean parseBoolean(final String value, final boolean defaultValue) {
+    public static boolean parseBoolean(@Nullable final String value, final boolean defaultValue) {
         return Optional.ofNullable(value)
                 .map(v -> v.equalsIgnoreCase("yes") || v.equalsIgnoreCase("true"))
                 .orElse(defaultValue);
+    }
+
+    /**
+     * Takes the passed string and converts it to a non-null <code>int</code> value. If value is null, the specified default value is used.
+     * Otherwise, Boolean.TRUE is returned if and only if the passed string equals &quot;yes&quot; or &quot;true&quot;, ignoring case.
+     *
+     * @param   value         The string to parse
+     * @param   defaultValue  The default if the string is null or empty
+     *
+     * @return  The parsed <code>int</code>
+     */
+    public static int parseInt(@Nullable final String value, final int defaultValue) {
+        if (value == null || value.isEmpty()) {
+            return defaultValue;
+        }
+
+        try {
+            return Integer.parseInt(value);
+        } catch (final NumberFormatException e) {
+            LOG.warn("Could not parse: " + value + ", as an int: " + e.getMessage());
+            return defaultValue;
+        }
     }
 
     public int getInteger(final String name) {
