@@ -137,8 +137,7 @@ public class WeakLazyStripes<K, S> {
     /**
      * Constructs a WeakLazyStripes.
      *
-     * @param concurrencyLevel The concurrency level for the underlying
-     *     {@link ConcurrentHashMap#ConcurrentHashMap(int, float, int)}
+     * @param concurrencyLevel The concurrency level for the underlying stripes map
      * @param creator A factory for creating new Stripes when needed
      */
     public WeakLazyStripes(final int concurrencyLevel, final Function<K, S> creator) {
@@ -148,8 +147,7 @@ public class WeakLazyStripes<K, S> {
     /**
      * Constructs a WeakLazyStripes.
      *
-     * @param concurrencyLevel The concurrency level for the underlying
-     *     {@link ConcurrentHashMap#ConcurrentHashMap(int, float, int)}
+     * @param concurrencyLevel The concurrency level for the underlying stripes map
      * @param creator A factory for creating new Stripes when needed
      * @param amortizeCleanup true if the cleanup of weak references should be
      *     amortized across many calls (default), false if the cleanup should be batched up
@@ -175,9 +173,17 @@ public class WeakLazyStripes<K, S> {
 
         final Holder<Boolean> written = new Holder<>(false);
 
+        // 1) attempt lookup via optimistic read and immediate conversion to write lock
         WeakValueReference<K, S> stripeRef = getOptimistic(key, written);
         if (stripeRef == null) {
+
+            // 2) attempt lookup via pessimistic read and immediate conversion to write lock
             stripeRef = getPessimistic(key, written);
+            if (stripeRef == null) {
+
+                // 3) attempt lookup via exclusive write lock
+                stripeRef = getExclusive(key, written);
+            }
         }
 
         if (amortizeCleanup) {
@@ -209,8 +215,14 @@ public class WeakLazyStripes<K, S> {
     }
 
     /**
+     * Get the stripe via immediate conversion of an optimistic read lock to a write lock.
+     *
+     * @param key the stripe key
+     * @param written (OUT) will be set to true if {@link #stripes} was updated
+     *
      * @return null if we could not perform an optimistic read, or a new object needed to be
-     *     created and we could not take the {@link #stripesLock} write lock immediately.
+     *     created and we could not take the {@link #stripesLock} write lock immediately,
+     *     otherwise the stripe.
      */
     private @Nullable WeakValueReference<K, S> getOptimistic(final K key, final Holder<Boolean> written) {
         // optimistic read
@@ -219,6 +231,7 @@ public class WeakLazyStripes<K, S> {
         if (stripeRef == null || stripeRef.get() == null) {
             final long writeStamp = stripesLock.tryConvertToWriteLock(stamp);
             if (writeStamp != 0l) {
+                final boolean wasGCd = stripeRef != null && stripeRef.get() == null;
                 try {
                     stripeRef = new WeakValueReference<>(key, creator.apply(key), referenceQueue);
                     stripes.put(key, stripeRef);
@@ -228,7 +241,7 @@ public class WeakLazyStripes<K, S> {
 
                 written.value = true;
 
-                if (stripeRef.get() == null && !amortizeCleanup) {
+                if (wasGCd && !amortizeCleanup) {
                     expiredReferenceReadCount.incrementAndGet();
                 }
             }
@@ -247,38 +260,85 @@ public class WeakLazyStripes<K, S> {
     }
 
     /**
+     * Get the stripe via immediate conversion of a read lock to a write lock.
+     *
+     * @param key the stripe key
+     * @param written (OUT) will be set to true if {@link #stripes} was updated
+     *
      * @return null if a new object needed to be created and we could not take the {@link #stripesLock}
-     *     write lock immediately.
+     *     write lock immediately, otherwise the stripe.
      */
     private @Nullable WeakValueReference<K, S> getPessimistic(final K key, final Holder<Boolean> written) {
-        // otherwise... pessimistic read
+        WeakValueReference<K, S> stripeRef;
         long stamp = stripesLock.readLock();
         try {
-            WeakValueReference<K, S> stripeRef = stripes.get(key);
+            stripeRef = stripes.get(key);
             if (stripeRef == null || stripeRef.get() == null) {
                 final long writeStamp = stripesLock.tryConvertToWriteLock(stamp);
                 if (writeStamp != 0l) {
+                    final boolean wasGCd = stripeRef != null && stripeRef.get() == null;
+
                     stamp = writeStamp;  // NOTE: this causes the write lock to be released in the finally further down
                     stripeRef = new WeakValueReference<>(key, creator.apply(key), referenceQueue);
                     stripes.put(key, stripeRef);
 
                     written.value = true;
 
-                    if (stripeRef.get() == null && !amortizeCleanup) {
+                    if (wasGCd && !amortizeCleanup) {
                         expiredReferenceReadCount.incrementAndGet();
                     }
                 }
-            } else {
-                if (amortizeCleanup) {
-                    readCount.incrementAndGet();
-                }
+
+                return stripeRef;
             }
-
-            return stripeRef;
-
         } finally {
             stripesLock.unlock(stamp);
         }
+
+        // else (we don't need the lock on this path)
+        if (amortizeCleanup) {
+            readCount.incrementAndGet();
+        }
+
+        return stripeRef;
+    }
+
+    /**
+     * Get the stripe whilst holding the write lock.
+     *
+     * @param key the stripe key
+     * @param written (OUT) will be set to true if {@link #stripes} was updated
+     *
+     * @return the stripe
+     */
+    private WeakValueReference<K, S> getExclusive(final K key, final Holder<Boolean> written) {
+        WeakValueReference<K, S> stripeRef;
+        final long writeStamp = stripesLock.writeLock();
+        try {
+            stripeRef = stripes.get(key);
+            if (stripeRef == null || stripeRef.get() == null) {
+                final boolean wasGCd = stripeRef != null && stripeRef.get() == null;
+
+                stripeRef = new WeakValueReference<>(key, creator.apply(key), referenceQueue);
+                stripes.put(key, stripeRef);
+
+                written.value = true;
+
+                if (wasGCd && !amortizeCleanup) {
+                    expiredReferenceReadCount.incrementAndGet();
+                }
+
+                return stripeRef;
+            }
+        } finally {
+            stripesLock.unlockWrite(writeStamp);
+        }
+
+        // else (we don't need the write lock on this path)
+        if (amortizeCleanup) {
+            readCount.incrementAndGet();
+        }
+        return stripeRef;
     }
 
     /**
