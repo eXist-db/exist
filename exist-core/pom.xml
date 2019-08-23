@@ -61,11 +61,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jctools</groupId>
-            <artifactId>jctools-core</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>com.github.krukow</groupId>
             <artifactId>clj-ds</artifactId>
             <version>0.0.4</version>
