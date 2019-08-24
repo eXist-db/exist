@@ -28,12 +28,60 @@ function collations:cleanup() {
 
 declare
     %test:assertEquals("<a>xxx</a>")
-function collations:non-empty-string() {
+function collations:non-empty-string-contains() {
     doc("/db/collations-test/test.xml")//a[contains(.,'x',"?lang=en-US")]
 };
 
 declare
     %test:assertEmpty
-function collations:empty-string() {
+function collations:empty-string-contains() {
     doc("/db/collations-test/test.xml")//b[contains(.,'x',"?lang=en-US")]
+};
+
+declare
+    %test:assertEquals("<a>xxx</a>")
+function collations:non-empty-string-starts-with() {
+    doc("/db/collations-test/test.xml")//a[starts-with(.,'x',"?lang=en-US")]
+};
+
+ declare
+    %test:assertEmpty
+function collations:empty-string-starts-with() {
+    doc("/db/collations-test/test.xml")//b[starts-with(.,'x',"?lang=en-US")]
+};
+
+declare
+    %test:assertEquals("<a>xxx</a>")
+function collations:non-empty-string-ends-with() {
+    doc("/db/collations-test/test.xml")//a[ends-with(.,'x',"?lang=en-US")]
+};
+
+ declare
+    %test:assertEmpty
+function collations:empty-string-ends-with() {
+    doc("/db/collations-test/test.xml")//b[ends-with(.,'x',"?lang=en-US")]
+};
+
+declare
+    %test:assertEquals("")
+    function collations:substring-after-empty-string() {
+        substring-after("", "test", "?lang=en-US")
+};
+
+declare
+    %test:assertEquals("")
+    function collations:substring-before-empty-string() {
+        substring-before("", "test", "?lang=en-US")
+};
+
+declare
+    %test:assertEquals("")
+    function collations:substring-after-empty-sequence() {
+        substring-after((), "test", "?lang=en-US")
+};
+
+declare
+    %test:assertEquals("")
+    function collations:substring-before-empty-sequence() {
+        substring-before((), "test", "?lang=en-US")
 };
