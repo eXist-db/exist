@@ -311,9 +311,15 @@ public class Collations {
         if (collator == null) {
             return s1.startsWith(s2);
         } else {
-            final SearchIterator searchIterator =
-                    new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator)collator);
-            return searchIterator.first() == 0;
+            if (s2.length() == 0) {
+                return true;
+            } else if (s1.length() == 0) {
+                return false;
+            } else {
+                final SearchIterator searchIterator =
+                        new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator) collator);
+                return searchIterator.first() == 0;
+            }
         }
     }
 
@@ -332,17 +338,23 @@ public class Collations {
         if (collator == null) {
             return s1.endsWith(s2);
         } else {
-            final SearchIterator searchIterator =
-                    new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator)collator);
-            int lastPos = SearchIterator.DONE;
-            int lastLen = 0;
-            for (int pos = searchIterator.first(); pos != SearchIterator.DONE;
-                 pos = searchIterator.next()) {
-                lastPos = pos;
-                lastLen = searchIterator.getMatchLength();
-            }
+            if (s2.length() == 0) {
+                return true;
+            } else if (s1.length() == 0) {
+                return false;
+            } else {
+                final SearchIterator searchIterator =
+                        new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator) collator);
+                int lastPos = SearchIterator.DONE;
+                int lastLen = 0;
+                for (int pos = searchIterator.first(); pos != SearchIterator.DONE;
+                     pos = searchIterator.next()) {
+                    lastPos = pos;
+                    lastLen = searchIterator.getMatchLength();
+                }
 
-            return lastPos > SearchIterator.DONE && lastPos + lastLen == s1.length();
+                return lastPos > SearchIterator.DONE && lastPos + lastLen == s1.length();
+            }
         }
     }
 
@@ -387,9 +399,15 @@ public class Collations {
         if (collator == null) {
             return s1.indexOf(s2);
         } else {
-            final SearchIterator searchIterator =
-                    new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator)collator);
-            return searchIterator.first();
+            if (s2.length() == 0) {
+                return 0;
+            } else if (s1.length() == 0) {
+                return -1;
+            } else {
+                final SearchIterator searchIterator =
+                        new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator) collator);
+                return searchIterator.first();
+            }
         }
     }
 
