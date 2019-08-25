@@ -244,10 +244,10 @@
         </Logger>
 
         <!-- expath pkg repo -->
-        <Logger name="org.expath.pkg" additivity="false" level="trace">
+        <Logger name="org.expath.pkg" additivity="false" level="info">
             <AppenderRef ref="expath.repo"/>
         </Logger>
-        <Logger name="org.exist.repo" additivity="false" level="trace">
+        <Logger name="org.exist.repo" additivity="false" level="info">
             <AppenderRef ref="expath.repo"/>
         </Logger>
         <Logger name="org.exist.launcher" additivity="false" level="warn">
