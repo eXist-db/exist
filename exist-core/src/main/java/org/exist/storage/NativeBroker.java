@@ -69,6 +69,7 @@ import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.util.io.FastByteArrayInputStream;
 import org.exist.util.io.FastByteArrayOutputStream;
+import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.value.Type;
@@ -95,6 +96,7 @@ import java.util.regex.Pattern;
 import org.exist.storage.dom.INodeIterator;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.security.Permission.DEFAULT_TEMPORARY_COLLECTION_PERM;
 import static org.exist.util.io.InputStreamUtil.copy;
 
@@ -571,27 +573,30 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    private final String readInitCollectionConfig() {
-        final Path fInitCollectionConfig = pool.getConfiguration().getExistHome()
-                .map(h -> h.resolve(INIT_COLLECTION_CONFIG))
-                .orElse(Paths.get(INIT_COLLECTION_CONFIG));
+    private @Nullable String readInitCollectionConfig() {
+        try {
 
-        if(Files.isRegularFile(fInitCollectionConfig)) {
-            try(final InputStream is = Files.newInputStream(fInitCollectionConfig)) {
-                final StringBuilder initCollectionConfig = new StringBuilder();
+            // 1) try and load from etc/ dir
+            final Path fInitCollectionConfig = pool.getConfiguration().getExistHome()
+                    .map(h -> h.resolve("etc").resolve(INIT_COLLECTION_CONFIG))
+                    .orElse(Paths.get("etc").resolve(INIT_COLLECTION_CONFIG));
+            if (Files.exists(fInitCollectionConfig)) {
+                return new String(Files.readAllBytes(fInitCollectionConfig), UTF_8);
+            }
 
-                int read = -1;
-                final byte buf[] = new byte[1024];
-                while((read = is.read(buf)) != -1) {
-                    initCollectionConfig.append(new String(buf, 0, read));
+            // 2) fallback to attempting to load from classpath
+            try (final InputStream is = pool.getClassLoader().getResourceAsStream(INIT_COLLECTION_CONFIG)) {
+                if (is == null) {
+                    return null;
                 }
 
-                return initCollectionConfig.toString();
-            } catch(final IOException ioe) {
-                LOG.error(ioe.getMessage(), ioe);
+                return InputStreamUtil.readString(is, UTF_8);
             }
+        } catch(final IOException ioe) {
+            LOG.error(ioe.getMessage(), ioe);
         }
 
+        // 3) could not load!
         return null;
     }
 
