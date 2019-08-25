@@ -612,28 +612,28 @@
                                     <abbrev>dashboard</abbrev>
                                 </package>
                                 <package>
-                                    <abbrev>packageservice</abbrev>
-                                </package>
-                                <package>
-                                    <abbrev>shared</abbrev>
-                                </package>
-                                <package>
                                     <abbrev>eXide</abbrev>
-                                </package>
-                                <package>
-                                    <abbrev>monex</abbrev>
-                                </package>
-                                <package>
-                                    <abbrev>functx</abbrev>
                                 </package>
                                 <package>
                                     <abbrev>exist-documentation</abbrev>
                                 </package>
                                 <package>
+                                    <abbrev>functx</abbrev>
+                                </package>
+                                <package>
                                     <abbrev>fundocs</abbrev>
                                 </package>
                                 <package>
+                                    <abbrev>monex</abbrev>
+                                </package>
+                                <package>
                                     <abbrev>markdown</abbrev>
+                                </package>
+                                <package>
+                                    <abbrev>packageservice</abbrev>
+                                </package>
+                                <package>
+                                    <abbrev>shared</abbrev>
                                 </package>
                             </packages>
                         </configuration>
