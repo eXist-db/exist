@@ -51,9 +51,13 @@ cache:
   directories:
   - $HOME/.m2
 
+before_install:
+  # This is the simplest way to ensure the latest bats version is used
+  - npm i -g bats
+
 install: travis_wait mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddocker=$BUILD_DOCKER install -B -V -q
 
-script: mvn -T 2C -Ddocker=$BUILD_DOCKER test -B
+script: mvn -T 2C -Ddocker=$BUILD_DOCKER test integration-test -B
 
 after_failure:
    - tar -cjf surefire-reports.tar.bz2 exist-core/target/surefire-reports exist-core/target/test-logs
