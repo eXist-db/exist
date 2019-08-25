@@ -1,0 +1,6 @@
+<query xmlns='http://exist.sourceforge.net/NS/exist' start='1' max='99' wrap='no'>
+<text><![CDATA[
+xquery version '3.1';
+sm:is-dba("admin")
+]]></text>
+</query>
