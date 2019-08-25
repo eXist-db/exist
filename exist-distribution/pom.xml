@@ -633,6 +633,9 @@
                                     <abbrev>packageservice</abbrev>
                                 </package>
                                 <package>
+                                    <abbrev>semver-xq</abbrev>
+                                </package>
+                                <package>
                                     <abbrev>shared</abbrev>
                                 </package>
                             </packages>
