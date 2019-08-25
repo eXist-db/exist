@@ -318,7 +318,7 @@ public class Deployment {
             try {
                 final Optional<ElementImpl> cleanup = findElement(repoXML, CLEANUP_ELEMENT);
                 if(cleanup.isPresent()) {
-                    runQuery(broker, null, packageDir, cleanup.get().getStringValue(), false);
+                    runQuery(broker, null, packageDir, cleanup.get().getStringValue(), false, pkgName);
                 }
 
                 final Optional<ElementImpl> target = findElement(repoXML, TARGET_COLL_ELEMENT);
@@ -359,7 +359,7 @@ public class Deployment {
             final Optional<String> setupPath = setup.map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
 
             if (setupPath.isPresent()) {
-                runQuery(broker, null, packageDir, setupPath.get(), true);
+                runQuery(broker, null, packageDir, setupPath.get(), true, pkgName);
                 return Optional.empty();
             } else {
                 // otherwise copy all child directories to the target collection
@@ -428,7 +428,7 @@ public class Deployment {
                 final Optional<String> preSetupPath = preSetup.map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
 
                 if(preSetupPath.isPresent()) {
-                    runQuery(broker, targetCollection, packageDir, preSetupPath.get(), true);
+                    runQuery(broker, targetCollection, packageDir, preSetupPath.get(), true, pkgName);
                 }
 
                 // any required users and group should have been created by the pre-setup query.
@@ -448,7 +448,7 @@ public class Deployment {
                 final Optional<String> postSetupPath = postSetup.map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
 
                 if(postSetupPath.isPresent()) {
-                    runQuery(broker, targetCollection, packageDir, postSetupPath.get(), false);
+                    runQuery(broker, targetCollection, packageDir, postSetupPath.get(), false, pkgName);
                 }
 
                 storeRepoXML(broker, transaction, repoXML, targetCollection, requestedPerms);
@@ -644,11 +644,12 @@ public class Deployment {
         }
     }
 
-    private Sequence runQuery(final DBBroker broker, final XmldbURI targetCollection, final Path tempDir, final String fileName, final boolean preInstall)
+    private Sequence runQuery(final DBBroker broker, final XmldbURI targetCollection, final Path tempDir,
+            final String fileName, final boolean preInstall, final String pkgName)
             throws PackageException, IOException, XPathException {
         final Path xquery = tempDir.resolve(fileName);
         if (!Files.isReadable(xquery)) {
-            LOG.warn("The XQuery resource specified in the <setup> element was not found");
+            LOG.warn("The XQuery resource specified in the <setup> element was not found for EXPath Package: '" + pkgName + "'");
             return Sequence.EMPTY_SEQUENCE;
         }
         final XQuery xqs = broker.getBrokerPool().getXQueryService();
