@@ -21,6 +21,7 @@
 package org.exist.storage;
 
 import org.exist.EXistException;
+import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -71,8 +72,8 @@ public class DataBackupTest {
         }
 
         @Override
-        public void execute(final DBBroker broker) throws EXistException {
-            super.execute(broker);
+        public void execute(final DBBroker broker, final Txn transaction) throws EXistException {
+            super.execute(broker, transaction);
             completed = true;
         }
 

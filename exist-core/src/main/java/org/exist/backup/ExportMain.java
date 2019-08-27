@@ -25,6 +25,7 @@ import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.SystemExitCodes;
@@ -147,11 +148,13 @@ public class ExportMain {
         }
         int retval = 0; // return value
 
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+
             List<ErrorReport> errors = null;
 
             if (!noCheck) {
-                final ConsistencyCheck checker = new ConsistencyCheck(broker, direct, checkDocs);
+                final ConsistencyCheck checker = new ConsistencyCheck(broker, transaction, direct, checkDocs);
                 errors = checker.checkAll(new CheckCallback());
             }
 
@@ -169,9 +172,12 @@ public class ExportMain {
                     System.err.println("Output dir already exists and is a file: " + exportTarget.toAbsolutePath().toString());
                     System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);
                 }
-                final SystemExport sysexport = new SystemExport(broker, new Callback(verbose), null, direct);
+                final SystemExport sysexport = new SystemExport(broker, transaction, new Callback(verbose), null, direct);
                 sysexport.export(exportTarget.toAbsolutePath().toString(), incremental, zip, errors);
             }
+
+            transaction.commit();
+
         } catch (final EXistException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
             retval = SystemExitCodes.NO_BROKER_EXIT_CODE;

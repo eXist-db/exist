@@ -25,6 +25,7 @@ import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
@@ -432,8 +433,7 @@ public class ExportGUI extends javax.swing.JFrame {
             return;
         }
 
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-
+        try {
             final SystemExport.StatusCallback callback = new SystemExport.StatusCallback() {
                 public void startCollection(final String path) {
                     progress.setString(path);
@@ -472,15 +472,27 @@ public class ExportGUI extends javax.swing.JFrame {
 
             displayMessage("Starting export ...");
             final long start = System.currentTimeMillis();
-            final SystemExport sysexport = new SystemExport(broker, callback, null, directAccess);
-            final Path file = sysexport.export(exportTarget, incremental, zip, errorList);
 
-            displayMessage("Export to " + file.toAbsolutePath().toString() + " completed successfully.");
-            displayMessage("Export took " + (System.currentTimeMillis() - start) + "ms.");
-            progress.setString("");
-        } catch (final EXistException e) {
-            System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
+            try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+
+                final SystemExport sysexport = new SystemExport(broker, transaction, callback, null, directAccess);
+                final Path file = sysexport.export(exportTarget, incremental, zip, errorList);
+
+                transaction.commit();
+
+
+                final long end = System.currentTimeMillis();
+
+                displayMessage("Export to " + file.toAbsolutePath().toString() + " completed successfully.");
+                displayMessage("Export took " + (end - start) + "ms.");
+
+            } catch (final EXistException e) {
+                System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
+            }
+
         } finally {
+            progress.setString("");
             progress.setValue(0);
             currentTask.setText(" ");
         }
@@ -492,14 +504,15 @@ public class ExportGUI extends javax.swing.JFrame {
             return (null);
         }
 
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             Object[] selected = directAccessBtn.getSelectedObjects();
             final boolean directAccess = (selected != null) && (selected[0] != null);
             selected = scanBtn.getSelectedObjects();
             final boolean scan = (selected != null) && (selected[0] != null);
 
-            final ConsistencyCheck checker = new ConsistencyCheck(broker, directAccess, scan);
+            final ConsistencyCheck checker = new ConsistencyCheck(broker, transaction, directAccess, scan);
             final org.exist.backup.ConsistencyCheck.ProgressCallback cb = new ConsistencyCheck.ProgressCallback() {
                 public void startDocument(final String path, final int current, final int count) {
                     progress.setString(path);
@@ -547,7 +560,10 @@ public class ExportGUI extends javax.swing.JFrame {
                 displayMessage("Errors found.");
             }
             progress.setString("");
-            return (errors);
+
+            transaction.commit();
+
+            return errors;
         } catch (final EXistException | PermissionDeniedException e) {
             System.err.println("ERROR: Failed to retrieve database broker: " + e.getMessage());
         } catch (final TerminatedException e) {

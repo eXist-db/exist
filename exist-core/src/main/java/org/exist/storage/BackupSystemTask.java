@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.Backup;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
@@ -119,7 +120,7 @@ public class BackupSystemTask implements SystemTask {
     }
 
     @Override
-    public void execute(final DBBroker broker) throws EXistException {
+    public void execute(final DBBroker broker, final Txn transaction) throws EXistException {
         // see if old zip files need to be purged
         if (zipFilesMax > 0) {
             try {
