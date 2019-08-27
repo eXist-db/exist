@@ -27,6 +27,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 
 import java.io.IOException;
@@ -90,7 +91,7 @@ public class DataBackup implements SystemTask {
     }
 
     @Override
-	public void execute(final DBBroker broker) throws EXistException {
+	public void execute(final DBBroker broker, final Txn transaction) throws EXistException {
 		if (!(broker instanceof NativeBroker)) {
             throw new EXistException("DataBackup system task can only be used with the native storage backend");
 		}

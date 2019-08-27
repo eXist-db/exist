@@ -32,6 +32,7 @@ import org.exist.scheduler.JobDescription;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.SystemTask;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
 
@@ -77,7 +78,7 @@ public class SyncTask implements SystemTask {
     }
 
     @Override
-    public void execute(final DBBroker broker) throws EXistException {
+    public void execute(final DBBroker broker, final Txn transaction) throws EXistException {
         final BrokerPool pool = broker.getBrokerPool();
         if (!checkDiskSpace()) {
             LOG.fatal("Partition containing DATA_DIR: " + dataDir.toAbsolutePath().toString() + " is running out of disk space. " +

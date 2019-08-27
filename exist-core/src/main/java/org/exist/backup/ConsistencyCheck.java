@@ -39,6 +39,7 @@ import org.exist.storage.dom.DOMFile;
 import org.exist.storage.dom.DOMTransaction;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
+import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Node;
@@ -52,6 +53,7 @@ import java.util.*;
 
 public class ConsistencyCheck {
     private final DBBroker broker;
+    private final Txn transaction;
     private final int defaultIndexDepth;
     private final boolean directAccess;
     private final boolean checkDocs;
@@ -64,8 +66,9 @@ public class ConsistencyCheck {
      * @param directAccess set to true to bypass the collections.dbx index and perform a low-level scan instead
      * @param checkDocs    set to true to perform additional checks on every document (slow)
      */
-    public ConsistencyCheck(final DBBroker broker, final boolean directAccess, final boolean checkDocs) {
+    public ConsistencyCheck(final DBBroker broker, final Txn transaction, final boolean directAccess, final boolean checkDocs) {
         this.broker = broker;
+        this.transaction = transaction;
         this.defaultIndexDepth = ((NativeBroker) broker).getDefaultIndexDepth();
         this.directAccess = directAccess;
         this.checkDocs = checkDocs;
@@ -168,7 +171,7 @@ public class ConsistencyCheck {
             AccountImpl.getSecurityProperties().enableCheckPasswords(false);
             try {
                 final DocumentCallback cb = new DocumentCallback(null, null, false);
-                broker.getResourcesFailsafe(cb, directAccess);
+                broker.getResourcesFailsafe(transaction, cb, directAccess);
                 documentCount = cb.docCount;
             } finally {
                 AccountImpl.getSecurityProperties().enableCheckPasswords(true);
@@ -205,7 +208,7 @@ public class ConsistencyCheck {
 
         try {
             final DocumentCallback cb = new DocumentCallback(errorList, progress, true);
-            broker.getResourcesFailsafe(cb, directAccess);
+            broker.getResourcesFailsafe(transaction, cb, directAccess);
             cb.checkDocs();
         } finally {
             AccountImpl.getSecurityProperties().enableCheckPasswords(true);

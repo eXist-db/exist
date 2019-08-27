@@ -480,9 +480,10 @@ public class BlobStoreRecoveryTest {
         journalManager.configure(mockConfiguration);
 
         final DBBroker mockSystemBroker = createNiceMock(DBBroker.class);
+        final Txn mockSystemTransaction = createNiceMock(Txn.class);
 
         final SystemTaskManager mockSystemTaskManager = createNiceMock(SystemTaskManager.class);
-        mockSystemTaskManager.processTasks(mockSystemBroker);
+        mockSystemTaskManager.processTasks(mockSystemBroker, mockSystemTransaction);
         expectLastCall().anyTimes();
         replay(mockSystemTaskManager);
 

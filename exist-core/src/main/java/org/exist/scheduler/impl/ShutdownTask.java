@@ -23,6 +23,7 @@ import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.SystemTask;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.NamedThreadFactory;
 
@@ -47,7 +48,7 @@ public class ShutdownTask implements SystemTask {
     }
 
     @Override
-    public void execute(final DBBroker broker) throws EXistException {
+    public void execute(final DBBroker broker, final Txn transaction) throws EXistException {
 
         //NOTE - shutdown must be executed asynchronously from the scheduler, to avoid a deadlock with shutting down the scheduler
         final Callable shutdownCallable = new AsyncShutdown(broker.getBrokerPool());

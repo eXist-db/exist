@@ -25,6 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.storage.txn.Txn;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -115,9 +116,10 @@ public class FnExport extends BasicFunction {
 	        builder.startElement(EXPORT_ELEMENT, null);
         }
         
-        try {
-        	final SystemExport export = new SystemExport(context.getBroker(), new Callback(builder), null, true);
+        try (final Txn transaction = context.getBroker().continueOrBeginTransaction()) {
+        	final SystemExport export = new SystemExport(context.getBroker(), transaction, new Callback(builder), null, true);
             export.export(dirOrFile, incremental, zip, null);
+            transaction.commit();
         } catch (final Exception e) {
             throw new XPathException(this, "export failed with exception: " + e.getMessage(), e);
         }
