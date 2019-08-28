@@ -4,20 +4,15 @@ import org.exist.EXistException;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.repo.Deployment;
 import org.exist.repo.ExistRepository;
-import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.expath.pkg.repo.PackageException;
-import org.expath.pkg.repo.Repository;
-import org.expath.pkg.repo.XarFileSource;
-import org.expath.pkg.repo.XarSource;
+import org.expath.pkg.repo.*;
 import org.expath.pkg.repo.tui.BatchUserInteraction;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -40,13 +35,20 @@ public class RestoreAppsTest {
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private static final String REPO_XML =
+    private static final String REPO_XML_APP =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<meta xmlns=\"http://exist-db.org/xquery/repo\">\n" +
             "    <description>Backup Test App</description>\n" +
             "    <type>application</type>\n" +
-            "    <target>backup-test</target>" +
+            "    <target>backup-test</target>\n" +
             "</meta>";
+
+    private static final String REPO_XML_LIB =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        "<meta xmlns=\"http://exist-db.org/xquery/repo\">\n" +
+        "    <description>Backup Test App</description>\n" +
+        "    <type>library</type>\n" +
+        "</meta>";
 
     /**
      * Create an app package and generate a backup. Install a newer version
@@ -58,25 +60,62 @@ public class RestoreAppsTest {
     @Test
     public void restoreSkipNewer() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        removePackage(pool);
 
-        createAndInstallApp("1.0.0");
+        createAndInstallApp("1.0.0", REPO_XML_APP);
 
         Path backup = export(pool);
 
         removePackage(pool);
 
-        createAndInstallApp("2.0.0");
+        createAndInstallApp("2.0.0", REPO_XML_APP);
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-            final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-            Restore restore = new Restore();
-            TestRestoreListener listener = new TestRestoreListener();
-            restore.restore(broker, transaction, null, backup, listener, false);
+        restoreAndCheck(pool, backup, "Newer version is already installed.");
+    }
 
-            assertEquals(1, listener.info.size());
-            assertTrue(listener.info.get(0).endsWith("Newer version is already installed."));
-        }
+    /**
+     * Create a library package and generate a backup. Install a newer version
+     * of the same package and restore the backup. The newer version inside
+     * the expath repo should be preserved and not overwritten.
+     *
+     * Library packages are restored into /db/system/repo, not /db/apps, therefore
+     * we need an extra test.
+     *
+     * @throws Exception in case of error
+     */
+    @Test
+    public void restoreSkipNewerLib() throws Exception {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+
+        createAndInstallApp("1.0.0", REPO_XML_LIB);
+
+        Path backup = export(pool);
+
+        removePackage(pool);
+
+        createAndInstallApp("2.0.0", REPO_XML_LIB);
+
+        restoreAndCheck(pool, backup, "Newer version is already installed.");
+    }
+
+    /**
+     * Semver coercion: create an app with an incomplete semver and try to restore it. The newer version inside
+     * the expath repo should be preserved and not overwritten.
+     *
+     * @throws Exception in case of error
+     */
+    @Test
+    public void restoreWithIncompleteSemverAndSkipNewer() throws Exception {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+
+        createAndInstallApp("1", REPO_XML_APP);
+
+        Path backup = export(pool);
+
+        removePackage(pool);
+
+        createAndInstallApp("2.0.0", REPO_XML_APP);
+
+        restoreAndCheck(pool, backup, "Newer version is already installed.");
     }
 
     /**
@@ -87,26 +126,81 @@ public class RestoreAppsTest {
      * @throws Exception in case of error
      */
     @Test
-    public void restoreOverwriteOlder() throws IOException, EXistException, PackageException, PermissionDeniedException, SAXException {
+    public void restoreOverwriteOlder() throws Exception {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        removePackage(pool);
 
-        createAndInstallApp("2.0.0");
+        createAndInstallApp("2.0.0", REPO_XML_APP);
 
         Path backup = export(pool);
 
         removePackage(pool);
 
-        createAndInstallApp("1.0.0");
+        createAndInstallApp("1.0.0", REPO_XML_APP);
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-            final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+        restoreAndCheck(pool, backup, null);
+    }
+
+    /**
+     * Create a library package and generate a backup. Install an older version
+     * of the same package and restore the backup. The newer version inside
+     * the backup should overwrite the older in the database.
+     *
+     * Library packages are restored into /db/system/repo, not /db/apps, therefore
+     * we need an extra test.
+     *
+     * @throws Exception in case of error
+     */
+    @Test
+    public void restoreOverwriteOlderLib() throws Exception {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+
+        createAndInstallApp("2.0.0", REPO_XML_LIB);
+
+        Path backup = export(pool);
+
+        removePackage(pool);
+
+        createAndInstallApp("1.0.0", REPO_XML_LIB);
+
+        restoreAndCheck(pool, backup, null);
+    }
+
+    /**
+     * Semver coercion: create an app with an incomplete semver and try to restore it.
+     * The newer version inside the backup should overwrite the older in the database.
+     *
+     * @throws Exception in case of error
+     */
+    @Test
+    public void restoreOverwriteOlderWithIncompleteSemver() throws Exception {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+
+        createAndInstallApp("2.0.0", REPO_XML_APP);
+
+        Path backup = export(pool);
+
+        removePackage(pool);
+
+        createAndInstallApp("1.0", REPO_XML_APP);
+
+        restoreAndCheck(pool, backup, null);
+    }
+
+    private void restoreAndCheck(BrokerPool pool, Path backup, String expectedMessage) throws Exception {
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
             Restore restore = new Restore();
             TestRestoreListener listener = new TestRestoreListener();
             restore.restore(broker, transaction, null, backup, listener, false);
 
-            assertEquals(0, listener.info.size());
+            if (expectedMessage != null) {
+                assertEquals(1, listener.info.size());
+                assertTrue(listener.info.get(0).endsWith(expectedMessage));
+            } else {
+                assertEquals(0, listener.info.size());
+            }
         }
+        existEmbeddedServer.restart(true);
     }
 
     private void removePackage(BrokerPool pool) throws PackageException {
@@ -127,7 +221,7 @@ public class RestoreAppsTest {
         return backup;
     }
 
-    private void createAndInstallApp(String version) throws IOException, PackageException, EXistException {
+    private void createAndInstallApp(String version, String repoDescriptor) throws IOException, PackageException, EXistException {
         String descriptor =
                 "<package xmlns=\"http://expath.org/ns/pkg\" name=\"http://existsolutions.com/apps/backup-test\"\n" +
                 "   abbrev=\"backup-test\" version=\"" + version + "\" spec=\"1.0\">\n" +
@@ -144,7 +238,7 @@ public class RestoreAppsTest {
 
         entry = new ZipEntry("repo.xml");
         zos.putNextEntry(entry);
-        bytes = REPO_XML.getBytes(StandardCharsets.UTF_8);
+        bytes = repoDescriptor.getBytes(StandardCharsets.UTF_8);
         zos.write(bytes);
         zos.closeEntry();
         zos.close();
@@ -161,6 +255,9 @@ public class RestoreAppsTest {
             deployment.installAndDeploy(broker, transaction, xar, null);
             transaction.commit();
         }
+
+        Packages pkgs = repo.get().getParentRepo().getPackages("http://existsolutions.com/apps/backup-test");
+        assertEquals(1, pkgs.packages().size());
     }
 
     class TestRestoreListener implements RestoreListener {
