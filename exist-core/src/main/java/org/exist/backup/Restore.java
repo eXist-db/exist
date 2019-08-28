@@ -57,7 +57,7 @@ public class Restore {
     private static final byte[] ZIP_FILE_MAGIC_NUMBER = {0x50, 0x4B, 0x03, 0x04};
 
     public void restore(final DBBroker broker, @Nullable final Txn transaction, final String newAdminPass, final Path f,
-                        final RestoreListener listener, boolean overwriteApps) throws EXistException, IOException, SAXException, PermissionDeniedException {
+                        final RestoreListener listener, final boolean overwriteApps) throws EXistException, IOException, SAXException, PermissionDeniedException {
         
         //set the admin password
         if (newAdminPass != null) {

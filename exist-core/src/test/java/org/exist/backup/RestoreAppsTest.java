@@ -229,19 +229,19 @@ public class RestoreAppsTest {
                 "   <dependency processor=\"http://exist-db.org\" semver-min=\"5.0.0-RC8\"/>\n" +
                 "</package>";
         Path xarFile = temporaryFolder.newFile().toPath();
-        ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(xarFile, StandardOpenOption.WRITE));
-        ZipEntry entry = new ZipEntry("expath-pkg.xml");
-        zos.putNextEntry(entry);
-        byte[] bytes = descriptor.getBytes(StandardCharsets.UTF_8);
-        zos.write(bytes);
-        zos.closeEntry();
+        try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(xarFile, StandardOpenOption.WRITE))) {
+            ZipEntry entry = new ZipEntry("expath-pkg.xml");
+            zos.putNextEntry(entry);
+            byte[] bytes = descriptor.getBytes(StandardCharsets.UTF_8);
+            zos.write(bytes);
+            zos.closeEntry();
 
-        entry = new ZipEntry("repo.xml");
-        zos.putNextEntry(entry);
-        bytes = repoDescriptor.getBytes(StandardCharsets.UTF_8);
-        zos.write(bytes);
-        zos.closeEntry();
-        zos.close();
+            entry = new ZipEntry("repo.xml");
+            zos.putNextEntry(entry);
+            bytes = repoDescriptor.getBytes(StandardCharsets.UTF_8);
+            zos.write(bytes);
+            zos.closeEntry();
+        }
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         Optional<ExistRepository> repo = pool.getExpathRepo();
@@ -286,7 +286,6 @@ public class RestoreAppsTest {
 
         @Override
         public void info(String message) {
-            System.out.println(message);
             info.add(message);
         }
 

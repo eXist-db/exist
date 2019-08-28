@@ -118,7 +118,7 @@ public class Main {
             .description("rebuild the EXpath app repository after restore.")
             .defaultValue(false)
             .build();
-    private static final Argument<Boolean> overwriteAppsArg = optionArgument("-a", "--overwrite")
+    private static final Argument<Boolean> overwriteAppsArg = optionArgument("-a", "--overwrite-apps")
             .description("overwrite newer applications installed in the database.")
             .defaultValue(false)
             .build();
