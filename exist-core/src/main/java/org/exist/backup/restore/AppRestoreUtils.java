@@ -90,47 +90,59 @@ public class AppRestoreUtils {
         for (final BackupDescriptor descriptor : descriptors) {
             final BackupDescriptor apps = descriptor.getChildBackupDescriptor(appRoot);
             if (apps != null) {
-                final List<String> collections = getSubcollectionNames(parserPool, apps);
+                getAppsFromSubColl(result, parserPool, apps);
+            }
 
-                for (final String collection : collections) {
-                    final BackupDescriptor app = apps.getChildBackupDescriptor(collection);
-                    final InputSource is = app.getInputSource("expath-pkg.xml");
-                    if (is != null) {
-                        XMLReader reader = null;
-                        try {
-                            reader = parserPool.borrowXMLReader();
-                            reader.setContentHandler(new DefaultHandler() {
-                                @Override
-                                public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-                                    if (PKG_NAMESPACE.equals(uri) && "package".equals(localName)) {
-                                        final String version = attributes.getValue("version");
-                                        final String name = attributes.getValue("name");
-                                        if (StringUtils.isEmpty(version) || StringUtils.isEmpty(name)) {
-                                            LOG.warn("Invalid package descriptor for " + app.getSymbolicPath());
-                                            return;
-                                        }
-                                        try {
-                                            final AppDetail detail = new AppDetail(app.getSymbolicPath(), name, Semver.parse(version));
-                                            result.add(detail);
-                                        } catch (PackageException e) {
-                                            LOG.warn("Invalid semver found while parsing " + app.getSymbolicPath());
-                                        }
-                                    }
-                                }
-                            });
-                            reader.parse(is);
-                        } catch (IOException | SAXException e) {
-                            LOG.warn("Parse exception while parsing " + app.getSymbolicPath("expath-pkg.xml", false));
-                        } finally {
-                            if (reader != null) {
-                                parserPool.returnXMLReader(reader);
-                            }
-                        }
-                    }
+            final BackupDescriptor system = descriptor.getChildBackupDescriptor("system");
+            if (system != null) {
+                final BackupDescriptor repo = system.getChildBackupDescriptor("repo");
+                if (repo != null) {
+                    getAppsFromSubColl(result, parserPool, repo);
                 }
             }
         }
         return result;
+    }
+
+    private static void getAppsFromSubColl(final List<AppDetail> result, final XMLReaderPool parserPool, final BackupDescriptor descriptor) {
+        final List<String> collections = getSubcollectionNames(parserPool, descriptor);
+
+        for (final String collection : collections) {
+            final BackupDescriptor app = descriptor.getChildBackupDescriptor(collection);
+            final InputSource is = app.getInputSource("expath-pkg.xml");
+            if (is != null) {
+                XMLReader reader = null;
+                try {
+                    reader = parserPool.borrowXMLReader();
+                    reader.setContentHandler(new DefaultHandler() {
+                        @Override
+                        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+                            if (PKG_NAMESPACE.equals(uri) && "package".equals(localName)) {
+                                final String version = attributes.getValue("version");
+                                final String name = attributes.getValue("name");
+                                if (StringUtils.isEmpty(version) || StringUtils.isEmpty(name)) {
+                                    LOG.warn("Invalid package descriptor for " + app.getSymbolicPath());
+                                    return;
+                                }
+                                try {
+                                    final AppDetail detail = new AppDetail(app.getSymbolicPath(), name, Semver.parse(version));
+                                    result.add(detail);
+                                } catch (PackageException e) {
+                                    LOG.warn("Invalid semver found while parsing " + app.getSymbolicPath());
+                                }
+                            }
+                        }
+                    });
+                    reader.parse(is);
+                } catch (IOException | SAXException e) {
+                    LOG.warn("Parse exception while parsing " + app.getSymbolicPath("expath-pkg.xml", false));
+                } finally {
+                    if (reader != null) {
+                        parserPool.returnXMLReader(reader);
+                    }
+                }
+            }
+        }
     }
 
     private static List<String> getSubcollectionNames(XMLReaderPool parserPool, BackupDescriptor apps) {
