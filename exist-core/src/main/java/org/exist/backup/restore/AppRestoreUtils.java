@@ -48,7 +48,7 @@ public class AppRestoreUtils {
      * @param descriptors a queue of backup descriptors to inspect
      * @return a set of paths for which newer versions exist in the database. may be empty.
      */
-    public static Set<String> checkApps(DBBroker broker, Deque<BackupDescriptor> descriptors) {
+    public static Set<String> checkApps(final DBBroker broker, final Deque<BackupDescriptor> descriptors) {
         final List<AppDetail> apps = getAppsFromBackup(broker, descriptors);
         final Set<String> paths = new HashSet<>();
         final Optional<ExistRepository> repo = broker.getBrokerPool().getExpathRepo();
@@ -83,9 +83,9 @@ public class AppRestoreUtils {
      * @param descriptors a queue of backup descriptors to inspect
      * @return list of application details
      */
-    private static List<AppDetail> getAppsFromBackup(DBBroker broker, Deque<BackupDescriptor> descriptors) {
+    private static List<AppDetail> getAppsFromBackup(final DBBroker broker, final Deque<BackupDescriptor> descriptors) {
         final String appRoot = getAppRoot(broker);
-        final List<AppDetail> result = new ArrayList<>(17);
+        final List<AppDetail> result = new ArrayList<>();
         final XMLReaderPool parserPool = broker.getBrokerPool().getParserPool();
         for (final BackupDescriptor descriptor : descriptors) {
             final BackupDescriptor apps = descriptor.getChildBackupDescriptor(appRoot);
@@ -145,7 +145,7 @@ public class AppRestoreUtils {
         }
     }
 
-    private static List<String> getSubcollectionNames(XMLReaderPool parserPool, BackupDescriptor apps) {
+    private static List<String> getSubcollectionNames(final XMLReaderPool parserPool, final BackupDescriptor apps) {
         final List<String> collections = new ArrayList<>();
         try {
             apps.parse(parserPool, new DefaultHandler() {
@@ -167,7 +167,7 @@ public class AppRestoreUtils {
      * @param broker the broker to get the configuration from
      * @return the root path for applications
      */
-    private static String getAppRoot(DBBroker broker) {
+    private static String getAppRoot(final DBBroker broker) {
         String appRoot = (String) broker.getConfiguration().getProperty(Deployment.PROPERTY_APP_ROOT);
         if (appRoot.startsWith(XmldbURI.ROOT_COLLECTION + '/')) {
             appRoot = appRoot.substring(XmldbURI.ROOT_COLLECTION.length() + 1);

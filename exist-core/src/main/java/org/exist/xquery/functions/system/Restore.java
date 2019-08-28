@@ -52,29 +52,31 @@ public class Restore extends BasicFunction {
 
 	protected final static Logger logger = LogManager.getLogger(Restore.class);
 
-	public final static FunctionSignature signatures[] = {
+    public static final FunctionParameterSequenceType PARAM_DIR_OR_FILE = new FunctionParameterSequenceType("dir-or-file", Type.STRING, Cardinality.EXACTLY_ONE,
+            "This is either a backup directory with the backup descriptor (__contents__.xml) or a backup ZIP file.");
+    public static final FunctionParameterSequenceType PARAM_ADMIN_PASS = new FunctionParameterSequenceType("admin-pass", Type.STRING, Cardinality.ZERO_OR_ONE,
+            "The password for the admin user");
+    public static final FunctionParameterSequenceType PARAM_NEW_ADMIN_PASS = new FunctionParameterSequenceType("new-admin-pass", Type.STRING, Cardinality.ZERO_OR_ONE,
+            "Set the admin password to this new password.");
+    public static final String DESCRIPTION = "Restore the database or a section of the database (admin user only).";
+
+    public final static FunctionSignature signatures[] = {
 	        new FunctionSignature(
                     new QName("restore", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-                    "Restore the database or a section of the database (admin user only).",
+                    DESCRIPTION,
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("dir-or-file", Type.STRING, Cardinality.EXACTLY_ONE,
-                                    "This is either a backup directory with the backup descriptor (__contents__.xml) or a backup ZIP file."),
-                            new FunctionParameterSequenceType("admin-pass", Type.STRING, Cardinality.ZERO_OR_ONE,
-                                    "The password for the admin user"),
-                            new FunctionParameterSequenceType("new-admin-pass", Type.STRING, Cardinality.ZERO_OR_ONE,
-                                    "Set the admin password to this new password.")
+                            PARAM_DIR_OR_FILE,
+                            PARAM_ADMIN_PASS,
+                            PARAM_NEW_ADMIN_PASS
                     },
                     new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the restore results")),
             new FunctionSignature(
                     new QName("restore", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-                    "Restore the database or a section of the database (admin user only).",
+                    DESCRIPTION,
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("dir-or-file", Type.STRING, Cardinality.EXACTLY_ONE,
-                                    "This is either a backup directory with the backup descriptor (__contents__.xml) or a backup ZIP file."),
-                            new FunctionParameterSequenceType("admin-pass", Type.STRING, Cardinality.ZERO_OR_ONE,
-                                    "The password for the admin user"),
-                            new FunctionParameterSequenceType("new-admin-pass", Type.STRING, Cardinality.ZERO_OR_ONE,
-                                    "Set the admin password to this new password."),
+                            PARAM_DIR_OR_FILE,
+                            PARAM_ADMIN_PASS,
+                            PARAM_NEW_ADMIN_PASS,
                             new FunctionParameterSequenceType("overwrite", Type.BOOLEAN, Cardinality.ZERO_OR_ONE,
                                     "Should newer versions of apps installed in the database be overwritten " +
                                             "by those found in the backup? False by default.")
@@ -99,10 +101,7 @@ public class Restore extends BasicFunction {
         if (args[2].hasOne())
                 {adminPassAfter = args[2].getStringValue();}
 
-        boolean overwriteApps = false;
-        if (args.length == 4) {
-            overwriteApps = args[3].effectiveBooleanValue();
-        }
+        final boolean overwriteApps = args.length == 4 && args[3].effectiveBooleanValue();
 
         final MemTreeBuilder builder = context.getDocumentBuilder();
         builder.startDocument();
