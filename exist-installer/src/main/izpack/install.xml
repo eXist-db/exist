@@ -153,6 +153,13 @@
             </fileset>
         </pack>
 
+        <pack name="Semver.xq" required="true" preselected="true" parent="Apps">
+            <description>Semver 2.0.0 versioning module</description>
+            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
+                <include name="semver-xq-*.xar"/>
+            </fileset>
+        </pack>
+
         <pack name="dashboard" required="true" preselected="true" parent="Apps">
             <description>Dashboard</description>
             <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
