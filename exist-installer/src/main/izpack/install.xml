@@ -116,6 +116,9 @@
             </fileset>
             <executable os="unix" targetfile="$INSTALL_PATH/bin/backup.sh"/>
             <executable os="unix" targetfile="$INSTALL_PATH/bin/client.sh"/>
+            <executable os="unix" targetfile="$INSTALL_PATH/bin/export.sh"/>
+            <executable os="unix" targetfile="$INSTALL_PATH/bin/export-gui.sh"/>
+            <executable os="unix" targetfile="$INSTALL_PATH/bin/jmxclient.sh"/>
             <executable os="unix" targetfile="$INSTALL_PATH/bin/launcher.sh"/>
             <executable os="unix" targetfile="$INSTALL_PATH/bin/shutdown.sh"/>
             <executable os="unix" targetfile="$INSTALL_PATH/bin/startup.sh"/>
