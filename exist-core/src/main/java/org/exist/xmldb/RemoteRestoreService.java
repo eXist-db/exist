@@ -64,7 +64,7 @@ public class RemoteRestoreService implements EXistRestoreService {
 
     @Override
     public void restore(final String backup, @Nullable final String newAdminPassword,
-            final RestoreServiceTaskListener restoreListener, boolean overwriteApps) throws XMLDBException {
+            final RestoreServiceTaskListener restoreListener, final boolean overwriteApps) throws XMLDBException {
         final Path backupPath = Paths.get(backup).normalize().toAbsolutePath();
         if (!Files.exists(backupPath)) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Backup does not exist: " + backupPath);

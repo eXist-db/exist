@@ -407,7 +407,7 @@ public class RestoreHandler extends DefaultHandler {
         //parse the sub-collection descriptor and restore
         final BackupDescriptor subDescriptor = descriptor.getChildBackupDescriptor(name);
         if(subDescriptor != null) {
-            if (pathsToIgnore != null && pathsToIgnore.contains(subDescriptor.getSymbolicPath())) {
+            if (pathsToIgnore.contains(subDescriptor.getSymbolicPath())) {
                 listener.info("Skipping app path " + subDescriptor.getSymbolicPath() + ". Newer version " +
                         "is already installed.");
                 return;
