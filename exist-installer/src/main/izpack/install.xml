@@ -167,7 +167,7 @@
             </fileset>
         </pack>
 
-        <pack name="functx" required="false" preselected="true" parent="Apps">
+        <pack name="functx" required="true" preselected="true" parent="Apps">
             <description>FunctX library</description>
             <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
                 <include name="functx-*.xar"/>
