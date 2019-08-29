@@ -279,9 +279,9 @@ public abstract class DBBroker implements AutoCloseable {
      */
     public abstract MutableDocumentSet getAllXMLResources(MutableDocumentSet docs) throws PermissionDeniedException, LockException;
 
-    public abstract void getResourcesFailsafe(BTreeCallback callback, boolean fullScan) throws TerminatedException;
+    public abstract void getResourcesFailsafe(Txn transaction, BTreeCallback callback, boolean fullScan) throws TerminatedException;
 
-    public abstract void getCollectionsFailsafe(BTreeCallback callback) throws TerminatedException;
+    public abstract void getCollectionsFailsafe(Txn transaction, BTreeCallback callback) throws TerminatedException;
 
     /**
      * Gets a database Collection.
