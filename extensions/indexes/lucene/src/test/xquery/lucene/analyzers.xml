@@ -80,7 +80,7 @@
         <expected/>
     </test>
     <test output="xml">
-        <task>Index/Query field "line-again" with different analyzers (see PR#2990)</task>
+        <task>Index/Query field "line-again" with different analyzers (see PR#2991)</task>
         <code>ft:query-field("line-again", "herzen")</code>
         <expected>
             <l n="l1.12">Das will mir schier das Herz verbrennen.</l>
