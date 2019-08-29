@@ -17,7 +17,10 @@
                         <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
                         <analyzer id="keyword" class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
                         <analyzer id="de" class="org.apache.lucene.analysis.de.GermanAnalyzer"/>
+                        <analyzer id="line-again:index" class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+                        <analyzer id="line-again:query" class="org.apache.lucene.analysis.de.GermanAnalyzer"/>
                         <text field="line" qname="l"/>
+                        <text field="line-again" qname="l" analyzer="line-again:index"/>
                         <text qname="l" analyzer="de"/>
                         <text field="lineno" qname="@n" analyzer="keyword"/>
                     </lucene>
@@ -72,9 +75,16 @@
         </expected>
     </test>
     <test output="xml">
-        <task>Query field with standard analyzer, no match</task>
+        <task>Query field "line" with standard analyzer, no match</task>
         <code>ft:query-field("line", "herzen")</code>
         <expected/>
+    </test>
+    <test output="xml">
+        <task>Index/Query field "line-again" with different analyzers (see PR#2990)</task>
+        <code>ft:query-field("line-again", "herzen")</code>
+        <expected>
+            <l n="l1.12">Das will mir schier das Herz verbrennen.</l>
+        </expected>
     </test>
     <test output="xml">
         <task>Query field with standard analyzer and without context</task>
