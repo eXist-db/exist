@@ -202,10 +202,10 @@
             </fileset>
         </pack>
 
-        <pack name="fundocs" required="false" preselected="true" parent="Apps">
+        <pack name="exist-function-documentation" required="false" preselected="true" parent="Apps">
             <description>XQuery Function Documentation</description>
             <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
-                <include name="fundocs-*.xar"/>
+                <include name="exist-function-documentation-*.xar"/>
             </fileset>
         </pack>
 
