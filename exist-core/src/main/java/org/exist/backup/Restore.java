@@ -67,10 +67,7 @@ public class Restore {
         //get the backup descriptors, can be more than one if it was an incremental backup
         final Deque<BackupDescriptor> descriptors = getBackupDescriptors(f);
 
-        Set<String> appsToSkip = null;
-        if (!overwriteApps) {
-            appsToSkip = AppRestoreUtils.checkApps(broker, descriptors);
-        }
+        final Set<String> appsToSkip = overwriteApps ? Collections.emptySet() : AppRestoreUtils.checkApps(broker, descriptors);
 
         // count all files
         long totalNrOfFiles = 0;
@@ -88,7 +85,7 @@ public class Restore {
 
             while(!descriptors.isEmpty()) {
                 final BackupDescriptor descriptor = descriptors.pop();
-                if (appsToSkip != null && appsToSkip.contains(descriptor.getSymbolicPath())) {
+                if (appsToSkip.contains(descriptor.getSymbolicPath())) {
                     listener.info("Skipping app path " + descriptor.getSymbolicPath() + ". Newer version " +
                             "is already installed.");
                 } else {

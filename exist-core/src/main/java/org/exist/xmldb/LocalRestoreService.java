@@ -49,7 +49,7 @@ public class LocalRestoreService extends AbstractLocalService implements EXistRe
 
     @Override
     public void restore(final String backup, final @Nullable String newAdminPassword,
-            final RestoreServiceTaskListener restoreListener, boolean overwriteApps) throws XMLDBException {
+            final RestoreServiceTaskListener restoreListener, final boolean overwriteApps) throws XMLDBException {
         final Restore restore = new Restore();
         withDb((broker, transaction) -> {
             try {
