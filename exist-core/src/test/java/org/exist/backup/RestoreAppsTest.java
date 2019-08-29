@@ -211,10 +211,13 @@ public class RestoreAppsTest {
 
     private Path export(BrokerPool pool) throws IOException, EXistException {
         Path backup;
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            SystemExport export = new SystemExport(broker, null, null, false);
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+            SystemExport export = new SystemExport(broker, transaction, null, null, false);
             String backupDir = temporaryFolder.newFolder().getAbsolutePath();
             backup = export.export(backupDir, false, true, null);
+
+            transaction.commit();
         }
         assertNotNull(backup);
         assertTrue(Files.isReadable(backup));
