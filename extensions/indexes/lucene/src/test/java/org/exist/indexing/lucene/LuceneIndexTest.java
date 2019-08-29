@@ -325,6 +325,7 @@ public class LuceneIndexTest {
                 "            <analyzer class='org.apache.lucene.analysis.standard.StandardAnalyzer'/>\n" +
                 "            <text match=\"//title[@xml:lang='Sa-Ltn']\"/>\n" +
                 "            <text match=\"/TEI/text\"><ignore qname=\"text\"/></text>\n" +
+                "            <text field=\"non-Sa-Ltn\" match=\"//title[@xml:lang != 'Sa-Ltn']\"/>\n" +
                 "        </lucene> \n" +
                 "    </index>\n" +
                 "</collection>";
@@ -383,6 +384,40 @@ public class LuceneIndexTest {
             seq = xquery.execute(broker, "//.[ft:query(title, 'AFord')]", null);
             assertNotNull(seq);
             assertEquals(0, seq.getItemCount());
+
+            // Field query with negative attribute predicate: <text field="non-En" match="//title[@xml:lang != 'En']"/>
+
+            seq = xquery.execute(broker, "//.[ft:query-field('non-Sa-Ltn', 'Buick')]", null);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+
+            seq = xquery.execute(broker, "//.[ft:query-field('non-Sa-Ltn', 'Cadillac')]", null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute(broker, "//.[ft:query-field('non-Sa-Ltn', 'Dodge')]", null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute(broker, "//.[ft:query-field('non-Sa-Ltn', 'Ford')]", null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute(broker, "//.[ft:query-field('non-Sa-Ltn', 'ABuick')]", null);
+            assertNotNull(seq);
+            assertEquals(0, seq.getItemCount());
+
+            seq = xquery.execute(broker, "//.[ft:query-field('non-Sa-Ltn', 'ACadillac')]", null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute(broker, "//.[ft:query-field('non-Sa-Ltn', 'ADodge')]", null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute(broker, "//.[ft:query-field('non-Sa-Ltn', 'AFord')]", null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
         }
     }
 

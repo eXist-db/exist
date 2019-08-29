@@ -64,11 +64,18 @@ public class NodePathPattern {
         }
     };
 
-    static class SimpleAttrEqValuePredicate implements Predicate {
+    enum PredicateCode {
+        EQUALS,
+        NOT_EQUALS
+    }
+
+    static class SimpleAttrValuePredicate implements Predicate {
+        private final PredicateCode pcode;
         private final String attrName;
         private final String attrVal;
 
-        SimpleAttrEqValuePredicate(String attrName, String attrVal) {
+        SimpleAttrValuePredicate(PredicateCode pcode, String attrName, String attrVal) {
+            this.pcode = pcode;
             this.attrName = attrName;
             this.attrVal = attrVal;
         }
@@ -76,7 +83,15 @@ public class NodePathPattern {
         @Override
         public boolean evaluate(NodePath2 nodePath, int elementIdx) {
             String val = nodePath.attribs(elementIdx).get(attrName);
-            return Objects.equals(val, attrVal);
+            switch (pcode) {
+                case EQUALS:
+                    return Objects.equals(val, attrVal);
+                case NOT_EQUALS:
+                    return !Objects.equals(val, attrVal);
+                default:
+                    assert false: "PredicateCode " + pcode + " not handled!";
+                    return false;
+            }
         }
     }
 
@@ -141,16 +156,22 @@ public class NodePathPattern {
 
     private Predicate parsePredicate(String input) {
         if (!input.startsWith("[") || !input.endsWith("]") || input.charAt(1) != '@') {
-            throw new IllegalArgumentException("Bad predicate spec: " + input + "\nOnly [@attr=value] is supported");
+            throw new IllegalArgumentException("Bad predicate spec: " + input + "\nOnly [@attr=value] and [@attr!=value] are supported");
         }
 
         // So far we're supporting only [@attr=value] predicates:
         int eqIdx = input.indexOf('=');
         if (eqIdx < 0) {
-            throw new IllegalArgumentException("Bad predicate spec: " + input + "\nOnly [@attr=value] is supported");
+            throw new IllegalArgumentException("Bad predicate spec: " + input + "\nOnly [@attr=value] and [@attr!=value] are supported");
+        }
+        PredicateCode pcode = PredicateCode.EQUALS;
+        int eqIdxEnd = eqIdx + 1;
+        if (input.charAt(eqIdx - 1) == '!') {
+            eqIdx -= 1;
+            pcode = PredicateCode.NOT_EQUALS;
         }
         String name = input.substring(2, eqIdx).trim(); // 2 is to skip the leading [@
-        String val = input.substring(eqIdx + 1, input.length() - 1).trim(); // -1 is to skip the trailing ]
+        String val = input.substring(eqIdxEnd, input.length() - 1).trim(); // -1 is to skip the trailing ]
 
         if (!(val.startsWith("\'") && val.endsWith("\'") || val.startsWith("\"") && val.endsWith("\""))) {
             throw new IllegalArgumentException("Bad predicate spec: " + input + "\nAttribute value not in quotes");
@@ -158,7 +179,7 @@ public class NodePathPattern {
             val = val.substring(1, val.length() - 1); // strip the quotes
         }
 
-        return new SimpleAttrEqValuePredicate(name, val);
+        return new SimpleAttrValuePredicate(pcode, name, val);
     }
 
     public int length() {
