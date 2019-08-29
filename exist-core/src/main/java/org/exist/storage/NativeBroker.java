@@ -2286,7 +2286,8 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public void getResourcesFailsafe(final BTreeCallback callback, final boolean fullScan) throws TerminatedException {
+    public void getResourcesFailsafe(final Txn transaction, final BTreeCallback callback, final boolean fullScan) throws TerminatedException {
+        assert(transaction != null && transaction.getState() == Txn.State.STARTED);
         try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeReadLock(collectionsDb.getLockName())) {
             final Value key = new CollectionStore.DocumentKey();
             final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
@@ -2303,7 +2304,8 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public void getCollectionsFailsafe(final BTreeCallback callback) throws TerminatedException {
+    public void getCollectionsFailsafe(final Txn transaction, final BTreeCallback callback) throws TerminatedException {
+        assert(transaction != null && transaction.getState() == Txn.State.STARTED);
         try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeReadLock(collectionsDb.getLockName())) {
             final Value key = new CollectionStore.CollectionKey();
             final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);

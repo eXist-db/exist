@@ -624,7 +624,10 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                                 props.setProperty("backup", "no");
                                 props.setProperty("output", "sanity");
                                 task.configure(conf, props);
-                                task.execute(systemBroker);
+                                try (final Txn transaction = transactionManager.beginTransaction()) {
+                                    task.execute(systemBroker, transaction);
+                                    transaction.commit();
+                                }
                             }
                         }
 

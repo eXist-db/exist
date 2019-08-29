@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.storage.sync.Sync;
+import org.exist.storage.txn.Txn;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -58,7 +59,7 @@ public class SystemTaskManager implements BrokerPoolService {
      *
      * @param systemBroker a broker running as the SYSTEM subject.
      */
-    public void processTasks(final DBBroker systemBroker) {
+    public void processTasks(final DBBroker systemBroker, final Txn transaction) {
         //dont run the task if we are shutting down
         if (pool.isShuttingDown() || pool.isShutDown()) {
             return;
@@ -83,7 +84,7 @@ public class SystemTaskManager implements BrokerPoolService {
                             if (task.afterCheckpoint()) {
                                 pool.sync(systemBroker, Sync.MAJOR);
                             }
-                            runSystemTask(task, systemBroker);
+                            runSystemTask(task, systemBroker, transaction);
                         }
                     }
                 } catch (final Exception e) {
@@ -93,12 +94,12 @@ public class SystemTaskManager implements BrokerPoolService {
         }
     }
 
-    private void runSystemTask(final SystemTask task, final DBBroker broker) throws EXistException {
+    private void runSystemTask(final SystemTask task, final DBBroker broker, final Txn transaction) throws EXistException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Running system maintenance task: " + task.getClass().getName());
         }
 
-        task.execute(broker);
+        task.execute(broker, transaction);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("System task completed.");
