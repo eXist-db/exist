@@ -103,12 +103,14 @@ public class RootNode extends Step {
         
         // check if the loaded documents should remain locked
         NewArrayNodeSet result = new NewArrayNodeSet();
-        ManagedLocks<ManagedDocumentLock> docLocks = null;
-        try {
-            // wait for pending updates
-            if (!context.inProtectedMode()) {
-                docLocks = ds.lock(context.getBroker(), false);
-            }
+
+        // NOTE(AR) locking the documents here does not actually do anything useful, eXist-db will still exhibit weak isolation with concurrent updates
+//        ManagedLocks<ManagedDocumentLock> docLocks = null;
+//        try {
+//            // wait for pending updates
+//            if (!context.inProtectedMode()) {
+//                docLocks = ds.lock(context.getBroker(), false);
+//            }
 
 	        DocumentImpl doc;
 	        for (final Iterator<DocumentImpl> i = ds.getDocumentIterator(); i.hasNext();) {
@@ -121,14 +123,17 @@ public class RootNode extends Step {
             }
 	        cached = result;
 	        cachedDocs = ds;
-        } catch (final LockException e) {
-            throw new XPathException(this, "Failed to acquire lock on the context document set");
-        } finally {
-            // release all locks
-            if (!context.inProtectedMode() && docLocks != null) {
-                docLocks.close();
-            }
-        }
+
+        // NOTE(AR) see comment above regards locking the documents
+//        } catch (final LockException e) {
+//            throw new XPathException(this, "Failed to acquire lock on the context document set");
+//        } finally {
+//            // release all locks
+//            if (!context.inProtectedMode() && docLocks != null) {
+//                docLocks.close();
+//            }
+//        }
+
 //        result.updateNoSort();
         if (context.getProfiler().isEnabled()) 
             {context.getProfiler().end(this, "", result);}

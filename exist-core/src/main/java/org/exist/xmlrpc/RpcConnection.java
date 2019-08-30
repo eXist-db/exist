@@ -3651,7 +3651,7 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
-    public String restore(final String newAdminPassword, final String localFile) throws EXistException {
+    public String restore(final String newAdminPassword, final String localFile, final boolean overwriteApps) throws EXistException {
         final int handle = Integer.parseInt(localFile);
         final SerializedResult sr = factory.resultSets.getSerializedResult(handle);
         if (sr == null) {
@@ -3668,7 +3668,7 @@ public class RpcConnection implements RpcAPI {
 
                 withDb((broker, transaction) -> {
                     final Restore restore = new Restore();
-                    restore.restore(broker, transaction, newAdminPassword, backupFile, listener);
+                    restore.restore(broker, transaction, newAdminPassword, backupFile, listener, overwriteApps);
                     return null;
                 });
 

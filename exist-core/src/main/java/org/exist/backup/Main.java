@@ -118,6 +118,10 @@ public class Main {
             .description("rebuild the EXpath app repository after restore.")
             .defaultValue(false)
             .build();
+    private static final Argument<Boolean> overwriteAppsArg = optionArgument("-a", "--overwrite-apps")
+            .description("overwrite newer applications installed in the database.")
+            .defaultValue(false)
+            .build();
 
     private static Properties loadProperties() {
         try {
@@ -159,6 +163,7 @@ public class Main {
 
         final Optional<Path> restorePath = getOpt(arguments, restoreArg).map(File::toPath);
         final boolean rebuildRepo = getBool(arguments, rebuildExpathRepoArg);
+        final boolean overwriteApps = getBool(arguments, overwriteAppsArg);
 
         boolean deduplicateBlobs = getBool(arguments, backupDeduplicateBlobs);
 
@@ -238,9 +243,10 @@ public class Main {
                     }
 
                     if (guiMode) {
-                        restoreWithGui(username, optionPass, optionDbaPass, path, dbUri);
+                        restoreWithGui(username, optionPass, optionDbaPass, path, dbUri, overwriteApps);
                     } else {
-                        restoreWithoutGui(username, optionPass, optionDbaPass, path, dbUri, rebuildRepo, quiet);
+                        restoreWithoutGui(username, optionPass, optionDbaPass, path, dbUri,
+                                rebuildRepo, quiet, overwriteApps);
                     }
                 } catch (final Exception e) {
                     reportError(e);
@@ -264,12 +270,12 @@ public class Main {
 
     private static void restoreWithoutGui(final String username, final String password,
             final Optional<String> dbaPassword, final Path f, final XmldbURI uri, final boolean rebuildRepo,
-            final boolean quiet) {
+            final boolean quiet, final boolean overwriteApps) {
         final AggregatingConsoleRestoreServiceTaskListener listener = new AggregatingConsoleRestoreServiceTaskListener(quiet);
         try {
             final Collection collection = DatabaseManager.getCollection(uri.toString(), username, password);
             final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
-            service.restore(f.toAbsolutePath().toString(), dbaPassword.orElse(null), listener);
+            service.restore(f.toAbsolutePath().toString(), dbaPassword.orElse(null), listener, overwriteApps);
 
         } catch (final XMLDBException e) {
             listener.error(e.getMessage());
@@ -350,7 +356,8 @@ public class Main {
         }
     }
 
-    private static void restoreWithGui(final String username, final String password, final Optional<String> dbaPassword, final Path f, final XmldbURI uri) {
+    private static void restoreWithGui(final String username, final String password, final Optional<String> dbaPassword,
+                                       final Path f, final XmldbURI uri, boolean overwriteApps) {
 
         final GuiRestoreServiceTaskListener listener = new GuiRestoreServiceTaskListener();
 
@@ -359,7 +366,7 @@ public class Main {
             try {
                 final Collection collection = DatabaseManager.getCollection(uri.toString(), username, password);
                 final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
-                service.restore(f.toAbsolutePath().toString(), dbaPassword.orElse(null), listener);
+                service.restore(f.toAbsolutePath().toString(), dbaPassword.orElse(null), listener, overwriteApps);
 
                 listener.hideDialog();
 
@@ -434,7 +441,7 @@ public class Main {
             final ParsedArguments arguments = CommandLineParser
                     .withArguments(userArg, passwordArg, dbaPasswordArg)
                     .andArguments(backupCollectionArg, backupOutputDirArg, backupDeduplicateBlobs)
-                    .andArguments(restoreArg, rebuildExpathRepoArg)
+                    .andArguments(restoreArg, rebuildExpathRepoArg, overwriteAppsArg)
                     .andArguments(helpArg, guiArg, quietArg, optionArg)
                     .parse(args);
 

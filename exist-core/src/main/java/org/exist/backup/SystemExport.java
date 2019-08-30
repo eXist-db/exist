@@ -45,6 +45,7 @@ import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.serializers.ChainOfReceiversFactory;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.storage.txn.Txn;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.util.UTF8;
@@ -113,15 +114,17 @@ public class SystemExport {
     private final Properties contentsOutputProps = new Properties();
 
     private final DBBroker broker;
+    private final Txn transaction;
     private StatusCallback callback = null;
     private boolean directAccess = false;
     private ProcessMonitor.Monitor monitor = null;
     private BackupHandler bh = null;
     private ChainOfReceiversFactory chainFactory;
 
-    public SystemExport(final DBBroker broker, final StatusCallback callback, final ProcessMonitor.Monitor monitor,
+    public SystemExport(final DBBroker broker, final Txn transaction, final StatusCallback callback, final ProcessMonitor.Monitor monitor,
             final boolean direct, final ChainOfReceiversFactory chainFactory) {
         this.broker = broker;
+        this.transaction = transaction;
         this.callback = callback;
         this.monitor = monitor;
         this.directAccess = direct;
@@ -139,9 +142,9 @@ public class SystemExport {
     }
 
     @SuppressWarnings("unchecked")
-    public SystemExport(final DBBroker broker, final StatusCallback callback, final ProcessMonitor.Monitor monitor,
-            final boolean direct) {
-        this(broker, callback, monitor, direct, null);
+    public SystemExport(final DBBroker broker, final Txn transaction, final StatusCallback callback,
+            final ProcessMonitor.Monitor monitor, final boolean direct) {
+        this(broker, transaction, callback, monitor, direct, null);
 
         final List<String> list = (List<String>) broker.getConfiguration().getProperty(CONFIG_FILTERS);
         if (list != null) {
@@ -232,7 +235,7 @@ public class SystemExport {
 
                 final Date date = (prevBackup == null) ? null : prevBackup.getDate();
                 final CollectionCallback cb = new CollectionCallback(output, date, prevBackup, errorList, true);
-                broker.getCollectionsFailsafe(cb);
+                broker.getCollectionsFailsafe(transaction, cb);
 
                 exportOrphans(output, cb.getDocs(), errorList);
             }
@@ -333,7 +336,7 @@ public class SystemExport {
             serializer.startElement(Namespaces.EXIST_NS, "collection", "collection", attr);
 
             final DocumentCallback docCb = new DocumentCallback(output, serializer, null, null, docs, true);
-            broker.getResourcesFailsafe(docCb, directAccess);
+            broker.getResourcesFailsafe(transaction, docCb, directAccess);
 
             serializer.endElement(Namespaces.EXIST_NS, "collection", "collection");
             serializer.endPrefixMapping("");
@@ -707,7 +710,7 @@ public class SystemExport {
 
             try {
                 final CollectionCallback cb = new CollectionCallback(null, null, null, null, false);
-                broker.getCollectionsFailsafe(cb);
+                broker.getCollectionsFailsafe(transaction, cb);
                 collectionCount = cb.collectionCount;
             } finally {
                 AccountImpl.getSecurityProperties().enableCheckPasswords(true);

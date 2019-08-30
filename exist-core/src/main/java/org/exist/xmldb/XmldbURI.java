@@ -47,7 +47,7 @@ import java.util.regex.Pattern;
  * full uri support.  The create method creates a minimal object to keep memory
  * usage low.
  */
-public class XmldbURI implements Comparable<Object>, Serializable {
+public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
 
     protected final static Logger LOG = LogManager.getLogger(XmldbURI.class);
     public static final int NO_PORT = -1;
@@ -171,6 +171,16 @@ public class XmldbURI implements Comparable<Object>, Serializable {
 
     protected XmldbURI(final String collectionPath) {
         this.encodedCollectionPath = collectionPath;
+    }
+
+    /**
+     * Copy Constructor.
+     *
+     * @param other another XmldbURI to copy.
+     */
+    private XmldbURI(final XmldbURI other) {
+        this.encodedCollectionPath = other.encodedCollectionPath;
+        this.hadXmldbPrefix = other.hadXmldbPrefix;
     }
 
     public static XmldbURI xmldbUriFor(final URI uri) throws URISyntaxException {
@@ -1102,6 +1112,11 @@ public class XmldbURI implements Comparable<Object>, Serializable {
     @Override
     public int hashCode() {
         return getXmldbURI().hashCode();
+    }
+
+    @Override
+    public Object clone() {
+        return new XmldbURI(this);
     }
 
     //  TODO : prefefined URIs as static classes...

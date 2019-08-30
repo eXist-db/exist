@@ -25,6 +25,7 @@ package org.exist.storage;
 import java.util.Properties;
 
 import org.exist.EXistException;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 
 /**
@@ -60,7 +61,7 @@ public interface SystemTask {
 	 * 
 	 * @throws EXistException if a database error occurs
 	 */
-	void execute(DBBroker broker) throws EXistException;
+	void execute(DBBroker broker, Txn transaction) throws EXistException;
 	
 	/**
 	 * @return true if a checkpoint should be generated before this system task

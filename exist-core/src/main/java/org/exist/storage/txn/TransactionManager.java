@@ -566,7 +566,10 @@ public class TransactionManager implements BrokerPoolService {
                     // otherwise we might be in SYSTEM state but `abort` or `commit`
                     // functions are still finishing
                     if (transactions.isEmpty()) {
-                        systemTaskManager.processTasks(systemBroker);
+                        try (final Txn transaction = beginTransaction()) {
+                            systemTaskManager.processTasks(systemBroker, transaction);
+                            transaction.commit();
+                        }
                     }
 
                 } finally {

@@ -46,6 +46,7 @@ public class RestoreTask extends AbstractXMLDBTask
     private Path   dir             = null;
     private DirSet dirSet          = null;
     private String restorePassword = null;
+    private boolean overwriteApps = false;
 
     @Override
     public void execute() throws BuildException
@@ -88,7 +89,7 @@ public class RestoreTask extends AbstractXMLDBTask
                         final RestoreServiceTaskListener listener = new ConsoleRestoreServiceTaskListener();
                         final Collection collection = DatabaseManager.getCollection(uri, user, password);
                         final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
-                        service.restore(file.normalize().toAbsolutePath().toString(), restorePassword, listener);
+                        service.restore(file.normalize().toAbsolutePath().toString(), restorePassword, listener, overwriteApps);
                     }
 
                 } else if( dirSet != null ) {
@@ -116,7 +117,7 @@ public class RestoreTask extends AbstractXMLDBTask
                             final RestoreServiceTaskListener listener = new ConsoleRestoreServiceTaskListener();
                             final Collection collection = DatabaseManager.getCollection(uri, user, password);
                             final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
-                            service.restore(contentsFile.normalize().toAbsolutePath().toString(), restorePassword, listener);
+                            service.restore(contentsFile.normalize().toAbsolutePath().toString(), restorePassword, listener, overwriteApps);
                         }
                     }
 
@@ -135,7 +136,7 @@ public class RestoreTask extends AbstractXMLDBTask
                         final RestoreServiceTaskListener listener = new ConsoleRestoreServiceTaskListener();
                         final Collection collection = DatabaseManager.getCollection(uri, user, password);
                         final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
-                        service.restore(zipFile.normalize().toAbsolutePath().toString(), restorePassword, listener);
+                        service.restore(zipFile.normalize().toAbsolutePath().toString(), restorePassword, listener, overwriteApps);
                     }
                 }
 

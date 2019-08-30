@@ -131,14 +131,17 @@ public class SystemExportImportTest {
     public void exportImport() throws EXistException, IOException, PermissionDeniedException, SAXException, ParserConfigurationException, AuthenticationException, URISyntaxException, XMLDBException {
         Path file;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             final Collection test = broker.getCollection(TEST_COLLECTION_URI);
             assertNotNull(test);
 
-            final SystemExport sysexport = new SystemExport(broker, null, null, direct);
+            final SystemExport sysexport = new SystemExport(broker, transaction, null, null, direct);
             final String backupDir = temporaryFolder.newFolder().getAbsolutePath();
             file = sysexport.export(backupDir, false, zip, null);
+
+            transaction.commit();
         }
 
         clean();

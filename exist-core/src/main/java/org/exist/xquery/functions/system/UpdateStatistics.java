@@ -26,6 +26,8 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.storage.statistics.IndexStatistics;
 import org.exist.storage.statistics.IndexStatisticsWorker;
+import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.Txn;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -55,7 +57,12 @@ public class UpdateStatistics extends BasicFunction {
         final IndexStatisticsWorker index = (IndexStatisticsWorker)
             context.getBroker().getIndexController().getWorkerByIndexId(IndexStatistics.ID);
         if (index != null) {
-            index.updateIndex(context.getBroker());
+            try (final Txn transaction = context.getBroker().continueOrBeginTransaction()) {
+                index.updateIndex(context.getBroker(), transaction);
+                transaction.commit();
+            } catch (final TransactionException e) {
+                throw new XPathException(this, e.getMessage(), e);
+            }
         } else {
         	logger.error("The module may not be enabled!");
         }

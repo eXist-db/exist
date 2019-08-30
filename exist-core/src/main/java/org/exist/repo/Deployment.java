@@ -318,7 +318,7 @@ public class Deployment {
             try {
                 final Optional<ElementImpl> cleanup = findElement(repoXML, CLEANUP_ELEMENT);
                 if(cleanup.isPresent()) {
-                    runQuery(broker, null, packageDir, cleanup.get().getStringValue(), false);
+                    runQuery(broker, null, packageDir, cleanup.get().getStringValue(), pkgName, QueryPurpose.UNDEPLOY);
                 }
 
                 final Optional<ElementImpl> target = findElement(repoXML, TARGET_COLL_ELEMENT);
@@ -359,7 +359,7 @@ public class Deployment {
             final Optional<String> setupPath = setup.map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
 
             if (setupPath.isPresent()) {
-                runQuery(broker, null, packageDir, setupPath.get(), true);
+                runQuery(broker, null, packageDir, setupPath.get(), pkgName, QueryPurpose.SETUP);
                 return Optional.empty();
             } else {
                 // otherwise copy all child directories to the target collection
@@ -428,7 +428,7 @@ public class Deployment {
                 final Optional<String> preSetupPath = preSetup.map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
 
                 if(preSetupPath.isPresent()) {
-                    runQuery(broker, targetCollection, packageDir, preSetupPath.get(), true);
+                    runQuery(broker, targetCollection, packageDir, preSetupPath.get(), pkgName, QueryPurpose.PREINSTALL);
                 }
 
                 // any required users and group should have been created by the pre-setup query.
@@ -448,7 +448,7 @@ public class Deployment {
                 final Optional<String> postSetupPath = postSetup.map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
 
                 if(postSetupPath.isPresent()) {
-                    runQuery(broker, targetCollection, packageDir, postSetupPath.get(), false);
+                    runQuery(broker, targetCollection, packageDir, postSetupPath.get(), pkgName, QueryPurpose.POSTINSTALL);
                 }
 
                 storeRepoXML(broker, transaction, repoXML, targetCollection, requestedPerms);
@@ -644,11 +644,29 @@ public class Deployment {
         }
     }
 
-    private Sequence runQuery(final DBBroker broker, final XmldbURI targetCollection, final Path tempDir, final String fileName, final boolean preInstall)
+    private enum QueryPurpose {
+        SETUP("<setup> element"),
+        PREINSTALL("<prepare> element"),
+        POSTINSTALL("<finish> element"),
+        UNDEPLOY("undeploy");
+
+        private final String purpose;
+
+        QueryPurpose(final String purpose) {
+            this.purpose = purpose;
+        }
+
+        public String getPurposeString() {
+            return purpose;
+        }
+    }
+
+    private Sequence runQuery(final DBBroker broker, final XmldbURI targetCollection, final Path tempDir,
+            final String fileName, final String pkgName, final QueryPurpose purpose)
             throws PackageException, IOException, XPathException {
         final Path xquery = tempDir.resolve(fileName);
         if (!Files.isReadable(xquery)) {
-            LOG.warn("The XQuery resource specified in the <setup> element was not found");
+            LOG.warn("The XQuery resource specified in the " + purpose.getPurposeString() + " was not found for EXPath Package: '" + pkgName + "'");
             return Sequence.EMPTY_SEQUENCE;
         }
         final XQuery xqs = broker.getBrokerPool().getXQueryService();
@@ -664,7 +682,7 @@ public class Deployment {
             ctx.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI + targetCollection.toString());
         } else
             {ctx.declareVariable("target", Sequence.EMPTY_SEQUENCE);}
-        if (preInstall) {
+        if (QueryPurpose.PREINSTALL == purpose) {
             // when running pre-setup scripts, base path should point to directory
             // because the target collection does not yet exist
             ctx.setModuleLoadPath(tempDir.toAbsolutePath().toString());

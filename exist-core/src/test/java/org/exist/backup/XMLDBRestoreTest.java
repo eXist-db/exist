@@ -149,7 +149,7 @@ public class XMLDBRestoreTest {
     private static void restoreBackup(final XmldbURI uri, final Path backup, @Nullable final String backupPassword, final RestoreServiceTaskListener listener) throws XMLDBException {
         final Collection collection = DatabaseManager.getCollection(uri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final EXistRestoreService restoreService = (EXistRestoreService) collection.getService("RestoreService", "1.0");
-        restoreService.restore(backup.normalize().toAbsolutePath().toString(), backupPassword, listener);
+        restoreService.restore(backup.normalize().toAbsolutePath().toString(), backupPassword, listener, false);
     }
 
     private static Path createBackupWithInvalidContent() throws IOException {

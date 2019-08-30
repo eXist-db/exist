@@ -27,9 +27,11 @@ package org.exist.management.impl;
  * @author ljo
  */
 public interface SystemInfoMXBean {
-    String getExistVersion();
+    String getProductName();
 
-    String getExistBuild();
+    String getProductVersion();
+
+    String getProductBuild();
 
     String getGitCommit();
 
