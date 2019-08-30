@@ -148,7 +148,7 @@ public class XMLDBBackupTest {
         final Collection collection = DatabaseManager.getCollection(collectionUri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final EXistRestoreService restoreService = (EXistRestoreService) collection.getService("RestoreService", "1.0");
         final TestRestoreListener listener = new TestRestoreListener();
-        restoreService.restore(backupFile.normalize().toAbsolutePath().toString(), null, listener);
+        restoreService.restore(backupFile.normalize().toAbsolutePath().toString(), null, listener, false);
     }
 
     private void deleteCollection(final XmldbURI collectionUri) throws XMLDBException {

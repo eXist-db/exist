@@ -14,6 +14,7 @@ declare namespace expath="http://expath.org/ns/pkg";
  :)
 declare %public function repair:clean-all() {
     for $pkg in repo:list()
+    where repair:delete-package($pkg)
     return
         repo:remove($pkg)
 };
@@ -114,4 +115,22 @@ declare %private function repair:install($xar as xs:string) {
             true()
         ) else
             false()
+};
+
+(:~
+ : Check if the given package should be deleted before it is reconstructed from the backed up data.
+ : A library package not installed in the database should only be deleted if a copy exists in /db/system/repo
+ : from which we can restore it.
+ :)
+declare %private function repair:delete-package($pkg as xs:string) {
+    let $repoDescriptor := repo:get-resource($pkg, "repo.xml")
+    return
+        if (exists($repoDescriptor)) then
+            (: only packages not installed in the db need to be checked: repo:target will be empty for those :)
+            if (empty(parse-xml(util:binary-to-string($repoDescriptor))//repo:target/node())) then
+                exists(collection("/db/system/repo")//expath:package[@name = $pkg])
+            else
+                true()
+        else
+            exists(collection("/db/system/repo")//expath:package[@name = $pkg])
 };

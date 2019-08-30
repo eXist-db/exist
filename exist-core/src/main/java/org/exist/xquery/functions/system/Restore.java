@@ -36,10 +36,8 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 import java.nio.file.Paths;
@@ -48,27 +46,47 @@ import java.util.Optional;
 import org.exist.backup.restore.listener.AbstractRestoreListener;
 import org.exist.backup.restore.listener.RestoreListener;
 
+import static org.exist.xquery.functions.system.SystemModule.functionSignatures;
+import static org.exist.xquery.FunctionDSL.*;
+
 public class Restore extends BasicFunction {
 
 	protected final static Logger logger = LogManager.getLogger(Restore.class);
 
-	public final static FunctionSignature signature = new FunctionSignature(
-			new QName("restore", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Restore the database or a section of the database (admin user only).",
-			new SequenceType[] {
-					new FunctionParameterSequenceType("dir-or-file", Type.STRING, Cardinality.EXACTLY_ONE,
-							"This is either a backup directory with the backup descriptor (__contents__.xml) or a backup ZIP file."),
-					new FunctionParameterSequenceType("admin-pass", Type.STRING, Cardinality.ZERO_OR_ONE,
-							"The password for the admin user"),
-					new FunctionParameterSequenceType("new-admin-pass", Type.STRING, Cardinality.ZERO_OR_ONE,
-							"Set the admin password to this new password.") 
-			}, 
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the restore results"));
+    public static final FunctionParameterSequenceType PARAM_DIR_OR_FILE = param("dir-or-file", Type.STRING,
+            "This is either a backup directory with the backup descriptor (__contents__.xml) or a backup ZIP file.");
+    public static final FunctionParameterSequenceType PARAM_ADMIN_PASS = optParam("admin-pass", Type.STRING,
+            "The password for the admin user");
+    public static final FunctionParameterSequenceType PARAM_NEW_ADMIN_PASS = optParam("new-admin-pass", Type.STRING,
+            "Set the admin password to this new password.");
+
+    private static final String FS_RESTORE_NAME = "restore";
+
+    static final FunctionSignature[] FS_RESTORE = functionSignatures(
+            FS_RESTORE_NAME,
+            "Restore the database or a section of the database (admin user only).",
+            returns(Type.NODE, "the restore results"),
+            arities(
+                 arity(
+                         PARAM_DIR_OR_FILE,
+                         PARAM_ADMIN_PASS,
+                         PARAM_NEW_ADMIN_PASS
+                 ),
+                 arity(
+                         PARAM_DIR_OR_FILE,
+                         PARAM_ADMIN_PASS,
+                         PARAM_NEW_ADMIN_PASS,
+                         param("overwrite", Type.BOOLEAN,
+                                 "Should newer versions of apps installed in the database be overwritten " +
+                                         "by those found in the backup? False by default.")
+                 )
+            )
+    );
 
 	public final static QName RESTORE_ELEMENT = new QName("restore", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
 	
 
-	public Restore(XQueryContext context) {
+	public Restore(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -82,6 +100,8 @@ public class Restore extends BasicFunction {
         if (args[2].hasOne())
                 {adminPassAfter = args[2].getStringValue();}
 
+        final boolean overwriteApps = args.length == 4 && args[3].effectiveBooleanValue();
+
         final MemTreeBuilder builder = context.getDocumentBuilder();
         builder.startDocument();
         builder.startElement(RESTORE_ELEMENT, null);
@@ -94,7 +114,7 @@ public class Restore extends BasicFunction {
 
                 final RestoreListener listener = new XMLRestoreListener(builder);
                 final org.exist.backup.Restore restore = new org.exist.backup.Restore();
-                restore.restore(broker, transaction, adminPassAfter, Paths.get(dirOrFile), listener);
+                restore.restore(broker, transaction, adminPassAfter, Paths.get(dirOrFile), listener, overwriteApps);
 
                 transaction.commit();
             }

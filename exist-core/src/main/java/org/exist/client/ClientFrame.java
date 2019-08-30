@@ -1089,20 +1089,23 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             final JPanel askPass = new JPanel(new BorderLayout());
             askPass.add(new JLabel(Messages.getString("ClientFrame.170")), BorderLayout.NORTH); //$NON-NLS-1$
             final JPasswordField passInput = new JPasswordField(25);
+            final JCheckBox overwriteCb = new JCheckBox(Messages.getString("ClientFrame.227"), false);
             askPass.add(passInput, BorderLayout.CENTER);
+            askPass.add(overwriteCb, BorderLayout.SOUTH);
             if (JOptionPane.showOptionDialog(this, askPass, Messages.getString("ClientFrame.171"), //$NON-NLS-1$
                     JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                     null, null, null) == JOptionPane.YES_OPTION) {
                 final String newDbaPass = passInput.getPassword().length == 0 ? null : new String(passInput.getPassword());
                 final String restoreFile = f.toAbsolutePath().toString();
-
+                final boolean overwriteApps = overwriteCb.isSelected();
                 final GuiRestoreServiceTaskListener listener = new GuiRestoreServiceTaskListener(this);
-                doRestore(listener, properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER), properties.getProperty(InteractiveClient.PASSWORD, null), newDbaPass, Paths.get(restoreFile), properties.getProperty(InteractiveClient.URI, "xmldb:exist://"));
+                doRestore(listener, properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER), properties.getProperty(InteractiveClient.PASSWORD, null), newDbaPass, Paths.get(restoreFile), properties.getProperty(InteractiveClient.URI, "xmldb:exist://"), overwriteApps);
             }
         }
     }
 
-    private void doRestore(final GuiRestoreServiceTaskListener listener, final String username, final String password, final String dbaPassword, final Path f, final String uri) {
+    private void doRestore(final GuiRestoreServiceTaskListener listener, final String username, final String password,
+                           final String dbaPassword, final Path f, final String uri, final boolean overwriteApps) {
 
         final Runnable restoreTask = () -> {
 
@@ -1116,7 +1119,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
                 final Collection collection = DatabaseManager.getCollection(dbUri.toString(), username, password);
                 final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
-                service.restore(f.toAbsolutePath().toString(), dbaPassword, listener);
+                service.restore(f.toAbsolutePath().toString(), dbaPassword, listener, overwriteApps);
 
                 if (JOptionPane.showConfirmDialog(null, Messages.getString("ClientFrame.223"), Messages.getString("ClientFrame.224"),
                         JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
