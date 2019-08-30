@@ -994,7 +994,7 @@ public interface RpcAPI {
 
     Map<String, Object> getSubResourcePermissions(String parentPath, String name) throws EXistException, PermissionDeniedException, URISyntaxException;
 
-    String restore(String newAdminPassword, String localFile) throws EXistException;
+    String restore(String newAdminPassword, String localFile, boolean overwriteApps) throws EXistException;
 
     List<String> getRestoreTaskEvents(String restoreTaskHandle) throws EXistException;
 

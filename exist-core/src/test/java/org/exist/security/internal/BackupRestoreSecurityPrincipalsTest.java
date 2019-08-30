@@ -146,7 +146,7 @@ public class BackupRestoreSecurityPrincipalsTest {
 
         //restore the database backup
         final EXistRestoreService service = (EXistRestoreService)server.getRoot().getService("RestoreService", "1.0");
-        service.restore(backupFile.normalize().toAbsolutePath().toString(), null, new NullRestoreServiceTaskListener());
+        service.restore(backupFile.normalize().toAbsolutePath().toString(), null, new NullRestoreServiceTaskListener(), false);
 
 
         //check the current user accounts after the restore
