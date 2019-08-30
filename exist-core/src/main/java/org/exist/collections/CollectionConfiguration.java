@@ -299,7 +299,7 @@ public class CollectionConfiguration {
         return indexSpec;
     }
 
-    private void configureTrigger(ClassLoader cl, final Element triggerElement, final XmldbURI collectionConfigurationURI, final boolean testOnly) throws CollectionConfigurationException {
+    private void configureTrigger(final ClassLoader cl, final Element triggerElement, final XmldbURI collectionConfigurationURI, final boolean testOnly) throws CollectionConfigurationException {
 
         //TODO : rely on schema-driven validation -pb
 
