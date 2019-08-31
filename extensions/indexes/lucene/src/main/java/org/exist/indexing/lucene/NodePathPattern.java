@@ -186,10 +186,6 @@ public class NodePathPattern {
             input = input.substring("fn:not".length()).trim();
             negate = true;
         }
-        else if (input.startsWith("not(")) {
-            input = input.substring("not".length()).trim();
-            negate = true;
-        }
 
         if (negate) {
             if (!input.startsWith("(") || !input.endsWith(")")) {
