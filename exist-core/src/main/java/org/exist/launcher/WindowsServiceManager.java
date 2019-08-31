@@ -109,6 +109,7 @@ class WindowsServiceManager implements ServiceManager {
                 "--LogPrefix=service",
                 "--PidFile=service.pid",
                 "--Startup=auto",
+                "--ServiceUser=LocalSystem",  // TODO(AR) this changed from `LocalSystem` to `NT Authority\LocalService` in procrun 1.2.0, however our service won't seem to start under that account... we need to investigate!
                 "--Jvm=" + findJvm().orElse("auto"),
                 "--Classpath=\"" + existHome.resolve("lib").toAbsolutePath().toString().replace('\\', '/') + "/*\"",
                 "--JvmMs=" + minMemory,
