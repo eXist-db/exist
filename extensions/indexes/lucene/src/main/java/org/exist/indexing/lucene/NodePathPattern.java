@@ -87,13 +87,13 @@ public class NodePathPattern {
         public boolean evaluate(NodePath2 nodePath, int elementIdx) {
             String val = nodePath.attribs(elementIdx).get(attrName);
             switch (pcode) {
-                case EQUALS:
-                case EQ:
+                case EQUALS: // =
+                case EQ: // eq
                     return Objects.equals(val, attrVal);
-                case NOT_EQUALS:
+                case NOT_EQUALS: // !=
                     // actual attr val should be present but different:
                     return val != null && !Objects.equals(val, attrVal);
-                case NE:
+                case NE: // ne
                     // actual attr val may be null (i.e. not present) or present but different:
                     return !Objects.equals(val, attrVal);
                 default:
@@ -157,7 +157,7 @@ public class NodePathPattern {
     private void addSegment(final Map<String, String> namespaces, final String segment) {
         String qname;
         int predBeg = segment.indexOf('[');
-        Predicate pred = null;
+        Predicate pred;
         if (predBeg >= 0) {
             qname = segment.substring(0, predBeg);
             pred = parsePredicate(segment.substring(predBeg));
