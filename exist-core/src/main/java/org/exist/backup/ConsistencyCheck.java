@@ -63,6 +63,7 @@ public class ConsistencyCheck {
 
     /**
      * @param broker       the db broker to use
+     * @param transaction the database transaction
      * @param directAccess set to true to bypass the collections.dbx index and perform a low-level scan instead
      * @param checkDocs    set to true to perform additional checks on every document (slow)
      */

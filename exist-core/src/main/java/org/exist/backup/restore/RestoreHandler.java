@@ -96,6 +96,7 @@ public class RestoreHandler extends DefaultHandler {
      *                    should occur in its own transaction
      * @param descriptor the backup descriptor to start restoring from
      * @param listener the listener to report restore events to
+     * @param pathsToIgnore database paths to ignore in the backup
      */
     public RestoreHandler(final DBBroker broker, @Nullable final Txn transaction, final BackupDescriptor descriptor,
             final RestoreListener listener, final Set<String> pathsToIgnore) {
