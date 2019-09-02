@@ -296,7 +296,7 @@ public abstract class DBBroker implements AutoCloseable {
      * This function should only be used where estimated reads are needed, no writes should
      * be performed on a Collection retrieved by this function.
      * If you are uncertain whether this function is safe for you to use, you should always
-     * use {@link #openCollection(XmldbURI, LockMode)} instead.
+     * use #openCollection(XmldbURI, LockMode) instead.
      *
      * @param uri The Collection's path
      * @return the Collection, or null if no Collection matches the path

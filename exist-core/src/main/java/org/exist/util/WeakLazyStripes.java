@@ -125,7 +125,7 @@ public class WeakLazyStripes<K, S> {
 
     /**
      * Constructs a WeakLazyStripes where the concurrencyLevel
-     * is the lower of either {@link ConcurrentHashMap#DEFAULT_CONCURRENCY_LEVEL}
+     * is the lower of either ConcurrentHashMap#DEFAULT_CONCURRENCY_LEVEL
      * or {@code Runtime.getRuntime().availableProcessors() * 2}.
      *
      * @param creator A factory for creating new Stripes when needed
