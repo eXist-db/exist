@@ -1,6 +1,6 @@
 # eXist Versioning Scheme and Release Process
 
-![eXist Logo](https://github.com/eXist-db/exist/raw/develop/webapp/logo.jpg)
+![eXist Logo](https://github.com/eXist-db/exist/raw/develop/exist-jetty-config/src/main/resources/webapp/logo.jpg)
 
 ## Overview
 This document describes the Versioning Scheme and Release Process for eXist. These two topics are tightly connected, so both are covered in this document.
