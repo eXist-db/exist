@@ -28,7 +28,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -72,13 +71,14 @@ public class ExistResourceFactory implements ResourceFactory {
 
         // load specific options
         try {
+
             // Find right file
             final Optional<Path> eXistHome = brokerPool.getConfiguration().getExistHome();
-            final Path config = FileUtils.resolve(eXistHome, "webdav.properties");
+            final Path config = FileUtils.resolve(eXistHome, "etc").resolve("webdav.properties");
 
             // Read from file if existent
             if (Files.isReadable(config)) {
-                LOG.info(String.format("Read WebDAV configuration from %s", config.toAbsolutePath().toString()));
+                LOG.info("Read WebDAV configuration from {}", config.toAbsolutePath().toString());
                 try (final InputStream is = Files.newInputStream(config)) {
                     webDavOptions.load(is);
                 }
