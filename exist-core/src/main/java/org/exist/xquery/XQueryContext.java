@@ -1569,8 +1569,8 @@ public class XQueryContext implements BinaryValueManager, Context {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("module " + module.getNamespaceURI() + " loaded successfully.");
             }
-        } catch (final ClassNotFoundException e) {
-            LOG.warn("module class " + moduleClass + " not found. Skipping...");
+        } catch (final ClassNotFoundException cnfe) {
+            LOG.warn("module class " + moduleClass + " not found. Skipping...", cnfe);
         }
         return module;
     }
