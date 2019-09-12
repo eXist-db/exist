@@ -123,20 +123,6 @@
             with high load will never be shrinked. A negative value means that
             shrinkage will not be performed.
 
-         - doc-ids:
-            how document ids are managed by eXist. Takes the values
-            "default" or "incremental".
-            
-            eXist assigns a unique, 32bit integer document id to every 
-            document. When a document is deleted, its id will be freed 
-            and reused for the next document stored. The disadvantage 
-            of this approach is that document ids
-            are not stable, i.e. one cannot be sure that the same document
-            id will always identify the same document.
-
-            If you need stable, incremental ids, set the option doc-ids to
-            "incremental".
-
         - minDiskSpace:
             The amount of disk space (in megabytes) which should be available for
             the database to continue operations. If free disk space goes below
@@ -197,7 +183,7 @@
     -->
     <db-connection cacheSize="256M" checkMaxCacheSize="true" collectionCache="64M" database="native"
         files="../data" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
-        doc-ids="default" minDiskSpace="128M" posix-chown-restricted="true" preserve-on-copy="false">
+        minDiskSpace="128M" posix-chown-restricted="true" preserve-on-copy="false">
 
         <!--
             Startup Triggers are executed before the database becomes generally available

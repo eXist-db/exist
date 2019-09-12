@@ -88,9 +88,6 @@ public interface BrokerPoolConstants {
     String PROPERTY_RECOVERY_FORCE_RESTART = "db-connection.recovery.force-restart";
     String RECOVERY_FORCE_RESTART_ATTRIBUTE = "force-restart";
 
-    String DOC_ID_MODE_ATTRIBUTE = "doc-ids";
-    String DOC_ID_MODE_PROPERTY = "db-connection.doc-ids.mode";
-
     String PROPERTY_PAGE_SIZE = "db-connection.page-size";
 
     /**

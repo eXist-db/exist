@@ -847,11 +847,10 @@ public class Configuration implements ErrorHandler
      */
     private void configureBackend( final Optional<Path> dbHome, Element con ) throws DatabaseConfigurationException
     {
-        final String mysql = getConfigAttributeValue( con, BrokerFactory.PROPERTY_DATABASE );
-
-        if( mysql != null ) {
-            config.put( BrokerFactory.PROPERTY_DATABASE, mysql );
-            LOG.debug( BrokerFactory.PROPERTY_DATABASE + ": " + config.get( BrokerFactory.PROPERTY_DATABASE ) );
+        final String database = getConfigAttributeValue(con, BrokerFactory.PROPERTY_DATABASE);
+        if (database != null) {
+            config.put(BrokerFactory.PROPERTY_DATABASE, database);
+            LOG.debug(BrokerFactory.PROPERTY_DATABASE + ": " + config.get(BrokerFactory.PROPERTY_DATABASE));
         }
 
         // directory for database files
@@ -982,71 +981,6 @@ public class Configuration implements ErrorHandler
             }
             catch( final NumberFormatException nfe ) {
                 LOG.warn("Cannot convert " + BrokerPool.PROPERTY_NODES_BUFFER + " value to integer: " + nodesBuffer, nfe);
-            }
-        }
-
-        final String docIds = getConfigAttributeValue(con, BrokerPool.DOC_ID_MODE_ATTRIBUTE);
-        if (docIds != null) {
-        	config.put(BrokerPool.DOC_ID_MODE_PROPERTY, docIds);
-        }
-        
-        //Unused !
-        final String buffers = getConfigAttributeValue( con, "buffers" );
-
-        if( buffers != null ) {
-
-            try {
-                config.put( "db-connection.buffers", Integer.valueOf(buffers) );
-                LOG.debug( "db-connection.buffers: " + config.get( "db-connection.buffers" ) );
-
-            }
-            catch( final NumberFormatException nfe ) {
-                LOG.warn("Cannot convert " + "db-connection.buffers" + " value to integer: " + buffers, nfe);
-            }
-        }
-
-        //Unused !
-        final String collBuffers = getConfigAttributeValue( con, "collection_buffers" );
-
-        if( collBuffers != null ) {
-
-            try {
-                config.put( "db-connection.collections.buffers", Integer.valueOf(collBuffers) );
-                LOG.debug( "db-connection.collections.buffers: " + config.get( "db-connection.collections.buffers" ) );
-
-            }
-            catch( final NumberFormatException nfe ) {
-                LOG.warn("Cannot convert " + "db-connection.collections.buffers" + " value to integer: " + collBuffers, nfe);
-            }
-        }
-
-        //Unused !
-        final String wordBuffers = getConfigAttributeValue( con, "words_buffers" );
-
-        if( wordBuffers != null ) {
-
-            try {
-                config.put( "db-connection.words.buffers", Integer.valueOf(wordBuffers) );
-                LOG.debug( "db-connection.words.buffers: " + config.get( "db-connection.words.buffers" ) );
-
-            }
-            catch( final NumberFormatException nfe ) {
-                LOG.warn("Cannot convert " + "db-connection.words.buffers" + " value to integer: " + wordBuffers, nfe);
-            }
-        }
-
-        //Unused !
-        final String elementBuffers = getConfigAttributeValue( con, "elements_buffers" );
-
-        if( elementBuffers != null ) {
-
-            try {
-                config.put( "db-connection.elements.buffers", Integer.valueOf(elementBuffers) );
-                LOG.debug( "db-connection.elements.buffers: " + config.get( "db-connection.elements.buffers" ) );
-
-            }
-            catch( final NumberFormatException nfe ) {
-                LOG.warn("Cannot convert " + "db-connection.elements.buffers" + " value to integer: " + elementBuffers, nfe);
             }
         }
 
