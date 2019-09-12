@@ -36,7 +36,7 @@ public class LockTableBenchmark {
 
     @State(Scope.Benchmark)
     public static class LockTableState {
-        private final LockTable lockTable = new LockTable();
+        private final LockTable lockTable = new LockTable(null);
     }
 
     @State(Scope.Thread)

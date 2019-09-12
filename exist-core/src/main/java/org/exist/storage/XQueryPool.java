@@ -20,9 +20,9 @@
 package org.exist.storage;
 
 import java.text.NumberFormat;
-import java.util.Queue;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -33,8 +33,8 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.Source;
 import org.exist.util.Configuration;
+import org.exist.util.Holder;
 import org.exist.xquery.*;
-import org.jctools.queues.atomic.MpmcAtomicArrayQueue;
 
 /**
  * Global pool for compiled XQuery expressions.
@@ -72,48 +72,44 @@ public class XQueryPool implements BrokerPoolService {
     private int maxQueryStackSize = DEFAULT_MAX_QUERY_STACK_SIZE;
     private long timeout = DEFAULT_TIMEOUT;
 
-    private final AtomicBoolean configured = new AtomicBoolean();
-    private Cache<Source, Queue<CompiledXQuery>> cache;
+    /**
+     * Source -> Deque of compiled Queries
+     */
+    private Cache<Source, Deque<CompiledXQuery>> cache;
 
     @Override
     public void configure(final Configuration configuration) {
-        if(configured.compareAndSet(false, true)) {
+        final Integer maxStSz = (Integer) configuration.getProperty(PROPERTY_MAX_STACK_SIZE);
+        final Integer maxPoolSz = (Integer) configuration.getProperty(PROPERTY_POOL_SIZE);
+        final Long t = (Long) configuration.getProperty(PROPERTY_TIMEOUT);
+        final NumberFormat nf = NumberFormat.getNumberInstance();
 
-            final Integer maxStSz = (Integer) configuration.getProperty(PROPERTY_MAX_STACK_SIZE);
-            final Integer maxPoolSz = (Integer) configuration.getProperty(PROPERTY_POOL_SIZE);
-            final Long t = (Long) configuration.getProperty(PROPERTY_TIMEOUT);
-            final NumberFormat nf = NumberFormat.getNumberInstance();
-
-            if (maxPoolSz != null) {
-                this.maxPoolSize = maxPoolSz;
-            } else {
-                this.maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-            }
-
-            if (maxStSz != null) {
-                this.maxQueryStackSize = maxStSz;
-            } else {
-                this.maxQueryStackSize = DEFAULT_MAX_QUERY_STACK_SIZE;
-            }
-
-            if (t != null) {
-                this.timeout = t;
-            } else {
-                this.timeout = DEFAULT_TIMEOUT;
-            }
-
-            this.cache = Caffeine.newBuilder()
-                    .maximumSize(maxPoolSize)
-                    .expireAfterAccess(timeout, TimeUnit.MILLISECONDS)
-                    .build();
-
-            LOG.info("QueryPool: " +
-            "size = " + nf.format(maxPoolSize) + "; " +
-            "maxQueryStackSize = " + nf.format(maxQueryStackSize) + "; " +
-            "timeout = " + nf.format(timeout) + "; ");
+        if (maxPoolSz != null) {
+            this.maxPoolSize = maxPoolSz;
         } else {
-            throw new IllegalStateException("XQuery Pool has already been configured");
+            this.maxPoolSize = DEFAULT_MAX_POOL_SIZE;
         }
+
+        if (maxStSz != null) {
+            this.maxQueryStackSize = maxStSz;
+        } else {
+            this.maxQueryStackSize = DEFAULT_MAX_QUERY_STACK_SIZE;
+        }
+
+        if (t != null) {
+            this.timeout = t;
+        } else {
+            this.timeout = DEFAULT_TIMEOUT;
+        }
+
+        this.cache = Caffeine.newBuilder()
+                .maximumSize(maxPoolSize)
+                .expireAfterAccess(timeout, TimeUnit.MILLISECONDS)
+                .build();
+
+        LOG.info("QueryPool: " + "size = " + nf.format(maxPoolSize) + "; "
+                + "maxQueryStackSize = " + nf.format(maxQueryStackSize) + "; "
+                + "timeout = " + nf.format(timeout) + "; ");
     }
 
     /**
@@ -128,16 +124,16 @@ public class XQueryPool implements BrokerPoolService {
         }
 
         cache.asMap().compute(source, (key, value) -> {
-            final Queue<CompiledXQuery> queue;
+            final Deque<CompiledXQuery> deque;
             if (value != null) {
-                queue = value;
+                deque = value;
             } else {
-                queue = new MpmcAtomicArrayQueue<>(maxQueryStackSize);
+                deque = new ArrayDeque<>(maxQueryStackSize);
             }
 
-            queue.offer(compiledXQuery);
+            deque.offerFirst(compiledXQuery);
 
-            return queue;
+            return deque;
         });
     }
 
@@ -155,52 +151,75 @@ public class XQueryPool implements BrokerPoolService {
      */
     public CompiledXQuery borrowCompiledXQuery(final DBBroker broker, final Source source)
             throws PermissionDeniedException {
-        if(broker == null || source == null) {
+        if (broker == null || source == null) {
             return null;
         }
 
+        // this will be set to non-null if we can borrow a query... allows us to escape the lamba, see https://github.com/ben-manes/caffeine/issues/192#issuecomment-337365618
+        final Holder<CompiledXQuery> borrowedCompiledQuery = new Holder<>();
+
         // get (compute by checking validity) the stack of compiled XQuerys for the source
-        final Queue<CompiledXQuery> queue = cache.asMap().computeIfPresent(source, (key, value) -> {
-            if(!value.isEmpty()) {
-
-                // remove any stack of compiled queries which are now invalid
-                final CompiledXQuery firstCompiledXQuery = value.peek();
-                final Source cachedSource = firstCompiledXQuery.getSource();
-                Source.Validity validity = cachedSource.isValid(broker);
-                if (validity == Source.Validity.UNKNOWN) {
-                    validity = cachedSource.isValid(source);
-                }
-
-                if (validity == Source.Validity.INVALID || validity == Source.Validity.UNKNOWN) {
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug(source.getKey() + " is invalid, removing from XQuery Pool...");
-                    }
-                    return null;    // returning null will remove the entry from the cache
-                }
-
-                // the compiled query is no longer valid: one of the imported
-                // modules may have changed
-                if(!firstCompiledXQuery.isValid()) {
-                    return null;    // returning null will remove the entry from the cache
-                }
+        final Deque<CompiledXQuery> deque = cache.asMap().computeIfPresent(source, (key, value) -> {
+            final CompiledXQuery firstCompiledXQuery = value.pollFirst();
+            if (firstCompiledXQuery == null) {
+                // deque is empty, returning null will remove the entry from the cache
+                return null;
             }
 
+            if (!isCompiledQueryValid(broker, source, firstCompiledXQuery)) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(source.getKey() + " is invalid, removing from XQuery Pool...");
+                }
+
+                // query is invalid, returning null will remove the entry from the cache
+                return null;
+            }
+
+            // escape the result from the lambda
+            borrowedCompiledQuery.value = firstCompiledXQuery;
+
+            // query is ok, preserve the tail of the deque
             return value;
         });
 
-        if(queue == null) {
-            return null;
-        }
-
-        final CompiledXQuery query = queue.poll();
-        if(query == null) {
+        if (deque == null) {
             return null;
         }
 
         //check execution permission
         source.validate(broker.getCurrentSubject(), Permission.EXECUTE);
 
-        return query;
+        return borrowedCompiledQuery.value;
+    }
+
+    /**
+     * Determines if a compiled XQuery is still valid.
+     *
+     * @param broker the database broker
+     * @param source the source of the query
+     * @param compiledXQuery the compiled query
+     *
+     * @return true if the compiled query is still valid, false otherwise.
+     */
+    private static boolean isCompiledQueryValid(final DBBroker broker, final Source source,
+            final CompiledXQuery compiledXQuery) {
+        final Source cachedSource = compiledXQuery.getSource();
+        Source.Validity validity = cachedSource.isValid(broker);
+        if (validity == Source.Validity.UNKNOWN) {
+            validity = cachedSource.isValid(source);
+        }
+
+        if (validity == Source.Validity.INVALID || validity == Source.Validity.UNKNOWN) {
+            return false;    // returning null will remove the entry from the cache
+        }
+
+        // the compiled query is no longer valid if one of the imported
+        // modules may have changed
+        if (!compiledXQuery.isValid()) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

@@ -19,6 +19,7 @@
  */
 package org.exist.storage.lock;
 
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -27,6 +28,7 @@ import org.exist.storage.NativeBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.Lock.LockType;
 import org.exist.storage.txn.Txn;
+import org.exist.util.Configuration;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -50,6 +52,12 @@ import static org.exist.storage.lock.LockTable.LockEventType.*;
  */
 public class LockTable {
 
+    // org.exist.util.Configuration properties
+    public static final String CONFIGURATION_DISABLED = "lock-table.disabled";
+    public static final String CONFIGURATION_TRACE_STACK_DEPTH = "lock-table.trace-stack-depth";
+
+    //TODO(AR) remove eventually!
+    // legacy properties for overriding the config
     public static final String PROP_DISABLE = "exist.locktable.disable";
     public static final String PROP_TRACE_STACK_DEPTH = "exist.locktable.trace.stack.depth";
 
@@ -59,14 +67,13 @@ public class LockTable {
     /**
      * Set to false to disable all events
      */
-    private volatile boolean disableEvents = Boolean.getBoolean(PROP_DISABLE);
+    private final boolean disableEvents;
 
     /**
      * Whether we should try and trace the stack for the lock event, -1 means all stack,
      * 0 means no stack, n means n stack frames, 5 is a reasonable value
      */
-    private volatile int traceStackDepth = Optional.ofNullable(Integer.getInteger(PROP_TRACE_STACK_DEPTH))
-            .orElse(0);
+    private int traceStackDepth;
 
     /**
      * Lock event listeners
@@ -85,7 +92,10 @@ public class LockTable {
     private final Map<Thread, Entries> acquired = new ConcurrentHashMap<>(60);
 
 
-    LockTable() {
+    LockTable(final Configuration configuration) {
+        this.disableEvents = LockManager.getLegacySystemPropertyOrConfigPropertyBool(PROP_DISABLE, configuration, CONFIGURATION_DISABLED, false);
+        this.traceStackDepth = LockManager.getLegacySystemPropertyOrConfigPropertyInt(PROP_TRACE_STACK_DEPTH, configuration, CONFIGURATION_TRACE_STACK_DEPTH, 0);
+
         // add a log listener if trace level logging is enabled
         if(LOG.isTraceEnabled()) {
             registerListener(new LockEventLogListener(LOG, Level.TRACE));
@@ -200,8 +210,7 @@ public class LockTable {
                 Entries acquiredEntries = acquired.get(currentThread);
 
                 if (acquiredEntries == null) {
-                    final Entry acquiredEntry = new Entry();
-                    acquiredEntry.setFrom(attemptEntry);
+                    final Entry acquiredEntry = new Entry(attemptEntry);
 
                     acquiredEntries = new Entries(acquiredEntry);
                     acquired.put(currentThread, acquiredEntries);
@@ -247,149 +256,152 @@ public class LockTable {
     @ThreadSafe
     private static class Entries {
         private final StampedLock entriesLock = new StampedLock();
-        @GuardedBy("entriesLock") private final List<Entry> entries = new ArrayList<>(16);
+        @GuardedBy("entriesLock") private final ObjectLinkedOpenHashSet<Entry> entries = new ObjectLinkedOpenHashSet<>();
 
         public Entries(final Entry entry) {
             entries.add(entry);
         }
 
-        private @Nullable Entry findEntry(final Entry entry) {
-            // optimistic read
-            long stamp = entriesLock.tryOptimisticRead();
-            for (int i = 0; i < entries.size(); i++) {
-                final Entry local = entries.get(i);
-                if (local.equals(entry)) {
-                    if (entriesLock.validate(stamp)) {
+        public Entry merge(final Entry attemptEntry) {
+            // try optimistic read
+            long optReadStamp = entriesLock.tryOptimisticRead();
+            long readStamp = -1;
+            long stamp = -1;
+            try {
+
+                Entry local = entries.get(attemptEntry);
+                if (!entriesLock.validate(optReadStamp)) {
+
+                    // otherwise... pessimistic read
+                    readStamp = entriesLock.readLock();
+                    stamp = readStamp;
+                    local = entries.get(attemptEntry);
+                } else {
+                    stamp = optReadStamp;
+                }
+
+                // if found, do the merge
+                if (local != null) {
+                    if (attemptEntry.stackTraces != null) {
+                        local.stackTraces.addAll(attemptEntry.stackTraces);
+                    }
+                    local.count += attemptEntry.count;
+                    return local;
+                }
+
+                // try to upgrade optimistic-read or read lock to write lock
+                stamp = entriesLock.tryConvertToWriteLock(stamp);
+                if (stamp == 0l) {
+
+                    // failed to upgrade
+                    if (readStamp != -1) {
+                        // release the read lock before taking the write lock
+                        entriesLock.unlockRead(readStamp);
+                    }
+
+                    // take the write lock (blocking)
+                    stamp = entriesLock.writeLock();
+
+                    // we must refresh the `local` as it could have changed between releasing the readLock and obtaining the write lock
+                    local = entries.get(attemptEntry);
+
+                    // if found, do the merge
+                    if (local != null) {
+                        if (attemptEntry.stackTraces != null) {
+                            local.stackTraces.addAll(attemptEntry.stackTraces);
+                        }
+                        local.count += attemptEntry.count;
                         return local;
                     }
                 }
-            }
 
-            // otherwise... pessimistic read
-            stamp = entriesLock.readLock();
-            try {
-                for (int i = 0; i < entries.size(); i++) {
-                    final Entry local = entries.get(i);
-                    if (local.equals(entry)) {
-                        return entry;
-                    }
-                }
-            } finally {
-                entriesLock.unlockRead(stamp);
-            }
-
-            return null;
-        }
-
-        public Entry merge(final Entry attemptEntry) {
-            final Entry local = findEntry(attemptEntry);
-
-            // if found, do the merge
-            if (local != null) {
-                if (attemptEntry.stackTraces != null) {
-                    local.stackTraces.addAll(attemptEntry.stackTraces);
-                }
-                local.count += attemptEntry.count;
-                return local;
-            }
-
-            // else, add it
-            final Entry acquiredEntry = new Entry();
-            acquiredEntry.setFrom(attemptEntry);
-
-            final long stamp = entriesLock.writeLock();
-            try {
+                // we have a write lock, add it
+                final Entry acquiredEntry = new Entry(attemptEntry);
                 entries.add(acquiredEntry);
                 return acquiredEntry;
             } finally {
-                entriesLock.unlockWrite(stamp);
+                // we don't need to unlock if it was just an optimistic read
+                if (stamp != optReadStamp) {
+                    entriesLock.unlock(stamp);
+                }
             }
         }
 
         @Nullable
         public Entry unmerge(final String id, final LockType lockType, final LockMode lockMode) {
+            final Entry key = new Entry(id, lockType, lockMode, null, null);
+
             // optimistic read
             long stamp = entriesLock.tryOptimisticRead();
-            for (int i = 0; i < entries.size(); i++) {
-                final Entry local = entries.get(i);
-                if (local.id.equals(id) && local.lockType == lockType && local.lockMode == lockMode) {
-
-                    // if count is equal to 1 we can just remove from the list rather than decrementing
-                    if (local.count == 1) {
-                        long writeStamp = entriesLock.tryConvertToWriteLock(stamp);
-                        if (writeStamp != 0l) {
-                            try {
-                                //TODO(AR) we need to recycle the entry here!    ... nope do it in the caller!
-                                local.count--;
-                                return entries.remove(i);
-                            } finally {
-                                entriesLock.unlockWrite(writeStamp);
-                            }
-                        }
-                    } else {
-                        if (entriesLock.validate(stamp)) {
-
-                            // do the unmerge bit
-                            if (local.stackTraces != null) {
-                                local.stackTraces.remove(local.stackTraces.size() - 1);
-                            }
-                            local.count = local.count - 1;
-
-                            //done
-                            return local;
-                        }
+            Entry local = entries.get(key);
+            // if count is equal to 1 we can just remove from the list rather than decrementing
+            if (local.count == 1) {
+                final long writeStamp = entriesLock.tryConvertToWriteLock(stamp);
+                if (writeStamp != 0l) {
+                    try {
+                        entries.remove(local);
+                        local.count--;
+                        return local;
+                    } finally {
+                        entriesLock.unlockWrite(writeStamp);
                     }
+                }
+            } else {
+                if (entriesLock.validate(stamp)) {
 
-                    break;
+                    // do the unmerge bit
+                    if (local.stackTraces != null) {
+                        local.stackTraces.remove(local.stackTraces.size() - 1);
+                    }
+                    local.count = local.count - 1;
+
+                    //done
+                    return local;
                 }
             }
 
 
             // otherwise... pessimistic read
-            int foundIdx = -1;
+            boolean mustRemove;
             stamp = entriesLock.readLock();
             try {
-                for (int i = 0; i < entries.size(); i++) {
-                    final Entry local = entries.get(i);
-                    if (local.id.equals(id) && local.lockType == lockType && local.lockMode == lockMode) {
 
-                        // if count is equal to 1 we can just remove from the list rather than decrementing
-                        if (local.count == 1) {
+                local = entries.get(key);
 
-                            long writeStamp = entriesLock.tryConvertToWriteLock(stamp);
-                            if (writeStamp != 0l) {
-                                stamp = writeStamp;
-                                //TODO(AR) we need to recycle the entry here!    ... nope do it in the caller!
-                                local.count--;
-                                return entries.remove(i);
-                            }
+                // if count is equal to 1 we can just remove from the list rather than decrementing
+                if (local.count == 1) {
 
-                        } else {
-                            // do the unmerge bit
-                            if (local.stackTraces != null) {
-                                local.stackTraces.remove(local.stackTraces.size() - 1);
-                            }
-                            local.count = local.count - 1;
-
-                            //done
-                            return local;
-                        }
-
-                        foundIdx = i;
-                        break;
+                    final long writeStamp = entriesLock.tryConvertToWriteLock(stamp);
+                    if (writeStamp != 0l) {
+                        stamp = writeStamp;  // NOTE: this causes the write lock to be released in the finally further down
+                        entries.remove(local);
+                        local.count--;
+                        return local;
                     }
+
+                } else {
+                    // do the unmerge bit
+                    if (local.stackTraces != null) {
+                        local.stackTraces.remove(local.stackTraces.size() - 1);
+                    }
+                    local.count = local.count - 1;
+
+                    //done
+                    return local;
                 }
+
+                mustRemove = true;
             } finally {
                 entriesLock.unlock(stamp);
             }
 
-
-            if (foundIdx > -1) {
+            // unable to remove by tryConvertToWriteLock above, so directly acquire write lock
+            if (mustRemove) {
                 stamp = entriesLock.writeLock();
                 try {
-                    final Entry removed = entries.remove(foundIdx);
-                    removed.count--;
-                    return removed;
+                    entries.remove(local);
+                    local.count--;
+                    return local;
                 } finally {
                     entriesLock.unlockWrite(stamp);
                 }
@@ -401,9 +413,7 @@ public class LockTable {
         public void forEach(final Consumer<Entry> entryConsumer) {
             final long stamp = entriesLock.readLock();
             try {
-                for (int i = 0; i < entries.size(); i++) {
-                    entryConsumer.accept(entries.get(i));
-                }
+                entries.forEach(entryConsumer);
             } finally {
                 entriesLock.unlockRead(stamp);
             }
@@ -783,6 +793,20 @@ public class LockTable {
             this.count = 1;
         }
 
+        private Entry(final Entry other) {
+            this.id = other.id;
+            this.lockType = other.lockType;
+            this.lockMode = other.lockMode;
+            this.owner = other.owner;
+            if (other.stackTraces != null) {
+                this.stackTraces = (ArrayList)((ArrayList)other.stackTraces).clone();
+            } else {
+                this.stackTraces = null;
+            }
+            // write last to ensure reader visibility of above fields!
+            this.count = other.count;
+        }
+
         public void setFrom(final Entry entry) {
             this.id = entry.id;
             this.lockType = entry.lockType;
@@ -802,9 +826,9 @@ public class LockTable {
             if (this == o) return true;
             if (o == null || Entry.class != o.getClass()) return false;
             Entry entry = (Entry) o;
-            return id.equals(entry.id) &&
-                    lockType == entry.lockType &&
-                    lockMode == entry.lockMode;
+            return lockType == entry.lockType &&
+                    lockMode == entry.lockMode
+                    && id.equals(entry.id);
         }
 
         @Override

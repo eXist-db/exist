@@ -115,6 +115,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     private XmldbURI fileURI = null;
 
+    /**
+     * Lazily computed. Needs to be recomputed if {@link #fileURI} or {@link #collection} change
+     */
+    private XmldbURI uri = null;
+
     private Permission permissions = null;
 
     private DocumentMetadata metadata = null;
@@ -221,6 +226,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     @EnsureContainerLocked(mode=WRITE_LOCK)
     public void setCollection(final Collection collection) {
         this.collection = collection;
+        this.uri = null;  // reset
     }
 
     /**
@@ -259,16 +265,20 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     @EnsureContainerLocked(mode=WRITE_LOCK)
     public void setFileURI(final XmldbURI fileURI) {
         this.fileURI = fileURI;
+        this.uri = null;  // reset
     }
 
     //@EnsureContainerLocked(mode=READ_LOCK)  // TODO(AR) temporarily we need to allow some unlocked access
     @Override
     public XmldbURI getURI() {
-        if(collection == null) {
-            return fileURI;
-        } else {
-            return collection.getURI().append(fileURI);
+        if (uri == null) {
+            if (collection == null) {
+                uri = (XmldbURI) fileURI.clone();
+            } else {
+                uri = collection.getURI().append(fileURI);
+            }
         }
+        return uri;
     }
 
     @EnsureContainerLocked(mode=READ_LOCK)

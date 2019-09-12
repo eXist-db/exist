@@ -23,6 +23,7 @@ import com.evolvedbinary.j8fu.tuple.Tuple3;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.lock.Lock.LockType;
+import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.WeakLazyStripes;
 import org.exist.xmldb.XmldbURI;
@@ -61,6 +62,14 @@ import java.util.function.Consumer;
  */
 public class LockManager {
 
+    // org.exist.util.Configuration properties
+    public final static String CONFIGURATION_UPGRADE_CHECK = "lock-manager.upgrade-check";
+    public final static String CONFIGURATION_WARN_WAIT_ON_READ_FOR_WRITE = "lock-manager.warn-wait-on-read-for-write";
+    public final static String CONFIGURATION_COLLECTION_MULTI_WRITER = "lock-manager.collection.multi-writer";
+    public final static String CONFIGURATION_DOCUMENT_MULTI_LOCK = "lock-manager.document.multi-lock";
+
+    //TODO(AR) remove eventually!
+    // legacy properties for overriding the config
     public final static String PROP_ENABLE_COLLECTIONS_MULTI_WRITER = "exist.lockmanager.collections.multiwriter";
     public final static String PROP_UPGRADE_CHECK = "exist.lockmanager.upgrade.check";
     public final static String PROP_WARN_WAIT_ON_READ_FOR_WRITE = "exist.lockmanager.warn.waitonreadforwrite";
@@ -68,25 +77,29 @@ public class LockManager {
 
     private static final Logger LOG = LogManager.getLogger(LockManager.class);
     private static final boolean USE_FAIR_SCHEDULER = true;  //Java's ReentrantReadWriteLock must use the Fair Scheduler to get FIFO like ordering
-    private static final boolean USE_MULTILOCK_FOR_DOCUMENTS = Boolean.getBoolean(PROP_USE_MULTILOCK_FOR_DOCUMENTS);
+
+    /**
+     * Set to true to use MultiLock instead of ReentrantReadWriteLock
+     */
+    private final boolean useMultiLockForDocuments;
 
     /**
      * Set to true to enable Multi-Writer/Multi-Reader semantics for
      * the Collection Hierarchy as opposed to the default Single-Writer/Multi-Reader
      */
-    private volatile boolean collectionsMultiWriter = Boolean.getBoolean(PROP_ENABLE_COLLECTIONS_MULTI_WRITER);
+    private final boolean collectionsMultiWriter;
 
     /**
      * Set to true to enable checking for lock upgrading within the same
      * thread, i.e. READ_LOCK -> WRITE_LOCK
      */
-    private volatile boolean upgradeCheck = Boolean.getBoolean(PROP_UPGRADE_CHECK);
+    private final boolean upgradeCheck;
 
     /**
      * Set to true to enable warning when a thread wants to acquire the WRITE_LOCK
      * but another thread holds the READ_LOCK
      */
-    private volatile boolean warnWaitOnReadForWrite = Boolean.getBoolean(PROP_WARN_WAIT_ON_READ_FOR_WRITE);
+    private final boolean warnWaitOnReadForWrite;
 
 
     private final LockTable lockTable;
@@ -94,13 +107,36 @@ public class LockManager {
     private final WeakLazyStripes<String, DocumentLock> documentLocks;
     private final WeakLazyStripes<String, ReentrantLock> btreeLocks;
 
+    /**
+     * @param configuration database configuration
+     * @param concurrencyLevel Concurrency Level of the lock table.
+     */
+    public LockManager(final Configuration configuration, final int concurrencyLevel) {
+        // set configuration
+        this.useMultiLockForDocuments = getLegacySystemPropertyOrConfigPropertyBool(PROP_USE_MULTILOCK_FOR_DOCUMENTS, configuration, CONFIGURATION_DOCUMENT_MULTI_LOCK, false);
+        this.collectionsMultiWriter = getLegacySystemPropertyOrConfigPropertyBool(PROP_ENABLE_COLLECTIONS_MULTI_WRITER, configuration, CONFIGURATION_COLLECTION_MULTI_WRITER, false);
+        this.upgradeCheck = getLegacySystemPropertyOrConfigPropertyBool(PROP_UPGRADE_CHECK, configuration, CONFIGURATION_UPGRADE_CHECK, false);
+        this.warnWaitOnReadForWrite = getLegacySystemPropertyOrConfigPropertyBool(PROP_WARN_WAIT_ON_READ_FOR_WRITE, configuration, CONFIGURATION_WARN_WAIT_ON_READ_FOR_WRITE, false);
 
-    public LockManager(final int concurrencyLevel) {
-        this.lockTable = new LockTable();
+        this.lockTable = new LockTable(configuration);
         this.collectionLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createCollectionLock);
-        this.documentLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createDocumentLock);
+        if (useMultiLockForDocuments) {
+            this.documentLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createDocumentMultiLock);
+        } else {
+            this.documentLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createDocumentReentrantLock);
+        }
         this.btreeLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createBtreeLock);
+
         LOG.info("Configured LockManager with concurrencyLevel={}", concurrencyLevel);
+    }
+
+    /**
+     * Reserved for testing!
+     *
+     * @param concurrencyLevel Concurrency Level of the lock table.
+     */
+    LockManager(final int concurrencyLevel) {
+        this(null, concurrencyLevel);
     }
 
     /**
@@ -121,15 +157,27 @@ public class LockManager {
     }
 
     /**
-     * Creates a new lock for a Document
-     * will be Striped by the collectionPath
+     * Creates a new Reentrant lock for a Document
+     * will be Striped by the collectionPath.
+     *
+     * @param documentPath the document path
+     *
+     * @return the document lock
      */
-    private static DocumentLock createDocumentLock(final String documentPath) {
-        if (USE_MULTILOCK_FOR_DOCUMENTS) {
-            return new MultiLockDocumentLockAdapter(new MultiLock());
-        } else {
-            return new ReentrantReadWriteLockDocumentLockAdapter(new ReentrantReadWriteLock());
-        }
+    private static DocumentLock createDocumentReentrantLock(final String documentPath) {
+        return new ReentrantReadWriteLockDocumentLockAdapter(new ReentrantReadWriteLock());
+    }
+
+    /**
+     * Creates a new MultiLock lock for a Document
+     * will be Striped by the collectionPath.
+     *
+     * @param documentPath the document path
+     *
+     * @return the document lock
+     */
+    private static DocumentLock createDocumentMultiLock(final String documentPath) {
+        return new MultiLockDocumentLockAdapter(new MultiLock());
     }
 
     /**
@@ -669,6 +717,54 @@ public class LockManager {
         @Override
         public boolean hasQueuedThreads() {
             return reentrantReadWriteLock.hasQueuedThreads();
+        }
+    }
+
+    /**
+     * Gets a configuration option from a (legacy) System Property
+     * or if that is not set, then from an eXist-db Configuration file
+     * property.
+     *
+     * @param legacyPropertyName name of the legacy system property
+     * @param configuration eXist-db configuration
+     * @param configProperty name of an eXist-db configuration property
+     * @param defaultValue the default value if no system property of config property is found.
+     *
+     * @return the value of the property
+     */
+    static boolean getLegacySystemPropertyOrConfigPropertyBool(final String legacyPropertyName,
+            final Configuration configuration, final String configProperty, final boolean defaultValue) {
+        final String legacyPropertyValue = System.getProperty(legacyPropertyName);
+        if (legacyPropertyValue != null && !legacyPropertyValue.isEmpty()) {
+            return Boolean.getBoolean(legacyPropertyName);
+        } else if (configuration != null) {
+            return configuration.getProperty(configProperty, defaultValue);
+        } else {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Gets a configuration option from a (legacy) System Property
+     * or if that is not set, then from an eXist-db Configuration file
+     * property.
+     *
+     * @param legacyPropertyName name of the legacy system property
+     * @param configuration eXist-db configuration
+     * @param configProperty name of an eXist-db configuration property
+     * @param defaultValue the default value if no system property of config property is found.
+     *
+     * @return the value of the property
+     */
+    static int getLegacySystemPropertyOrConfigPropertyInt(final String legacyPropertyName,
+            final Configuration configuration, final String configProperty, final int defaultValue) {
+        final String legacyPropertyValue = System.getProperty(legacyPropertyName);
+        if (legacyPropertyValue != null && !legacyPropertyValue.isEmpty()) {
+            return Integer.getInteger(legacyPropertyName);
+        } else if (configuration != null) {
+            return configuration.getProperty(configProperty, defaultValue);
+        } else {
+            return defaultValue;
         }
     }
 }

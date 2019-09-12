@@ -147,11 +147,11 @@ public class IndexStatisticsWorker implements IndexWorker {
         perDocGuide = new DataGuide();
     }
 
-    public void updateIndex(final DBBroker broker) {
+    public void updateIndex(final DBBroker broker, final Txn transaction) {
         perDocGuide = new DataGuide();
         final DocumentCallback cb = new DocumentCallback(broker);
         try {
-            broker.getResourcesFailsafe(cb, false);
+            broker.getResourcesFailsafe(transaction, cb, false);
         } catch (final TerminatedException e) {
             // thrown when the db shuts down. ignore.
         }

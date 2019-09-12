@@ -39,6 +39,7 @@ import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.management.TaskStatus;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.xquery.TerminatedException;
 
@@ -125,7 +126,7 @@ public class ConsistencyCheckTask implements SystemTask {
     }
 
     @Override
-    public void execute(final DBBroker broker) throws EXistException {
+    public void execute(final DBBroker broker, final Txn transaction) throws EXistException {
         final Agent agentInstance = AgentFactory.getInstance();
         final BrokerPool brokerPool = broker.getBrokerPool();
         final TaskStatus endStatus = new TaskStatus(TaskStatus.Status.STOPPED_OK);
@@ -152,7 +153,7 @@ public class ConsistencyCheckTask implements SystemTask {
                 report = openLog();
                 final CheckCallback cb = new CheckCallback(report);
 
-                final ConsistencyCheck check = new ConsistencyCheck(broker, false, checkDocs);
+                final ConsistencyCheck check = new ConsistencyCheck(broker, transaction, false, checkDocs);
                 agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.RUNNING_CHECK));
                 errors = check.checkAll(cb);
                 
@@ -176,7 +177,7 @@ public class ConsistencyCheckTask implements SystemTask {
             if (doBackup) {
                 LOG.info("Starting backup...");
 
-                final SystemExport sysexport = new SystemExport(broker, logCallback, monitor, false);
+                final SystemExport sysexport = new SystemExport(broker, transaction, logCallback, monitor, false);
                 lastExportedBackup = sysexport.export(exportDir, incremental, maxInc, createZip, errors);
                 agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.RUNNING_BACKUP));
 

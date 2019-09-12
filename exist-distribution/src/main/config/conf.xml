@@ -15,6 +15,7 @@
                 recovery
                 security
                 watchdog
+            lock-manager
             repository
             binary-manager
             indexer
@@ -51,9 +52,6 @@
     
         - http://exist-db.org/exist/apps/doc/configuration.xml
         - http://exist-db.org/exist/apps/doc/documentation.xml
-        - http://atomic.exist-db.org/
-        
-    Version: 4.6.0-SNAPSHOT
 
 -->
 <exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/conf.xsd">
@@ -348,6 +346,95 @@
         <watchdog output-size-limit="1000000" query-timeout="-1"/>
 
     </db-connection>
+
+
+    <!--
+        Settings for the Database Lock Manager
+
+        - upgrade-check
+            Used by developers for diagnosing illegal lock upgrade issues. When enabled
+            checks for lock upgrading within the same thread, i.e. READ_LOCK -> WRITE_LOCK
+            are enabled. When an illegal upgrade is detected a LockException is thrown.
+            Such behaviour will likely corrupt any database writes, and should only be
+            used by developers when debugging database issues.
+
+            This can also be set via the Java System Properties `org.exist.lock-manager.upgrade-check`,
+                or (legacy) `exist.lockmanager.upgrade.check`.
+
+        - warn-wait-on-read-for-write
+            Used by developers for diagnosing lock performance issues. When enabled
+            checks for detecting when a thread wants to acquire the WRITE_LOCK
+            but another thread holds the READ_LOCK are enabled. When such operations
+            are detected a log message is written to locks.log at WARN level.
+
+            This can also be set via the Java System Properties `org.exist.lock-manager.warn-wait-on-read-for-write`,
+                or (legacy) `exist.lockmanager.warn.waitonreadforwrite`.
+    -->
+    <lock-manager
+            upgrade-check="false"
+            warn-wait-on-read-for-write="false">
+
+        <!--
+            Settings for the Lock Table
+
+            - disabled
+                Disables the database lock table which tracks database locks. The Lock Table is enabled by default
+                and allows reporting on database locking via JMX.
+
+                NOTE: Tracking locks via the Lock Table imposes a small overhead per-Lock. Once users
+                have finished testing their system to ensure correct operation, they may wish to disable
+                this in production to ensure the absolute best performance.
+
+                This can also be set via the Java System Properties `org.exist.lock-manager.lock-table.disabled`,
+                    or (legacy) `exist.locktable.disable`.
+
+            - trace-stack-depth
+                When set above 0, this captures n frames of each threads stack that performs a try/lock/release
+                operation. These frames are visible from JMX reporting.
+                In addition, when the logging level for the Lock Table is set in log4j2.xml to TRACE the lock
+                events are written to the locks.log file.
+
+                This can also be set via the Java System Properties `org.exist.lock-manager.lock-table.trace-stack-depth`,
+                    or (legacy) `exist.locktable.trace.stack.depth`.
+        -->
+        <lock-table disabled="false" trace-stack-depth="0"/>
+
+
+        <!--
+            Settings for Collection Locking
+
+            - multiple-writers
+                Set to true to enable Multi-Writer/Multi-Reader semantics for
+                the Collection Hierarchy as opposed to the default (false) for Single-Writer/Multi-Reader.
+
+                NOTE: Whilst enabling Multiple-Writers on the Collection Hierarchy can improve concurrent
+                through-put for write-heavy workloads, it can also can lead to deadlocks unless the User's
+                Collection Hierarchy is carefully designed to isolate query/database writes between Collection combs.
+                It is highly recommended that users leave this as the default setting. For more information, see:
+                "Locking and Cache Improvements for eXist-db", 2018-02-05, Section "Attempt 6" Page 58 -
+                https://www.evolvedbinary.com/technical-reports/exist-db/locking-and-cache-improvements/
+
+                This can also be set via the Java System Properties `org.exist.lock-manager.collection.multiple-writers`,
+                or (legacy) `exist.lockmanager.collections.multiwriter`.
+        -->
+        <collection multiple-writers="false"/>
+
+
+        <!-- Settings for Document Locking
+
+            - multi-lock
+                Set to true to use the "Fast Multi-Level locks" implementation
+                (uk.ac.ic.doc.slurp.multilock.MultiLock) for locking documents, instead of the default of Java's
+                Reentrant Read Write Lock implementation (java.util.concurrent.locks.ReentrantReadWriteLock).
+
+                NOTE: At present changing this option has little effect.
+
+                This can also be set via the Java System Properties `org.exist.lock-manager.document.multi-lock`,
+                or (legacy) `exist.lockmanager.documents.multilock`.
+        -->
+        <document multi-lock="false"/>
+
+    </lock-manager>
 
     <!--
         Settings for the package repository:

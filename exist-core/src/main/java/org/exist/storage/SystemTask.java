@@ -25,13 +25,14 @@ package org.exist.storage;
 import java.util.Properties;
 
 import org.exist.EXistException;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 
 /**
  * Interface to be implemented by tasks used for system
  * maintenance. System tasks require the database to be in
  * a consistent state. All database operations will be stopped 
- * until the {@link #execute(DBBroker)} method returned
+ * until the {@link #execute(DBBroker, Txn)} method returned
  * or throws an exception. Any exception will be caught and a warning
  * written to the log.
  * 
@@ -57,10 +58,11 @@ public interface SystemTask {
 	 * Execute this task.
 	 * 
 	 * @param broker a DBBroker object that can be used
+	 * @param transaction the database transaction
 	 * 
 	 * @throws EXistException if a database error occurs
 	 */
-	void execute(DBBroker broker) throws EXistException;
+	void execute(DBBroker broker, Txn transaction) throws EXistException;
 	
 	/**
 	 * @return true if a checkpoint should be generated before this system task

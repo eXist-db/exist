@@ -120,7 +120,8 @@ public class SystemExportFiltersTest {
     public void exportImport() throws Exception {
         Path file;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             List<String> filters = new ArrayList<>();
             filters.add(FilterForBackup.class.getName());
@@ -131,9 +132,11 @@ public class SystemExportFiltersTest {
             assertNotNull(test);
 
             boolean direct = true;
-            final SystemExport sysexport = new SystemExport(broker, null, null, direct);
+            final SystemExport sysexport = new SystemExport(broker, transaction, null, null, direct);
             final Path backupDir = tempFolder.newFolder().toPath();
             file = sysexport.export(backupDir.toAbsolutePath().toString(), false, false, null);
+
+            transaction.commit();
         }
 
         TestUtils.cleanupDB();

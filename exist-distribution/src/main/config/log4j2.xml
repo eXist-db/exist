@@ -110,14 +110,6 @@
             <PatternLayout pattern="${exist.file.pattern}"/>
         </RollingRandomAccessFile>
         
-        <RollingRandomAccessFile name="exist.mdStorage" filePattern="${logs}/mdStorage.${rollover.file.pattern}.log.gz" fileName="${logs}/mdStorage.log">
-            <Policies>
-                <SizeBasedTriggeringPolicy size="${rollover.max.size}"/>
-            </Policies>
-            <DefaultRolloverStrategy max="${rollover.max}"/>
-            <PatternLayout pattern="${exist.file.pattern}"/>
-        </RollingRandomAccessFile>
-        
         <RollingRandomAccessFile name="exist.statistics" filePattern="${logs}/statistics.${rollover.file.pattern}.log.gz" fileName="${logs}/statistics.log">
             <Policies>
                 <SizeBasedTriggeringPolicy size="${rollover.max.size}"/>
@@ -237,17 +229,12 @@
         <Logger name="de.betterform" additivity="false" level="warn">
             <AppenderRef ref="exist.betterform"/>
         </Logger>
-        
-        <!-- Metadata Storage extension -->
-        <Logger name="mdStorage" additivity="false" level="warn">
-            <AppenderRef ref="exist.mdStorage"/>
-        </Logger>
 
         <!-- expath pkg repo -->
-        <Logger name="org.expath.pkg" additivity="false" level="trace">
+        <Logger name="org.expath.pkg" additivity="false" level="info">
             <AppenderRef ref="expath.repo"/>
         </Logger>
-        <Logger name="org.exist.repo" additivity="false" level="trace">
+        <Logger name="org.exist.repo" additivity="false" level="info">
             <AppenderRef ref="expath.repo"/>
         </Logger>
         <Logger name="org.exist.launcher" additivity="false" level="warn">

@@ -454,7 +454,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     }
 
     private void _initialize() throws EXistException, DatabaseConfigurationException {
-        this.lockManager = new LockManager(concurrencyLevel);
+        this.lockManager = new LockManager(conf, concurrencyLevel);
 
         //Flag to indicate that we are initializing
         status.process(Event.INITIALIZE);
@@ -624,7 +624,10 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                                 props.setProperty("backup", "no");
                                 props.setProperty("output", "sanity");
                                 task.configure(conf, props);
-                                task.execute(systemBroker);
+                                try (final Txn transaction = transactionManager.beginTransaction()) {
+                                    task.execute(systemBroker, transaction);
+                                    transaction.commit();
+                                }
                             }
                         }
 
