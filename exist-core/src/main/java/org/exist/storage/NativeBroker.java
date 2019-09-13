@@ -185,8 +185,6 @@ public class NativeBroker extends DBBroker {
     private final LockManager lockManager;
     private final Optional<JournalManager> logManager;
 
-    private boolean incrementalDocIds = false;
-
     // initialize database; read configuration, etc.
     public NativeBroker(final BrokerPool pool, final Configuration config) throws EXistException {
         super(pool, config);
@@ -213,11 +211,6 @@ public class NativeBroker extends DBBroker {
         defaultIndexDepth = config.getInteger(PROPERTY_INDEX_DEPTH);
         if(defaultIndexDepth < 0) {
             defaultIndexDepth = DEFAULT_INDEX_DEPTH;
-        }
-
-        final String docIdProp = (String) config.getProperty(BrokerPool.DOC_ID_MODE_PROPERTY);
-        if(docIdProp != null) {
-            incrementalDocIds = docIdProp.equalsIgnoreCase("incremental");
         }
 
         this.indexConfiguration = (IndexSpec) config.getProperty(Indexer.PROPERTY_INDEXER_CONFIG);
