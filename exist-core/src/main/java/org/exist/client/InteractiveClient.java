@@ -1917,9 +1917,11 @@ public class InteractiveClient {
      * @throws java.lang.Exception
      */
     private boolean processCommandLineActions() throws Exception {
+        final boolean foundCollection = options.setCol.isPresent();
+
         // process command-line actions
         if (options.reindex) {
-            if (!options.setCol.isPresent()) {
+            if (!foundCollection) {
                 System.err.println("Please specify target collection with --collection");
                 shutdown(false);
                 return false;
@@ -1952,8 +1954,6 @@ public class InteractiveClient {
                 return false;
             }
         }
-
-        final boolean foundCollection = !options.setCol.isPresent();
 
         if (options.getDoc.isPresent()) {
             try {
