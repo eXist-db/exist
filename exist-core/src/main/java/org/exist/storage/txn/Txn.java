@@ -172,8 +172,11 @@ public class Txn implements Transaction {
         public void abort() {
             this.reusableState = State.ABORTED;
             if(underlyingTransaction.state != State.ABORTED) {
-                super.abort();
-                this.underlyingTransaction.setState(State.ABORTED);
+                try {
+                    super.abort();
+                } finally {
+                    this.underlyingTransaction.setState(State.ABORTED);
+                }
             }
         }
 
@@ -190,15 +193,21 @@ public class Txn implements Transaction {
                 }
                 this.reusableState = State.ABORTED;
                 if(underlyingTransaction.state != State.CLOSED) {
-                    super.close();
-                    this.underlyingTransaction.setState(State.CLOSED);
+                    try {
+                        super.close();
+                    } finally {
+                        this.underlyingTransaction.setState(State.CLOSED);
+                    }
                 }
                 this.reusableState = State.CLOSED;
             } else if(reusableState == State.ABORTED) {
                 this.reusableState = State.CLOSED;
                 if(underlyingTransaction.state != State.CLOSED) {
-                    super.close();
-                    this.underlyingTransaction.setState(State.CLOSED);
+                    try {
+                        super.close();
+                    } finally {
+                        this.underlyingTransaction.setState(State.CLOSED);
+                    }
                 }
             } else {
                 LOG.debug("Resetting transaction state for next use.");
