@@ -17,7 +17,7 @@ public class TxnTest {
 
     @Test
     public void commitTransaction() throws NoSuchFieldException, IllegalAccessException, EXistException {
-        final TransactionManager transact = helper.createTestableTransactionManager();
+        final TransactionManager transact = helper.createTestableTransactionManager(false);
 
         final Txn transaction = transact.beginTransaction();
 
@@ -36,7 +36,7 @@ public class TxnTest {
 
     @Test
     public void commitAndCloseTransaction() throws NoSuchFieldException, IllegalAccessException, EXistException {
-        final TransactionManager transact = helper.createTestableTransactionManager();
+        final TransactionManager transact = helper.createTestableTransactionManager(true);
 
         final Txn transaction = transact.beginTransaction();
 
@@ -56,7 +56,7 @@ public class TxnTest {
 
     @Test
     public void abortTransaction() throws NoSuchFieldException, IllegalAccessException, EXistException {
-        final TransactionManager transact = helper.createTestableTransactionManager();
+        final TransactionManager transact = helper.createTestableTransactionManager(false);
 
         final Txn transaction = transact.beginTransaction();
 
@@ -75,7 +75,7 @@ public class TxnTest {
 
     @Test
     public void abortAndCloseTransaction() throws NoSuchFieldException, IllegalAccessException, EXistException {
-        final TransactionManager transact = helper.createTestableTransactionManager();
+        final TransactionManager transact = helper.createTestableTransactionManager(true);
 
         final Txn transaction = transact.beginTransaction();
 
@@ -95,7 +95,7 @@ public class TxnTest {
 
     @Test
     public void repeatedAbortOnlyAbortsTransactionOnce() throws NoSuchFieldException, IllegalAccessException, EXistException {
-        final TransactionManager transact = helper.createTestableTransactionManager();
+        final TransactionManager transact = helper.createTestableTransactionManager(false);
 
         final Txn transaction = transact.beginTransaction();
 
@@ -117,7 +117,7 @@ public class TxnTest {
 
     @Test
     public void closeWithoutCommitAbortsTransaction() throws NoSuchFieldException, IllegalAccessException, EXistException {
-        final TransactionManager transact = helper.createTestableTransactionManager();
+        final TransactionManager transact = helper.createTestableTransactionManager(true);
 
         final Txn transaction = transact.beginTransaction();
 
@@ -136,7 +136,7 @@ public class TxnTest {
 
     @Test
     public void repeatedCloseWithoutCommitOnlyAbortsTransactionOnce() throws NoSuchFieldException, IllegalAccessException, EXistException {
-        final TransactionManager transact = helper.createTestableTransactionManager();
+        final TransactionManager transact = helper.createTestableTransactionManager(true);
 
         final Txn transaction = transact.beginTransaction();
 

@@ -651,7 +651,7 @@ public abstract class AbstractRecoverTest {
                 transaction.commit();
                 transaction.close();
             } else {
-                broker.setCurrentTransaction(null);
+                broker.removeCurrentTransaction(transaction);
             }
         }));
     }
@@ -765,7 +765,7 @@ public abstract class AbstractRecoverTest {
                 transaction.commit();
                 transaction.close();
             } else {
-                broker.setCurrentTransaction(null);
+                broker.removeCurrentTransaction(transaction);
             }
         }));
     }

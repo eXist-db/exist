@@ -1504,7 +1504,7 @@ public abstract class AbstractJournalTest<T> {
                 transaction.commit();
                 transaction.close();
             } else {
-                broker.setCurrentTransaction(null);
+                broker.removeCurrentTransaction(transaction);
             }
 
             return new TxnDoc<>(transaction.getId(), docId);

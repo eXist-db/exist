@@ -208,9 +208,9 @@ public class TransactionManager implements BrokerPoolService {
         transactions.put(txnId, new TxnCounter().increment());
         final Txn txn = new Txn(this, txnId);
 
-        // TODO(AR) ultimately we should be doing away with DBBroker#setCurrentTransaction
+        // TODO(AR) ultimately we should be doing away with DBBroker#addCurrentTransaction
         try(final DBBroker broker = pool.getBroker()) {
-            broker.setCurrentTransaction(txn);
+            broker.addCurrentTransaction(txn);
         } catch(final EXistException ee) {
             LOG.fatal(ee.getMessage(), ee);
             throw new RuntimeException(ee);
@@ -401,9 +401,9 @@ public class TransactionManager implements BrokerPoolService {
                 abort(txn);
             }
 
-            // TODO(AR) ultimately we should be doing away with DBBroker#setCurrentTransaction
+            // TODO(AR) ultimately we should be doing away with DBBroker#addCurrentTransaction
             try(final DBBroker broker = pool.getBroker()) {
-                broker.setCurrentTransaction(null);
+                broker.removeCurrentTransaction(txn instanceof Txn.ReusableTxn ? ((Txn.ReusableTxn)txn).getUnderlyingTransaction() : txn);
             } catch(final EXistException ee) {
                 LOG.fatal(ee.getMessage(), ee);
                 throw new RuntimeException(ee);

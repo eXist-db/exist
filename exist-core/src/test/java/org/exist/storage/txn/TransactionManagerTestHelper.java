@@ -20,12 +20,16 @@ public class TransactionManagerTestHelper {
     BrokerPool mockBrokerPool = null;
     NativeBroker mockBroker = null;
 
-    protected TransactionManager createTestableTransactionManager() throws NoSuchFieldException, IllegalAccessException, EXistException {
+    protected TransactionManager createTestableTransactionManager(final boolean expectTxnClose) throws NoSuchFieldException, IllegalAccessException, EXistException {
         mockBrokerPool = createMock(BrokerPool.class);
         mockBroker = createMock(NativeBroker.class);
         expect(mockBrokerPool.getBroker()).andReturn(mockBroker).atLeastOnce();
-        mockBroker.setCurrentTransaction(anyObject());
+        mockBroker.addCurrentTransaction(anyObject());
         expectLastCall().atLeastOnce();
+        if (expectTxnClose) {
+            mockBroker.removeCurrentTransaction(anyObject());
+            expectLastCall().atLeastOnce();
+        }
         mockBroker.close();
         expectLastCall().atLeastOnce();
         final SecurityManager mockSecurityManager = createMock(SecurityManager.class);

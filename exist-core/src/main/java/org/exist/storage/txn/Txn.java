@@ -225,5 +225,9 @@ public class Txn implements Transaction {
                 throw new IllegalStateException("You must only call releaseAll on the real underlying transaction");
             }
         }
+
+        Txn getUnderlyingTransaction() {
+            return underlyingTransaction;
+        }
     }
 }
