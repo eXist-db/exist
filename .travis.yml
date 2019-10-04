@@ -20,6 +20,7 @@ matrix:
       env:
          - JAVA_HOME=$(/usr/libexec/java_home)
          - BUILD_DOCKER=false
+         - MAVEN_OPTS="-Ddependency-check.skip=true"
 
 deploy:
   - provider: script
