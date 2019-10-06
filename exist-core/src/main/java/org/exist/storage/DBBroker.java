@@ -20,6 +20,7 @@
 package org.exist.storage;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -1136,23 +1137,30 @@ public abstract class DBBroker implements AutoCloseable {
         pool.release(this);
     }
 
-    public final static String PROP_DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS = "exist.disable-single-thread-overlapping-transaction-checks";
-    private final static boolean DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS = Boolean.valueOf(System.getProperty(PROP_DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS, "false"));
-    private Txn currentTransaction = null;
-    public synchronized void setCurrentTransaction(final Txn transaction) {
-        if (DISABLE_SINGLE_THREAD_OVERLAPPING_TRANSACTION_CHECKS) {
-            currentTransaction = transaction;
-        } else {
-            if (currentTransaction == null ^ transaction == null) {
-                currentTransaction = transaction;
-            } else {
-                throw new IllegalStateException("Broker already has a transaction set");
+    private ObjectLinkedOpenHashSet<Txn> currentTransactions = new ObjectLinkedOpenHashSet(4);  // 4 - we don't expect many concurrent transactions per-broker!
+    public void addCurrentTransaction(final Txn transaction) {
+        synchronized (currentTransactions) {
+            if (!currentTransactions.add(transaction)) {
+                throw new IllegalStateException("Transaction is already current: " + transaction.getId());
             }
         }
     }
 
-    public synchronized Txn getCurrentTransaction() {
-        return currentTransaction;
+    public void removeCurrentTransaction(final Txn transaction) {
+        synchronized (currentTransactions) {
+            if (!currentTransactions.remove(transaction)) {
+                throw new IllegalStateException("Unable to remove current transaction: " + transaction.getId());
+            }
+        }
+    }
+
+    public @Nullable Txn getCurrentTransaction() {
+        synchronized (currentTransactions) {
+            if (currentTransactions.isEmpty()) {
+                return null;
+            }
+            return currentTransactions.last();
+        }
     }
 
     /**
@@ -1172,13 +1180,14 @@ public abstract class DBBroker implements AutoCloseable {
      * @return the transaction
      */
     @Deprecated
-    public synchronized Txn continueOrBeginTransaction() {
-        final Txn currentTransaction = getCurrentTransaction();
-        if(currentTransaction != null) {
-            return new Txn.ReusableTxn(currentTransaction);
-        } else {
-            final TransactionManager tm = getBrokerPool().getTransactionManager();
-            return tm.beginTransaction(); //TransactionManager will call this#setCurrentTransaction
+    public Txn continueOrBeginTransaction() {
+        synchronized (currentTransactions) {
+            if (currentTransactions.isEmpty()) {
+                final TransactionManager tm = getBrokerPool().getTransactionManager();
+                return tm.beginTransaction(); //TransactionManager will call this#addCurrentTransaction
+            } else {
+                return new Txn.ReusableTxn(currentTransactions.last());
+            }
         }
     }
 

@@ -14,7 +14,7 @@ public class ReusableTxnTest {
 
     @Test
     public void commitTransactionHasNoEffect() throws NoSuchFieldException, IllegalAccessException, EXistException {
-        final TransactionManager transact = helper.createTestableTransactionManager();
+        final TransactionManager transact = helper.createTestableTransactionManager(false);
 
         final Txn realTransaction = transact.beginTransaction();
         final CountingTxnListener realListener = new CountingTxnListener();
@@ -39,7 +39,7 @@ public class ReusableTxnTest {
 
     @Test
     public void commitAndCloseTransactionHasNoEffect() throws NoSuchFieldException, IllegalAccessException, EXistException {
-        final TransactionManager transact = helper.createTestableTransactionManager();
+        final TransactionManager transact = helper.createTestableTransactionManager(false);
 
         final Txn realTransaction = transact.beginTransaction();
         final CountingTxnListener realListener = new CountingTxnListener();
@@ -65,7 +65,7 @@ public class ReusableTxnTest {
 
     @Test
     public void abortTransaction() throws NoSuchFieldException, IllegalAccessException, EXistException {
-        final TransactionManager transact = helper.createTestableTransactionManager();
+        final TransactionManager transact = helper.createTestableTransactionManager(false);
 
         final Txn realTransaction = transact.beginTransaction();
         final CountingTxnListener realListener = new CountingTxnListener();
@@ -90,7 +90,7 @@ public class ReusableTxnTest {
 
     @Test
     public void abortAndCloseTransaction() throws NoSuchFieldException, IllegalAccessException, EXistException {
-        final TransactionManager transact = helper.createTestableTransactionManager();
+        final TransactionManager transact = helper.createTestableTransactionManager(true);
 
         final Txn realTransaction = transact.beginTransaction();
         final CountingTxnListener realListener = new CountingTxnListener();
@@ -116,7 +116,7 @@ public class ReusableTxnTest {
 
     @Test
     public void repeatedAbortOnlyAbortsTransactionOnce() throws NoSuchFieldException, IllegalAccessException, EXistException {
-        final TransactionManager transact = helper.createTestableTransactionManager();
+        final TransactionManager transact = helper.createTestableTransactionManager(false);
 
         final Txn realTransaction = transact.beginTransaction();
         final CountingTxnListener realListener = new CountingTxnListener();
@@ -146,7 +146,7 @@ public class ReusableTxnTest {
 
     @Test
     public void closeWithoutCommitAbortsTransaction() throws NoSuchFieldException, IllegalAccessException, EXistException {
-        final TransactionManager transact = helper.createTestableTransactionManager();
+        final TransactionManager transact = helper.createTestableTransactionManager(true);
 
         final Txn realTransaction = transact.beginTransaction();
         final CountingTxnListener realListener = new CountingTxnListener();
@@ -173,7 +173,7 @@ public class ReusableTxnTest {
 
     @Test
     public void repeatedCloseWithoutCommitOnlyAbortsTransactionOnce() throws NoSuchFieldException, IllegalAccessException, EXistException {
-        final TransactionManager transact = helper.createTestableTransactionManager();
+        final TransactionManager transact = helper.createTestableTransactionManager(true);
 
         final Txn realTransaction = transact.beginTransaction();
         final CountingTxnListener realListener = new CountingTxnListener();
@@ -203,7 +203,7 @@ public class ReusableTxnTest {
 
     @Test
     public void closeWithoutCommitOnMultipleReusableTransactionOnlyAbortsTransactionOnce() throws NoSuchFieldException, IllegalAccessException, EXistException {
-        final TransactionManager transact = helper.createTestableTransactionManager();
+        final TransactionManager transact = helper.createTestableTransactionManager(true);
 
         final Txn realTransaction = transact.beginTransaction();
         final CountingTxnListener realListener = new CountingTxnListener();
@@ -236,7 +236,7 @@ public class ReusableTxnTest {
 
     @Test
     public void abortOnMultipleReusableTransactionOnlyAbortsTransactionOnce() throws NoSuchFieldException, IllegalAccessException, EXistException {
-        final TransactionManager transact = helper.createTestableTransactionManager();
+        final TransactionManager transact = helper.createTestableTransactionManager(false);
 
         final Txn realTransaction = transact.beginTransaction();
         final CountingTxnListener realListener = new CountingTxnListener();
