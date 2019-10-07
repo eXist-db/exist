@@ -3,6 +3,8 @@ package org.exist.test;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.start.Classpath;
+import org.exist.start.EXistClassLoader;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.journal.Journal;
 import org.exist.util.Configuration;
@@ -77,6 +79,11 @@ public class ExistEmbeddedServer extends ExternalResource {
         this.configProperties = Optional.ofNullable(configProperties);
         this.disableAutoDeploy = disableAutoDeploy;
         this.useTemporaryStorage = useTemporaryStorage;
+
+        // setup classloader
+        final Classpath _classpath = new Classpath();
+        final EXistClassLoader cl = _classpath.getClassLoader(null);
+        Thread.currentThread().setContextClassLoader(cl);
     }
 
     @Override
