@@ -36,7 +36,7 @@ public class HttpClientModule extends AbstractInternalModule {
 
     public final static String NAMESPACE_URI = HttpConstants.HTTP_CLIENT_NS_URI;
 
-    public final static String PREFIX = HttpConstants.HTTP_CLIENT_NS_PREFIX;
+    public final static String PREFIX = "http";
     public final static String INCLUSION_DATE = "2011-03-17";
     public final static String RELEASED_IN_VERSION = "1.5";
 
