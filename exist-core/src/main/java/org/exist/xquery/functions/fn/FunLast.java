@@ -59,11 +59,8 @@ public class FunLast extends Function {
 	 * @see org.exist.xquery.functions.Function#getDependencies()
 	 */
 	public int getDependencies() {
-		if (inPredicate)
-			{return Dependency.CONTEXT_SET;}
-		else
-			{return Dependency.CONTEXT_SET +
-			Dependency.CONTEXT_POSITION;}				
+		return Dependency.CONTEXT_SET +
+			Dependency.CONTEXT_POSITION;
 	}
 
 	/* (non-Javadoc)

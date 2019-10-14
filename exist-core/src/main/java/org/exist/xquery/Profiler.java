@@ -202,6 +202,10 @@ public class Profiler {
         stats.recordIndexUse(expression, indexType, context.getSource().path(), mode, elapsed);
     }
 
+    public final void traceOptimization(XQueryContext context, PerformanceStats.OptimizationType type, Expression expression) {
+        stats.recordOptimization(expression, type, context.getSource().path());
+    }
+
     private void save() {
         if (db != null) {
             db.getPerformanceStats().merge(stats);

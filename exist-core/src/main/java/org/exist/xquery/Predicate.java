@@ -123,10 +123,6 @@ public class Predicate extends PathExpr {
             newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
             super.analyze(newContextInfo);
         }
-        if (executionMode == POSITIONAL && staticReturnType != Type.ITEM
-                && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
-            contextInfo.addFlag(POSITIONAL_PREDICATE);
-        }
     }
 
     private AnalyzeContextInfo createContext(AnalyzeContextInfo contextInfo) {

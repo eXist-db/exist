@@ -100,8 +100,6 @@ public abstract class Step extends AbstractExpression {
             for (final Predicate pred : predicates) {
                 pred.analyze(newContext);
             }
-            if (predicates.size() == 1 && (newContext.getFlags() & POSITIONAL_PREDICATE) != 0)
-                {hasPositionalPredicate = true;}
         }
         // if we are on the self axis, remember the static return type given in the context
         if (this.axis == Constants.SELF_AXIS)

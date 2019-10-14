@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.Arrays;
 import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.util.HashSet;
 
 public class PerformanceStats implements BrokerPoolService {
 
@@ -137,6 +138,44 @@ public class PerformanceStats implements BrokerPoolService {
         }
     }
 
+    private static class OptimizationStats {
+
+        String source;
+        OptimizationType type;
+        int line;
+        int column;
+
+        OptimizationStats(String source, OptimizationType type, int line, int column) {
+            if (source == null) {
+                this.source = "";
+            } else {
+                this.source = source;
+            }
+            this.type = type;
+            this.line = line;
+            this.column = column;
+        }
+
+        @Override
+        public int hashCode() {
+            return 32 * type.hashCode() + source.hashCode() + line + column;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof OptimizationStats) {
+                final OptimizationStats stats = (OptimizationStats) obj;
+                return source.equals(stats.source) && type == stats.type &&
+                        line == stats.line && column == stats.column;
+            }
+            return false;
+        }
+    }
+
+    public enum OptimizationType {
+        PositionalPredicate
+    }
+
     private static class CompareByTime implements Comparator<FunctionStats> {
 
         public int compare(FunctionStats o1, FunctionStats o2) {
@@ -149,6 +188,7 @@ public class PerformanceStats implements BrokerPoolService {
     private HashMap<String, QueryStats> queries = new HashMap<String, QueryStats>();
     private HashMap<FunctionStats, FunctionStats> functions = new HashMap<FunctionStats, FunctionStats>();
     private HashMap<IndexStats, IndexStats> indexStats = new HashMap<IndexStats, IndexStats>();
+    private HashSet<OptimizationStats> optimizations = new HashSet<>();
     
     private boolean enabled = false;
 
@@ -208,7 +248,12 @@ public class PerformanceStats implements BrokerPoolService {
             stats.recordUsage(elapsed);
         }
     }
-    
+
+    public void recordOptimization(Expression expression, OptimizationType type, String source) {
+        final OptimizationStats newStats = new OptimizationStats(source, type, expression.getLine(), expression.getColumn());
+        optimizations.add(newStats);
+    }
+
     public synchronized void merge(PerformanceStats otherStats) {
         for (final QueryStats other: otherStats.queries.values()) {
             final QueryStats mine = queries.get(other.source);
@@ -237,6 +282,9 @@ public class PerformanceStats implements BrokerPoolService {
                mine.executionTime += other.executionTime;
            }
        }
+        for (OptimizationStats stats : otherStats.optimizations) {
+            optimizations.add(stats);
+        }
     }
 
     @SuppressWarnings("unused")
@@ -301,6 +349,15 @@ public class PerformanceStats implements BrokerPoolService {
             attrs.addAttribute("", "optimization", "optimization", "CDATA",
                 Integer.toString(stats.mode));
             builder.startElement(new QName("index", XML_NAMESPACE, XML_PREFIX), attrs);
+            builder.endElement();
+        }
+        for (final OptimizationStats stats: optimizations) {
+            attrs.clear();
+            attrs.addAttribute("", "type", "type", "CDATA", stats.type.toString());
+            if (stats.source != null) {
+                attrs.addAttribute("", "source", "source", "CDATA", stats.source + " [" + stats.line + ":" + stats.column + "]");
+            }
+            builder.startElement(new QName("optimization", XML_NAMESPACE, XML_PREFIX), attrs);
             builder.endElement();
         }
         builder.endElement();

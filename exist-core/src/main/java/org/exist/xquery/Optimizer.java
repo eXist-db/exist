@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Type;
 
 import java.util.*;
 
@@ -70,6 +71,9 @@ public class Optimizer extends DefaultExpressionVisitor {
 
     public void visitLocationStep(LocationStep locationStep) {
         super.visitLocationStep(locationStep);
+
+        this.checkPositionalFilters(locationStep);
+
         // check query rewriters if they want to rewrite the location step
         Pragma optimizePragma = null;
         for (QueryRewriter rewriter : rewriters) {
@@ -140,6 +144,27 @@ public class Optimizer extends DefaultExpressionVisitor {
             // Replace the old expression with the pragma
             final RewritableExpression path = (RewritableExpression) parent;
             path.replace(locationStep, extension);
+        }
+    }
+
+    /**
+     * Static check if the location steps first filter is a positional predicate.
+     * If yes, set a flag on the {@link LocationStep}
+     *
+     * @param locationStep the location step to analyze
+     */
+    private void checkPositionalFilters(LocationStep locationStep) {
+        if (locationStep.hasPredicates()) {
+            final List<Predicate> preds = locationStep.getPredicates();
+            final Predicate predicate = preds.get(0);
+            final Expression predExpr = predicate.getFirst();
+            // only apply optimization if the static return type is a single number
+            // and there are no dependencies on the context item
+            if (Type.subTypeOf(predExpr.returnsType(), Type.NUMBER) &&
+                    Cardinality.checkCardinality(Cardinality.EXACTLY_ONE, predExpr.getCardinality()) &&
+                    !Dependency.dependsOn(predExpr, Dependency.CONTEXT_POSITION)) {
+                locationStep.hasPositionalPredicate = true;
+            }
         }
     }
 
