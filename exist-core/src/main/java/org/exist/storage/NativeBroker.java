@@ -844,51 +844,110 @@ public class NativeBroker extends DBBroker {
             return null;
         }
 
-        // 1) optimize for reading from the Collection from the cache
         final CollectionCache collectionsCache = pool.getCollectionsCache();
+        final Collection collection;
+        try {
+            // NOTE: getCollectionForOpen will perform the Permission.EXECUTE security check on Collection at collectionUri
+            collection = getCollectionForOpen(collectionsCache, collectionUri);
+            if (collection == null) {
+                unlockFn.run();
+                return null;
+            }
+        } catch (final IllegalStateException | PermissionDeniedException e) {
+            unlockFn.run();
+            throw e;
+        }
+
+        // Must ALSO perform a security check up the collection hierarchy to ensure that we have Permission.EXECUTE all the way
+        try {
+            checkCollectionAncestorPermissions(collectionsCache, collection);
+        } catch (final IllegalStateException | PermissionDeniedException e) {
+            unlockFn.run();
+            throw e;
+        } catch (final LockException e) {
+            unlockFn.run();
+            LOG.error("Failed to acquire lock on Collection: {}", collectionUri);
+            return null;
+        }
+
+        return new LockedCollection(collectionLock, collection);
+    }
+
+    // NOTE: READ_LOCK in the @EnsureLocked parameter annotation here means "at least" READ
+    private @Nullable Collection getCollectionForOpen(final CollectionCache collectionsCache,
+            @EnsureLocked(type=LockType.COLLECTION, mode=LockMode.READ_LOCK) final XmldbURI collectionUri)
+            throws IllegalStateException, PermissionDeniedException {
+
+        // 1) optimize for reading from the Collection from the cache
         final Collection collection = collectionsCache.getIfPresent(collectionUri);
         if (collection != null) {
 
             // sanity check
             if(!collection.getURI().equalsInternal(collectionUri)) {
                 LOG.error("openCollection: The Collection received from the cache: {} is not the requested: {}", collection.getURI(), collectionUri);
-                unlockFn.run();
                 throw new IllegalStateException();
             }
 
-            // does the user have permission to access the Collection
+            // does the user have permission to access THIS Collection
             if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE)) {
-                unlockFn.run();
                 throw new PermissionDeniedException("Permission denied to open collection: " + collection.getURI().toString() + " by " + getCurrentSubject().getName());
             }
 
-            return new LockedCollection(collectionLock, collection);
-        }
+            return collection;
 
-        // 2) if not in the cache, load from disk
-        final Collection loadedCollection;
-        try {
-            loadedCollection = loadCollection(collectionUri);
-        } catch(final IOException e) {
-            LOG.error(e.getMessage(), e);
-            unlockFn.run();
-            return null;
-        } catch(final LockException e) {
-            LOG.error("Failed to acquire lock on: {}", FileUtils.fileName(collectionsDb.getFile()));
-            unlockFn.run();
-            return null;
-        }
-
-        // if we loaded a Collection add it to the cache (if it isn't already there)
-        if(loadedCollection != null) {
-            final Collection cachedCollection = collectionsCache.getOrCreate(collectionUri, key -> loadedCollection);
-            return new LockedCollection(collectionLock, cachedCollection);
         } else {
-            unlockFn.run();
-            return null;
+
+            // 2) if not in the cache, load from disk
+            final Collection loadedCollection;
+            try {
+                // NOTE: loadCollection via. MutableCollection's constructor will perform the Permission.EXECUTE security check
+                loadedCollection = loadCollection(collectionUri);
+            } catch (final IOException e) {
+                LOG.error(e.getMessage(), e);
+                return null;
+            } catch (final LockException e) {
+                LOG.error("Failed to acquire lock on: {}", FileUtils.fileName(collectionsDb.getFile()));
+                return null;
+            }
+
+            // if we loaded a Collection add it to the cache (if it isn't already there)
+            if (loadedCollection != null) {
+                return collectionsCache.getOrCreate(collectionUri, key -> loadedCollection);
+            } else {
+                return null;
+            }
         }
     }
 
+    // NOTE: READ_LOCK in the @EnsureLocked parameter annotation here means "at least" READ
+    private void checkCollectionAncestorPermissions(final CollectionCache collectionsCache,
+            @EnsureLocked(type=LockType.COLLECTION, mode=LockMode.READ_LOCK) Collection collection)
+            throws IllegalStateException, PermissionDeniedException, LockException {
+
+        /*
+            When we are called we hold either a READ or WRITE Lock on the Collection.
+            As we are using hierarchical locking for Collections we can
+            assume that we also hold either an INTENTION_READ or INTENTION_WRITE Lock
+            on each ancestor Collection up to the root,
+            therefore we don't really need to acquire any more locks.
+
+            The permissions are checked bottom-up on the Collection hierarchy as we
+            assume that the more specific/restrictive permissions are likely to be
+            closer to the target Collection.
+         */
+
+        XmldbURI parentUri = collection.getParentURI();
+        while (parentUri != null) {
+            // this will throw a PermissionDeniedException if the user does not have Permission.EXECUTE on the Collection at the parentUri
+            collection = getCollectionForOpen(collectionsCache, parentUri);
+            if (collection == null) {
+                LOG.error("Parent collection {} was null for collection {} ", parentUri, collection.getURI());
+                throw new IllegalStateException();
+            }
+
+            parentUri = collection.getParentURI();
+        }
+    }
 
     @Override
     public List<String> findCollectionsMatching(final String regexp) {
