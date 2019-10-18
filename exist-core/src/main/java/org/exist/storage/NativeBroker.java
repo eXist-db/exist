@@ -3526,9 +3526,9 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public String getNodeValue(final IStoredNode node, final boolean addWhitespace) {
-        return (String) new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
+        return new DOMTransaction<String>(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
             @Override
-            public Object start() {
+            public String start() {
                 return domDb.getNodeValue(NativeBroker.this, node, addWhitespace);
             }
         }.run();
@@ -3536,9 +3536,9 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public IStoredNode objectWith(final Document doc, final NodeId nodeId) {
-        return (IStoredNode<?>) new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
+        return new DOMTransaction<IStoredNode<?>>(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
             @Override
-            public Object start() {
+            public IStoredNode<?> start() {
                 final Value val = domDb.get(NativeBroker.this, new NodeProxy((DocumentImpl) doc, nodeId));
                 if(val == null) {
                     if(LOG.isDebugEnabled()) {
@@ -3559,9 +3559,9 @@ public class NativeBroker extends DBBroker {
         if(!StorageAddress.hasAddress(p.getInternalAddress())) {
             return objectWith(p.getOwnerDocument(), p.getNodeId());
         }
-        return (IStoredNode<?>) new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
+        return new DOMTransaction<IStoredNode<?>>(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
             @Override
-            public Object start() {
+            public IStoredNode<?> start() {
                 // DocumentImpl sets the nodeId to DOCUMENT_NODE when it's trying to find its top-level
                 // children (for which it doesn't persist the actual node ids), so ignore that.  Nobody else
                 // should be passing DOCUMENT_NODE into here.
