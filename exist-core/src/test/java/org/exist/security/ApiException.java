@@ -30,15 +30,15 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class ApiException extends Exception {
     
-    public ApiException(final XMLDBException xmldbe) {
-        super(xmldbe);
-    }
-
-    public ApiException(final IOException ioe) {
-        super(ioe);
+    public ApiException(final Throwable cause) {
+        super(cause);
     }
     
     public ApiException(final String message) {
         super(message);
+    }
+
+    public ApiException(final String message, final Throwable cause) {
+        super(message, cause);
     }
 }
