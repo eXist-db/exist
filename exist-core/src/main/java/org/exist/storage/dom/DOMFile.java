@@ -285,7 +285,10 @@ public class DOMFile extends BTree implements Lockable {
         return CONFIG_KEY_FOR_FILE;
     }
 
-    void synchronized addToBuffer(final DOMPage page) {
+    void addToBuffer(final DOMPage page) {
+        if (LOG.isDebugEnabled() && !lockManager.isBtreeLocked(getLockName())) {
+            LOG.debug("The file doesn't own a lock");
+        }
         dataCache.add(page);
     }
 
@@ -307,6 +310,9 @@ public class DOMFile extends BTree implements Lockable {
     }
 
     void setCurrentDocument(final DocumentImpl doc) {
+        if(LOG.isDebugEnabled() && !lockManager.isBtreeLocked(getLockName())) {
+            LOG.debug("The file doesn't own a lock");
+        }
         this.currentDocument = doc;
     }
 
@@ -2205,10 +2211,14 @@ public class DOMFile extends BTree implements Lockable {
      * 
      * @param ownerObject The new ownerObject value
      */
-    public synchronized final void setOwnerObject(final Object ownerObject) {
+    public final void setOwnerObject(final Object ownerObject) {
         if (ownerObject == null) {
             LOG.error("setOwnerObject(null)");
-        }   
+        }
+        if(LOG.isDebugEnabled() && !lockManager.isBtreeLocked(getLockName())) {
+            LOG.debug("The file doesn't own a lock");
+        }
+
         owner = ownerObject;
     }
 
