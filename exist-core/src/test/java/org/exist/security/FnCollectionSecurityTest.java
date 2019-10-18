@@ -2,10 +2,7 @@ package org.exist.security;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
@@ -30,7 +27,6 @@ import java.util.Optional;
 
 import static org.exist.xmldb.XmldbURI.ROOT_COLLECTION;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 public class FnCollectionSecurityTest {
 
@@ -231,8 +227,11 @@ public class FnCollectionSecurityTest {
         securityManager.updateGroup(group);
     }
 
-    private static void createCollection(final DBBroker broker, final Txn transaction, final String collectionUri, final String modeStr, final ACEAider... aces) throws PermissionDeniedException, IOException, TriggerException, SyntaxException {
-        try (final Collection collection = broker.getOrCreateCollection(transaction, XmldbURI.create(collectionUri))) {
+    private static void createCollection(final DBBroker broker, final Txn transaction, final String collectionUri, final String modeStr, final ACEAider... aces) throws PermissionDeniedException, IOException, TriggerException, SyntaxException, LockException {
+        Collection collection = null;
+        try {
+            collection = broker.getOrCreateCollection(transaction, XmldbURI.create(collectionUri));
+            collection.getLock().acquire(Lock.LockMode.WRITE_LOCK);
             final Permission permissions = collection.getPermissions();
             permissions.setMode(modeStr);
             if (permissions instanceof SimpleACLPermission) {
@@ -247,6 +246,10 @@ public class FnCollectionSecurityTest {
                 }
             }
             broker.saveCollection(transaction, collection);
+        } finally {
+            if (collection != null) {
+                collection.getLock().release(Lock.LockMode.WRITE_LOCK);
+            }
         }
     }
 }

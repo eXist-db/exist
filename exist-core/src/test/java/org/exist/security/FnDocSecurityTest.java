@@ -5,7 +5,6 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
@@ -223,8 +222,11 @@ public class FnDocSecurityTest {
         securityManager.updateGroup(group);
     }
 
-    private static void createCollection(final DBBroker broker, final Txn transaction, final String collectionUri, final String modeStr, final ACEAider... aces) throws PermissionDeniedException, IOException, TriggerException, SyntaxException {
-        try (final Collection collection = broker.getOrCreateCollection(transaction, XmldbURI.create(collectionUri))) {
+    private static void createCollection(final DBBroker broker, final Txn transaction, final String collectionUri, final String modeStr, final ACEAider... aces) throws PermissionDeniedException, IOException, TriggerException, SyntaxException, LockException {
+        Collection collection = null;
+        try {
+            collection = broker.getOrCreateCollection(transaction, XmldbURI.create(collectionUri));
+            collection.getLock().acquire(Lock.LockMode.WRITE_LOCK);
             final Permission permissions = collection.getPermissions();
             permissions.setMode(modeStr);
             if (permissions instanceof SimpleACLPermission) {
@@ -239,23 +241,36 @@ public class FnDocSecurityTest {
                 }
             }
             broker.saveCollection(transaction, collection);
+        } finally {
+            if (collection != null) {
+                collection.getLock().release(Lock.LockMode.WRITE_LOCK);
+            }
         }
     }
 
     private static void createDocument(final DBBroker broker, final Txn transaction, final String collectionUri, final String docName, final String content, final String modeStr) throws PermissionDeniedException, LockException, SAXException, EXistException, IOException, SyntaxException {
-        try (final Collection collection = broker.openCollection(XmldbURI.create(collectionUri), Lock.LockMode.WRITE_LOCK)) {
+        Collection collection = null;
+        try {
+            collection = broker.openCollection(XmldbURI.create(collectionUri), Lock.LockMode.WRITE_LOCK);
             final IndexInfo indexInfo = collection.validateXMLResource(transaction, broker, XmldbURI.create(docName), content);
             collection.store(transaction, broker, indexInfo, content);
 
-            try (final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.create(collectionUri).append(docName), Lock.LockMode.WRITE_LOCK)) {
-                final DocumentImpl doc = lockedDoc.getDocument();
+            DocumentImpl doc = null;
+            try {
+                doc = broker.getXMLResource(XmldbURI.create(collectionUri).append(docName), Lock.LockMode.WRITE_LOCK);
                 final Permission permissions = doc.getPermissions();
                 permissions.setMode(modeStr);
 
                 broker.saveCollection(transaction, collection);
 
-                // asymmetrical close of collection!
-                collection.close();
+            } finally {
+                if (doc != null) {
+                    doc.getUpdateLock().release(Lock.LockMode.WRITE_LOCK);
+                }
+            }
+        } finally {
+            if (collection != null) {
+                collection.getLock().release(Lock.LockMode.WRITE_LOCK);
             }
         }
     }

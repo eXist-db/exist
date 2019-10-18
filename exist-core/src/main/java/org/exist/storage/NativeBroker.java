@@ -83,6 +83,7 @@ import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.annotation.Nullable;
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.nio.file.Files;
@@ -767,12 +768,6 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public Collection openCollection(final XmldbURI uri, final LockMode lockMode) throws PermissionDeniedException {
-        return openCollection(uri, BFile.UNKNOWN_ADDRESS, lockMode);
-    }
-
-
-    @Override
     public List<String> findCollectionsMatching(final String regexp) {
 
         final List<String> collections = new ArrayList<>();
@@ -869,29 +864,56 @@ public class NativeBroker extends DBBroker {
      * returned.
      *
      * @param uri collection URI
-     * @return The collection value
+     * @param lockMode the mode to lock the collection with
+     *
+     * @return The collection or null
      */
-    private Collection openCollection(XmldbURI uri, final long address, final LockMode lockMode) throws PermissionDeniedException {
+    @Override
+    public @Nullable Collection openCollection(XmldbURI uri, final LockMode lockMode) throws PermissionDeniedException {
         uri = prepend(uri.toCollectionPathURI());
         //We *must* declare it here (see below)
-        Collection collection;
         final CollectionCache collectionsCache = pool.getCollectionsCache();
-        synchronized(collectionsCache) {
-            collection = collectionsCache.get(uri);
-            if(collection == null) {
+        final Collection collection = getCollectionForOpen(collectionsCache, uri);
+        if (collection == null) {
+            return null;
+        }
+
+        // Must ALSO perform a security check up the collection hierarchy to ensure that we have Permission.EXECUTE all the way
+        try {
+            checkCollectionAncestorPermissions(collectionsCache, collection);
+        } catch (final IllegalStateException | PermissionDeniedException e) {
+            throw e;
+        } catch (final LockException e) {
+            LOG.error("Failed to acquire lock on Collection: {}", uri);
+            return null;
+        }
+
+        if(lockMode != LockMode.NO_LOCK) {
+            try {
+                collection.getLock().acquire(lockMode);
+            } catch(final LockException e) {
+                LOG.error("Failed to acquire lock on collection: {}", uri);
+            }
+        }
+
+        return collection;
+    }
+
+    private @Nullable Collection getCollectionForOpen(final CollectionCache collectionsCache, final XmldbURI uri) throws PermissionDeniedException {
+        synchronized (collectionsCache) {
+            Collection collection = collectionsCache.get(uri);
+            if (collection == null) {
                 final Lock lock = collectionsDb.getLock();
                 try {
                     lock.acquire(LockMode.READ_LOCK);
-                    VariableByteInput is;
-                    if(address == BFile.UNKNOWN_ADDRESS) {
-                        final Value key = new CollectionStore.CollectionKey(uri.toString());
-                        is = collectionsDb.getAsStream(key);
-                    } else {
-                        is = collectionsDb.getAsStream(address);
-                    }
-                    if(is == null) {
+
+                    final Value key = new CollectionStore.CollectionKey(uri.toString());
+                    final VariableByteInput is = collectionsDb.getAsStream(key);
+                    if (is == null) {
                         return null;
                     }
+
+                    // NOTE: MutableCollection.load via. Collection#deserialize will perform the Permission.EXECUTE security check
                     collection = MutableCollection.load(this, uri, is);
 
                     collectionsCache.add(collection);
@@ -912,7 +934,7 @@ public class NativeBroker extends DBBroker {
             } else {
                 if(!collection.getURI().equalsInternal(uri)) {
                     LOG.error("The collection received from the cache is not the requested: " + uri +
-                        "; received: " + collection.getURI());
+                            "; received: " + collection.getURI());
                 }
                 collectionsCache.add(collection);
 
@@ -920,23 +942,37 @@ public class NativeBroker extends DBBroker {
                     throw new PermissionDeniedException("Permission denied to open collection: " + collection.getURI().toString() + " by " + getCurrentSubject().getName());
                 }
             }
-        }
 
-        //Important : 
-        //This code must remain outside of the synchronized block
-        //because another thread may already own a lock on the collection
-        //This would result in a deadlock... until the time-out raises the Exception
-        //TODO : make an attempt to an immediate lock ?
-        //TODO : manage a collection of requests for locks ?
-        //TODO : another yet smarter solution ?
-        if(lockMode != LockMode.NO_LOCK) {
-            try {
-                collection.getLock().acquire(lockMode);
-            } catch(final LockException e) {
-                LOG.error("Failed to acquire lock on collection '" + uri + "'");
-            }
+            return collection;
         }
-        return collection;
+    }
+
+    private void checkCollectionAncestorPermissions(final CollectionCache collectionsCache, Collection collection)
+            throws IllegalStateException, PermissionDeniedException, LockException {
+
+        /*
+            When we are called we don't hold a lock on the Collection in eXist-db 4.x.x, but really we should!
+            Additionally, we should really lock each ancestor collection as we retrieve it and check its permissions,
+            but actually the locking in eXist-db 4.x.x for openCollection is already kinda broken, so
+            we just do a quick check without correct locking. This is fixed in eXist-db 5.0.0.
+
+            The permissions are checked bottom-up on the Collection hierarchy as we
+            assume that the more specific/restrictive permissions are likely to be
+            closer to the target Collection.
+         */
+
+        XmldbURI parentUri = collection.getParentURI();
+        while (parentUri != null) {
+            // this will throw a PermissionDeniedException if the user does not have Permission.EXECUTE on the Collection at the parentUri
+            collection = getCollectionForOpen(collectionsCache, parentUri);
+
+            if (collection == null) {
+                LOG.error("Parent collection {} was null for collection {} ", parentUri, collection.getURI());
+                throw new IllegalStateException();
+            }
+
+            parentUri = collection.getParentURI();
+        }
     }
 
     /**
