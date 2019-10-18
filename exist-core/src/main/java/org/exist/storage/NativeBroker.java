@@ -3142,7 +3142,12 @@ public class NativeBroker extends DBBroker {
             }.run();
             ByteArrayPool.releaseByteArray(data);
         } catch(final Exception e) {
-            final Value oldVal = domDb.get(node.getInternalAddress());
+            final Value oldVal = new DOMTransaction<Value>(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
+                @Override
+                public Value start() {
+                    return domDb.get(node.getInternalAddress());
+                }
+            }.run();
 
             //TODO what can we do about abstracting this out?
             final IStoredNode old = StoredNode.deserialize(oldVal.data(),
@@ -3711,8 +3716,23 @@ public class NativeBroker extends DBBroker {
         try {
             flush();
             sync(Sync.MAJOR);
-            domDb.close();
-            collectionsDb.close();
+
+            new DOMTransaction(NativeBroker.this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
+                @Override
+                public Object start() {
+                    try {
+                        domDb.close();
+                    } catch(final DBException e) {
+                        LOG.error(e.getMessage(), e);
+                    }
+                    return null;
+                }
+            }.run();
+
+            try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
+                collectionsDb.close();
+            }
+
             notifyClose();
         } catch(final Exception e) {
             LOG.error(e.getMessage(), e);
