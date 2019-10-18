@@ -94,6 +94,12 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
     }
 
     @Override
+    protected void addCollectionUserAce(final String collectionUri, final String user_uid, final String mode, final boolean allow, final String uid, final String pwd) throws ApiException {
+        final String query = "sm:add-user-ace(xs:anyURI('" + collectionUri + "'), '" + user_uid + "', " + (allow ? "true()" : "false()") + ", '" + mode + "')";
+        executeQuery(query, uid, pwd);
+    }
+
+    @Override
     protected String getXmlResourceContent(final String resourceUri, final String uid, final String pwd) throws ApiException {
         final Executor exec = getExecutor(uid, pwd);
         try {
@@ -171,9 +177,10 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
             final String queryUri = createQueryUri(xquery);
             
             final HttpResponse resp = exec.execute(Request.Get(queryUri)).returnResponse();
-            
-            if(resp.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                throw new ApiException("Could not execute query uri: " + queryUri + ". " + getResponseBody(resp.getEntity()));
+
+            final int status = resp.getStatusLine().getStatusCode();
+            if(status != HttpStatus.SC_OK) {
+                throw new ApiException("HTTP " + status + " could not execute query uri: " + queryUri + ". " + getResponseBody(resp.getEntity()));
             }
         } catch(final IOException ioe) {
             throw new ApiException(ioe);

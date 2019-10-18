@@ -41,22 +41,9 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.functions.xmldb.XMLDBModule;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -152,10 +139,21 @@ public class ExtCollection extends Function {
             }
         } catch (final XPathException e) { //From AnyURIValue constructor
             e.setLocation(line, column);
-            throw new XPathException("FODC0002: " + e.getMessage());
-        } catch(final PermissionDeniedException pde) {
-            throw new XPathException("FODC0002: can not access collection '" + pde.getMessage() + "'");
-            
+            Sequence flattenedArgs = Sequence.EMPTY_SEQUENCE;
+            try {
+                flattenedArgs = argsToSeq(contextSequence, contextItem);
+            } catch (final XPathException xe) {
+                LOG.warn(e.getMessage(), xe);
+            }
+            throw new XPathException(this, ErrorCodes.FODC0002, e.getMessage(), flattenedArgs, e);
+        } catch (final PermissionDeniedException e) {
+            Sequence flattenedArgs = Sequence.EMPTY_SEQUENCE;
+            try {
+                flattenedArgs = argsToSeq(contextSequence, contextItem);
+            } catch (final XPathException xe) {
+                LOG.warn(e.getMessage(), xe);
+            }
+            throw new XPathException(this, ErrorCodes.FODC0002, "Can not access collection '" + e.getMessage() + "'", flattenedArgs, e);
         }
         // iterate through all docs and create the node set
         final NodeSet result = new NewArrayNodeSet();
@@ -172,7 +170,13 @@ public class ExtCollection extends Function {
                 }
                 result.add(new NodeProxy(doc)); // , -1, Node.DOCUMENT_NODE));
             } catch (final LockException e) {
-                throw new XPathException(e.getMessage());
+                Sequence flattenedArgs = Sequence.EMPTY_SEQUENCE;
+                try {
+                    flattenedArgs = argsToSeq(contextSequence, contextItem);
+                } catch (final XPathException xe) {
+                    LOG.warn(e.getMessage(), xe);
+                }
+                throw new XPathException(this, ErrorCodes.FODC0002, e.getMessage(), flattenedArgs, e);
             } finally {
                 if (lockAcquired)
                     {dlock.release(LockMode.READ_LOCK);}
@@ -182,6 +186,15 @@ public class ExtCollection extends Function {
         if (context.getProfiler().isEnabled())
                {context.getProfiler().end(this, "", result);}
         return result;
+    }
+
+    private Sequence argsToSeq(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        final ValueSequence sequence = new ValueSequence();
+        for (int i = 0; i < getArgumentCount(); i++) {
+            final Sequence seq = getArgument(i).eval(contextSequence, contextItem);
+            sequence.addAll(seq);
+        }
+        return sequence;
     }
 
     /**

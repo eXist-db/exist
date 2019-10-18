@@ -58,7 +58,6 @@ public abstract class AbstractApiSecurityTest {
     
     @Test
     public void canReadXmlResourceWithOnlyExecutePermissionOnParentCollection() throws ApiException {
-        
         chmodCol(TEST_COLLECTION1, "--x------", TEST_USER1_UID, TEST_USER1_PWD);
         
         final String content = getXmlResourceContent(TEST_XML_DOC1, TEST_USER1_UID, TEST_USER1_PWD);
@@ -67,12 +66,25 @@ public abstract class AbstractApiSecurityTest {
     
     @Test
     public void cannotReadXmlResourceWithoutExecutePermissionOnParentCollection() throws ApiException {
-
         chmodCol(TEST_COLLECTION1, "rw-------", TEST_USER1_UID, TEST_USER1_PWD);
         
         try {
             final String content = getXmlResourceContent(TEST_XML_DOC1, TEST_USER1_UID, TEST_USER1_PWD);
-            fail("Excpected READ collection denied!");
+            fail("Expected READ collection denied!");
+        } catch(final ApiException ae) {
+            //do nothing <-- expected exception
+        }
+    }
+
+    @Test
+    public void cannotReadXmlResourceWithoutExecutePermissionOnParentCollectionViaACE() throws ApiException {
+        chmodCol(TEST_COLLECTION1, "rwx------", TEST_USER1_UID, TEST_USER1_PWD);
+
+        addCollectionUserAce(TEST_COLLECTION1, TEST_USER1_UID, "--x", false,  TEST_USER1_UID, TEST_USER1_PWD);
+
+        try {
+            final String content = getXmlResourceContent(TEST_XML_DOC1, TEST_USER1_UID, TEST_USER1_PWD);
+            fail("Expected READ collection denied!");
         } catch(final ApiException ae) {
             //do nothing <-- expected exception
         }
@@ -85,6 +97,8 @@ public abstract class AbstractApiSecurityTest {
     protected abstract void chmodCol(String collectionUri, String mode, String uid, String pwd) throws ApiException;
     protected abstract void chmodRes(String resourceUri, String mode, String uid, String pwd) throws ApiException;
     protected abstract void chownRes(String resourceUri, String owner_uid, String group_gid, String uid, String pwd) throws ApiException;
+
+    protected abstract void addCollectionUserAce(String collectionUri, String user_uid, String mode, boolean allow, String uid, String pwd) throws ApiException;
     
     protected abstract String getXmlResourceContent(String resourceUri, String uid, String pwd) throws ApiException;
     
