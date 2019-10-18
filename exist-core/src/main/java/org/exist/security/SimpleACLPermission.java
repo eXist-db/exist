@@ -71,7 +71,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
 
     @Override
     public void addACE(final ACE_ACCESS_TYPE access_type, final ACE_TARGET target, final String name, final String modeStr) throws PermissionDeniedException {
-        addACE(access_type, target, lookupTargetId(target, name), modeStrToMode(modeStr));
+        addACE(access_type, target, lookupTargetId(target, name), aceSimpleSymbolicModeToInt(modeStr));
     }
 
     @Override
@@ -101,7 +101,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
 
     @Override
     public void insertACE(final int index, final ACE_ACCESS_TYPE access_type, final ACE_TARGET target, final String name, final String modeStr) throws PermissionDeniedException {
-        insertACE(index, access_type, target, lookupTargetId(target, name), modeStrToMode(modeStr));
+        insertACE(index, access_type, target, lookupTargetId(target, name), aceSimpleSymbolicModeToInt(modeStr));
     }
 
     @PermissionRequired(user = IS_DBA | IS_OWNER, mode = ACL_WRITE)
@@ -123,7 +123,14 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
         this.acl = newAcl;
     }
 
-    private int modeStrToMode(final String modeStr) throws PermissionDeniedException {
+    /**
+     * Converts the mode string for an ACE to an int.
+     *
+     * @param modeStr the mode string for the ACE is simple symbolic format, must be between 1 and 3 characters.
+     *
+     * @return the octal mode encoded as an int.
+     */
+    public static int aceSimpleSymbolicModeToInt(final String modeStr) throws PermissionDeniedException {
         if (modeStr == null || modeStr.length() == 0 || modeStr.length() > 3) {
             throw new PermissionDeniedException("Invalid mode string '" + modeStr + "'");
         }
@@ -199,7 +206,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
 
     @Override
     public void modifyACE(final int index, final ACE_ACCESS_TYPE access_type, final String modeStr) throws PermissionDeniedException {
-        modifyACE(index, access_type, modeStrToMode(modeStr));
+        modifyACE(index, access_type, aceSimpleSymbolicModeToInt(modeStr));
     }
 
     @PermissionRequired(user = IS_DBA | IS_OWNER, mode = ACL_WRITE)

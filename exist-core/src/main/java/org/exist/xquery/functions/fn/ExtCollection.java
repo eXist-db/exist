@@ -138,11 +138,29 @@ public class ExtCollection extends Function {
             }
         } catch (final XPathException e) { //From AnyURIValue constructor
             e.setLocation(line, column);
-            throw new XPathException(this, ErrorCodes.FODC0002, e.getMessage());
+            Sequence flattenedArgs = Sequence.EMPTY_SEQUENCE;
+            try {
+                flattenedArgs = argsToSeq(contextSequence, contextItem);
+            } catch (final XPathException xe) {
+                LOG.warn(e.getMessage(), xe);
+            }
+            throw new XPathException(this, ErrorCodes.FODC0002, e.getMessage(), flattenedArgs, e);
         } catch (final PermissionDeniedException e) {
-            throw new XPathException(this, ErrorCodes.FODC0002, "Can not access collection '" + e.getMessage() + "'");
+            Sequence flattenedArgs = Sequence.EMPTY_SEQUENCE;
+            try {
+                flattenedArgs = argsToSeq(contextSequence, contextItem);
+            } catch (final XPathException xe) {
+                LOG.warn(e.getMessage(), xe);
+            }
+            throw new XPathException(this, ErrorCodes.FODC0002, "Can not access collection '" + e.getMessage() + "'", flattenedArgs, e);
         } catch (final LockException e) {
-            throw new XPathException(this, ErrorCodes.FODC0002, e);
+            Sequence flattenedArgs = Sequence.EMPTY_SEQUENCE;
+            try {
+                flattenedArgs = argsToSeq(contextSequence, contextItem);
+            } catch (final XPathException xe) {
+                LOG.warn(e.getMessage(), xe);
+            }
+            throw new XPathException(this, ErrorCodes.FODC0002, e.getMessage(), flattenedArgs, e);
         }
 
         // iterate through all docs and create the node set
@@ -152,6 +170,15 @@ public class ExtCollection extends Function {
             context.getProfiler().end(this, "", result);
         }
         return result;
+    }
+
+    private Sequence argsToSeq(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        final ValueSequence sequence = new ValueSequence();
+        for (int i = 0; i < getArgumentCount(); i++) {
+            final Sequence seq = getArgument(i).eval(contextSequence, contextItem);
+            sequence.addAll(seq);
+        }
+        return sequence;
     }
 
     private URI asUri(final String path) throws XPathException {

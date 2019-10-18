@@ -112,7 +112,7 @@ public class FunDoc extends Function {
                     registerUpdateListener();
                 }
             } catch (final Exception e) {
-                throw new XPathException(this, ErrorCodes.FODC0005, e.getMessage(), arg);
+                throw new XPathException(this, ErrorCodes.FODC0005, e.getMessage(), arg, e);
             }
         }
         if (context.getProfiler().isEnabled()) 
