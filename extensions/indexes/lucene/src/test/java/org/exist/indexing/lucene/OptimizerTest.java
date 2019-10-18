@@ -22,23 +22,14 @@
 package org.exist.indexing.lucene;
 
 import com.googlecode.junittoolbox.ParallelRunner;
-import org.exist.EXistException;
-import org.exist.TestUtils;
-import org.exist.collections.triggers.TriggerException;
-import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.FileUtils;
-import org.exist.util.LockException;
-import org.exist.util.XMLFilenameFilter;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.IndexQueryService;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.FunctionFactory;
 import org.junit.*;
 import org.junit.runner.RunWith;
-import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -47,14 +38,10 @@ import org.xmldb.api.modules.XQueryService;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 import static org.junit.Assert.assertEquals;
-import static org.exist.samples.Samples.SAMPLES;
-
 import static org.exist.samples.Samples.SAMPLES;
 
 /**
@@ -62,6 +49,9 @@ import static org.exist.samples.Samples.SAMPLES;
  */
 @RunWith(ParallelRunner.class)
 public class OptimizerTest {
+
+    @ClassRule
+    public final static ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String OPTIMIZE = "declare option exist:optimize 'enable=yes';";
     private final static String NO_OPTIMIZE = "declare option exist:optimize 'enable=no';";
@@ -185,16 +175,9 @@ public class OptimizerTest {
             true);
 
     @BeforeClass
-    public static void initDatabase() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, IOException {
-        // initialize driver
-        Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        Database database = (Database) cl.newInstance();
-        database.setProperty("create-database", "true");
-        DatabaseManager.registerDatabase(database);
-
-        Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
+    public static void initDatabase() throws XMLDBException, IOException {
         CollectionManagementService service =
-                (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+                (CollectionManagementService) server.getRoot().getService("CollectionManagementService", "1.0");
         testCollection = service.createCollection("test");
         Assert.assertNotNull(testCollection);
 
@@ -212,10 +195,5 @@ public class OptimizerTest {
             }
             testCollection.storeResource(resource);
         }
-    }
-
-    @AfterClass
-    public static void cleanupDb() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
-        TestUtils.cleanupDB();
     }
 }
