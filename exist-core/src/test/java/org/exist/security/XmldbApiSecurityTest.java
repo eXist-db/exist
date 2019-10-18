@@ -21,11 +21,16 @@
  */
 package org.exist.security;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+
 import org.exist.jetty.JettyStart;
+import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.test.ExistWebServer;
+import org.exist.util.SyntaxException;
 import org.exist.xmldb.UserManagementService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -201,6 +206,46 @@ public class XmldbApiSecurityTest extends AbstractApiSecurityTest {
             if(col != null) {
                 try {
                     col.close();
+                } catch (final XMLDBException xmldbe) {
+                    throw new ApiException(xmldbe);
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void addCollectionUserAce(final String collectionUri, final String user_uid, final String mode, final boolean allow, final String uid, final String pwd) throws ApiException {
+        Collection parentCol = null;
+        Collection subCol = null;
+        try {
+            final String parentColUri = collectionUri.substring(0, collectionUri.lastIndexOf('/'));
+            final String subColName = collectionUri.substring(collectionUri.lastIndexOf('/') + 1);
+
+            parentCol = DatabaseManager.getCollection(getBaseUri() + parentColUri, uid, pwd);
+            final UserManagementService ums = (UserManagementService) parentCol.getService("UserManagementService", "1.0");
+
+            final Permission subColPermissions = ums.getSubCollectionPermissions(parentCol, subColName);
+
+            subCol = DatabaseManager.getCollection(getBaseUri() + collectionUri, uid, pwd);
+            final List<ACEAider> aces = new ArrayList<>();
+            final ACEAider ace = new ACEAider(allow ? ACLPermission.ACE_ACCESS_TYPE.ALLOWED : ACLPermission.ACE_ACCESS_TYPE.DENIED, ACLPermission.ACE_TARGET.USER, user_uid, SimpleACLPermission.aceSimpleSymbolicModeToInt(mode));
+            aces.add(ace);
+            ums.setPermissions(subCol, subColPermissions.getOwner().getName(), subColPermissions.getGroup().getName(), subColPermissions.getMode(), aces);
+
+        } catch(final XMLDBException | PermissionDeniedException e) {
+            throw new ApiException(e);
+        } finally {
+            if(subCol != null) {
+                try {
+                    subCol.close();
+                } catch (final XMLDBException xmldbe) {
+                    throw new ApiException(xmldbe);
+                }
+            }
+
+            if(parentCol != null) {
+                try {
+                    parentCol.close();
                 } catch (final XMLDBException xmldbe) {
                     throw new ApiException(xmldbe);
                 }
