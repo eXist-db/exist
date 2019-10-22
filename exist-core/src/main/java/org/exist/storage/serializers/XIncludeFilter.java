@@ -386,8 +386,10 @@ public class XIncludeFilter implements Receiver {
             }
         } else {
             // process the xpointer or the stored XQuery
+            Source source = null;
+            final XQueryPool pool = serializer.broker.getBrokerPool().getXQueryPool();
+            CompiledXQuery compiled = null;
             try {
-                Source source;
                 if (xpointer == null) {
                     source = new DBSource(serializer.broker, (BinaryDocument) doc, true);
                 } else {
@@ -395,14 +397,13 @@ public class XIncludeFilter implements Receiver {
                     source = new StringSource(xpointer);
                 }
                 final XQuery xquery = serializer.broker.getBrokerPool().getXQueryService();
-                final XQueryPool pool = serializer.broker.getBrokerPool().getXQueryPool();
                 XQueryContext context;
-                CompiledXQuery compiled = pool.borrowCompiledXQuery(serializer.broker, source);
-                if (compiled != null) {
+                compiled = pool.borrowCompiledXQuery(serializer.broker, source);
+                if (compiled == null) {
+                    context = new XQueryContext(serializer.broker.getBrokerPool());
+                } else {
                     context = compiled.getContext();
                     context.prepareForReuse();
-                } else {
-                    context = new XQueryContext(serializer.broker.getBrokerPool());
                 }
                 context.declareNamespaces(namespaces);
                 context.declareNamespace("xinclude", Namespaces.XINCLUDE_NS);
@@ -439,35 +440,47 @@ public class XIncludeFilter implements Receiver {
                     } catch (final IOException e) {
                         throw new SAXException("I/O error while reading query for xinclude: " + e.getMessage(), e);
                     }
+                } else {
+                    compiled.getContext().updateContext(context);
+                    context.getWatchDog().reset();
                 }
                 LOG.info("xpointer query: " + ExpressionDumper.dump((Expression) compiled));
                 Sequence contextSeq = null;
                 if (memtreeDoc != null) {
                     contextSeq = memtreeDoc;
                 }
-                final Sequence seq = xquery.execute(serializer.broker, compiled, contextSeq);
 
-                if (Type.subTypeOf(seq.getItemType(), Type.NODE)) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("xpointer found: " + seq.getItemCount());
-                    }
+                try {
+                    final Sequence seq = xquery.execute(serializer.broker, compiled, contextSeq);
 
-                    NodeValue node;
-                    for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-                        node = (NodeValue) i.nextItem();
-                        serializer.serializeToReceiver(node, false);
+                    if (Type.subTypeOf(seq.getItemType(), Type.NODE)) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("xpointer found: " + seq.getItemCount());
+                        }
+
+                        NodeValue node;
+                        for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+                            node = (NodeValue) i.nextItem();
+                            serializer.serializeToReceiver(node, false);
+                        }
+                    } else {
+                        String val;
+                        for (int i = 0; i < seq.getItemCount(); i++) {
+                            val = seq.itemAt(i).getStringValue();
+                            characters(val);
+                        }
                     }
-                } else {
-                    String val;
-                    for (int i = 0; i < seq.getItemCount(); i++) {
-                        val = seq.itemAt(i).getStringValue();
-                        characters(val);
-                    }
+                } finally {
+                    context.runCleanupTasks();
                 }
 
             } catch (final XPathException | PermissionDeniedException e) {
                 LOG.warn("xpointer error", e);
                 throw new SAXException("Error while processing XInclude expression: " + e.getMessage(), e);
+            } finally {
+                if (compiled != null) {
+                    pool.returnCompiledXQuery(source, compiled);
+                }
             }
         }
         // restore settings
