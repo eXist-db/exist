@@ -358,7 +358,19 @@ public class WeakLazyStripes<K, S> {
 
                 final long writeStamp = stripesLock.writeLock();
                 try {
-                    stripes.remove(stripeRef.key);
+
+                    // TODO(AR) it may be more performant to call #drainClearedReferences() at the beginning of #get(K) as oposed to the end, then we could avoid the extra check here which calls stripes#get(K)
+
+                    /*
+                        NOTE: we have to check that we have not added a new reference to replace an
+                        expired reference in #get(K) before calling #drainClearedReferences()
+                     */
+                    final WeakValueReference<K, S> check = stripes.get(stripeRef.key);
+                    if (check.get() == null) {
+
+                        stripes.remove(stripeRef.key);
+
+                    }
                 } finally {
                     stripesLock.unlockWrite(writeStamp);
                 }
