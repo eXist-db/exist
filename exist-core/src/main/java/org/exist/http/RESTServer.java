@@ -1316,11 +1316,12 @@ public class RESTServer {
         }
 
         final XmldbURI pathUri = XmldbURI.createInternal(path);
+        final Source source = new StringSource(query);
+        final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
+        CompiledXQuery compiled = null;
         try {
-            final Source source = new StringSource(query);
             final XQuery xquery = broker.getBrokerPool().getXQueryService();
-            final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
-            CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
+            compiled = pool.borrowCompiledXQuery(broker, source);
 
             XQueryContext context;
             if (compiled == null) {
@@ -1368,11 +1369,14 @@ public class RESTServer {
 
             } finally {
                 context.runCleanupTasks();
-                pool.returnCompiledXQuery(source, compiled);
             }
 
         } catch (final IOException e) {
             throw new BadRequestException(e.getMessage(), e);
+        } finally {
+            if (compiled != null) {
+                pool.returnCompiledXQuery(source, compiled);
+            }
         }
     }
 
@@ -1495,60 +1499,66 @@ public class RESTServer {
             throws XPathException, BadRequestException, PermissionDeniedException {
 
         final Source source = new DBSource(broker, (BinaryDocument) resource, true);
-        final XQuery xquery = broker.getBrokerPool().getXQueryService();
         final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
-        XQueryContext context;
-
-        CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
-        if (compiled == null) {
-            // special header to indicate that the query is not returned from
-            // cache
-            response.setHeader("X-XQuery-Cached", "false");
-            context = new XQueryContext(broker.getBrokerPool());
-        } else {
-            response.setHeader("X-XQuery-Cached", "true");
-            context = compiled.getContext();
-            context.prepareForReuse();
-        }
-
-        // TODO: don't hardcode this?
-        context.setModuleLoadPath(
-                XmldbURI.EMBEDDED_SERVER_URI.append(
-                resource.getCollection().getURI()).toString());
-
-        context.setStaticallyKnownDocuments(
-                new XmldbURI[]{resource.getCollection().getURI()});
-
-        final HttpRequestWrapper reqw = declareVariables(context, null, request, response);
-        reqw.setServletPath(servletPath);
-        reqw.setPathInfo(pathInfo);
-
-        final long compilationTime;
-        if (compiled == null) {
-            try {
-                final long compilationStart = System.currentTimeMillis();
-                compiled = xquery.compile(broker, context, source);
-                compilationTime = System.currentTimeMillis() - compilationStart;
-            } catch (final IOException e) {
-                throw new BadRequestException("Failed to read query from " + resource.getURI(), e);
-            }
-        } else {
-            compilationTime = 0;
-        }
-
-        DebuggeeFactory.checkForDebugRequest(request, context);
-
-        boolean wrap = outputProperties.getProperty("_wrap") != null
-                && "yes".equals(outputProperties.getProperty("_wrap"));
-
+        CompiledXQuery compiled = null;
         try {
-            final long executeStart = System.currentTimeMillis();
-            final Sequence result = xquery.execute(broker, compiled, null, outputProperties);
-            writeResults(response, broker, transaction, result, -1, 1, false, outputProperties, wrap, compilationTime, System.currentTimeMillis() - executeStart);
+            final XQuery xquery = broker.getBrokerPool().getXQueryService();
+            compiled = pool.borrowCompiledXQuery(broker, source);
 
+            XQueryContext context;
+            if (compiled == null) {
+                // special header to indicate that the query is not returned from
+                // cache
+                response.setHeader("X-XQuery-Cached", "false");
+                context = new XQueryContext(broker.getBrokerPool());
+            } else {
+                response.setHeader("X-XQuery-Cached", "true");
+                context = compiled.getContext();
+                context.prepareForReuse();
+            }
+
+            // TODO: don't hardcode this?
+            context.setModuleLoadPath(
+                    XmldbURI.EMBEDDED_SERVER_URI.append(
+                            resource.getCollection().getURI()).toString());
+
+            context.setStaticallyKnownDocuments(
+                    new XmldbURI[]{resource.getCollection().getURI()});
+
+            final HttpRequestWrapper reqw = declareVariables(context, null, request, response);
+            reqw.setServletPath(servletPath);
+            reqw.setPathInfo(pathInfo);
+
+            final long compilationTime;
+            if (compiled == null) {
+                try {
+                    final long compilationStart = System.currentTimeMillis();
+                    compiled = xquery.compile(broker, context, source);
+                    compilationTime = System.currentTimeMillis() - compilationStart;
+                } catch (final IOException e) {
+                    throw new BadRequestException("Failed to read query from " + resource.getURI(), e);
+                }
+            } else {
+                compilationTime = 0;
+            }
+
+            DebuggeeFactory.checkForDebugRequest(request, context);
+
+            boolean wrap = outputProperties.getProperty("_wrap") != null
+                    && "yes".equals(outputProperties.getProperty("_wrap"));
+
+            try {
+                final long executeStart = System.currentTimeMillis();
+                final Sequence result = xquery.execute(broker, compiled, null, outputProperties);
+                writeResults(response, broker, transaction, result, -1, 1, false, outputProperties, wrap, compilationTime, System.currentTimeMillis() - executeStart);
+
+            } finally {
+                context.runCleanupTasks();
+            }
         } finally {
-            context.runCleanupTasks();
-            pool.returnCompiledXQuery(source, compiled);
+            if (compiled != null) {
+                pool.returnCompiledXQuery(source, compiled);
+            }
         }
     }
 
@@ -1563,67 +1573,76 @@ public class RESTServer {
             throws XPathException, BadRequestException, PermissionDeniedException {
 
         final URLSource source = new URLSource(this.getClass().getResource("run-xproc.xq"));
-        final XQuery xquery = broker.getBrokerPool().getXQueryService();
         final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
-        XQueryContext context;
-        CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
-        if (compiled == null) {
-            context = new XQueryContext(broker.getBrokerPool());
-        } else {
-            context = compiled.getContext();
-            context.prepareForReuse();
-        }
-
-        context.declareVariable("pipeline", resource.getURI().toString());
-        
-        final String stdin = request.getParameter("stdin");
-        context.declareVariable("stdin", stdin == null ? "" : stdin);
-
-        final String debug = request.getParameter("debug");
-        context.declareVariable("debug", debug == null ? "0" : "1");
-
-        final String bindings = request.getParameter("bindings");
-        context.declareVariable("bindings", bindings == null ? "<bindings/>" : bindings);
-
-        final String autobind = request.getParameter("autobind");
-        context.declareVariable("autobind", autobind == null ? "0" : "1");
-
-        final String options = request.getParameter("options");
-        context.declareVariable("options", options == null ? "<options/>" : options);
-
-        // TODO: don't hardcode this?
-        context.setModuleLoadPath(
-                XmldbURI.EMBEDDED_SERVER_URI.append(
-                resource.getCollection().getURI()).toString());
-
-        context.setStaticallyKnownDocuments(
-                new XmldbURI[]{resource.getCollection().getURI()});
-
-        final HttpRequestWrapper reqw = declareVariables(context, null, request, response);
-        reqw.setServletPath(servletPath);
-        reqw.setPathInfo(pathInfo);
-
-        final long compilationTime;
-        if (compiled == null) {
-            try {
-                final long compilationStart = System.currentTimeMillis();
-                compiled = xquery.compile(broker, context, source);
-                compilationTime = System.currentTimeMillis() - compilationStart;
-            } catch (final IOException e) {
-                throw new BadRequestException("Failed to read query from "
-                        + source.getURL(), e);
-            }
-        } else {
-            compilationTime = 0;
-        }
+        CompiledXQuery compiled = null;
 
         try {
-            final long executeStart = System.currentTimeMillis();
-            final Sequence result = xquery.execute(broker, compiled, null, outputProperties);
-            writeResults(response, broker, transaction, result, -1, 1, false, outputProperties, false, compilationTime, System.currentTimeMillis() - executeStart);
+            final XQuery xquery = broker.getBrokerPool().getXQueryService();
+            compiled = pool.borrowCompiledXQuery(broker, source);
+
+            XQueryContext context;
+            if (compiled == null) {
+                context = new XQueryContext(broker.getBrokerPool());
+            } else {
+                context = compiled.getContext();
+                context.prepareForReuse();
+            }
+
+            context.declareVariable("pipeline", resource.getURI().toString());
+
+            final String stdin = request.getParameter("stdin");
+            context.declareVariable("stdin", stdin == null ? "" : stdin);
+
+            final String debug = request.getParameter("debug");
+            context.declareVariable("debug", debug == null ? "0" : "1");
+
+            final String bindings = request.getParameter("bindings");
+            context.declareVariable("bindings", bindings == null ? "<bindings/>" : bindings);
+
+            final String autobind = request.getParameter("autobind");
+            context.declareVariable("autobind", autobind == null ? "0" : "1");
+
+            final String options = request.getParameter("options");
+            context.declareVariable("options", options == null ? "<options/>" : options);
+
+            // TODO: don't hardcode this?
+            context.setModuleLoadPath(
+                    XmldbURI.EMBEDDED_SERVER_URI.append(
+                            resource.getCollection().getURI()).toString());
+
+            context.setStaticallyKnownDocuments(
+                    new XmldbURI[]{resource.getCollection().getURI()});
+
+            final HttpRequestWrapper reqw = declareVariables(context, null, request, response);
+            reqw.setServletPath(servletPath);
+            reqw.setPathInfo(pathInfo);
+
+            final long compilationTime;
+            if (compiled == null) {
+                try {
+                    final long compilationStart = System.currentTimeMillis();
+                    compiled = xquery.compile(broker, context, source);
+                    compilationTime = System.currentTimeMillis() - compilationStart;
+                } catch (final IOException e) {
+                    throw new BadRequestException("Failed to read query from "
+                            + source.getURL(), e);
+                }
+            } else {
+                compilationTime = 0;
+            }
+
+            try {
+                final long executeStart = System.currentTimeMillis();
+                final Sequence result = xquery.execute(broker, compiled, null, outputProperties);
+                writeResults(response, broker, transaction, result, -1, 1, false, outputProperties, false, compilationTime, System.currentTimeMillis() - executeStart);
+            } finally {
+                context.runCleanupTasks();
+
+            }
         } finally {
-            context.runCleanupTasks();
-            pool.returnCompiledXQuery(source, compiled);
+            if (compiled != null) {
+                pool.returnCompiledXQuery(source, compiled);
+            }
         }
     }
 
