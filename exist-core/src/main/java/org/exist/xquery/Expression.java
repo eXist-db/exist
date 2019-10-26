@@ -252,9 +252,6 @@ public interface Expression {
 
     public Expression getSubExpression(int index);
 
-    //check will item process by the expression 
-    public Boolean match(Sequence contextSequence, Item item) throws XPathException;
-
     public boolean allowMixedNodesInReturn();
 
     public Expression getParent();

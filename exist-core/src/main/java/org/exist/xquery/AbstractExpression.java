@@ -170,12 +170,6 @@ public abstract class AbstractExpression implements Expression {
     }
 
     @Override
-    public Boolean match(Sequence contextSequence, Item item) throws XPathException {
-        //default
-        return false;
-    }
-
-    @Override
     public boolean allowMixedNodesInReturn() {
         return false;
     }

@@ -1,11 +1,8 @@
 xquery version "3.0";
 
 (:~
- : Test all kinds of XQuery expressions to see if optimizer does properly 
- : analyze them and indexes are used in fully optimized manner.
- : 
- : Expressions use the @test:stats annotation to retrieve execution statistics
- : for each test function.
+ : Test optimization of positional predicates combined with the following
+ : and preceding axes.
  :)
 module namespace ot="http://exist-db.org/xquery/optimizer/test/positional";
 
@@ -206,10 +203,6 @@ declare
     %test:assertEquals("<word>enjoy</word>", "<word>developers</word>")
 function ot:optimize-following-filter-with-at() {
     let $word := doc($ot:DOC_NESTED2)//line/word[. = 'working']
-    (:~ return (
-        $word/preceding::word[1],
-        $word/preceding::word[2]
-    ) ~:)
     for $i at $p in (1 to 2)
     return
         $word/preceding::word[$p]
