@@ -100,10 +100,30 @@ public abstract class Step extends AbstractExpression {
             for (final Predicate pred : predicates) {
                 pred.analyze(newContext);
             }
+
+            this.checkPositionalFilters(inPredicate);
         }
         // if we are on the self axis, remember the static return type given in the context
         if (this.axis == Constants.SELF_AXIS)
             {staticReturnType = contextInfo.getStaticType();}
+    }
+
+    /**
+     * Static check if the location steps first filter is a positional predicate.
+     * If yes, set a flag on the {@link LocationStep}
+     */
+    private void checkPositionalFilters(final boolean inPredicate) {
+        if (!inPredicate && this.hasPredicates()) {
+            final List<Predicate> preds = this.getPredicates();
+            final Predicate predicate = preds.get(0);
+            final Expression predExpr = predicate.getFirst();
+            // only apply optimization if the static return type is a single number
+            // and there are no dependencies on the context item
+            if (Type.subTypeOf(predExpr.returnsType(), Type.NUMBER) &&
+                    !Dependency.dependsOn(predExpr, Dependency.CONTEXT_POSITION)) {
+                this.hasPositionalPredicate = true;
+            }
+        }
     }
 
     public abstract Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException;

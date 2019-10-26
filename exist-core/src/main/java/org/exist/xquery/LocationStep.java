@@ -21,13 +21,7 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.VirtualNodeSet;
-import org.exist.dom.persistent.ExtNodeSet;
-import org.exist.dom.persistent.NewArrayNodeSet;
-import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.*;
 import org.exist.indexing.StructuralIndex;
 import org.exist.dom.memtree.InMemoryNodeSet;
 import org.exist.dom.memtree.NodeImpl;
@@ -44,8 +38,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.util.Iterator;
-
-import org.exist.dom.persistent.NodeHandle;
+import java.util.List;
 
 /**
  * Processes all location path steps (like descendant::*, ancestor::XXX).
@@ -828,7 +821,7 @@ public class LocationStep extends Step {
         }
 
         if (test.isWildcardTest()) {
-            final NewArrayNodeSet result = new NewArrayNodeSet();
+            final AVLTreeNodeSet result = new AVLTreeNodeSet();
             try {
                 final int limit = computeLimit();
                 for (final NodeProxy current : contextSet) {
@@ -850,7 +843,7 @@ public class LocationStep extends Step {
                         final NodeProxy startNode = new NodeProxy(current.getOwnerDocument(), startNodeId);
 
                         reader = context.getBroker().getXMLStreamReader(startNode, false);
-                        filter = new PrecedingSiblingFilter(test, startNode, current, result, contextId, limit);
+                        filter = new PrecedingSiblingFilter(test, startNode, current, result, contextId);
                     } else {
                         reader = context.getBroker().getXMLStreamReader(current, false);
                         filter = new FollowingSiblingFilter(test, current, result, contextId, limit);
@@ -941,7 +934,7 @@ public class LocationStep extends Step {
                         final NodeProxy root = new NodeProxy(node);
                         final StreamFilter filter;
                         if (axis == Constants.PRECEDING_AXIS) {
-                            filter = new PrecedingFilter(test, root, next, result, contextId, position);
+                            filter = new PrecedingFilter(test, root, next, result, contextId);
                         } else {
                             filter = new FollowingFilter(test, root, next, result, contextId, position);
                         }
@@ -1012,9 +1005,6 @@ public class LocationStep extends Step {
             // Non integers return... nothing, not even an error !
             if (!v.hasFractionalPart() && !v.isZero()) {
                 position = v.getInt();
-                if (context.getProfiler().traceFunctions()) {
-                    context.getProfiler().traceOptimization(context, PerformanceStats.OptimizationType.PositionalPredicate, pred);
-                }
             }
         }
         return position;
@@ -1277,7 +1267,7 @@ public class LocationStep extends Step {
         }
     }
 
-    private static abstract class AbstractFilterBase implements StreamFilter {
+    private abstract class AbstractFilterBase implements StreamFilter {
         final NodeTest test;
         final NodeSet result;
         final int limit;
@@ -1289,10 +1279,14 @@ public class LocationStep extends Step {
             this.result = result;
             this.contextId = contextId;
             this.limit = limit;
+            if (limit > -1 && context.getProfiler().traceFunctions()) {
+                context.getProfiler().traceOptimization(context, PerformanceStats.OptimizationType.PositionalPredicate,
+                        LocationStep.this);
+            }
         }
     }
 
-    private static class FollowingSiblingFilter extends AbstractFilterBase {
+    private class FollowingSiblingFilter extends AbstractFilterBase {
         final NodeProxy start;
         final int level;
         boolean sibling = false;
@@ -1345,14 +1339,13 @@ public class LocationStep extends Step {
         }
     }
 
-    private static class PrecedingSiblingFilter extends AbstractFilterBase {
+    private class PrecedingSiblingFilter extends AbstractFilterBase {
         final int level;
         final NodeProxy referenceNode;
-        int nodesRead = 0;
 
         PrecedingSiblingFilter(final NodeTest test, final NodeProxy start, final NodeProxy referenceNode,
-                final NodeSet result, final int contextId, final int limit) {
-            super(test, result, contextId, limit);
+                final NodeSet result, final int contextId) {
+            super(test, result, contextId, -1);
             this.level = start.getNodeId().getTreeLevel();
             this.referenceNode = referenceNode;
         }
@@ -1367,7 +1360,10 @@ public class LocationStep extends Step {
                 return false;
             }
 
-            if (currentId.getTreeLevel() == level && !reader.isEndElement() && test.matches(reader)) {
+            if (reader.isEndElement()) {
+                return true;
+            }
+            if (currentId.getTreeLevel() == level && test.matches(reader)) {
                 // sibling which matches the test
                 NodeProxy sibling = result.get(referenceNode.getOwnerDocument(), currentId);
                 if (sibling == null) {
@@ -1384,17 +1380,13 @@ public class LocationStep extends Step {
                 } else if (Expression.NO_CONTEXT_ID != contextId) {
                     sibling.addContextNode(contextId, referenceNode);
                 }
-//                nodesRead++;
-//                if (this.limit > -1 && nodesRead == this.limit) {
-//                    return false;
-//                }
             }
 
             return true;
         }
     }
 
-    private static class FollowingFilter extends AbstractFilterBase {
+    private class FollowingFilter extends AbstractFilterBase {
         final NodeProxy root;
         final NodeProxy referenceNode;
         boolean isAfter = false;
@@ -1444,13 +1436,13 @@ public class LocationStep extends Step {
         }
     }
 
-    private static class PrecedingFilter extends AbstractFilterBase {
+    private class PrecedingFilter extends AbstractFilterBase {
         final NodeProxy root;
         final NodeProxy referenceNode;
 
         PrecedingFilter(final NodeTest test, final NodeProxy root, final NodeProxy referenceNode, final NodeSet result,
-                final int contextId, final int limit) {
-            super(test, result, contextId, limit);
+                final int contextId) {
+            super(test, result, contextId, -1);
             this.root = root;
             this.referenceNode = referenceNode;
         }
@@ -1460,12 +1452,8 @@ public class LocationStep extends Step {
             final NodeId currentId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
 
             if (reader.getEventType() == XMLStreamReader.END_ELEMENT) {
-                if (currentId.getTreeLevel() == root.getNodeId().getTreeLevel()) {
-                    // exited the root element, so  stop filtering
-                    return false;
-                }
-
-                return true;
+                // exited the root element, so  stop filtering
+                return currentId.getTreeLevel() != root.getNodeId().getTreeLevel();
             }
 
             final NodeId refId = referenceNode.getNodeId();
@@ -1482,10 +1470,6 @@ public class LocationStep extends Step {
                     } else {
                         proxy.addContextNode(contextId, referenceNode);
                     }
-                }
-                nodesRead++;
-                if (this.limit > -1 && nodesRead == this.limit) {
-                    return false;
                 }
                 result.add(proxy);
             }
