@@ -367,11 +367,13 @@ public class PerformanceStats implements BrokerPoolService {
         queries.clear();
         functions.clear();
         indexStats.clear();
+        optimizations.clear();
     }
 
     public void reset() {
         queries.clear();
         functions.clear();
         indexStats.clear();
+        optimizations.clear();
     }
 }
