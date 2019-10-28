@@ -57,18 +57,28 @@ public class NodePathPattern {
         boolean evaluate(NodePath2 nodePath, int elementIdx);
     }
 
-    private final static Predicate CONST_TRUE_PREDICATE = new Predicate() {
+    private final static class ConstTruePredicate implements Predicate {
         @Override
         public boolean evaluate(NodePath2 nodePath, int elementIdx) {
             return true;
         }
-    };
+    }
+    private final static Predicate CONST_TRUE_PREDICATE = new ConstTruePredicate();
 
-    static class SimpleAttrEqValuePredicate implements Predicate {
+    enum PredicateCode {
+        EQUALS,      // =
+        NOT_EQUALS,  // !=
+        EQ,          // eq
+        NE,          // ne
+    }
+
+    private static class SimpleAttrValuePredicate implements Predicate {
+        private final PredicateCode pcode;
         private final String attrName;
         private final String attrVal;
 
-        SimpleAttrEqValuePredicate(String attrName, String attrVal) {
+        SimpleAttrValuePredicate(PredicateCode pcode, String attrName, String attrVal) {
+            this.pcode = pcode;
             this.attrName = attrName;
             this.attrVal = attrVal;
         }
@@ -76,10 +86,35 @@ public class NodePathPattern {
         @Override
         public boolean evaluate(NodePath2 nodePath, int elementIdx) {
             String val = nodePath.attribs(elementIdx).get(attrName);
-            return Objects.equals(val, attrVal);
+            switch (pcode) {
+                case EQUALS: // =
+                case EQ: // eq
+                    return Objects.equals(val, attrVal);
+                case NOT_EQUALS: // !=
+                    // actual attr val should be present but different:
+                    return val != null && !Objects.equals(val, attrVal);
+                case NE: // ne
+                    // actual attr val may be null (i.e. not present) or present but different:
+                    return !Objects.equals(val, attrVal);
+                default:
+                    assert false;
+                    throw new IllegalArgumentException("PredicateCode " + pcode + " not handled!");
+            }
         }
     }
 
+    private final static class NegatePredicate implements Predicate {
+        final Predicate negatedPredicate;
+
+        NegatePredicate(Predicate negatedPredicate) {
+            this.negatedPredicate = negatedPredicate;
+        }
+
+        @Override
+        public boolean evaluate(NodePath2 nodePath, int elementIdx) {
+            return !negatedPredicate.evaluate(nodePath, elementIdx);
+        }
+    }
 
     public NodePathPattern(Map<String, String> namespaces, String matchPattern) {
         qnPath = new NodePath();
@@ -122,7 +157,7 @@ public class NodePathPattern {
     private void addSegment(final Map<String, String> namespaces, final String segment) {
         String qname;
         int predBeg = segment.indexOf('[');
-        Predicate pred = null;
+        Predicate pred;
         if (predBeg >= 0) {
             qname = segment.substring(0, predBeg);
             pred = parsePredicate(segment.substring(predBeg));
@@ -140,17 +175,47 @@ public class NodePathPattern {
     }
 
     private Predicate parsePredicate(String input) {
-        if (!input.startsWith("[") || !input.endsWith("]") || input.charAt(1) != '@') {
-            throw new IllegalArgumentException("Bad predicate spec: " + input + "\nOnly [@attr=value] is supported");
+        if (!input.startsWith("[") || !input.endsWith("]")) {
+            throw new IllegalArgumentException("Bad predicate spec: " + input
+                    + "\nPredicate should be enclosed in []-brackets");
+        }
+        input = input.substring(1, input.length() - 1).trim(); // to skip the [ and ]
+
+        boolean negate = false;
+        if (input.startsWith("fn:not(")) {
+            input = input.substring("fn:not".length()).trim();
+            negate = true;
         }
 
-        // So far we're supporting only [@attr=value] predicates:
-        int eqIdx = input.indexOf('=');
-        if (eqIdx < 0) {
-            throw new IllegalArgumentException("Bad predicate spec: " + input + "\nOnly [@attr=value] is supported");
+        if (negate) {
+            if (!input.startsWith("(") || !input.endsWith(")")) {
+                throw new IllegalArgumentException("Bad predicate spec: " + input
+                        + "\nArgument of fn:not should be enclosed in () parentheses");
+            }
+            input = input.substring(1, input.length() - 1).trim(); // to skip the ( and )
         }
-        String name = input.substring(2, eqIdx).trim(); // 2 is to skip the leading [@
-        String val = input.substring(eqIdx + 1, input.length() - 1).trim(); // -1 is to skip the trailing ]
+
+        // So far we're supporting only `@attr OP 'value'` predicates, where OP is one of:
+        String[] ops = { "!=", "=", " ne ", " eq "};
+        PredicateCode[] pcodes = { PredicateCode.NOT_EQUALS, PredicateCode.EQUALS, PredicateCode.NE, PredicateCode.EQ };
+        PredicateCode pcode = null;
+        int opIdx = 0, opIdxEnd = 0;
+        for (int i=0; i < ops.length; ++i) {
+            opIdx = input.indexOf(ops[i]);
+            if (opIdx >= 1) { // as input should start with `@`
+                pcode = pcodes[i];
+                opIdxEnd = opIdx + ops[i].length();
+                break;
+            }
+        }
+
+        if (!input.startsWith("@") || pcode == null) {
+            throw new IllegalArgumentException("Bad predicate spec: " + input
+                    + "\nOnly [@attr OP 'value'] and [fn:not(@attr OP 'value')] are supported, where OP is one of "
+                    + String.join(", ", ops));
+        }
+        String name = input.substring(1, opIdx).trim(); // start at 1 to skip the leading `@`
+        String val = input.substring(opIdxEnd).trim();
 
         if (!(val.startsWith("\'") && val.endsWith("\'") || val.startsWith("\"") && val.endsWith("\""))) {
             throw new IllegalArgumentException("Bad predicate spec: " + input + "\nAttribute value not in quotes");
@@ -158,7 +223,8 @@ public class NodePathPattern {
             val = val.substring(1, val.length() - 1); // strip the quotes
         }
 
-        return new SimpleAttrEqValuePredicate(name, val);
+        Predicate res = new SimpleAttrValuePredicate(pcode, name, val);
+        return negate ? new NegatePredicate(res) : res;
     }
 
     public int length() {

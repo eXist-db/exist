@@ -325,6 +325,9 @@ public class LuceneIndexTest {
                 "            <analyzer class='org.apache.lucene.analysis.standard.StandardAnalyzer'/>\n" +
                 "            <text match=\"//title[@xml:lang='Sa-Ltn']\"/>\n" +
                 "            <text match=\"/TEI/text\"><ignore qname=\"text\"/></text>\n" +
+                "            <text field=\"not-equals-Sa-Ltn\" match=\"//title[@xml:lang != 'Sa-Ltn']\"/>\n" +
+                "            <text field=\"ne-Sa-Ltn\" match=\"//title[fn:not(@xml:lang='Sa-Ltn')]\"/>\n" +
+                "            <text field=\"eq-Sa-Ltn\" match=\"//title[@xml:lang eq 'Sa-Ltn']\"/>\n" +
                 "        </lucene> \n" +
                 "    </index>\n" +
                 "</collection>";
@@ -336,53 +339,54 @@ public class LuceneIndexTest {
 
 
             // unbeknownst to me, the test on the next line fails if the literal "buick" is replaced with "Buick":
-            final Occurrences[] o1 = checkIndex(docs, broker, new QName[]{new QName("title")}, "buick", 1);
-            final Occurrences[] o2 = checkIndex(docs, broker, new QName[]{new QName("title")}, "cadillac", 0);
-            final Occurrences[] o3 = checkIndex(docs, broker, new QName[]{new QName("title")}, "dodge", 0);
-            final Occurrences[] o4 = checkIndex(docs, broker, new QName[]{new QName("title")}, "ford", 0);
+            checkIndex(docs, broker, new QName[]{new QName("title")}, "buick", 1);
+            checkIndex(docs, broker, new QName[]{new QName("title")}, "cadillac", 0);
+            checkIndex(docs, broker, new QName[]{new QName("title")}, "dodge", 0);
+            checkIndex(docs, broker, new QName[]{new QName("title")}, "ford", 0);
 
-            final Occurrences[] p1 = checkIndex(docs, broker, new QName[]{new QName("title")}, "abuick", 1);
-            final Occurrences[] p2 = checkIndex(docs, broker, new QName[]{new QName("title")}, "acadillac", 0);
-            final Occurrences[] p3 = checkIndex(docs, broker, new QName[]{new QName("title")}, "adodge", 0);
-            final Occurrences[] p4 = checkIndex(docs, broker, new QName[]{new QName("title")}, "aford", 0);
+            checkIndex(docs, broker, new QName[]{new QName("title")}, "abuick", 1);
+            checkIndex(docs, broker, new QName[]{new QName("title")}, "acadillac", 0);
+            checkIndex(docs, broker, new QName[]{new QName("title")}, "adodge", 0);
+            checkIndex(docs, broker, new QName[]{new QName("title")}, "aford", 0);
+
             // nested <text> should be ignored and not indexed by match="/TEI/text"
-            final Occurrences[] p5 = checkIndex(docs, broker, new QName[]{new QName("text")}, "nested", 0);
+            checkIndex(docs, broker, new QName[]{new QName("text")}, "nested", 0);
 
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq;
 
-            seq = xquery.execute(broker, "//.[ft:query(title, 'Buick')]", null);
-            assertNotNull(seq);
-            assertEquals(1, seq.getItemCount());
+            String[]  searchTerms = {
+                    "Buick", "Cadillac", "Dodge", "Ford",
+                    "ABuick", "ACadillac", "ADodge", "AFord",
+            };
 
-            seq = xquery.execute(broker, "//.[ft:query(title, 'Cadillac')]", null);
-            assertNotNull(seq);
-            assertEquals(0, seq.getItemCount());
+            String[]  queryTemplates = {
+                    "//.[ft:query(title, '%s')]",
+            // Field query with != attribute predicate: <text field="non-En" match="//title[@xml:lang != 'En']"/>:
+                    "//.[ft:query-field('not-equals-Sa-Ltn', '%s')]",
+            // Field query with 'ne' attribute predicate: <text field="non-En" match="//title[@xml:lang ne 'En']"/>:
+                    "//.[ft:query-field('ne-Sa-Ltn', '%s')]",
+            // Field query with 'eq' attribute predicate: <text field="non-En" match="//title[@xml:lang ne 'En']"/>:
+                    "//.[ft:query-field('eq-Sa-Ltn', '%s')]",
+            };
 
-            seq = xquery.execute(broker, "//.[ft:query(title, 'Dodge')]", null);
-            assertNotNull(seq);
-            assertEquals(0, seq.getItemCount());
+            int[][] resultCounts = {
+                    {1, 0, 0, 0 },
+                    {0, 0, 1, 0 },
+                    {0, 1, 1, 1 },
+                    {1, 0, 0, 0 },
+            };
 
-            seq = xquery.execute(broker, "//.[ft:query(title, 'Ford')]", null);
-            assertNotNull(seq);
-            assertEquals(0, seq.getItemCount());
-
-            seq = xquery.execute(broker, "//.[ft:query(title, 'ABuick')]", null);
-            assertNotNull(seq);
-            assertEquals(1, seq.getItemCount());
-
-            seq = xquery.execute(broker, "//.[ft:query(title, 'ACadillac')]", null);
-            assertNotNull(seq);
-            assertEquals(0, seq.getItemCount());
-
-            seq = xquery.execute(broker, "//.[ft:query(title, 'ADodge')]", null);
-            assertNotNull(seq);
-            assertEquals(0, seq.getItemCount());
-
-            seq = xquery.execute(broker, "//.[ft:query(title, 'AFord')]", null);
-            assertNotNull(seq);
-            assertEquals(0, seq.getItemCount());
+            for (int qi = 0; qi < queryTemplates.length; ++qi) {
+                int[] resultCount = resultCounts[qi];
+                for (int ri=0; ri < searchTerms.length; ++ri) {
+                    String query = String.format(queryTemplates[qi], searchTerms[ri]);
+                    Sequence seq = xquery.execute(broker, query, null);
+                    assertNotNull(seq);
+                    int expected = resultCount[ri % resultCount.length];
+                    assertEquals(query, expected, seq.getItemCount());
+                }
+            }
         }
     }
 
