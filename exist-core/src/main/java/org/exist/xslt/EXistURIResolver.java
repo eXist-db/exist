@@ -208,7 +208,7 @@ public class EXistURIResolver implements URIResolver {
         }
 
       } else {
-        source = new DOMSource(doc);
+        source = new EXistDbSource(broker, doc);
         source.setSystemId(uri.toASCIIString());
         return source;
       }
