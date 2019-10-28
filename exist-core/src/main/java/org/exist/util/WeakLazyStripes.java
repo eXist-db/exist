@@ -244,6 +244,9 @@ public class WeakLazyStripes<K, S> {
                 if (wasGCd && !amortizeCleanup) {
                     expiredReferenceReadCount.incrementAndGet();
                 }
+            } else {
+                // invalid conversion to write lock... small optimisation for the fall-through to #getPessimistic(K, Holder) in #get(K)
+                stripeRef = null;
             }
         } else {
             if (stripesLock.validate(stamp)) {
@@ -287,6 +290,9 @@ public class WeakLazyStripes<K, S> {
                     if (wasGCd && !amortizeCleanup) {
                         expiredReferenceReadCount.incrementAndGet();
                     }
+                } else {
+                    // invalid conversion to write lock... small optimisation for the fall-through to #getExclusive(K, Holder) in #get(K)
+                    stripeRef = null;
                 }
 
                 return stripeRef;
