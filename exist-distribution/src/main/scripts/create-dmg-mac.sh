@@ -51,7 +51,6 @@ ln -s /Applications $tmp_dmg_mount/$2/Applications
 
 # Compress it to a new image
 /usr/bin/hdiutil convert $tmp_dmg.dmg -format UDZO -o $6
-/usr/bin/hdiutil internet-enable -yes $6
 
 # Delete the temporary image
 rm $tmp_dmg.dmg
