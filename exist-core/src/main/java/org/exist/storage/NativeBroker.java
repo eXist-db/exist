@@ -921,7 +921,7 @@ public class NativeBroker extends DBBroker {
 
     // NOTE: READ_LOCK in the @EnsureLocked parameter annotation here means "at least" READ
     private void checkCollectionAncestorPermissions(final CollectionCache collectionsCache,
-            @EnsureLocked(type=LockType.COLLECTION, mode=LockMode.READ_LOCK) Collection collection)
+            @EnsureLocked(type=LockType.COLLECTION, mode=LockMode.READ_LOCK) final Collection collection)
             throws IllegalStateException, PermissionDeniedException, LockException {
 
         /*
@@ -936,16 +936,17 @@ public class NativeBroker extends DBBroker {
             closer to the target Collection.
          */
 
-        XmldbURI parentUri = collection.getParentURI();
+        Collection c = collection;
+        XmldbURI parentUri = c.getParentURI();
         while (parentUri != null) {
             // this will throw a PermissionDeniedException if the user does not have Permission.EXECUTE on the Collection at the parentUri
-            collection = getCollectionForOpen(collectionsCache, parentUri);
-            if (collection == null) {
+            c = getCollectionForOpen(collectionsCache, parentUri);
+            if (c == null) {
                 LOG.error("Parent collection {} was null for collection {} ", parentUri, collection.getURI());
                 throw new IllegalStateException();
             }
 
-            parentUri = collection.getParentURI();
+            parentUri = c.getParentURI();
         }
     }
 
