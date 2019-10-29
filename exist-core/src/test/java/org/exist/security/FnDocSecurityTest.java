@@ -247,16 +247,7 @@ public class FnDocSecurityTest {
             final IndexInfo indexInfo = collection.validateXMLResource(transaction, broker, XmldbURI.create(docName), content);
             collection.store(transaction, broker, indexInfo, content);
 
-            try (final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.create(collectionUri).append(docName), Lock.LockMode.WRITE_LOCK)) {
-                final DocumentImpl doc = lockedDoc.getDocument();
-                final Permission permissions = doc.getPermissions();
-                permissions.setMode(modeStr);
-
-                broker.saveCollection(transaction, collection);
-
-                // asymmetrical close of collection!
-                collection.close();
-            }
+            PermissionFactory.chmod_str(broker, transaction, XmldbURI.create(collectionUri).append(docName), Optional.of(modeStr), Optional.empty());
         }
     }
 
