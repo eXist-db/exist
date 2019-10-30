@@ -26,7 +26,7 @@ import java.sql.*;
 public class ExecuteFunctionTest {
 
     // the function that will be tested
-    final static QName functionName = new QName( "execute", SQLModule.NAMESPACE_URI, SQLModule.PREFIX );
+    final static QName functionName = new QName("execute", SQLModule.NAMESPACE_URI, SQLModule.PREFIX);
 
 
     @Test
@@ -48,7 +48,7 @@ public class ExecuteFunctionTest {
         ResultSet rs = mock(ResultSet.class);
         ResultSetMetaData rsmd = mock(ResultSetMetaData.class);
 
-        Object[] mocks = new Object[] { connection, stmt, rs, rsmd };
+        Object[] mocks = new Object[]{connection, stmt, rs, rsmd};
 
         // mock behavior
 
@@ -72,15 +72,15 @@ public class ExecuteFunctionTest {
         replay(mocks);
 
         // register mocked connection
-        final long connId = SQLModule.storeConnection( context, connection );
+        final long connId = SQLModule.storeConnection(context, connection);
 
         // execute function
 
-        Sequence res = execute.eval(new Sequence[] {
+        Sequence res = execute.eval(new Sequence[]{
                 new IntegerValue(connId),
                 new StringValue(sql),
                 new BooleanValue(false)
-            }, Sequence.EMPTY_SEQUENCE);
+        }, Sequence.EMPTY_SEQUENCE);
 
 
         // assert expectations
@@ -124,11 +124,11 @@ public class ExecuteFunctionTest {
         ResultSet rs = mock(ResultSet.class);
         ResultSetMetaData rsmd = mock(ResultSetMetaData.class);
 
-        Object[] mocks = new Object[] { connection, preparedStatement, rs, rsmd };
+        Object[] mocks = new Object[]{connection, preparedStatement, rs, rsmd};
 
         // register mocked connection and prepared statement
-        final long connId = SQLModule.storeConnection( context, connection );
-        final long stmtId = SQLModule.storePreparedStatement( context, new PreparedStatementWithSQL(sql, preparedStatement));
+        final long connId = SQLModule.storeConnection(context, connection);
+        final long stmtId = SQLModule.storePreparedStatement(context, new PreparedStatementWithSQL(sql, preparedStatement));
 
         // mock behavior
 
@@ -175,12 +175,12 @@ public class ExecuteFunctionTest {
 
         final ElementImpl sqlParams = (ElementImpl) paramBuilder.getDocument().getFirstChild();
 
-        execute.eval(new Sequence[] {
+        execute.eval(new Sequence[]{
                 new IntegerValue(connId),
                 new IntegerValue(stmtId),
                 sqlParams,
                 new BooleanValue(false)
-            }, Sequence.EMPTY_SEQUENCE);
+        }, Sequence.EMPTY_SEQUENCE);
 
 
         // assert expectations
@@ -210,11 +210,11 @@ public class ExecuteFunctionTest {
         Connection connection = mock(Connection.class);
         PreparedStatement preparedStatement = mock(PreparedStatement.class);
 
-        Object[] mocks = new Object[] { connection, preparedStatement };
+        Object[] mocks = new Object[]{connection, preparedStatement};
 
         // register mocked connection and prepared statement
-        final long connId = SQLModule.storeConnection( context, connection );
-        final long stmtId = SQLModule.storePreparedStatement( context, new PreparedStatementWithSQL(sql, preparedStatement));
+        final long connId = SQLModule.storeConnection(context, connection);
+        final long stmtId = SQLModule.storePreparedStatement(context, new PreparedStatementWithSQL(sql, preparedStatement));
 
         // mock behavior
 
@@ -239,12 +239,12 @@ public class ExecuteFunctionTest {
 
         final ElementImpl sqlParams = (ElementImpl) paramBuilder.getDocument().getFirstChild();
 
-        Sequence res = execute.eval(new Sequence[] {
+        Sequence res = execute.eval(new Sequence[]{
                 new IntegerValue(connId),
                 new IntegerValue(stmtId),
                 sqlParams,
                 new BooleanValue(false)
-            }, Sequence.EMPTY_SEQUENCE);
+        }, Sequence.EMPTY_SEQUENCE);
 
 
         // assert expectations
@@ -311,11 +311,11 @@ public class ExecuteFunctionTest {
         Connection connection = mock(Connection.class);
         PreparedStatement preparedStatement = mock(PreparedStatement.class);
 
-        Object[] mocks = new Object[] { connection, preparedStatement };
+        Object[] mocks = new Object[]{connection, preparedStatement};
 
         // register mocked connection and prepared statement
-        final long connId = SQLModule.storeConnection( context, connection );
-        final long stmtId = SQLModule.storePreparedStatement( context, new PreparedStatementWithSQL(sql, preparedStatement));
+        final long connId = SQLModule.storeConnection(context, connection);
+        final long stmtId = SQLModule.storePreparedStatement(context, new PreparedStatementWithSQL(sql, preparedStatement));
 
         // mock behavior
 
@@ -339,7 +339,7 @@ public class ExecuteFunctionTest {
         final ElementImpl sqlParams = (ElementImpl) paramBuilder.getDocument().getFirstChild();
 
         try {
-            execute.eval(new Sequence[] {
+            execute.eval(new Sequence[]{
                     new IntegerValue(connId),
                     new IntegerValue(stmtId),
                     sqlParams,
@@ -370,7 +370,7 @@ public class ExecuteFunctionTest {
         Connection connection = mock(Connection.class);
         Statement stmt = mock(Statement.class);
 
-        Object[] mocks = new Object[] { connection, stmt };
+        Object[] mocks = new Object[]{connection, stmt};
 
         // mock behavior
 
@@ -381,11 +381,11 @@ public class ExecuteFunctionTest {
         replay(mocks);
 
         // register mocked connection
-        final long connId = SQLModule.storeConnection( context, connection );
+        final long connId = SQLModule.storeConnection(context, connection);
 
         // execute function
 
-        Sequence res = execute.eval(new Sequence[] {
+        Sequence res = execute.eval(new Sequence[]{
                 new IntegerValue(connId),
                 new StringValue(query),
                 new BooleanValue(false)
@@ -424,7 +424,7 @@ public class ExecuteFunctionTest {
     }
 
 
-    public  static class XQueryContextStub extends XQueryContext {
+    public static class XQueryContextStub extends XQueryContext {
         public XQueryContextStub() {
             super();
         }

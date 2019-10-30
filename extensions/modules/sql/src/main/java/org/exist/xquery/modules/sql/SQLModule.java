@@ -34,20 +34,21 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.modules.ModuleUtils.ContextMapEntryModifier;
 
 /**
  * eXist SQL Module Extension.
- *
+ * <p>
  * An extension module for the eXist Native XML Database that allows queries against SQL Databases, returning an XML representation of the result
  * set.
  *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
- * @author   ljo
- * @version  1.2
- * @see      org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[], java.util.Map) 
- * @serial   2010-03-18
+ * @author ljo
+ * @version 1.2
+ * @serial 2010-03-18
+ * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[], java.util.Map)
  */
 public class SQLModule extends AbstractInternalModule {
 
@@ -57,14 +58,14 @@ public class SQLModule extends AbstractInternalModule {
     public final static String INCLUSION_DATE = "2006-09-25";
     public final static String RELEASED_IN_VERSION = "eXist-1.2";
     private final static FunctionDef[] functions = {
-        new FunctionDef(GetConnectionFunction.signatures[0], GetConnectionFunction.class),
-        new FunctionDef(GetConnectionFunction.signatures[1], GetConnectionFunction.class),
-        new FunctionDef(GetConnectionFunction.signatures[2], GetConnectionFunction.class),
-        new FunctionDef(GetJNDIConnectionFunction.signatures[0], GetJNDIConnectionFunction.class),
-        new FunctionDef(GetJNDIConnectionFunction.signatures[1], GetJNDIConnectionFunction.class),
-        new FunctionDef(ExecuteFunction.signatures[0], ExecuteFunction.class),
-        new FunctionDef(ExecuteFunction.signatures[1], ExecuteFunction.class),
-        new FunctionDef(PrepareFunction.signatures[0], PrepareFunction.class)
+            new FunctionDef(GetConnectionFunction.signatures[0], GetConnectionFunction.class),
+            new FunctionDef(GetConnectionFunction.signatures[1], GetConnectionFunction.class),
+            new FunctionDef(GetConnectionFunction.signatures[2], GetConnectionFunction.class),
+            new FunctionDef(GetJNDIConnectionFunction.signatures[0], GetJNDIConnectionFunction.class),
+            new FunctionDef(GetJNDIConnectionFunction.signatures[1], GetJNDIConnectionFunction.class),
+            new FunctionDef(ExecuteFunction.signatures[0], ExecuteFunction.class),
+            new FunctionDef(ExecuteFunction.signatures[1], ExecuteFunction.class),
+            new FunctionDef(PrepareFunction.signatures[0], PrepareFunction.class)
     };
     private static final long currentUID = System.currentTimeMillis();
     public final static String CONNECTIONS_CONTEXTVAR = "_eXist_sql_connections";
@@ -97,10 +98,9 @@ public class SQLModule extends AbstractInternalModule {
     /**
      * Retrieves a previously stored Connection from the Context of an XQuery.
      *
-     * @param   context        The Context of the XQuery containing the Connection
-     * @param   connectionUID  The UID of the Connection to retrieve from the Context of the XQuery
-     *
-     * @return  DOCUMENT ME!
+     * @param context       The Context of the XQuery containing the Connection
+     * @param connectionUID The UID of the Connection to retrieve from the Context of the XQuery
+     * @return DOCUMENT ME!
      */
     public static Connection retrieveConnection(XQueryContext context, long connectionUID) {
         return ModuleUtils.retrieveObjectFromContextMap(context, SQLModule.CONNECTIONS_CONTEXTVAR, connectionUID);
@@ -109,10 +109,9 @@ public class SQLModule extends AbstractInternalModule {
     /**
      * Stores a Connection in the Context of an XQuery.
      *
-     * @param   context  The Context of the XQuery to store the Connection in
-     * @param   con      The connection to store
-     *
-     * @return  A unique ID representing the connection
+     * @param context The Context of the XQuery to store the Connection in
+     * @param con     The connection to store
+     * @return A unique ID representing the connection
      */
     public static synchronized long storeConnection(XQueryContext context, Connection con) {
         return ModuleUtils.storeObjectInContextMap(context, SQLModule.CONNECTIONS_CONTEXTVAR, con);
@@ -121,10 +120,9 @@ public class SQLModule extends AbstractInternalModule {
     /**
      * Retrieves a previously stored PreparedStatement from the Context of an XQuery.
      *
-     * @param   context               The Context of the XQuery containing the PreparedStatement
-     * @param   preparedStatementUID  The UID of the PreparedStatement to retrieve from the Context of the XQuery
-     *
-     * @return  DOCUMENT ME!
+     * @param context              The Context of the XQuery containing the PreparedStatement
+     * @param preparedStatementUID The UID of the PreparedStatement to retrieve from the Context of the XQuery
+     * @return DOCUMENT ME!
      */
     public static PreparedStatementWithSQL retrievePreparedStatement(XQueryContext context, long preparedStatementUID) {
         return ModuleUtils.retrieveObjectFromContextMap(context, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, preparedStatementUID);
@@ -133,10 +131,9 @@ public class SQLModule extends AbstractInternalModule {
     /**
      * Stores a PreparedStatement in the Context of an XQuery.
      *
-     * @param   context  The Context of the XQuery to store the PreparedStatement in
-     * @param   stmt     preparedStatement The PreparedStatement to store
-     *
-     * @return  A unique ID representing the PreparedStatement
+     * @param context The Context of the XQuery to store the PreparedStatement in
+     * @param stmt    preparedStatement The PreparedStatement to store
+     * @return A unique ID representing the PreparedStatement
      */
     public static synchronized long storePreparedStatement(XQueryContext context, PreparedStatementWithSQL stmt) {
         return ModuleUtils.storeObjectInContextMap(context, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, stmt);
@@ -145,7 +142,7 @@ public class SQLModule extends AbstractInternalModule {
     /**
      * Resets the Module Context and closes any DB connections for the XQueryContext.
      *
-     * @param  xqueryContext  The XQueryContext
+     * @param xqueryContext The XQueryContext
      */
     @Override
     public void reset(XQueryContext xqueryContext, boolean keepGlobals) {
@@ -158,35 +155,35 @@ public class SQLModule extends AbstractInternalModule {
         // close any open Connections
         closeAllConnections(xqueryContext);
     }
-    
+
     /**
      * Closes all the open DB Connections for the specified XQueryContext.
      *
-     * @param  xqueryContext  The context to close JDBC Connections for
+     * @param xqueryContext The context to close JDBC Connections for
      */
     private static void closeAllConnections(XQueryContext xqueryContext) {
-        ModuleUtils.modifyContextMap(xqueryContext, SQLModule.CONNECTIONS_CONTEXTVAR, new ContextMapEntryModifier<Connection>(){
-            
-            @Override 
+        ModuleUtils.modifyContextMap(xqueryContext, SQLModule.CONNECTIONS_CONTEXTVAR, new ContextMapEntryModifier<Connection>() {
+
+            @Override
             public void modify(Map<Long, Connection> map) {
                 super.modify(map);
-                
+
                 //empty the map
                 map.clear();
             }
-            
+
             @Override
             public void modify(Entry<Long, Connection> entry) {
                 final Connection con = entry.getValue();
                 try {
                     // close the Connection
                     con.close();
-                } catch(SQLException se) {
+                } catch (SQLException se) {
                     LOG.warn("Unable to close JDBC Connection: " + se.getMessage(), se);
                 }
             }
         });
-        
+
         // update the context
         //ModuleUtils.storeContextMap(xqueryContext, SQLModule.CONNECTIONS_CONTEXTVAR, connections);
     }
@@ -194,31 +191,31 @@ public class SQLModule extends AbstractInternalModule {
     /**
      * Closes all the open DB PreparedStatements for the specified XQueryContext.
      *
-     * @param  xqueryContext  The context to close JDBC PreparedStatements for
+     * @param xqueryContext The context to close JDBC PreparedStatements for
      */
     private static void closeAllPreparedStatements(XQueryContext xqueryContext) {
-        ModuleUtils.modifyContextMap(xqueryContext, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, new ContextMapEntryModifier<PreparedStatementWithSQL>(){
-            
-            @Override 
+        ModuleUtils.modifyContextMap(xqueryContext, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, new ContextMapEntryModifier<PreparedStatementWithSQL>() {
+
+            @Override
             public void modify(Map<Long, PreparedStatementWithSQL> map) {
                 super.modify(map);
-                
+
                 //empty the map
                 map.clear();
             }
-            
+
             @Override
             public void modify(Entry<Long, PreparedStatementWithSQL> entry) {
                 final PreparedStatementWithSQL stmt = entry.getValue();
                 try {
                     // close the PreparedStatement
                     stmt.getStmt().close();
-                } catch(SQLException se) {
+                } catch (SQLException se) {
                     LOG.warn("Unable to close JDBC PreparedStatement: " + se.getMessage(), se);
                 }
             }
         });
-        
+
         // update the context
         //ModuleUtils.storeContextMap(xqueryContext, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, preparedStatements);
     }

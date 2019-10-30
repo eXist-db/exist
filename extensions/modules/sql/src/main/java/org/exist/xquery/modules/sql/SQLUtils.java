@@ -6,17 +6,15 @@ import org.exist.xquery.value.Type;
 
 /**
  * Utility class for converting to/from SQL types and escaping XML text and attributes.
- * 
+ *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @author <a href="mailto:robert.walpole@metoffice.gov.uk">Robert Walpole</a>
- * @serial 2010-07-23
  * @version 1.0
- * 
+ * @serial 2010-07-23
  */
 public final class SQLUtils {
-	
-	public static int sqlTypeFromString( String sqlType )
-    {
+
+    public static int sqlTypeFromString(String sqlType) {
         sqlType = sqlType.toUpperCase();
 
         switch (sqlType) {
@@ -66,12 +64,10 @@ public final class SQLUtils {
     /**
      * Converts a SQL data type to an XML data type.
      *
-     * @param   sqlType  The SQL data type as specified by JDBC
-     *
-     * @return  The XML Type as specified by eXist
+     * @param sqlType The SQL data type as specified by JDBC
+     * @return The XML Type as specified by eXist
      */
-    public static int sqlTypeToXMLType( int sqlType )
-    {
+    public static int sqlTypeToXMLType(int sqlType) {
         switch (sqlType) {
 
             case Types.ARRAY: {
@@ -156,30 +152,28 @@ public final class SQLUtils {
         }
     }
 
-    public static String escapeXmlText( String text )
-    {
+    public static String escapeXmlText(String text) {
         String work = null;
 
-        if( text != null ) {
-            work = text.replaceAll( "\\&", "\\&amp;" );
-            work = work.replaceAll( "<", "\\&lt;" );
-            work = work.replaceAll( ">", "\\&gt;" );
+        if (text != null) {
+            work = text.replaceAll("\\&", "\\&amp;");
+            work = work.replaceAll("<", "\\&lt;");
+            work = work.replaceAll(">", "\\&gt;");
         }
 
-        return( work );
+        return (work);
     }
 
-    public static String escapeXmlAttr( String attr )
-    {
+    public static String escapeXmlAttr(String attr) {
         String work = null;
 
-        if( attr != null ) {
-            work = escapeXmlText( attr );
-            work = work.replaceAll( "'", "\\&apos;" );
-            work = work.replaceAll( "\"", "\\&quot;" );
+        if (attr != null) {
+            work = escapeXmlText(attr);
+            work = work.replaceAll("'", "\\&apos;");
+            work = work.replaceAll("\"", "\\&quot;");
         }
 
-        return( work );
+        return (work);
     }
 
 }
