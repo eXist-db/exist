@@ -55,6 +55,7 @@ public class ExecuteFunctionTest {
         expect(connection.createStatement()).andReturn(stmt);
         expect(stmt.execute(sql)).andReturn(true);
         expect(stmt.getResultSet()).andReturn(rs);
+        expect(stmt.getUpdateCount()).andReturn(-1);
         stmt.close();
 
         expect(rs.getMetaData()).andReturn(rsmd);
@@ -112,7 +113,7 @@ public class ExecuteFunctionTest {
         ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.FS_EXECUTE, functionName, 3));
 
         // this is what an empty xsl:param element of type varchar should use to fill prepared statement parameters
-        final String emptyStringValue = null;
+        final String emptyStringValue = "";
         final Integer emptyIntValue = null;
 
         final String sql = "SELECT ? AS COL1, ? AS COL2";
@@ -135,8 +136,10 @@ public class ExecuteFunctionTest {
         preparedStatement.setObject(1, emptyStringValue, Types.VARCHAR);
         preparedStatement.setObject(2, emptyIntValue, Types.INTEGER);
 
+        expect(preparedStatement.getConnection()).andReturn(connection);
         expect(preparedStatement.execute()).andReturn(true);
         expect(preparedStatement.getResultSet()).andReturn(rs);
+        expect(preparedStatement.getUpdateCount()).andReturn(-1);
         expect(rs.next()).andReturn(true).andReturn(false);
         expect(rs.getRow()).andReturn(1);
         expect(rs.getString(1)).andReturn(emptyStringValue);
@@ -218,7 +221,8 @@ public class ExecuteFunctionTest {
 
         // mock behavior
 
-        preparedStatement.setObject(1, null, Types.VARCHAR);
+        expect(preparedStatement.getConnection()).andReturn(connection);
+        preparedStatement.setObject(1, "", Types.VARCHAR);
         expect(preparedStatement.execute()).andThrow(new SQLException(test_message, test_sqlState));
 
         replay(mocks);
@@ -295,7 +299,7 @@ public class ExecuteFunctionTest {
     }
 
     @Test
-    public void testMissingParamType() {
+    public void testMissingParamType() throws SQLException {
 
         // mocks a simple SQL prepared statement with one parameter that lacks a type attribute.
         // This should throw an informative error.
@@ -318,6 +322,7 @@ public class ExecuteFunctionTest {
         final long stmtId = SQLModule.storePreparedStatement(context, new PreparedStatementWithSQL(sql, preparedStatement));
 
         // mock behavior
+        expect(preparedStatement.getConnection()).andReturn(connection);
 
         // no behavior necessary - error should be thrown before first call
 
