@@ -268,10 +268,22 @@ public class ExecuteFunction extends BasicFunction {
         try {
 
             if (executeResult) {
+                rs = stmt.getResultSet();
+            }
+
+            // for executing Stored Procedures that return results (e.g. SQL Server)
+            if (rs == null) {
+                try {
+                    rs = stmt.getGeneratedKeys();
+                } catch (final SQLException e) {
+                    // no-op - getGeneratedKeys is not always supported
+                }
+            }
+
+            if (rs != null) {
                 /* SQL Query returned results */
 
                 // iterate through the result set building an XML document
-                rs = stmt.getResultSet();
                 final ResultSetMetaData rsmd = rs.getMetaData();
                 final int iColumns = rsmd.getColumnCount();
 
