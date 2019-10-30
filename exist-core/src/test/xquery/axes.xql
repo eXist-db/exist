@@ -50,6 +50,22 @@ declare variable $axes:pi-doc :=
         <root/>
     };
 
+declare variable $axes:siblings :=
+    <xml>
+        <a>
+            <b>B1</b>
+        </a>
+        <a>
+            <b>B2</b>
+            <c>correct</c>
+        </a>
+        <a>
+            <b>B3</b>
+            <c>wrong</c>
+        </a>
+    </xml>
+;
+
 declare
     %test:setUp
 function axes:setup() {
@@ -57,7 +73,8 @@ function axes:setup() {
     xmldb:store("/db/axes-test", "test.xml", $axes:NESTED_DIVS),
     xmldb:store("/db/axes-test", "doc1.xml", $axes:in-mem-doc1),
     xmldb:store("/db/axes-test", "doc2.xml", $axes:in-mem-doc2),
-    xmldb:store("/db/axes-test", "pi.xml", $axes:pi-doc)
+    xmldb:store("/db/axes-test", "pi.xml", $axes:pi-doc),
+    xmldb:store("/db/axes-test", "siblings.xml", $axes:siblings)
 };
 
 declare
@@ -241,4 +258,65 @@ function axes:abbrevForwardStep-at-any-kind-test() {
     document {
     	<e1 a1="hello"/>
     }/e1/empty(@node())
+};
+
+declare
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
+function axes:in-memory() {
+    $axes:siblings//c[../preceding-sibling::a]
+};
+
+declare
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
+function axes:in-database() {
+    doc("/db/axes-test/siblings.xml")//c[../preceding-sibling::a]
+};
+
+
+declare
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
+function axes:in-memory-predicate() {
+    $axes:siblings//c[../preceding-sibling::a[1]]
+};
+
+declare
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
+function axes:in-database-predicate() {
+    doc("/db/axes-test/siblings.xml")//c[../preceding-sibling::a[1]]
+};
+
+declare
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
+function axes:in-memory-position() {
+    $axes:siblings//c[../preceding-sibling::a[position() eq 1]]
+};
+
+declare
+    %test:assertEquals("<c>correct</c>", "<c>wrong</c>")
+function axes:in-database-position() {
+    doc("/db/axes-test/siblings.xml")//c[../preceding-sibling::a[position() eq 1]]
+};
+
+declare
+    %test:assertEquals("<c>correct</c>")
+function axes:in-memory-predicate-and-path() {
+    $axes:siblings//c[../preceding-sibling::a[1]/b = 'B1']
+};
+
+declare
+    %test:assertEquals("<c>correct</c>")
+function axes:in-database-predicate-and-path() {
+    doc("/db/axes-test/siblings.xml")//c[../preceding-sibling::a[1]/b = 'B1']
+};
+
+declare
+    %test:assertEquals("<c>correct</c>")
+function axes:in-memory-position-and-path() {
+    $axes:siblings//c[../preceding-sibling::a[position() eq 1]/b = 'B1']
+};
+
+declare
+    %test:assertEquals("<c>correct</c>")
+function axes:in-database-position-and-path() {
+    doc("/db/axes-test/siblings.xml")//c[../preceding-sibling::a[position() eq 1]/b = 'B1']
 };

@@ -165,7 +165,6 @@ public class CastExpression extends AbstractExpression {
 	 */
 	public int getDependencies() {
         return expression.getDependencies() | Dependency.CONTEXT_ITEM;
-//		return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
 	}
 	
 	/* (non-Javadoc)
