@@ -106,7 +106,7 @@ public class ExecuteFunction extends BasicFunction {
                     arity(
                             FS_PARAM_CONNECTION_HANDLE,
                             param("statement-handle", Type.INTEGER, "The prepared statement handle"),
-                            optParam("parameters", Type.ELEMENT, "Parameters for the prepared statement. e.g. <sql:parameters><sql:param sql:type=\"varchar\">value</sql:param></sql:parameters>"),
+                            optParam("parameters", Type.ELEMENT, "Parameters for the prepared statement. e.g. <sql:parameters><sql:param sql:type=\"long\">1234</sql:param><sql:param sql:type=\"varchar\"><sql:null/></sql:param></sql:parameters>"),
                             FS_PARAM_MAKE_NODE_FROM_COLUMN_NAME
                     )
             )
@@ -221,24 +221,42 @@ public class ExecuteFunction extends BasicFunction {
                 final Element param = ((Element) paramElements.item(i));
                 Node child = param.getFirstChild();
 
-                final String value;
-                if (child != null) {
-                    if (child instanceof ReferenceNode) {
-                        child = ((ReferenceNode) child).getReference().getNode();
-                    }
-
-                    value = child.getNodeValue();
-                } else {
-                    // TODO for VARCHAR, either null or "" could be appropriate (an empty sql:param element is ambiguous)
-                    value = null;
-                }
-
                 final int sqlType;
                 final String type = param.getAttributeNS(SQLModule.NAMESPACE_URI, TYPE_ATTRIBUTE_NAME);
                 if (type != null) {
                     sqlType = SQLUtils.sqlTypeFromString(type);
                 } else {
                     throw new XPathException(ErrorCodes.ERROR, "<sql:param> must contain attribute sql:type");
+                }
+
+                final String value;
+                if (child != null) {
+                    if (child instanceof ReferenceNode) {
+                        child = ((ReferenceNode) child).getReference().getNode();
+                    }
+
+                    if (child instanceof Element) {
+                        // check for <sql:null/>
+                        final Element elem = (Element)child;
+                        if ("null".equals(elem.getLocalName()) && SQLModule.NAMESPACE_URI.equals(elem.getNamespaceURI())) {
+                            value = null;
+                        } else {
+                            value = child.getNodeValue();
+                        }
+
+                    } else {
+                        value = child.getNodeValue();
+                    }
+                } else {
+                    if (sqlType == Types.VARCHAR || sqlType == Types.LONGVARCHAR
+                            || sqlType == Types.NVARCHAR || sqlType == Types.LONGNVARCHAR
+                            || sqlType == Types.CLOB || sqlType == Types.NCLOB) {
+                        // for string data an empty sql:param element means the empty string
+                        value = "";
+                    } else {
+                        // otherwise for other types empty means null which is the same as <sql:null/>
+                        value = null;
+                    }
                 }
 
                 if (sqlType == Types.TIMESTAMP) {
