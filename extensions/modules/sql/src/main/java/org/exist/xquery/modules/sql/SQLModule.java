@@ -24,9 +24,8 @@ package org.exist.xquery.modules.sql;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.exist.xquery.AbstractInternalModule;
-import org.exist.xquery.FunctionDef;
-import org.exist.xquery.XQueryContext;
+import org.exist.dom.QName;
+import org.exist.xquery.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -37,6 +36,10 @@ import java.util.Map.Entry;
 
 import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.modules.ModuleUtils.ContextMapEntryModifier;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+
+import static org.exist.xquery.FunctionDSL.functionDefs;
 
 /**
  * eXist SQL Module Extension.
@@ -57,17 +60,14 @@ public class SQLModule extends AbstractInternalModule {
     public final static String PREFIX = "sql";
     public final static String INCLUSION_DATE = "2006-09-25";
     public final static String RELEASED_IN_VERSION = "eXist-1.2";
-    private final static FunctionDef[] functions = {
-            new FunctionDef(GetConnectionFunction.signatures[0], GetConnectionFunction.class),
-            new FunctionDef(GetConnectionFunction.signatures[1], GetConnectionFunction.class),
-            new FunctionDef(GetConnectionFunction.signatures[2], GetConnectionFunction.class),
-            new FunctionDef(GetJNDIConnectionFunction.signatures[0], GetJNDIConnectionFunction.class),
-            new FunctionDef(GetJNDIConnectionFunction.signatures[1], GetJNDIConnectionFunction.class),
-            new FunctionDef(ExecuteFunction.signatures[0], ExecuteFunction.class),
-            new FunctionDef(ExecuteFunction.signatures[1], ExecuteFunction.class),
-            new FunctionDef(PrepareFunction.signatures[0], PrepareFunction.class)
-    };
-    private static final long currentUID = System.currentTimeMillis();
+
+    public static final FunctionDef[] functions = functionDefs(
+            functionDefs(GetConnectionFunction.class, GetConnectionFunction.signatures),
+            functionDefs(GetJNDIConnectionFunction.class, GetJNDIConnectionFunction.signatures),
+            functionDefs(ExecuteFunction.class, ExecuteFunction.FS_EXECUTE),
+            functionDefs(PrepareFunction.class, PrepareFunction.signatures)
+    );
+
     public final static String CONNECTIONS_CONTEXTVAR = "_eXist_sql_connections";
     public final static String PREPARED_STATEMENTS_CONTEXTVAR = "_eXist_sql_prepared_statements";
 

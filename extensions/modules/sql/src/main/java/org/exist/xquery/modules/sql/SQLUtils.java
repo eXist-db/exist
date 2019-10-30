@@ -2,6 +2,11 @@ package org.exist.xquery.modules.sql;
 
 import java.sql.Types;
 
+import org.exist.dom.QName;
+import org.exist.xquery.FunctionDSL;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Type;
 
 /**
@@ -176,4 +181,8 @@ public final class SQLUtils {
         return (work);
     }
 
+    static FunctionSignature[] functionSignatures(final String name, final String description,
+            final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
+        return FunctionDSL.functionSignatures(new QName(name, SQLModule.NAMESPACE_URI), description, returnType, variableParamTypes);
+    }
 }

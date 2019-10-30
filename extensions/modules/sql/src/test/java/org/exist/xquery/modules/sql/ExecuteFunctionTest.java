@@ -35,7 +35,7 @@ public class ExecuteFunctionTest {
         // mocks a simple SQL query returning a single string and checks the result
 
         XQueryContext context = new XQueryContextStub();
-        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.signatures, functionName, 3));
+        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.FS_EXECUTE, functionName, 3));
 
         final String sql = "SELECT NAME FROM BLA";
         final String testValue = "<&>";
@@ -109,7 +109,7 @@ public class ExecuteFunctionTest {
         // is filled with an empty xsl:param element
 
         XQueryContext context = new XQueryContextStub();
-        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.signatures, functionName, 3));
+        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.FS_EXECUTE, functionName, 3));
 
         // this is what an empty xsl:param element of type varchar should use to fill prepared statement parameters
         final String emptyStringValue = null;
@@ -198,7 +198,7 @@ public class ExecuteFunctionTest {
         // the parameter is filled with an empty sql:param element
 
         XQueryContext context = new XQueryContextStub();
-        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.signatures, functionName, 3));
+        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.FS_EXECUTE, functionName, 3));
 
 
         final String sql = "SELECT ?";
@@ -301,7 +301,7 @@ public class ExecuteFunctionTest {
         // This should throw an informative error.
 
         XQueryContext context = new XQueryContextStub();
-        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.signatures, functionName, 3));
+        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.FS_EXECUTE, functionName, 3));
 
 
         final String sql = "SELECT ?";
@@ -360,7 +360,7 @@ public class ExecuteFunctionTest {
         // checks the resulting error report
 
         XQueryContext context = new XQueryContextStub();
-        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.signatures, functionName, 3));
+        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.FS_EXECUTE, functionName, 3));
         final String query = "SELECT '<NAME>' FROM BLA";
         final String testMessage = "Some <&> error occurred!";
 
