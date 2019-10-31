@@ -29,25 +29,21 @@ import java.sql.PreparedStatement;
  *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
-public class PreparedStatementWithSQL
-{
-    private String            sql  = null;
+public class PreparedStatementWithSQL {
+    private String sql = null;
     private PreparedStatement stmt = null;
 
-    public PreparedStatementWithSQL( String sql, PreparedStatement stmt )
-    {
-        this.sql  = sql;
+    public PreparedStatementWithSQL(String sql, PreparedStatement stmt) {
+        this.sql = sql;
         this.stmt = stmt;
     }
 
-    public String getSql()
-    {
-        return( sql );
+    public String getSql() {
+        return (sql);
     }
 
 
-    public PreparedStatement getStmt()
-    {
-        return( stmt );
+    public PreparedStatement getStmt() {
+        return (stmt);
     }
 }

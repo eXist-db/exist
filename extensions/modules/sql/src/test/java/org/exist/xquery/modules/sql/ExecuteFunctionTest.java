@@ -26,7 +26,7 @@ import java.sql.*;
 public class ExecuteFunctionTest {
 
     // the function that will be tested
-    final static QName functionName = new QName( "execute", SQLModule.NAMESPACE_URI, SQLModule.PREFIX );
+    final static QName functionName = new QName("execute", SQLModule.NAMESPACE_URI, SQLModule.PREFIX);
 
 
     @Test
@@ -35,7 +35,7 @@ public class ExecuteFunctionTest {
         // mocks a simple SQL query returning a single string and checks the result
 
         XQueryContext context = new XQueryContextStub();
-        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.signatures, functionName, 3));
+        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.FS_EXECUTE, functionName, 3));
 
         final String sql = "SELECT NAME FROM BLA";
         final String testValue = "<&>";
@@ -48,13 +48,14 @@ public class ExecuteFunctionTest {
         ResultSet rs = mock(ResultSet.class);
         ResultSetMetaData rsmd = mock(ResultSetMetaData.class);
 
-        Object[] mocks = new Object[] { connection, stmt, rs, rsmd };
+        Object[] mocks = new Object[]{connection, stmt, rs, rsmd};
 
         // mock behavior
 
         expect(connection.createStatement()).andReturn(stmt);
         expect(stmt.execute(sql)).andReturn(true);
         expect(stmt.getResultSet()).andReturn(rs);
+        expect(stmt.getUpdateCount()).andReturn(-1);
         stmt.close();
 
         expect(rs.getMetaData()).andReturn(rsmd);
@@ -72,15 +73,15 @@ public class ExecuteFunctionTest {
         replay(mocks);
 
         // register mocked connection
-        final long connId = SQLModule.storeConnection( context, connection );
+        final long connId = SQLModule.storeConnection(context, connection);
 
         // execute function
 
-        Sequence res = execute.eval(new Sequence[] {
+        Sequence res = execute.eval(new Sequence[]{
                 new IntegerValue(connId),
                 new StringValue(sql),
                 new BooleanValue(false)
-            }, Sequence.EMPTY_SEQUENCE);
+        }, Sequence.EMPTY_SEQUENCE);
 
 
         // assert expectations
@@ -109,10 +110,10 @@ public class ExecuteFunctionTest {
         // is filled with an empty xsl:param element
 
         XQueryContext context = new XQueryContextStub();
-        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.signatures, functionName, 3));
+        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.FS_EXECUTE, functionName, 3));
 
         // this is what an empty xsl:param element of type varchar should use to fill prepared statement parameters
-        final String emptyStringValue = null;
+        final String emptyStringValue = "";
         final Integer emptyIntValue = null;
 
         final String sql = "SELECT ? AS COL1, ? AS COL2";
@@ -124,19 +125,21 @@ public class ExecuteFunctionTest {
         ResultSet rs = mock(ResultSet.class);
         ResultSetMetaData rsmd = mock(ResultSetMetaData.class);
 
-        Object[] mocks = new Object[] { connection, preparedStatement, rs, rsmd };
+        Object[] mocks = new Object[]{connection, preparedStatement, rs, rsmd};
 
         // register mocked connection and prepared statement
-        final long connId = SQLModule.storeConnection( context, connection );
-        final long stmtId = SQLModule.storePreparedStatement( context, new PreparedStatementWithSQL(sql, preparedStatement));
+        final long connId = SQLModule.storeConnection(context, connection);
+        final long stmtId = SQLModule.storePreparedStatement(context, new PreparedStatementWithSQL(sql, preparedStatement));
 
         // mock behavior
 
         preparedStatement.setObject(1, emptyStringValue, Types.VARCHAR);
         preparedStatement.setObject(2, emptyIntValue, Types.INTEGER);
 
+        expect(preparedStatement.getConnection()).andReturn(connection);
         expect(preparedStatement.execute()).andReturn(true);
         expect(preparedStatement.getResultSet()).andReturn(rs);
+        expect(preparedStatement.getUpdateCount()).andReturn(-1);
         expect(rs.next()).andReturn(true).andReturn(false);
         expect(rs.getRow()).andReturn(1);
         expect(rs.getString(1)).andReturn(emptyStringValue);
@@ -175,12 +178,12 @@ public class ExecuteFunctionTest {
 
         final ElementImpl sqlParams = (ElementImpl) paramBuilder.getDocument().getFirstChild();
 
-        execute.eval(new Sequence[] {
+        execute.eval(new Sequence[]{
                 new IntegerValue(connId),
                 new IntegerValue(stmtId),
                 sqlParams,
                 new BooleanValue(false)
-            }, Sequence.EMPTY_SEQUENCE);
+        }, Sequence.EMPTY_SEQUENCE);
 
 
         // assert expectations
@@ -198,7 +201,7 @@ public class ExecuteFunctionTest {
         // the parameter is filled with an empty sql:param element
 
         XQueryContext context = new XQueryContextStub();
-        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.signatures, functionName, 3));
+        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.FS_EXECUTE, functionName, 3));
 
 
         final String sql = "SELECT ?";
@@ -210,15 +213,16 @@ public class ExecuteFunctionTest {
         Connection connection = mock(Connection.class);
         PreparedStatement preparedStatement = mock(PreparedStatement.class);
 
-        Object[] mocks = new Object[] { connection, preparedStatement };
+        Object[] mocks = new Object[]{connection, preparedStatement};
 
         // register mocked connection and prepared statement
-        final long connId = SQLModule.storeConnection( context, connection );
-        final long stmtId = SQLModule.storePreparedStatement( context, new PreparedStatementWithSQL(sql, preparedStatement));
+        final long connId = SQLModule.storeConnection(context, connection);
+        final long stmtId = SQLModule.storePreparedStatement(context, new PreparedStatementWithSQL(sql, preparedStatement));
 
         // mock behavior
 
-        preparedStatement.setObject(1, null, Types.VARCHAR);
+        expect(preparedStatement.getConnection()).andReturn(connection);
+        preparedStatement.setObject(1, "", Types.VARCHAR);
         expect(preparedStatement.execute()).andThrow(new SQLException(test_message, test_sqlState));
 
         replay(mocks);
@@ -239,12 +243,12 @@ public class ExecuteFunctionTest {
 
         final ElementImpl sqlParams = (ElementImpl) paramBuilder.getDocument().getFirstChild();
 
-        Sequence res = execute.eval(new Sequence[] {
+        Sequence res = execute.eval(new Sequence[]{
                 new IntegerValue(connId),
                 new IntegerValue(stmtId),
                 sqlParams,
                 new BooleanValue(false)
-            }, Sequence.EMPTY_SEQUENCE);
+        }, Sequence.EMPTY_SEQUENCE);
 
 
         // assert expectations
@@ -295,13 +299,13 @@ public class ExecuteFunctionTest {
     }
 
     @Test
-    public void testMissingParamType() {
+    public void testMissingParamType() throws SQLException {
 
         // mocks a simple SQL prepared statement with one parameter that lacks a type attribute.
         // This should throw an informative error.
 
         XQueryContext context = new XQueryContextStub();
-        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.signatures, functionName, 3));
+        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.FS_EXECUTE, functionName, 3));
 
 
         final String sql = "SELECT ?";
@@ -311,13 +315,14 @@ public class ExecuteFunctionTest {
         Connection connection = mock(Connection.class);
         PreparedStatement preparedStatement = mock(PreparedStatement.class);
 
-        Object[] mocks = new Object[] { connection, preparedStatement };
+        Object[] mocks = new Object[]{connection, preparedStatement};
 
         // register mocked connection and prepared statement
-        final long connId = SQLModule.storeConnection( context, connection );
-        final long stmtId = SQLModule.storePreparedStatement( context, new PreparedStatementWithSQL(sql, preparedStatement));
+        final long connId = SQLModule.storeConnection(context, connection);
+        final long stmtId = SQLModule.storePreparedStatement(context, new PreparedStatementWithSQL(sql, preparedStatement));
 
         // mock behavior
+        expect(preparedStatement.getConnection()).andReturn(connection);
 
         // no behavior necessary - error should be thrown before first call
 
@@ -339,7 +344,7 @@ public class ExecuteFunctionTest {
         final ElementImpl sqlParams = (ElementImpl) paramBuilder.getDocument().getFirstChild();
 
         try {
-            execute.eval(new Sequence[] {
+            execute.eval(new Sequence[]{
                     new IntegerValue(connId),
                     new IntegerValue(stmtId),
                     sqlParams,
@@ -360,7 +365,7 @@ public class ExecuteFunctionTest {
         // checks the resulting error report
 
         XQueryContext context = new XQueryContextStub();
-        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.signatures, functionName, 3));
+        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.FS_EXECUTE, functionName, 3));
         final String query = "SELECT '<NAME>' FROM BLA";
         final String testMessage = "Some <&> error occurred!";
 
@@ -370,7 +375,7 @@ public class ExecuteFunctionTest {
         Connection connection = mock(Connection.class);
         Statement stmt = mock(Statement.class);
 
-        Object[] mocks = new Object[] { connection, stmt };
+        Object[] mocks = new Object[]{connection, stmt};
 
         // mock behavior
 
@@ -381,11 +386,11 @@ public class ExecuteFunctionTest {
         replay(mocks);
 
         // register mocked connection
-        final long connId = SQLModule.storeConnection( context, connection );
+        final long connId = SQLModule.storeConnection(context, connection);
 
         // execute function
 
-        Sequence res = execute.eval(new Sequence[] {
+        Sequence res = execute.eval(new Sequence[]{
                 new IntegerValue(connId),
                 new StringValue(query),
                 new BooleanValue(false)
@@ -424,7 +429,7 @@ public class ExecuteFunctionTest {
     }
 
 
-    public  static class XQueryContextStub extends XQueryContext {
+    public static class XQueryContextStub extends XQueryContext {
         public XQueryContextStub() {
             super();
         }
