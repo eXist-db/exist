@@ -21,13 +21,7 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.VirtualNodeSet;
-import org.exist.dom.persistent.ExtNodeSet;
-import org.exist.dom.persistent.NewArrayNodeSet;
-import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.*;
 import org.exist.indexing.StructuralIndex;
 import org.exist.dom.memtree.InMemoryNodeSet;
 import org.exist.dom.memtree.NodeImpl;
@@ -44,8 +38,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.util.Iterator;
-
-import org.exist.dom.persistent.NodeHandle;
 
 /**
  * Processes all location path steps (like descendant::*, ancestor::XXX).
@@ -828,8 +820,9 @@ public class LocationStep extends Step {
         }
 
         if (test.isWildcardTest()) {
-            final NewArrayNodeSet result = new NewArrayNodeSet();
+            final AVLTreeNodeSet result = new AVLTreeNodeSet();
             try {
+                final int limit = computeLimit();
                 for (final NodeProxy current : contextSet) {
                     // document-node() does not have any preceding or following elements
                     if (NodeId.DOCUMENT_NODE.equals(current.getNodeId())) {
@@ -852,7 +845,7 @@ public class LocationStep extends Step {
                         filter = new PrecedingSiblingFilter(test, startNode, current, result, contextId);
                     } else {
                         reader = context.getBroker().getXMLStreamReader(current, false);
-                        filter = new FollowingSiblingFilter(test, current, result, contextId);
+                        filter = new FollowingSiblingFilter(test, current, result, contextId, limit);
                     }
 
                     reader.filter(filter);
@@ -904,18 +897,9 @@ public class LocationStep extends Step {
      */
     private Sequence getPrecedingOrFollowing(final XQueryContext context, final Sequence contextSequence)
             throws XPathException {
-        int position = -1;
-        if (hasPositionalPredicate) {
-            final Predicate pred = predicates.get(0);
-            final Sequence seq = pred.preprocess();
+        final int position = computeLimit();
 
-            final NumericValue v = (NumericValue) seq.itemAt(0);
-            // Non integers return... nothing, not even an error !
-            if (!v.hasFractionalPart() && !v.isZero()) {
-                position = v.getInt();
-            }
-        }
-
+        // process an in-memory node set
         if (!contextSequence.isPersistentSet()) {
             final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
             if (hasPositionalPredicate && position > -1) {
@@ -938,6 +922,7 @@ public class LocationStep extends Step {
             return vset;
         }
 
+        // handle node(), * etc.
         if (test.isWildcardTest()) {
             try {
                 final NodeSet result = new NewArrayNodeSet();
@@ -950,7 +935,7 @@ public class LocationStep extends Step {
                         if (axis == Constants.PRECEDING_AXIS) {
                             filter = new PrecedingFilter(test, root, next, result, contextId);
                         } else {
-                            filter = new FollowingFilter(test, root, next, result, contextId);
+                            filter = new FollowingFilter(test, root, next, result, contextId, position);
                         }
                         final IEmbeddedXMLStreamReader reader = context.getBroker().getXMLStreamReader(root, false);
                         reader.filter(filter);
@@ -999,6 +984,29 @@ public class LocationStep extends Step {
                 }
             }
         }
+    }
+
+    /**
+     * If the optimizer has determined that the first filter after this step is a simple positional
+     * predicate and can be optimized, try to precompute the position and return it to limit the
+     * number of items being processed by axes.
+     *
+     * @return max number of nodes to be processed until position is reached
+     * @throws XPathException if a dynamic error occurs
+     */
+    private int computeLimit() throws XPathException {
+        int position = -1;
+        if (hasPositionalPredicate) {
+            final Predicate pred = predicates.get(0);
+            final Sequence seq = pred.preprocess();
+
+            final NumericValue v = (NumericValue) seq.itemAt(0);
+            // Non integers return... nothing, not even an error !
+            if (!v.hasFractionalPart() && !v.isZero()) {
+                position = v.getInt();
+            }
+        }
+        return position;
     }
 
     /**
@@ -1258,21 +1266,35 @@ public class LocationStep extends Step {
         }
     }
 
-    private static class FollowingSiblingFilter implements StreamFilter {
-        private final NodeTest test;
-        private final NodeProxy start;
-        private final int level;
-        private final NodeSet result;
-        private final int contextId;
-        private boolean sibling = false;
+    private abstract class AbstractFilterBase implements StreamFilter {
+        final NodeTest test;
+        final NodeSet result;
+        final int limit;
+        int nodesRead = 0;
+        final int contextId;
 
-        private FollowingSiblingFilter(final NodeTest test, final NodeProxy start, final NodeSet result,
-                final int contextId) {
+        AbstractFilterBase(final NodeTest test, final NodeSet result, final int contextId, final int limit) {
             this.test = test;
-            this.start = start;
-            this.level = start.getNodeId().getTreeLevel();
             this.result = result;
             this.contextId = contextId;
+            this.limit = limit;
+            if (limit > -1 && context.getProfiler().traceFunctions()) {
+                context.getProfiler().traceOptimization(context, PerformanceStats.OptimizationType.PositionalPredicate,
+                        LocationStep.this);
+            }
+        }
+    }
+
+    private class FollowingSiblingFilter extends AbstractFilterBase {
+        final NodeProxy start;
+        final int level;
+        boolean sibling = false;
+
+        FollowingSiblingFilter(final NodeTest test, final NodeProxy start, final NodeSet result,
+                final int contextId, final int limit) {
+            super(test, result, contextId, limit);
+            this.start = start;
+            this.level = start.getNodeId().getTreeLevel();
         }
 
         @Override
@@ -1302,6 +1324,10 @@ public class LocationStep extends Step {
                 } else if (Expression.NO_CONTEXT_ID != contextId) {
                     sibling.addContextNode(contextId, start);
                 }
+                nodesRead++;
+                if (this.limit > -1 && nodesRead == this.limit) {
+                    return false;
+                }
 
             } else if (currentLevel < level) {
                 // exited the parent node, so stop filtering
@@ -1312,20 +1338,15 @@ public class LocationStep extends Step {
         }
     }
 
-    private static class PrecedingSiblingFilter implements StreamFilter {
-        private final NodeTest test;
-        private final int level;
-        private final NodeProxy referenceNode;
-        private final NodeSet result;
-        private final int contextId;
+    private class PrecedingSiblingFilter extends AbstractFilterBase {
+        final int level;
+        final NodeProxy referenceNode;
 
-        private PrecedingSiblingFilter(final NodeTest test, final NodeProxy start, final NodeProxy referenceNode,
+        PrecedingSiblingFilter(final NodeTest test, final NodeProxy start, final NodeProxy referenceNode,
                 final NodeSet result, final int contextId) {
-            this.test = test;
+            super(test, result, contextId, -1);
             this.level = start.getNodeId().getTreeLevel();
             this.referenceNode = referenceNode;
-            this.result = result;
-            this.contextId = contextId;
         }
 
         @Override
@@ -1338,7 +1359,10 @@ public class LocationStep extends Step {
                 return false;
             }
 
-            if (currentId.getTreeLevel() == level && !reader.isEndElement() && test.matches(reader)) {
+            if (reader.isEndElement()) {
+                return true;
+            }
+            if (currentId.getTreeLevel() == level && test.matches(reader)) {
                 // sibling which matches the test
                 NodeProxy sibling = result.get(referenceNode.getOwnerDocument(), currentId);
                 if (sibling == null) {
@@ -1361,21 +1385,16 @@ public class LocationStep extends Step {
         }
     }
 
-    private static class FollowingFilter implements StreamFilter {
-        private final NodeTest test;
-        private final NodeProxy root;
-        private final NodeProxy referenceNode;
-        private final NodeSet result;
-        private final int contextId;
-        private boolean isAfter = false;
+    private class FollowingFilter extends AbstractFilterBase {
+        final NodeProxy root;
+        final NodeProxy referenceNode;
+        boolean isAfter = false;
 
-        private FollowingFilter(final NodeTest test, final NodeProxy root, final NodeProxy referenceNode, final NodeSet result,
-                final int contextId) {
-            this.test = test;
+        FollowingFilter(final NodeTest test, final NodeProxy root, final NodeProxy referenceNode, final NodeSet result,
+                final int contextId, final int limit) {
+            super(test, result, contextId, limit);
             this.root = root;
             this.referenceNode = referenceNode;
-            this.result = result;
-            this.contextId = contextId;
         }
 
         @Override
@@ -1407,25 +1426,24 @@ public class LocationStep extends Step {
                     }
                 }
                 result.add(proxy);
+                nodesRead++;
+                if (this.limit > -1 && nodesRead == this.limit) {
+                    return false;
+                }
             }
             return true;
         }
     }
 
-    private static class PrecedingFilter implements StreamFilter {
-        private final NodeTest test;
-        private final NodeProxy root;
-        private final NodeProxy referenceNode;
-        private final NodeSet result;
-        private final int contextId;
+    private class PrecedingFilter extends AbstractFilterBase {
+        final NodeProxy root;
+        final NodeProxy referenceNode;
 
-        private PrecedingFilter(final NodeTest test, final NodeProxy root, final NodeProxy referenceNode, final NodeSet result,
+        PrecedingFilter(final NodeTest test, final NodeProxy root, final NodeProxy referenceNode, final NodeSet result,
                 final int contextId) {
-            this.test = test;
+            super(test, result, contextId, -1);
             this.root = root;
             this.referenceNode = referenceNode;
-            this.result = result;
-            this.contextId = contextId;
         }
 
         @Override
@@ -1433,12 +1451,8 @@ public class LocationStep extends Step {
             final NodeId currentId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
 
             if (reader.getEventType() == XMLStreamReader.END_ELEMENT) {
-                if (currentId.getTreeLevel() == root.getNodeId().getTreeLevel()) {
-                    // exited the root element, so  stop filtering
-                    return false;
-                }
-
-                return true;
+                // exited the root element, so  stop filtering
+                return currentId.getTreeLevel() != root.getNodeId().getTreeLevel();
             }
 
             final NodeId refId = referenceNode.getNodeId();
@@ -1462,341 +1476,4 @@ public class LocationStep extends Step {
         }
     }
 
-    @Override
-    public Boolean match(final Sequence contextSequence, final Item contextItem) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);
-            context.getProfiler().message(this, Profiler.DEPENDENCIES,
-                    "DEPENDENCIES",
-                    Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null) {
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                        "CONTEXT SEQUENCE", contextSequence);
-            }
-            if (contextItem != null) {
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                        "CONTEXT ITEM", contextItem.toSequence());
-            }
-        }
-
-        Boolean result;
-        if (needsComputation()) {
-            if (contextSequence == null) {
-                throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context sequence for '"
-                        + this.toString() + "'");
-            }
-            switch (axis) {
-                case Constants.DESCENDANT_AXIS:
-                case Constants.DESCENDANT_SELF_AXIS:
-                    result = null;//getDescendants(context, contextSequence);
-                    break;
-
-                case Constants.CHILD_AXIS:
-                    // VirtualNodeSets may have modified the axis ; checking the
-                    // type
-                    // TODO : further checks ?
-                    if (this.test.getType() == Type.ATTRIBUTE) {
-                        this.axis = Constants.ATTRIBUTE_AXIS;
-                        result = matchAttributes(context, contextSequence);
-                    } else {
-                        result = matchChildren(context, contextItem.toSequence());//matchChildren(context, contextSequence);
-                    }
-                    break;
-
-                case Constants.ANCESTOR_SELF_AXIS:
-                case Constants.ANCESTOR_AXIS:
-                    result = null;//getAncestors(context, contextSequence);
-                    break;
-
-                case Constants.PARENT_AXIS:
-                    result = null;//getParents(context, contextSequence);
-                    break;
-
-                case Constants.SELF_AXIS:
-//				if (!(contextSequence instanceof VirtualNodeSet)
-//						&& Type.subTypeOf(contextSequence.getItemType(),
-//								Type.ATOMIC)) {
-//					// This test is copied from the legacy method
-//					// getSelfAtomic()
-//					if (!test.isWildcardTest())
-//						throw new XPathException(this, test.toString()
-//								+ " cannot be applied to an atomic value.");
-//					result = null;//contextSequence;
-//				} else {
-                    result = matchSelf(context, contextItem.toSequence());
-//				}
-                    break;
-
-                case Constants.ATTRIBUTE_AXIS:
-                case Constants.DESCENDANT_ATTRIBUTE_AXIS:
-                    result = null;//getAttributes(context, contextSequence);
-                    break;
-
-                case Constants.PRECEDING_AXIS:
-                    result = null;//getPreceding(context, contextSequence);
-                    break;
-                case Constants.FOLLOWING_AXIS:
-                    result = null;//getFollowing(context, contextSequence);
-                    break;
-
-                case Constants.PRECEDING_SIBLING_AXIS:
-                case Constants.FOLLOWING_SIBLING_AXIS:
-                    result = null;//getSiblings(context, contextSequence);
-                    break;
-
-                default:
-                    throw new IllegalArgumentException("Unsupported axis specified");
-            }
-        } else {
-            result = null;//NodeSet.EMPTY_SET;
-        }
-
-        result = matchPredicate(contextSequence, (Node) contextItem, result);
-
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().end(this, "", null);
-        }
-        // actualReturnType = result.getItemType();
-
-        return result;
-    }
-
-    private Boolean matchPredicate(final Sequence contextSequence, final Node contextItem, Boolean result)
-            throws XPathException {
-
-        if (result == null) {
-            return false;
-        }
-
-        if (!result) {
-            return result;
-        }
-
-        if (contextSequence == null) {
-            return false;
-        }
-
-        if (predicates.size() == 0) {
-            return result;
-        }
-
-        for (final Predicate pred : predicates) {
-//				&& (result instanceof VirtualNodeSet || !result.isEmpty());) {
-            // TODO : log and/or profile ?
-            pred.setContextDocSet(getContextDocSet());
-
-            //result = pred.evalPredicate(outerSequence, result, axis);
-            result = pred.matchPredicate(contextSequence, (Item) contextItem, axis);
-
-            if (!result) {
-                return false;
-            }
-
-            // subsequent predicates operate on the result of the previous one
-//			outerSequence = null;
-        }
-        return result;
-    }
-
-    private Boolean matchSelf(final XQueryContext context, final Sequence contextSequence) throws XPathException {
-        if (!contextSequence.isPersistentSet()) {
-            final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
-            return nodes.matchSelf(test);
-        }
-
-        final NodeSet contextSet = contextSequence.toNodeSet();
-        if (test.getType() == Type.PROCESSING_INSTRUCTION) {
-            final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId, contextSet);
-            vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
-            return !vset.isEmpty();
-        }
-
-        if (test.isWildcardTest()) {
-            if (nodeTestType == null) {
-                nodeTestType = test.getType();
-            }
-
-            if (Type.subTypeOf(nodeTestType, Type.NODE)) {
-                if (Expression.NO_CONTEXT_ID != contextId) {
-                    if (contextSet instanceof VirtualNodeSet) {
-                        ((VirtualNodeSet) contextSet).setInPredicate(true);
-                        ((VirtualNodeSet) contextSet).setContextId(contextId);
-                        ((VirtualNodeSet) contextSet).setSelfIsContext();
-                    } else if (Type.subTypeOf(contextSet.getItemType(), Type.NODE)) {
-                        for (final NodeProxy p : contextSet) {
-                            if (test.matches(p)) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-                return false;
-            } else {
-                final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId, contextSet);
-                vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
-                return !vset.isEmpty();
-            }
-        } else {
-            final DocumentSet docs = getDocumentSet(contextSet);
-            final StructuralIndex index = context.getBroker().getStructuralIndex();
-            if (context.getProfiler().isEnabled()) {
-                context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                        "OPTIMIZATION",
-                        "Using structural index '" + index.toString() + "'");
-            }
-            final NodeSelector selector = new SelfSelector(contextSet, contextId);
-            return index.matchElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
-        }
-    }
-
-    private Boolean matchChildren(final XQueryContext context, final Sequence contextSequence) throws XPathException {
-        if (!contextSequence.isPersistentSet()) {
-            final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
-            return nodes.matchChildren(test);
-        }
-
-        final NodeSet contextSet = contextSequence.toNodeSet();
-        // TODO : understand this. I guess comments should be treated in a
-        // similar way ? -pb
-        if (test.isWildcardTest() || test.getType() == Type.PROCESSING_INSTRUCTION) {
-            // test is one out of *, text(), node() including
-            // processing-instruction(targetname)
-            final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId, contextSet);
-            vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
-            return !vset.isEmpty();
-        }
-
-        // IndexStatistics stats = (IndexStatistics)
-        // context.getBroker().getBrokerPool().
-        // getIndexManager().getIndexById(IndexStatistics.ID);
-        // int parentDepth = stats.getMaxParentDepth(test.getName());
-        // LOG.debug("parentDepth for " + test.getName() + ": " + parentDepth);
-
-        if (useDirectChildSelect) {
-            //NewArrayNodeSet result = new NewArrayNodeSet();
-            for (final NodeProxy p : contextSet) {
-                if (p.directMatchChild(test.getName(), contextId)) {
-                    return true;
-                }
-            }
-            return false;
-        } else if (hasPreloadedData()) {
-            final DocumentSet docs = getDocumentSet(contextSet);
-            synchronized (context) {
-                // TODO : understand why this one is different from the other
-                // ones
-//				if (currentSet == null
-//						|| currentDocs == null
-//						|| (!optimized && !(docs == currentDocs || docs
-//								.equalDocs(currentDocs)))) {
-                final StructuralIndex index = context.getBroker().getStructuralIndex();
-                if (context.getProfiler().isEnabled()) {
-                    context.getProfiler().message(
-                            this,
-                            Profiler.OPTIMIZATIONS,
-                            "OPTIMIZATION",
-                            "Using structural index '" + index.toString()
-                                    + "'");
-                }
-                return index.matchElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), null);
-//					currentDocs = docs;
-//UNDERSTAND: TODO:					registerUpdateListener();
-            }
-//				return currentSet.selectParentChild(contextSet,
-//						NodeSet.DESCENDANT, contextId);
-//			}
-        } else {
-            final DocumentSet docs = getDocumentSet(contextSet);
-            final StructuralIndex index = context.getBroker().getStructuralIndex();
-            if (context.getProfiler().isEnabled()) {
-                context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                        "OPTIMIZATION",
-                        "Using structural index '" + index.toString() + "'");
-            }
-            if (contextSet instanceof ExtNodeSet && !contextSet.getProcessInReverseOrder()) {
-                return index.matchDescendantsByTagName(ElementValue.ELEMENT, test.getName(), axis, docs,
-                        (ExtNodeSet) contextSet, contextId);
-            } else {
-                // if (contextSet instanceof VirtualNodeSet)
-                // ((VirtualNodeSet)contextSet).realize();
-                final NodeSelector selector = new ChildSelector(contextSet, contextId);
-                return index.matchElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
-            }
-        }
-    }
-
-    private boolean matchAttributes(final XQueryContext context, final Sequence contextSequence) throws XPathException {
-        if (!contextSequence.isPersistentSet()) {
-            final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
-            if (axis == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
-                return nodes.matchDescendantAttributes(test);
-            } else {
-                return nodes.matchAttributes(test);
-            }
-        }
-
-        final NodeSet contextSet = contextSequence.toNodeSet();
-        if (test.isWildcardTest()) {
-            final NodeSet result = new VirtualNodeSet(context.getBroker(), axis, test, contextId, contextSet);
-            ((VirtualNodeSet) result).setInPredicate(Expression.NO_CONTEXT_ID != contextId);
-            return !result.isEmpty();
-            // if there's just a single known node in the context, it is faster
-            // do directly search for the attribute in the parent node.
-        }
-
-        if (hasPreloadedData()) {
-            final DocumentSet docs = getDocumentSet(contextSet);
-            synchronized (context) {
-                if (currentSet == null || currentDocs == null || (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
-                    final StructuralIndex index = context.getBroker().getStructuralIndex();
-                    if (context.getProfiler().isEnabled()) {
-                        context.getProfiler().message(
-                                this,
-                                Profiler.OPTIMIZATIONS,
-                                "OPTIMIZATION",
-                                "Using structural index '" + index.toString()
-                                        + "'");
-                    }
-                    // TODO : why a null selector here ? We have one below !
-                    currentSet = index.findElementsByTagName(ElementValue.ATTRIBUTE, docs, test.getName(), null, this);
-                    currentDocs = docs;
-                    registerUpdateListener();
-                }
-
-                switch (axis) {
-                    case Constants.ATTRIBUTE_AXIS:
-                        return currentSet.matchParentChild(contextSet, NodeSet.DESCENDANT, contextId);
-                    case Constants.DESCENDANT_ATTRIBUTE_AXIS:
-                        return currentSet.matchAncestorDescendant(contextSet, NodeSet.DESCENDANT, false, contextId, true);
-                    default:
-                        throw new IllegalArgumentException("Unsupported axis specified");
-                }
-            }
-        } else {
-            final DocumentSet docs = getDocumentSet(contextSet);
-            final StructuralIndex index = context.getBroker().getStructuralIndex();
-            if (context.getProfiler().isEnabled()) {
-                context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                        "OPTIMIZATION",
-                        "Using structural index '" + index.toString() + "'");
-            }
-            if (contextSet instanceof ExtNodeSet && !contextSet.getProcessInReverseOrder()) {
-                return index.matchDescendantsByTagName(ElementValue.ATTRIBUTE, test.getName(), axis, docs,
-                        (ExtNodeSet) contextSet, contextId);
-            } else {
-                final NodeSelector selector;
-                switch (axis) {
-                    case Constants.ATTRIBUTE_AXIS:
-                        selector = new ChildSelector(contextSet, contextId);
-                        break;
-                    case Constants.DESCENDANT_ATTRIBUTE_AXIS:
-                        selector = new DescendantSelector(contextSet, contextId);
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unsupported axis specified");
-                }
-                return index.matchElementsByTagName(ElementValue.ATTRIBUTE, docs, test.getName(), selector);
-            }
-        }
-    }
 }

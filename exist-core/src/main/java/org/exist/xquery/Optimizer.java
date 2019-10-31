@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Type;
 
 import java.util.*;
 
@@ -57,7 +58,7 @@ public class Optimizer extends DefaultExpressionVisitor {
 
     private boolean hasOptimized = false;
 
-    private List<QueryRewriter> rewriters = new ArrayList<QueryRewriter>(5);
+    private List<QueryRewriter> rewriters;
 
     public Optimizer(XQueryContext context) {
         this.context = context;
@@ -70,6 +71,7 @@ public class Optimizer extends DefaultExpressionVisitor {
 
     public void visitLocationStep(LocationStep locationStep) {
         super.visitLocationStep(locationStep);
+
         // check query rewriters if they want to rewrite the location step
         Pragma optimizePragma = null;
         for (QueryRewriter rewriter : rewriters) {

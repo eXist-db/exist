@@ -164,8 +164,7 @@ public class CastExpression extends AbstractExpression {
 	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
-//        return expression.getDependencies();
-		return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
+        return expression.getDependencies() | Dependency.CONTEXT_ITEM;
 	}
 	
 	/* (non-Javadoc)

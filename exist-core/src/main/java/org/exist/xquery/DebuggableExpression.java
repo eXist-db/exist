@@ -153,10 +153,6 @@ public class DebuggableExpression implements Expression, RewritableExpression {
         return expression.getSubExpression(index);
     }
 
-    public Boolean match(Sequence contextSequence, Item item) throws XPathException {
-        return expression.match(contextSequence, item);
-    }
-
     @Override
     public void replace(Expression oldExpr, Expression newExpr) {
         if (oldExpr == expression)
