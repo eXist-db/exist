@@ -39,9 +39,8 @@ public class EXistDbSource extends SAXSource {
     private final static Logger LOG = LogManager.getLogger(EXistDbSource.class);
 
     private InputSource source;
-    private String systemId;
     
-    public EXistDbSource(DBBroker broker, DocumentImpl doc) {
+    public EXistDbSource(final DBBroker broker, final DocumentImpl doc) {
         this.source = new EXistDbInputSource(broker, doc);
     }
 
@@ -52,7 +51,7 @@ public class EXistDbSource extends SAXSource {
     
     @Override
     public String getSystemId() {
-        return this.systemId;
+        return (this.source == null) ? null : this.source.getSystemId();
     }
     
     @Override
@@ -64,7 +63,7 @@ public class EXistDbSource extends SAXSource {
     }
     
     @Override
-    public void setInputSource(InputSource inputSource) {
+    public void setInputSource(final InputSource inputSource) {
         if (!(inputSource instanceof EXistDbInputSource)) {
             throw new UnsupportedOperationException("EXistDbSource only accepts EXistDbInputSource");
         }
@@ -73,13 +72,16 @@ public class EXistDbSource extends SAXSource {
     }
     
     @Override
-    public void setSystemId(String systemId) {
-        this.systemId = systemId;
+    public void setSystemId(final String systemId) {
+	if (this.source == null) {
+	    // This should not be possible
+	    throw new IllegalStateException("EXistDbSource cannot initialize InputSource from a systemId");
+	}
         this.source.setSystemId(systemId);
     }
     
     @Override
-    public void setXMLReader(XMLReader reader) {
+    public void setXMLReader(final XMLReader reader) {
 	throw new UnsupportedOperationException("Setting external reader is not supported");
     }
 }

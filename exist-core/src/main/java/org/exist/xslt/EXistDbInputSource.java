@@ -33,8 +33,8 @@ import org.xml.sax.InputSource;
  */
 
 public class EXistDbInputSource extends InputSource {
-    protected DBBroker broker;
-    protected DocumentImpl doc;
+    private final DBBroker broker;
+    private final DocumentImpl doc;
     
     public EXistDbInputSource(DBBroker broker, DocumentImpl doc) {
         super();

@@ -43,9 +43,9 @@ public class EXistDbXMLReader implements XMLReader, Locator {
     private final static Logger LOG = LogManager.getLogger(EXistDbSource.class);
 
     private ContentHandler contentHandler;
-    private ErrorHandler    errHandler;
+    private ErrorHandler   errHandler;
     
-    private InputSource     source;
+    private InputSource    source;
     
     public EXistDbXMLReader() {
     }
@@ -71,17 +71,17 @@ public class EXistDbXMLReader implements XMLReader, Locator {
     }
     
     @Override
-    public boolean getFeature(String name) {
+    public boolean getFeature(final String name) {
         return false;
     }
     
     @Override
-    public Object getProperty(String name) {
+    public Object getProperty(final String name) {
         return null;
     }
     
     @Override
-    public void parse(InputSource input) {
+    public void parse(final InputSource input) {
         if (!(input instanceof EXistDbInputSource)) {
             throw new UnsupportedOperationException("EXistDbXMLReader only accepts EXistDbInputSource");
         }
@@ -121,34 +121,34 @@ public class EXistDbXMLReader implements XMLReader, Locator {
     }
     
     @Override
-    public void parse(String systemId) {
+    public void parse(final String systemId) {
         throw new UnsupportedOperationException();
     }
     
     @Override
-    public void setContentHandler(ContentHandler handler) {
+    public void setContentHandler(final ContentHandler handler) {
         this.contentHandler = handler;
     }
     
     @Override
-    public void setDTDHandler(DTDHandler handler) {
+    public void setDTDHandler(final DTDHandler handler) {
     }
     
     @Override
-    public void setEntityResolver(EntityResolver resolver) {
+    public void setEntityResolver(final EntityResolver resolver) {
     }
     
     @Override
-    public void setErrorHandler(ErrorHandler handler) {
+    public void setErrorHandler(final ErrorHandler handler) {
         this.errHandler = handler;
     }
     
     @Override
-    public void setFeature(String name, boolean value) {
+    public void setFeature(final String name, final boolean value) {
     }
     
     @Override
-    public void setProperty(String name, Object value) {
+    public void setProperty(final String name, final Object value) {
     }
    
     @Override
