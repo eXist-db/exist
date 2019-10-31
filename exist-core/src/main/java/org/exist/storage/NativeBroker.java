@@ -947,7 +947,7 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    private void checkCollectionAncestorPermissions(final CollectionCache collectionsCache, Collection collection)
+    private void checkCollectionAncestorPermissions(final CollectionCache collectionsCache, final Collection collection)
             throws IllegalStateException, PermissionDeniedException, LockException {
 
         /*
@@ -961,17 +961,18 @@ public class NativeBroker extends DBBroker {
             closer to the target Collection.
          */
 
-        XmldbURI parentUri = collection.getParentURI();
+        Collection c = collection;
+        XmldbURI parentUri = c.getParentURI();
         while (parentUri != null) {
             // this will throw a PermissionDeniedException if the user does not have Permission.EXECUTE on the Collection at the parentUri
-            collection = getCollectionForOpen(collectionsCache, parentUri);
+            c = getCollectionForOpen(collectionsCache, parentUri);
 
-            if (collection == null) {
+            if (c == null) {
                 LOG.error("Parent collection {} was null for collection {} ", parentUri, collection.getURI());
                 throw new IllegalStateException();
             }
 
-            parentUri = collection.getParentURI();
+            parentUri = c.getParentURI();
         }
     }
 
