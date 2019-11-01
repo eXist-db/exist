@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
+import java.net.URISyntaxException;
 import java.util.*;
 
 import javax.xml.XMLConstants;
@@ -40,6 +41,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -64,7 +66,10 @@ public class Sync extends BasicFunction {
                         Cardinality.EXACTLY_ONE, "The full path or URI to the directory"),
                 new FunctionParameterSequenceType("dateTime", Type.DATE_TIME, 
                         Cardinality.ZERO_OR_ONE, 
-                		"Optional: only resources modified after the given date/time will be synchronized.")
+                        "Optional: only resources modified after the given date/time will be synchronized."),
+                new FunctionParameterSequenceType("prune", Type.BOOLEAN,
+                        Cardinality.ZERO_OR_ONE,
+                        "Optional: delete any file/dir that does not correspond to a doc/collection currently in the DB.")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise")
         );
@@ -88,15 +93,21 @@ public class Sync extends BasicFunction {
 		}
 		
 		final String collectionPath = args[0].getStringValue();
+
+		final String target = args[1].getStringValue();
+		Path targetDir = FileModuleHelper.getFile(target);
+
 		Date startDate = null;
 		if (args[2].hasOne()) {
 			DateTimeValue dtv = (DateTimeValue) args[2].itemAt(0);
 			startDate = dtv.getDate();
 		}
-        
-		final String target = args[1].getStringValue();
-        Path targetDir = FileModuleHelper.getFile(target);
-        
+
+		boolean prune = false;
+		if (args[3].hasOne()) {
+			BooleanValue bv = (BooleanValue) args[3].itemAt(0);
+			prune = bv.getValue();
+		}
 		
 		context.pushDocumentContext();
 		final MemTreeBuilder output = context.getDocumentBuilder();
@@ -111,7 +122,7 @@ public class Sync extends BasicFunction {
 			output.addAttribute(new QName("collection", FileModule.NAMESPACE_URI), collectionPath);
 			output.addAttribute(new QName("dir", FileModule.NAMESPACE_URI), targetDir.toAbsolutePath().toString());
 			
-			saveCollection(XmldbURI.create(collectionPath), targetDir, startDate, output);
+			saveCollection(XmldbURI.create(collectionPath), targetDir, startDate, prune, output);
 			
 			output.endElement();
 			output.endDocument();
@@ -123,7 +134,7 @@ public class Sync extends BasicFunction {
 		return output.getDocument();
 	}
 
-	private void saveCollection(final XmldbURI collectionPath, Path targetDir, final Date startDate, final MemTreeBuilder output) throws PermissionDeniedException, LockException {
+	private void saveCollection(final XmldbURI collectionPath, Path targetDir, final Date startDate, final boolean prune, final MemTreeBuilder output) throws PermissionDeniedException, LockException {
 		try {
 			targetDir = Files.createDirectories(targetDir);
 		} catch(final IOException ioe) {
@@ -142,6 +153,9 @@ public class Sync extends BasicFunction {
 			if (collection == null) {
 				reportError(output, "Collection not found: " + collectionPath);
 				return;
+			}
+			if (prune) {
+				pruneCollectionEntries(collection, targetDir, output);
 			}
 			for (final Iterator<DocumentImpl> i = collection.iterator(context.getBroker()); i.hasNext(); ) {
 				DocumentImpl doc = i.next();
@@ -162,7 +176,7 @@ public class Sync extends BasicFunction {
 		
 		for (final XmldbURI childURI : subcollections) {
 			final Path childDir = targetDir.resolve(childURI.lastSegment().toString());
-			saveCollection(collectionPath.append(childURI), childDir, startDate, output);
+			saveCollection(collectionPath.append(childURI), childDir, startDate, prune, output);
 		}
 	}
 
@@ -170,6 +184,26 @@ public class Sync extends BasicFunction {
 		output.startElement(new QName("error", FileModule.NAMESPACE_URI), null);
 		output.characters(msg);
 		output.endElement();
+	}
+
+	private void pruneCollectionEntries(final Collection collection, final Path targetDir, final MemTreeBuilder output) {
+		try {
+			Files.walk(targetDir, 1).forEach(path -> {
+				try {
+					String fname = path.getFileName().toString();
+					XmldbURI dbname = XmldbURI.xmldbUriFor(fname);
+					if (!collection.hasDocument(context.getBroker(), dbname)
+					 && !collection.hasChildCollection(context.getBroker(), dbname)) {
+						Files.deleteIfExists(path);
+					}
+				} catch (IOException | URISyntaxException
+						| PermissionDeniedException | LockException e) {
+					reportError(output, e.getMessage());
+				}
+			});
+		} catch (IOException e) {
+			reportError(output, e.getMessage());
+		}
 	}
 
 	private void saveXML(final Path targetDir, final DocumentImpl doc, final MemTreeBuilder output) {
