@@ -31,8 +31,9 @@ import java.util.Optional;
 
 public class PackageTriggerTest {
 
+    static final String xarFile = "triggertest-1.0.0.xar";
     static final XmldbURI triggerTestCollection = XmldbURI.create("/db");
-    static final XmldbURI xarUri = triggerTestCollection.append("triggertest-1.0-SNAPSHOT.xar");
+    static final XmldbURI xarUri = triggerTestCollection.append(xarFile);
 
     @ClassRule
     public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(false, true);
@@ -52,7 +53,8 @@ public class PackageTriggerTest {
         }
 
         // Load XAR file
-        InputStream resourceAsStream = PackageTriggerTest.class.getResourceAsStream("triggertest-1.0-SNAPSHOT.xar");
+
+        InputStream resourceAsStream = PackageTriggerTest.class.getResourceAsStream(xarFile);
         Assert.assertNotNull(resourceAsStream);
         byte[] content = IOUtils.toByteArray(resourceAsStream);
 
@@ -75,7 +77,7 @@ public class PackageTriggerTest {
         // Install and deploy XAR
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()))) {
             final XQuery xquery = brokerPool.getXQueryService();
-            final Sequence result = xquery.execute(broker,"repo:install-and-deploy-from-db('/db/triggertest-1.0-SNAPSHOT.xar')", null);
+            final Sequence result = xquery.execute(broker, "repo:install-and-deploy-from-db('/db/" + xarFile + "')", null);
             Assert.assertEquals(1, result.getItemCount());
         }
 
