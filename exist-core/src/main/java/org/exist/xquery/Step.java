@@ -47,8 +47,6 @@ public abstract class Step extends AbstractExpression {
 
     protected int staticReturnType = Type.ITEM;
 
-    protected boolean hasPositionalPredicate = false;
-
     public Step( XQueryContext context, int axis ) {
         super(context);
         this.axis = axis;
@@ -100,8 +98,6 @@ public abstract class Step extends AbstractExpression {
             for (final Predicate pred : predicates) {
                 pred.analyze(newContext);
             }
-
-            this.checkPositionalFilters(inPredicate);
         }
         // if we are on the self axis, remember the static return type given in the context
         if (this.axis == Constants.SELF_AXIS)
@@ -112,7 +108,7 @@ public abstract class Step extends AbstractExpression {
      * Static check if the location steps first filter is a positional predicate.
      * If yes, set a flag on the {@link LocationStep}
      */
-    private void checkPositionalFilters(final boolean inPredicate) {
+    protected boolean checkPositionalFilters(final boolean inPredicate) {
         if (!inPredicate && this.hasPredicates()) {
             final List<Predicate> preds = this.getPredicates();
             final Predicate predicate = preds.get(0);
@@ -121,9 +117,10 @@ public abstract class Step extends AbstractExpression {
             // and there are no dependencies on the context item
             if (Type.subTypeOf(predExpr.returnsType(), Type.NUMBER) &&
                     !Dependency.dependsOn(predExpr, Dependency.CONTEXT_POSITION)) {
-                this.hasPositionalPredicate = true;
+                return true;
             }
         }
+        return false;
     }
 
     public abstract Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException;

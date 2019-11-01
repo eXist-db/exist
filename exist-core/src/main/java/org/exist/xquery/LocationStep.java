@@ -902,7 +902,7 @@ public class LocationStep extends Step {
         // process an in-memory node set
         if (!contextSequence.isPersistentSet()) {
             final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
-            if (hasPositionalPredicate && position > -1) {
+            if (position > -1) {
                 applyPredicate = false;
             }
 
@@ -960,7 +960,7 @@ public class LocationStep extends Step {
                     registerUpdateListener();
                 }
 
-                if (hasPositionalPredicate) {
+                if (position > -1) {
                     try {
                         applyPredicate = false;
                         if (axis == Constants.PRECEDING_AXIS) {
@@ -996,7 +996,7 @@ public class LocationStep extends Step {
      */
     private int computeLimit() throws XPathException {
         int position = -1;
-        if (hasPositionalPredicate) {
+        if (this.checkPositionalFilters(this.inPredicate)) {
             final Predicate pred = predicates.get(0);
             final Sequence seq = pred.preprocess();
 

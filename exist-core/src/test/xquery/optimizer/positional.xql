@@ -110,6 +110,16 @@ function ot:optimize-simple-following-node() {
 };
 
 declare
+    %test:stats
+    %test:assertXPath("$result//stats:optimization[@type = 'PositionalPredicate']")
+function ot:optimize-simple-following-in-for() {
+    let $w := doc($ot:DOC)//w[@xml:id='25000']
+    for $i in 1 to 3
+    return
+        $w/following::node()[$i]
+};
+
+declare
     %test:assertEquals("25001")
 function ot:simple-following-text() {
     let $w := doc($ot:DOC)//w[@xml:id='25000']
