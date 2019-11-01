@@ -647,7 +647,7 @@
             <plugin>
                 <groupId>ch.mfrey.maven.plugin</groupId>
                 <artifactId>copy-maven-plugin</artifactId>
-                <version>0.0.6</version>
+                <version>1.0.0</version>
                 <configuration>
                     <showfiles>true</showfiles>
                 </configuration>
