@@ -3,10 +3,7 @@ package org.exist.repo;
 import org.apache.commons.io.IOUtils;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.triggers.CollectionTrigger;
-import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.collections.triggers.TriggerProxy;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -26,7 +23,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Optional;
 
 public class PackageTriggerTest {
@@ -53,10 +49,11 @@ public class PackageTriggerTest {
         }
 
         // Load XAR file
-
-        InputStream resourceAsStream = PackageTriggerTest.class.getResourceAsStream(xarFile);
-        Assert.assertNotNull(resourceAsStream);
-        byte[] content = IOUtils.toByteArray(resourceAsStream);
+        byte[] content;
+        try (InputStream resourceAsStream = PackageTriggerTest.class.getResourceAsStream(xarFile)) {
+            Assert.assertNotNull(resourceAsStream);
+            content = IOUtils.toByteArray(resourceAsStream);
+        }
 
         // Store XAR in database
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
