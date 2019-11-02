@@ -140,7 +140,7 @@ public class StylesheetResolverAndCompiler implements Stylesheet {
     //factory.setURIResolver(new EXistURIResolver(broker, stylesheet.getCollection().getURI().toString()));
 
     final TemplatesHandler handler = factory(broker.getBrokerPool(), errorListener).newTemplatesHandler();
-
+    handler.setSystemId(stylesheet.getBaseURI());
     handler.startDocument();
 
     final Serializer serializer = broker.newSerializer();
