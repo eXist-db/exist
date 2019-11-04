@@ -161,7 +161,7 @@ public class Sync extends BasicFunction {
 			for (final Iterator<DocumentImpl> i = collection.iterator(context.getBroker()); i.hasNext(); ) {
 				final DocumentImpl doc = i.next();
 				try (final ManagedLock lock = context.getBroker().getBrokerPool()
-													 .getLockManager().acquireDocumentReadLock(doc.getURI())) {
+				                                     .getLockManager().acquireDocumentReadLock(doc.getURI())) {
 					if (startDate == null || doc.getMetadata().getLastModified() > startDate.getTime()) {
 						if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
 							saveBinary(targetDir, (BinaryDocument) doc, output);
