@@ -940,3 +940,39 @@ function arr:lookupWildcard() {
         and
         (every $prime in $actual satisfies $prime = $expected)
 };
+
+declare
+    %test:assertEquals("x", "b", "c", "d")
+function arr:put_pos_first() {
+    array:put(["a", "b", "c", "d"], 1, "x")?*
+};
+
+declare
+    %test:assertEquals("a", "b", "x", "d")
+function arr:put_pos_third() {
+    array:put(["a", "b", "c", "d"], 3, "x")?*
+};
+
+declare
+    %test:assertEquals("a", "b", "c", "x")
+function arr:put_pos_last() {
+    array:put(["a", "b", "c", "d"], 4, "x")?*
+};
+
+declare
+    %test:assertError("err:FOAY0001")
+function arr:put_pos_zero() {
+    array:put(["a", "b", "c", "d"], 0, "x")?*
+};
+
+declare
+    %test:assertError("err:FORG0006")
+function arr:put_pos_double() {
+    array:put(["a", "b", "c", "d"], 1.5, "x")?*
+};
+
+declare
+    %test:assertError("err:FOAY0001")
+function arr:put_pos_illegal_index() {
+    array:put(["a", "b", "c", "d"], 5, "x")?*
+};

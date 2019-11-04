@@ -126,6 +126,10 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         return new ArrayType(context, (IPersistentVector<Sequence>)ret.persistent());
     }
 
+    public ArrayType put(int position, Sequence member) throws XPathException {
+        return new ArrayType(context, vector.assocN(position,member));
+    }
+
     public static ArrayType join(XQueryContext context, List<ArrayType> arrays) {
         final ITransientCollection<Sequence> ret = PersistentVector.emptyVector().asTransient();
         for (ArrayType type: arrays) {
