@@ -28,6 +28,7 @@ import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.FileUtils;
@@ -158,12 +159,15 @@ public class Sync extends BasicFunction {
 				pruneCollectionEntries(collection, targetDir, output);
 			}
 			for (final Iterator<DocumentImpl> i = collection.iterator(context.getBroker()); i.hasNext(); ) {
-				DocumentImpl doc = i.next();
-				if (startDate == null || doc.getMetadata().getLastModified() > startDate.getTime()) {
-					if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-						saveBinary(targetDir, (BinaryDocument) doc, output);
-					} else {
-						saveXML(targetDir, doc, output);
+				final DocumentImpl doc = i.next();
+				try (final ManagedLock lock = context.getBroker().getBrokerPool()
+													 .getLockManager().acquireDocumentReadLock(doc.getURI())) {
+					if (startDate == null || doc.getMetadata().getLastModified() > startDate.getTime()) {
+						if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+							saveBinary(targetDir, (BinaryDocument) doc, output);
+						} else {
+							saveXML(targetDir, doc, output);
+						}
 					}
 				}
 			}
