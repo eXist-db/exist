@@ -99,13 +99,13 @@ public class Sync extends BasicFunction {
 
 		Date startDate = null;
 		if (args[2].hasOne()) {
-			DateTimeValue dtv = (DateTimeValue) args[2].itemAt(0);
+			final DateTimeValue dtv = (DateTimeValue) args[2].itemAt(0);
 			startDate = dtv.getDate();
 		}
 
 		boolean prune = false;
 		if (args[3].hasOne()) {
-			BooleanValue bv = (BooleanValue) args[3].itemAt(0);
+			final BooleanValue bv = (BooleanValue) args[3].itemAt(0);
 			prune = bv.getValue();
 		}
 		
@@ -190,8 +190,8 @@ public class Sync extends BasicFunction {
 		try {
 			Files.walk(targetDir, 1).forEach(path -> {
 				try {
-					String fname = path.getFileName().toString();
-					XmldbURI dbname = XmldbURI.xmldbUriFor(fname);
+					final String fname = path.getFileName().toString();
+					final XmldbURI dbname = XmldbURI.xmldbUriFor(fname);
 					if (!collection.hasDocument(context.getBroker(), dbname)
 					 && !collection.hasChildCollection(context.getBroker(), dbname)) {
 						Files.deleteIfExists(path);
