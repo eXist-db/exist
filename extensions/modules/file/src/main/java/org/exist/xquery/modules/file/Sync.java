@@ -126,7 +126,7 @@ public class Sync extends BasicFunction {
 		}
 
 		final String mode = args.length > 3 ? args[3].getStringValue() : "no_prune";
-		if (!mode.equals("prune") && !mode.equals("no_prune")) {
+		if (!"prune".equals(mode) && !"no_prune".equals(mode)) {
 		    throw new XPathException("Argument $mode in call to function file:sync is '" + mode + "' " +
 		                             " (must be 'prune' or 'no_prune')");
 		}
