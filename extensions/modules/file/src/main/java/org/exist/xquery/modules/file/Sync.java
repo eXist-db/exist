@@ -42,7 +42,6 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -54,36 +53,58 @@ import org.xml.sax.SAXException;
 
 public class Sync extends BasicFunction {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
+    public final static FunctionSignature signature3 =
+        new FunctionSignature(
             new QName("sync", FileModule.NAMESPACE_URI, FileModule.PREFIX),
-            "Synchronize a collection with a directory hierarchy. Compares last modified time stamps. " +
-            "If $dateTime is given, only resources modified after this time stamp are taken into account. " +
-    		"This method is only available to the DBA role.",
+                      "Synchronize a collection with a directory hierarchy. Compares last modified time stamps. " +
+                      "If $dateTime is given, only resources modified after this time stamp are taken into account. " +
+                      "Note: there's a sync/4 method that will also prune target directory. " +
+                      "This method is only available to the DBA role.",
             new SequenceType[]{
-            	new FunctionParameterSequenceType("collection", Type.STRING, 
+                new FunctionParameterSequenceType("collection", Type.STRING,
                         Cardinality.EXACTLY_ONE, "The collection to sync."),
                 new FunctionParameterSequenceType("targetPath", Type.ITEM, 
                         Cardinality.EXACTLY_ONE, "The full path or URI to the directory"),
                 new FunctionParameterSequenceType("dateTime", Type.DATE_TIME, 
                         Cardinality.ZERO_OR_ONE, 
                         "Optional: only resources modified after the given date/time will be synchronized."),
-                new FunctionParameterSequenceType("prune", Type.BOOLEAN,
-                        Cardinality.ZERO_OR_ONE,
-                        "Optional: delete any file/dir that does not correspond to a doc/collection currently in the DB.")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise")
         );
-	
+
+
+    public final static FunctionSignature signature4 =
+        new FunctionSignature(
+            new QName("sync", FileModule.NAMESPACE_URI, FileModule.PREFIX),
+                      "Synchronize a collection with a directory hierarchy. Compares last modified time stamps. " +
+                      "If $dateTime is given, only resources modified after this time stamp are taken into account. " +
+                      "If $mode is 'prune', delete any file/dir that does not correspond to a doc/collection in the DB. " +
+                      "This method is only available to the DBA role.",
+            new SequenceType[]{
+                new FunctionParameterSequenceType("collection", Type.STRING,
+                        Cardinality.EXACTLY_ONE, "The collection to sync."),
+                new FunctionParameterSequenceType("targetPath", Type.ITEM,
+                        Cardinality.EXACTLY_ONE, "The full path or URI to the directory"),
+                new FunctionParameterSequenceType("dateTime", Type.DATE_TIME,
+                        Cardinality.ZERO_OR_ONE,
+                        "Optional: only resources modified after the given date/time will be synchronized."),
+                new FunctionParameterSequenceType("mode", Type.STRING,
+                        Cardinality.EXACTLY_ONE,
+                        "Delete any file/dir that does not correspond to a doc/collection in the DB.")
+            },
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise")
+        );
+
+
 	private final static Properties DEFAULT_PROPERTIES = new Properties();
 	static {
 		DEFAULT_PROPERTIES.put(OutputKeys.INDENT, "yes");
 		DEFAULT_PROPERTIES.put(OutputKeys.OMIT_XML_DECLARATION, "no");
-        DEFAULT_PROPERTIES.put(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+		DEFAULT_PROPERTIES.put(EXistOutputKeys.EXPAND_XINCLUDES, "no");
 	}
-	
-	public Sync(final XQueryContext context) {
-		super(context, signature);
+
+	public Sync(final XQueryContext context, final FunctionSignature sig) {
+		super(context, sig);
 	}
 
 	@Override
@@ -104,11 +125,12 @@ public class Sync extends BasicFunction {
 			startDate = dtv.getDate();
 		}
 
-		boolean prune = false;
-		if (args[3].hasOne()) {
-			final BooleanValue bv = (BooleanValue) args[3].itemAt(0);
-			prune = bv.getValue();
+		final String mode = args.length > 3 ? args[3].getStringValue() : "no_prune";
+		if (!mode.equals("prune") && !mode.equals("no_prune")) {
+		    throw new XPathException("Argument $mode in call to function file:sync is '" + mode + "' " +
+		                             " (must be 'prune' or 'no_prune')");
 		}
+		final boolean prune = mode.equals("prune");
 		
 		context.pushDocumentContext();
 		final MemTreeBuilder output = context.getDocumentBuilder();
@@ -160,8 +182,8 @@ public class Sync extends BasicFunction {
 			}
 			for (final Iterator<DocumentImpl> i = collection.iterator(context.getBroker()); i.hasNext(); ) {
 				final DocumentImpl doc = i.next();
-				try (final ManagedLock lock = context.getBroker().getBrokerPool()
-				                                     .getLockManager().acquireDocumentReadLock(doc.getURI())) {
+				try (final ManagedLock lock = context.getBroker().getBrokerPool().getLockManager()
+				                                     .acquireDocumentReadLock(doc.getURI())) {
 					if (startDate == null || doc.getMetadata().getLastModified() > startDate.getTime()) {
 						if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
 							saveBinary(targetDir, (BinaryDocument) doc, output);
