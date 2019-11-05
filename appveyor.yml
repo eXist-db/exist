@@ -41,15 +41,9 @@ after_test:
 
 on_failure:
   - cmd: 7z a exist-core-surefire-reports.zip %APPVEYOR_BUILD_FOLDER%\exist-core\target\surefire-reports\ && appveyor PushArtifact exist-core-surefire-reports.zip
-  - cmd: 7z a exist-core-test-logs.zip %APPVEYOR_BUILD_FOLDER%\exist-core\target\test-logs\ && appveyor PushArtifact exist-core-test-logs.zip
+  - cmd: 7z a exist-core-test-logs.zip %APPVEYOR_BUILD_FOLDER%\exist-core\target\test-logs-* && appveyor PushArtifact exist-core-test-logs.zip
   - sh: tar czvf exist-core-surefire-reports.tgz $APPVEYOR_BUILD_FOLDER/exist-core/target/surefire-reports/ && appveyor PushArtifact exist-core-surefire-reports.tgz
-  - sh: tar czvf exist-core-test-logs.tgz $APPVEYOR_BUILD_FOLDER/exist-core/target/test-logs/ && appveyor PushArtifact exist-core-test-logs.tgz
-
-artifacts:
-  - path: exist-core\target\surefire-reports
-    name: exist-core-surefire-reports
-  - path: exist-core\target\test-logs
-    name: exist-core-test-logs
+  - sh: tar czvf exist-core-test-logs.tgz $APPVEYOR_BUILD_FOLDER/exist-core/target/test-logs-* && appveyor PushArtifact exist-core-test-logs.tgz
 
 cache:
   - '%USERPROFILE%\.m2'

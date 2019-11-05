@@ -57,7 +57,7 @@ install: travis_wait mvn -T 2C -DskipTests=true -Dmaven.javadoc.skip=true -Ddock
 script: mvn -T 2C -Ddocker=$BUILD_DOCKER test -B
 
 after_failure:
-   - tar -cjf surefire-reports.tar.bz2 exist-core/target/surefire-reports exist-core/target/test-logs
+   - tar -cjf surefire-reports.tar.bz2 exist-core/target/surefire-reports exist-core/target/test-logs-*
    - curl -v -u $CHUNK_USER:$CHUNK_PW -sT surefire-reports.tar.bz2 chunk.io
 
 notifications:
