@@ -8,7 +8,7 @@
     <xsl:template match="Set[@name eq 'defaultsDescriptor']">
         <xsl:copy><xsl:copy-of select="@*"/><xsl:copy-of select="Property[@name eq 'jetty.home']"/>/etc/jetty/webdefault.xml</xsl:copy>
     </xsl:template>
-    <xsl:template match="Set[@name eq 'war']">
+    <xsl:template match="Set[@name eq 'war' and SystemProperty/Default/Property[@name eq 'jetty.home']]">
         <xsl:copy><xsl:copy-of select="@*"/><xsl:copy-of select="SystemProperty/Default/Property[@name eq 'jetty.home']"/>/etc/<xsl:value-of select="tokenize(SystemProperty/Default/text(),'/')[last() - 1]"/></xsl:copy>
     </xsl:template>
     <xsl:template match="Property[@name = ('jetty.sslContext.keyStorePath', 'jetty.sslContext.trustStorePath')]">
