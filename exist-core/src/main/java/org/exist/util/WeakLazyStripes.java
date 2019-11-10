@@ -374,7 +374,7 @@ public class WeakLazyStripes<K, S> {
                         expired reference in #get(K) before calling #drainClearedReferences()
                      */
                     final WeakValueReference<K, S> check = stripes.get(stripeRef.key);
-                    if (check.get() == null) {
+                    if (check != null && check.get() == null) {
 
                         stripes.remove(stripeRef.key);
 
