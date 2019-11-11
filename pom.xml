@@ -25,6 +25,7 @@
         <module>exist-parent</module>
         <module>exist-ant</module>
         <module>exist-core</module>
+        <module>exist-core-jcstress</module>
         <module>exist-core-jmh</module>
         <module>exist-distribution</module>
         <module>exist-installer</module>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Properties>
-        <Property name="logs">${log4j:configParentLocation}/../../target/test-logs</Property>
+        <Property name="logs">${log4j:configParentLocation}/../../target/test-logs-${date:yyyyMMddHHmmssSSS}</Property>
         <Property name="rollover.max.size">10MB</Property>
         <Property name="rollover.max">14</Property>
         <Property name="rollover.file.pattern">%d{yyyyMMddHHmmss}</Property>

@@ -171,47 +171,49 @@ public class WeakLazyStripes<K, S> {
      */
     public S get(final K key) {
 
-        final Holder<Boolean> written = new Holder<>(false);
+        while (true) {
 
-        // 1) attempt lookup via optimistic read and immediate conversion to write lock
-        WeakValueReference<K, S> stripeRef = getOptimistic(key, written);
-        if (stripeRef == null) {
+            final Holder<Boolean> written = new Holder<>(false);
 
-            // 2) attempt lookup via pessimistic read and immediate conversion to write lock
-            stripeRef = getPessimistic(key, written);
+            // 1) attempt lookup via optimistic read and immediate conversion to write lock
+            WeakValueReference<K, S> stripeRef = getOptimistic(key, written);
             if (stripeRef == null) {
 
-                // 3) attempt lookup via exclusive write lock
-                stripeRef = getExclusive(key, written);
-            }
-        }
+                // 2) attempt lookup via pessimistic read and immediate conversion to write lock
+                stripeRef = getPessimistic(key, written);
+                if (stripeRef == null) {
 
-        if (amortizeCleanup) {
-            if (written.value) {
-                // TODO (AR) if we find that we are too frequently draining and it is expensive
-                // then we could make the read and write drain paths both use the DRAIN_THRESHOLD
-                drainClearedReferences();
-            } else if (readCount.get() >= READ_DRAIN_THRESHOLD) {
-                drainClearedReferences();
+                    // 3) attempt lookup via exclusive write lock
+                    stripeRef = getExclusive(key, written);
+                }
             }
-        } else {
-            // have we reached the threshold where we should clear
-            // out any cleared WeakReferences from the stripes map
-            final int count = expiredReferenceReadCount.get();
-            if (count > MAX_EXPIRED_REFERENCE_READ_COUNT
-                    && expiredReferenceReadCount.compareAndSet(count, 0)) {
-                drainClearedReferences();
+
+            if (amortizeCleanup) {
+                if (written.value) {
+                    // TODO (AR) if we find that we are too frequently draining and it is expensive
+                    // then we could make the read and write drain paths both use the DRAIN_THRESHOLD
+                    drainClearedReferences();
+                } else if (readCount.get() >= READ_DRAIN_THRESHOLD) {
+                    drainClearedReferences();
+                }
+            } else {
+                // have we reached the threshold where we should clear
+                // out any cleared WeakReferences from the stripes map
+                final int count = expiredReferenceReadCount.get();
+                if (count > MAX_EXPIRED_REFERENCE_READ_COUNT
+                        && expiredReferenceReadCount.compareAndSet(count, 0)) {
+                    drainClearedReferences();
+                }
             }
-        }
 
-        // check the weak reference before returning!
-        final S stripe = stripeRef.get();
-        if(stripe != null) {
-            return stripe;
-        }
+            // check the weak reference before returning!
+            final S stripe = stripeRef.get();
+            if (stripe != null) {
+                return stripe;
+            }
 
-        // weak reference has expired in the mean time, regenerate
-        return get(key);
+            // weak reference has expired in the mean time, so loop...
+        }
     }
 
     /**
@@ -244,6 +246,9 @@ public class WeakLazyStripes<K, S> {
                 if (wasGCd && !amortizeCleanup) {
                     expiredReferenceReadCount.incrementAndGet();
                 }
+            } else {
+                // invalid conversion to write lock... small optimisation for the fall-through to #getPessimistic(K, Holder) in #get(K)
+                stripeRef = null;
             }
         } else {
             if (stripesLock.validate(stamp)) {
@@ -287,6 +292,9 @@ public class WeakLazyStripes<K, S> {
                     if (wasGCd && !amortizeCleanup) {
                         expiredReferenceReadCount.incrementAndGet();
                     }
+                } else {
+                    // invalid conversion to write lock... small optimisation for the fall-through to #getExclusive(K, Holder) in #get(K)
+                    stripeRef = null;
                 }
 
                 return stripeRef;
@@ -358,7 +366,19 @@ public class WeakLazyStripes<K, S> {
 
                 final long writeStamp = stripesLock.writeLock();
                 try {
-                    stripes.remove(stripeRef.key);
+
+                    // TODO(AR) it may be more performant to call #drainClearedReferences() at the beginning of #get(K) as oposed to the end, then we could avoid the extra check here which calls stripes#get(K)
+
+                    /*
+                        NOTE: we have to check that we have not added a new reference to replace an
+                        expired reference in #get(K) before calling #drainClearedReferences()
+                     */
+                    final WeakValueReference<K, S> check = stripes.get(stripeRef.key);
+                    if (check != null && check.get() == null) {
+
+                        stripes.remove(stripeRef.key);
+
+                    }
                 } finally {
                     stripesLock.unlockWrite(writeStamp);
                 }
