@@ -1,0 +1,17 @@
+collective: eXist-db
+tiers:
+  - tiers: '*'
+    labels: ['backer']
+    message: 'Hey <link>'
+  - tiers: ['Sponsor']
+    labels: ['sponsor']
+    message: 'Hey sponsor <link>'
+invitation: |
+   Hey <author> :wave:,
+   
+   Thank you for opening an issue. We will get back to you as soon as we can.
+   
+   Also, check out our [Open Collective](https://opencollective.com/existdb) and consider backing us - every little helps!
+   
+   :gift_heart: We also offer bounties for some issues, please tell us if you want to boost this issue with one!
+  
