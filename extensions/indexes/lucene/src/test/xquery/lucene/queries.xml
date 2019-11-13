@@ -104,6 +104,26 @@
 		</expected>
 	</test>
 	<test output="xml">
+		<task>XML query test 1a: boolean with optional, matches, minimum of 4 results</task>
+		<code><![CDATA[
+			let $qu := <query><bool min="4"><term occur="optional">eins</term><term occur="optional">zwei</term></bool></query>
+			for $hit in doc("/db/lucene/text1.xml")//p[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected/>
+	</test>
+	<test output="xml">
+		<task>XML query test 1b: boolean with optional, matches, minimum of 2 results</task>
+		<code><![CDATA[
+			let $qu := <query><bool min="2"><term occur="optional">eins</term><term occur="optional">zwei</term></bool></query>
+			for $hit in doc("/db/lucene/text1.xml")//p[ft:query(., $qu)]
+			return
+			$hit
+		]]></code>
+		<expected><p>Eins zwei drei vier zwei fünf sechs.</p></expected>
+	</test>
+	<test output="xml">
 		<task>XML query test 2: boolean with must, no match</task>
 		<code><![CDATA[
 			let $qu := <query><bool><term occur="must">eins</term><term occur="must">sieben</term></bool></query>
