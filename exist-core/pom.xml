@@ -413,7 +413,7 @@
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-core</artifactId>
+            <artifactId>hamcrest</artifactId>
             <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
         </dependency>
 
@@ -428,11 +428,6 @@
             <groupId>org.exist-db</groupId>
             <artifactId>exist-samples</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-library</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
