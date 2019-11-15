@@ -8,11 +8,10 @@ import static org.easymock.EasyMock.matches;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
+import static org.junit.Assert.assertEquals;
 
 import java.io.OutputStream;
 import java.util.List;
-
-import junit.framework.Assert;
 
 import org.easymock.Capture;
 import org.exist.dom.QName;
@@ -73,15 +72,15 @@ public class EXISerializerTest {
 		QName testQName = new QName("local", "uri", "prefix");
 		AttrList testAttrList = new AttrList();
 		testAttrList.addAttribute(new QName("local", "uri"), "value");
-		Capture<Attributes> capturedAttributes = new Capture<Attributes>();
+		Capture<Attributes> capturedAttributes = Capture.newInstance();
 		mockEncoder.startElement(matches("uri"), matches("local"), (String)isNull(), capture(capturedAttributes));
 		replay(mockEncoder);
 		serializer.startElement(testQName, testAttrList);
 		verify(mockEncoder);
 		List<Attributes> capturedAttributeList = capturedAttributes.getValues();
-		Assert.assertEquals("local", capturedAttributeList.get(0).getLocalName(0));
-		Assert.assertEquals("uri", capturedAttributeList.get(0).getURI(0));
-		Assert.assertEquals("value", capturedAttributeList.get(0).getValue(0));	
+		assertEquals("local", capturedAttributeList.get(0).getLocalName(0));
+		assertEquals("uri", capturedAttributeList.get(0).getURI(0));
+		assertEquals("value", capturedAttributeList.get(0).getValue(0));
 	}
 	
 	@Test
