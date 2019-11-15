@@ -70,7 +70,17 @@ public class UnaryExpr extends PathExpr {
         if (item.isEmpty())
         	{return item;}
         
-		NumericValue value = (NumericValue)item.convertTo(Type.NUMBER);
+		final NumericValue value;
+        if (Type.subTypeOf(item.getItemType(), Type.NUMBER)) {
+        	if (item instanceof NumericValue) {
+				value = (NumericValue) item;
+			} else {
+        		value = (NumericValue) item.convertTo(item.getItemType());
+			}
+		} else {
+        	value = (NumericValue)item.convertTo(Type.NUMBER);
+		}
+
 		if(mode == ArithmeticOperator.SUBTRACTION)
             {result = value.negate();}
 		else
