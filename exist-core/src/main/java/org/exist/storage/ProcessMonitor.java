@@ -2,17 +2,17 @@
  * eXist Open Source Native XML Database
  * Copyright (C) 2001-2019 The eXist Project
  * http://exist-db.org
- *  
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -43,7 +43,7 @@ import java.util.concurrent.TimeUnit;
  * registered by each query. It is up to the query to check the watchdog's state.
  * If it simply ignores the terminate signal, it will be killed after the shutdown
  * timeout is reached.
- * 
+ *
  * @author wolf
  */
 public class ProcessMonitor implements BrokerPoolService {
@@ -60,7 +60,7 @@ public class ProcessMonitor implements BrokerPoolService {
     public static final String ACTION_MOVE_COLLECTION = "move collection";
     public static final String ACTION_BACKUP = "backup";
 
-    private static final  Logger LOG = LogManager.getLogger(ProcessMonitor.class);
+    private static final Logger LOG = LogManager.getLogger(ProcessMonitor.class);
     private static final long QUERY_HISTORY_TIMEOUT = 2 * 60 * 1000; // 2 minutes
     private static final long MIN_TIME = 100;
 
@@ -72,7 +72,7 @@ public class ProcessMonitor implements BrokerPoolService {
     private long minTime = MIN_TIME;
     private boolean trackRequests = false;
 
-	@Override
+    @Override
     public void configure(final Configuration configuration) {
         this.maxShutdownWait = configuration.getProperty(BrokerPool.PROPERTY_SHUTDOWN_DELAY, BrokerPool.DEFAULT_MAX_SHUTDOWN_WAIT);
     }
@@ -124,7 +124,7 @@ public class ProcessMonitor implements BrokerPoolService {
                         Thread.currentThread().interrupt(); // pass on interrupted status
                     }
                     //...or force the shutdown
-                    if(maxShutdownWait > -1 && System.currentTimeMillis() - waitStart > maxShutdownWait){
+                    if (maxShutdownWait > -1 && System.currentTimeMillis() - waitStart > maxShutdownWait) {
                         break;
                     }
                 }
@@ -141,7 +141,7 @@ public class ProcessMonitor implements BrokerPoolService {
             runningQueries.add(watchdog);
         }
     }
-	
+
     public void queryCompleted(final XQueryWatchDog watchdog) {
         boolean found;
         synchronized (runningQueries) {
@@ -169,7 +169,7 @@ public class ProcessMonitor implements BrokerPoolService {
 
     private void cleanHistory() {
         // remove timed out entries
-        while (history.poll() != null);
+        while (history.poll() != null) ;
     }
 
     /**
@@ -280,28 +280,27 @@ public class ProcessMonitor implements BrokerPoolService {
         synchronized (history) {
             cleanHistory();
             return
-                history.stream()
-                    .sorted((o1, o2) -> Long.compare(o2.expires, o1.expires))
-                    .toArray(QueryHistory[]::new);
+                    history.stream()
+                            .sorted((o1, o2) -> Long.compare(o2.expires, o1.expires))
+                            .toArray(QueryHistory[]::new);
         }
     }
 
-	
-	public void killAll(final long waitTime) {
+
+    public void killAll(final long waitTime) {
         // directly called from BrokerPool itself. no need to synchronize.
-		for (final XQueryWatchDog watchdog : runningQueries) {
-			LOG.debug("Killing query: " + 
-			        ExpressionDumper.dump(watchdog.getContext().getRootExpression()));
-			watchdog.kill(waitTime);
-		}
-	}
-	
-	public XQueryWatchDog[] getRunningXQueries()
-	{
+        for (final XQueryWatchDog watchdog : runningQueries) {
+            LOG.debug("Killing query: " +
+                    ExpressionDumper.dump(watchdog.getContext().getRootExpression()));
+            watchdog.kill(waitTime);
+        }
+    }
+
+    public XQueryWatchDog[] getRunningXQueries() {
         synchronized (runningQueries) {
             return runningQueries.toArray(new XQueryWatchDog[0]);
         }
-	}
+    }
 
     public final static class Monitor {
         boolean stop = false;
@@ -318,30 +317,30 @@ public class ProcessMonitor implements BrokerPoolService {
 
     public final static class JobInfo {
         private final Thread thread;
-		private final String action;
-		private final long startTime;
+        private final String action;
+        private final long startTime;
         private final Monitor monitor;
 
         private Object addInfo = null;
 
-		public JobInfo(final String action, final Monitor monitor) {
+        public JobInfo(final String action, final Monitor monitor) {
             this.thread = Thread.currentThread();
-			this.action = action;
+            this.action = action;
             this.monitor = monitor;
             this.startTime = System.currentTimeMillis();
-		}
+        }
 
         public String getAction() {
-			return action;
-		}
+            return action;
+        }
 
         public Thread getThread() {
             return thread;
         }
-        
-		public long getStartTime() {
-			return startTime;
-		}
+
+        public long getStartTime() {
+            return startTime;
+        }
 
         public void setAddInfo(final Object info) {
             this.addInfo = info;
@@ -352,9 +351,9 @@ public class ProcessMonitor implements BrokerPoolService {
         }
 
         public void stop() {
-                monitor.stop();
+            monitor.stop();
         }
-	}
+    }
 
     /**
      * Try to figure out the HTTP request URI by which a query was called.
@@ -365,7 +364,7 @@ public class ProcessMonitor implements BrokerPoolService {
      * @return HTTP request URI by which a query was called
      */
     public static String getRequestURI(final XQueryWatchDog watchdog) {
-        final RequestModule reqModule = (RequestModule)watchdog.getContext().getModule(RequestModule.NAMESPACE_URI);
+        final RequestModule reqModule = (RequestModule) watchdog.getContext().getModule(RequestModule.NAMESPACE_URI);
         if (reqModule == null) {
             return null;
         }
