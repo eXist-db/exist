@@ -701,7 +701,7 @@
                 <plugin>
                     <groupId>com.carrotgarden.maven</groupId>
                     <artifactId>bintray-maven-plugin</artifactId>
-                    <version>1.4.20190427204453</version>
+                    <version>1.5.20191113165555</version>
                 </plugin>
             </plugins>
         </pluginManagement>
