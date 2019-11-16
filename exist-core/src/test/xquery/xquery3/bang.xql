@@ -119,12 +119,6 @@ function bang:precedence2() {
 };
 
 declare
-    %test:assertEquals("-3")
-function bang:precedence3() {
-    -2!(.+1)
-};
-
-declare
     %test:assertEquals(1, 1, 2, 1, 2, 3)
 function bang:sequence() {
     (1 to 3) ! (1 to .)

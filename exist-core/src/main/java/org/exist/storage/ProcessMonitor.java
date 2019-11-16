@@ -1,24 +1,21 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
- *  
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2019 The eXist Project
+ * http://exist-db.org
+ *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
  *  as published by the Free Software Foundation; either version 2
  *  of the License, or (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id: ProcessMonitor.java 8235 2008-10-17 16:03:27Z chaeron $
  */
 package org.exist.storage;
 
@@ -46,56 +43,50 @@ import java.util.concurrent.TimeUnit;
  * registered by each query. It is up to the query to check the watchdog's state.
  * If it simply ignores the terminate signal, it will be killed after the shutdown
  * timeout is reached.
- * 
+ *
  * @author wolf
  */
 public class ProcessMonitor implements BrokerPoolService {
 
-    public final static String ACTION_UNSPECIFIED = "unspecified";
-    public final static String ACTION_VALIDATE_DOC = "validating document";
-    public final static String ACTION_STORE_DOC = "storing document";
-    public final static String ACTION_STORE_BINARY = "storing binary resource";
-    public final static String ACTION_REMOVE_XML = "remove XML resource";
-    public final static String ACTION_REMOVE_BINARY = "remove binary resource";
-    public final static String ACTION_REMOVE_COLLECTION = "remove collection";
-    public final static String ACTION_REINDEX_COLLECTION = "reindex collection";
-    public final static String ACTION_COPY_COLLECTION = "copy collection";
-    public final static String ACTION_MOVE_COLLECTION = "move collection";
-    public final static String ACTION_BACKUP = "backup";
+    public static final String ACTION_UNSPECIFIED = "unspecified";
+    public static final String ACTION_VALIDATE_DOC = "validating document";
+    public static final String ACTION_STORE_DOC = "storing document";
+    public static final String ACTION_STORE_BINARY = "storing binary resource";
+    public static final String ACTION_REMOVE_XML = "remove XML resource";
+    public static final String ACTION_REMOVE_BINARY = "remove binary resource";
+    public static final String ACTION_REMOVE_COLLECTION = "remove collection";
+    public static final String ACTION_REINDEX_COLLECTION = "reindex collection";
+    public static final String ACTION_COPY_COLLECTION = "copy collection";
+    public static final String ACTION_MOVE_COLLECTION = "move collection";
+    public static final String ACTION_BACKUP = "backup";
 
-    private final static Logger LOG = LogManager.getLogger(ProcessMonitor.class);
+    private static final Logger LOG = LogManager.getLogger(ProcessMonitor.class);
+    private static final long QUERY_HISTORY_TIMEOUT = 2 * 60 * 1000; // 2 minutes
+    private static final long MIN_TIME = 100;
 
-    public final static long QUERY_HISTORY_TIMEOUT = 2 * 60 * 1000; // 2 minutes
-    public final static long MIN_TIME = 100;
-
-    private final Set<XQueryWatchDog> runningQueries = new HashSet<XQueryWatchDog>();
+    private final Set<XQueryWatchDog> runningQueries = new HashSet<>();
     private final DelayQueue<QueryHistory> history = new DelayQueue<>();
-
-    private Map<Thread, JobInfo> processes = new HashMap<Thread, JobInfo>();
-
+    private final Map<Thread, JobInfo> processes = new HashMap<>();
     private long maxShutdownWait;
-
     private long historyTimespan = QUERY_HISTORY_TIMEOUT;
-
     private long minTime = MIN_TIME;
-
     private boolean trackRequests = false;
 
-	@Override
+    @Override
     public void configure(final Configuration configuration) {
         this.maxShutdownWait = configuration.getProperty(BrokerPool.PROPERTY_SHUTDOWN_DELAY, BrokerPool.DEFAULT_MAX_SHUTDOWN_WAIT);
     }
 
-    public void startJob(String action) {
+    public void startJob(final String action) {
         startJob(action, null);
     }
 
-    public void startJob(String action, Object addInfo) {
+    public void startJob(final String action, final Object addInfo) {
         startJob(action, addInfo, null);
     }
 
     //TODO: addInfo = XmldbURI ? -shabanovd
-    public void startJob(String action, Object addInfo, Monitor monitor) {
+    public void startJob(final String action, final Object addInfo, final Monitor monitor) {
         final JobInfo info = new JobInfo(action, monitor);
         info.setAddInfo(addInfo);
         synchronized (this) {
@@ -110,7 +101,7 @@ public class ProcessMonitor implements BrokerPoolService {
 
     public JobInfo[] runningJobs() {
         synchronized (this) {
-            final JobInfo jobs[] = new JobInfo[processes.size()];
+            final JobInfo[] jobs = new JobInfo[processes.size()];
             int j = 0;
             for (final Iterator<JobInfo> i = processes.values().iterator(); i.hasNext(); j++) {
                 //BUG: addInfo = XmldbURI ? -shabanovd
@@ -129,9 +120,11 @@ public class ProcessMonitor implements BrokerPoolService {
                         //Wait until they become inactive...
                         this.wait(1000);
                     } catch (final InterruptedException e) {
+                        //no op
+                        Thread.currentThread().interrupt(); // pass on interrupted status
                     }
                     //...or force the shutdown
-                    if(maxShutdownWait > -1 && System.currentTimeMillis() - waitStart > maxShutdownWait){
+                    if (maxShutdownWait > -1 && System.currentTimeMillis() - waitStart > maxShutdownWait) {
                         break;
                     }
                 }
@@ -142,14 +135,14 @@ public class ProcessMonitor implements BrokerPoolService {
         }
     }
 
-    public void queryStarted(XQueryWatchDog watchdog) {
+    public void queryStarted(final XQueryWatchDog watchdog) {
         synchronized (runningQueries) {
             watchdog.setRunningThread(Thread.currentThread().getName());
             runningQueries.add(watchdog);
         }
     }
-	
-    public void queryCompleted(XQueryWatchDog watchdog) {
+
+    public void queryCompleted(final XQueryWatchDog watchdog) {
         boolean found;
         synchronized (runningQueries) {
             found = runningQueries.remove(watchdog);
@@ -176,7 +169,7 @@ public class ProcessMonitor implements BrokerPoolService {
 
     private void cleanHistory() {
         // remove timed out entries
-        while (history.poll() != null);
+        while (history.poll() != null) ;
     }
 
     /**
@@ -185,7 +178,7 @@ public class ProcessMonitor implements BrokerPoolService {
      *
      * @param time max duration in ms
      */
-    public void setHistoryTimespan(long time) {
+    public void setHistoryTimespan(final long time) {
         historyTimespan = time;
     }
 
@@ -199,7 +192,7 @@ public class ProcessMonitor implements BrokerPoolService {
      *
      * @param time min duration in ms
      */
-    public void setMinTime(long time) {
+    public void setMinTime(final long time) {
         this.minTime = time;
     }
 
@@ -214,7 +207,7 @@ public class ProcessMonitor implements BrokerPoolService {
      *
      * @param track attempt to track URIs if true
      */
-    public void setTrackRequestURI(boolean track) {
+    public void setTrackRequestURI(final boolean track) {
         trackRequests = track;
     }
 
@@ -231,7 +224,7 @@ public class ProcessMonitor implements BrokerPoolService {
         private int invocationCount = 0;
         private long expires;
 
-        public QueryHistory(String source, long delay) {
+        public QueryHistory(final String source, final long delay) {
             this.source = source;
             this.expires = System.currentTimeMillis() + delay;
         }
@@ -252,7 +245,7 @@ public class ProcessMonitor implements BrokerPoolService {
             return mostRecentExecutionTime;
         }
 
-        public void setMostRecentExecutionTime(long mostRecentExecutionTime) {
+        public void setMostRecentExecutionTime(final long mostRecentExecutionTime) {
             this.mostRecentExecutionTime = mostRecentExecutionTime;
         }
 
@@ -260,7 +253,7 @@ public class ProcessMonitor implements BrokerPoolService {
             return mostRecentExecutionDuration;
         }
 
-        public void setMostRecentExecutionDuration(long mostRecentExecutionDuration) {
+        public void setMostRecentExecutionDuration(final long mostRecentExecutionDuration) {
             this.mostRecentExecutionDuration = mostRecentExecutionDuration;
         }
 
@@ -268,24 +261,18 @@ public class ProcessMonitor implements BrokerPoolService {
             return requestURI;
         }
 
-        public void setRequestURI(String uri) {
+        public void setRequestURI(final String uri) {
             requestURI = uri;
         }
 
         @Override
-        public long getDelay(TimeUnit unit) {
+        public long getDelay(final TimeUnit unit) {
             return unit.convert(expires - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
         }
 
         @Override
-        public int compareTo(Delayed o) {
-            if (expires < ((QueryHistory) o).expires) {
-                return -1;
-            }
-            if (expires > ((QueryHistory) o).expires) {
-                return 1;
-            }
-            return 0;
+        public int compareTo(final Delayed o) {
+            return Long.compare(expires, ((QueryHistory) o).expires);
         }
     }
 
@@ -293,31 +280,30 @@ public class ProcessMonitor implements BrokerPoolService {
         synchronized (history) {
             cleanHistory();
             return
-                history.stream()
-                    .sorted((o1, o2) -> o1.expires > o2.expires ? -1 : (o1.expires < o2.expires ? 1 : 0))
-                    .toArray(QueryHistory[]::new);
+                    history.stream()
+                            .sorted((o1, o2) -> Long.compare(o2.expires, o1.expires))
+                            .toArray(QueryHistory[]::new);
         }
     }
 
-	
-	public void killAll(long waitTime) {
-        // directly called from BrokerPool itself. no need to synchronize.
-		for(final XQueryWatchDog watchdog : runningQueries) {
-			LOG.debug("Killing query: " + 
-			        ExpressionDumper.dump(watchdog.getContext().getRootExpression()));
-			watchdog.kill(waitTime);
-		}
-	}
-	
-	public XQueryWatchDog[] getRunningXQueries()
-	{
-        synchronized (runningQueries) {
-            return runningQueries.stream().toArray(XQueryWatchDog[]::new);
+
+    public void killAll(final long waitTime) {
+        synchronized(runningQueries) {
+            for (final XQueryWatchDog watchdog : runningQueries) {
+                LOG.debug("Killing query: " +
+                        ExpressionDumper.dump(watchdog.getContext().getRootExpression()));
+                watchdog.kill(waitTime);
+            }
         }
-	}
+    }
+
+    public XQueryWatchDog[] getRunningXQueries() {
+        synchronized (runningQueries) {
+            return runningQueries.toArray(new XQueryWatchDog[0]);
+        }
+    }
 
     public final static class Monitor {
-
         boolean stop = false;
 
         public boolean proceed() {
@@ -331,33 +317,33 @@ public class ProcessMonitor implements BrokerPoolService {
     }
 
     public final static class JobInfo {
+        private final Thread thread;
+        private final String action;
+        private final long startTime;
+        private final Monitor monitor;
 
-        private Thread thread;
-		private String action;
-		private long startTime;
         private Object addInfo = null;
-        private Monitor monitor = null;
 
-		public JobInfo(String action, Monitor monitor) {
+        public JobInfo(final String action, final Monitor monitor) {
             this.thread = Thread.currentThread();
-			this.action = action;
+            this.action = action;
             this.monitor = monitor;
             this.startTime = System.currentTimeMillis();
-		}
+        }
 
         public String getAction() {
-			return action;
-		}
+            return action;
+        }
 
         public Thread getThread() {
             return thread;
         }
-        
-		public long getStartTime() {
-			return startTime;
-		}
 
-        public void setAddInfo(Object info) {
+        public long getStartTime() {
+            return startTime;
+        }
+
+        public void setAddInfo(final Object info) {
             this.addInfo = info;
         }
 
@@ -366,11 +352,9 @@ public class ProcessMonitor implements BrokerPoolService {
         }
 
         public void stop() {
-            if (monitor != null) {
-                monitor.stop();
-            }
+            monitor.stop();
         }
-	}
+    }
 
     /**
      * Try to figure out the HTTP request URI by which a query was called.
@@ -380,8 +364,8 @@ public class ProcessMonitor implements BrokerPoolService {
      * @param watchdog XQuery WatchDog
      * @return HTTP request URI by which a query was called
      */
-    public static String getRequestURI(XQueryWatchDog watchdog) {
-        final RequestModule reqModule = (RequestModule)watchdog.getContext().getModule(RequestModule.NAMESPACE_URI);
+    public static String getRequestURI(final XQueryWatchDog watchdog) {
+        final RequestModule reqModule = (RequestModule) watchdog.getContext().getModule(RequestModule.NAMESPACE_URI);
         if (reqModule == null) {
             return null;
         }
