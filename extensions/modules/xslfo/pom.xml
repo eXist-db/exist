@@ -66,4 +66,17 @@
 
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <configuration>
+                    <!-- clashes with com.sun:tools from Ant 1.10.7 (transient dependency via fop-events), see https://github.com/jeremylong/DependencyCheck/issues/1914 -->
+                    <skipSystemScope>true</skipSystemScope>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

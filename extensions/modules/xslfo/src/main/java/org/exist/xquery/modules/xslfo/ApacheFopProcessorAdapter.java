@@ -12,6 +12,7 @@ import org.apache.avalon.framework.configuration.Configuration;
 import org.apache.avalon.framework.configuration.SAXConfigurationHandler;
 import org.apache.fop.apps.*;
 import org.apache.fop.apps.io.ResourceResolverFactory;
+import org.apache.fop.configuration.ConfigurationException;
 import org.apache.fop.events.Event;
 import org.apache.fop.events.EventFormatter;
 import org.apache.fop.events.EventListener;
@@ -56,7 +57,7 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
                     defaultBaseURI = new URI("exist://localhost" + configFile.getOwnerDocument().getBaseURI());
                 }
                 final EnvironmentProfile environment = EnvironmentalProfileFactory.createDefault(defaultBaseURI, getResourceResolver(broker, defaultBaseURI.toString()));
-                builder = new FopFactoryBuilder(environment).setConfiguration(cfg);
+                builder = new FopFactoryBuilder(environment).setConfiguration(new FopAvalonConfigurationAdapter(cfg));
             } else {
                 final URI defaultBaseURI = new URI(DEFAULT_BASE_URI);
                 final EnvironmentProfile environment = EnvironmentalProfileFactory.createDefault(defaultBaseURI, getResourceResolver(broker, defaultBaseURI.toString()));
@@ -179,7 +180,8 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
      * Extension of the Apache Avalon DefaultConfigurationBuilder Allows better
      * integration with Nodes passed in from eXist as Configuration files
      */
-    private static class FopConfigurationBuilder extends org.apache.avalon.framework.configuration.DefaultConfigurationBuilder {
+    private static class FopConfigurationBuilder
+            extends org.apache.avalon.framework.configuration.DefaultConfigurationBuilder {
 
         private final DBBroker broker;
 
@@ -199,6 +201,148 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
             handler.clear();
             configFile.toSAX(broker, handler, new Properties());
             return handler.getConfiguration();
+        }
+    }
+
+    /**
+     * Adapter between Avalon config which lets us easily use a Node as the configuration
+     * source, and Apache Fop configuration which does not.
+     *
+     * This was needed after the Fop API changed from version 2.3 to 2.4.
+     */
+    private static class FopAvalonConfigurationAdapter implements org.apache.fop.configuration.Configuration {
+        private final Configuration avalonConfiguration;
+
+        public FopAvalonConfigurationAdapter(final Configuration avalonConfiguration) {
+            this.avalonConfiguration = avalonConfiguration;
+        }
+
+        @Override
+        public org.apache.fop.configuration.Configuration getChild(final String child) {
+            return new FopAvalonConfigurationAdapter(avalonConfiguration.getChild(child));
+        }
+
+        @Override
+        public org.apache.fop.configuration.Configuration getChild(final String child, boolean createNew) {
+            return new FopAvalonConfigurationAdapter(avalonConfiguration.getChild(child, createNew));
+        }
+
+        @Override
+        public org.apache.fop.configuration.Configuration[] getChildren(final String name) {
+            final Configuration[] children = avalonConfiguration.getChildren(name);
+            if (children == null) {
+                return null;
+            }
+
+            final org.apache.fop.configuration.Configuration[] newChildren = new org.apache.fop.configuration.Configuration[children.length];
+            for (int i = 0; i < children.length; i++) {
+                newChildren[i] = new FopAvalonConfigurationAdapter(children[i]);
+            }
+            return newChildren;
+        }
+
+        @Override
+        public String[] getAttributeNames() {
+            return avalonConfiguration.getAttributeNames();
+        }
+
+        @Override
+        public String getAttribute(final String paramName) throws ConfigurationException {
+            try {
+                return avalonConfiguration.getAttribute(paramName);
+            } catch (final org.apache.avalon.framework.configuration.ConfigurationException e) {
+                throw new ConfigurationException(e.getMessage(), e);
+            }
+        }
+
+        @Override
+        public String getAttribute(final String name, final String defaultValue) {
+            return avalonConfiguration.getAttribute(name, defaultValue);
+        }
+
+        @Override
+        public boolean getAttributeAsBoolean(final String name, final boolean defaultValue) {
+            return avalonConfiguration.getAttributeAsBoolean(name, defaultValue);
+        }
+
+        @Override
+        public float getAttributeAsFloat(final String paramName) throws ConfigurationException {
+            try {
+                return avalonConfiguration.getAttributeAsFloat(paramName);
+            } catch (final org.apache.avalon.framework.configuration.ConfigurationException e) {
+                throw new ConfigurationException(e.getMessage(), e);
+            }
+        }
+
+        @Override
+        public float getAttributeAsFloat(final String name, final float defaultValue) {
+            return avalonConfiguration.getAttributeAsFloat(name, defaultValue);
+        }
+
+        @Override
+        public int getAttributeAsInteger(final String name, final int defaultValue) {
+            return avalonConfiguration.getAttributeAsInteger(name, defaultValue);
+        }
+
+        @Override
+        public String getValue() throws ConfigurationException {
+            try {
+                return avalonConfiguration.getValue();
+            } catch (final org.apache.avalon.framework.configuration.ConfigurationException e) {
+                throw new ConfigurationException(e.getMessage(), e);
+            }
+        }
+
+        @Override
+        public String getValue(final String defaultValue) {
+            return avalonConfiguration.getValue(defaultValue);
+        }
+
+        @Override
+        public boolean getValueAsBoolean() throws ConfigurationException {
+            try {
+                return avalonConfiguration.getValueAsBoolean();
+            } catch (final org.apache.avalon.framework.configuration.ConfigurationException e) {
+                throw new ConfigurationException(e.getMessage(), e);
+            }
+        }
+
+        @Override
+        public boolean getValueAsBoolean(final boolean defaultValue) {
+            return avalonConfiguration.getValueAsBoolean(defaultValue);
+        }
+
+        @Override
+        public int getValueAsInteger() throws ConfigurationException {
+            try {
+                return avalonConfiguration.getValueAsInteger();
+            } catch (final org.apache.avalon.framework.configuration.ConfigurationException e) {
+                throw new ConfigurationException(e.getMessage(), e);
+            }
+        }
+
+        @Override
+        public int getValueAsInteger(final int defaultValue) {
+            return avalonConfiguration.getValueAsInteger(defaultValue);
+        }
+
+        @Override
+        public float getValueAsFloat() throws ConfigurationException {
+            try {
+                return avalonConfiguration.getValueAsFloat();
+            } catch (final org.apache.avalon.framework.configuration.ConfigurationException e) {
+                throw new ConfigurationException(e.getMessage(), e);
+            }
+        }
+
+        @Override
+        public float getValueAsFloat(final float defaultValue) {
+            return avalonConfiguration.getValueAsFloat(defaultValue);
+        }
+
+        @Override
+        public String getLocation() {
+            return avalonConfiguration.getLocation();
         }
     }
 
