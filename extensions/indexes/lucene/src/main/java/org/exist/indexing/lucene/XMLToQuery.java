@@ -338,6 +338,18 @@ public class XMLToQuery {
 
     private Query booleanQuery(String field, Element node, Analyzer analyzer, QueryOptions options) throws XPathException {
         BooleanQuery query = new BooleanQuery();
+
+        // Specifies a minimum number of the optional BooleanClauses which must be satisfied.
+        String minOpt = node.getAttribute("min");
+        if (minOpt != null) {
+            try {
+                int minMust = Integer.parseInt(minOpt);
+                query.setMinimumNumberShouldMatch(minMust);
+            } catch (NumberFormatException ex) {
+                // ignore
+            }
+        }
+
         Node child = node.getFirstChild();
         while (child != null) {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
