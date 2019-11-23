@@ -30,12 +30,6 @@
                 <xs:element name="db-connection">
                     <xs:complexType>
                         <xs:sequence>
-                            <xs:element name="default-permissions" minOccurs="0">
-                                <xs:complexType>
-                                    <xs:attribute name="collection" type="xs:string" default="0775"/>
-                                    <xs:attribute name="resource" type="xs:string" default="0775"/>
-                                </xs:complexType>
-                            </xs:element>
                             <xs:element name="startup" minOccurs="0">
                                 <xs:complexType>
                                     <xs:sequence>
@@ -87,25 +81,6 @@
                                     <xs:attribute name="force-restart" type="yes_no" default="no"/>
                                     <xs:attribute name="consistency-check" type="yes_no"
                                         default="yes"/>
-                                </xs:complexType>
-                            </xs:element>
-
-                            <xs:element name="security" minOccurs="0">
-                                <xs:complexType>
-                                    <xs:attribute name="class" type="xs:string"
-                                        default="org.exist.security.XMLSecurityManager"/>
-                                    <xs:attribute name="password-encoding" use="optional"
-                                        default="md5">
-                                        <xs:simpleType>
-                                            <xs:restriction base="xs:string">
-                                                <xs:enumeration value="plain"/>
-                                                <xs:enumeration value="md5"/>
-                                                <xs:enumeration value="simple-md5"/>
-                                            </xs:restriction>
-                                        </xs:simpleType>
-                                    </xs:attribute>
-                                    <xs:attribute name="password-realm" type="xs:string"
-                                        use="optional"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="watchdog">

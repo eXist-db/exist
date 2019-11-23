@@ -1028,44 +1028,6 @@ public class Configuration implements ErrorHandler
         }
         config.put(DBBroker.PRESERVE_ON_COPY_PROPERTY, preserveOnCopy);
 
-        final NodeList securityConf             = con.getElementsByTagName( BrokerPool.CONFIGURATION_SECURITY_ELEMENT_NAME );
-        String   securityManagerClassName = BrokerPool.DEFAULT_SECURITY_CLASS;
-
-        if( securityConf.getLength() > 0 ) {
-            final Element security = (Element)securityConf.item( 0 );
-            securityManagerClassName = getConfigAttributeValue( security, "class" );
-
-            //Unused
-            final String encoding = getConfigAttributeValue( security, "password-encoding" );
-            config.put( "db-connection.security.password-encoding", encoding );
-
-            //Unused
-            final String realm = getConfigAttributeValue( security, "password-realm" );
-            config.put( "db-connection.security.password-realm", realm );
-
-            if( realm != null ) {
-                LOG.info( "db-connection.security.password-realm: " + config.get( "db-connection.security.password-realm" ) );
-                RealmImpl.setPasswordRealm( realm );
-
-            } else {
-                LOG.info( "No password realm set, defaulting." );
-            }
-        }
-
-        try {
-            config.put( BrokerPool.PROPERTY_SECURITY_CLASS, Class.forName( securityManagerClassName ) );
-            LOG.debug( BrokerPool.PROPERTY_SECURITY_CLASS + ": " + config.get( BrokerPool.PROPERTY_SECURITY_CLASS ) );
-
-        }
-        catch( final Throwable ex ) {
-
-            if( ex instanceof ClassNotFoundException ) {
-                throw( new DatabaseConfigurationException( "Cannot find security manager class " + securityManagerClassName, ex ) );
-            } else {
-                throw( new DatabaseConfigurationException( "Cannot load security manager class " + securityManagerClassName + " due to " + ex.getMessage(), ex ) );
-            }
-        }
-
         final NodeList startupConf = con.getElementsByTagName(BrokerPool.CONFIGURATION_STARTUP_ELEMENT_NAME);
         if(startupConf.getLength() > 0) {
             configureStartup((Element)startupConf.item(0));
