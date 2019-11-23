@@ -145,7 +145,7 @@
             the configured limit, eXist-db will flush all buffers to disk and
             switch to read-only mode in order to prevent potential data loss. 
             Set the limit large enough to allow all pending operations to 
-            complete. The default is 1 gigabyte.
+            complete. Set to -1 to disable. The default is 1 gigabyte.
 
         - posix-chown-restricted:
            As defined by POSIX.1 for _POSIX_CHOWN_RESTRICTED.
@@ -199,7 +199,7 @@
     -->
     <db-connection cacheSize="256M" checkMaxCacheSize="true" collectionCache="64M" database="native"
         files="${basedir}/target/test-data" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
-        doc-ids="default" minDiskSpace="128M" posix-chown-restricted="true" preserve-on-copy="false">
+        doc-ids="default" minDiskSpace="1024M" posix-chown-restricted="true" preserve-on-copy="false">
 
         <!--
             Startup Triggers are executed before the database becomes generally available
