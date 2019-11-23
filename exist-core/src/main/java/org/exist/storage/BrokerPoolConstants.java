@@ -44,7 +44,6 @@ public interface BrokerPoolConstants {
     String CONFIGURATION_CONNECTION_ELEMENT_NAME = "db-connection";
     String CONFIGURATION_STARTUP_ELEMENT_NAME = "startup";
     String CONFIGURATION_POOL_ELEMENT_NAME = "pool";
-    String CONFIGURATION_SECURITY_ELEMENT_NAME = "security";
     String CONFIGURATION_RECOVERY_ELEMENT_NAME = "recovery";
     String DISK_SPACE_MIN_ATTRIBUTE = "minDiskSpace";
 
@@ -75,8 +74,6 @@ public interface BrokerPoolConstants {
     String PROPERTY_COLLECTION_CACHE_SIZE = "db-connection.collection-cache-size";
 
     //TODO : move elsewhere ? Get fully qualified class name ?
-    String DEFAULT_SECURITY_CLASS = "org.exist.security.internal.SecurityManagerImpl";
-    String PROPERTY_SECURITY_CLASS = "db-connection.security.class";
     String PROPERTY_RECOVERY_ENABLED = "db-connection.recovery.enabled";
     String PROPERTY_RECOVERY_CHECK = "db-connection.recovery.consistency-check";
     String PROPERTY_SYSTEM_TASK_CONFIG = "db-connection.system-task-config";

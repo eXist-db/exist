@@ -12,8 +12,8 @@
                 startup
                     triggers
                 pool
+                query-pool
                 recovery
-                security
                 watchdog
             lock-manager
             repository
