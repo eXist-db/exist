@@ -25,6 +25,7 @@ import java.nio.file.FileStore;
 import java.nio.file.Path;
 import java.util.Properties;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -35,6 +36,8 @@ import org.exist.storage.SystemTask;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
+
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
 public class SyncTask implements SystemTask {
 
@@ -80,9 +83,10 @@ public class SyncTask implements SystemTask {
     @Override
     public void execute(final DBBroker broker, final Txn transaction) throws EXistException {
         final BrokerPool pool = broker.getBrokerPool();
-        if (!checkDiskSpace()) {
-            LOG.fatal("Partition containing DATA_DIR: " + dataDir.toAbsolutePath().toString() + " is running out of disk space. " +
-                "Switching eXist-db to read only to prevent data loss!");
+        final Tuple2<Boolean, Long> availableSpace = checkDiskSpace();
+        if (!availableSpace._1) {
+            LOG.fatal("Partition containing DATA_DIR: " + dataDir.toAbsolutePath().toString() + " is running out of disk space [minimum: " + diskSpaceMin + " free: " + availableSpace._2 + "]. " +
+                    "Switching eXist-db into read-only mode to prevent data loss!");
             pool.setReadOnly();
         }
 
@@ -95,11 +99,13 @@ public class SyncTask implements SystemTask {
     }
 
     /**
-     * @return true if there is enough disk space, false otherwis
+     * @return A tuple, where the first value indicates if there is enough disk space, the
+     * second value is the amount of usable space in bytes
      */
-    private boolean checkDiskSpace() {
-        final long space = FileUtils.measureFileStore(dataDir, FileStore::getUsableSpace);
+    private Tuple2<Boolean,Long> checkDiskSpace() {
+        final long usableSpace = FileUtils.measureFileStore(dataDir, FileStore::getUsableSpace);
         //LOG.info("Usable space on partition containing DATA_DIR: " + dataDir.getAbsolutePath() + ": " + (space / 1024 / 1024) + "mb");
-        return space > diskSpaceMin || space == -1;
+        final boolean enoughSpace = usableSpace > diskSpaceMin || usableSpace == -1;
+        return Tuple(enoughSpace, usableSpace);
     }
 }

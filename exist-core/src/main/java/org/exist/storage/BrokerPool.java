@@ -963,8 +963,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             if(!readOnly) {
                 final long freeSpace = FileUtils.measureFileStore(dataLock.getFile(), FileStore::getUsableSpace);
                 if (freeSpace != -1 && freeSpace < diskSpaceMin) {
-                    LOG.fatal("Partition containing DATA_DIR: " + dataLock.getFile().toAbsolutePath().toString() + " is running out of disk space [" + freeSpace + "]. " +
-                            "Switching eXist-db to read only to prevent data loss!");
+                    LOG.fatal("Partition containing DATA_DIR: " + dataLock.getFile().toAbsolutePath().toString() + " is running out of disk space [minimum: " + diskSpaceMin + " free: " + freeSpace + "]. " +
+                            "Switching eXist-db into read-only mode to prevent data loss!");
                     setReadOnly();
                 }
             }
