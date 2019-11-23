@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -27,6 +28,7 @@ import org.exist.xquery.value.NodeValue;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
@@ -214,7 +216,7 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
         private final Configuration avalonConfiguration;
 
         public FopAvalonConfigurationAdapter(final Configuration avalonConfiguration) {
-            this.avalonConfiguration = avalonConfiguration;
+            this.avalonConfiguration = Objects.requireNonNull(avalonConfiguration, "Avalon Configuration must not be null");
         }
 
         @Override
@@ -223,12 +225,16 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
         }
 
         @Override
-        public org.apache.fop.configuration.Configuration getChild(final String child, boolean createNew) {
-            return new FopAvalonConfigurationAdapter(avalonConfiguration.getChild(child, createNew));
+        public @Nullable org.apache.fop.configuration.Configuration getChild(final String child, boolean createNew) {
+            final Configuration childConfig = avalonConfiguration.getChild(child, createNew);
+            if (childConfig == null) {
+                return null;
+            }
+            return new FopAvalonConfigurationAdapter(childConfig);
         }
 
         @Override
-        public org.apache.fop.configuration.Configuration[] getChildren(final String name) {
+        public @Nullable org.apache.fop.configuration.Configuration[] getChildren(final String name) {
             final Configuration[] children = avalonConfiguration.getChildren(name);
             if (children == null) {
                 return null;
