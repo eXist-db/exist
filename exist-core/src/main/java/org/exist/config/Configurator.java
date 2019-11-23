@@ -1312,7 +1312,7 @@ public class Configurator {
                 final IndexInfo info = collection.validateXMLResource(txn, broker, uri, data);
                 final DocumentImpl doc = info.getDocument();
                 doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
-                PermissionFactory.chmod(broker, doc.getPermissions(), Optional.of(Permission.DEFAULT_SYSTSEM_RESOURCE_PERM), Optional.empty());
+                PermissionFactory.chmod(broker, doc.getPermissions(), Optional.of(Permission.DEFAULT_SYSTEM_RESOURCE_PERM), Optional.empty());
                 fullURI = getFullURI(pool, doc.getURI());
                 saving.add(fullURI);
                 collection.store(txn, broker, info, data);
