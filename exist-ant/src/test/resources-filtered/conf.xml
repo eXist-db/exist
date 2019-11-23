@@ -144,7 +144,7 @@
             the configured limit, eXist-db will flush all buffers to disk and
             switch to read-only mode in order to prevent potential data loss. 
             Set the limit large enough to allow all pending operations to 
-            complete. The default is 1 gigabyte.
+            complete. Set to -1 to disable. The default is 1 gigabyte.
     
         =====================================================================
         
@@ -157,7 +157,7 @@
     -->
     <db-connection cacheSize="256M" checkMaxCacheSize="true" collectionCache="64M" database="native"
         files="${basedir}/target/test-data" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
-        doc-ids="default" minDiskSpace="128M">
+        doc-ids="default" minDiskSpace="1024M">
 
         <!--
             Startup Triggers are executed before the database becomes generally available
