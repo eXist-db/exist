@@ -33,8 +33,6 @@ import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.collections.triggers.TriggerProxy;
 import org.exist.config.annotation.ConfigurationClass;
-import org.exist.security.Account;
-import org.exist.security.Permission;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
@@ -71,7 +69,6 @@ public class CollectionConfiguration {
      * First level element in a collection configuration document
      */
     private static final String INDEX_ELEMENT = "index";
-    private static final String PERMISSIONS_ELEMENT = "default-permissions";
     private static final String GROUP_ELEMENT = "default-group";
     private static final String RESOURCE_ATTR = "resource";
     private static final String COLLECTION_ATTR = "collection";
@@ -88,12 +85,6 @@ public class CollectionConfiguration {
 
     private XmldbURI docName = null;
     private XmldbURI srcCollectionURI;
-
-    private int defCollPermissions = Permission.DEFAULT_COLLECTION_PERM;
-    private int defResPermissions = Permission.DEFAULT_RESOURCE_PERM;
-
-    private String defCollGroup = null;
-    private String defResGroup = null;
 
     private XMLReaderObjectFactory.VALIDATION_SETTING validationMode = XMLReaderObjectFactory.VALIDATION_SETTING.UNKNOWN;
 
@@ -163,73 +154,6 @@ public class CollectionConfiguration {
                             LOG.warn(e.getMessage(), e);
                         }
                     }
-                } else if (PERMISSIONS_ELEMENT.equals(node.getLocalName())) {
-                    final Element elem = (Element) node;
-                    String permsOpt = elem.getAttribute(RESOURCE_ATTR);
-                    if (permsOpt != null && permsOpt.length() > 0) {
-                        LOG.debug("RESOURCE: " + permsOpt);
-                        try {
-                            defResPermissions = Integer.parseInt(permsOpt, 8);
-                        } catch (final NumberFormatException e) {
-                            if (checkOnly) {
-                                throw new CollectionConfigurationException(
-                                        "Illegal value for permissions in " +
-                                                "configuration document : " + e.getMessage(), e);
-                            } else {
-                                LOG.warn("Ilegal value for permissions in " +
-                                        "configuration document : " + e.getMessage(), e);
-                            }
-                        }
-                    }
-                    permsOpt = elem.getAttribute(COLLECTION_ATTR);
-                    if (permsOpt != null && permsOpt.length() > 0) {
-                        LOG.debug("COLLECTION: " + permsOpt);
-                        try {
-                            defCollPermissions = Integer.parseInt(permsOpt, 8);
-                        } catch (final NumberFormatException e) {
-                            if (checkOnly) {
-                                throw new CollectionConfigurationException(
-                                        "Illegal value for permissions in configuration " +
-                                                "document : " + e.getMessage(), e);
-                            } else {
-                                LOG.warn("Ilegal value for permissions in configuration " +
-                                        "document : " + e.getMessage(), e);
-                            }
-                        }
-                    }
-
-                } else if (GROUP_ELEMENT.equals(node.getLocalName())) {
-                    final Element elem = (Element) node;
-                    String groupOpt = elem.getAttribute(RESOURCE_ATTR);
-                    if (groupOpt != null && groupOpt.length() > 0) {
-                        LOG.debug("RESOURCE: " + groupOpt);
-                        if (pool.getSecurityManager().getGroup(groupOpt) != null) {
-                            defResGroup = groupOpt;
-                        } else {
-                            //? Seems inconsistent : what does "checkOnly" means then ?
-                            if (checkOnly) {
-                                throw new CollectionConfigurationException("Ilegal value " +
-                                        "for group in configuration document : " + groupOpt);
-                            } else {
-                                LOG.warn("Ilegal value for group in configuration document : " + groupOpt);
-                            }
-                        }
-                    }
-                    groupOpt = elem.getAttribute(COLLECTION_ATTR);
-                    if (groupOpt != null && groupOpt.length() > 0) {
-                        LOG.debug("COLLECTION: " + groupOpt);
-                        if (pool.getSecurityManager().getGroup(groupOpt) != null) {
-                            defCollGroup = groupOpt;
-                        } else {
-                            //? Seems inconsistent : what does "checkOnly" means then ?
-                            if (checkOnly) {
-                                throw new CollectionConfigurationException("Ilegal value " +
-                                        "for group in configuration document : " + groupOpt);
-                            } else {
-                                LOG.warn("Ilegal value for group in configuration document : " + groupOpt);
-                            }
-                        }
-                    }
 
                 } else if (VALIDATION_ELEMENT.equals(node.getLocalName())) {
                     final Element elem = (Element) node;
@@ -273,22 +197,6 @@ public class CollectionConfiguration {
 
     public XmldbURI getSourceCollectionURI() {
         return srcCollectionURI;
-    }
-
-    public int getDefCollPermissions() {
-        return defCollPermissions;
-    }
-
-    public int getDefResPermissions() {
-        return defResPermissions;
-    }
-
-    public String getDefCollGroup(final Account user) {
-        return defCollGroup != null ? defCollGroup : user.getPrimaryGroup();
-    }
-
-    public String getDefResGroup(final Account user) {
-        return (defResGroup != null) ? defResGroup : user.getPrimaryGroup();
     }
 
     public XMLReaderObjectFactory.VALIDATION_SETTING getValidationMode() {
