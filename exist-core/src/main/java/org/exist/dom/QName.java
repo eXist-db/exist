@@ -326,6 +326,7 @@ public class QName implements Comparable<QName> {
     }
 
     private final static Pattern ptnClarkNotation = Pattern.compile("\\{([^&{}]*)\\}([^&{}:]+)");
+    private final static Pattern ptnEqNameNotation = Pattern.compile("Q" + ptnClarkNotation);
 
     /**
      * Parses the given string into a QName. The method uses context to look up
@@ -343,15 +344,27 @@ public class QName implements Comparable<QName> {
             throws IllegalQNameException {
 
         // quick test if qname is in clark notation
-        if (qname.length() > 0 && qname.charAt(0) == '{') {
-            final Matcher clarkNotation = ptnClarkNotation.matcher(qname);
+        if (qname.length() > 0 ) {
+            if (qname.charAt(0) == '{') {
+                final Matcher clarkNotation = ptnClarkNotation.matcher(qname);
 
-            // more expensive check
-            if (clarkNotation.matches()) {
-                //parse as clark notation
-                final String ns = clarkNotation.group(1);
-                final String localPart = clarkNotation.group(2);
-                return new QName(localPart, ns);
+                // more expensive check
+                if (clarkNotation.matches()) {
+                    //parse as clark notation
+                    final String ns = clarkNotation.group(1);
+                    final String localPart = clarkNotation.group(2);
+                    return new QName(localPart, ns);
+                }
+            } else if (qname.charAt(0) == 'Q') {
+                final Matcher eqNameNotation = ptnEqNameNotation.matcher(qname);
+
+                // more expensive check
+                if (eqNameNotation.matches()) {
+                    //parse as clark notation
+                    final String ns = eqNameNotation.group(1);
+                    final String localPart = eqNameNotation.group(2);
+                    return new QName(localPart, ns);
+                }
             }
         }
 
