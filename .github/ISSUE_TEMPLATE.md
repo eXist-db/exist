@@ -1,6 +1,6 @@
 Thank you for reporting your issue!
 
-To be able to better understand you problem or suggestion, please add as much information as possible to this ticket. When there is no or just little information, it will be too difficult to work on it (and hence we will not be able to solve it)
+To be able to better understand you problem or suggestion, please add as much information as possible to this ticket. When there is no or just little information, it will be too difficult to work on it (and hence we will not be able to solve it).
 
 Please fill in the following sections:
 
@@ -13,7 +13,7 @@ Please fill in the following sections:
 ### Describe how to reproduce or add a test
 > Describe how we can can reproduce the problem.
 
-> The *best* way is to provide a 'self containing' test, a test that can be run without dependancies. The [XQSuite - Annotation-based Test Framework for XQuery](http://exist-db.org/exist/apps/doc/xqsuite.xml) makes it very easy for you to create tests. These tests can be executed from the [eXide editor](http://exist-db.org/exist/apps/eXide/index.html) (XQuery - Run as Test)
+> The *best* way is to provide an [SSCCE (Short, Self Contained, Correct (Compilable), Example)](http://sscce.org/). One type of SSCCE could be a small test which reproduces the issue and can be run without dependencies. The [XQSuite - Annotation-based Test Framework for XQuery](http://exist-db.org/exist/apps/doc/xqsuite.xml) makes it very easy for you to create tests. These tests can be executed from the [eXide editor](http://exist-db.org/exist/apps/eXide/index.html) (XQuery - Run as Test)
 
 ### Context information
 Please always add the following information
@@ -21,5 +21,5 @@ Please always add the following information
 - Java version (e.g. Java8u121)
 - Operating system (Windows 7, Linux, MacOs)
 - 32 or 64 bit
-- How is eXist-db installed? (JAR installer, DMG, WAR file, clone from GitHub)
+- How is eXist-db installed? (JAR installer, DMG, .tar.gz/.zip distribution, clone from GitHub)
 - Any custom changes in e.g. conf.xml
