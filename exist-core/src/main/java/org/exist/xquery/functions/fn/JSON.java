@@ -82,12 +82,12 @@ public class JSON extends BasicFunction {
         )
     };
 
-    public final static String OPTION_DUPLICATES = "duplicates";
-    public final static String OPTION_DUPLICATES_REJECT = "reject";
-    public final static String OPTION_DUPLICATES_USE_FIRST = "use-first";
-    public final static String OPTION_DUPLICATES_USE_LAST = "use-last";
-    public final static String OPTION_LIBERAL = "liberal";
-    public final static String OPTION_UNESCAPE = "unescape";
+    public static final String OPTION_DUPLICATES = "duplicates";
+    public static final String OPTION_DUPLICATES_REJECT = "reject";
+    public static final String OPTION_DUPLICATES_USE_FIRST = "use-first";
+    public static final String OPTION_DUPLICATES_USE_LAST = "use-last";
+    public static final String OPTION_LIBERAL = "liberal";
+    public static final String OPTION_UNESCAPE = "unescape";
     public static final QName KEY = new QName("key",null);
 
     public JSON(XQueryContext context, FunctionSignature signature) {
