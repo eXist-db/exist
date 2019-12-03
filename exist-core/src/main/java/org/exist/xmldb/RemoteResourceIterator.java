@@ -36,17 +36,13 @@ import org.xmldb.api.modules.XMLResource;
 
 public class RemoteResourceIterator implements ResourceIterator {
 
-    private final Leasable<XmlRpcClient> leasableXmlRpcClient;
-    private final Leasable<XmlRpcClient>.Lease xmlRpcClientLease;
     private final RemoteCollection collection;
     private final List<Object> resources;
     private final int indentXML;
     private final String encoding;
     private int pos = 0;
 
-    public RemoteResourceIterator(final Leasable<XmlRpcClient> leasableXmlRpcClient, final Leasable<XmlRpcClient>.Lease xmlRpcClientLease, final RemoteCollection collection, final List<Object> resources, final int indentXML, final String encoding) {
-        this.leasableXmlRpcClient = leasableXmlRpcClient;
-        this.xmlRpcClientLease = xmlRpcClientLease;
+    public RemoteResourceIterator(final RemoteCollection collection, final List<Object> resources, final int indentXML, final String encoding) {
         this.collection = collection;
         this.resources = resources;
         this.indentXML = indentXML;
@@ -85,12 +81,10 @@ public class RemoteResourceIterator implements ResourceIterator {
             params.add(indentXML);
             params.add(encoding);
             try {
-                final byte[] data = (byte[])xmlRpcClientLease.get().execute("retrieve", params);
-                final XMLResource res = new RemoteXMLResource(leasableXmlRpcClient.lease(), collection, XmldbURI.xmldbUriFor(doc), Optional.of(doc + "_" + s_id));
+                final byte[] data = (byte[])collection.execute("retrieve", params);
+                final XMLResource res = new RemoteXMLResource(collection, XmldbURI.xmldbUriFor(doc), Optional.of(doc + "_" + s_id));
                 res.setContent(new String(data, encoding));
                 return res;
-            } catch (final XmlRpcException xre) {
-                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
             } catch (final IOException ioe) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
             } catch (final URISyntaxException e) {
@@ -98,7 +92,7 @@ public class RemoteResourceIterator implements ResourceIterator {
             }
         } else {
             // value
-            final XMLResource res = new RemoteXMLResource(leasableXmlRpcClient.lease(), collection, null, Optional.of(Integer.toString(pos)));
+            final XMLResource res = new RemoteXMLResource(collection, null, Optional.of(Integer.toString(pos)));
             res.setContent(resources.get(pos++));
             return res;
         }

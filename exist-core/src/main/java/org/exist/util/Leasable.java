@@ -24,6 +24,7 @@ import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
 import javax.annotation.Nullable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 
@@ -135,10 +136,20 @@ public class Leasable<T> {
         }
     }
 
+    public boolean isClosed() {
+        lock.readLock().lock();
+        try {
+            return Leasable.this.closed;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
     /**
      * Represents a lease of the leasable object.
      */
     public class Lease implements AutoCloseable {
+        private final AtomicBoolean leaseClosed = new AtomicBoolean();
 
         /**
          * Access to the leased object.
@@ -146,6 +157,9 @@ public class Leasable<T> {
          * @return the leased object.
          */
         public T get() {
+            if (leaseClosed.get()) {
+                throw new IllegalLeasableState("Lease is closed");
+            }
             lock.readLock().lock();
             try {
                 if (closed) {
@@ -167,25 +181,31 @@ public class Leasable<T> {
          */
         @Override
         public void close() {
-            lock.writeLock().lock();
-            try {
-                if (closed) {
-                    throw new IllegalLeasableState("Object is closed");
-                }
+            if (leaseClosed.compareAndSet(false, true)) {
+                lock.writeLock().lock();
+                try {
+                    if (Leasable.this.closed) {
+                        throw new IllegalLeasableState("Object is closed");
+                    }
 
-                if(leases == 0) {
-                    throw new IllegalLeasableState("Lease was already returned");
-                }
+                    if(leases == 0) {
+                        throw new IllegalLeasableState("Lease was already returned");
+                    }
 
-                leases--;
+                    leases--;
 
-                if (leases == 0 && closer != null) {
-                    closer.accept(object);
-                    closed = true;
+                    if (leases == 0 && closer != null) {
+                        closer.accept(object);
+                        Leasable.this.closed = true;
+                    }
+                } finally {
+                    lock.writeLock().unlock();
                 }
-            } finally {
-                lock.writeLock().unlock();
             }
+        }
+
+        public boolean isClosed() {
+            return leaseClosed.get();
         }
     }
 
