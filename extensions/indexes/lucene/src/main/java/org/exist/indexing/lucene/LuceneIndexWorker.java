@@ -433,7 +433,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             for (QName qname : definedIndexes) {
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 LuceneConfig config = getLuceneConfig(broker, docs);
-                Analyzer analyzer = getAnalyzer(config,null, qname);
+                Analyzer analyzer = getQueryAnalyzer(config,null, qname, options);
                 Query query;
                 if (queryStr == null) {
                     query = new ConstantScoreQuery(new FieldValueFilter(field));
@@ -483,7 +483,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             for (QName qname : definedIndexes) {
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 LuceneConfig config = getLuceneConfig(broker, docs);
-                analyzer = getAnalyzer(config, null, qname);
+                analyzer = getQueryAnalyzer(config, null, qname, options);
                 Query query = queryRoot == null ? new ConstantScoreQuery(new FieldValueFilter(field)) : queryTranslator.parse(field, queryRoot, analyzer, options);
                 Optional<Map<String, List<String>>> facets = options.getFacets();
                 if (facets.isPresent() && config != null) {
@@ -505,7 +505,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final NodeSet resultSet = new NewArrayNodeSet();
             final boolean returnAncestor = axis == NodeSet.ANCESTOR;
             final LuceneConfig config = getLuceneConfig(broker, docs);
-            analyzer = getAnalyzer(config, field, null);
+            analyzer = getQueryAnalyzer(config, field, null, options);
             final Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
             if (query != null) {
                 searchAndProcess(contextId, null, docs, contextSet, resultSet,
@@ -578,7 +578,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             NodeSet resultSet = new NewArrayNodeSet();
             boolean returnAncestor = axis == NodeSet.ANCESTOR;
             LuceneConfig config = getLuceneConfig(context.getBroker(), docs);
-            Analyzer analyzer = getAnalyzer(config, field, null);
+            Analyzer analyzer = getQueryAnalyzer(config, field, null, options);
             LOG.debug("Using analyzer " + analyzer + " for " + queryString);
             QueryParserWrapper parser = getQueryParser(field, analyzer, docs);
             options.configureParser(parser.getConfiguration());
@@ -1062,10 +1062,17 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      *
      * @return the analyzer or null
      */
-    @Nullable protected Analyzer getAnalyzer(LuceneConfig config, String field, QName qname) {
+    @Nullable protected Analyzer getQueryAnalyzer(LuceneConfig config, String field, QName qname, QueryOptions opts) {
         if (config != null) {
             Analyzer analyzer;
-            if (field == null) {
+            if (opts.getQueryAnalyzerId() != null) {
+                analyzer = config.getAnalyzerById(opts.getQueryAnalyzerId());
+                if (analyzer == null) {
+                    String msg = String.format("getAnalyzerById(%s) returned null!", opts.getQueryAnalyzerId());
+                    LOG.error(msg);
+                }
+            }
+            else if (field == null) {
                 analyzer = config.getAnalyzer(qname);
             } else {
                 analyzer = config.getAnalyzer(field);
