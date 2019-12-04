@@ -181,4 +181,6 @@ public class QueryOptions {
             parser.setLowercaseExpandedTerms(lowercaseExpandedTerms);
         }
     }
+
+    public String  getQueryAnalyzerId() { return null; }
 }

@@ -202,6 +202,13 @@ public class LuceneConfig {
         return analyzers.getAnalyzerById(config.getAnalyzerId());
     }
 
+    /** Gets the Analyzer (defined in this LuceneConfig) with the specified id.
+     *  Returns null if no match was found.
+     */
+    public Analyzer getAnalyzerById(String analyzerId) {
+        return analyzers.getAnalyzerById(analyzerId);
+    }
+
     /**
      * Try to instantiate the configured Lucene query parser. Lucene's parsers
      * do not all have a common base class, so we need to wrap around the implementation
