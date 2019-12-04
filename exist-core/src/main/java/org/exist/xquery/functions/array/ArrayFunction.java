@@ -33,7 +33,8 @@ public class ArrayFunction extends BasicFunction {
         FOLD_LEFT("fold-left"),
         FOLD_RIGHT("fold-right"),
         FOR_EACH_PAIR("for-each-pair"),
-        FLATTEN("flatten");
+        FLATTEN("flatten"),
+        PUT("put");
 
         final static Map<String, Fn> fnMap = new HashMap<>();
         static {
@@ -129,6 +130,16 @@ public class ArrayFunction extends BasicFunction {
             new FunctionSignature(
                     new QName(Fn.INSERT_BEFORE.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Returns an array containing all the members of the supplied array, with one additional member at a specified position.",
+                    new SequenceType[] {
+                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array"),
+                            new FunctionParameterSequenceType("position", Type.INTEGER, Cardinality.EXACTLY_ONE, "Position at which the new member is inserted"),
+                            new FunctionParameterSequenceType("member", Type.ITEM, Cardinality.ZERO_OR_MORE, "The member to insert")
+                    },
+                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "A new array containing all members plus the new member")
+            ),
+            new FunctionSignature(
+                    new QName(Fn.PUT.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
+                    "Returns an array containing all the members of the supplied array, with one additional member at the specified position.",
                     new SequenceType[] {
                             new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array"),
                             new FunctionParameterSequenceType("position", Type.INTEGER, Cardinality.EXACTLY_ONE, "Position at which the new member is inserted"),
@@ -291,6 +302,12 @@ public class ArrayFunction extends BasicFunction {
                             throw new XPathException(this, ErrorCodes.FOAY0001, "Index of item to insert (" + ipos + ") is out of bounds");
                         }
                         return array.insertBefore(ipos - 1, args[2]);
+                    case PUT:
+                        final int ppos = ((IntegerValue) args[1].itemAt(0)).getInt();
+                        if (ppos  < 1 || ppos  > array.getSize() ) {
+                            throw new XPathException(this, ErrorCodes.FOAY0001, "Index of item to insert (" + ppos + ") is out of bounds");
+                        }
+                        return array.put(ppos - 1, args[2]);
                     case REVERSE:
                         return array.reverse();
                     case FOR_EACH:
