@@ -107,9 +107,7 @@ public class URLSource extends AbstractSource {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.source.Source#getKey()
-	 */
+	@Override
 	public Object getKey() {
 		return url;
 	}
@@ -129,6 +127,7 @@ public class URLSource extends AbstractSource {
 		return Validity.INVALID;
 	}
 
+	@Override
 	public Charset getEncoding() throws IOException {
 		if (connection == null) {
 			connection = url.openConnection();
@@ -150,9 +149,7 @@ public class URLSource extends AbstractSource {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.source.Source#getReader()
-	 */
+	@Override
 	public Reader getReader() throws IOException {
 		try {
 			if(connection == null) {
@@ -171,6 +168,7 @@ public class URLSource extends AbstractSource {
 		}
 	}
 
+	@Override
     public InputStream getInputStream() throws IOException {
         try {
             if(connection == null) {
@@ -194,9 +192,7 @@ public class URLSource extends AbstractSource {
         }
     }
 
-    /* (non-Javadoc)
-	 * @see org.exist.source.Source#getContent()
-	 */
+    @Override
 	public String getContent() throws IOException {
 		try {
 			if(connection == null) {
@@ -217,9 +213,11 @@ public class URLSource extends AbstractSource {
         return responseCode;
     }
 
+    @Override
 	public String toString() {
-		if (url == null)
-			{return "[not set]";}
+		if (url == null) {
+			return "[not set]";
+		}
 		return url.toString();
 	}
 
