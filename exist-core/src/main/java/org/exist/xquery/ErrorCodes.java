@@ -214,6 +214,9 @@ public class ErrorCodes {
     public static final ErrorCode FOJS0001 = new W3CErrorCode("FOJS0001", "JSON syntax error.");
     public static final ErrorCode FOJS0002 = new W3CErrorCode("FOJS0002", "JSON invalid character.");
     public static final ErrorCode FOJS0003 = new W3CErrorCode("FOJS0003", "JSON duplicate keys.");
+    public static final ErrorCode FOJS0005 = new W3CErrorCode("FOJS0005", "Invalid options.");
+    public static final ErrorCode FOJS0006 = new W3CErrorCode("FOJS0006", "Invalid XML representation of JSON.");
+    public static final ErrorCode FOJS0007 = new W3CErrorCode("FOJS0007", "Bad JSON escape sequence.");
 
     public static final ErrorCode FOUT1170 = new W3CErrorCode("FOUT1170", "Invalid $href argument to fn:unparsed-text() (etc.)");
     public static final ErrorCode FOUT1190 = new W3CErrorCode("FOUT1190", "Cannot decode resource retrieved by fn:unparsed-text() (etc.)");
