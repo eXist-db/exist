@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2009 The eXist Project
+ * Copyright (C) 2019 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -16,8 +16,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- *  $Id$
  */
 package org.exist.xquery.functions.fn;
 
@@ -40,7 +38,7 @@ import java.util.Stack;
  */
 public class FunXmlToJson extends BasicFunction {
 
-    protected static final Logger logger = LogManager.getLogger(FunXmlToJson.class);
+    private final static Logger logger = LogManager.getLogger();
 
     public final static FunctionSignature[] signature = {
             new FunctionSignature(
@@ -67,10 +65,10 @@ public class FunXmlToJson extends BasicFunction {
             )
     };
 
-    public FunXmlToJson(XQueryContext context, FunctionSignature signature) { super(context, signature); }
+    public FunXmlToJson(final XQueryContext context, final FunctionSignature signature) { super(context, signature); }
 
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        Sequence result;
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+        final Sequence result;
         final Sequence seq = (getArgumentCount() > 0) ? args[0] : Sequence.EMPTY_SEQUENCE;
         //TODO: implement handling of options
         final MapType options = (getArgumentCount() > 1) ? (MapType) args[1].itemAt(0) : new MapType(context);
@@ -105,7 +103,7 @@ public class FunXmlToJson extends BasicFunction {
      * @param writer the Writer to be used
      * @throws XPathException on error in XML JSON input according to specification
      */
-    private void nodeValueToJson(NodeValue nodeValue, Writer writer) throws XPathException {
+    private void nodeValueToJson(final NodeValue nodeValue, final Writer writer) throws XPathException {
         StringBuilder tempStringBuilder = new StringBuilder();
         JsonFactory jsonFactory = new JsonFactory();
         //use Stack<Object> to store String type keys and non-string type separators
@@ -113,9 +111,10 @@ public class FunXmlToJson extends BasicFunction {
         Stack<Object> mapkeyStack = new Stack<Object>();
         boolean elementKeyIsEscaped = false;
         boolean elementValueIsEscaped = false;
-        try {
-            final XMLStreamReader reader = context.getXMLStreamReader(nodeValue);
+        try (
             final JsonGenerator jsonGenerator = jsonFactory.createGenerator(writer);
+        ) {
+            final XMLStreamReader reader = context.getXMLStreamReader(nodeValue);
             int previous = XMLStreamReader.START_DOCUMENT;
             int status = XMLStreamReader.START_DOCUMENT;
             while (reader.hasNext()) {
@@ -205,7 +204,6 @@ public class FunXmlToJson extends BasicFunction {
                         break;
                 }
             }
-            jsonGenerator.close();
             reader.close();
         } catch (JsonGenerationException e) {
             throw new XPathException(ErrorCodes.FOJS0006, "Invalid XML representation of JSON.");
@@ -224,7 +222,7 @@ public class FunXmlToJson extends BasicFunction {
      * @throws IOException in case of an unhandled error reading the JSON
      * @throws XPathException in case of dynamic error
      */
-    private String unescapeEscapedJsonString(String escapedJsonString) throws IOException, XPathException {
+    private String unescapeEscapedJsonString(final String escapedJsonString) throws IOException, XPathException {
         JsonFactory jsonFactory = new JsonFactory();
         StringBuilder unescapedJsonStringBuilder = new StringBuilder();
         String unescapedJsonString;
