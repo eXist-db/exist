@@ -26,6 +26,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
@@ -65,7 +66,9 @@ public class FunXmlToJson extends BasicFunction {
             )
     };
 
-    public FunXmlToJson(final XQueryContext context, final FunctionSignature signature) { super(context, signature); }
+    public FunXmlToJson(final XQueryContext context, final FunctionSignature signature) {
+        super(context, signature);
+    }
 
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final Sequence result;
@@ -73,9 +76,9 @@ public class FunXmlToJson extends BasicFunction {
         //TODO: implement handling of options
         final MapType options = (getArgumentCount() > 1) ? (MapType) args[1].itemAt(0) : new MapType(context);
 
-        if (seq.isEmpty())
-            {result = Sequence.EMPTY_SEQUENCE;}
-        else {
+        if (seq.isEmpty()) {
+            result = Sequence.EMPTY_SEQUENCE;
+        } else {
             result = new ValueSequence();
             final Item item = seq.itemAt(0);
             if (item.getType() != Type.DOCUMENT && item.getType() != Type.ELEMENT) {
@@ -95,12 +98,12 @@ public class FunXmlToJson extends BasicFunction {
      * https://www.w3.org/TR/xpath-functions-31/schema-for-json.xsd
      * Traverse a NodeValue via XMLStreamReader and fill a Writer with its JSON representation
      * by calling com.fasterxml.jackson write functions according to input type.
-     *
+     * <p>
      * Implements basic part of the specification. String (un)escaping is fully delegated to jackson
      * and NOT fully conforming to spec.
      *
      * @param nodeValue the NodeValue to be read
-     * @param writer the Writer to be used
+     * @param writer    the Writer to be used
      * @throws XPathException on error in XML JSON input according to specification
      */
     private void nodeValueToJson(final NodeValue nodeValue, final Writer writer) throws XPathException {
@@ -112,7 +115,7 @@ public class FunXmlToJson extends BasicFunction {
         boolean elementKeyIsEscaped = false;
         boolean elementValueIsEscaped = false;
         try (
-            final JsonGenerator jsonGenerator = jsonFactory.createGenerator(writer);
+                final JsonGenerator jsonGenerator = jsonFactory.createGenerator(writer);
         ) {
             final XMLStreamReader reader = context.getXMLStreamReader(nodeValue);
             int previous = XMLStreamReader.START_DOCUMENT;
@@ -172,7 +175,7 @@ public class FunXmlToJson extends BasicFunction {
                                 jsonGenerator.writeBoolean(tempBoolean);
                                 break;
                             case "map":
-                                for (int i=0; i<=mapkeyStack.search(stackSeperator); i++) {
+                                for (int i = 0; i <= mapkeyStack.search(stackSeperator); i++) {
                                     mapkeyStack.pop();
                                 }
                                 jsonGenerator.writeEndObject();
@@ -219,7 +222,7 @@ public class FunXmlToJson extends BasicFunction {
      *
      * @param escapedJsonString the escaped JSON string
      * @return the unescaped JSON string
-     * @throws IOException in case of an unhandled error reading the JSON
+     * @throws IOException    in case of an unhandled error reading the JSON
      * @throws XPathException in case of dynamic error
      */
     private String unescapeEscapedJsonString(final String escapedJsonString) throws IOException, XPathException {
