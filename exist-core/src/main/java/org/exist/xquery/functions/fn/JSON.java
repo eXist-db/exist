@@ -3,7 +3,9 @@ package org.exist.xquery.functions.fn;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
@@ -59,15 +61,34 @@ public class JSON extends BasicFunction {
                         new FunctionParameterSequenceType("options", Type.MAP, Cardinality.EXACTLY_ONE, "Parsing options")
                 },
                 new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "The parsed data, typically a map, array or atomic value")
+        ),
+        new FunctionSignature(
+                new QName("json-to-xml", Function.BUILTIN_FUNCTION_NS),
+                "Parses a string supplied in the form of a JSON text, returning the results in the form of an XML document node.",
+                new SequenceType[]{
+                        new FunctionParameterSequenceType("json-text", Type.STRING, Cardinality.ZERO_OR_ONE, "JSON text as defined in [RFC 7159]. The function parses this string to return an XDM value"),
+                },
+                new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "The parsed data as XML")
+        ),
+
+        new FunctionSignature(
+                new QName("json-to-xml", Function.BUILTIN_FUNCTION_NS),
+                "Parses a string supplied in the form of a JSON text, returning the results in the form of an XML document node.",
+                new SequenceType[]{
+                        new FunctionParameterSequenceType("json-text", Type.STRING, Cardinality.ZERO_OR_ONE, "JSON text as defined in [RFC 7159]. The function parses this string to return an XDM value"),
+                        new FunctionParameterSequenceType("options", Type.MAP, Cardinality.EXACTLY_ONE, "Parsing options")
+                },
+                new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "The parsed data as XML")
         )
     };
 
-    public final static String OPTION_DUPLICATES = "duplicates";
-    public final static String OPTION_DUPLICATES_REJECT = "reject";
-    public final static String OPTION_DUPLICATES_USE_FIRST = "use-first";
-    public final static String OPTION_DUPLICATES_USE_LAST = "use-last";
-    public final static String OPTION_LIBERAL = "liberal";
-    public final static String OPTION_UNESCAPE = "unescape";
+    public static final String OPTION_DUPLICATES = "duplicates";
+    public static final String OPTION_DUPLICATES_REJECT = "reject";
+    public static final String OPTION_DUPLICATES_USE_FIRST = "use-first";
+    public static final String OPTION_DUPLICATES_USE_LAST = "use-last";
+    public static final String OPTION_LIBERAL = "liberal";
+    public static final String OPTION_UNESCAPE = "unescape";
+    public static final QName KEY = new QName("key",null);
 
     public JSON(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -99,6 +120,8 @@ public class JSON extends BasicFunction {
 
         if (isCalledAs("parse-json")) {
             return parse(args[0], handleDuplicates, factory);
+        }  else if (isCalledAs("json-to-xml")) {
+            return toxml(args[0], handleDuplicates, factory);
         } else {
             return parseResource(args[0], handleDuplicates, factory);
         }
@@ -141,6 +164,28 @@ public class JSON extends BasicFunction {
             throw e;
         }
     }
+    private Sequence toxml(Sequence json, String handleDuplicates, JsonFactory factory) throws XPathException {
+        if (json.isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        try (
+            final JsonParser parser = factory.createParser(json.itemAt(0).getStringValue())) {
+            context.pushDocumentContext();
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            builder.startDocument();
+            factory.configure(JsonParser.Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER, false);
+            jsonToXml(context, builder, parser, handleDuplicates);
+            return builder.getDocument() == null ? Sequence.EMPTY_SEQUENCE : builder.getDocument();
+        }  catch (IOException e) {
+            throw new XPathException(this, ErrorCodes.FOJS0001, e.getMessage());
+        } catch (XPathException e) {
+            e.setLocation(getLine(), getColumn(), getSource());
+            throw e;
+        } finally {
+            context.popDocumentContext();
+        }
+    }
+
 
     private Sequence parseResource(Sequence href, String handleDuplicates, JsonFactory factory) throws XPathException {
         if (href.isEmpty()) {
@@ -242,5 +287,85 @@ public class JSON extends BasicFunction {
             }
         }
         return next;
+    }
+
+    /**
+     * Generate an XML from the tokens delivered by the JSON parser.
+     *
+     * @param context the XQueryContext
+     * @param parser parser to use
+     * @param handleDuplicates string indicating how to handle duplicate property names
+     * @return the top item read
+     * @throws IOException
+     * @throws XPathException
+     */
+    public static void jsonToXml(XQueryContext context, MemTreeBuilder builder, JsonParser parser, String handleDuplicates) throws IOException, XPathException {
+        JsonToken token;
+
+        while ((token = parser.nextValue()) != null) {
+            if (token == JsonToken.END_OBJECT || token == JsonToken.END_ARRAY) {
+                builder.endElement();
+            }
+            switch (token) {
+                case START_OBJECT:
+                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS,"map","map",null );
+                    if(parser.getCurrentName() != null){
+                        builder.addAttribute(KEY, parser.getCurrentName());
+                    }
+                    break;
+                case START_ARRAY:
+                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS,"array","array",null );
+                    if(parser.getCurrentName() != null){
+                        builder.addAttribute(KEY, parser.getCurrentName());
+                    }
+                    break;
+                case VALUE_FALSE:
+                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS,"boolean","boolean",null );
+                    if(parser.getCurrentName() != null){
+                        builder.addAttribute(KEY, parser.getCurrentName());
+                    }
+                    builder.characters(Boolean.toString(false));
+                    builder.endElement();
+                    break;
+                case VALUE_TRUE:
+                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS,"boolean","boolean",null );
+                    if(parser.getCurrentName() != null){
+                        builder.addAttribute(KEY, parser.getCurrentName());
+                    }
+                    builder.characters(Boolean.toString(true));
+                    builder.endElement();
+                    break;
+                case VALUE_NUMBER_FLOAT:
+                case VALUE_NUMBER_INT:
+                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS,"number","number",null );
+                    if(parser.getCurrentName() != null){
+                        builder.addAttribute(KEY, parser.getCurrentName());
+                    }
+                    // according to spec, all numbers are converted to double
+                    builder.characters(parser.getText());
+                    builder.endElement();
+
+                    break;
+                case VALUE_NULL:
+                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS,"null","null",null );
+                    if(parser.getCurrentName() != null){
+                        builder.addAttribute(KEY, parser.getCurrentName());
+                    }
+                    builder.endElement();
+
+                    break;
+                case VALUE_STRING:
+                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS,"string","string",null );
+                    if(parser.getCurrentName() != null){
+                        builder.addAttribute(KEY, parser.getCurrentName());
+                    }
+                    builder.characters(parser.getText());
+                    builder.endElement();
+
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }
