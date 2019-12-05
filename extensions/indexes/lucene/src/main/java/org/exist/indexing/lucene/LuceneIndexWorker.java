@@ -1070,7 +1070,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (opts.getQueryAnalyzerId() != null) {
                 analyzer = config.getAnalyzerById(opts.getQueryAnalyzerId());
                 if (analyzer == null) {
-                    String msg = String.format("getAnalyzerById(%s) returned null!", opts.getQueryAnalyzerId());
+                    String msg = String.format("getAnalyzerById('%s') returned null!", opts.getQueryAnalyzerId());
                     LOG.error(msg);
                 }
             }
