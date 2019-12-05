@@ -255,6 +255,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 // Create a copy of the original RangeIndexConfig (there's only one per db instance),
                 // so we can safely work with it.
                 config = new RangeIndexConfig(config);
+        } else {
+            config = RangeIndexConfig.DEFAULT_CONFIG;
         }
         this.mode = mode;
     }

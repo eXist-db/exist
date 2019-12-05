@@ -18,6 +18,8 @@ import java.util.*;
 
 public class RangeIndexConfig {
 
+    public final static RangeIndexConfig DEFAULT_CONFIG = new RangeIndexConfig();
+    
     static final String CONFIG_ROOT = "range";
     static final String CREATE_ELEM = "create";
     private static final String FIELD_ELEM = "field";
@@ -30,6 +32,11 @@ public class RangeIndexConfig {
     private Analyzer analyzer;
 
     private PathIterator iterator = new PathIterator();
+
+    public RangeIndexConfig() {
+        // default analyzer
+        analyzer = new KeywordAnalyzer();
+    }
 
     public RangeIndexConfig(NodeList configNodes, Map<String, String> namespaces) {
         parse(configNodes, namespaces);
@@ -70,6 +77,8 @@ public class RangeIndexConfig {
     }
 
     private void parse(NodeList configNodes, Map<String, String> namespaces) {
+        // default analyzer
+        analyzer = new KeywordAnalyzer();
         for(int i = 0; i < configNodes.getLength(); i++) {
             Node node = configNodes.item(i);
             if (node.getNodeType() == Node.ELEMENT_NODE && CONFIG_ROOT.equals(node.getLocalName())) {
@@ -112,8 +121,6 @@ public class RangeIndexConfig {
                 }
             }
         }
-        // default analyzer
-        analyzer = new KeywordAnalyzer();
     }
 
     public Analyzer getDefaultAnalyzer() {
