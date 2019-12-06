@@ -87,6 +87,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 import static com.evolvedbinary.j8fu.fsm.TransitionTable.transitionTable;
 import static org.exist.util.ThreadUtils.nameInstanceThreadGroup;
@@ -1574,6 +1575,11 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      * @param killed <code>true</code> when the JVM is (cleanly) exiting
      */
     public void shutdown(final boolean killed) {
+        shutdown(killed, BrokerPools::removeInstance);
+    }
+
+    void shutdown(final boolean killed, final Consumer<String> shutdownInstanceConsumer) {
+
         try {
             status.process(Event.START_SHUTDOWN);
         } catch(final IllegalStateException e) {
@@ -1686,7 +1692,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     AgentFactory.getInstance().closeDBInstance(this);
 
                     //Clear the living instances container
-                    removeInstance(instanceName);
+                    shutdownInstanceConsumer.accept(instanceName);
 
                     synchronized (readOnly) {
                         if (!readOnly) {
