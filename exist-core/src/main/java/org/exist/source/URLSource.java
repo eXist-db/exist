@@ -102,14 +102,12 @@ public class URLSource extends AbstractSource {
 				{connection = url.openConnection();}
 			return connection.getLastModified();
 		} catch (final IOException e) {
-			LOG.warn("URL could not be opened: " + e.getMessage(), e);
+			LOG.warn("URL '" + url + "' could not be opened: " + e.getMessage());
 			return 0;
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.source.Source#getKey()
-	 */
+	@Override
 	public Object getKey() {
 		return url;
 	}
@@ -129,6 +127,7 @@ public class URLSource extends AbstractSource {
 		return Validity.INVALID;
 	}
 
+	@Override
 	public Charset getEncoding() throws IOException {
 		if (connection == null) {
 			connection = url.openConnection();
@@ -150,9 +149,7 @@ public class URLSource extends AbstractSource {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.source.Source#getReader()
-	 */
+	@Override
 	public Reader getReader() throws IOException {
 		try {
 			if(connection == null) {
@@ -166,11 +163,12 @@ public class URLSource extends AbstractSource {
 			connection = null;
 			return reader;
 		} catch (final IOException e) {
-			LOG.warn("URL could not be opened: " + e.getMessage(), e);
+			LOG.warn("URL '" + url + "' could not be opened: " + e.getMessage());
 			throw e;
 		}
 	}
 
+	@Override
     public InputStream getInputStream() throws IOException {
         try {
             if(connection == null) {
@@ -184,19 +182,17 @@ public class URLSource extends AbstractSource {
             connection = null;
             return is;
             
-        } catch (final ConnectException e){
-            LOG.warn("Unable to connect to URL: " + e.getMessage());
+        } catch (final ConnectException e) {
+            LOG.warn("Unable to connect to URL '" + url + "': " + e.getMessage());
             throw e;
 
         } catch (final IOException e) {
-            LOG.warn("URL could not be opened: " + e.getMessage(), e);
+            LOG.warn("URL '" + url + "' could not be opened: " + e.getMessage());
             throw e;
         }
     }
 
-    /* (non-Javadoc)
-	 * @see org.exist.source.Source#getContent()
-	 */
+    @Override
 	public String getContent() throws IOException {
 		try {
 			if(connection == null) {
@@ -208,7 +204,7 @@ public class URLSource extends AbstractSource {
 			connection = null;
 			return content;
 		} catch (final IOException e) {
-			LOG.warn("URL could not be opened: " + e.getMessage(), e);
+			LOG.warn("URL '" + url + "' could not be opened: " + e.getMessage());
 			return null;
 		}
 	}
@@ -217,9 +213,11 @@ public class URLSource extends AbstractSource {
         return responseCode;
     }
 
+    @Override
 	public String toString() {
-		if (url == null)
-			{return "[not set]";}
+		if (url == null) {
+			return "[not set]";
+		}
 		return url.toString();
 	}
 
