@@ -32,7 +32,7 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Stack;
+import java.util.ArrayList;
 
 /**
  * @author <a href="mailto:from-github-existdb@agh2342.de">Adrian Hamm</a>
@@ -109,9 +109,9 @@ public class FunXmlToJson extends BasicFunction {
     private void nodeValueToJson(final NodeValue nodeValue, final Writer writer) throws XPathException {
         StringBuilder tempStringBuilder = new StringBuilder();
         JsonFactory jsonFactory = new JsonFactory();
-        //use Stack<Object> to store String type keys and non-string type separators
-        final Integer stackSeperator = 0;
-        Stack<Object> mapkeyStack = new Stack<Object>();
+        final Integer stackSeparator = 0;
+        //use ArrayList<Object> to store String type keys and non-string type separators
+        ArrayList<Object> mapkeyArrayList = new ArrayList<Object>();
         boolean elementKeyIsEscaped = false;
         boolean elementValueIsEscaped = false;
         XMLStreamReader reader = null;
@@ -138,11 +138,11 @@ public class FunXmlToJson extends BasicFunction {
                             elementKeyValue = reader.getAttributeValue(null, "key");
                         }
                         if (elementKeyValue != null && previous != XMLStreamReader.START_DOCUMENT) {
-                            if (mapkeyStack.search(elementKeyValue) == -1 || (mapkeyStack.search(elementKeyValue) > mapkeyStack.search(stackSeperator))) {
+                            if (mapkeyArrayList.lastIndexOf(elementKeyValue) == -1 || (mapkeyArrayList.lastIndexOf(elementKeyValue) < mapkeyArrayList.lastIndexOf(stackSeparator))) {
                                 //key not found or found beyond separator, add key, continue
-                                mapkeyStack.push(elementKeyValue);
+                                mapkeyArrayList.add(elementKeyValue);
                                 jsonGenerator.writeFieldName(elementKeyValue);
-                            } else if (mapkeyStack.search(elementKeyValue) < mapkeyStack.search(stackSeperator)) {
+                            } else if (mapkeyArrayList.lastIndexOf(elementKeyValue) > mapkeyArrayList.lastIndexOf(stackSeparator)) {
                                 //key found, before separator, error double key use in same map
                                 logger.error("fn:xml-to-json(): FOJS0006: Invalid XML representation of JSON. Found map with double key use. Offending key in double quotes: \"" + elementKeyValue + "\"");
                                 throw new XPathException(ErrorCodes.FOJS0006, "Invalid XML representation of JSON. Found map with double key use. Offending key in error logs.");
@@ -153,7 +153,7 @@ public class FunXmlToJson extends BasicFunction {
                                 jsonGenerator.writeStartArray();
                                 break;
                             case "map":
-                                mapkeyStack.push(stackSeperator);
+                                mapkeyArrayList.add(stackSeparator);
                                 jsonGenerator.writeStartObject();
                                 break;
                             default:
@@ -176,8 +176,7 @@ public class FunXmlToJson extends BasicFunction {
                                 jsonGenerator.writeBoolean(tempBoolean);
                                 break;
                             case "map":
-                                for (int i = 0; i <= mapkeyStack.search(stackSeperator); i++) {
-                                    mapkeyStack.pop();
+                                while (mapkeyArrayList.size() > 0 && mapkeyArrayList.remove(mapkeyArrayList.size() - 1) != stackSeparator) {
                                 }
                                 jsonGenerator.writeEndObject();
                                 break;
