@@ -34,6 +34,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 
+import static org.exist.xquery.FunctionDSL.*;
+
 /**
  * @author <a href="mailto:from-github-existdb@agh2342.de">Adrian Hamm</a>
  */
@@ -41,30 +43,18 @@ public class FunXmlToJson extends BasicFunction {
 
     private final static Logger logger = LogManager.getLogger();
 
-    public final static FunctionSignature[] signature = {
-            new FunctionSignature(
-                    new QName("xml-to-json", Function.BUILTIN_FUNCTION_NS),
-                    "Converts an XML tree (in w3c 'XML Representation of JSON' format) into a string conforming to the JSON grammar. Basic string (un)escaping.",
-                    new SequenceType[]{
-                            new FunctionParameterSequenceType("node", Type.NODE,
-                                    Cardinality.ZERO_OR_ONE, "The input node")
-                    },
-                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE,
-                            "The JSON representation of the input node")
-            ),
-            new FunctionSignature(
-                    new QName("xml-to-json", Function.BUILTIN_FUNCTION_NS),
-                    "Converts an XML tree (in w3c 'XML Representation of JSON' format) into a string conforming to the JSON grammar. Basic string (un)escaping. Options are ignored.",
-                    new SequenceType[]{
-                            new FunctionParameterSequenceType("node", Type.NODE,
-                                    Cardinality.ZERO_OR_ONE, "The input node"),
-                            new FunctionParameterSequenceType("options", Type.MAP,
-                                    Cardinality.ONE, "The options map")
-                    },
-                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE,
-                            "The JSON representation of the input node")
+    private static final String FS_XML_TO_JSON_NAME = "xml-to-json";
+    private static final FunctionParameterSequenceType FS_XML_TO_JSON_OPT_PARAM_NODE = optParam("node", Type.NODE, "The input node");
+    private static final FunctionParameterSequenceType FS_XML_TO_JSON_OPT_PARAM_OPTIONS = optParam("options", Type.MAP, "The options map");
+    static final FunctionSignature[] FS_XML_TO_JSON = functionSignatures(
+            new QName(FS_XML_TO_JSON_NAME, Function.BUILTIN_FUNCTION_NS),
+            "Converts an XML tree (in w3c 'XML Representation of JSON' format) into a string conforming to the JSON grammar. Basic string (un)escaping.",
+            returnsOpt(Type.STRING, "The JSON representation of the input node"),
+            arities(
+                    arity(FS_XML_TO_JSON_OPT_PARAM_NODE),
+                    arity(FS_XML_TO_JSON_OPT_PARAM_NODE, FS_XML_TO_JSON_OPT_PARAM_OPTIONS)
             )
-    };
+    );
 
     public FunXmlToJson(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
