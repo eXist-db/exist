@@ -399,8 +399,12 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Nullable
     private HttpContext httpContext = null;
 
+    private final Map<QName, DecimalFormat> staticDecimalFormats = new HashMap<>();
+    private static final QName UNNAMED_DECIMAL_FORMAT = new QName("__UNNAMED__", Function.BUILTIN_FUNCTION_NS);
+
     public XQueryContext() {
         profiler = new Profiler(null);
+        staticDecimalFormats.put(UNNAMED_DECIMAL_FORMAT, DecimalFormat.UNNAMED);
     }
 
     public XQueryContext(final Database db) {
@@ -2601,6 +2605,30 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     private void setRealUser(final Subject realUser) {
         this.realUser = realUser;
+    }
+
+    /**
+     * Get a static decimal format.
+     *
+     * @param qnDecimalFormat the name of the decimal format, or null for the UNNAMED format.
+     *
+     * @return the decimal format, or null if there is no format matching the name
+     */
+    public @Nullable DecimalFormat getStaticDecimalFormat(@Nullable QName qnDecimalFormat) {
+        if (qnDecimalFormat == null) {
+            qnDecimalFormat = UNNAMED_DECIMAL_FORMAT;
+        }
+        return staticDecimalFormats.get(qnDecimalFormat);
+    }
+
+    /**
+     * Set a static decimal format.
+     *
+     * @param qnDecimalFormat the name of the decimal format
+     * @param decimalFormat the decimal format
+     */
+    public void setStaticDecimalFormat(final QName qnDecimalFormat, final DecimalFormat decimalFormat) {
+        staticDecimalFormats.put(qnDecimalFormat, decimalFormat);
     }
 
     /**

@@ -334,7 +334,7 @@ public abstract class Function extends PathExpr {
                         String.valueOf(argPosition), mySignature, type.toString(), Type.getTypeName(returnType)));
             }
         }
-        if (!typeMatches) {
+        if (!typeMatches && !context.isBackwardsCompatible()) {
             if (type.getNodeName() != null) {
                 expr = new DynamicNameCheck(context,
                         new NameTest(type.getPrimaryType(), type.getNodeName()), expr);
