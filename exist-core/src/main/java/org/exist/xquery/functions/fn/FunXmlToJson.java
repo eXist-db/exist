@@ -114,10 +114,11 @@ public class FunXmlToJson extends BasicFunction {
         Stack<Object> mapkeyStack = new Stack<Object>();
         boolean elementKeyIsEscaped = false;
         boolean elementValueIsEscaped = false;
+        XMLStreamReader reader = null;
         try (
                 final JsonGenerator jsonGenerator = jsonFactory.createGenerator(writer);
         ) {
-            final XMLStreamReader reader = context.getXMLStreamReader(nodeValue);
+            reader = context.getXMLStreamReader(nodeValue);
             int previous = XMLStreamReader.START_DOCUMENT;
             int status = XMLStreamReader.START_DOCUMENT;
             while (reader.hasNext()) {
@@ -207,13 +208,20 @@ public class FunXmlToJson extends BasicFunction {
                         break;
                 }
             }
-            reader.close();
         } catch (JsonGenerationException e) {
             throw new XPathException(ErrorCodes.FOJS0006, "Invalid XML representation of JSON.");
         } catch (XMLStreamException e) {
             throw new XPathException(ErrorCodes.FOER0000, "XMLStreamException", e);
         } catch (IOException e) {
             throw new XPathException(ErrorCodes.FOER0000, "IOException", e);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (XMLStreamException e) {
+                    throw new XPathException(ErrorCodes.FOER0000, "XMLStreamException", e);
+                }
+            }
         }
     }
 
