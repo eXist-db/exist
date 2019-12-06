@@ -129,6 +129,8 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
      * @param modeStr the mode string for the ACE is simple symbolic format, must be between 1 and 3 characters.
      *
      * @return the octal mode encoded as an int.
+     *
+     * @throws PermissionDeniedException if the mode string is invalid
      */
     public static int aceSimpleSymbolicModeToInt(final String modeStr) throws PermissionDeniedException {
         if (modeStr == null || modeStr.length() == 0 || modeStr.length() > 3) {

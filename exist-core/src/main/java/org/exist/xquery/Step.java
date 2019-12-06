@@ -107,6 +107,10 @@ public abstract class Step extends AbstractExpression {
     /**
      * Static check if the location steps first filter is a positional predicate.
      * If yes, set a flag on the {@link LocationStep}
+     *
+     * @param inPredicate true if in a predicate, false otherwise
+     *
+     * @return true if the first filter is a positional predicate
      */
     protected boolean checkPositionalFilters(final boolean inPredicate) {
         if (!inPredicate && this.hasPredicates()) {

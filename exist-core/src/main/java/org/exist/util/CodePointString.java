@@ -253,7 +253,7 @@ public class CodePointString {
      *
      * @return this
      *
-     * @throws IndexOutOfBoundsException if <code>index < 0 || index > getLength()</code>
+     * @throws IndexOutOfBoundsException if <code>index &lt; 0 || index &gt; getLength()</code>
      */
     public CodePointString insert(final int index, final int codePoint) {
         if (index < 0 || index > codePoints.length) {
@@ -281,7 +281,7 @@ public class CodePointString {
      *
      * @return this
      *
-     * @throws IndexOutOfBoundsException if <code>indexes[i] < 0 || indexes[i] > getLength()</code>
+     * @throws IndexOutOfBoundsException if <code>indexes[i] &lt; 0 || indexes[i] &gt; getLength()</code>
      */
     public CodePointString insert(final int[] indexes, final int codePoint) {
         // first sort the indexes into ascending order
