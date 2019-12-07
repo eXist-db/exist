@@ -56,16 +56,15 @@ public class BrokerPoolsTest {
     @Test
     public void shutdownConcurrent() throws InterruptedException, ExecutionException, EXistException, DatabaseConfigurationException, IOException {
         final int testThreads = 5;
-        final Path tempDir = temporaryFolder.getRoot().toPath();
         final CountDownLatch shutdownLatch = new CountDownLatch(1);
         final CountDownLatch acquiredLatch = new CountDownLatch(testThreads);
         final List<Future<Exception>> shutdownTasks = new ArrayList<>();
         final ExecutorService executorService = Executors.newFixedThreadPool(testThreads);
         for (int i = 0; i < testThreads; i ++) {
-            Path datadir = createDirectory(tempDir.resolve("exist" + i));
-            Path conf = datadir.resolve("conf.xml");
+            final Path dataDir = temporaryFolder.newFolder("exist" + i).toPath().normalize().toAbsolutePath();
+            final Path conf = dataDir.resolve("conf.xml");
             write(conf, singleton("<exist><db-connection database='native' files='" + datadir + "'/></exist>"));
-            BrokerPool.configure("instance" + i, 0, 1, new Configuration(conf.toString(), Optional.of(datadir)));
+            BrokerPool.configure("instance" + i, 0, 1, new Configuration(conf.normalize().toAbsolutePath().toString(), Optional.of(dataDir)));
             shutdownTasks.add(executorService.submit(new BrokerPoolShutdownTask(acquiredLatch, shutdownLatch)));
         }
 
