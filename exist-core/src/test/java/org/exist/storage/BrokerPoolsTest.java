@@ -20,26 +20,17 @@
 package org.exist.storage;
 
 import org.exist.EXistException;
-import org.exist.security.Subject;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.BrokerPools;
-import org.exist.storage.DBBroker;
-import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.xmldb.LocalCollection;
-import org.exist.xmldb.XmldbURI;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.xmldb.api.base.XMLDBException;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
 
-import static java.nio.file.Files.createDirectory;
 import static java.nio.file.Files.write;
 import static java.util.Collections.singleton;
 import static junit.framework.TestCase.assertTrue;
