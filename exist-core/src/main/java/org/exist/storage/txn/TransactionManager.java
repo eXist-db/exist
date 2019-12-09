@@ -240,6 +240,8 @@ public class TransactionManager implements BrokerPoolService {
             return;
         }
 
+        boolean doneCommit = false;
+
         // CAS loop
         try {
             while (true) {
@@ -269,11 +271,18 @@ public class TransactionManager implements BrokerPoolService {
                 }
 
                 // if we are have active transactions and are not preempted by another thread, commit transaction
-                if (localState > STATE_IDLE && state.compareAndSet(localState, localState - 1)) {
-                    doCommitTransaction(txn);
+                if (localState > STATE_IDLE) {
+                    if (!doneCommit) {
+                        doCommitTransaction(txn);
+                        // NOTE: doCommitTransaction above might throw an exception before commit which will throw us out of the loop
+                        doneCommit = txn.getState() == Txn.State.COMMITTED;
+                    }
 
-                    // done... exit CAS loop!
-                    return;
+                    // try and update our state to reflect that we have committed the transaction, if not then loop...
+                    if (state.compareAndSet(localState, localState - 1)) {
+                        // done... exit CAS loop!
+                        return;
+                    }
                 }
             }
         } catch (final InterruptedException e) {
