@@ -64,7 +64,7 @@ public class BrokerPoolsTest {
         for (int i = 0; i < testThreads; i ++) {
             Path datadir = createDirectory(tempDir.resolve("exist" + i));
             Path conf = datadir.resolve("conf.xml");
-            write(conf, singleton("<exist><db-connection database='native' files='\" + datadir + \"'/></exist>"));
+            write(conf, singleton("<exist><db-connection database='native' files='" + datadir + "'/></exist>"));
             BrokerPool.configure("instance" + i, 0, 1, new Configuration(conf.toString(), Optional.of(datadir)));
             shutdownTasks.add(executorService.submit(new BrokerPoolShutdownTask(acquiredLatch, shutdownLatch)));
         }
