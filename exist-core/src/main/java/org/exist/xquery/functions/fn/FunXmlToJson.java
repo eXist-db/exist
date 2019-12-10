@@ -97,11 +97,11 @@ public class FunXmlToJson extends BasicFunction {
      * @throws XPathException on error in XML JSON input according to specification
      */
     private void nodeValueToJson(final NodeValue nodeValue, final Writer writer) throws XPathException {
-        StringBuilder tempStringBuilder = new StringBuilder();
-        JsonFactory jsonFactory = new JsonFactory();
+        final StringBuilder tempStringBuilder = new StringBuilder();
+        final JsonFactory jsonFactory = new JsonFactory();
         final Integer stackSeparator = 0;
         //use ArrayList<Object> to store String type keys and non-string type separators
-        ArrayList<Object> mapkeyArrayList = new ArrayList<Object>();
+        final ArrayList<Object> mapkeyArrayList = new ArrayList<Object>();
         boolean elementKeyIsEscaped = false;
         boolean elementValueIsEscaped = false;
         XMLStreamReader reader = null;
@@ -117,11 +117,11 @@ public class FunXmlToJson extends BasicFunction {
                 switch (status) {
                     case XMLStreamReader.START_ELEMENT:
                         tempStringBuilder.setLength(0);
-                        String elementAttributeEscapedValue = reader.getAttributeValue(null, "escaped");
+                        final String elementAttributeEscapedValue = reader.getAttributeValue(null, "escaped");
                         elementValueIsEscaped = "true".equals(elementAttributeEscapedValue);
-                        String elementAttributeEscapedKeyValue = reader.getAttributeValue(null, "escaped-key");
+                        final String elementAttributeEscapedKeyValue = reader.getAttributeValue(null, "escaped-key");
                         elementKeyIsEscaped = "true".equals(elementAttributeEscapedKeyValue);
-                        String elementKeyValue = "";
+                        final String elementKeyValue;
                         if (elementKeyIsEscaped) {
                             elementKeyValue = unescapeEscapedJsonString(reader.getAttributeValue(null, "key"));
                         } else {
@@ -155,14 +155,13 @@ public class FunXmlToJson extends BasicFunction {
                         tempStringBuilder.append(reader.getText());
                         break;
                     case XMLStreamReader.END_ELEMENT:
-                        String tempString = tempStringBuilder.toString();
-                        boolean tempBoolean;
+                        final String tempString = tempStringBuilder.toString();
                         switch (reader.getLocalName()) {
                             case "array":
                                 jsonGenerator.writeEndArray();
                                 break;
                             case "boolean":
-                                tempBoolean = !("".equals(tempString) || "0".equals(tempString) || "false".equals(tempString));
+                                final boolean tempBoolean = !("".equals(tempString) || "0".equals(tempString) || "false".equals(tempString));
                                 jsonGenerator.writeBoolean(tempBoolean);
                                 break;
                             case "map":
@@ -177,7 +176,7 @@ public class FunXmlToJson extends BasicFunction {
                                 jsonGenerator.writeNull();
                                 break;
                             case "number":
-                                double tempDouble = Double.parseDouble(tempString);
+                                final double tempDouble = Double.parseDouble(tempString);
                                 jsonGenerator.writeNumber(tempDouble);
                                 break;
                             case "string":
@@ -223,13 +222,13 @@ public class FunXmlToJson extends BasicFunction {
      * @throws XPathException in case of dynamic error
      */
     private String unescapeEscapedJsonString(final String escapedJsonString) throws IOException, XPathException {
-        JsonFactory jsonFactory = new JsonFactory();
-        StringBuilder unescapedJsonStringBuilder = new StringBuilder();
-        String unescapedJsonString;
+        final JsonFactory jsonFactory = new JsonFactory();
+        final StringBuilder unescapedJsonStringBuilder = new StringBuilder();
+        final String unescapedJsonString;
         try {
-            JsonParser jsonParser = jsonFactory.createParser("\"" + escapedJsonString + "\"");
+            final JsonParser jsonParser = jsonFactory.createParser("\"" + escapedJsonString + "\"");
             while (!jsonParser.isClosed()) {
-                JsonToken jsonToken = jsonParser.nextToken();
+                jsonParser.nextToken();
                 if (jsonParser.hasTextCharacters()) {
                     unescapedJsonStringBuilder.append(jsonParser.getValueAsString());
                 }
