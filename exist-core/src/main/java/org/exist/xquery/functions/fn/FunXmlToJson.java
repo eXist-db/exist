@@ -198,10 +198,8 @@ public class FunXmlToJson extends BasicFunction {
             }
         } catch (JsonGenerationException e) {
             throw new XPathException(ErrorCodes.FOJS0006, "Invalid XML representation of JSON.");
-        } catch (XMLStreamException e) {
-            throw new XPathException(ErrorCodes.FOER0000, "XMLStreamException", e);
-        } catch (IOException e) {
-            throw new XPathException(ErrorCodes.FOER0000, "IOException", e);
+        } catch (XMLStreamException | IOException e) {
+            throw new XPathException(ErrorCodes.FOER0000, e.getMessage(), e);
         } finally {
             if (reader != null) {
                 try {
