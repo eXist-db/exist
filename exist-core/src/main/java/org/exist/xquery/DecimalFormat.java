@@ -26,7 +26,7 @@ package org.exist.xquery;
  *
  * NOTE: UTF-16 characters are stored as code-points!
  *
- * @author <a href="mailto: adam@evolvedbinary.com">Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class DecimalFormat {
 
