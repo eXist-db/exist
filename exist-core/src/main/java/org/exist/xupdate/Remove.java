@@ -67,27 +67,26 @@ public class Remove extends Modification {
 			final StoredNode[] ql = selectAndLock(transaction);
 			final NotificationService notifier = broker.getBrokerPool()
 					.getNotificationService();
-			for (int i = 0; i < ql.length; i++) {
-				final StoredNode node = ql[i];
+            for (final StoredNode node : ql) {
                 final DocumentImpl doc = node.getOwnerDocument();
-				if (!doc.getPermissions().validate(broker.getCurrentSubject(),
-						Permission.WRITE)) {
-            				throw new PermissionDeniedException("User '" + broker.getCurrentSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
-                                }
+                if (!doc.getPermissions().validate(broker.getCurrentSubject(),
+                        Permission.WRITE)) {
+                    throw new PermissionDeniedException("User '" + broker.getCurrentSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
+                }
 
-				final NodeImpl parent = (NodeImpl) getParent(node);
+                final NodeImpl parent = (NodeImpl) getParent(node);
 
                 if (parent == null || parent.getNodeType() != Node.ELEMENT_NODE) {
-					throw new EXistException(
-							"you cannot remove the document element. Use update "
-									+ "instead");
-				} else {
-					parent.removeChild(transaction, node);
-				}
-				doc.getMetadata().setLastModified(System.currentTimeMillis());
-				modifiedDocuments.add(doc);
-				broker.storeXMLResource(transaction, doc);
-				notifier.notifyUpdate(doc, UpdateListener.UPDATE);
+                    throw new EXistException(
+                            "you cannot remove the document element. Use update "
+                                    + "instead");
+                } else {
+                    parent.removeChild(transaction, node);
+                }
+                doc.getMetadata().setLastModified(System.currentTimeMillis());
+                modifiedDocuments.add(doc);
+                broker.storeXMLResource(transaction, doc);
+                notifier.notifyUpdate(doc, UpdateListener.UPDATE);
             }
 			checkFragmentation(transaction, modifiedDocuments);
 			return ql.length;

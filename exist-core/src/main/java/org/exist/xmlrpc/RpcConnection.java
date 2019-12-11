@@ -3436,8 +3436,8 @@ public class RpcConnection implements RpcAPI {
 
         //Copy i file
         int p, dsize = documents.length;
-        for (int i = 0; i < dsize; i++) {
-            final Map<String, Object> hash = (Map<String, Object>) documents[i];
+        for (Object document : documents) {
+            final Map<String, Object> hash = (Map<String, Object>) document;
             String docName = (String) hash.get("name");
             //TODO : use dedicated function in XmldbURI
             if ((p = docName.lastIndexOf("/")) != Constants.STRING_NOT_FOUND) {
@@ -3448,8 +3448,8 @@ public class RpcConnection implements RpcAPI {
             final String destDocUri = namedest + "/" + docName;
             withDb((broker, transaction) -> {
                 final LockManager lockManager = broker.getBrokerPool().getLockManager();
-                try(final ManagedDocumentLock srcDocLock = lockManager.acquireDocumentReadLock(XmldbURI.create(srcDocUri));
-                        final ManagedDocumentLock destDocLock = lockManager.acquireDocumentWriteLock(XmldbURI.create(destDocUri))) {
+                try (final ManagedDocumentLock srcDocLock = lockManager.acquireDocumentReadLock(XmldbURI.create(srcDocUri));
+                     final ManagedDocumentLock destDocLock = lockManager.acquireDocumentWriteLock(XmldbURI.create(destDocUri))) {
                     final byte[] xml = getDocument(srcDocUri, parameters);
                     parse(xml, destDocUri);
                     return null;

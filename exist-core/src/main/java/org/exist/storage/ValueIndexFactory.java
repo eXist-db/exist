@@ -252,8 +252,8 @@ public class ValueIndexFactory {
 
     private static void print(final AtomicValue dtv, final byte[] data) throws XPathException {
         System.out.print(dtv.getStringValue() + " = ");
-        for (int i = 0; i < data.length; i++) {
-            System.out.print(" " + Integer.toHexString(data[i] & 0xff));
+        for (byte datum : data) {
+            System.out.print(" " + Integer.toHexString(datum & 0xff));
         }
         System.out.println();
     }

@@ -24,7 +24,6 @@ package org.exist.xquery.functions.xmldb;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.storage.lock.Lock.LockMode;

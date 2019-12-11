@@ -92,11 +92,10 @@ public class Insert extends Modification {
             final int len = children.getLength();
             if (LOG.isDebugEnabled())
                 {LOG.debug("found " + len + " nodes to insert");}
-            for (int i = 0; i < ql.length; i++) {
-                final StoredNode node = ql[i];
+            for (final StoredNode node : ql) {
                 final DocumentImpl doc = node.getOwnerDocument();
                 if (!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE)) {
-                        throw new PermissionDeniedException("permission to update document denied");
+                    throw new PermissionDeniedException("permission to update document denied");
                 }
                 final NodeImpl parent = (NodeImpl) getParent(node);
                 switch (mode) {

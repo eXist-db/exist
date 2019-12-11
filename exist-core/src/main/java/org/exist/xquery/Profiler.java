@@ -102,28 +102,28 @@ public class Profiler {
     public final void configure(Option pragma) {
         final String options[] = pragma.tokenizeContents();
         String params[];
-        for (int i = 0; i < options.length; i++) {
-            params = Option.parseKeyValuePair(options[i]);
+        for (String option : options) {
+            params = Option.parseKeyValuePair(option);
             if (params != null) {
                 if ("trace".equals(params[0])) {
                     stats.setEnabled(true);
-                    
+
                 } else if ("tracelog".equals(params[0])) {
                     logEnabled = "yes".equals(params[1]);
-                
+
                 } else if ("logger".equals(params[0])) {
                     log = LogManager.getLogger(params[1]);
-                
+
                 } else if ("enabled".equals(params[0])) {
                     enabled = "yes".equals(params[1]);
-                
+
                 } else if ("verbosity".equals(params[0])) {
                     try {
                         verbosity = Integer.parseInt(params[1]);
                     } catch (final NumberFormatException e) {
-                    	log.warn( "invalid value for verbosity: " +
-                    			"should be an integer between 0 and " + 
-                    			SEQUENCE_DUMP );                   	
+                        log.warn("invalid value for verbosity: " +
+                                "should be an integer between 0 and " +
+                                SEQUENCE_DUMP);
                     }
                 }
             }

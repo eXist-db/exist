@@ -108,8 +108,8 @@ public class LocalXUpdateQueryService extends AbstractLocalService implements XU
 
                 final Modification modifications[] = processor.parse(new InputSource(reader));
                 long mods = 0;
-                for (int i = 0; i < modifications.length; i++) {
-                    mods += modifications[i].process(transaction);
+                for (Modification modification : modifications) {
+                    mods += modification.process(transaction);
                     broker.flush();
                 }
 

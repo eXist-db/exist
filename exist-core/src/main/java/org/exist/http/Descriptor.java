@@ -291,12 +291,12 @@ public class Descriptor implements ErrorHandler {
     public boolean allowSource(String path) {
         if (allowSourceList != null) {
             //Iterate through the xqueries that source viewing is allowed for
-            for (int i = 0; i < allowSourceList.length; i++) {
+            for (String s : allowSourceList) {
                 // DWES: this helps a lot. quickfix not the final solution
                 path = path.replace('\\', '/');
 
                 //does the path match the <allow-source><xquery path=""/></allow-source> path
-                if ((allowSourceList[i].equals(path)) || (path.indexOf(allowSourceList[i]) > -1)) {
+                if ((s.equals(path)) || (path.indexOf(s) > -1)) {
                     //yes, return true
                     return (true);
                 }
@@ -320,11 +320,11 @@ public class Descriptor implements ErrorHandler {
         }
 
         //Iterate through the mappings
-        for (int i = 0; i < mapList.length; i++) {
+        for (String[] strings : mapList) {
             //does the path or the path/ match the map path
-            if (mapList[i][0].equals(path) || (mapList[i][0] + "/").equals(path)) {
+            if (strings[0].equals(path) || (strings[0] + "/").equals(path)) {
                 //return the view
-                return (mapList[i][1]);
+                return (strings[1]);
             }
         }
 

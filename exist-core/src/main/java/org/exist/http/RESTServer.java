@@ -918,8 +918,8 @@ public class RESTServer {
                     long mods = 0;
                     try(final Reader reader = new StringReader(content)) {
                         final Modification modifications[] = processor.parse(new InputSource(reader));
-                        for (int i = 0; i < modifications.length; i++) {
-                            mods += modifications[i].process(transaction);
+                        for (Modification modification : modifications) {
+                            mods += modification.process(transaction);
                             broker.flush();
                         }
                     }

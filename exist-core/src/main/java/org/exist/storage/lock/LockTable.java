@@ -651,11 +651,11 @@ public class LockTable {
 
         final long stamp = listenersLock.readLock();
         try {
-            for (int i = 0; i < listeners.length; i ++) {
+            for (LockEventListener listener : listeners) {
                 try {
-                    listeners[i].accept(lockEventType, timestamp, groupId, entry);
+                    listener.accept(lockEventType, timestamp, groupId, entry);
                 } catch (final Exception e) {
-                    LOG.error("Listener '{}' error: ", listeners[i].getClass().getName(), e);
+                    LOG.error("Listener '{}' error: ", listener.getClass().getName(), e);
                 }
             }
         } finally {

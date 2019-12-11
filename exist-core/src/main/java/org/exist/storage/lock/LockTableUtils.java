@@ -79,9 +79,9 @@ public class LockTableUtils {
                                  builder
                                          .append(EOL)
                                          .append("\t\t\tTrace ").append(i).append(": ").append(EOL);
-                                 for (int j = 0; j < trace.length; j++) {
-                                     builder.append("\t\t\t\t").append(trace[j]).append(EOL);
-                                 }
+                                for (StackTraceElement stackTraceElement : trace) {
+                                    builder.append("\t\t\t\t").append(stackTraceElement).append(EOL);
+                                }
                             }
                         }
                     }

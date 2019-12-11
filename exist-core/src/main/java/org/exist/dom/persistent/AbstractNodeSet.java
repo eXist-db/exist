@@ -147,8 +147,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     @Override
     public DocumentSet getDocumentSet() {
         final MutableDocumentSet ds = new DefaultDocumentSet();
-        for(final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
-            ds.add(i.next().getOwnerDocument());
+        for (NodeProxy nodeProxy : this) {
+            ds.add(nodeProxy.getOwnerDocument());
         }
         return ds;
     }
@@ -346,22 +346,21 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public NodeSet getParents(final int contextId) {
         final NodeSet parents = new NewArrayNodeSet();
         NodeProxy parent = null;
-        for(final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
-            final NodeProxy current = i.next();
+        for (final NodeProxy current : this) {
             final NodeId parentID = current.getNodeId().getParentId();
-            if(parentID != null && !(parentID.getTreeLevel() == 1 &&
-                current.getOwnerDocument().getCollection().isTempCollection())) {
-                if(parent == null || parent.getOwnerDocument().getDocId() !=
-                    current.getOwnerDocument().getDocId() || !parent.getNodeId().equals(parentID)) {
-                    if(parentID != NodeId.DOCUMENT_NODE) {
+            if (parentID != null && !(parentID.getTreeLevel() == 1 &&
+                    current.getOwnerDocument().getCollection().isTempCollection())) {
+                if (parent == null || parent.getOwnerDocument().getDocId() !=
+                        current.getOwnerDocument().getDocId() || !parent.getNodeId().equals(parentID)) {
+                    if (parentID != NodeId.DOCUMENT_NODE) {
                         parent = new NodeProxy(current.getOwnerDocument(), parentID, Node.ELEMENT_NODE,
-                            StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
+                                StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
                     } else {
                         parent = new NodeProxy(current.getOwnerDocument(), parentID, Node.DOCUMENT_NODE,
-                            StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
+                                StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
                     }
                 }
-                if(Expression.NO_CONTEXT_ID != contextId) {
+                if (Expression.NO_CONTEXT_ID != contextId) {
                     parent.addContextNode(contextId, current);
                 } else {
                     parent.copyContext(current);
@@ -383,21 +382,20 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     @Override
     public NodeSet getAncestors(final int contextId, final boolean includeSelf) {
         final ExtArrayNodeSet ancestors = new ExtArrayNodeSet();
-        for(final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
-            final NodeProxy current = i.next();
-            if(includeSelf) {
-                if(Expression.NO_CONTEXT_ID != contextId) {
+        for (final NodeProxy current : this) {
+            if (includeSelf) {
+                if (Expression.NO_CONTEXT_ID != contextId) {
                     current.addContextNode(contextId, current);
                 }
                 ancestors.add(current);
             }
             NodeId parentID = current.getNodeId().getParentId();
-            while(parentID != null) {
+            while (parentID != null) {
                 //Filter out the temporary nodes wrapper element
-                if(parentID != NodeId.DOCUMENT_NODE &&
-                    !(parentID.getTreeLevel() == 1 && current.getOwnerDocument().getCollection().isTempCollection())) {
+                if (parentID != NodeId.DOCUMENT_NODE &&
+                        !(parentID.getTreeLevel() == 1 && current.getOwnerDocument().getCollection().isTempCollection())) {
                     final NodeProxy parent = new NodeProxy(current.getOwnerDocument(), parentID, Node.ELEMENT_NODE);
-                    if(Expression.NO_CONTEXT_ID != contextId) {
+                    if (Expression.NO_CONTEXT_ID != contextId) {
                         parent.addContextNode(contextId, current);
                     } else {
                         parent.copyContext(current);
@@ -435,10 +433,9 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     @Override
     public NodeSet intersection(final NodeSet other) {
         final AVLTreeNodeSet r = new AVLTreeNodeSet();
-        for(final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
-            final NodeProxy l = i.next();
+        for (final NodeProxy l : this) {
             final NodeProxy p = other.get(l);
-            if(p != null) {
+            if (p != null) {
                 l.addMatches(p);
                 r.add(l);
             }
@@ -449,8 +446,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     @Override
     public NodeSet deepIntersection(final NodeSet other) {
         final AVLTreeNodeSet r = new AVLTreeNodeSet();
-        for (final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
-            final NodeProxy l = i.next();
+        for (final NodeProxy l : this) {
             final NodeProxy p = other.parentWithChild(l, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
             if (p != null) {
                 if (p.getNodeId().equals(l.getNodeId())) {
@@ -459,12 +455,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
                 r.add(p);
             }
         }
-        for (final Iterator<NodeProxy> i = other.iterator(); i.hasNext(); ) {
-            final NodeProxy l = i.next();
+        for (final NodeProxy l : other) {
             final NodeProxy q = parentWithChild(l, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
             if (q != null) {
                 final NodeProxy p = r.get(q);
-                if(p != null) {
+                if (p != null) {
                     p.addMatches(l);
                 } else {
                     r.add(l);
@@ -478,9 +473,9 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public NodeSet except(final NodeSet other) {
         final AVLTreeNodeSet r = new AVLTreeNodeSet();
         NodeProxy l;
-        for(final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
-            l = i.next();
-            if(!other.contains(l)) {
+        for (NodeProxy nodeProxy : this) {
+            l = nodeProxy;
+            if (!other.contains(l)) {
                 r.add(l);
             }
         }
@@ -491,9 +486,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public NodeSet filterDocuments(final NodeSet otherSet) {
         final DocumentSet docs = otherSet.getDocumentSet();
         final NodeSet newSet = new NewArrayNodeSet();
-        for(final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
-            final NodeProxy p = i.next();
-            if(docs.contains(p.getOwnerDocument().getDocId())) {
+        for (final NodeProxy p : this) {
+            if (docs.contains(p.getOwnerDocument().getDocId())) {
                 newSet.add(p);
             }
         }
@@ -525,10 +519,9 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         } else {
             final NewArrayNodeSet result = new NewArrayNodeSet();
             result.addAll(other);
-            for(final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
-                final NodeProxy p = i.next();
+            for (final NodeProxy p : this) {
                 final NodeProxy c = other.get(p);
-                if(c != null) {
+                if (c != null) {
                     c.addMatches(p);
                 } else {
                     result.add(p);
@@ -550,17 +543,16 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public NodeSet getContextNodes(final int contextId) {
         final NewArrayNodeSet result = new NewArrayNodeSet();
         DocumentImpl lastDoc = null;
-        for(final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
-            final NodeProxy current = i.next();
+        for (final NodeProxy current : this) {
             ContextItem contextNode = current.getContext();
-            while(contextNode != null) {
-                if(contextNode.getContextId() == contextId) {
+            while (contextNode != null) {
+                if (contextNode.getContextId() == contextId) {
                     final NodeProxy context = contextNode.getNode();
                     context.addMatches(current);
-                    if(Expression.NO_CONTEXT_ID != contextId) {
+                    if (Expression.NO_CONTEXT_ID != contextId) {
                         context.addContextNode(contextId, context);
                     }
-                    if(lastDoc != null && lastDoc.getDocId() != context.getOwnerDocument().getDocId()) {
+                    if (lastDoc != null && lastDoc.getDocId() != context.getOwnerDocument().getDocId()) {
                         lastDoc = context.getOwnerDocument();
                         result.add(context, getSizeHint(lastDoc));
                     } else {
@@ -620,9 +612,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public int getIndexType() {
         //Is the index type initialized ?
         if(indexType == Type.ANY_TYPE) {
-            for(final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
-                final NodeProxy node = i.next();
-                if(node.getOwnerDocument().getCollection().isTempCollection()) {
+            for (final NodeProxy node : this) {
+                if (node.getOwnerDocument().getCollection().isTempCollection()) {
                     //Temporary nodes return default values
                     indexType = Type.ITEM;
                     break;
@@ -630,12 +621,12 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
                 final int nodeIndexType = node.getIndexType();
                 //Refine type
                 //TODO : use common subtype
-                if(indexType == Type.ANY_TYPE) {
+                if (indexType == Type.ANY_TYPE) {
                     indexType = nodeIndexType;
                 } else {
                     //Broaden type
                     //TODO : use common supertype
-                    if(indexType != nodeIndexType) {
+                    if (indexType != nodeIndexType) {
                         indexType = Type.ITEM;
                     }
                 }
@@ -647,8 +638,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     @Override
     public void clearContext(final int contextId) throws XPathException {
         NodeProxy p;
-        for(final Iterator<NodeProxy> i = iterator(); i.hasNext(); ) {
-            p = i.next();
+        for (NodeProxy nodeProxy : this) {
+            p = nodeProxy;
             p.clearContext(contextId);
         }
     }

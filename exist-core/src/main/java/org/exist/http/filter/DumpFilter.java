@@ -129,9 +129,9 @@ public class DumpFilter implements Filter {
             Cookie cookies[] = hrequest.getCookies();
             if (cookies == null)
                 {cookies = new Cookie[0];}
-            for (int i = 0; i < cookies.length; i++) {
-                LOG.info("            cookie=" + cookies[i].getName() +
-                        "=" + cookies[i].getValue());
+            for (Cookie cookie : cookies) {
+                LOG.info("            cookie=" + cookie.getName() +
+                        "=" + cookie.getValue());
             }
             names = hrequest.getHeaderNames();
             while (names.hasMoreElements()) {

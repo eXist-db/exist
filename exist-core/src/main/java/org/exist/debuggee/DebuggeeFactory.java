@@ -79,13 +79,13 @@ public class DebuggeeFactory {
 				//looking for session in cookies (FF XDebug Helper add-ons as example)
     			final Cookie[] cookies = request.getCookies();
     			if (cookies != null) {
-        			for (int i = 0; i < cookies.length; i++) {
-        				if ("XDEBUG_SESSION".equals(cookies[i].getName())) {
-        					//TODO: check for value?? ("eXistDB_XDebug" ? or leave "default") -shabanovd 
-        					context.declareVariable(Debuggee.SESSION, cookies[i].getValue());
-            				break;
-        				}
-        			}
+                    for (Cookie cookie : cookies) {
+                        if ("XDEBUG_SESSION".equals(cookie.getName())) {
+                            //TODO: check for value?? ("eXistDB_XDebug" ? or leave "default") -shabanovd
+                            context.declareVariable(Debuggee.SESSION, cookie.getValue());
+                            break;
+                        }
+                    }
     			}
 			}
 		}

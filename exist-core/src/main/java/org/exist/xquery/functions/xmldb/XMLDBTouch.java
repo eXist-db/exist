@@ -30,7 +30,6 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
 
 import java.util.Calendar;
 import java.util.Date;

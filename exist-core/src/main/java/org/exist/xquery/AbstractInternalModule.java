@@ -104,9 +104,9 @@ public abstract class AbstractInternalModule implements InternalModule {
     @Override
     public Iterator<FunctionSignature> getSignaturesForFunction(final QName qname) {
         final List<FunctionSignature> signatures = new ArrayList<>(2);
-        for (int i = 0; i < mFunctions.length; i++) {
-            final FunctionSignature signature = mFunctions[i].getSignature();
-            if (signature.getName().compareTo(qname) == 0){
+        for (FunctionDef mFunction : mFunctions) {
+            final FunctionSignature signature = mFunction.getSignature();
+            if (signature.getName().compareTo(qname) == 0) {
                 signatures.add(signature);
             }
         }
@@ -119,9 +119,9 @@ public abstract class AbstractInternalModule implements InternalModule {
         if (ordered) {
             return binarySearch(id);
         } else {
-            for (int i = 0; i < mFunctions.length; i++) {
-                if (id.compareTo(mFunctions[i].getSignature().getFunctionId()) == 0) {
-                    return mFunctions[i];
+            for (FunctionDef mFunction : mFunctions) {
+                if (id.compareTo(mFunction.getSignature().getFunctionId()) == 0) {
+                    return mFunction;
                 }
             }
         }
@@ -150,8 +150,8 @@ public abstract class AbstractInternalModule implements InternalModule {
     @Override
     public List<FunctionSignature> getFunctionsByName(final QName qname) {
         final List<FunctionSignature> funcs = new ArrayList<>();
-        for (int i = 0; i < mFunctions.length; i++) {
-            final FunctionSignature sig = mFunctions[i].getSignature();
+        for (FunctionDef mFunction : mFunctions) {
+            final FunctionSignature sig = mFunction.getSignature();
             if (sig.getName().compareTo(qname) == 0) {
                 funcs.add(sig);
             }

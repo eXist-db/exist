@@ -529,10 +529,9 @@ public class SymbolTable implements BrokerPoolService, Closeable {
         }
 
         protected final void write(final VariableByteOutputStream os) throws IOException {
-            for(final Iterator<String> i = symbolsByName.keySet().iterator(); i.hasNext(); ) {
-                final String symbol = i.next();
+            for (final String symbol : symbolsByName.keySet()) {
                 final int id = symbolsByName.getInt(symbol);
-                if(id < 0) {
+                if (id < 0) {
                     LOG.error("Symbol Table: symbolTypeId=" + getSymbolType() + ", symbol='" + symbol + "', id=" + id);
                     //TODO : raise exception ? -pb
                 }

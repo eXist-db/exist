@@ -113,16 +113,16 @@ public class KillRunningXQuery extends BasicFunction
         
         if( id != 0 ) {
             final XQueryWatchDog watchdogs[] = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
-            for (int i = 0; i < watchdogs.length; i++) {
-	        	final XQueryContext 	context 	= watchdogs[i].getContext();
-	        	
-	      		if( id == context.hashCode() ) {
-	      			if( !watchdogs[i].isTerminating() ) {
-	      				watchdogs[i].kill( waittime );
-	      			}
-	      			break;
-	      		}
-	        }
+            for (XQueryWatchDog watchdog : watchdogs) {
+                final XQueryContext context = watchdog.getContext();
+
+                if (id == context.hashCode()) {
+                    if (!watchdog.isTerminating()) {
+                        watchdog.kill(waittime);
+                    }
+                    break;
+                }
+            }
 	    }
 	}
 	

@@ -257,20 +257,20 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
 
         if( shrinkThreshold >= 0 ) {
 
-            for( int i = 0; i < caches.size(); i++ ) {
-                cache = (Cache)caches.get( i );
+            for (Cache cach : caches) {
+                cache = (Cache) cach;
 
-                if( cache.getGrowthFactor() > 1.0 ) {
+                if (cache.getGrowthFactor() > 1.0) {
                     load = cache.getLoad();
 
-                    if( ( cache.getBuffers() > minSize ) && ( load < shrinkThreshold ) ) {
+                    if ((cache.getBuffers() > minSize) && (load < shrinkThreshold)) {
 
-                        if( LOG.isDebugEnabled() ) {
+                        if (LOG.isDebugEnabled()) {
                             final NumberFormat nf = NumberFormat.getNumberInstance();
-                            LOG.debug( "Shrinking cache: " + cache.getName() + " (a " + cache.getClass().getName() + ") to " + nf.format( cache.getBuffers() ) );
+                            LOG.debug("Shrinking cache: " + cache.getName() + " (a " + cache.getClass().getName() + ") to " + nf.format(cache.getBuffers()));
                         }
                         currentPageCount -= cache.getBuffers();
-                        cache.resize( getDefaultInitialSize() );
+                        cache.resize(getDefaultInitialSize());
                         currentPageCount += getDefaultInitialSize();
                     }
                 }
@@ -288,18 +288,18 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
         final int   minSize = (int)( totalPageCount * MIN_SHRINK_FACTOR );
         Cache cache;
 
-        for( int i = 0; i < caches.size(); i++ ) {
-            cache = (Cache)caches.get( i );
+        for (Cache cach : caches) {
+            cache = (Cache) cach;
 
-            if( cache.getBuffers() >= minSize ) {
-                int newSize = (int)( cache.getBuffers() * SHRINK_FACTOR );
+            if (cache.getBuffers() >= minSize) {
+                int newSize = (int) (cache.getBuffers() * SHRINK_FACTOR);
 
-                if( LOG.isDebugEnabled() ) {
+                if (LOG.isDebugEnabled()) {
                     final NumberFormat nf = NumberFormat.getNumberInstance();
-                    LOG.debug( "Shrinking cache: " + cache.getName() + " (a " + cache.getClass().getName() + ") to " + nf.format( newSize ) );
+                    LOG.debug("Shrinking cache: " + cache.getName() + " (a " + cache.getClass().getName() + ") to " + nf.format(newSize));
                 }
                 currentPageCount -= cache.getBuffers();
-                cache.resize( newSize );
+                cache.resize(newSize);
                 currentPageCount += newSize;
                 break;
             }

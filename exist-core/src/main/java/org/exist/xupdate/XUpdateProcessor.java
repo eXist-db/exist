@@ -721,15 +721,15 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			context = new XQueryContext(broker.getBrokerPool());
 			context.setStaticallyKnownDocuments(documentSet);
 			Map.Entry<String, String> namespaceEntry;
-			for (final Iterator<Map.Entry<String, String>> i = namespaces.entrySet().iterator(); i.hasNext();) {
-				namespaceEntry = (Map.Entry<String, String>) i.next();
+			for (Map.Entry<String, String> stringStringEntry : namespaces.entrySet()) {
+				namespaceEntry = stringStringEntry;
 				context.declareNamespace(
-					namespaceEntry.getKey(),
-					namespaceEntry.getValue());
+						namespaceEntry.getKey(),
+						namespaceEntry.getValue());
 			}
 			Map.Entry<String, Object> entry;
-			for (final Iterator<Map.Entry<String, Object>> i = variables.entrySet().iterator(); i.hasNext(); ) {
-				entry = (Map.Entry<String, Object>) i.next();
+			for (Map.Entry<String, Object> stringObjectEntry : variables.entrySet()) {
+				entry = stringObjectEntry;
 				context.declareVariable(entry.getKey(), entry.getValue());
 			}
 			// TODO(pkaminsk2): why replicate XQuery.compile here?

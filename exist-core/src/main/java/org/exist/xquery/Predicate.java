@@ -455,8 +455,7 @@ public class Predicate extends PathExpr {
             return cached.getResult();
         }
         DocumentImpl lastDoc = null;
-        for (final Iterator<NodeProxy> i = nodes.iterator(); i.hasNext();) {
-            final NodeProxy currentNode = i.next();
+        for (final NodeProxy currentNode : nodes) {
             int sizeHint = Constants.NO_SIZE_HINT;
             if (lastDoc == null || currentNode.getOwnerDocument() != lastDoc) {
                 lastDoc = currentNode.getOwnerDocument();
@@ -465,8 +464,8 @@ public class Predicate extends PathExpr {
             ContextItem contextItem = currentNode.getContext();
             if (contextItem == null) {
                 throw new XPathException(this,
-                    "Internal evaluation error: context is missing for node " +
-                    currentNode.getNodeId() + " !");
+                        "Internal evaluation error: context is missing for node " +
+                                currentNode.getNodeId() + " !");
             }
             // TODO : review to consider transverse context
             while (contextItem != null) {

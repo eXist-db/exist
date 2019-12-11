@@ -91,10 +91,10 @@ public class Expand extends BasicFunction {
         if (getArgumentCount() == 2) {
             final String serOpts = args[1].getStringValue();
             final String[] contents = Option.tokenize(serOpts);
-            for (int i = 0; i < contents.length; i++) {
-                final String[] pair = Option.parseKeyValuePair(contents[i]);
+            for (String content : contents) {
+                final String[] pair = Option.parseKeyValuePair(content);
                 if (pair == null) {
-                    throw new XPathException(this, "Found invalid serialization option: " + contents[i]);
+                    throw new XPathException(this, "Found invalid serialization option: " + content);
                 }
                 logger.debug("Setting serialization property: " + pair[0] + " = " + pair[1]);
                 serializeOptions.setProperty(pair[0], pair[1]);

@@ -835,9 +835,7 @@ public class ElementImpl extends NamedNode implements Element {
             }
         }
         if(declaresNamespacePrefixes()) {
-            for(final Iterator<Map.Entry<String, String>> i =
-                    namespaceMappings.entrySet().iterator(); i.hasNext(); ) {
-                final Map.Entry<String, String> entry = i.next();
+            for (final Map.Entry<String, String> entry : namespaceMappings.entrySet()) {
                 final String prefix = entry.getKey();
                 final String ns = entry.getValue();
                 final QName attrName = new QName(prefix, Namespaces.XMLNS_NS, XMLConstants.XMLNS_ATTRIBUTE);

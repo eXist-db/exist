@@ -59,23 +59,25 @@ public class Replace extends Modification {
             TextImpl text;
             AttrImpl attribute;
             ElementImpl parent;
-            for (int i = 0; i < ql.length; i++) {
-                final StoredNode node = ql[i];
+            for (final StoredNode node : ql) {
                 if (node == null) {
                     LOG.warn("select " + selectStmt + " returned empty node set");
                     continue;
                 }
                 final DocumentImpl doc = node.getOwnerDocument();
                 if (!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE)) {
-                        throw new PermissionDeniedException("User '" + broker.getCurrentSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
+                    throw new PermissionDeniedException("User '" + broker.getCurrentSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                 }
                 parent = (ElementImpl) node.getParentStoredNode();
-                if (parent == null)
-                    {throw new EXistException("The root element of a document can not be replaced with 'xu:replace'. " +
-                        "Please consider removing the document or use 'xu:update' to just replace the children of the root.");}
+                if (parent == null) {
+                    throw new EXistException("The root element of a document can not be replaced with 'xu:replace'. " +
+                            "Please consider removing the document or use 'xu:update' to just replace the children of the root.");
+                }
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
-                        if (modifications == 0) {modifications = 1;}
+                        if (modifications == 0) {
+                            modifications = 1;
+                        }
                         temp = children.item(0);
                         parent.replaceChild(transaction, temp, node);
                         break;

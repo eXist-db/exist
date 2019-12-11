@@ -423,8 +423,7 @@ public class PorterStemmer
    */
   public String stem(String s) {
 	  final char[] word = s.toCharArray();
-	  for(int i = 0; i < word.length; i++)
-		  add(word[i]);
+      for (char c : word) add(c);
 	  stem();
 	  final String result = toString();
 	  reset();
@@ -515,13 +514,13 @@ public class PorterStemmer
   public static void main(String[] args) {
     final PorterStemmer s = new PorterStemmer();
 
-    for (int i = 0; i < args.length; i++) {
-		for (int j = 0; j < args[i].length(); j++)
-			s.add(args[i].charAt(j));
-		s.stem();
-		System.out.println(s.toString());
-		s.reset();
-	}
+      for (String arg : args) {
+          for (int j = 0; j < arg.length(); j++)
+              s.add(arg.charAt(j));
+          s.stem();
+          System.out.println(s.toString());
+          s.reset();
+      }
   }
 }
 

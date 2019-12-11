@@ -241,8 +241,8 @@ public class IndexKeys extends BasicFunction {
             final IndexSpec idxConf = collection.getIndexConfiguration(broker);
             if (idxConf != null) {
                 final List<QName> qnames = idxConf.getIndexedQNames();
-                for (int j = 0; j < qnames.size(); j++) {
-                    final QName qName = (QName) qnames.get(j);
+                for (QName qname : qnames) {
+                    final QName qName = (QName) qname;
                     indexes.add(qName);
                 }
             }

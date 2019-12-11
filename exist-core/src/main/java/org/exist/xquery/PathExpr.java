@@ -227,9 +227,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             //TODO : let the parser do it ? -pb
             boolean gotAtomicResult = false;
             Expression prev = null;
-            for (final Iterator<Expression> iter = steps.iterator(); iter.hasNext(); ) {
+            for (Expression step : steps) {
                 prev = expr;
-                expr = iter.next();
+                expr = step;
                 context.getWatchDog().proceed(expr);
                 //TODO : maybe this could be detected by the parser ? -pb
                 if (gotAtomicResult && !Type.subTypeOf(expr.returnsType(), Type.NODE)
@@ -521,8 +521,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     @Override
     public void resetState(final boolean postOptimization) {
         super.resetState(postOptimization);
-        for (int i = 0; i < steps.size(); i++) {
-            steps.get(i).resetState(postOptimization);
+        for (Expression step : steps) {
+            step.resetState(postOptimization);
         }
     }
 

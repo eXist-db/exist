@@ -111,15 +111,15 @@ public class Txn implements Transaction {
 
     protected void signalAbort() {
         state = State.ABORTED;
-        for (int i = 0; i < listeners.size(); i++) {
-            listeners.get(i).abort();
+        for (TxnListener listener : listeners) {
+            listener.abort();
         }
     }
 
     protected void signalCommit() {
         state = State.COMMITTED;
-        for (int i = 0; i < listeners.size(); i++) {
-            listeners.get(i).commit();
+        for (TxnListener listener : listeners) {
+            listener.commit();
         }
     }
 

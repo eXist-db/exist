@@ -46,10 +46,10 @@ public abstract class AbstractCommandResolver implements CommandResolver {
 		final String[] names = cmd.getNames();
 		
 		if (names == null) {return;} //TODO: report for debug
-		
-		for (int i = 0; i < names.length; i++ ) {
+
+		for (String name : names) {
 			//TODO: check for conflicts
-			commands.put(names[i], cmd);
+			commands.put(name, cmd);
 		}
 	}
 	

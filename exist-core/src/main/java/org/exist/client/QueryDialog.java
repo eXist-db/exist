@@ -366,9 +366,9 @@ public class QueryDialog extends JFrame {
         }
         final String[] childCollections = root.listChildCollections();
         Collection child = null;
-        for (int i = 0; i < childCollections.length; i++) {
+        for (String childCollection : childCollections) {
             try {
-                child = root.getChildCollection(childCollections[i]);
+                child = root.getChildCollection(childCollection);
             } catch (final XMLDBException xmldbe) {
                 if (xmldbe.getCause() instanceof PermissionDeniedException) {
                     continue;

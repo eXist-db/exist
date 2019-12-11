@@ -211,8 +211,8 @@ public class TypeswitchExpression extends AbstractExpression {
         operand.dump(dumper);
         dumper.display(')');
         dumper.startIndent();
-        for (int i = 0; i < cases.size(); i++) {
-            final Case caseClause = (Case) cases.get(i);
+        for (Case aCase : cases) {
+            final Case caseClause = (Case) aCase;
             dumper.display("case ");
             if (caseClause.variable != null) {
                 dumper.display('$');
@@ -243,8 +243,8 @@ public class TypeswitchExpression extends AbstractExpression {
         
         operand.resetState(postOptimization);
         defaultClause.returnClause.resetState(postOptimization);
-        for (int i = 0; i < cases.size(); i++) {
-            final Case caseClause = (Case) cases.get(i);
+        for (Case aCase : cases) {
+            final Case caseClause = (Case) aCase;
             caseClause.returnClause.resetState(postOptimization);
         }
     }

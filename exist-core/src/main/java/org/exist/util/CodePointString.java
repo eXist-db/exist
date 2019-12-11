@@ -288,8 +288,7 @@ public class CodePointString {
         Arrays.sort(indexes);
 
         // only codePoints.length >= offsets > 0
-        for (int i = 0; i < indexes.length; i++) {
-            final int index = indexes[i];
+        for (final int index : indexes) {
             if (index < 0 || index > codePoints.length) {
                 throw new IndexOutOfBoundsException();
             }

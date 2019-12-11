@@ -116,10 +116,10 @@ class TriggersDialog extends JFrame {
         try {
             final Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
             final List<PrettyXmldbURI> alAllCollections = getCollections(root, new ArrayList<>());
-            for(int i = 0; i < alAllCollections.size(); i++) {
+            for (PrettyXmldbURI alAllCollection : alAllCollections) {
                 //TODO : use XmldbURIs !
-                if(!alAllCollections.get(i).toString().contains(XmldbURI.CONFIG_COLLECTION)) {
-                    alCollections.add(alAllCollections.get(i));
+                if (!alAllCollection.toString().contains(XmldbURI.CONFIG_COLLECTION)) {
+                    alCollections.add(alAllCollection);
                 }
             }
         } catch(final XMLDBException e) {
@@ -218,11 +218,11 @@ class TriggersDialog extends JFrame {
         collectionsList.add(new PrettyXmldbURI(XmldbURI.create(root.getName())));
         final String[] childCollections = root.listChildCollections();
         Collection child;
-        for(int i = 0; i < childCollections.length; i++) {
+        for (String childCollection : childCollections) {
             try {
-                child = root.getChildCollection(childCollections[i]);
-            } catch(final XMLDBException xmldbe) {
-                if(xmldbe.getCause() instanceof PermissionDeniedException) {
+                child = root.getChildCollection(childCollection);
+            } catch (final XMLDBException xmldbe) {
+                if (xmldbe.getCause() instanceof PermissionDeniedException) {
                     continue;
                 } else {
                     throw xmldbe;

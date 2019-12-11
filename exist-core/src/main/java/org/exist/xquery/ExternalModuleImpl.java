@@ -155,9 +155,9 @@ public class ExternalModuleImpl implements ExternalModule {
      */
     public FunctionSignature[] listFunctions() {
         final List<FunctionSignature> signatures = new ArrayList<FunctionSignature>(mFunctionMap.size());
-        for (final Iterator<UserDefinedFunction> i = mFunctionMap.values().iterator(); i.hasNext(); ) {
-        	final FunctionSignature signature = i.next().getSignature();
-    		signatures.add(signature);
+        for (UserDefinedFunction userDefinedFunction : mFunctionMap.values()) {
+            final FunctionSignature signature = userDefinedFunction.getSignature();
+            signatures.add(signature);
         }
         final FunctionSignature[] result = new FunctionSignature[signatures.size()];
         return signatures.toArray(result);

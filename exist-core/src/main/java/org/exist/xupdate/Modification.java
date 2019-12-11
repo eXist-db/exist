@@ -194,10 +194,9 @@ public abstract class Modification {
 	 * @throws XPathException if an error occurs whilst declaring the variables
 	 */
 	protected void declareVariables(XQueryContext context) throws XPathException {
-		for (final Iterator<Map.Entry<String, Object>> i = variables.entrySet().iterator(); i.hasNext(); ) {
-			final Map.Entry<String, Object> entry = (Map.Entry<String, Object>) i.next();
-			context.declareVariable(entry.getKey(), entry.getValue());
-		}
+        for (final Map.Entry<String, Object> entry : variables.entrySet()) {
+            context.declareVariable(entry.getKey(), entry.getValue());
+        }
 	}
 
 	/**
@@ -206,12 +205,12 @@ public abstract class Modification {
 	 */
 	protected void declareNamespaces(XQueryContext context) throws XPathException {
 		Map.Entry<String, String> entry;
-		for (final Iterator<Map.Entry<String, String>> i = namespaces.entrySet().iterator(); i.hasNext();) {
-			entry = (Map.Entry<String, String>) i.next();
-			context.declareNamespace(
-				entry.getKey(),
-				entry.getValue());
-		}
+        for (Map.Entry<String, String> stringStringEntry : namespaces.entrySet()) {
+            entry = stringStringEntry;
+            context.declareNamespace(
+                    entry.getKey(),
+                    entry.getValue());
+        }
 	}
 
 	/**

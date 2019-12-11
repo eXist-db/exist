@@ -282,13 +282,12 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         	}
         	
         	//declare user defined parameters as external variables
-        	for(final Iterator itUserVarName = userDefinedVariables.keySet().iterator(); itUserVarName.hasNext();)
-        	{
-        		final String varName = (String)itUserVarName.next();
-        		final String varValue = userDefinedVariables.getProperty(varName);
-        	
-        		context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
-        	}
+            for (Object o : userDefinedVariables.keySet()) {
+                final String varName = (String) o;
+                final String varValue = userDefinedVariables.getProperty(varName);
+
+                context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
+            }
         	
         } catch(final XPathException | IOException | PermissionDeniedException e) {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
@@ -353,13 +352,12 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         	}
         	
         	//declare user defined parameters as external variables
-        	for(final Iterator itUserVarName = userDefinedVariables.keySet().iterator(); itUserVarName.hasNext();)
-        	{
-        		final String varName = (String)itUserVarName.next();
-        		final String varValue = userDefinedVariables.getProperty(varName);
-        	
-        		context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
-        	}
+            for (Object o : userDefinedVariables.keySet()) {
+                final String varName = (String) o;
+                final String varValue = userDefinedVariables.getProperty(varName);
+
+                context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
+            }
         	
         } catch(final XPathException | IOException | PermissionDeniedException e) {
         	//Should never be reached
@@ -412,12 +410,12 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         	compiledQuery = service.compile(broker, context, query);
 
         	//declare user defined parameters as external variables
-        	for(final Iterator itUserVarName = userDefinedVariables.keySet().iterator(); itUserVarName.hasNext();) {
-        		final String varName = (String)itUserVarName.next();
-        		final String varValue = userDefinedVariables.getProperty(varName);
-        	
-        		context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
-        	}
+            for (Object o : userDefinedVariables.keySet()) {
+                final String varName = (String) o;
+                final String varValue = userDefinedVariables.getProperty(varName);
+
+                context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
+            }
         	
         	//reset & prepareForExecution for execution
         	compiledQuery.reset();
