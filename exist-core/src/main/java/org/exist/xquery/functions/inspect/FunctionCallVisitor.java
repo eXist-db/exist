@@ -8,7 +8,7 @@ import java.util.*;
 
 public class FunctionCallVisitor extends DefaultExpressionVisitor {
 
-    private Set<FunctionSignature> functionCalls = new HashSet<FunctionSignature>();
+    private Set<FunctionSignature> functionCalls = new HashSet<>();
 
     public Set<FunctionSignature> getFunctionCalls() {
         return functionCalls;

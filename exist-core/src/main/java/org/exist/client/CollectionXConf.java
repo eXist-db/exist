@@ -395,7 +395,7 @@ public class CollectionXConf
 		final NodeList nlRangeIndexes = xconf.getElementsByTagName("create");
         if(nlRangeIndexes.getLength() > 0)
 		{
-            final List<RangeIndex> rl = new ArrayList<RangeIndex>();
+            final List<RangeIndex> rl = new ArrayList<>();
             for(int i = 0; i < nlRangeIndexes.getLength(); i++)
 			{	
 				final Element rangeIndex = (Element)nlRangeIndexes.item(i);

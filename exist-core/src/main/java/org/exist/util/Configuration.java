@@ -390,9 +390,9 @@ public class Configuration implements ErrorHandler
         config.put( PerformanceStats.CONFIG_PROPERTY_TRACE, trace );
 
         // built-in-modules
-        final Map<String, Class<?>> classMap      = new HashMap<String, Class<?>>();
-        final Map<String, String>   knownMappings = new HashMap<String, String>();
-        final Map<String, Map<String, List<? extends Object>>> moduleParameters = new HashMap<String, Map<String, List<? extends Object>>>();
+        final Map<String, Class<?>> classMap      = new HashMap<>();
+        final Map<String, String>   knownMappings = new HashMap<>();
+        final Map<String, Map<String, List<? extends Object>>> moduleParameters = new HashMap<>();
         loadModuleClasses(xquery, classMap, knownMappings, moduleParameters);
         config.put( XQueryContext.PROPERTY_BUILT_IN_MODULES, classMap);
         config.put( XQueryContext.PROPERTY_STATIC_MODULE_MAP, knownMappings);
@@ -754,7 +754,7 @@ public class Configuration implements ErrorHandler
             return;
         }
 
-        final List<JobConfig> jobList = new ArrayList<JobConfig>();
+        final List<JobConfig> jobList = new ArrayList<>();
 
         for(int i = 0; i < nlJobs.getLength(); i++) {
             final Element job = (Element)nlJobs.item( i );
@@ -1033,7 +1033,7 @@ public class Configuration implements ErrorHandler
             configureStartup((Element)startupConf.item(0));
         } else {
             // Prevent NPE
-            final List<StartupTriggerConfig> startupTriggers = new ArrayList<StartupTriggerConfig>();
+            final List<StartupTriggerConfig> startupTriggers = new ArrayList<>();
             config.put(BrokerPool.PROPERTY_STARTUP_TRIGGERS, startupTriggers);
         }
         
@@ -1245,7 +1245,7 @@ public class Configuration implements ErrorHandler
                 // Initialize trigger configuration
                 List<StartupTriggerConfig> startupTriggers = (List<StartupTriggerConfig>)config.get(BrokerPool.PROPERTY_STARTUP_TRIGGERS);
                 if(startupTriggers == null) {
-                    startupTriggers = new ArrayList<StartupTriggerConfig>();
+                    startupTriggers = new ArrayList<>();
                     config.put(BrokerPool.PROPERTY_STARTUP_TRIGGERS, startupTriggers);
                 }
                 

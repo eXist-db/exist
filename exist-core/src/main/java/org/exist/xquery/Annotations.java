@@ -30,7 +30,7 @@ import java.util.Map;
  */
 public abstract class Annotations {
 
-    private final static Map<String, Annotations> ns = new HashMap<String, Annotations>();
+    private final static Map<String, Annotations> ns = new HashMap<>();
     
     //workaround
     static {

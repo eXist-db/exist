@@ -77,7 +77,7 @@ public class HttpRequestWrapper implements RequestWrapper {
 
     // Use linkedhashmap to preserver order
     // Object can be a single object, or a List of objects
-    private Map<String, Object> params = new LinkedHashMap<String, Object>();
+    private Map<String, Object> params = new LinkedHashMap<>();
 
     // flag to administer wether multi-part formdata was processed
     private boolean isFormDataParsed = false;
@@ -176,7 +176,7 @@ public class HttpRequestWrapper implements RequestWrapper {
 
             } else {
                 // Single value already detected, convert to List and add both items
-                final ArrayList<Object> list = new ArrayList<Object>();
+                final ArrayList<Object> list = new ArrayList<>();
                 list.add(original);
                 list.add(value);
                 map.put(paramName, list);
@@ -240,7 +240,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      */
     private List<FileItem> getFileItem(Object obj) {
 
-    	final List<FileItem> fileList = new LinkedList<FileItem>();
+    	final List<FileItem> fileList = new LinkedList<>();
         if (obj instanceof List) {
             // Cast
             final List list = (List) obj;
@@ -449,7 +449,7 @@ public class HttpRequestWrapper implements RequestWrapper {
         }
 
         final List<FileItem> items = getFileItem(o);
-        final List<String> files = new ArrayList<String>(items.size());
+        final List<String> files = new ArrayList<>(items.size());
         for (final FileItem item : items) {
         	files.add(FilenameUtils.normalize(item.getName()));
         }

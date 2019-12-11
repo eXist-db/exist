@@ -544,7 +544,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     }
 
     protected List<QName> getQNamesForDoc(DocumentImpl doc) {
-        final List<QName> qnames = new ArrayList<QName>();
+        final List<QName> qnames = new ArrayList<>();
         if (index.btree == null)
             {return qnames;}
         final byte[] fromKey = computeDocKey(doc.getDocId());
@@ -594,7 +594,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
      * @return the matching occurrences
      */
     public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
-        final Map<String, Occurrences> occurrences = new TreeMap<String, Occurrences>();
+        final Map<String, Occurrences> occurrences = new TreeMap<>();
         for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
             final DocumentImpl doc = i.next();
             final List<QName> qnames = getQNamesForDoc(doc);
@@ -659,7 +659,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         List<NodeProxy> buf = pending.get(qname);
         if (buf == null) {
             //Create a node list
-            buf = new ArrayList<NodeProxy>(50);
+            buf = new ArrayList<>(50);
             pending.put(qname, buf);
         }
         //Add node's proxy to the list

@@ -514,7 +514,7 @@ strLoop:
      * @return a Vector of path elements from the tokenized path
      */
     public static Vector<String> tokenizePath (String path) {
-        final Vector<String> ret = new Vector<String>();
+        final Vector<String> ret = new Vector<>();
         final StringTokenizer st = new StringTokenizer(path,File.separator);
         while (st.hasMoreTokens()) {
             ret.addElement(st.nextToken());

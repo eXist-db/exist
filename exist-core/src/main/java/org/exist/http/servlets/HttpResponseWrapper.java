@@ -203,7 +203,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	}
 	
 	/** used the feature "Guess last modification time for an XQuery result" */
-	private Map<String, Long> dateHeaders = new HashMap<String, Long>();
+	private Map<String, Long> dateHeaders = new HashMap<>();
 
 	/**
 	 * Set a date header.

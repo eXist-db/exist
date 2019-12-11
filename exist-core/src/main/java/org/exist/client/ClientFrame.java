@@ -767,7 +767,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         //get an array of collection paths
         try {
             final Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
-            final List<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
+            final List<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<>());
             collections = new PrettyXmldbURI[alCollections.size()];
             alCollections.toArray(collections);
         } catch (final XMLDBException e) {
@@ -853,7 +853,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         //get an array of collection paths
         try {
             final Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
-            final List<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
+            final List<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<>());
             collections = new PrettyXmldbURI[alCollections.size()];
             alCollections.toArray(collections);
         } catch (final XMLDBException e) {
@@ -1304,7 +1304,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 permAider = PermissionAiderFactory.getPermission(account.getName(), account.getPrimaryGroup(), Permission.DEFAULT_RESOURCE_PERM); //$NON-NLS-1$ //$NON-NLS-2$
             }
 
-            final List<ResourceDescriptor> selected = new ArrayList<ResourceDescriptor>();
+            final List<ResourceDescriptor> selected = new ArrayList<>();
             final int rows[] = fileman.getSelectedRows();
             for (int row : rows) {
                 selected.add(resources.getRow(fileman.convertRowIndexToModel(row)));

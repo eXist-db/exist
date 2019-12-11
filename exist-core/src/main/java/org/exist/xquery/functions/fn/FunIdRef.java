@@ -191,7 +191,7 @@ public class FunIdRef extends Function {
 	}
 
     private void getIdRef(Sequence result, Sequence seq, String id) throws XPathException {
-        final Set<org.exist.dom.memtree.DocumentImpl> visitedDocs = new TreeSet<org.exist.dom.memtree.DocumentImpl>();
+        final Set<org.exist.dom.memtree.DocumentImpl> visitedDocs = new TreeSet<>();
         for (final SequenceIterator i = seq.iterate(); i.hasNext();) {
             final org.exist.dom.memtree.NodeImpl v = (org.exist.dom.memtree.NodeImpl) i.nextItem();
             final org.exist.dom.memtree.DocumentImpl doc = v.getOwnerDocument();

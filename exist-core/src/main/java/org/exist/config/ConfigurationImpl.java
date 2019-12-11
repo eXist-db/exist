@@ -389,7 +389,7 @@ public class ConfigurationImpl implements Configuration {
     @Override
     public synchronized Object putObject(String name, Object object) {
         if (objects == null)
-            objects = new HashMap<String, Object>();
+            objects = new HashMap<>();
         
         return objects.put(name, object);
     }

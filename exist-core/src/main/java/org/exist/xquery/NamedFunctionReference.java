@@ -35,7 +35,7 @@ public class NamedFunctionReference extends AbstractExpression {
 		final XQueryAST ast = new XQueryAST();
 		ast.setLine(self.getLine());
 		ast.setColumn(self.getColumn());
-		final List<Expression> args = new ArrayList<Expression>(arity);
+		final List<Expression> args = new ArrayList<>(arity);
 		for (int i = 0; i < arity; i++) {
 			args.add(new Function.Placeholder(context));
 		}

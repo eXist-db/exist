@@ -360,7 +360,7 @@ public class Optimizer extends DefaultExpressionVisitor {
      */
     public static class FindOptimizable extends BasicExpressionVisitor {
 
-        List<Optimizable> optimizables = new ArrayList<Optimizable>();
+        List<Optimizable> optimizables = new ArrayList<>();
 
         public List<Optimizable> getOptimizables() {
             return optimizables;

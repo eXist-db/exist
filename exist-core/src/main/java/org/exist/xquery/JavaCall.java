@@ -47,7 +47,7 @@ public class JavaCall extends Function {
 	private final QName qname;
 	private String name;
 	private Class<?> myClass = null;
-	private List<AccessibleObject> candidateMethods = new ArrayList<AccessibleObject>(5);
+	private List<AccessibleObject> candidateMethods = new ArrayList<>(5);
 
 	/**
 	 * Create new call on the Java method or constructor identified by the QName.

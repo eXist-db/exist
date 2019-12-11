@@ -39,7 +39,7 @@ public abstract class Step extends AbstractExpression {
 
     protected boolean abbreviatedStep = false;
 
-    protected List<Predicate> predicates = new CopyOnWriteArrayList<Predicate>();
+    protected List<Predicate> predicates = new CopyOnWriteArrayList<>();
 
     protected NodeTest test;
 

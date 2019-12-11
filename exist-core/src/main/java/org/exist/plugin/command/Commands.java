@@ -34,7 +34,7 @@ import org.exist.xmldb.XmldbURI;
  */
 public class Commands {
 	
-	private static Map<String, CommandResolver> commands = new HashMap<String, CommandResolver>();
+	private static Map<String, CommandResolver> commands = new HashMap<>();
 	
 	public static void plug(String command, CommandResolver resolver) {
 		commands.put(command, resolver);

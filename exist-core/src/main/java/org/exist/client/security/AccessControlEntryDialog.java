@@ -52,17 +52,17 @@ public class AccessControlEntryDialog extends javax.swing.JFrame implements Dial
     private final Set<String> allUsernames;
     private DefaultComboBoxModel groupNameModel = null;
     private final Set<String> allGroupNames;
-    private final List<DialogCompleteWithResponse<ACEAider>> dialogCompleteWithResponseCallbacks = new ArrayList<DialogCompleteWithResponse<ACEAider>>();
+    private final List<DialogCompleteWithResponse<ACEAider>> dialogCompleteWithResponseCallbacks = new ArrayList<>();
 
     public AccessControlEntryDialog(final UserManagementService userManagementService, final String title) throws XMLDBException {
         this.userManagementService = userManagementService;
         this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());        
-        allUsernames = new HashSet<String>();
+        allUsernames = new HashSet<>();
         for(final Account account : userManagementService.getAccounts()) {
             allUsernames.add(account.getName());
         }
         
-        allGroupNames = new HashSet<String>();
+        allGroupNames = new HashSet<>();
         for(final String groupName : userManagementService.getGroups()) {
             allGroupNames.add(groupName);
         }

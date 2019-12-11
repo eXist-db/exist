@@ -281,7 +281,7 @@ public final class HeapSort {
 	}
 
 	public static void main(String[] args) throws Exception {
-		final List<String> l = new ArrayList<String>();
+		final List<String> l = new ArrayList<>();
 
 		if(args.length==0) {
 			final String[] a=new String[] {

@@ -32,7 +32,7 @@ import org.exist.xmldb.XmldbURI;
  */
 public abstract class AbstractCommandResolver implements CommandResolver {
 
-	protected Map<String, Command> commands = new HashMap<String, Command>();
+	protected Map<String, Command> commands = new HashMap<>();
 
 	public void plug(Class<? extends Command> commandClass) {
 		Command cmd;

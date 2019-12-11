@@ -123,7 +123,7 @@ public class BuiltinFunctions extends BasicFunction {
 	}
 
 	private void addFunctionsFromModule(ValueSequence resultSeq, Module module) {
-		final Set<QName> set = new TreeSet<QName>();
+		final Set<QName> set = new TreeSet<>();
 		final FunctionSignature signatures[] = module.listFunctions();
 		// add to set to remove duplicate QName's
 		for (FunctionSignature signature : signatures) {

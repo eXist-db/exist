@@ -185,9 +185,9 @@ public class PerformanceStats implements BrokerPoolService {
         }
     }
 
-    private HashMap<String, QueryStats> queries = new HashMap<String, QueryStats>();
-    private HashMap<FunctionStats, FunctionStats> functions = new HashMap<FunctionStats, FunctionStats>();
-    private HashMap<IndexStats, IndexStats> indexStats = new HashMap<IndexStats, IndexStats>();
+    private HashMap<String, QueryStats> queries = new HashMap<>();
+    private HashMap<FunctionStats, FunctionStats> functions = new HashMap<>();
+    private HashMap<IndexStats, IndexStats> indexStats = new HashMap<>();
     private HashSet<OptimizationStats> optimizations = new HashSet<>();
     
     private boolean enabled = false;

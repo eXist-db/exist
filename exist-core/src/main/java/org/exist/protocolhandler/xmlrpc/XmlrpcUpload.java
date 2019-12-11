@@ -84,7 +84,7 @@ public class XmlrpcUpload {
             }
             
             // Initialize xmlrpc parameters
-            final List<Object> params = new ArrayList<Object>(5);
+            final List<Object> params = new ArrayList<>(5);
             String handle=null;
             
             // Copy data from inputstream to database

@@ -489,7 +489,7 @@ public class Query {
          */
         public List<Query.Properties.Property> getProperty() {
             if (property == null) {
-                property = new ArrayList<Query.Properties.Property>();
+                property = new ArrayList<>();
             }
             return this.property;
         }

@@ -292,7 +292,7 @@ public class GroupMembershipFunction extends BasicFunction {
     }
 
     private List<Account> getUsers(final SecurityManager securityManager, final Sequence seq) throws XPathException {
-        final List<Account> accounts = new ArrayList<Account>();
+        final List<Account> accounts = new ArrayList<>();
         for(int i = 0; i < seq.getItemCount(); i++) {
             final String user = seq.itemAt(i).toString();
             final Account account = securityManager.getAccount(user);

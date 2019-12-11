@@ -40,7 +40,7 @@ import org.xml.sax.helpers.NamespaceSupport;
 public class DOMSerializer extends AbstractSerializer {
 
     protected NamespaceSupport nsSupport = new NamespaceSupport();
-    protected Map<String, String> namespaceDecls = new HashMap<String, String>();
+    protected Map<String, String> namespaceDecls = new HashMap<>();
 
     public DOMSerializer(Writer writer, Properties outputProperties) {
         super();

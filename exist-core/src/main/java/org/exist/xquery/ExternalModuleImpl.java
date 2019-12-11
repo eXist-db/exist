@@ -44,9 +44,9 @@ public class ExternalModuleImpl implements ExternalModule {
 
     private boolean isReady = false;
 
-    final private TreeMap<FunctionId, UserDefinedFunction> mFunctionMap = new TreeMap<FunctionId, UserDefinedFunction>();
-    final private TreeMap<QName, VariableDeclaration> mGlobalVariables = new TreeMap<QName, VariableDeclaration>();
-    final private TreeMap<QName, Variable> mStaticVariables = new TreeMap<QName, Variable>();
+    final private TreeMap<FunctionId, UserDefinedFunction> mFunctionMap = new TreeMap<>();
+    final private TreeMap<QName, VariableDeclaration> mGlobalVariables = new TreeMap<>();
+    final private TreeMap<QName, Variable> mStaticVariables = new TreeMap<>();
 
     private Source mSource = null;
 
@@ -90,7 +90,7 @@ public class ExternalModuleImpl implements ExternalModule {
 
     public void addMetadata(String key, String value) {
         if (metadata == null) {
-            metadata = new HashMap<String, String>();
+            metadata = new HashMap<>();
         }
         final String old = metadata.get(key);
         if (old != null) {
@@ -154,7 +154,7 @@ public class ExternalModuleImpl implements ExternalModule {
      * @see org.exist.xquery.Module#listFunctions()
      */
     public FunctionSignature[] listFunctions() {
-        final List<FunctionSignature> signatures = new ArrayList<FunctionSignature>(mFunctionMap.size());
+        final List<FunctionSignature> signatures = new ArrayList<>(mFunctionMap.size());
         for (UserDefinedFunction userDefinedFunction : mFunctionMap.values()) {
             final FunctionSignature signature = userDefinedFunction.getSignature();
             signatures.add(signature);
@@ -167,7 +167,7 @@ public class ExternalModuleImpl implements ExternalModule {
      * @see org.exist.xquery.Module#getSignatureForFunction(org.exist.dom.QName)
      */
     public Iterator<FunctionSignature> getSignaturesForFunction(QName qname) {
-        final ArrayList<FunctionSignature> signatures = new ArrayList<FunctionSignature>(2);
+        final ArrayList<FunctionSignature> signatures = new ArrayList<>(2);
         for (final UserDefinedFunction func : mFunctionMap.values()) {
             if (func.getName().compareTo(qname) == 0)
                 {signatures.add(func.getSignature());}

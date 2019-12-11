@@ -163,7 +163,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
      * within the XUpdate will be added to this list. The final list
      * will be returned to the caller.
      */
-    private List<Modification> modifications = new ArrayList<Modification>();
+    private List<Modification> modifications = new ArrayList<>();
 
     /** Temporary string buffer used for collecting text chunks */
     private FastStringBuffer charBuf = new FastStringBuffer(64);
@@ -174,12 +174,12 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
      * Maps variable QName to the Sequence returned by
      * evaluating the variable expression.
      */
-    private Map<String, Object> variables = new TreeMap<String, Object>();
+    private Map<String, Object> variables = new TreeMap<>();
 
     /**
      * Keeps track of namespaces declared within the XUpdate.
      */
-    private Map<String, String> namespaces = new HashMap<String, String>(10);
+    private Map<String, String> namespaces = new HashMap<>(10);
 
     /**
      * Stack used to track conditionals.

@@ -129,9 +129,9 @@ public class EditGroupDialog extends GroupDialog {
     }
     
     private void updateGroupMembers() throws XMLDBException, PermissionDeniedException {
-        final Set<String> currentGroupMembers = new HashSet<String>(Arrays.asList(getUserManagementService().getGroupMembers(group.getName())));
+        final Set<String> currentGroupMembers = new HashSet<>(Arrays.asList(getUserManagementService().getGroupMembers(group.getName())));
         
-        final Set<String> groupMembers = new HashSet<String>();
+        final Set<String> groupMembers = new HashSet<>();
         for(int i = 0; i < getGroupMembersTableModel().getRowCount(); i++) {
             groupMembers.add((String)getGroupMembersTableModel().getValueAt(i, 0));
         }

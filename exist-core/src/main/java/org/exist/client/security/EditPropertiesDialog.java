@@ -493,7 +493,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
         
         try {
-            final List<ACEAider> dlgAces = new ArrayList<ACEAider>();
+            final List<ACEAider> dlgAces = new ArrayList<>();
             if(permission instanceof ACLPermission) {
                 for(int i = 0; i < tblAcl.getRowCount(); i++) {
                     final ACE_TARGET target = ACE_TARGET.valueOf((String)getAclTableModel().getValueAt(i, 0));
@@ -643,7 +643,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     }//GEN-LAST:event_miInsertAceAfterActionPerformed
 
     private boolean isDba() throws XMLDBException {
-        final Set<String> dbaMembers = new HashSet<String>(Arrays.asList(getUserManagementService().getGroupMembers(SecurityManager.DBA_GROUP)));
+        final Set<String> dbaMembers = new HashSet<>(Arrays.asList(getUserManagementService().getGroupMembers(SecurityManager.DBA_GROUP)));
         return dbaMembers.contains(currentUser);
     }
     

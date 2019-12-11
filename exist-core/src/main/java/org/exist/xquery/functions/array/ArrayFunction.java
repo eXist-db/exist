@@ -244,7 +244,7 @@ public class ArrayFunction extends BasicFunction {
         final Fn called = Fn.get(getSignature().getName().getLocalPart());
         switch (called) {
             case JOIN:
-                final List<ArrayType> arrays = new ArrayList<ArrayType>(args[0].getItemCount());
+                final List<ArrayType> arrays = new ArrayList<>(args[0].getItemCount());
                 for (SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
                     arrays.add((ArrayType) i.nextItem());
                 }

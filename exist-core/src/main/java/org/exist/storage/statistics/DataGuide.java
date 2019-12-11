@@ -115,7 +115,7 @@ public class DataGuide {
     }
 
     public String toString() {
-        final List<StringBuilder> paths = new ArrayList<StringBuilder>();
+        final List<StringBuilder> paths = new ArrayList<>();
         root.dump(new StringBuilder(), paths);
 
         final StringBuilder buf = new StringBuilder();

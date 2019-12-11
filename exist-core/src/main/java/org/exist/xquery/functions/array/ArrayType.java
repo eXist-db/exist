@@ -44,7 +44,7 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     public ArrayType(XQueryContext context, Sequence items) throws XPathException {
         this(context);
 
-        List<Sequence> itemList = new ArrayList<Sequence>(items.getItemCount());
+        List<Sequence> itemList = new ArrayList<>(items.getItemCount());
         for (SequenceIterator i = items.iterate(); i.hasNext(); ) {
             itemList.add(i.nextItem().toSequence());
         }

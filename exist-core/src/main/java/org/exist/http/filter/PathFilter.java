@@ -62,9 +62,9 @@ public class PathFilter implements Filter {
     private static final String TEST_PUT = "HTTP PUT";
 
     private boolean allowFirst = false;
-    private HashSet<String> allows = new HashSet<String>();
-    private HashSet<String> denys = new HashSet<String>();
-    private HashSet<String> filterNames = new HashSet<String>();
+    private HashSet<String> allows = new HashSet<>();
+    private HashSet<String> denys = new HashSet<>();
+    private HashSet<String> filterNames = new HashSet<>();
 
     public void init(FilterConfig filterConfig) throws ServletException {
         setFilterConfig(filterConfig);

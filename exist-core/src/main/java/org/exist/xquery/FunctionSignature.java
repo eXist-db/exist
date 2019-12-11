@@ -172,7 +172,7 @@ public class FunctionSignature {
 
     public void addMetadata(final String key, String value) {
         if(metadata == null) {
-            metadata = new HashMap<String, String>(5);
+            metadata = new HashMap<>(5);
         }
         final String old = metadata.get(key);
         if (old != null) {

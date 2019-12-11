@@ -373,7 +373,7 @@ public class InteractiveClient {
         //Collection child;
         Permission perm;
 
-        final List<ResourceDescriptor> tableData = new ArrayList<ResourceDescriptor>(resources.length); // A list of ResourceDescriptor for the GUI
+        final List<ResourceDescriptor> tableData = new ArrayList<>(resources.length); // A list of ResourceDescriptor for the GUI
 
         int i = 0;
         for (; i < childCollections.length; i++) {
@@ -503,7 +503,7 @@ public class InteractiveClient {
             tok.quoteChar('"');
             tok.whitespaceChars(0x20, 0x20);
 
-            final List<String> argList = new ArrayList<String>(3);
+            final List<String> argList = new ArrayList<>(3);
             // int i = 0;
             int token;
             try {

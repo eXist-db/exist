@@ -17,7 +17,7 @@ public class ArrayConstructor extends AbstractExpression {
     public enum ConstructorType { SQUARE_ARRAY, CURLY_ARRAY }
 
     private ConstructorType type;
-    private List<Expression> arguments = new ArrayList<Expression>();
+    private List<Expression> arguments = new ArrayList<>();
 
     public ArrayConstructor(XQueryContext context, ConstructorType type) {
         super(context);
@@ -44,7 +44,7 @@ public class ArrayConstructor extends AbstractExpression {
         }
         switch(type) {
             case SQUARE_ARRAY:
-                final List<Sequence> items = new ArrayList<Sequence>(arguments.size());
+                final List<Sequence> items = new ArrayList<>(arguments.size());
                 for (Expression arg: arguments) {
                     final Sequence result = arg.eval(contextSequence, contextItem);
                     if (result != null) {

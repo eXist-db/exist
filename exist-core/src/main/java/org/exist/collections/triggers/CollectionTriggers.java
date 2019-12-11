@@ -54,7 +54,7 @@ public class CollectionTriggers implements CollectionTrigger {
         
         java.util.Collection<TriggerProxy<? extends CollectionTrigger>> masterTriggers = broker.getDatabase().getCollectionTriggers();
         
-        triggers = new ArrayList<CollectionTrigger>( masterTriggers.size() + (colTriggers == null ? 0 : colTriggers.size()) );
+        triggers = new ArrayList<>(masterTriggers.size() + (colTriggers == null ? 0 : colTriggers.size()));
         
         for (TriggerProxy<? extends CollectionTrigger> colTrigger : masterTriggers) {
             

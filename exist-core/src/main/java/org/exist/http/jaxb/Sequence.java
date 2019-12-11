@@ -78,7 +78,7 @@ public class Sequence {
      */
     public List<Sequence.Value> getValue() {
         if (value == null) {
-            value = new ArrayList<Sequence.Value>();
+            value = new ArrayList<>();
         }
         return this.value;
     }

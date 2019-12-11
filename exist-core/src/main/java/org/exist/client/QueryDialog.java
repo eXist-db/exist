@@ -328,7 +328,7 @@ public class QueryDialog extends JFrame {
         label = new JLabel(Messages.getString("QueryDialog.contextlabel"));
         optionsPanel.add(label);
 
-        final List<String> data = new ArrayList<String>();
+        final List<String> data = new ArrayList<>();
         try {
             final Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
             data.add(collection.getName());

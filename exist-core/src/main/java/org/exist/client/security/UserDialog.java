@@ -514,7 +514,7 @@ public class UserDialog extends javax.swing.JFrame {
         if(availableGroupsModel == null) {
             try {
                 final String groupNames[] = getUserManagementService().getGroups();
-                availableGroupsModel = new SortedListModel<String>();
+                availableGroupsModel = new SortedListModel<>();
                 availableGroupsModel.addAll(groupNames);
             } catch (final XMLDBException xmldbe) {
                 JOptionPane.showMessageDialog(this, "Could not get available groups: " + xmldbe.getMessage(), "Create User Error", JOptionPane.ERROR_MESSAGE);
@@ -525,7 +525,7 @@ public class UserDialog extends javax.swing.JFrame {
     
     protected SortedListModel getMemberOfGroupsListModel() {
         if(memberOfGroupsModel == null) {
-            memberOfGroupsModel = new SortedListModel<String>();
+            memberOfGroupsModel = new SortedListModel<>();
         }
         return memberOfGroupsModel;
     }

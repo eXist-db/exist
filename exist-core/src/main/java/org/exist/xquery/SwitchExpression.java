@@ -55,7 +55,7 @@ public class SwitchExpression extends AbstractExpression {
     
     private Expression operand;
     private Case defaultClause = null;
-    private List<Case> cases = new ArrayList<Case>(5);
+    private List<Case> cases = new ArrayList<>(5);
     
     public SwitchExpression(XQueryContext context, Expression operand) {
         super(context);

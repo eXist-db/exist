@@ -111,8 +111,8 @@ public abstract class Modification {
 		this.selectStmt = selectStmt;
 		this.broker = broker;
 		this.docs = docs;
-		this.namespaces = new HashMap<String, String>(namespaces);
-		this.variables = new TreeMap<String, Object>(variables);
+		this.namespaces = new HashMap<>(namespaces);
+		this.variables = new TreeMap<>(variables);
         this.triggers = new Int2ObjectOpenHashMap<>();
         // DESIGN_QUESTION : wouldn't that be nice to apply selectStmt right here ?
 	}

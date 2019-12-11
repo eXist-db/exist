@@ -984,7 +984,7 @@ public class RESTServer {
 
     private class NamespaceExtractor extends XMLFilterImpl {
 
-        final List<Namespace> namespaces = new ArrayList<Namespace>();
+        final List<Namespace> namespaces = new ArrayList<>();
 
         @Override
         public void startPrefixMapping(final String prefix, final String uri)

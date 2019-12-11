@@ -129,7 +129,7 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     }
 
     public static List<LocationStep> findLocationSteps(Expression expr) {
-        final List<LocationStep> steps = new ArrayList<LocationStep>(5);
+        final List<LocationStep> steps = new ArrayList<>(5);
         if (expr instanceof LocationStep) {
             steps.add((LocationStep)expr);
             return steps;

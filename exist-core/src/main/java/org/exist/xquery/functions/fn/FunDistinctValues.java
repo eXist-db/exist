@@ -117,7 +117,7 @@ public class FunDistinctValues extends CollatingFunction {
         }
         final Sequence seq = getArgument(0).eval(contextSequence, contextItem);
         final Collator collator = getCollator(contextSequence, contextItem, 2);		
-        final TreeSet<AtomicValue> set = new TreeSet<AtomicValue>(new ValueComparator(collator));
+        final TreeSet<AtomicValue> set = new TreeSet<>(new ValueComparator(collator));
         final ValueSequence result = new ValueSequence();
         Item item;
         AtomicValue value;

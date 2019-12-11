@@ -35,7 +35,7 @@ public class SortedListModel<T extends Object> extends AbstractListModel {
     private final SortedSet<T> model;
 
     public SortedListModel() {
-        model = new TreeSet<T>();
+        model = new TreeSet<>();
     }
 
     @Override

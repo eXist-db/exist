@@ -77,7 +77,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
     public static final String  SHRINK_THRESHOLD_PROPERTY      			= "db-connection.cache-shrink-threshold";
 
     /** Caches maintained by this class. */
-    private List<Cache>         caches                          = new ArrayList<Cache>();
+    private List<Cache>         caches                          = new ArrayList<>();
 
     private long                totalMem;
 

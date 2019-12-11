@@ -19,7 +19,7 @@ public class CaseVariants {
     // case variants, to reduce the number of objects that need to be allocated
 
     private static Int2IntMap monoVariants = new Int2IntOpenHashMap(2500);
-    private static Int2ObjectMap<int[]> polyVariants = new Int2ObjectOpenHashMap<int[]>(100);
+    private static Int2ObjectMap<int[]> polyVariants = new Int2ObjectOpenHashMap<>(100);
 
     private static void cv(int a, int b) {
         monoVariants.put(a, b);

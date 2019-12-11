@@ -240,7 +240,7 @@ public abstract class DBBroker implements AutoCloseable {
     }
 
     /** Observer Design Pattern: List of ContentLoadingObserver objects */
-    protected List<ContentLoadingObserver> contentLoadingObservers = new ArrayList<ContentLoadingObserver>();	
+    protected List<ContentLoadingObserver> contentLoadingObservers = new ArrayList<>();
 
     /** Remove all observers */
     public void clearContentLoadingObservers() {

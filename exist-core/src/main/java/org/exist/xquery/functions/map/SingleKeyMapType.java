@@ -97,7 +97,7 @@ public class SingleKeyMapType extends AbstractMapType {
                 return null;
             }
             hasMore = false;
-            return new AbstractMap.SimpleEntry<AtomicValue, Sequence>(key, value);
+            return new AbstractMap.SimpleEntry<>(key, value);
         }
     }
 }
