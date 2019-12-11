@@ -41,9 +41,7 @@ public class BTreeTest {
 
     public void create(int count) throws DBException, IOException {
         FileUtils.deleteQuietly(file);
-        BTree btree = null;
-        try {
-            btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file);
+        try (BTree btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file)) {
             btree.create((short) -1);
 
             String prefixStr = "KEY";
@@ -53,13 +51,9 @@ public class BTreeTest {
             }
             btree.flush();
 
-            try(final OutputStreamWriter writer = new OutputStreamWriter(System.out)) {
+            try (final OutputStreamWriter writer = new OutputStreamWriter(System.out)) {
                 btree.dump(writer);
                 writer.flush();
-            }
-        } finally {
-            if (btree != null) {
-                btree.close();
             }
         }
     }
