@@ -17,10 +17,7 @@
                         <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
                         <analyzer id="keyword" class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
                         <analyzer id="de" class="org.apache.lucene.analysis.de.GermanAnalyzer"/>
-                        <analyzer id="LA:index" class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
-                        <analyzer id="LA:query" class="org.apache.lucene.analysis.de.GermanAnalyzer"/>
                         <text field="line" qname="l"/>
-                        <text field="line-again" qname="l" analyzer="LA:index"/>
                         <text qname="l" analyzer="de"/>
                         <text field="lineno" qname="@n" analyzer="keyword"/>
                     </lucene>
@@ -75,14 +72,53 @@
         </expected>
     </test>
     <test output="xml">
-        <task>Query field "line" with standard analyzer, no match</task>
+        <task>&lt;query-analyzer-id&gt;de&lt;...</task>
+        <code>doc("/db/lucene/text.xml")//l[ft:query(., 'herzen',
+            &lt;options&gt;&lt;query-analyzer-id&gt;de&lt;/query-analyzer-id&gt;&lt;/options&gt;
+                                                    )]
+        </code>
+        <expected>
+            <l n="l1.12">Das will mir schier das Herz verbrennen.</l>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>query-analyzer-id:de</task>
+        <code>doc("/db/lucene/text.xml")//l[ft:query(., 'herzen', map { "query-analyzer-id": "de" })]</code>
+        <expected>
+            <l n="l1.12">Das will mir schier das Herz verbrennen.</l>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>&lt;query-analyzer-id&gt;keyword&lt;...</task>
+        <code>doc("/db/lucene/text.xml")//l[ft:query(., 'herzen',
+            &lt;options&gt;&lt;query-analyzer-id&gt;keyword&lt;/query-analyzer-id&gt;&lt;/options&gt;
+                                                    )]
+        </code>
+        <expected/>
+    </test>
+    <test output="xml">
+        <task>query-analyzer-id:keyword</task>
+        <code>doc("/db/lucene/text.xml")//l[ft:query(., 'herzen', map { "query-analyzer-id": "keyword" })]</code>
+        <expected/>
+    </test>
+    <test output="xml">
+        <task>Query field with standard analyzer, no match</task>
         <code>ft:query-field("line", "herzen")</code>
         <expected/>
     </test>
     <test output="xml">
-        <task>Index/Query field "line-again" with different analyzers (see PR#2991)</task>
-        <!--code>doc("/db/lucene/text.xml")//l[ft:query(., "line-again:herzen")]</code-->
-        <code>ft:query-field("line-again", "herzen")</code>
+        <task>Query field with query analyzer overridden (options as map)</task>
+        <code>ft:query-field("line", "herzen", map { "query-analyzer-id": "de" })</code>
+        <expected>
+            <l n="l1.12">Das will mir schier das Herz verbrennen.</l>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>Query field with query analyzer overridden (options as xml)</task>
+        <code>ft:query-field("line", "herzen",
+            &lt;options&gt;&lt;query-analyzer-id&gt;de&lt;/query-analyzer-id&gt;&lt;/options&gt;
+                            )
+        </code>
         <expected>
             <l n="l1.12">Das will mir schier das Herz verbrennen.</l>
         </expected>
