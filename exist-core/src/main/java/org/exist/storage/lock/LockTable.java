@@ -509,10 +509,7 @@ public class LockTable {
     public Map<String, Map<LockType, List<LockModeOwner>>> getAttempting() {
         final Map<String, Map<LockType, List<LockModeOwner>>> result = new HashMap<>();
 
-        final Iterator<Entry> it = attempting.values().iterator();
-        while (it.hasNext()) {
-            final Entry entry = it.next();
-
+        for (Entry entry : attempting.values()) {
             // read count (volatile) first to ensure visibility
             final int localCount = entry.count;
             if (localCount == 0) {
@@ -548,10 +545,7 @@ public class LockTable {
     public Map<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> getAcquired() {
         final Map<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> result = new HashMap<>();
 
-        final Iterator<Entries> it = acquired.values().iterator();
-        while (it.hasNext()) {
-            final Entries entries = it.next();
-
+        for (Entries entries : acquired.values()) {
             entries.forEach(entry -> {
 
                 // read count (volatile) first to ensure visibility
