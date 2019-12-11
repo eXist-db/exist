@@ -411,7 +411,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         LOG.info("database instance '" + instanceName + "' will be synchronized every " + nf.format(/*this.*/majorSyncPeriod) + " ms");
 
         // convert from bytes to megabytes: 1024 * 1024
-        this.diskSpaceMin = 1024l * 1024l * conf.getProperty(BrokerPool.DISK_SPACE_MIN_PROPERTY, DEFAULT_DISK_SPACE_MIN);
+        this.diskSpaceMin = 1024L * 1024L * conf.getProperty(BrokerPool.DISK_SPACE_MIN_PROPERTY, DEFAULT_DISK_SPACE_MIN);
 
         this.pageSize = conf.getProperty(PROPERTY_PAGE_SIZE, DEFAULT_PAGE_SIZE);
 

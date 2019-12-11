@@ -231,7 +231,7 @@ public class FileUtils {
         return paths.stream().map(FileUtils::sizeQuietly)
                 .filter(size -> size != -1)
                 .reduce((a, b) -> a + b)
-                .orElse(-1l);
+                .orElse(-1L);
     }
 
     /**
@@ -269,7 +269,7 @@ public class FileUtils {
             return measurer.apply(Files.getFileStore(path));
         } catch(final IOException ioe) {
             LOG.error(ioe);
-            return -1l;
+            return -1L;
         }
     }
 

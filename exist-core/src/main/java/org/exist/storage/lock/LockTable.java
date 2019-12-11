@@ -291,7 +291,7 @@ public class LockTable {
 
                 // try to upgrade optimistic-read or read lock to write lock
                 stamp = entriesLock.tryConvertToWriteLock(stamp);
-                if (stamp == 0l) {
+                if (stamp == 0L) {
 
                     // failed to upgrade
                     if (readStamp != -1) {
@@ -337,7 +337,7 @@ public class LockTable {
             // if count is equal to 1 we can just remove from the list rather than decrementing
             if (local.count == 1) {
                 final long writeStamp = entriesLock.tryConvertToWriteLock(stamp);
-                if (writeStamp != 0l) {
+                if (writeStamp != 0L) {
                     try {
                         entries.remove(local);
                         local.count--;
@@ -372,7 +372,7 @@ public class LockTable {
                 if (local.count == 1) {
 
                     final long writeStamp = entriesLock.tryConvertToWriteLock(stamp);
-                    if (writeStamp != 0l) {
+                    if (writeStamp != 0L) {
                         stamp = writeStamp;  // NOTE: this causes the write lock to be released in the finally further down
                         entries.remove(local);
                         local.count--;
