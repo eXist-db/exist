@@ -100,7 +100,7 @@ public class RemoteIndexQueryService extends AbstractRemote implements IndexQuer
         try {
             final List<Object> params = new ArrayList<>();
             params.add(collection.getPath());
-            params.add(Boolean.valueOf(inclusive));
+            params.add(inclusive);
             final Object[] result = (Object[]) client.execute("getIndexedElements", params);
 
             final Stream<Occurrences> occurrences = Arrays.stream(result)

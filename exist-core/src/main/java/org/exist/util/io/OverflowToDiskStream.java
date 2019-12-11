@@ -50,7 +50,7 @@ final class OverflowToDiskStream extends OutputStream {
         if (overflowOutputStream == null) {
             overflowOutputStream = overflowStreamSupplier.get();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Writing in memory buffered {} bytes to overflow stream", Long.valueOf(count));
+                LOG.debug("Writing in memory buffered {} bytes to overflow stream", count);
             }
             memoryContents.transferTo(overflowOutputStream, 0);
             memoryContents.reset();
@@ -117,7 +117,7 @@ final class OverflowToDiskStream extends OutputStream {
     public void close() throws IOException {
         if (overflowOutputStream != null) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Closing overflow stream after writing {} bytes", Long.valueOf(count));
+                LOG.debug("Closing overflow stream after writing {} bytes", count);
             }
             overflowOutputStream.close();
         }

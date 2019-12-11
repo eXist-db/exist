@@ -137,7 +137,7 @@ public abstract class DBBroker implements AutoCloseable {
         this.config = config;
         final Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
         if (temp != null) {
-            caseSensitive = temp.booleanValue();
+            caseSensitive = temp;
         }
         this.pool = pool;
         this.preserveOnCopy = config.getProperty(PRESERVE_ON_COPY_PROPERTY, PreserveType.NO_PRESERVE);

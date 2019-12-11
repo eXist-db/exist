@@ -447,7 +447,7 @@ public class PermissionFactory {
                     other.setMode(mode.get().left().get());
                     changeMode = permission.getMode() != other.getMode();
                 } else {
-                    changeMode = permission.getMode() != mode.get().right().get().intValue();
+                    changeMode = permission.getMode() != mode.get().right().get();
                 }
             } else {
                 changeMode = false;

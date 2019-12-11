@@ -481,7 +481,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         int fragmentationLimit = -1;
         final Object property = pool.getConfiguration().getProperty(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
         if(property != null) {
-            fragmentationLimit = ((Integer) property).intValue();
+            fragmentationLimit = (Integer) property;
         }
         if(fragmentationLimit != -1) {
             getMetadata().setSplitCount(fragmentationLimit);

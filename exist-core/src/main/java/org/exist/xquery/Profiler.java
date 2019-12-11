@@ -145,7 +145,7 @@ public class Profiler {
         try {
             final DBBroker broker = db.getActiveBroker();
             final Boolean globalProp = (Boolean) broker.getConfiguration().getProperty(CONFIG_PROPERTY_TRACELOG);
-            return logEnabled || (globalProp != null && globalProp.booleanValue());
+            return logEnabled || (globalProp != null && globalProp);
         } catch (Throwable t) {
             log.debug("Ignored exception: " + t.getMessage());
             return logEnabled;

@@ -269,8 +269,8 @@ public abstract class AbstractRemoteResource extends AbstractRemote
         final List<Object> params = new ArrayList<>();
         if (isRetrieve) {
             command = "retrieveFirstChunk";
-            params.add(Integer.valueOf(handle));
-            params.add(Integer.valueOf(pos));
+            params.add(handle);
+            params.add(pos);
         } else {
             command = "getDocumentData";
             params.add(path.toString());

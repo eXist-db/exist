@@ -619,7 +619,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                                 }
                             }
 
-                            if(((Boolean) conf.getProperty(PROPERTY_RECOVERY_CHECK)).booleanValue()) {
+                            if((Boolean) conf.getProperty(PROPERTY_RECOVERY_CHECK)) {
                                 final ConsistencyCheckTask task = new ConsistencyCheckTask();
                                 final Properties props = new Properties();
                                 props.setProperty("backup", "no");

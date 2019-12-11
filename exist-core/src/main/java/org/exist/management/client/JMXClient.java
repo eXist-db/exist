@@ -90,11 +90,11 @@ public class JMXClient {
             echo("\nINSTANCE:");
             final ObjectName name = new ObjectName("org.exist.management." + instance + ":type=Database");
             final Long memReserved = (Long) connection.getAttribute(name, "ReservedMem");
-            echo(String.format("%25s: %10d k", "Reserved memory", memReserved.longValue() / 1024));
+            echo(String.format("%25s: %10d k", "Reserved memory", memReserved / 1024));
             final Long memCache = (Long) connection.getAttribute(name, "CacheMem");
-            echo(String.format("%25s: %10d k", "Cache memory", memCache.longValue() / 1024));
+            echo(String.format("%25s: %10d k", "Cache memory", memCache / 1024));
             final Long memCollCache = (Long) connection.getAttribute(name, "CollectionCacheMem");
-            echo(String.format("%25s: %10d k", "Collection cache memory", memCollCache.longValue() / 1024));
+            echo(String.format("%25s: %10d k", "Collection cache memory", memCollCache / 1024));
 
             final String cols[] = { "MaxBrokers", "AvailableBrokers", "ActiveBrokers" };
             echo(String.format("\n%17s %17s %17s", cols[0], cols[1], cols[2]));

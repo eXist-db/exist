@@ -74,7 +74,7 @@ public final class MemoryContentsImpl implements MemoryContents {
     private MemoryContentsImpl(int initialBlocks) {
         this.initialBlocks = initialBlocks;
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Initializing with {} initial blocks", Integer.valueOf(initialBlocks));
+            LOG.debug("Initializing with {} initial blocks", initialBlocks);
         }
         lock = new ReentrantReadWriteLock();
         initialize();

@@ -129,7 +129,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
 
         final Boolean checkMaxCache = (Boolean)configuration.getProperty( PROPERTY_CACHE_CHECK_MAX_SIZE );
 
-        if( checkMaxCache == null || checkMaxCache.booleanValue() ) {
+        if( checkMaxCache == null || checkMaxCache) {
             final long max        = Runtime.getRuntime().maxMemory();
             long maxCache   = ( max >= ( 768 * 1024 * 1024 ) ) ? ( max / 2 ) : ( max / 3 );
 

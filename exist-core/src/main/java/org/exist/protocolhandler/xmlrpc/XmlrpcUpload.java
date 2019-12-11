@@ -109,7 +109,7 @@ public class XmlrpcUpload {
             final Boolean result =(Boolean)client.execute("parseLocal", params);
             
             // Check XMLRPC result
-            if(result.booleanValue()){
+            if(result){
                 LOG.debug("Document stored.");
             } else {
                 LOG.debug("Could not store document.");

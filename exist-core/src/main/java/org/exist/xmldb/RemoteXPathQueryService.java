@@ -169,8 +169,8 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
         final String message = (String) result.get(RpcAPI.ERROR);
         final Integer lineInt = (Integer) result.get(RpcAPI.LINE);
         final Integer columnInt = (Integer) result.get(RpcAPI.COLUMN);
-        final int line = lineInt == null ? 0 : lineInt.intValue();
-        final int column = columnInt == null ? 0 : columnInt.intValue();
+        final int line = lineInt == null ? 0 : lineInt;
+        final int column = columnInt == null ? 0 : columnInt;
         final XPathException cause = new XPathException(line, column, message);
         throw new XMLDBException(ErrorCodes.VENDOR_ERROR, message, cause);
     }
@@ -179,8 +179,8 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
         final String message = (String) result.get(RpcAPI.ERROR);
         final Integer lineInt = (Integer) result.get(RpcAPI.LINE);
         final Integer columnInt = (Integer) result.get(RpcAPI.COLUMN);
-        final int line = lineInt == null ? 0 : lineInt.intValue();
-        final int column = columnInt == null ? 0 : columnInt.intValue();
+        final int line = lineInt == null ? 0 : lineInt;
+        final int column = columnInt == null ? 0 : columnInt;
         throw new XPathException(line, column, message);
     }
 

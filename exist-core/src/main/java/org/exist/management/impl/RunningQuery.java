@@ -36,10 +36,10 @@ public class RunningQuery {
     long elapsed;
 
     public RunningQuery(final XQueryWatchDog watchdog, final String requestURI) {
-        this.id = Integer.valueOf(watchdog.getContext().hashCode());
+        this.id = watchdog.getContext().hashCode();
         this.sourceType = watchdog.getContext().getSource().type();
         this.sourceKey = watchdog.getContext().getSource().path();
-        this.terminating = Boolean.valueOf(watchdog.isTerminating());
+        this.terminating = watchdog.isTerminating();
         this.requestURI = requestURI;
         this.thread = watchdog.getRunningThread();
         this.elapsed = System.currentTimeMillis() - watchdog.getStartTime();

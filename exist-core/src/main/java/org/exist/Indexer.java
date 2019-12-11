@@ -175,7 +175,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
         Boolean temp;
         if ((temp = (Boolean) config
 	     .getProperty(PROPERTY_PRESERVE_WS_MIXED_CONTENT)) != null) {
-            preserveWSmixed = temp.booleanValue();
+            preserveWSmixed = temp;
 	}
     }
 

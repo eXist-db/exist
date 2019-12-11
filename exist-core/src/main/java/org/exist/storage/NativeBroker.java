@@ -3036,7 +3036,7 @@ public class NativeBroker extends DBBroker {
         boolean xupdateConsistencyChecks = false;
         final Object property = pool.getConfiguration().getProperty(PROPERTY_XUPDATE_CONSISTENCY_CHECKS);
         if(property != null) {
-            xupdateConsistencyChecks = ((Boolean) property).booleanValue();
+            xupdateConsistencyChecks = (Boolean) property;
         }
         if(xupdateConsistencyChecks) {
             LOG.debug("Checking document " + doc.getFileURI());
@@ -3054,7 +3054,7 @@ public class NativeBroker extends DBBroker {
         boolean xupdateConsistencyChecks = false;
         final Object property = pool.getConfiguration().getProperty(PROPERTY_XUPDATE_CONSISTENCY_CHECKS);
         if(property != null) {
-            xupdateConsistencyChecks = ((Boolean) property).booleanValue();
+            xupdateConsistencyChecks = (Boolean) property;
         }
         if(xupdateConsistencyChecks) {
             new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
