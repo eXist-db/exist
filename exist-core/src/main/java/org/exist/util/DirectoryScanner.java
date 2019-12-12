@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
 
 public class DirectoryScanner {
 
@@ -62,8 +63,26 @@ public class DirectoryScanner {
         }
     }
 
-    public final static boolean match(String pattern, String name) {
-        return SelectorUtils.matchPath(pattern, name);
+    /**
+     * Check if the pattern matches the path.
+     */
+    public final static boolean match(final @Nonnull String pattern, final @Nonnull String path) {
+        return SelectorUtils.matchPath(pattern, path);
+    }
+
+    /**
+     * Check if any of the patterns matches the path.
+     * If path starts with File.separator it is removed before the match. (Legacy requirement)
+     */
+    public final static boolean matchAny(final @Nonnull Iterable<String> patterns, final @Nonnull String path) {
+        final String normalizedPath = path.startsWith(File.separator) ? path.substring(File.separator.length())
+                                                                      : path;
+        for (final String pattern : patterns) {
+            if (DirectoryScanner.match(pattern, normalizedPath)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public final static boolean matchStart(String pattern, String name) {

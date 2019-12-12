@@ -1,5 +1,6 @@
 package org.exist.xquery.modules.file;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -21,6 +22,9 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
@@ -31,6 +35,7 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.DirectoryScanner;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.util.serializer.SAXSerializer;
@@ -52,6 +57,8 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 public class Sync extends BasicFunction {
+
+    protected final static Logger LOG = LogManager.getLogger(Sync.class);
 
     public final static FunctionSignature signature3 =
         new FunctionSignature(
@@ -95,6 +102,31 @@ public class Sync extends BasicFunction {
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise")
         );
 
+    public final static FunctionSignature signature5 =
+            new FunctionSignature(
+                    new QName("sync", FileModule.NAMESPACE_URI, FileModule.PREFIX),
+                    "Synchronize a collection with a directory hierarchy. Compares last modified time stamps. " +
+                            "If $dateTime is given, only resources modified after this time stamp are taken into account. " +
+                            "If $mode is 'prune', delete any file/dir that does not correspond to a doc/collection in the DB. " +
+                            "The $excludes patterns prevent matched files/dirs from being deleted by prune." +
+                            "This method is only available to the DBA role.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("collection", Type.STRING,
+                                    Cardinality.EXACTLY_ONE, "The collection to sync."),
+                            new FunctionParameterSequenceType("targetPath", Type.ITEM,
+                                    Cardinality.EXACTLY_ONE, "The full path or URI to the directory"),
+                            new FunctionParameterSequenceType("dateTime", Type.DATE_TIME,
+                                    Cardinality.ZERO_OR_ONE,
+                                    "Optional: only resources modified after the given date/time will be synchronized."),
+                            new FunctionParameterSequenceType("mode", Type.STRING,
+                                    Cardinality.EXACTLY_ONE,
+                                    "Delete any file/dir that does not correspond to a doc/collection in the DB."),
+                            new FunctionParameterSequenceType("excludes", Type.STRING,
+                                    Cardinality.ONE_OR_MORE,
+                                    "Exclude from pruning files/dirs that match any of the specified patterns.")
+                    },
+                    new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise")
+            );
 
 	private final static Properties DEFAULT_PROPERTIES = new Properties();
 	static {
@@ -131,7 +163,13 @@ public class Sync extends BasicFunction {
 		                             " (must be 'prune' or 'no_prune')");
 		}
 		final boolean prune = mode.equals("prune");
-		
+
+		final List<String> excludes = (args.length > 4) ? args[4].asList(item -> item.getStringValue())
+		                                                : Collections.EMPTY_LIST;
+		if (!prune && !excludes.isEmpty()) {
+			LOG.warn("file:sync(...) invoked with no prune but with exclude patterns");
+		}
+
 		context.pushDocumentContext();
 		final MemTreeBuilder output = context.getDocumentBuilder();
 		try {
@@ -144,9 +182,11 @@ public class Sync extends BasicFunction {
 			output.startElement(new QName("sync", FileModule.NAMESPACE_URI), null);
 			output.addAttribute(new QName("collection", FileModule.NAMESPACE_URI), collectionPath);
 			output.addAttribute(new QName("dir", FileModule.NAMESPACE_URI), targetDir.toAbsolutePath().toString());
-			
-			saveCollection(XmldbURI.create(collectionPath), targetDir, startDate, prune, output);
-			
+
+			final String rootTargetAbsPath = targetDir.toAbsolutePath().toString();
+			final String separator = rootTargetAbsPath.endsWith(File.separator) ? "" : File.separator;
+			saveCollection(XmldbURI.create(collectionPath), rootTargetAbsPath + separator, targetDir, startDate, prune, excludes, output);
+
 			output.endElement();
 			output.endDocument();
         } catch(final PermissionDeniedException | LockException e) {
@@ -157,17 +197,25 @@ public class Sync extends BasicFunction {
 		return output.getDocument();
 	}
 
-	private void saveCollection(final XmldbURI collectionPath, Path targetDir, final Date startDate, final boolean prune, final MemTreeBuilder output) throws PermissionDeniedException, LockException {
+	private void saveCollection(final XmldbURI       collectionPath,
+	                            final String         rootTargetAbsPath,
+	                                  Path           targetDir,
+	                            final Date           startDate,
+	                            final boolean        prune,
+	                            final List<String>   excludes,
+	                            final MemTreeBuilder output
+	                           ) throws PermissionDeniedException, LockException
+	{
 		try {
 			targetDir = Files.createDirectories(targetDir);
 		} catch(final IOException ioe) {
-			reportError(output, "Failed to create output directory: " + targetDir.toAbsolutePath().toString() +
+			reportError(output, "Failed to create output directory: " + targetDir.toAbsolutePath() +
 					" for collection " + collectionPath);
 			return;
 		}
 
 		if (!Files.isWritable(targetDir)) {
-			reportError(output, "Failed to write to output directory: " + targetDir.toAbsolutePath().toString());
+			reportError(output, "Failed to write to output directory: " + targetDir.toAbsolutePath());
 			return;
 		}
 		
@@ -177,8 +225,8 @@ public class Sync extends BasicFunction {
 				reportError(output, "Collection not found: " + collectionPath);
 				return;
 			}
-			if (prune) {
-				pruneCollectionEntries(collection, targetDir, output);
+			if (prune && !isExcludedFromPruning(rootTargetAbsPath, targetDir, excludes)) {
+				pruneCollectionEntries(collection, rootTargetAbsPath, targetDir, excludes, output);
 			}
 			for (final Iterator<DocumentImpl> i = collection.iterator(context.getBroker()); i.hasNext(); ) {
 				final DocumentImpl doc = i.next();
@@ -202,7 +250,7 @@ public class Sync extends BasicFunction {
 		
 		for (final XmldbURI childURI : subcollections) {
 			final Path childDir = targetDir.resolve(childURI.lastSegment().toString());
-			saveCollection(collectionPath.append(childURI), childDir, startDate, prune, output);
+			saveCollection(collectionPath.append(childURI), rootTargetAbsPath, childDir, startDate, prune, excludes, output);
 		}
 	}
 
@@ -212,14 +260,22 @@ public class Sync extends BasicFunction {
 		output.endElement();
 	}
 
-	private void pruneCollectionEntries(final Collection collection, final Path targetDir, final MemTreeBuilder output) {
+	private void pruneCollectionEntries(
+						final Collection     collection,
+						final String         rootTargetAbsPath,
+						final Path           targetDir,
+						final List<String>   excludes,
+						final MemTreeBuilder output)
+	{
 		try {
 			Files.walk(targetDir, 1).forEach(path -> {
 				try {
 					final String fname = path.getFileName().toString();
 					final XmldbURI dbname = XmldbURI.xmldbUriFor(fname);
 					if (!collection.hasDocument(context.getBroker(), dbname)
-					 && !collection.hasChildCollection(context.getBroker(), dbname)) {
+					 && !collection.hasChildCollection(context.getBroker(), dbname)
+					 && !isExcludedFromPruning(rootTargetAbsPath, path, excludes))
+					{
 						Files.deleteIfExists(path);
 					}
 				} catch (IOException | URISyntaxException
@@ -230,6 +286,26 @@ public class Sync extends BasicFunction {
 		} catch (IOException e) {
 			reportError(output, e.getMessage());
 		}
+	}
+
+	/**
+	 * We need to convert to a relative path in relation to rootTargetAbsPath,
+	 * as all the exclusion patterns are relative to rootTargetAbsPath.
+	 * @param rootTargetAbsPath the root target (abs)path
+	 * @param path (abs)path to check for being excluded. Should be subdir of rootTargetAbsPath
+	 * @param excludes exclude patterns (in the convention of DirectoryScanner.match)
+	 * @return true iff the (rel)path in question is matched by some of the exclusion patterns
+	 */
+	private static boolean isExcludedFromPruning(String rootTargetAbsPath, Path path, List<String> excludes) {
+		if (excludes.isEmpty())
+			return false;
+
+		final String absPath = path.toAbsolutePath().toString();
+		if (!absPath.startsWith(rootTargetAbsPath)) {
+			LOG.error("UNEXPECTED: %s is not a prefix of %s", rootTargetAbsPath, path);
+		}
+		final String relPath = absPath.substring(rootTargetAbsPath.length());
+		return DirectoryScanner.matchAny(excludes, relPath);
 	}
 
 	private void saveXML(final Path targetDir, final DocumentImpl doc, final MemTreeBuilder output) {

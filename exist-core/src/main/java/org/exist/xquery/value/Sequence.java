@@ -30,6 +30,8 @@ import org.exist.xquery.XQueryContext;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * This interface represents a sequence as defined in the XPath 2.0 specification.
@@ -334,4 +336,31 @@ public interface Sequence {
      * @param contextSequence the context sequence
      */
     void destroy(XQueryContext context, Sequence contextSequence);
+
+    int MAX_ITEM_COUNT_AS_LIST = 100_000;
+
+    interface ItemFunction<R> {
+        R apply(Item i) throws XPathException;
+    }
+
+    /**
+     * Get all (transformed) items from the sequence as a List
+     * Caller should take care that item count does not exceed MAX_ITEM_COUNT_AS_LIST
+     * @param f the transformation to apply on each item
+     * @return list of (transformed) items
+     * @throws XPathException
+     * @throws IllegalArgumentException if the sequence contains more than MAX_ITEM_COUNT_AS_LIST items
+     */
+    default <R> List<R> asList(ItemFunction<R> f) throws XPathException {
+        long itemCount = getItemCountLong();
+        if (itemCount > MAX_ITEM_COUNT_AS_LIST) {
+            throw new IllegalArgumentException("Item count exceeds " + MAX_ITEM_COUNT_AS_LIST);
+        }
+
+        ArrayList<R> res = new ArrayList<>((int)itemCount);
+        for (final SequenceIterator si = iterate(); si.hasNext(); ) {
+            res.add(f.apply(si.nextItem()));
+        }
+        return res;
+    }
 }

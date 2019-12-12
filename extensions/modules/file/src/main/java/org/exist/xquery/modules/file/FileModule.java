@@ -70,6 +70,7 @@ public class FileModule extends AbstractInternalModule
         new FunctionDef( DirectoryCreate.signatures[1], 		DirectoryCreate.class ),
         new FunctionDef( Sync.signature3,						Sync.class),
         new FunctionDef( Sync.signature4,						Sync.class),
+        new FunctionDef( Sync.signature5,						Sync.class),
 	};
 	
 	

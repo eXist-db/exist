@@ -160,7 +160,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                         String relPath = file.toString().substring(baseDir.toString().length());
                         final int p = relPath.lastIndexOf(java.io.File.separatorChar);
 
-                        if (checkExcludes(excludes, relPath)) {
+                        if (DirectoryScanner.matchAny(excludes, relPath)) {
                             continue;
                         }
 
@@ -204,25 +204,5 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
         }
 
         return stored;
-    }
-
-    /**
-     * Check if path matches any of the exclude patterns.
-     */
-    private static boolean checkExcludes(final List<String> excludes, String path) {
-        if (excludes == null || excludes.isEmpty()) {
-            return false;
-        }
-        if (path.charAt(0) == java.io.File.separatorChar) {
-            path = path.substring(1);
-        }
-        boolean skip = false;
-        for (final String exclude : excludes) {
-            if (DirectoryScanner.match(exclude, path)) {
-                skip = true;
-                break;
-            }
-        }
-        return skip;
     }
 }
