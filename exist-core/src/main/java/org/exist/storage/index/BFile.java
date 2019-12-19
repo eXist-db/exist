@@ -273,8 +273,8 @@ public class BFile extends BTree {
     }
 
     @Override
-    public void closeAndRemove() {
-        super.closeAndRemove();
+    public void close() throws DBException {
+        super.close();
         cacheManager.deregisterCache(dataCache);
     }
 

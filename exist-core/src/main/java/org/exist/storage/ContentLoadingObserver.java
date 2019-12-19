@@ -108,7 +108,7 @@ public interface ContentLoadingObserver extends AutoCloseable {
 	@Override
 	void close() throws DBException;
 	
-	void closeAndRemove();
+	void closeAndRemove() throws DBException;
 	
 	void printStatistics();
 	

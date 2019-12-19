@@ -171,6 +171,15 @@ public abstract class Paged implements AutoCloseable {
         }
     }
 
+    /**
+     * Completely close down the instance and
+     * all underlying resources and caches.
+     */
+    public final void closeAndRemove() throws DBException {
+        close();
+        FileUtils.deleteQuietly(file);
+    }
+
     public boolean create() throws DBException {
         try {
             fileHeader.write();
@@ -253,20 +262,6 @@ public abstract class Paged implements AutoCloseable {
      */
     public FileHeader getFileHeader() {
         return fileHeader;
-    }
-
-    /**
-     * Completely close down the instance and
-     * all underlying resources and caches.
-     */
-    public void closeAndRemove() {
-        try {
-            raf.close();
-        } catch (final IOException e) {
-            //TODO : forward the exception ? -pb
-            LOG.error("Failed to close data file: " + file.toAbsolutePath().toString());
-        }
-        FileUtils.deleteQuietly(file);
     }
 
     protected final Page getFreePage() throws IOException {

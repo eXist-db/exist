@@ -304,15 +304,10 @@ public class DOMFile extends BTree implements Lockable {
         if (!isReadOnly()) {
             flush();
         }
-        super.close();
-    }
-
-    @Override
-    public void closeAndRemove() {
-        if(LOG.isDebugEnabled() && !lockManager.isBtreeLockedForWrite(getLockName())) {
+        if (LOG.isDebugEnabled() && !lockManager.isBtreeLockedForWrite(getLockName())) {
             LOG.debug("The file doesn't own a write lock");
         }
-        super.closeAndRemove();
+        super.close();
         cacheManager.deregisterCache(dataCache);
     }
 
