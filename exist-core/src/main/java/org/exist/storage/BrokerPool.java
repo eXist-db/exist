@@ -1666,6 +1666,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                         if(broker != null) {
                             broker.popSubject();
                         }
+                        // remove all remaining inactive brokers as we do shutdown now and no loner need those
+                        inactiveBrokers.clear();
                     }
 
                     // final notification to database services to shutdown
@@ -1710,7 +1712,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 securityManager = null;
                 notificationService = null;
                 statusObservers.clear();
-
+                startupTriggersManager = null;
                 statusReporter.terminate();
                 statusReporter = null;
 
