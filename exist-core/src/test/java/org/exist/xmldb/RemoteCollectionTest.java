@@ -237,6 +237,14 @@ public class RemoteCollectionTest extends RemoteDBTest {
         assertEquals(16777229, outputStream.size());
     }
 
+    @Test
+    public void isOpen() throws XMLDBException {
+        Collection collection = getCollection();
+        assertTrue(collection.isOpen());
+        collection.close();
+        assertFalse(collection.isOpen());
+    }
+
     private void prepareContent(RemoteXMLResource resource) throws XMLDBException, SAXException {
         final char[] buffer = new char[16 * 1024 * 1024];
         Arrays.fill(buffer, (char) 'x');

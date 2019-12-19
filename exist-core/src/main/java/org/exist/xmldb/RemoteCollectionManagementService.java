@@ -34,11 +34,8 @@ import org.xmldb.api.base.XMLDBException;
 
 public class RemoteCollectionManagementService extends AbstractRemote implements EXistCollectionManagementService {
 
-    private final XmlRpcClient client;
-
-    public RemoteCollectionManagementService(final XmlRpcClient client, final RemoteCollection parent) {
+    public RemoteCollectionManagementService(final RemoteCollection parent) {
         super(parent);
-        this.client = client;
     }
 
     @Override
@@ -86,13 +83,7 @@ public class RemoteCollectionManagementService extends AbstractRemote implements
         if (created != null) {
             params.add(created);
         }
-
-        try {
-            client.execute("createCollection", params);
-        } catch (final XmlRpcException xre) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
-        }
-
+        collection.execute("createCollection", params);
         return collection.getChildCollection(collName);
     }
 
@@ -136,11 +127,7 @@ public class RemoteCollectionManagementService extends AbstractRemote implements
         final XmldbURI collName = resolve(name);
         final List<Object> params = new ArrayList<>();
         params.add(collName.toString());
-        try {
-            client.execute("removeCollection", params);
-        } catch (final XmlRpcException xre) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
-        }
+        collection.execute("removeCollection", params);
     }
 
     @Override
@@ -180,11 +167,7 @@ public class RemoteCollectionManagementService extends AbstractRemote implements
         params.add(srcPath.toString());
         params.add(destPath.toString());
         params.add(newName.toString());
-        try {
-            client.execute("moveCollection", params);
-        } catch (final XmlRpcException xre) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
-        }
+        collection.execute("moveCollection", params);
     }
 
     /**
@@ -217,13 +200,7 @@ public class RemoteCollectionManagementService extends AbstractRemote implements
         params.add(srcPath.toString());
         params.add(destPath.toString());
         params.add(newName.toString());
-        try {
-            client.execute("moveResource", params);
-        } catch (final XmlRpcException xre) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-                    xre.getMessage(),
-                    xre);
-        }
+        collection.execute("moveResource", params);
     }
 
     /**
@@ -261,13 +238,7 @@ public class RemoteCollectionManagementService extends AbstractRemote implements
         params.add(destPath.toString());
         params.add(newName.toString());
         params.add(preserveType);
-        try {
-            client.execute("copyCollection", params);
-        } catch (final XmlRpcException xre) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-                    xre.getMessage(),
-                    xre);
-        }
+        collection.execute("copyCollection", params);
     }
 
     /**
@@ -306,13 +277,7 @@ public class RemoteCollectionManagementService extends AbstractRemote implements
         params.add(destPath.toString());
         params.add(newName.toString());
         params.add(preserveType);
-        try {
-            client.execute("copyResource", params);
-        } catch (final XmlRpcException xre) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-                    xre.getMessage(),
-                    xre);
-        }
+        collection.execute("copyResource", params);
     }
 
     @Override
@@ -320,13 +285,7 @@ public class RemoteCollectionManagementService extends AbstractRemote implements
         final List<Object> params = new ArrayList<>();
         params.add(collection.getPathURI());
         params.add(cmdParams);
-        try {
-            client.execute("runCommand", params);
-        } catch (final XmlRpcException xre) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-                    xre.getMessage(),
-                    xre);
-        }
+        collection.execute("runCommand", params);
     }
 }
 

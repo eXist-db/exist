@@ -20,10 +20,10 @@
 
 package org.exist.xmldb;
 
-import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.exist.util.FileUtils;
+import org.exist.util.Leasable;
 import org.exist.xmlrpc.RpcAPI;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -36,8 +36,6 @@ import java.io.OutputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -46,10 +44,18 @@ import static org.exist.xmldb.RemoteCollection.MAX_UPLOAD_CHUNK;
 
 public class RemoteRestoreService implements EXistRestoreService {
 
-    private final XmlRpcClient client;
+    private final Leasable<XmlRpcClient> leasableXmlRpcClient;
+    private final RemoteCallSite remoteCallSite;
 
-    public RemoteRestoreService(final XmlRpcClient client) {
-        this.client = client;
+    /**
+     * Constructor for DatabaseInstanceManagerImpl.
+     *
+     * @param leasableXmlRpcClient the leasable instance of a the XML RPC client
+     * @param remoteCallSite the remote call site
+     */
+    public RemoteRestoreService(final Leasable<XmlRpcClient> leasableXmlRpcClient, final RemoteCallSite remoteCallSite) {
+        this.leasableXmlRpcClient = leasableXmlRpcClient;
+        this.remoteCallSite = remoteCallSite;
     }
 
     @Override
@@ -97,25 +103,23 @@ public class RemoteRestoreService implements EXistRestoreService {
         params.add(newAdminPassword);
         params.add(remoteFileName);
         params.add(overwriteApps);
-        try {
-            restoreTaskHandle = (String)client.execute("restore", params);
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Unable to begin restore: " + e.getMessage());
-        }
+        restoreTaskHandle = (String) remoteCallSite.execute("restore", params);
 
         // has the admin password changed?
-        final XmlRpcClientConfigImpl config = (XmlRpcClientConfigImpl) client.getClientConfig();
-        final String currentPassword = config.getBasicPassword();
-        if (newAdminPassword != null && !currentPassword.equals(newAdminPassword)) {
-            config.setBasicPassword(newAdminPassword);
-        }
-        try {
-            Thread.sleep(3000);
-        } catch (final InterruptedException e) {
-            // restore interrupt status
-            Thread.currentThread().interrupt();
+        try (Leasable<XmlRpcClient>.Lease xmlRpcClientLease = leasableXmlRpcClient.lease()){
+            final XmlRpcClientConfigImpl config = (XmlRpcClientConfigImpl) xmlRpcClientLease.get().getClientConfig();
+            final String currentPassword = config.getBasicPassword();
+            if (newAdminPassword != null && !currentPassword.equals(newAdminPassword)) {
+                config.setBasicPassword(newAdminPassword);
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (final InterruptedException e) {
+                // restore interrupt status
+                Thread.currentThread().interrupt();
 
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
+            }
         }
 
         // now we need to poll for results...
@@ -124,15 +128,11 @@ public class RemoteRestoreService implements EXistRestoreService {
         params.add(restoreTaskHandle);
         while (!finished) {
             final List<String> events = new ArrayList<>();
-            try {
-                final Object[] results = (Object[]) client.execute("getRestoreTaskEvents", params);
-                if (results != null) {
-                    for (final Object result : results) {
-                        events.add((String)result);
-                    }
+            final Object[] results = (Object[]) remoteCallSite.execute("getRestoreTaskEvents", params);
+            if (results != null) {
+                for (final Object result : results) {
+                    events.add((String)result);
                 }
-            } catch (final XmlRpcException e) {
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
             }
 
             for (final String event : events) {
@@ -211,12 +211,12 @@ public class RemoteRestoreService implements EXistRestoreService {
                     }
                     params.add(chunk);
                     params.add(len);
-                    fileName = (String) client.execute("upload", params);
+                    fileName = (String) remoteCallSite.execute("upload", params);
                 }
             }
 
             return fileName;
-        } catch (final IOException | XmlRpcException e) {
+        } catch (final IOException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Unable to upload backup file: " + e.getMessage());
         }
     }

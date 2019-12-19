@@ -27,7 +27,6 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 import com.evolvedbinary.j8fu.lazy.LazyVal;
-import org.apache.xmlrpc.XmlRpcException;
 
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.security.Permission;
@@ -52,7 +51,6 @@ import static org.exist.util.io.InputStreamUtil.copy;
 
 public abstract class AbstractRemoteResource extends AbstractRemote
         implements EXistResource, ExtendedResource, Resource {
-    protected final Leasable<XmlRpcClient>.Lease xmlRpcClientLease;
     protected final XmldbURI path;
     private String mimeType;
 
@@ -67,9 +65,8 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     Date dateCreated = null;
     Date dateModified = null;
 
-    protected AbstractRemoteResource(final Leasable<XmlRpcClient>.Lease xmlRpcClientLease, final RemoteCollection parent, final XmldbURI documentName, final String mimeType) {
+    protected AbstractRemoteResource(final RemoteCollection parent, final XmldbURI documentName, final String mimeType) {
         super(parent);
-        this.xmlRpcClientLease = xmlRpcClientLease;
         if (documentName.numSegments() > 1) {
             this.path = documentName;
         } else {
@@ -162,11 +159,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             params.add(path.toString());
             params.add(dateModified.getTime());
 
-            try {
-                xmlRpcClientLease.get().execute("setLastModified", params);
-            } catch (final XmlRpcException e) {
-                throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-            }
+            collection.execute("setLastModified", params);
 
             this.dateModified = dateModified;
         }
@@ -282,7 +275,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             final TemporaryFileManager tempFileManager = TemporaryFileManager.getInstance();
             final VirtualTempPath tempFile = new VirtualTempPath(getInMemorySize(properties), tempFileManager);
 
-            Map<?, ?> table = (Map<?, ?>) xmlRpcClientLease.get().execute(command, params);
+            Map<?, ?> table = (Map<?, ?>) collection.execute(command, params);
 
             final String method;
             final boolean useLongOffset;
@@ -329,7 +322,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                     params.clear();
                     params.add(table.get("handle"));
                     params.add(useLongOffset ? Long.toString(offset) : Integer.valueOf((int) offset));
-                    table = (Map<?, ?>) xmlRpcClientLease.get().execute(method, params);
+                    table = (Map<?, ?>) collection.execute(method, params);
                     offset = useLongOffset ? Long.parseLong((String) table.get("offset")) : ((Integer) table.get("offset"));
                     data = (byte[]) table.get("data");
 
@@ -359,8 +352,6 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             }
 
             contentFile = tempFile;
-        } catch (final XmlRpcException xre) {
-            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
         } catch (final IOException | DataFormatException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
@@ -493,20 +484,16 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             final List<Object> params = new ArrayList<>();
             params.add(path.toString());
             params.add(getProperties());
-            try {
-                final Map<?, ?> table = (Map<?, ?>) xmlRpcClientLease.get().execute("describeResource", params);
-                if (table.containsKey("content-length-64bit")) {
-                    final Object o = table.get("content-length-64bit");
-                    if (o instanceof Long) {
-                        retval = ((Long) o);
-                    } else {
-                        retval = Long.parseLong((String) o);
-                    }
+            final Map<?, ?> table = (Map<?, ?>) collection.execute("describeResource", params);
+            if (table.containsKey("content-length-64bit")) {
+                final Object o = table.get("content-length-64bit");
+                if (o instanceof Long) {
+                    retval = ((Long) o);
                 } else {
-                    retval = ((Integer) table.get("content-length"));
+                    retval = Long.parseLong((String) o);
                 }
-            } catch (final XmlRpcException xre) {
-                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
+            } else {
+                retval = ((Integer) table.get("content-length"));
             }
         }
 
@@ -567,7 +554,6 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                     contentFile.close();
                     contentFile = null;
                 }
-                xmlRpcClientLease.close();
             } finally {
                 closed = true;
             }

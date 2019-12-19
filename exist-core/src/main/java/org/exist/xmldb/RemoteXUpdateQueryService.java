@@ -37,11 +37,9 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 
 	private final static Logger LOG = LogManager.getLogger(RemoteXUpdateQueryService.class);
 
-    private final XmlRpcClient client;
     private RemoteCollection parent;
 
-    public RemoteXUpdateQueryService(final XmlRpcClient client, final RemoteCollection parent) {
-        this.client = client;
+    public RemoteXUpdateQueryService(final RemoteCollection parent) {
         this.parent = parent;
     }
 
@@ -63,13 +61,9 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 
         params.add(parent.getPath());
         params.add(xupdateData);
-        try {
-            final int mods = (int) client.execute("xupdate", params);
-            LOG.debug("processed " + mods + " modifications");
-            return mods;
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        }
+        final int mods = (int) parent.execute("xupdate", params);
+        LOG.debug("processed " + mods + " modifications");
+        return mods;
     }
 
     @Override
@@ -80,13 +74,9 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
         //TODO : use dedicated function in XmldbURI
         params.add(parent.getPath() + "/" + id);
         params.add(xupdateData);
-        try {
-            final int mods = (int) client.execute("xupdateResource", params);
-            LOG.debug("processed " + mods + " modifications");
-            return mods;
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-        }
+        final int mods = (int) parent.execute("xupdateResource", params);
+        LOG.debug("processed " + mods + " modifications");
+        return mods;
     }
 
 
