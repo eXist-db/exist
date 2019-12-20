@@ -12,6 +12,11 @@ import org.exist.storage.lock.Lock;
  */
 public interface Lockable {
 
+    /**
+     * Get the name of the Lock.
+     *
+     * @return the name of the Lock
+     */
     public Lock getLock();
     
 }
