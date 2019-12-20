@@ -21,6 +21,7 @@
  */
 package org.exist.management;
 
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,13 +30,14 @@ import java.lang.invoke.MethodHandles;
 
 import static java.lang.invoke.MethodType.methodType;
 
+@ThreadSafe
 public class AgentFactory {
 
     private final static Logger LOG = LogManager.getLogger(AgentFactory.class);
 
     private static Agent instance = null;
 
-    public static Agent getInstance() {
+    public static synchronized Agent getInstance() {
         if (instance == null) {
             final String className = System.getProperty("exist.jmxagent", "org.exist.management.impl.JMXAgent");
             try {
