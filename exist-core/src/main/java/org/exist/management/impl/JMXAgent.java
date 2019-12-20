@@ -41,23 +41,17 @@ import java.util.*;
 /**
  * Real implementation of interface {@link org.exist.management.Agent}
  * which registers MBeans with the MBeanServer.
+ *
+ * Note that the agent will be constructed via reflection by the
+ * {@link org.exist.management.AgentFactory}
  */
-public class JMXAgent implements Agent {
+public final class JMXAgent implements Agent {
 
     private final static Logger LOG = LogManager.getLogger(JMXAgent.class);
-
-    private static volatile Agent agent = null;
 
     private final MBeanServer server;
     private final Map<String, Deque<ObjectName>> registeredMBeans = new HashMap<>();
     private final Map<ObjectName, Object> beanInstances = new HashMap<>();
-
-    public static Agent getInstance() {
-        if (agent == null) {
-            agent = new JMXAgent();
-        }
-        return agent;
-    }
 
     public JMXAgent() {
         if (LOG.isDebugEnabled()) {
