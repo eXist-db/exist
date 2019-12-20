@@ -218,12 +218,6 @@ public class BTree extends Paged implements Lockable {
     }
 
     @Override
-    public void closeAndRemove() {
-        super.closeAndRemove();
-        cacheManager.deregisterCache(cache);
-    }
-
-    @Override
     public String getLockName() {
         return null;
     }
@@ -547,6 +541,7 @@ public class BTree extends Paged implements Lockable {
             flush();
         }
         super.close();
+        cacheManager.deregisterCache(cache);
     }
 
     protected void dumpValue(final Writer writer, final Value value, final int status) throws IOException {
