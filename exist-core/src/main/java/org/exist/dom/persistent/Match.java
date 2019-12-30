@@ -300,9 +300,9 @@ public abstract class Match implements Comparable<Match> {
             return newCopy();
         }
         final List<Offset> newMatchOffsets = getOffsets();
-        Collections.sort(newMatchOffsets, (o1, o2) -> {
+        newMatchOffsets.sort((o1, o2) -> {
             final int lengthDiff = o2.length - o1.length;
-            if(lengthDiff != 0) {
+            if (lengthDiff != 0) {
                 return lengthDiff;
             } else {
                 return o1.offset - o2.offset;

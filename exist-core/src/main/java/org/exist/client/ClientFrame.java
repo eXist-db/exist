@@ -1490,7 +1490,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         public void setData(final List<ResourceDescriptor> rows) {
-            Collections.sort(rows, new ResourceComparator());
+            rows.sort(new ResourceComparator());
             this.rows = rows;
             fireTableDataChanged();
         }
