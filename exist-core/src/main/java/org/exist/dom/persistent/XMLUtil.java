@@ -110,14 +110,19 @@ public final class XMLUtil {
                 p = str.indexOf(';', i);
                 if(p != Constants.STRING_NOT_FOUND) {
                     ent = str.substring(i + 1, p);
-                    if("amp".equals(ent)) {
-                        out.append('&');
-                    } else if("lt".equals(ent)) {
-                        out.append('<');
-                    } else if("gt".equals(ent)) {
-                        out.append('>');
-                    } else if("quot".equals(ent)) {
-                        out.append('"');
+                    switch (ent) {
+                        case "amp":
+                            out.append('&');
+                            break;
+                        case "lt":
+                            out.append('<');
+                            break;
+                        case "gt":
+                            out.append('>');
+                            break;
+                        case "quot":
+                            out.append('"');
+                            break;
                     }
                     i = p;
                     continue;

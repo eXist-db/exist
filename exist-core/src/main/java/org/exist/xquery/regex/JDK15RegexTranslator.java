@@ -967,16 +967,21 @@ public class JDK15RegexTranslator extends RegexTranslator {
         final int[] addRanges = RegexData.CATEGORY_RANGES[sci / 2];
         for (int i = 0; i < addRanges.length; i += 2)
             classes.add(new CharRange(addRanges[i], addRanges[i + 1]));
-        if ("Lu".equals(name))
-            {classes.add(new SingleChar(RegexData.UNICODE_3_1_ADD_Lu));}
-        else if ("Ll".equals(name))
-            {classes.add(new SingleChar(RegexData.UNICODE_3_1_ADD_Ll));}
-        else if ("Nl".equals(name))
-            {classes.add(new CharRange(RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MIN, RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MAX));}
-        else if ("No".equals(name))
-            {return new Subtraction(new Union(classes),
-                    new CharRange(RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MIN,
-                            RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MAX));}
+        switch (name) {
+            case "Lu":
+                classes.add(new SingleChar(RegexData.UNICODE_3_1_ADD_Lu));
+                break;
+            case "Ll":
+                classes.add(new SingleChar(RegexData.UNICODE_3_1_ADD_Ll));
+                break;
+            case "Nl":
+                classes.add(new CharRange(RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MIN, RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MAX));
+                break;
+            case "No":
+                return new Subtraction(new Union(classes),
+                        new CharRange(RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MIN,
+                                RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MAX));
+        }
         return new Union(classes);
     }
 

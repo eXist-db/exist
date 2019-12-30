@@ -164,12 +164,16 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
         final String suppressWS = (String) config
             .getProperty(PROPERTY_SUPPRESS_WHITESPACE);
         if (suppressWS != null) {
-            if ("leading".equals(suppressWS)) {
-                normalize = XMLString.SUPPRESS_LEADING_WS;
-            } else if ("trailing".equals(suppressWS)) {
-                normalize = XMLString.SUPPRESS_TRAILING_WS;
-            } else if ("none".equals(suppressWS)) {
-                normalize = 0;
+            switch (suppressWS) {
+                case "leading":
+                    normalize = XMLString.SUPPRESS_LEADING_WS;
+                    break;
+                case "trailing":
+                    normalize = XMLString.SUPPRESS_TRAILING_WS;
+                    break;
+                case "none":
+                    normalize = 0;
+                    break;
             }
         }
         Boolean temp;

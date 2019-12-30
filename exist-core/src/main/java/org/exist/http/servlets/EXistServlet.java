@@ -94,12 +94,13 @@ public class EXistServlet extends AbstractExistHttpServlet {
     private FeatureEnabled parseFeatureEnabled(final ServletConfig config, final String paramName, final FeatureEnabled defaultValue) {
         final String paramValue = config.getInitParameter(paramName);
         if(paramValue != null) {
-            if (paramValue.equals("disabled")) {
-                return FeatureEnabled.FALSE;
-            } else if (paramValue.equals("enabled")) {
-                return FeatureEnabled.TRUE;
-            } else if (paramValue.equals("authenticated")) {
-                return FeatureEnabled.AUTHENTICATED_USERS_ONLY;
+            switch (paramValue) {
+                case "disabled":
+                    return FeatureEnabled.FALSE;
+                case "enabled":
+                    return FeatureEnabled.TRUE;
+                case "authenticated":
+                    return FeatureEnabled.AUTHENTICATED_USERS_ONLY;
             }
         }
 
