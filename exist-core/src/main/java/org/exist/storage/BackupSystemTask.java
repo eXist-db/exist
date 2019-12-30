@@ -90,7 +90,7 @@ public class BackupSystemTask implements SystemTask {
         collection = XmldbURI.create(collName);
         LOG.debug("Collection to backup: " + collection.toString() + ". User: " + user);
 
-        deduplicateBlobs = Boolean.valueOf(properties.getProperty("deduplucate-blobs", "false"));
+        deduplicateBlobs = Boolean.parseBoolean(properties.getProperty("deduplucate-blobs", "false"));
 
         suffix = properties.getProperty("suffix", "");
         prefix = properties.getProperty("prefix", "");

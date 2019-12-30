@@ -513,7 +513,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
                 u.addGroup((String) group);
             }
 
-            u.setEnabled(Boolean.valueOf((String) tab.get("enabled")));
+            u.setEnabled(Boolean.parseBoolean((String) tab.get("enabled")));
             u.setUserMask((Integer) tab.get("umask"));
 
             final Map<String, String> metadata = (Map<String, String>) tab.get("metadata");
@@ -552,7 +552,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
                 u[i].addGroup((String) group);
             }
 
-            u[i].setEnabled(Boolean.valueOf((String) tab.get("enabled")));
+            u[i].setEnabled(Boolean.parseBoolean((String) tab.get("enabled")));
             u[i].setUserMask((Integer) tab.get("umask"));
 
             final Map<String, String> metadata = (Map<String, String>) tab.get("metadata");

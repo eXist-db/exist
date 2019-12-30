@@ -917,19 +917,19 @@ public class Configuration implements ErrorHandler
             try {
                 final int collectionCacheBytes;
                 if(collectionCache.endsWith("k")) {
-                    collectionCacheBytes = 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 1));
+                    collectionCacheBytes = 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 1));
                 } else if(collectionCache.endsWith("kb")) {
-                    collectionCacheBytes = 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 2));
+                    collectionCacheBytes = 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 2));
                 } else if(collectionCache.endsWith("m")) {
-                    collectionCacheBytes = 1024 * 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 1));
+                    collectionCacheBytes = 1024 * 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 1));
                 } else if(collectionCache.endsWith("mb")) {
-                    collectionCacheBytes = 1024 * 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 2));
+                    collectionCacheBytes = 1024 * 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 2));
                 } else if(collectionCache.endsWith("g")) {
-                    collectionCacheBytes = 1024 * 1024 * 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 1));
+                    collectionCacheBytes = 1024 * 1024 * 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 1));
                 } else if(collectionCache.endsWith("gb")) {
-                    collectionCacheBytes = 1024 * 1024 * 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 2));
+                    collectionCacheBytes = 1024 * 1024 * 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 2));
                 } else {
-                    collectionCacheBytes = Integer.valueOf(collectionCache);
+                    collectionCacheBytes = Integer.parseInt(collectionCache);
                 }
 
                 config.put(CollectionCache.PROPERTY_CACHE_SIZE_BYTES, collectionCacheBytes);
@@ -1005,7 +1005,7 @@ public class Configuration implements ErrorHandler
         if(posixChownRestrictedStr == null) {
             posixChownRestricted = true;  // default
         } else {
-            if(Boolean.valueOf(posixChownRestrictedStr)) {
+            if(Boolean.parseBoolean(posixChownRestrictedStr)) {
                 posixChownRestricted = true;
             } else {
                 // configuration explicitly specifies that posix chown should NOT be restricted
@@ -1019,7 +1019,7 @@ public class Configuration implements ErrorHandler
         if(preserveOnCopyStr == null) {
             preserveOnCopy = DBBroker.PreserveType.NO_PRESERVE;  // default
         } else {
-            if(Boolean.valueOf(preserveOnCopyStr)) {
+            if(Boolean.parseBoolean(preserveOnCopyStr)) {
                 // configuration explicitly specifies that attributes should be preserved on copy
                 preserveOnCopy = DBBroker.PreserveType.PRESERVE;
             } else {

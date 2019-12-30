@@ -302,7 +302,7 @@ public class Configurator {
 
                         try {
                             if (settingKey == SettingKey.RADIX) {
-                                final int radix = Integer.valueOf(settingKey.extractValueFromSettings(settings));
+                                final int radix = Integer.parseInt(settingKey.extractValueFromSettings(settings));
                                 value = Integer.valueOf(configuration.getProperty(property), radix);
                             } else if (settingKey == SettingKey.OCTAL_STRING) {
                                 value = Integer.valueOf(configuration.getProperty(property), 8);
@@ -896,7 +896,7 @@ public class Configurator {
 
                 if (settingKey == SettingKey.RADIX) {
                     try {
-                        final int radix = Integer.valueOf(settingKey.extractValueFromSettings(settings));
+                        final int radix = Integer.parseInt(settingKey.extractValueFromSettings(settings));
                         return Integer.toString((Integer) field.get(instance), radix);
                     } catch (final Exception e) {
                         LOG.error(e);

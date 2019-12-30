@@ -209,7 +209,7 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
         
         final String param = config.getInitParameter("hidden");
         if(param != null) {
-            internalOnly = Boolean.valueOf(param);
+            internalOnly = Boolean.parseBoolean(param);
         }
     }
     
