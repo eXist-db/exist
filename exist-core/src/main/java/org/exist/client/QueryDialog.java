@@ -422,7 +422,7 @@ public class QueryDialog extends JFrame {
     }
 
     private void save(String stringToSave, String fileCategory) {
-        if (stringToSave == null || "".equals(stringToSave)) {
+        if (stringToSave == null || stringToSave.isEmpty()) {
             return;
         }
         final String workDir = properties.getProperty("working-dir", System.getProperty("user.dir"));

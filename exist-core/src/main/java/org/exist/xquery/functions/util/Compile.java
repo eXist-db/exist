@@ -106,7 +106,7 @@ public class Compile extends BasicFunction {
 		
 		// get the query expression
 		final String expr = args[0].getStringValue();
-		if ("".equals(expr.trim())) {
+		if (expr.trim().isEmpty()) {
 		  return new EmptySequence();
 		}
 		context.pushNamespaceContext();

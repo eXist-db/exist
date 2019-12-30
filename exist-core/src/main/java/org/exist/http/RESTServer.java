@@ -785,7 +785,7 @@ public class RESTServer {
                         }
 
                         option = root.getAttribute(Method.xmlKey());
-                        if ((option != null) && (!"".equals(option))) {
+                        if ((option != null) && (!option.isEmpty())) {
                             outputProperties.setProperty(SERIALIZATION_METHOD_PROPERTY, option);
                         }
 
@@ -797,7 +797,7 @@ public class RESTServer {
                         }
 
                         option = root.getAttribute(Mime.xmlKey());
-                        if ((option != null) && (!"".equals(option))) {
+                        if ((option != null) && (!option.isEmpty())) {
                             mimeType = option;
                         }
 

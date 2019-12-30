@@ -52,7 +52,7 @@ public class DOMImplementationImpl implements DOMImplementation {
     @Override
     public boolean hasFeature(final String feature, final String version) {
         return ("Core".equalsIgnoreCase(feature) || "XML".equalsIgnoreCase(feature)) &&
-                (version == null || "".equals(version) || "1.0".equals(version) || "2.0".equals(version) || "3.0".equals(version));
+                (version == null || version.isEmpty() || "1.0".equals(version) || "2.0".equals(version) || "3.0".equals(version));
     }
 }
 

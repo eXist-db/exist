@@ -223,7 +223,7 @@ public class Eval extends BasicFunction {
             querySource = loadQueryFromURI(expr);
         } else {
             final String queryStr = expr.getStringValue();
-            if ("".equals(queryStr.trim())) {
+            if (queryStr.trim().isEmpty()) {
                 return new EmptySequence();
             }
             querySource = new StringSource(queryStr);

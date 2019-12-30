@@ -250,7 +250,7 @@ public class Profiler {
         buf.append(expr.toString()); 
         log.debug(buf.toString());
 
-        if (message != null && !"".equals(message)) {           
+        if (message != null && !message.isEmpty()) {
             buf.setLength(0);
 	    	for (int i = 0; i < stack.size(); i++) {
                 buf.append('\t');
@@ -288,7 +288,7 @@ public class Profiler {
             
             final long elapsed = System.currentTimeMillis() - e.start;
             
-            if (message != null && !"".equals(message)) {                
+            if (message != null && !message.isEmpty()) {
                 buf.setLength(0);
     	    	for (int i = 0; i < stack.size(); i++) {
                     buf.append('\t');
@@ -371,7 +371,7 @@ public class Profiler {
     	for (int i = 0; i < stack.size() - 1; i++) {
             buf.append('\t');
         }
-        if (title != null && !"".equals(title))
+        if (title != null && !title.isEmpty())
             {buf.append(title);}
         else
             {buf.append("MSG");}        
@@ -398,11 +398,11 @@ public class Profiler {
     	for (int i = 0; i < stack.size() - 1; i++) {
             buf.append('\t');
         }
-        if (title != null && !"".equals(title))
+        if (title != null && !title.isEmpty())
             {buf.append(title);}
         else
             {buf.append("MSG");}        
-        if (message != null && !"".equals(message)) {
+        if (message != null && !message.isEmpty()) {
             buf.append("\t");
             buf.append(message);        	
         }

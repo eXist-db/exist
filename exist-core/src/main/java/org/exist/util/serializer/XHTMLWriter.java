@@ -221,7 +221,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
     
     @Override
     protected boolean isInlineTag(final String namespaceURI, final String localName) {
-    	return (namespaceURI == null || "".equals(namespaceURI) || Namespaces.XHTML_NS.equals(namespaceURI))
+    	return (namespaceURI == null || namespaceURI.isEmpty() || Namespaces.XHTML_NS.equals(namespaceURI))
     			&& inlineTags.contains(localName);
     }
 }

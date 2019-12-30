@@ -128,7 +128,7 @@ public class FunResolveQName extends BasicFunction {
                         } while (next != null && next.getNodeType() == Node.ELEMENT_NODE);
                     }
 
-                    if (uri == null && prefix != null && !"".equals(prefix)) {
+                    if (uri == null && prefix != null && !prefix.isEmpty()) {
                         throw new XPathException(this, ErrorCodes.FONS0004, "No namespace found for prefix. No binding for prefix '" + prefix
                                 + "' was found.", args[0]);
                     }

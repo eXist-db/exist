@@ -150,7 +150,7 @@ public class XmldbURL {
             context=path.substring(0,dbPosition);
         } 
         
-        if(context!=null && "".equals(context)){
+        if(context!=null && context.isEmpty()){
             context=null;
         }
         
@@ -247,12 +247,12 @@ public class XmldbURL {
         }
         
         // Fix credentials. If not found (empty string) fill NULL
-        if(username!=null && "".equals(username)){
+        if(username!=null && username.isEmpty()){
             username=null;
         }
         
         // Fix credentials. If not found (empty string) fill NULL
-        if(password!=null && "".equals(password)){
+        if(password!=null && password.isEmpty()){
             password=null;
         }
         
