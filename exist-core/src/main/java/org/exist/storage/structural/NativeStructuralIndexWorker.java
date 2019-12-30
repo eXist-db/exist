@@ -651,13 +651,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     		throw new IllegalArgumentException("Document id ('" + document.getDocId() + "') and proxy id ('" +
     				proxy.getOwnerDocument().getDocId() + "') differ !");
     	}
-        //Is this qname already pending ?
-        List<NodeProxy> buf = pending.get(qname);
-        if (buf == null) {
-            //Create a node list
-            buf = new ArrayList<>(50);
-            pending.put(qname, buf);
-        }
+        //Is this qname already pending ? Create a node list when not present.
+        List<NodeProxy> buf = pending.computeIfAbsent(qname, k -> new ArrayList<>(50));
+
         //Add node's proxy to the list
         buf.add(proxy);
     }

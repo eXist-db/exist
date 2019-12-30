@@ -443,7 +443,7 @@ public class FnFormatNumbers extends BasicFunction {
             throw new XPathException(this, ErrorCodes.FODF1310, "format-number() sub-picture in $picture must not contain a grouping-separator character in the absence of a decimal-separator character, at the end of the integer part.");
         }
 
-        return Tuple(firstSubPicture.adjust(), Optional.ofNullable(secondSubPicture).map(sp -> sp.adjust()));
+        return Tuple(firstSubPicture.adjust(), Optional.ofNullable(secondSubPicture).map(SubPicture::adjust));
     }
 
     private void analyzePassiveChar(final DecimalFormat decimalFormat, final int c, final boolean capturePrefix, final SubPicture subPicture) throws XPathException {

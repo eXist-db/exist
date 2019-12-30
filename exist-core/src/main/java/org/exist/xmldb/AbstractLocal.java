@@ -239,7 +239,7 @@ public abstract class AbstractLocal {
         final boolean joinTransactionIfPresent = System.getProperty(PROP_JOIN_TRANSACTION_IF_PRESENT, "true")
                 .equalsIgnoreCase("true");
         if(joinTransactionIfPresent) {
-            return (broker) -> broker.continueOrBeginTransaction();
+            return DBBroker::continueOrBeginTransaction;
         } else {
             return (broker) -> broker.getBrokerPool().getTransactionManager().beginTransaction();
         }

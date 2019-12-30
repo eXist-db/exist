@@ -230,7 +230,7 @@ public class FileUtils {
     public static long sizeQuietly(final Collection<Path> paths) {
         return paths.stream().map(FileUtils::sizeQuietly)
                 .filter(size -> size != -1)
-                .reduce((a, b) -> a + b)
+                .reduce(Long::sum)
                 .orElse(-1L);
     }
 

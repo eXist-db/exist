@@ -935,9 +935,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
          * @param updateFn A function which updates the principal db and returns a new principal id.
          */
         public void update(final BiFunction<Int2ObjectMap<V>, Integer, Integer> updateFn) {
-            write(principalDb -> {
-                this.principalId = updateFn.apply(principalDb, principalId);
-            });
+            write(principalDb -> this.principalId = updateFn.apply(principalDb, principalId));
         }
     }
 

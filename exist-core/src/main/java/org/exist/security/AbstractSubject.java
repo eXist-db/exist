@@ -180,7 +180,7 @@ public abstract class AbstractSubject implements Subject {
        return Optional
                .ofNullable(obj)
                .flatMap(other -> other instanceof Account ? Optional.of((Account)other) : Optional.empty())
-               .map(otherAccount -> account.equals(otherAccount))
+               .map(account::equals)
                .orElse(false);
     }
 

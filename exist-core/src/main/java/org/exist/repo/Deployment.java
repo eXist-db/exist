@@ -636,7 +636,7 @@ public class Deployment {
             if (!secman.hasAccount(requestedPerms.user)) {
                 final UserAider aider = new UserAider(requestedPerms.user);
                 aider.setPassword(requestedPerms.password);
-                requestedPerms.group.ifPresent(groupName -> aider.addGroup(groupName));
+                requestedPerms.group.ifPresent(aider::addGroup);
                 secman.addAccount(broker, aider);
             }
         } catch (final PermissionDeniedException | EXistException e) {

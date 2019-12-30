@@ -94,7 +94,7 @@ public class RemoteIndexQueryService extends AbstractRemote implements IndexQuer
         final Stream<Occurrences> occurrences = Arrays.stream(result)
                 .map(o -> (Object[]) o)
                 .map(row -> new Occurrences(new QName(row[0].toString(), row[1].toString(), row[2].toString()), (Integer) row[3]));
-        return occurrences.toArray(size -> new Occurrences[size]);
+        return occurrences.toArray(Occurrences[]::new);
     }
 
     @Override

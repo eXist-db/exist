@@ -311,7 +311,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
                 final StoredNodeIdentity ni1 = ((StoredNodeIdentity) obj);
                 final StoredNodeIdentity ni2 = ((StoredNodeIdentity) args[0]);
 
-                final Optional<Boolean> niEquals = ni1.getNodeId().flatMap(n1id -> ni2.getNodeId().map(n2id -> n1id.equals(n2id)));
+                final Optional<Boolean> niEquals = ni1.getNodeId().flatMap(n1id -> ni2.getNodeId().map(n1id::equals));
                 if (niEquals.isPresent()) {
                     domResult = niEquals.get();
                 }
