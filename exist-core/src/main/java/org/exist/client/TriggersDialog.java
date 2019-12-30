@@ -274,7 +274,7 @@ class TriggersDialog extends JFrame {
             }
     
             // Set the state
-            setSelected((value != null && ((Boolean) value).booleanValue()));
+            setSelected((value != null && (Boolean) value));
             return this;
         }
     }

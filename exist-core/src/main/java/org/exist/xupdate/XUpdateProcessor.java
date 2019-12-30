@@ -209,7 +209,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			Boolean temp;
 			if ((temp = (Boolean) config.getProperty("indexer.preserve-whitespace-mixed-content"))
 				!= null)
-				{preserveWhitespaceTemp = temp.booleanValue();}
+				{preserveWhitespaceTemp = temp;}
 		}
 	}
 	

@@ -1687,7 +1687,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         if (result == null) {
             return 2;
         }
-        return ((Integer) optionPane.getValue()).intValue();
+        return (Integer) optionPane.getValue();
     }
 
     /*

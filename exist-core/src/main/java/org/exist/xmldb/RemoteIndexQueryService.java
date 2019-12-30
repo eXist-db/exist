@@ -88,7 +88,7 @@ public class RemoteIndexQueryService extends AbstractRemote implements IndexQuer
     public Occurrences[] getIndexedElements(final boolean inclusive) throws XMLDBException {
         final List<Object> params = new ArrayList<>();
         params.add(collection.getPath());
-        params.add(Boolean.valueOf(inclusive));
+        params.add(inclusive);
         final Object[] result = (Object[]) collection.execute("getIndexedElements", params);
 
         final Stream<Occurrences> occurrences = Arrays.stream(result)

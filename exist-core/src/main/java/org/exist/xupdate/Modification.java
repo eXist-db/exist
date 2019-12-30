@@ -308,7 +308,7 @@ public abstract class Modification {
         int fragmentationLimit = -1;
         final Object property = broker.getBrokerPool().getConfiguration().getProperty(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
         if (property != null)
-	        {fragmentationLimit = ((Integer)property).intValue();}		
+	        {fragmentationLimit = (Integer) property;}
 	    for(final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
 	        final DocumentImpl next = i.next();
 	        if(next.getMetadata().getSplitCount() > fragmentationLimit)

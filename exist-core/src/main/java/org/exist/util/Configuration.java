@@ -1114,7 +1114,7 @@ public class Configuration implements ErrorHandler
         if( option != null ) {
             value = "yes".equals(option);
         }
-        setProperty( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART, Boolean.valueOf( value ) );
+        setProperty( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART, value);
         LOG.debug( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART + ": " + config.get( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART ) );
 
         option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_POST_RECOVERY_CHECK );
@@ -1123,7 +1123,7 @@ public class Configuration implements ErrorHandler
         if( option != null ) {
             value = "yes".equals(option);
         }
-        setProperty( BrokerPool.PROPERTY_RECOVERY_CHECK, Boolean.valueOf( value ) );
+        setProperty( BrokerPool.PROPERTY_RECOVERY_CHECK, value);
         LOG.debug( BrokerPool.PROPERTY_RECOVERY_CHECK + ": " + config.get( BrokerPool.PROPERTY_RECOVERY_CHECK ) );
     }
 
@@ -1375,7 +1375,7 @@ public class Configuration implements ErrorHandler
                     LOG.warn( "parameter index-depth should be >= 3 or you will experience a severe " + "performance loss for node updates (XUpdate or XQuery update extensions)" );
                     depth = 3;
                 }
-                config.put( NativeBroker.PROPERTY_INDEX_DEPTH, Integer.valueOf(depth) );
+                config.put( NativeBroker.PROPERTY_INDEX_DEPTH, depth);
                 LOG.debug( NativeBroker.PROPERTY_INDEX_DEPTH + ": " + config.get( NativeBroker.PROPERTY_INDEX_DEPTH ) );
             }
             catch( final NumberFormatException e ) {

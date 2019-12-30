@@ -212,7 +212,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	 * @param value the header value
 	 */
 	public void setDateHeader(String name, long value) {
-		dateHeaders.put(name, Long.valueOf(value) );
+		dateHeaders.put(name, value);
 		response.setDateHeader(name, value);
 	}
 
@@ -227,7 +227,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 		long ret = 0;
 		final Long val = dateHeaders.get(name);
 		if ( val != null )
-			{ret = val.longValue();}
+			{ret = val;}
 		return ret;
 	}
 	

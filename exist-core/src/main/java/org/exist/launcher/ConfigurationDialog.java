@@ -61,10 +61,10 @@ public class ConfigurationDialog extends JDialog {
         try {
             Configuration existConfig = new Configuration();
             final int cacheSizeProp = existConfig.getInteger(DefaultCacheManager.PROPERTY_CACHE_SIZE);
-            cacheSize.setValue(Integer.valueOf(cacheSizeProp));
+            cacheSize.setValue(cacheSizeProp);
             
             final int collectionCacheProp = existConfig.getInteger(CollectionCache.PROPERTY_CACHE_SIZE_BYTES);
-            collectionCache.setValue(Integer.valueOf(collectionCacheProp / 1024 / 1024)); // show in MB
+            collectionCache.setValue(collectionCacheProp / 1024 / 1024); // show in MB
 
             final Path dir = (Path)existConfig.getProperty(BrokerPool.PROPERTY_DATA_DIR);
             dataDir.setText(dir.toAbsolutePath().toString());
@@ -190,7 +190,7 @@ public class ConfigurationDialog extends JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 22, 0, 0);
         getContentPane().add(jLabel2, gridBagConstraints);
 
-        maxMemory.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(1024), Integer.valueOf(512), null, Integer.valueOf(64)));
+        maxMemory.setModel(new javax.swing.SpinnerNumberModel(1024, 512, null, 64));
         maxMemory.addChangeListener(this::maxMemoryChanged);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;

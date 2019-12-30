@@ -847,8 +847,8 @@ public class InteractiveClient {
                     String p1;
                     String p2;
                     while (true) {
-                        p1 = console.readLine("password: ", Character.valueOf('*'));
-                        p2 = console.readLine("re-enter password: ", Character.valueOf('*'));
+                        p1 = console.readLine("password: ", '*');
+                        p2 = console.readLine("re-enter password: ", '*');
                         if (p1.equals(p2)) {
                             break;
                         }
@@ -914,8 +914,8 @@ public class InteractiveClient {
                     String p1;
                     String p2;
                     while (true) {
-                        p1 = console.readLine("password: ", Character.valueOf('*'));
-                        p2 = console.readLine("re-enter password: ", Character.valueOf('*'));
+                        p1 = console.readLine("password: ", '*');
+                        p2 = console.readLine("re-enter password: ", '*');
                         if (p1.equals(p2)) {
                             break;
                         }
@@ -2193,7 +2193,7 @@ public class InteractiveClient {
 
             } else if (options.username.isPresent() && !options.password.isPresent()) {
                 try {
-                    properties.setProperty(PASSWORD, console.readLine("password: ", Character.valueOf('*')));
+                    properties.setProperty(PASSWORD, console.readLine("password: ", '*'));
                 } catch (final Exception e) {
                 }
             }

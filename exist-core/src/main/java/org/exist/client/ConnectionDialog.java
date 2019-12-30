@@ -577,7 +577,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
                 tpConnectionType.setSelectedIndex(cmbConnectionType.getSelectedIndex());
 
                 txtServerUri.setText(favourite.getUri());
-                chkSsl.setSelected(Boolean.valueOf(favourite.isSsl()));
+                chkSsl.setSelected(favourite.isSsl());
 
                 txtConfiguration.setText(favourite.getConfiguration());
 

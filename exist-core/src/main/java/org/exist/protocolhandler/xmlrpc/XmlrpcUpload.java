@@ -96,7 +96,7 @@ public class XmlrpcUpload {
                     params.add(handle);
                 }
                 params.add(buf);
-                params.add(Integer.valueOf(len));
+                params.add(len);
                 handle = (String)client.execute("upload", params);
             }
             

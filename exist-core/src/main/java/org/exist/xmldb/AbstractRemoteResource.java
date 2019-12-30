@@ -287,7 +287,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                 method = "getNextChunk";
             }
 
-            long offset = ((Integer) table.get("offset")).intValue();
+            long offset = (Integer) table.get("offset");
             byte[] data = (byte[]) table.get("data");
             final boolean isCompressed = "yes".equals(properties.getProperty(EXistOutputKeys.COMPRESS_OUTPUT, "no"));
 
@@ -361,7 +361,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
         if (inMemoryBufferSize == null) {
             inMemoryBufferSize = new LazyVal<>(() -> Integer.parseInt(properties.getProperty("in-memory-buffer-size", Integer.toString(VirtualTempPath.DEFAULT_IN_MEMORY_SIZE))));
         }
-        return inMemoryBufferSize.get().intValue();
+        return inMemoryBufferSize.get();
     }
 
     protected static InputStream getAnyStream(final Object obj)

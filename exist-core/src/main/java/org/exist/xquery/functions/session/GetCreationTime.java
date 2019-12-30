@@ -56,7 +56,7 @@ public class GetCreationTime extends SessionFunction {
     @Override
     public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> session) throws XPathException {
         if (!session.isPresent()) {
-            return XPathUtil.javaObjectToXPath(Integer.valueOf(-1), context);
+            return XPathUtil.javaObjectToXPath(-1, context);
         }
 
         try {

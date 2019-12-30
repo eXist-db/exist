@@ -298,7 +298,7 @@ public class ConfigurationImpl implements Configuration {
 
     public Boolean getPropertyBoolean(String name, boolean defaultValue) {
         Boolean value = getPropertyBoolean(name);
-        if(value == null) return Boolean.valueOf(defaultValue);
+        if(value == null) return defaultValue;
 
         return value;
     }
@@ -340,7 +340,7 @@ public class ConfigurationImpl implements Configuration {
         }
         final long result = Long.parseLong(value);
         if ((positive) && (result < 0)) {
-            return defaultValue.longValue();
+            return defaultValue;
         }
         return result;
     }
