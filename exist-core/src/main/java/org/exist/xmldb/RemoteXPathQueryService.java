@@ -299,11 +299,7 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
     @Override
     public void removeNamespace(final String ns)
             throws XMLDBException {
-        for (final Iterator<String> i = namespaceMappings.values().iterator(); i.hasNext(); ) {
-            if (i.next().equals(ns)) {
-                i.remove();
-            }
-        }
+        namespaceMappings.values().removeIf(s -> s.equals(ns));
     }
 
     @Override

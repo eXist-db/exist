@@ -327,15 +327,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
 
             String str = uri.toString();
 
-            Iterator<Entry<CollectionURI, CollectionConfiguration>> it = configurations.entrySet().iterator();
-
-            while (it.hasNext()) {
-                Entry<CollectionURI, CollectionConfiguration> entry = it.next();
-
-                if (entry.getKey().toString().startsWith(str)) {
-                    it.remove();
-                }
-            }
+            configurations.entrySet().removeIf(entry -> entry.getKey().toString().startsWith(str));
         }
     }
 
