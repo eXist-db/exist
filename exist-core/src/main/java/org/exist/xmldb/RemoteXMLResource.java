@@ -94,25 +94,23 @@ public class RemoteXMLResource
     /**
      * Construct a remote XML Resource.
      *
-     * @param xmlRpcClientLease the XML-RPC Client lease
      * @param parent the parent collection
      * @param docId the document if of the remote resource
      * @param id the id of the remote resource
      *
      * @throws XMLDBException if an error occurs during construction
      *
-     * @deprecated Use {@link #RemoteXMLResource(Leasable.Lease, RemoteCollection, XmldbURI, Optional, Optional)}.
+     * @deprecated Use {@link #RemoteXMLResource(RemoteCollection, XmldbURI, Optional, Optional)}.
      */
     @Deprecated
-    public RemoteXMLResource(final Leasable<XmlRpcClient>.Lease xmlRpcClientLease, final RemoteCollection parent, final XmldbURI docId, final Optional<String> id)
+    public RemoteXMLResource(final RemoteCollection parent, final XmldbURI docId, final Optional<String> id)
             throws XMLDBException {
-        this(xmlRpcClientLease, parent, -1, -1, docId, id, Optional.empty());
+        this(parent, -1, -1, docId, id, Optional.empty());
     }
 
     /**
      * Construct a remote XML Resource.
      *
-     * @param xmlRpcClientLease the XML-RPC Client lease
      * @param parent the parent collection
      * @param docId the document if of the remote resource
      * @param id the id of the remote resource
@@ -122,9 +120,9 @@ public class RemoteXMLResource
      *
      * @deprecated Use {@link #RemoteXMLResource(Leasable.Lease, RemoteCollection, int, int, XmldbURI, Optional, Optional)}.
      */
-    public RemoteXMLResource(final Leasable<XmlRpcClient>.Lease xmlRpcClientLease, final RemoteCollection parent, final XmldbURI docId, final Optional<String> id, final Optional<String> type)
+    public RemoteXMLResource(final RemoteCollection parent, final XmldbURI docId, final Optional<String> id, final Optional<String> type)
             throws XMLDBException {
-        this(xmlRpcClientLease, parent, -1, -1, docId, id, type);
+        this(parent, -1, -1, docId, id, type);
     }
 
     /**
@@ -139,21 +137,19 @@ public class RemoteXMLResource
      *
      * @throws XMLDBException if an error occurs during construction
      *
-     * @deprecated Use {@link #RemoteXMLResource(Leasable.Lease, RemoteCollection, int, int, XmldbURI, Optional, Optional)}.
+     * @deprecared Use {@link #RemoteXMLResource(RemoteCollection, int, int, XmldbURI, Optional, Optional)}.
      */
     @Deprecated
     public RemoteXMLResource(
-            final Leasable<XmlRpcClient>.Lease xmlRpcClientLease,
             final RemoteCollection parent,
             final int handle,
             final int pos,
             final XmldbURI docId,
             final Optional<String> id) throws XMLDBException {
-        this(xmlRpcClientLease, parent, handle, pos, docId, id, Optional.empty());
+        this(parent, handle, pos, docId, id, Optional.empty());
     }
 
     public RemoteXMLResource(
-            final Leasable<XmlRpcClient>.Lease xmlRpcClientLease,
             final RemoteCollection parent,
             final int handle,
             final int pos,
@@ -161,7 +157,7 @@ public class RemoteXMLResource
             final Optional<String> id,
             final Optional<String> type)
             throws XMLDBException {
-        super(xmlRpcClientLease, parent, docId, MimeType.XML_TYPE.getName());
+        super(parent, docId, MimeType.XML_TYPE.getName());
         this.handle = handle;
         this.pos = pos;
         this.id = id;
@@ -414,18 +410,14 @@ public class RemoteXMLResource
         final List params = new ArrayList(1);
         params.add(path.toString());
 
-        try {
-            final Object[] request = (Object[]) xmlRpcClientLease.get().execute("getDocType", params);
-            final DocumentType result;
-            if (!"".equals(request[0])) {
-                result = new DocumentTypeImpl((String) request[0], (String) request[1], (String) request[2]);
-            } else {
-                result = null;
-            }
-            return result;
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+        final Object[] request = (Object[]) collection.execute("getDocType", params);
+        final DocumentType result;
+        if (!"".equals(request[0])) {
+            result = new DocumentTypeImpl((String) request[0], (String) request[1], (String) request[2]);
+        } else {
+            result = null;
         }
+        return result;
     }
 
     @Override
@@ -437,11 +429,7 @@ public class RemoteXMLResource
             params.add(doctype.getPublicId() == null ? "" : doctype.getPublicId());
             params.add(doctype.getSystemId() == null ? "" : doctype.getSystemId());
 
-            try {
-                xmlRpcClientLease.get().execute("setDocType", params);
-            } catch (final XmlRpcException e) {
-                throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-            }
+            collection.execute("setDocType", params);
         }
     }
 

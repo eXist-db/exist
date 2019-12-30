@@ -84,8 +84,8 @@
         <icu.version>59.1</icu.version>
         <izpack.version>5.1.3</izpack.version>
         <jaxb.version>2.3.1</jaxb.version>
-        <jetty.version>9.4.24.v20191120</jetty.version>
-        <log4j.version>2.12.1</log4j.version>
+        <jetty.version>9.4.25.v20191220</jetty.version>
+        <log4j.version>2.13.0</log4j.version>
         <lucene.version>4.10.4</lucene.version>
         <milton.version>1.8.1.3</milton.version>
         <saxon.version>9.9.1-6</saxon.version>
@@ -208,7 +208,7 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.7.29</version>
+                <version>1.7.30</version>
             </dependency>
 
             <dependency>
@@ -538,7 +538,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.2.1</version>
                     <configuration>
                         <archive>
                             <manifest>

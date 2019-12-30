@@ -54,12 +54,12 @@ public class RemoteBinaryResource
     private BlobId blobId = null;
     private MessageDigest contentDigest = null;
 
-    public RemoteBinaryResource(final Leasable<XmlRpcClient>.Lease xmlRpcClientLease, final RemoteCollection parent, final XmldbURI documentName) throws XMLDBException {
-        super(xmlRpcClientLease, parent, documentName, MimeType.BINARY_TYPE.getName());
+    public RemoteBinaryResource(final RemoteCollection parent, final XmldbURI documentName) throws XMLDBException {
+        super(parent, documentName, MimeType.BINARY_TYPE.getName());
     }
 
-    public RemoteBinaryResource(final Leasable<XmlRpcClient>.Lease xmlRpcClientLease, final RemoteCollection parent, final XmldbURI documentName, final String type, final byte[] content) throws XMLDBException {
-        super(xmlRpcClientLease, parent, documentName, MimeType.BINARY_TYPE.getName());
+    public RemoteBinaryResource(final RemoteCollection parent, final XmldbURI documentName, final String type, final byte[] content) throws XMLDBException {
+        super(parent, documentName, MimeType.BINARY_TYPE.getName());
         this.type = type;
         this.content = content;
     }
@@ -149,20 +149,16 @@ public class RemoteBinaryResource
         params.add(path.toString());
         params.add(digestType.getCommonNames()[0]);
 
-        try {
-            final Map result = (Map) xmlRpcClientLease.get().execute("getContentDigest", params);
-            final String digestAlgorithm = (String)result.get("digest-algorithm");
-            final byte[] digest = (byte[])result.get("digest");
+        final Map result = (Map) collection.execute("getContentDigest", params);
+        final String digestAlgorithm = (String)result.get("digest-algorithm");
+        final byte[] digest = (byte[])result.get("digest");
 
-            final MessageDigest messageDigest = new MessageDigest(DigestType.forCommonName(digestAlgorithm), digest);
-            if (this.contentDigest == null) {
-                this.contentDigest = messageDigest;
-            }
-            return messageDigest;
-
-        } catch (final XmlRpcException xre) {
-            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
+        final MessageDigest messageDigest = new MessageDigest(DigestType.forCommonName(digestAlgorithm), digest);
+        if (this.contentDigest == null) {
+            this.contentDigest = messageDigest;
         }
+        return messageDigest;
+
     }
 
     public void setContentDigest(final MessageDigest contentDigest) {

@@ -19,8 +19,6 @@
  */
 package org.exist.xmldb;
 
-import org.apache.xmlrpc.XmlRpcException;
-import org.apache.xmlrpc.client.XmlRpcClient;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -31,15 +29,15 @@ import java.util.List;
 
 public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 
-    private final XmlRpcClient client;
+    private final RemoteCallSite remoteCallSite;
 
     /**
      * Constructor for DatabaseInstanceManagerImpl.
      *
-     * @param client the XML-RPC client.
+     * @param remoteCallSite the remote call site
      */
-    public RemoteDatabaseInstanceManager(final XmlRpcClient client) {
-        this.client = client;
+    public RemoteDatabaseInstanceManager(final RemoteCallSite remoteCallSite) {
+        this.remoteCallSite = remoteCallSite;
     }
 
     @Override
@@ -59,11 +57,7 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 
     @Override
     public void shutdown() throws XMLDBException {
-        try {
-            client.execute("shutdown", Collections.EMPTY_LIST);
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "shutdown failed", e);
-        }
+        remoteCallSite.execute("shutdown", Collections.EMPTY_LIST);
     }
 
     @Override
@@ -71,30 +65,18 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
         final List<Object> params = new ArrayList<>();
         if (delay > 0)
             params.add(Long.valueOf(delay).toString());
-        try {
-            client.execute("shutdown", params);
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "shutdown failed", e);
-        }
+        remoteCallSite.execute("shutdown", params);
     }
 
     @Override
     public boolean enterServiceMode() throws XMLDBException {
-        try {
-            client.execute("enterServiceMode", Collections.EMPTY_LIST);
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Failed to switch db to service mode: " + e.getMessage(), e);
-        }
+        remoteCallSite.execute("enterServiceMode", Collections.EMPTY_LIST);
         return true;
     }
 
     @Override
     public void exitServiceMode() throws XMLDBException {
-        try {
-            client.execute("exitServiceMode", Collections.EMPTY_LIST);
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Failed to switch db to service mode: " + e.getMessage(), e);
-        }
+        remoteCallSite.execute("exitServiceMode", Collections.EMPTY_LIST);
     }
 
     @Override

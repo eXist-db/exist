@@ -45,7 +45,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class RemoteXPathQueryService extends AbstractRemote implements EXistXPathQueryService, EXistXQueryService {
 
     private final Leasable<XmlRpcClient> leasableXmlRpcClient;
-    private final XmlRpcClient xmlRpcClient;
     private final Map<String, String> namespaceMappings = new HashMap<>();
     private final Map<String, Object> variableDecls = new HashMap<>();
     private final Properties outputProperties;
@@ -59,10 +58,9 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
      * @param xmlRpcClient the XML-RPC client
      * @param collection a RemoteCollection value
      */
-    public RemoteXPathQueryService(final Leasable<XmlRpcClient> leasableXmlRpcClient, final XmlRpcClient xmlRpcClient, final RemoteCollection collection) {
+    public RemoteXPathQueryService(final Leasable<XmlRpcClient> leasableXmlRpcClient, final RemoteCollection collection) {
         super(collection);
         this.leasableXmlRpcClient = leasableXmlRpcClient;
-        this.xmlRpcClient = xmlRpcClient;
         this.outputProperties = collection.getProperties();
     }
 
@@ -84,47 +82,43 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
     @Override
     public ResourceSet query(final String query, final String sortExpr)
             throws XMLDBException {
-        try {
-            final Map<String, Object> optParams = new HashMap<>();
+        final Map<String, Object> optParams = new HashMap<>();
 
-            if (sortExpr != null) {
-                optParams.put(RpcAPI.SORT_EXPR, sortExpr);
-            }
-            if (namespaceMappings.size() > 0) {
-                optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
-            }
-            if (variableDecls.size() > 0) {
-                optParams.put(RpcAPI.VARIABLES, variableDecls);
-            }
-            optParams.put(RpcAPI.BASE_URI, outputProperties.getProperty(RpcAPI.BASE_URI, collection.getPath()));
-            if (moduleLoadPath != null) {
-                optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);
-            }
-            if (protectedMode) {
-                optParams.put(RpcAPI.PROTECTED_MODE, collection.getPath());
-            }
-            final List<Object> params = new ArrayList<>();
-            params.add(query.getBytes(UTF_8));
-            params.add(optParams);
-            final Map result = (Map) xmlRpcClient.execute("queryPT", params);
-
-            if (result.get(RpcAPI.ERROR) != null) {
-                throwException(result);
-            }
-
-            final Object[] resources = (Object[]) result.get("results");
-            int handle = -1;
-            int hash = -1;
-            if (resources != null && resources.length > 0) {
-                handle = (Integer) result.get("id");
-                hash = (Integer) result.get("hash");
-            }
-            final Properties resourceSetProperties = new Properties(outputProperties);
-            resourceSetProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
-            return new RemoteResourceSet(leasableXmlRpcClient, xmlRpcClient, collection, resourceSetProperties, resources, handle, hash);
-        } catch (final XmlRpcException xre) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
+        if (sortExpr != null) {
+            optParams.put(RpcAPI.SORT_EXPR, sortExpr);
         }
+        if (namespaceMappings.size() > 0) {
+            optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
+        }
+        if (variableDecls.size() > 0) {
+            optParams.put(RpcAPI.VARIABLES, variableDecls);
+        }
+        optParams.put(RpcAPI.BASE_URI, outputProperties.getProperty(RpcAPI.BASE_URI, collection.getPath()));
+        if (moduleLoadPath != null) {
+            optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);
+        }
+        if (protectedMode) {
+            optParams.put(RpcAPI.PROTECTED_MODE, collection.getPath());
+        }
+        final List<Object> params = new ArrayList<>();
+        params.add(query.getBytes(UTF_8));
+        params.add(optParams);
+        final Map result = (Map) collection.execute("queryPT", params);
+
+        if (result.get(RpcAPI.ERROR) != null) {
+            throwException(result);
+        }
+
+        final Object[] resources = (Object[]) result.get("results");
+        int handle = -1;
+        int hash = -1;
+        if (resources != null && resources.length > 0) {
+            handle = (Integer) result.get("id");
+            hash = (Integer) result.get("hash");
+        }
+        final Properties resourceSetProperties = new Properties(outputProperties);
+        resourceSetProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
+        return new RemoteResourceSet(leasableXmlRpcClient, collection, resourceSetProperties, resources, handle, hash);
     }
 
     @Override
@@ -138,31 +132,27 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
 
     @Override
     public CompiledExpression compileAndCheck(final String query) throws XMLDBException, XPathException {
-        try {
-            final Map<String, Object> optParams = new HashMap<>();
-            if (namespaceMappings.size() > 0) {
-                optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
-            }
-            if (variableDecls.size() > 0) {
-                optParams.put(RpcAPI.VARIABLES, variableDecls);
-            }
-            if (moduleLoadPath != null) {
-                optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);
-            }
-            optParams.put(RpcAPI.BASE_URI,
-                    outputProperties.getProperty(RpcAPI.BASE_URI, collection.getPath()));
-            final List<Object> params = new ArrayList<>();
-            params.add(query.getBytes(UTF_8));
-            params.add(optParams);
-            final Map result = (Map) xmlRpcClient.execute("compile", params);
-
-            if (result.get(RpcAPI.ERROR) != null) {
-                throwXPathException(result);
-            }
-            return new RemoteCompiledExpression(query);
-        } catch (final XmlRpcException xre) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
+        final Map<String, Object> optParams = new HashMap<>();
+        if (namespaceMappings.size() > 0) {
+            optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
         }
+        if (variableDecls.size() > 0) {
+            optParams.put(RpcAPI.VARIABLES, variableDecls);
+        }
+        if (moduleLoadPath != null) {
+            optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);
+        }
+        optParams.put(RpcAPI.BASE_URI,
+                outputProperties.getProperty(RpcAPI.BASE_URI, collection.getPath()));
+        final List<Object> params = new ArrayList<>();
+        params.add(query.getBytes(UTF_8));
+        params.add(optParams);
+        final Map result = (Map) collection.execute("compile", params);
+
+        if (result.get(RpcAPI.ERROR) != null) {
+            throwXPathException(result);
+        }
+        return new RemoteCompiledExpression(query);
     }
 
     private void throwException(final Map result) throws XMLDBException {
@@ -201,26 +191,22 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
         params.add(uri);
         params.add(new HashMap<String, Object>());
 
-        try {
-            final Map result = (Map) xmlRpcClient.execute("executeT", params);
+        final Map result = (Map) collection.execute("executeT", params);
 
-            if (result.get(RpcAPI.ERROR) != null) {
-                throwException(result);
-            }
-
-            final Object[] resources = (Object[]) result.get("results");
-            int handle = -1;
-            int hash = -1;
-            if (resources != null && resources.length > 0) {
-                handle = (Integer) result.get("id");
-                hash = (Integer) result.get("hash");
-            }
-            final Properties resourceSetProperties = new Properties(outputProperties);
-            resourceSetProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
-            return new RemoteResourceSet(leasableXmlRpcClient, xmlRpcClient, collection, outputProperties, resources, handle, hash);
-        } catch (final XmlRpcException xre) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
+        if (result.get(RpcAPI.ERROR) != null) {
+            throwException(result);
         }
+
+        final Object[] resources = (Object[]) result.get("results");
+        int handle = -1;
+        int hash = -1;
+        if (resources != null && resources.length > 0) {
+            handle = (Integer) result.get("id");
+            hash = (Integer) result.get("hash");
+        }
+        final Properties resourceSetProperties = new Properties(outputProperties);
+        resourceSetProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
+        return new RemoteResourceSet(leasableXmlRpcClient, collection, outputProperties, resources, handle, hash);
     }
 
     @Override
@@ -233,49 +219,45 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
     public ResourceSet query(final XMLResource res, final String query, final String sortExpr)
             throws XMLDBException {
         final RemoteXMLResource resource = (RemoteXMLResource) res;
-        try {
-            final Map<String, Object> optParams = new HashMap<>();
-            if (namespaceMappings.size() > 0) {
-                optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
-            }
-            if (variableDecls.size() > 0) {
-                optParams.put(RpcAPI.VARIABLES, variableDecls);
-            }
-            if (sortExpr != null) {
-                optParams.put(RpcAPI.SORT_EXPR, sortExpr);
-            }
-            if (moduleLoadPath != null) {
-                optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);
-            }
-            optParams.put(RpcAPI.BASE_URI,
-                    outputProperties.getProperty(RpcAPI.BASE_URI, collection.getPath()));
-            if (protectedMode) {
-                optParams.put(RpcAPI.PROTECTED_MODE, collection.getPath());
-            }
-            final List<Object> params = new ArrayList<>();
-            params.add(query.getBytes(UTF_8));
-            params.add(resource.path.toString());
-            params.add(resource.idIsPresent() ? resource.getNodeId() : "");
-            params.add(optParams);
-            final Map result = (Map) xmlRpcClient.execute("queryPT", params);
-
-            if (result.get(RpcAPI.ERROR) != null) {
-                throwException(result);
-            }
-
-            final Object[] resources = (Object[]) result.get("results");
-            int handle = -1;
-            int hash = -1;
-            if (resources != null && resources.length > 0) {
-                handle = (Integer) result.get("id");
-                hash = (Integer) result.get("hash");
-            }
-            final Properties resourceSetProperties = new Properties(outputProperties);
-            resourceSetProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
-            return new RemoteResourceSet(leasableXmlRpcClient, xmlRpcClient, collection, resourceSetProperties, resources, handle, hash);
-        } catch (final XmlRpcException xre) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
+        final Map<String, Object> optParams = new HashMap<>();
+        if (namespaceMappings.size() > 0) {
+            optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
         }
+        if (variableDecls.size() > 0) {
+            optParams.put(RpcAPI.VARIABLES, variableDecls);
+        }
+        if (sortExpr != null) {
+            optParams.put(RpcAPI.SORT_EXPR, sortExpr);
+        }
+        if (moduleLoadPath != null) {
+            optParams.put(RpcAPI.MODULE_LOAD_PATH, moduleLoadPath);
+        }
+        optParams.put(RpcAPI.BASE_URI,
+                outputProperties.getProperty(RpcAPI.BASE_URI, collection.getPath()));
+        if (protectedMode) {
+            optParams.put(RpcAPI.PROTECTED_MODE, collection.getPath());
+        }
+        final List<Object> params = new ArrayList<>();
+        params.add(query.getBytes(UTF_8));
+        params.add(resource.path.toString());
+        params.add(resource.idIsPresent() ? resource.getNodeId() : "");
+        params.add(optParams);
+        final Map result = (Map) collection.execute("queryPT", params);
+
+        if (result.get(RpcAPI.ERROR) != null) {
+            throwException(result);
+        }
+
+        final Object[] resources = (Object[]) result.get("results");
+        int handle = -1;
+        int hash = -1;
+        if (resources != null && resources.length > 0) {
+            handle = (Integer) result.get("id");
+            hash = (Integer) result.get("hash");
+        }
+        final Properties resourceSetProperties = new Properties(outputProperties);
+        resourceSetProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
+        return new RemoteResourceSet(leasableXmlRpcClient, collection, resourceSetProperties, resources, handle, hash);
     }
 
     @Override
@@ -386,9 +368,9 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
         params.add(query);
         params.add(optParams);
         try {
-            final String dump = (String) xmlRpcClient.execute("printDiagnostics", params);
+            final String dump = (String) collection.execute("printDiagnostics", params);
             writer.write(dump);
-        } catch (final XmlRpcException | IOException e) {
+        } catch (final IOException e) {
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
         }
     }

@@ -35,11 +35,8 @@ import org.xmldb.api.base.XMLDBException;
 
 public class RemoteIndexQueryService extends AbstractRemote implements IndexQueryService {
 
-    private final XmlRpcClient client;
-
-    public RemoteIndexQueryService(final XmlRpcClient client, final RemoteCollection parent) {
+    public RemoteIndexQueryService(final RemoteCollection parent) {
         super(parent);
-        this.client = client;
     }
 
     @Override
@@ -71,15 +68,11 @@ public class RemoteIndexQueryService extends AbstractRemote implements IndexQuer
     }
 
     @Override
-    public void reindexCollection(final XmldbURI collection) throws XMLDBException {
-        final XmldbURI collectionPath = resolve(collection);
+    public void reindexCollection(final XmldbURI collectionUri) throws XMLDBException {
+        final XmldbURI collectionPath = resolve(collectionUri);
         final List<Object> params = new ArrayList<>();
         params.add(collectionPath.toString());
-        try {
-            client.execute("reindexCollection", params);
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "xmlrpc error while doing reindexCollection: ", e);
-        }
+        collection.execute("reindexCollection", params);
     }
 
     @Override
@@ -88,28 +81,20 @@ public class RemoteIndexQueryService extends AbstractRemote implements IndexQuer
         final XmldbURI documentPath = collectionPath.append(name);
         final List<Object> params = new ArrayList<>();
         params.add(documentPath.toString());
-        try {
-            client.execute("reindexDocument", params);
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "xmlrpc error while doing reindexDocument: ", e);
-        }
+        collection.execute("reindexDocument", params);
     }
 
     @Override
     public Occurrences[] getIndexedElements(final boolean inclusive) throws XMLDBException {
-        try {
-            final List<Object> params = new ArrayList<>();
-            params.add(collection.getPath());
-            params.add(inclusive);
-            final Object[] result = (Object[]) client.execute("getIndexedElements", params);
+        final List<Object> params = new ArrayList<>();
+        params.add(collection.getPath());
+        params.add(Boolean.valueOf(inclusive));
+        final Object[] result = (Object[]) collection.execute("getIndexedElements", params);
 
-            final Stream<Occurrences> occurrences = Arrays.stream(result)
-                    .map(o -> (Object[]) o)
-                    .map(row -> new Occurrences(new QName(row[0].toString(), row[1].toString(), row[2].toString()), (Integer) row[3]));
-            return occurrences.toArray(size -> new Occurrences[size]);
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "xmlrpc error while retrieving indexed elements", e);
-        }
+        final Stream<Occurrences> occurrences = Arrays.stream(result)
+                .map(o -> (Object[]) o)
+                .map(row -> new Occurrences(new QName(row[0].toString(), row[1].toString(), row[2].toString()), (Integer) row[3]));
+        return occurrences.toArray(size -> new Occurrences[size]);
     }
 
     @Override
@@ -132,10 +117,6 @@ public class RemoteIndexQueryService extends AbstractRemote implements IndexQuer
         final List<Object> params = new ArrayList<>();
         params.add(path);
         params.add(configData);
-        try {
-            client.execute("configureCollection", params);
-        } catch (final XmlRpcException e) {
-            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "xmlrpc error while doing reindexCollection: ", e);
-        }
+        collection.execute("configureCollection", params);
     }
 }
