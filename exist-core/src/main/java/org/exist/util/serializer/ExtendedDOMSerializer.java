@@ -64,9 +64,7 @@ public class ExtendedDOMSerializer extends DOMSerializer {
             try {
                 serializer.setProperties(outputProperties);
                 serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
-            } catch (final SAXNotRecognizedException e) {
-                //Nothing to do ?
-            } catch (final SAXNotSupportedException e) {
+            } catch (final SAXNotRecognizedException | SAXNotSupportedException e) {
                 //Nothing to do ?
             }
             try {

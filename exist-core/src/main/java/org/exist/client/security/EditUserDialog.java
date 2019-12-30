@@ -137,10 +137,8 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
                 acct.setPassword(newPassword.get());
                 getUserManagementService().updateAccount(acct);
             }
-        } catch(final PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException | XMLDBException pde) {
             JOptionPane.showMessageDialog(this, "Could not update user '" + txtUsername.getText() + "': " + pde.getMessage(), "Edit User Error", JOptionPane.ERROR_MESSAGE);
-        } catch(final XMLDBException xmldbe) {
-            JOptionPane.showMessageDialog(this, "Could not update user '" + txtUsername.getText() + "': " + xmldbe.getMessage(), "Edit User Error", JOptionPane.ERROR_MESSAGE);
         }
     }
     

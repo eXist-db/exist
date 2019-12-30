@@ -203,9 +203,7 @@ public class GetData extends StrictRequestFunction {
             final Document doc = receiver.getDocument();
 
             result = (NodeValue) doc;
-        } catch (final SAXException saxe) {
-            //do nothing, we will default to trying to return a string below
-        } catch (final IOException ioe) {
+        } catch (final SAXException | IOException saxe) {
             //do nothing, we will default to trying to return a string below
         } finally {
             context.popDocumentContext();

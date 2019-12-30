@@ -159,14 +159,8 @@ public class Descriptor implements ErrorHandler {
             if (maps.getLength() > 0) {
                 configureMaps((Element) maps.item(0));
             }
-        } catch (final SAXException e) {
+        } catch (final SAXException | IOException | ParserConfigurationException e) {
             LOG.warn("Error while reading descriptor file: " + file, e);
-            return;
-        } catch (final ParserConfigurationException cfg) {
-            LOG.warn("Error while reading descriptor file: " + file, cfg);
-            return;
-        } catch (final IOException io) {
-            LOG.warn("Error while reading descriptor file: " + file, io);
             return;
         } finally {
             if (is != null) {

@@ -141,24 +141,16 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
             if(!BrokerPool.isConfigured()) {
                 BrokerPool.configure(1, 5, configuration);
             }
-        } catch(final EXistException e) {
-            throw new ServletException(e.getMessage(), e);
-        } catch(final DatabaseConfigurationException e) {
+        } catch(final EXistException | DatabaseConfigurationException e) {
             throw new ServletException(e.getMessage(), e);
         }
-        
+
         try {
             getLog().info("Registering XMLDB driver");
             final Class<?> clazz = Class.forName("org.exist.xmldb.DatabaseImpl");
             final Database database = (Database) clazz.newInstance();
             DatabaseManager.registerDatabase(database);
-        } catch(final ClassNotFoundException e) {
-            getLog().info("ERROR", e);
-        } catch(final InstantiationException e) {
-            getLog().info("ERROR", e);
-        } catch(final IllegalAccessException e) {
-            getLog().info("ERROR", e);
-        } catch(final XMLDBException e) {
+        } catch(final ClassNotFoundException | XMLDBException | IllegalAccessException | InstantiationException e) {
             getLog().info("ERROR", e);
         }
     }

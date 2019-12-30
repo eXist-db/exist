@@ -778,10 +778,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			expr.analyze(new AnalyzeContextInfo());
 			final Sequence seq = expr.eval(null, null);
 			return seq;
-		} catch (final RecognitionException e) {
-			LOG.warn("error while creating variable", e);
-			throw new SAXException(e);
-		} catch (final TokenStreamException e) {
+		} catch (final RecognitionException | TokenStreamException e) {
 			LOG.warn("error while creating variable", e);
 			throw new SAXException(e);
 		} catch (final XPathException e) {

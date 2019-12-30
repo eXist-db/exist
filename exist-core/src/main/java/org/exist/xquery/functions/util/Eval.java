@@ -454,10 +454,8 @@ public class Eval extends BasicFunction {
 
             return sequence;
 
-        } catch (final IOException ioe) {
+        } catch (final IOException | PermissionDeniedException ioe) {
             throw new XPathException(this, ioe);
-        } catch (final PermissionDeniedException e) {
-            throw new XPathException(this, e);
         } finally {
             if (compiled != null) {
                 compiled.getContext().runCleanupTasks();

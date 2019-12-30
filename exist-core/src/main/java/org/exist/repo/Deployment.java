@@ -327,9 +327,7 @@ public class Deployment {
                 }
 
                 return target.map(e -> Optional.ofNullable(e.getStringValue())).orElseGet(() -> Optional.of(getTargetFallback(pkg.get()).getCollectionPath()));
-            } catch (final XPathException e) {
-                throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
-            } catch (final IOException e) {
+            } catch (final XPathException | IOException e) {
                 throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
             }
         } else {

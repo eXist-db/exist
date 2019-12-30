@@ -97,10 +97,8 @@ public class AccountStatusFunction extends BasicFunction {
             try {
                 account.save(broker);
                 return Sequence.EMPTY_SEQUENCE;
-            } catch(final ConfigurationException ce) {
+            } catch(final ConfigurationException | PermissionDeniedException ce) {
                 throw new XPathException(ce.getMessage(), ce);
-            } catch(final PermissionDeniedException pde) {
-                throw new XPathException(pde.getMessage(), pde);
             }
         } else {
             throw new XPathException("Unknown function");

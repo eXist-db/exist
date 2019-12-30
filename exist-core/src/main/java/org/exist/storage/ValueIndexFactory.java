@@ -85,12 +85,9 @@ public class ValueIndexFactory {
                                 data[start + 6],
                                 0);
                 return new DateValue(xmlutccal);
-            } catch (final DatatypeConfigurationException dtce) {
+            } catch (final DatatypeConfigurationException | XPathException dtce) {
                 throw new EXistException("Could not deserialize xs:date data type" +
                         " for range index key: " + Type.getTypeName(type) + " - " + dtce.getMessage());
-            } catch (final XPathException xpe) {
-                throw new EXistException("Could not deserialize xs:date data type" +
-                        " for range index key: " + Type.getTypeName(type) + " - " + xpe.getMessage());
             }
         }
         /* xs:integer */

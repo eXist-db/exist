@@ -52,9 +52,7 @@ public class XQDocHelper {
             final XQDocHelper helper = new XQDocHelper();
             parser.xqdocComment(helper);
             return helper;
-        } catch (final RecognitionException e) {
-            // ignore: comment will be shown unparsed
-        } catch (final TokenStreamException e) {
+        } catch (final RecognitionException | TokenStreamException e) {
             // ignore: comment will be shown unparsed
         }
         return null;

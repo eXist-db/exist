@@ -2216,11 +2216,7 @@ public class RESTServer {
 
             writer.flush();
             writer.close();
-        } catch (final IOException e) {
-            throw new BadRequestException("Error while serializing xml: " + e.toString(), e);
-        } catch (final SAXException e) {
-            throw new BadRequestException("Error while serializing xml: " + e.toString(), e);
-        } catch (final XPathException e) {
+        } catch (final IOException | XPathException | SAXException e) {
             throw new BadRequestException("Error while serializing xml: " + e.toString(), e);
         }
     }

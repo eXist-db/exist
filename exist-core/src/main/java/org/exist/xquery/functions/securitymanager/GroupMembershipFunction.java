@@ -220,10 +220,8 @@ public class GroupMembershipFunction extends BasicFunction {
                     throw new XPathException("Unknown function call: " + getSignature());
                 }
             }
-        } catch(final PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException | EXistException pde) {
             throw new XPathException(this, pde);
-        } catch(final EXistException ee) {
-            throw new XPathException(this, ee);
         }
 
         return result;

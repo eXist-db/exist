@@ -526,13 +526,11 @@ public class VirtualNodeSet extends AbstractNodeSet {
                     ++level;
                 }
             }
-        } catch(final IOException e) {
+        } catch(final IOException | XMLStreamException e) {
             LOG.error(e);
             //TODO : throw exception ,
-        } catch(final XMLStreamException e) {
-            LOG.error(e);
-            //TODO : throw exception ? -pb
-        }
+        } //TODO : throw exception ? -pb
+
     }
 
     /**

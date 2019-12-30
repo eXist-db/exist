@@ -51,9 +51,7 @@ public class DebuggeeFactory {
                 }
             } catch (final ClassNotFoundException e) {
                 LOG.warn("Class not found for debuggee: " + className);
-            } catch (final IllegalAccessException e) {
-                LOG.warn("Failed to instantiate class for debuggee: " + className);
-            } catch (final InstantiationException e) {
+            } catch (final IllegalAccessException | InstantiationException e) {
                 LOG.warn("Failed to instantiate class for debuggee: " + className);
             }
             if (instance == null)

@@ -143,9 +143,7 @@ public class Compile extends BasicFunction {
 				throw astParser.getLastException();
 			}
 			path.analyze(new AnalyzeContextInfo());
-		} catch (final RecognitionException e) {			
-			error = e.toString();
-		} catch (final TokenStreamException e) {
+		} catch (final RecognitionException | TokenStreamException e) {
 			error = e.toString();
 		} catch (final XPathException e) {
 			line = e.getLine();

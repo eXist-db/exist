@@ -139,10 +139,8 @@ public class SetPrincipalMetadataFunction extends BasicFunction {
             } else if(principal instanceof Group) {
                 securityManager.updateGroup((Group)principal);
             }
-        } catch(final PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException | EXistException pde) {
             throw new XPathException(this, pde);
-        } catch(final EXistException ee) {
-            throw new XPathException(this, ee);
         }
     }
 }

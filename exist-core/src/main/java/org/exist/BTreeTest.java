@@ -28,9 +28,7 @@ public class BTreeTest {
 
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
-        } catch (DatabaseConfigurationException e) {
-            e.printStackTrace();
-        } catch (EXistException e) {
+        } catch (DatabaseConfigurationException | EXistException e) {
             e.printStackTrace();
         }
     }
@@ -119,11 +117,7 @@ public class BTreeTest {
             } else if ("rebuild".equals(command)) {
                 test.rebuild();
             }
-        } catch (DBException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TerminatedException e) {
+        } catch (DBException | TerminatedException | IOException e) {
             e.printStackTrace();
         } finally {
             test.shutdown();
