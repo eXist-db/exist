@@ -20,12 +20,7 @@
 package org.exist.client;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -674,10 +669,10 @@ public class CollectionXConf
 				{
 					if(parameters.size() > 0)
 					{
-						final Enumeration pKeys = parameters.keys();
-						while(pKeys.hasMoreElements())
+						Iterator iterator = parameters.keySet().iterator();
+						while(iterator.hasNext())
 						{
-							final String name = (String)pKeys.nextElement();
+							final String name = (String) iterator.next();
 							final String value = parameters.getProperty(name);
 						
 							trigger.append("<parameter name=\"");
