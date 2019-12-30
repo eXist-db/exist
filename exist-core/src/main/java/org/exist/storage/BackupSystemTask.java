@@ -149,19 +149,17 @@ public class BackupSystemTask implements SystemTask {
 		int entriesNumber = entriesPaths.size();
 		int numberOfEntriesToBeDeleted = entriesNumber - zipFilesMax + 1;
 
-		Comparator<Path> timestampComparator = new Comparator<Path>() {
-			public int compare(Path path1, Path path2) {
-				int result = 0;
+		Comparator<Path> timestampComparator = (path1, path2) -> {
+            int result = 0;
 
-				try {
-					result = Files.getLastModifiedTime(path1).compareTo(Files.getLastModifiedTime(path2));
-				} catch (IOException e) {
-					LOG.error("Cannot compare files by timestamp: " + path1 + ", " + path2, e);
-				}
+            try {
+                result = Files.getLastModifiedTime(path1).compareTo(Files.getLastModifiedTime(path2));
+            } catch (IOException e) {
+                LOG.error("Cannot compare files by timestamp: " + path1 + ", " + path2, e);
+            }
 
-				return result;
-			}
-		};
+            return result;
+        };
 
 		if (numberOfEntriesToBeDeleted > 0) {
 			entriesPaths.stream().sorted(timestampComparator).limit(numberOfEntriesToBeDeleted).forEach(path -> {

@@ -551,12 +551,10 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         final byte[] toKey = computeDocKey(doc.getDocId() + 1);
         final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
         try(final ManagedLock<ReentrantLock> btreeLock = index.lockManager.acquireBtreeWriteLock(index.btree.getLockName())) {
-            index.btree.query(query, new BTreeCallback() {
-                public boolean indexInfo(Value value, long pointer) throws TerminatedException {
-                    final QName qname = readQName(value.getData());
-                    qnames.add(qname);
-                    return true;
-                }
+            index.btree.query(query, (value, pointer) -> {
+                final QName qname = readQName(value.getData());
+                qnames.add(qname);
+                return true;
             });
         } catch (final LockException e) {
             NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
@@ -610,20 +608,18 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                 final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
 
                 try(final ManagedLock<ReentrantLock> btreeLock = index.lockManager.acquireBtreeReadLock(index.btree.getLockName())) {
-                    index.btree.query(query, new BTreeCallback() {
-                        public boolean indexInfo(Value value, long pointer) throws TerminatedException {
-                            Occurrences oc = occurrences.get(name);
-                            if (oc == null) {
-                                oc = new Occurrences(name);
-                                occurrences.put(name, oc);
-                                oc.addDocument(doc);
-                                oc.addOccurrences(1);
-                            } else {
-                                oc.addOccurrences(1);
-                                oc.addDocument(doc);
-                            }
-                            return true;
+                    index.btree.query(query, (value, pointer) -> {
+                        Occurrences oc = occurrences.get(name);
+                        if (oc == null) {
+                            oc = new Occurrences(name);
+                            occurrences.put(name, oc);
+                            oc.addDocument(doc);
+                            oc.addOccurrences(1);
+                        } else {
+                            oc.addOccurrences(1);
+                            oc.addDocument(doc);
                         }
+                        return true;
                     });
                 } catch (final LockException e) {
                     NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
