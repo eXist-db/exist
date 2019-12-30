@@ -1100,7 +1100,7 @@ public abstract class DBBroker implements AutoCloseable {
     /**
      * Reads and populates the metadata for a sub-Collection
      *
-     * The entry to read is determined by {@link SubCollectionEntry#uri}
+     * The entry to read is determined by {@link SubCollectionEntry#getUri()}
      *
      * NOTE: It is assumed that the caller holds a {@link LockMode#READ_LOCK} (or better)
      * on the Collection indicated in `entry`.

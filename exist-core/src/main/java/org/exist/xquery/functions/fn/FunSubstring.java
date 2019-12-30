@@ -231,7 +231,7 @@ public class FunSubstring extends Function {
 	 * 
 	 * @see <a href="http://www.w3.org/TR/xpath-functions/#func-substring">w3.org</a>
 	 * 
-	 * @param stringSource	The source string to substring
+	 * @param sourceString	The source string to substring
 	 * @param startingLoc	The Starting Location for the substring, start 
      * index is 1
 	 * 
@@ -253,10 +253,9 @@ public class FunSubstring extends Function {
 	 * 
 	 * @see <a href="http://www.w3.org/TR/xpath-functions/#func-substring">http://www.w3.org/TR/xpath-functions/#func-substring</a>
 	 * 
-	 * @param stringSource	The source string to substring
-	 * @param startingLoc	The Starting Location for the substring, start 
-     * index is 1
-	 * @param length	The length of the substring
+	 * @param sourceString	The source string to substring
+	 * @param startingLoc	The Starting Location for the substring, start index is 1
+	 * @param endingLoc		The Ending Location for the substring
 	 * 
 	 * @return The StringValue of the substring
 	 */

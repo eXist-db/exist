@@ -117,8 +117,7 @@ public class RemoteXMLResource
      * @param type the type of the remote resource
      *
      * @throws XMLDBException if an error occurs during construction
-     *
-     * @deprecated Use {@link #RemoteXMLResource(Leasable.Lease, RemoteCollection, int, int, XmldbURI, Optional, Optional)}.
+     * @deprecated Use {@link #RemoteXMLResource(RemoteCollection, int, int, XmldbURI, Optional, Optional)}.
      */
     public RemoteXMLResource(final RemoteCollection parent, final XmldbURI docId, final Optional<String> id, final Optional<String> type)
             throws XMLDBException {
@@ -128,7 +127,6 @@ public class RemoteXMLResource
     /**
      * Construct a remote XML Resource.
      *
-     * @param xmlRpcClientLease the XML-RPC Client lease
      * @param parent the parent collection
      * @param handle the handle to the remote resource
      * @param pos the position of the remote resource

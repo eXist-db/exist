@@ -55,7 +55,6 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
      * Creates a new RemoteXPathQueryService instance.
      *
      * @param leasableXmlRpcClient the XML-RPC client lease
-     * @param xmlRpcClient the XML-RPC client
      * @param collection a RemoteCollection value
      */
     public RemoteXPathQueryService(final Leasable<XmlRpcClient> leasableXmlRpcClient, final RemoteCollection collection) {

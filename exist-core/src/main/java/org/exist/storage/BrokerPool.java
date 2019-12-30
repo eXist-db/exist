@@ -1917,7 +1917,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
     /**
      * Represents a change involving {@link BrokerPool#inactiveBrokers}
-     * or {@link BrokerPool#activeBrokers} or {@link DBBroker#referenceCount}
+     * or {@link BrokerPool#activeBrokers} or {@link DBBroker#getReferenceCount}
      *
      * Used for tracing broker leases
      */
