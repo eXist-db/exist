@@ -102,8 +102,8 @@ public class GetData extends StrictRequestFunction {
                 String contentType = request.getContentType();
                 if (contentType != null) {
                     //strip off any charset encoding info
-                    if (contentType.indexOf(";") > -1) {
-                        contentType = contentType.substring(0, contentType.indexOf(";"));
+                    if (contentType.indexOf(';') > -1) {
+                        contentType = contentType.substring(0, contentType.indexOf(';'));
                     }
 
                     final MimeType mimeType = MimeTable.getInstance().getContentType(contentType);

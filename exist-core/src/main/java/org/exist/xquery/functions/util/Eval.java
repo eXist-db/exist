@@ -484,7 +484,7 @@ public class Eval extends BasicFunction {
                 // If location is relative (does not contain any / and does
                 // not start with . or .. then the path of the module need to
                 // be added.
-                if (location.indexOf("/") < 0 || location.startsWith(".")) {
+                if (location.indexOf('/') < 0 || location.startsWith(".")) {
                     final XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor(context.getModuleLoadPath());
                     locationUri = moduleLoadPathUri.resolveCollectionPath(locationUri);
                 }

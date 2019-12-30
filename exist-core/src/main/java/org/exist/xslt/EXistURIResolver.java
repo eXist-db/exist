@@ -145,7 +145,7 @@ public class EXistURIResolver implements URIResolver {
           if (base.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX)) {
             base = base.substring(XmldbURI.EMBEDDED_SERVER_URI_PREFIX.length());
           }
-          path = base.substring(0, base.lastIndexOf("/") + 1) + href;
+          path = base.substring(0, base.lastIndexOf('/') + 1) + href;
         }
       }
     }

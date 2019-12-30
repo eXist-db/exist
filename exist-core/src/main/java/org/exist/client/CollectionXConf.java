@@ -373,7 +373,7 @@ public class CollectionXConf
 				final Node a = attrs.item(i);
 				if(a.getNodeName().startsWith("xmlns:"))
 				{
-					final String namespaceLocalName = a.getNodeName().substring(a.getNodeName().indexOf(":")+1); 
+					final String namespaceLocalName = a.getNodeName().substring(a.getNodeName().indexOf(':')+1);
 					namespaces.put(namespaceLocalName, a.getNodeValue());
 				}
 			}

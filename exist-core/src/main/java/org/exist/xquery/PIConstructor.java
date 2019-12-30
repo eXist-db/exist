@@ -44,7 +44,7 @@ public class PIConstructor extends NodeConstructor {
 	public PIConstructor(XQueryContext context, String pi) throws XPathException {
 		super(context);
         //TODO : handle this from the parser -pb
-		int p = pi.indexOf(" ");
+		int p = pi.indexOf(' ');
 		if(p == Constants.STRING_NOT_FOUND) {
             target = pi;
         } else {

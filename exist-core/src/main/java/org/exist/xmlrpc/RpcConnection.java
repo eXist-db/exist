@@ -3440,7 +3440,7 @@ public class RpcConnection implements RpcAPI {
             final Map<String, Object> hash = (Map<String, Object>) document;
             String docName = (String) hash.get("name");
             //TODO : use dedicated function in XmldbURI
-            if ((p = docName.lastIndexOf("/")) != Constants.STRING_NOT_FOUND) {
+            if ((p = docName.lastIndexOf('/')) != Constants.STRING_NOT_FOUND) {
                 docName = docName.substring(p + 1);
             }
 
