@@ -1,62 +1,32 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>org.exist-db</groupId>
         <artifactId>exist-parent</artifactId>
         <version>5.2.0-SNAPSHOT</version>
         <relativePath>../../../exist-parent</relativePath>
     </parent>
-    
+
     <artifactId>exist-index-spatial</artifactId>
     <packaging>jar</packaging>
-    
+
     <name>eXist-db Spatial Index</name>
     <description>eXist-db NoSQL Database Spatial Index</description>
-    
+
     <scm>
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>
         <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
         <url>scm:git:https://github.com/exist-db/exist.git</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <geotools.version>2.4.5</geotools.version>
     </properties>
-    
-    <dependencies>
-        <dependency>
-            <groupId>org.exist-db</groupId>
-            <artifactId>exist-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-        </dependency>
 
-        <dependency>
-            <groupId>org.opengis</groupId>
-            <artifactId>geoapi-nogenerics</artifactId>
-            <version>2.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.geotools</groupId>
-            <artifactId>gt2-api</artifactId>
-            <version>${geotools.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.geotools</groupId>
-            <artifactId>gt2-main</artifactId>
-            <version>${geotools.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.geotools</groupId>
-            <artifactId>gt2-referencing</artifactId>
-            <version>${geotools.version}</version>
-        </dependency>
+    <dependencies>
         <!--
             <dependency>
                 <groupId>org.geotools</groupId>
@@ -79,6 +49,31 @@
             <artifactId>jts</artifactId>
             <version>1.8</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt2-api</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt2-main</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt2-referencing</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
@@ -86,10 +81,14 @@
         </dependency>
 
         <dependency>
-            <groupId>org.geotools</groupId>
-            <artifactId>gt2-epsg-wkt</artifactId>
-            <version>${geotools.version}</version>
-            <scope>runtime</scope>
+            <groupId>org.opengis</groupId>
+            <artifactId>geoapi-nogenerics</artifactId>
+            <version>2.1.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
         </dependency>
         <dependency>
             <groupId>java3d</groupId>
@@ -105,8 +104,10 @@
         </dependency>
 
         <dependency>
-            <groupId>xml-apis</groupId>
-            <artifactId>xml-apis</artifactId>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt2-epsg-wkt</artifactId>
+            <version>${geotools.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
@@ -117,18 +118,40 @@
 
     </dependencies>
 
+    <repositories>
+        <repository>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>osgeo</id>
+            <url>http://download.osgeo.org/webdav/geotools/</url>
+        </repository>
+        <repository>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>atlassian</id>
+            <url>https://packages.atlassian.com/maven-3rdparty/</url>
+        </repository>
+    </repositories>
+
     <build>
         <testResources>
             <testResource>
-                <directory>src/test/resources</directory>
                 <filtering>false</filtering>
+                <directory>src/test/resources</directory>
             </testResource>
             <testResource>
-                <directory>src/test/resources-filtered</directory>
                 <filtering>true</filtering>
+                <directory>src/test/resources-filtered</directory>
             </testResource>
         </testResources>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -158,10 +181,10 @@
                 <executions>
                     <execution>
                         <id>os-mastermap-samples</id>
-                        <phase>generate-test-resources</phase>
                         <goals>
                             <goal>wget</goal>
                         </goals>
+                        <phase>generate-test-resources</phase>
                         <configuration>
                             <url>http://data.exist-db.org/spatial/os-mastermap-topography-layer-sample-data.gz</url>
                             <readTimeOut>120000</readTimeOut>
@@ -176,8 +199,8 @@
             </plugin>
 
             <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <!-- TODO the version of GeoTools that we use is not compatible with Java 9+
                     so we skip the tests by default, and only enable them in a profile (below) if Java 8
@@ -209,20 +232,4 @@
             </build>
         </profile>
     </profiles>
-
-    <repositories>
-        <repository>
-            <id>osgeo</id>
-            <url>http://download.osgeo.org/webdav/geotools/</url>
-            <releases><enabled>true</enabled></releases>
-            <snapshots><enabled>false</enabled></snapshots>
-        </repository>
-        <repository>
-            <id>atlassian</id>
-            <url>https://packages.atlassian.com/maven-3rdparty/</url>
-            <releases><enabled>true</enabled></releases>
-            <snapshots><enabled>false</enabled></snapshots>
-        </repository>
-    </repositories>
-    
 </project>

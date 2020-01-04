@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -18,8 +19,8 @@
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>
         <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
         <url>scm:git:https://github.com/exist-db/exist.git</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <izpack.resources.src>${basedir}/src/main/izpack</izpack.resources.src>
@@ -63,7 +64,8 @@
                         <configuration>
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>${project.groupId}:exist-distribution:pom:${project.version}</ignoredUnusedDeclaredDependency>  <!-- needed at runtime to support lucene query syntax -->
+                                <ignoredUnusedDeclaredDependency>${project.groupId}:exist-distribution:pom:${project.version}</ignoredUnusedDeclaredDependency>
+                                <!-- needed at runtime to support lucene query syntax -->
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
@@ -76,10 +78,10 @@
                 <executions>
                     <execution>
                         <id>copy-iz-pack-resources</id>
-                        <phase>generate-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
+                        <phase>generate-resources</phase>
                         <configuration>
                             <outputDirectory>${izpack.resources.target}</outputDirectory>
                             <resources>
@@ -126,10 +128,10 @@
                 <executions>
                     <execution>
                         <id>upload-installer-to-bintray</id>
-                        <phase>deploy</phase>
                         <goals>
                             <goal>upload</goal>
                         </goals>
+                        <phase>deploy</phase>
                         <configuration>
                             <restApiUrl>https://api.bintray.com</restApiUrl>
                             <subject>existdb</subject>

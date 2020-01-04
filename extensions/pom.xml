@@ -15,20 +15,15 @@
     <name>eXist-db Extensions</name>
     <description>eXist-db NoSQL Database Extensions</description>
 
-    <scm>
-        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
-        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
-        <url>scm:git:https://github.com/exist-db/exist.git</url>
-      <tag>HEAD</tag>
-  </scm>
-
     <modules>
         <module>contentextraction</module>
-        <!-- module>debuggee</module -->  <!-- Not used -->
+        <!-- module>debuggee</module -->
+        <!-- Not used -->
         <module>exiftool</module>
         <module>expath</module>
         <module>exquery</module>
-        <!-- module>images</module -->  <!-- Not used -->
+        <!-- module>images</module -->
+        <!-- Not used -->
         <module>indexes</module>
         <module>modules</module>
         <module>security</module>
@@ -36,4 +31,10 @@
         <module>xqdoc</module>
     </modules>
 
+    <scm>
+        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
+        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
+        <url>scm:git:https://github.com/exist-db/exist.git</url>
+        <tag>HEAD</tag>
+    </scm>
 </project>

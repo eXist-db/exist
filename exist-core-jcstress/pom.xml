@@ -9,28 +9,27 @@
         <relativePath>../exist-parent</relativePath>
     </parent>
 
-
     <artifactId>exist-core-jcstress</artifactId>
     <packaging>jar</packaging>
 
     <name>eXist-db Core JCStress Tests</name>
 
+    <properties>
+        <uberjar.name>jcstress</uberjar.name>
+    </properties>
+
     <dependencies>
-        <dependency>
-            <groupId>org.openjdk.jcstress</groupId>
-            <artifactId>jcstress-core</artifactId>
-            <version>0.5</version>
-        </dependency>
         <dependency>
             <groupId>org.exist-db</groupId>
             <artifactId>exist-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openjdk.jcstress</groupId>
+            <artifactId>jcstress-core</artifactId>
+            <version>0.5</version>
+        </dependency>
     </dependencies>
-
-    <properties>
-        <uberjar.name>jcstress</uberjar.name>
-    </properties>
 
     <build>
         <plugins>
@@ -41,10 +40,10 @@
                 <executions>
                     <execution>
                         <id>main</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <finalName>${uberjar.name}</finalName>
                             <filters>
@@ -71,5 +70,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -18,8 +19,8 @@
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>
         <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
         <url>scm:git:https://github.com/exist-db/exist.git</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <appassembler.version>2.1.0</appassembler.version>
@@ -33,21 +34,17 @@
     </properties>
 
     <dependencies>
+
+        <!-- extensions/modules/ -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>exist-core</artifactId>
+            <artifactId>exist-cache</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>exist-start</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>exist-service</artifactId>
+            <artifactId>exist-compression</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
@@ -56,6 +53,24 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>exist-contentextraction</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-core</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-counter</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-cqlparser</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
@@ -73,6 +88,19 @@
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
+        <!-- TODO(AR) EXI module is effectively GPL -->
+        <!-- dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-exi</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-expathrepo</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -80,28 +108,18 @@
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
-
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>exist-restxq</artifactId>
+            <artifactId>exist-file</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
-
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>exist-webdav</artifactId>
+            <artifactId>exist-image</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>exist-xqdoc</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-
 
         <!-- extensions/indexes/ -->
         <dependency>
@@ -134,57 +152,6 @@
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
-
-        <!-- extensions/modules/ -->
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>exist-cache</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>exist-compression</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>exist-counter</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>exist-cqlparser</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <!-- TODO(AR) EXI module is effectively GPL -->
-        <!-- dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>exist-exi</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency -->
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>exist-expathrepo</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>exist-file</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>exist-image</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>exist-jndi</artifactId>
@@ -209,33 +176,16 @@
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-restxq</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>exist-scheduler</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>exist-simpleql</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>exist-sql</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>exist-xmldiff</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>exist-xslfo</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
@@ -259,6 +209,64 @@
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-service</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-simpleql</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-sql</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-start</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-webdav</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-xmldiff</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-xqdoc</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-xslfo</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- needed for the AppAssembler booter approach -->
+        <dependency>
+            <groupId>org.codehaus.mojo.appassembler</groupId>
+            <artifactId>appassembler-booter</artifactId>
+            <version>${appassembler.version}</version>
+            <scope>runtime</scope>
+        </dependency>
 
         <!-- needed for starting up a jetty server -->
         <dependency>
@@ -271,30 +279,21 @@
             <artifactId>jetty-jmx</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!-- server-side dependency for javax.websocket (JSR-356) support -->
+        <dependency>
+            <groupId>org.eclipse.jetty.websocket</groupId>
+            <artifactId>javax-websocket-server-impl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <dependency>
             <groupId>org.eclipse.jetty.websocket</groupId>
             <artifactId>websocket-server</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <!-- server-side dependency for javax.websocket (JSR-356) support -->
-        <dependency>
-          <groupId>org.eclipse.jetty.websocket</groupId>
-          <artifactId>javax-websocket-server-impl</artifactId>
-          <scope>runtime</scope>
-        </dependency>
-
-        <!-- needed for the AppAssembler booter approach -->
-        <dependency>
-            <groupId>org.codehaus.mojo.appassembler</groupId>
-            <artifactId>appassembler-booter</artifactId>
-            <version>${appassembler.version}</version>
             <scope>runtime</scope>
         </dependency>
 
     </dependencies>
 
     <build>
-
         <plugins>
             <plugin>
                 <groupId>org.owasp</groupId>
@@ -321,10 +320,10 @@
 
                     <execution>
                         <id>unpack-for-appassembler</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>unpack</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <markersDirectory>${project.build.directory}/dependency-maven-plugin-markers/appassembler</markersDirectory>
                             <artifactItems>
@@ -357,10 +356,10 @@
 
                     <execution>
                         <id>unpack-for-mac-bundle</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>unpack</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <markersDirectory>${project.build.directory}/dependency-maven-plugin-markers/macbundle</markersDirectory>
                             <artifactItems>
@@ -385,10 +384,10 @@
                 <executions>
                     <execution>
                         <id>rename-jetty-etc-dir-for-appassembler</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>rename</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <sourceFile>${assemble.dir}/etc/org/exist/jetty/etc</sourceFile>
                             <destinationFile>${assemble.dir}/etc/jetty</destinationFile>
@@ -398,10 +397,10 @@
 
                     <execution>
                         <id>rename-jetty-etc-dir-for-mac-bundle</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>rename</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <sourceFile>${mac.bundle.resources.dir}/etc/org/exist/jetty/etc</sourceFile>
                             <destinationFile>${mac.bundle.resources.dir}/etc/jetty</destinationFile>
@@ -411,10 +410,10 @@
 
                     <execution>
                         <id>copy-readme-for-appassembler</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>copy</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <fileSets>
                                 <fileSet>
@@ -435,10 +434,10 @@
 
                     <execution>
                         <id>copy-readme-for-mac-bundle</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>copy</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <fileSets>
                                 <fileSet>
@@ -471,10 +470,10 @@
                 <executions>
                     <execution>
                         <id>adjust-jetty-deploy-for-appassembler</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>transform</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <transformationSets>
                                 <transformationSet>
@@ -494,10 +493,10 @@
                     </execution>
                     <execution>
                         <id>adjust-web-xml-for-appassembler</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>transform</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <transformationSets>
                                 <transformationSet>
@@ -513,10 +512,10 @@
                     </execution>
                     <execution>
                         <id>adjust-jetty-deploy-for-mac-bundle</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>transform</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <transformationSets>
                                 <transformationSet>
@@ -536,10 +535,10 @@
                     </execution>
                     <execution>
                         <id>adjust-web-xml-for-mac-bundle</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>transform</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <transformationSets>
                                 <transformationSet>
@@ -562,10 +561,10 @@
                 <executions>
                     <execution>
                         <id>clean-etc-dir-unpacked-for-appassembler</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>clean</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <excludeDefaultDirectories>true</excludeDefaultDirectories>
                             <filesets>
@@ -577,10 +576,10 @@
                     </execution>
                     <execution>
                         <id>clean-etc-dir-unpacked-for-mac-bundle</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>clean</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <excludeDefaultDirectories>true</excludeDefaultDirectories>
                             <filesets>
@@ -600,10 +599,10 @@
                 <executions>
                     <execution>
                         <id>fetch-xars</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>resolve</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <repoUri>${public.xar.repo.uri}</repoUri>
                             <outputDirectory>${expath.pkg.dir}</outputDirectory>
@@ -655,10 +654,10 @@
                 <executions>
                     <execution>
                         <id>autodeploy-expath-pkgs-for-appassembler</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>copy</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <resources>
                                 <resource>
@@ -678,12 +677,12 @@
                     </execution>
                     <execution>
                         <id>autodeploy-expath-pkgs-for-mac-bundle</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>copy</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
-                            <outputDirectory />
+                            <outputDirectory></outputDirectory>
                             <resources>
                                 <resource>
                                     <workOnFullPath>true</workOnFullPath>
@@ -733,13 +732,13 @@
                 <executions>
                     <execution>
                         <id>appassembler-base</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>assemble</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <assembleDirectory>${assemble.dir}</assembleDirectory>
-                            <programs />
+                            <programs></programs>
                             <configurationDirectory>etc</configurationDirectory>
                             <copyConfigurationDirectory>true</copyConfigurationDirectory>
                             <logsDirectory>logs</logsDirectory>
@@ -747,10 +746,10 @@
                     </execution>
                     <execution>
                         <id>appassembler-booter</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>generate-daemons</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <generateRepository>false</generateRepository>
                             <target>${assemble.dir}</target>
@@ -852,10 +851,10 @@
 
                     <execution>
                         <id>appassembler-booter-for-mac</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>generate-daemons</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <repositoryName>../Java</repositoryName>
                             <generateRepository>false</generateRepository>
@@ -956,10 +955,10 @@
                 <executions>
                     <execution>
                         <id>assemble-archives</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <attach>false</attach>
                             <tarLongFileMode>gnu</tarLongFileMode>
@@ -979,10 +978,10 @@
                 <executions>
                     <execution>
                         <id>exist-db-mac-app</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>bundle</goal>
                         </goals>
+                        <phase>package</phase>
                         <configuration>
                             <displayName>eXist-db</displayName>
                             <identifier>org.exist.start.Main</identifier>
@@ -1032,10 +1031,10 @@
                 <executions>
                     <execution>
                         <id>upload-distributions-to-bintray</id>
-                        <phase>deploy</phase>
                         <goals>
                             <goal>upload</goal>
                         </goals>
+                        <phase>deploy</phase>
                         <configuration>
                             <restApiUrl>https://api.bintray.com</restApiUrl>
                             <subject>existdb</subject>
@@ -1058,7 +1057,6 @@
         </plugins>
     </build>
 
-
     <profiles>
         <profile>
             <id>codesign-mac-app</id>
@@ -1079,10 +1077,10 @@
                         <executions>
                             <execution>
                                 <id>mac-codesign-app</id>
-                                <phase>package</phase>
                                 <goals>
                                     <goal>exec</goal>
                                 </goals>
+                                <phase>package</phase>
                                 <configuration>
                                     <executable>/usr/bin/codesign</executable>
                                     <arguments>
@@ -1098,7 +1096,6 @@
                 </plugins>
             </build>
         </profile>
-
 
         <profile>
             <id>mac-dmg-on-mac</id>
@@ -1120,10 +1117,10 @@
                         <executions>
                             <execution>
                                 <id>mac-app-dmg-on-mac</id>
-                                <phase>package</phase>
                                 <goals>
                                     <goal>exec</goal>
                                 </goals>
+                                <phase>package</phase>
                                 <configuration>
                                     <executable>${project.basedir}/src/main/scripts/create-dmg-mac.sh</executable>
                                     <arguments>
@@ -1142,13 +1139,12 @@
             </build>
         </profile>
 
-
         <profile>
             <id>mac-dmg-on-unix</id>
             <activation>
                 <os>
-                    <family>unix</family>
                     <name>Linux</name>
+                    <family>unix</family>
                 </os>
                 <!-- Note: Travis and AppVeyor etc don't support the loopback filesystem required by create-dmg-unix.sh -->
                 <property>
@@ -1164,10 +1160,10 @@
                         <executions>
                             <execution>
                                 <id>mac-app-dmg-on-unix</id>
-                                <phase>package</phase>
                                 <goals>
                                     <goal>exec</goal>
                                 </goals>
+                                <phase>package</phase>
                                 <configuration>
                                     <executable>${project.basedir}/src/main/scripts/create-dmg-unix.sh</executable>
                                     <arguments>
@@ -1185,7 +1181,6 @@
                 </plugins>
             </build>
         </profile>
-
 
         <profile>
             <id>codesign-mac-dmg</id>
@@ -1206,10 +1201,10 @@
                         <executions>
                             <execution>
                                 <id>mac-codesign-dmg</id>
-                                <phase>package</phase>
                                 <goals>
                                     <goal>exec</goal>
                                 </goals>
+                                <phase>package</phase>
                                 <configuration>
                                     <executable>/usr/bin/codesign</executable>
                                     <arguments>
@@ -1226,5 +1221,4 @@
             </build>
         </profile>
     </profiles>
-
 </project>

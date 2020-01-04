@@ -11,12 +11,10 @@
     <description>eXist-db NoSQL Database</description>
     <url>http://www.exist-db.org/</url>
     <inceptionYear>2001</inceptionYear>
-
     <organization>
         <name>The eXist-db Project</name>
         <url>http://www.exist-db.org</url>
     </organization>
-
     <licenses>
         <license>
             <name>GNU Lesser General Public License, version 2.1</name>
@@ -28,18 +26,11 @@
     <developers>
         <developer>
             <name>The eXist-db Project</name>
-            <organization>The eXist-db Project</organization>
-            <url>http://www.exist-db.org</url>
             <email>info@exist-db.org</email>
+            <url>http://www.exist-db.org</url>
+            <organization>The eXist-db Project</organization>
         </developer>
     </developers>
-
-    <scm>
-        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
-        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
-        <url>scm:git:https://github.com/exist-db/exist.git</url>
-      <tag>HEAD</tag>
-  </scm>
 
     <mailingLists>
         <mailingList>
@@ -67,6 +58,25 @@
             </otherArchives>
         </mailingList>
     </mailingLists>
+
+    <scm>
+        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
+        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
+        <url>scm:git:https://github.com/exist-db/exist.git</url>
+        <tag>HEAD</tag>
+    </scm>
+    <distributionManagement>
+        <repository>
+            <id>sonatype-nexus-staging</id>
+            <name>Nexus Release Repository</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>exist-db-snapshots</id>
+            <name>Evolved Binary - eXist-db Snapshots</name>
+            <url>http://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <properties>
         <project.build.source>1.8</project.build.source>
@@ -97,10 +107,71 @@
 
     <dependencyManagement>
         <dependencies>
+
             <dependency>
-                <groupId>net.jcip</groupId>
-                <artifactId>jcip-annotations</artifactId>
-                <version>1.0</version>
+                <groupId>antlr</groupId>
+                <artifactId>antlr</artifactId>
+                <version>2.7.7</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cglib</groupId>
+                <artifactId>cglib</artifactId>
+                <version>3.3.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.evolvedbinary.j8fu</groupId>
+                <artifactId>j8fu</artifactId>
+                <version>1.23.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.ben-manes.caffeine</groupId>
+                <artifactId>caffeine</artifactId>
+                <version>2.8.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>3.0.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.ibm.icu</groupId>
+                <artifactId>icu4j</artifactId>
+                <version>${icu.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.siemens.ct.exi</groupId>
+                <artifactId>exificient</artifactId>
+                <version>0.9.3</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>1.13</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>3.2.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.6</version>
+            </dependency>
+
+            <dependency>
+                <groupId>it.unimi.dsi</groupId>
+                <artifactId>fastutil</artifactId>
+                <version>8.3.0</version>
             </dependency>
 
             <dependency>
@@ -116,27 +187,16 @@
             </dependency>
 
             <dependency>
-                <groupId>org.glassfish.jaxb</groupId>
-                <artifactId>jaxb-runtime</artifactId>
-                <version>${jaxb.version}</version>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
+                <!-- scope>test</scope -->
+                <!-- not just test scope, as needed for org.exist.test -->
             </dependency>
-
             <dependency>
-                <groupId>com.github.ben-manes.caffeine</groupId>
-                <artifactId>caffeine</artifactId>
-                <version>2.8.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.ibm.icu</groupId>
-                <artifactId>icu4j</artifactId>
-                <version>${icu.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jctools</groupId>
-                <artifactId>jctools-core</artifactId>
-                <version>2.1.2</version>
+                <groupId>net.jcip</groupId>
+                <artifactId>jcip-annotations</artifactId>
+                <version>1.0</version>
             </dependency>
 
             <dependency>
@@ -146,69 +206,9 @@
             </dependency>
 
             <dependency>
-                <groupId>com.evolvedbinary.j8fu</groupId>
-                <artifactId>j8fu</artifactId>
-                <version>1.23.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.google.code.findbugs</groupId>
-                <artifactId>jsr305</artifactId>
-                <version>3.0.2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>se.softhouse</groupId>
-                <artifactId>jargo</artifactId>
-                <version>0.4.14</version>
-            </dependency>
-
-            <dependency>
-                <groupId>commons-codec</groupId>
-                <artifactId>commons-codec</artifactId>
-                <version>1.13</version>
-            </dependency>
-
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>2.6</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-api</artifactId>
-                <version>${log4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-core</artifactId>
-                <version>${log4j.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-jcl</artifactId>
-                <version>${log4j.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-jul</artifactId>
-                <version>${log4j.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-slf4j-impl</artifactId>
-                <version>${log4j.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>1.7.30</version>
+                <groupId>net.sf.xmldb-org</groupId>
+                <artifactId>xmldb-api</artifactId>
+                <version>1.7.0</version>
             </dependency>
 
             <dependency>
@@ -218,15 +218,19 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.xmlrpc</groupId>
-                <artifactId>xmlrpc-common</artifactId>
-                <version>${apache.xmlrpc.version}</version>
-                <exclusions>
-                    <exclusion> <!-- conflicts with xerces 2.12.0 dependency on xml-apis version 1.4.01 -->
-                        <artifactId>xml-apis</artifactId>
-                        <groupId>xml-apis</groupId>
-                    </exclusion>
-                </exclusions>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.9</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>fluent-hc</artifactId>
+                <version>${apache.httpcomponents.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${apache.httpcomponents.version}</version>
             </dependency>
 
             <dependency>
@@ -236,18 +240,26 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>${apache.httpcomponents.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpmime</artifactId>
                 <version>${apache.httpcomponents.version}</version>
             </dependency>
+
             <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>fluent-hc</artifactId>
-                <version>${apache.httpcomponents.version}</version>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-api</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.xmlrpc</groupId>
+                <artifactId>xmlrpc-common</artifactId>
+                <version>${apache.xmlrpc.version}</version>
+                <exclusions>
+                    <exclusion><!-- conflicts with xerces 2.12.0 dependency on xml-apis version 1.4.01 -->
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -296,8 +308,8 @@
                 <version>${jetty.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.jetty.websocket</groupId>
-                <artifactId>websocket-server</artifactId>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-xml</artifactId>
                 <version>${jetty.version}</version>
             </dependency>
             <!-- server-side dependency for javax.websocket (JSR-356) support -->
@@ -307,57 +319,9 @@
                 <version>${jetty.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-xml</artifactId>
+                <groupId>org.eclipse.jetty.websocket</groupId>
+                <artifactId>websocket-server</artifactId>
                 <version>${jetty.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>net.sf.xmldb-org</groupId>
-                <artifactId>xmldb-api</artifactId>
-                <version>1.7.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>3.9</version>
-            </dependency>
-
-            <dependency>
-                <groupId>antlr</groupId>
-                <artifactId>antlr</artifactId>
-                <version>2.7.7</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.siemens.ct.exi</groupId>
-                <artifactId>exificient</artifactId>
-                <version>0.9.3</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.expath.packaging</groupId>
-                <artifactId>pkg-java</artifactId>
-                <version>1.4.2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>cglib</groupId>
-                <artifactId>cglib</artifactId>
-                <version>3.3.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>commons-collections</groupId>
-                <artifactId>commons-collections</artifactId>
-                <version>3.2.2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.exquery</groupId>
-                <artifactId>exquery-common</artifactId>
-                <version>${exquery.distribution.version}</version>
             </dependency>
 
             <dependency>
@@ -379,15 +343,40 @@
             </dependency>
 
             <dependency>
-                <groupId>it.unimi.dsi</groupId>
-                <artifactId>fastutil</artifactId>
-                <version>8.3.0</version>
+                <groupId>org.expath.packaging</groupId>
+                <artifactId>pkg-java</artifactId>
+                <version>1.4.2</version>
             </dependency>
 
             <dependency>
-                <groupId>xml-apis</groupId>
-                <artifactId>xml-apis</artifactId>
-                <version>1.4.01</version>
+                <groupId>org.exquery</groupId>
+                <artifactId>exquery-common</artifactId>
+                <version>${exquery.distribution.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-runtime</artifactId>
+                <version>${jaxb.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hamcrest</groupId>
+                <artifactId>hamcrest</artifactId>
+                <version>2.2</version>
+                <!-- scope>test</scope -->
+                <!-- not just test scope, as needed for org.exist.test -->
+            </dependency>
+
+            <dependency>
+                <groupId>org.jctools</groupId>
+                <artifactId>jctools-core</artifactId>
+                <version>2.1.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.30</version>
             </dependency>
 
             <dependency>
@@ -397,26 +386,55 @@
             </dependency>
             <dependency>
                 <groupId>org.xmlunit</groupId>
-                <artifactId>xmlunit-matchers</artifactId>
+                <artifactId>xmlunit-legacy</artifactId>
                 <version>${xmlunit.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.xmlunit</groupId>
-                <artifactId>xmlunit-legacy</artifactId>
+                <artifactId>xmlunit-matchers</artifactId>
                 <version>${xmlunit.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.12</version>
-                <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
+                <groupId>se.softhouse</groupId>
+                <artifactId>jargo</artifactId>
+                <version>0.4.14</version>
+            </dependency>
+
+            <dependency>
+                <groupId>xml-apis</groupId>
+                <artifactId>xml-apis</artifactId>
+                <version>1.4.01</version>
             </dependency>
             <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest</artifactId>
-                <version>2.2</version>
-                <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>${log4j.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-jcl</artifactId>
+                <version>${log4j.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-jul</artifactId>
+                <version>${log4j.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j-impl</artifactId>
+                <version>${log4j.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.googlecode.junit-toolbox</groupId>
+                <artifactId>junit-toolbox</artifactId>
+                <version>2.4</version>
+                <scope>test</scope>
             </dependency>
 
             <!-- test dependencies -->
@@ -426,17 +444,63 @@
                 <version>4.1</version>
                 <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>com.googlecode.junit-toolbox</groupId>
-                <artifactId>junit-toolbox</artifactId>
-                <version>2.4</version>
-                <scope>test</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
-    <build>
+    <repositories>
+        <repository>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>exist-db-snapshots</id>
+            <name>Evolved Binary - eXist-db Snapshots</name>
+            <url>http://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
+        </repository>
+        <repository>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>exist-db</id>
+            <name>Evolved Binary - eXist-db Releases</name>
+            <url>http://repo.evolvedbinary.com/repository/exist-db/</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>clojars.org</id>
+            <url>http://clojars.org/repo</url>
+        </pluginRepository>
+        <pluginRepository>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>exist-db</id>
+            <name>Evolved Binary - eXist-db Releases</name>
+            <url>http://repo.evolvedbinary.com/repository/exist-db/</url>
+        </pluginRepository>
+        <pluginRepository>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>exist-db-snapshots</id>
+            <name>Evolved Binary - eXist-db Snapshots</name>
+            <url>http://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
+        </pluginRepository>
+    </pluginRepositories>
 
+    <build>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -612,7 +676,8 @@
                     <artifactId>maven-project-info-reports-plugin</artifactId>
                     <version>3.0.0</version>
                     <configuration>
-                        <dependencyDetailsEnabled>false</dependencyDetailsEnabled>  <!-- TODO(AR) disabled due to slow `mvn site` build times -->
+                        <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
+                        <!-- TODO(AR) disabled due to slow `mvn site` build times -->
                     </configuration>
                 </plugin>
                 <plugin>
@@ -699,7 +764,6 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-
         <plugins>
             <plugin>
                 <groupId>com.mycila</groupId>
@@ -707,7 +771,8 @@
                 <inherited>true</inherited>
                 <configuration>
                     <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
-                    <failIfMissing>false</failIfMissing> <!-- TODO(AR) should be true eventually -->
+                    <failIfMissing>false</failIfMissing>
+                    <!-- TODO(AR) should be true eventually -->
                     <aggregate>true</aggregate>
                     <strictCheck>true</strictCheck>
                     <properties>
@@ -726,10 +791,10 @@
                 <executions>
                     <execution>
                         <id>check-headers</id>
-                        <phase>verify</phase>
                         <goals>
                             <goal>check</goal>
                         </goals>
+                        <phase>verify</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -771,10 +836,10 @@
                 <artifactId>buildversion-plugin</artifactId>
                 <executions>
                     <execution>
-                        <phase>validate</phase>
                         <goals>
                             <goal>set-properties</goal>
                         </goals>
+                        <phase>validate</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -787,14 +852,13 @@
                 <artifactId>maven-release-plugin</artifactId>
             </plugin>
         </plugins>
-
     </build>
 
     <reporting>
         <plugins>
             <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-report-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
                 <configuration>
                     <aggregate>true</aggregate>
                 </configuration>
@@ -823,73 +887,6 @@
         </plugins>
     </reporting>
 
-    <repositories>
-        <repository>
-            <id>exist-db-snapshots</id>
-            <name>Evolved Binary - eXist-db Snapshots</name>
-            <url>http://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>exist-db</id>
-            <name>Evolved Binary - eXist-db Releases</name>
-            <url>http://repo.evolvedbinary.com/repository/exist-db/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>clojars.org</id>
-            <url>http://clojars.org/repo</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>exist-db</id>
-            <name>Evolved Binary - eXist-db Releases</name>
-            <url>http://repo.evolvedbinary.com/repository/exist-db/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>exist-db-snapshots</id>
-            <name>Evolved Binary - eXist-db Snapshots</name>
-            <url>http://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>exist-db-snapshots</id>
-            <name>Evolved Binary - eXist-db Snapshots</name>
-            <url>http://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
-        </snapshotRepository>
-        <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Nexus Release Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
     <profiles>
         <profile>
             <id>exist-release</id>
@@ -901,10 +898,10 @@
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
-                                <phase>verify</phase>
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
+                                <phase>verify</phase>
                             </execution>
                         </executions>
                     </plugin>
@@ -913,5 +910,4 @@
         </profile>
 
     </profiles>
-
 </project>
