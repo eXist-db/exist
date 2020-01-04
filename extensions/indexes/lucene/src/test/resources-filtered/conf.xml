@@ -740,6 +740,7 @@
 
             <!-- Needed for XQSuite! -->
             <module uri="http://www.w3.org/2005/xpath-functions/map" class="org.exist.xquery.functions.map.MapModule" />
+            <module uri="http://www.w3.org/2005/xpath-functions/array" class="org.exist.xquery.functions.array.ArrayModule" />
             <module uri="http://exist-db.org/xquery/inspection" class="org.exist.xquery.functions.inspect.InspectionModule"/>
             <module uri="http://exist-db.org/xquery/response" class="org.exist.xquery.functions.response.ResponseModule" />
             <module uri="http://exist-db.org/xquery/system" class="org.exist.xquery.functions.system.SystemModule" />

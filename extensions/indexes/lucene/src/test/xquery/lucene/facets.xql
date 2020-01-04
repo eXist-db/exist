@@ -14,6 +14,7 @@ declare variable $facet:XML :=
             <time>14:22:19.329+01:00</time>
             <likes>9</likes>
             <score>6.0</score>
+            <subject>art</subject>
         </letter>
         <letter>
             <from>Rudi</from>
@@ -23,6 +24,7 @@ declare variable $facet:XML :=
             <time>15:22:19.329+01:00</time>
             <likes>19</likes>
             <score>8.25</score>
+            <subject>history</subject>
         </letter>
         <letter>
             <from>Susi</from>
@@ -31,6 +33,8 @@ declare variable $facet:XML :=
             <date>2019-04-01</date>
             <likes>29</likes>
             <score>16.5</score>
+            <subject>engineering</subject>
+            <subject>history</subject>
         </letter>
         <letter>
             <from>Heinz</from>
@@ -39,6 +43,7 @@ declare variable $facet:XML :=
             <date>2017-03-11</date>
             <likes>1</likes>
             <score>14.25</score>
+            <subject>history</subject>
         </letter>
         <letter>
             <from>Heinz</from>
@@ -47,6 +52,7 @@ declare variable $facet:XML :=
             <date>2015-06-22</date>
             <likes>5</likes>
             <score>29.50</score>
+            <subject>history</subject>
         </letter>
         <letter>
             <from>Heinz</from>
@@ -54,6 +60,7 @@ declare variable $facet:XML :=
             <place>Wrocław</place>
             <date>2013-06-22</date>
             <likes>3</likes>
+            <subject>history</subject>
             <score>16.0</score>
         </letter>
     </letters>;
@@ -69,6 +76,19 @@ declare variable $facet:TAXONOMY :=
             <place name="Kraków"/>
         </place>
     </places>;
+
+declare variable $facet:SUBJECT :=
+    <subject>
+        <subject name="science">
+            <subject name="math"/>
+            <subject name="engineering"/>
+        </subject>
+        <subject name="humanities">
+            <subject name="art"/>
+            <subject name="sociology"/>
+            <subject name="history"/>
+        </subject>
+    </subject>;
 
 declare variable $facet:DOCUMENTS :=
     <documents>
@@ -110,6 +130,15 @@ declare variable $facet:MODULE :=
             else
                 ()
         };
+
+        declare function idx:subject-hierarchy($key as xs:string*) {
+            if (exists($key)) then
+                 array:for-each(array {$key}, function($k) {
+                     doc('/db/lucenetest/subjects.xml')//subject[@name=$k]/ancestor-or-self::subject/@name
+                 })
+            else
+                ()
+        };
     ]``;
 
 declare variable $facet:XCONF1 :=
@@ -124,6 +153,7 @@ declare variable $facet:XCONF1 :=
                 <text qname="letter" analyzer="nodiacritics">
                     <facet dimension="place" expression="place"/>
                     <facet dimension="location" expression="idx:place-hierarchy(place)" hierarchical="yes"/>
+                    <facet dimension="subject" expression="idx:subject-hierarchy(subject)" hierarchical="yes"/>
                     <facet dimension="from" expression="from"/>
                     <facet dimension="to" expression="to"/>
                     <facet dimension="date" expression="tokenize(date, '-')" hierarchical="yes"/>
@@ -164,6 +194,7 @@ function facet:setup() {
         xmldb:store($testCol, "module.xql", $facet:MODULE, "application/xquery"),
         xmldb:store($confCol, "collection.xconf", $facet:XCONF1),
         xmldb:store($testCol, "places.xml", $facet:TAXONOMY),
+        xmldb:store($testCol, "subjects.xml", $facet:SUBJECT),
         xmldb:store($testCol, "test.xml", $facet:XML),
         xmldb:store($testCol, "documents.xml", $facet:DOCUMENTS),
         xmldb:store($testCol, "multi-lang.xml", $facet:MULTI_LANGUAGE)
@@ -290,6 +321,34 @@ function facet:hierarchical-place() {
     return
         serialize(
             ft:facets($result, "location", 10, $country), (: Get facet counts for sub-categories :)
+            map { "method": "json" }
+        )
+};
+
+declare
+    %test:assertEquals('{"art":1,"history":5}','{"engineering":1}')
+function facet:hierarchical-subject() {
+    let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
+    let $facets := ft:facets($result, "subject", 10) (: Returns facet counts for "science" and "humanities" :)
+    for $topic in map:keys($facets)
+    order by $topic
+    return
+        serialize(
+            ft:facets($result, "subject", 10, $topic), (: Get facet counts for sub-categories :)
+            map { "method": "json" }
+        )
+};
+
+declare
+    %test:assertEquals('{"history":1}','{"engineering":1}')
+function facet:hierarchical-multivalue-subject() {
+    let $result := collection("/db/lucenetest")//letter[ft:query(., 'from:susi')]
+    let $facets := ft:facets($result, "subject", 10) (: Returns facet counts for "science" and "humanities" :)
+    for $topic in map:keys($facets)
+    order by $topic
+    return
+        serialize(
+            ft:facets($result, "subject", 10, $topic), (: Get facet counts for sub-categories :)
             map { "method": "json" }
         )
 };
