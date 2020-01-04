@@ -322,9 +322,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
             throw new IndexOutOfBoundsException(""+index);
         }
         ensureCapacity(1);
-        for (int i=used; i>index; i--) {
-            array[i] = array[i-1];
-        }
+        if (used - index >= 0) System.arraycopy(array, index, array, index + 1, used - index);
         used++;
         array[index] = ch;
     }
@@ -339,9 +337,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
             throw new IndexOutOfBoundsException(""+index);
         }
         used--;
-        for (int i=index; i<used; i++) {
-            array[i] = array[i+1];
-        }
+        if (used - index >= 0) System.arraycopy(array, index + 1, array, index, used - index);
     }
 
     /**
