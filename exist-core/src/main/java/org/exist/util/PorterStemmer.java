@@ -64,9 +64,9 @@ class PorterStemmer {
      * adding characters, you can call stem(void) to stem the word.
      */
 
-    public void add(char ch) {
+    public void add(final char ch) {
         if (i == b.length) {
-            char[] new_b = new char[i + INC];
+            final char[] new_b = new char[i + INC];
             for (int c = 0; c < i; c++) new_b[c] = b[c];
             b = new_b;
         }
@@ -80,9 +80,9 @@ class PorterStemmer {
      * faster.
      */
 
-    public void add(char[] w, int wLen) {
+    public void add(final char[] w, final int wLen) {
         if (i + wLen >= b.length) {
-            char[] new_b = new char[i + wLen + INC];
+            final char[] new_b = new char[i + wLen + INC];
             for (int c = 0; c < i; c++) new_b[c] = b[c];
             b = new_b;
         }
@@ -116,7 +116,7 @@ class PorterStemmer {
 
     /* cons(i) is true <=> b[i] is a consonant. */
 
-    private final boolean cons(int i) {
+    private final boolean cons(final int i) {
         switch (b[i]) {
             case 'a':
             case 'e':
@@ -178,7 +178,7 @@ class PorterStemmer {
 
     /* doublec(j) is true <=> j,(j-1) contain a double consonant. */
 
-    private final boolean doublec(int j) {
+    private final boolean doublec(final int j) {
         if (j < 1) return false;
         if (b[j] != b[j - 1]) return false;
         return cons(j);
@@ -193,18 +193,18 @@ class PorterStemmer {
 
    */
 
-    private final boolean cvc(int i) {
+    private final boolean cvc(final int i) {
         if (i < 2 || !cons(i) || cons(i - 1) || !cons(i - 2)) return false;
         {
-            int ch = b[i];
+            final int ch = b[i];
             if (ch == 'w' || ch == 'x' || ch == 'y') return false;
         }
         return true;
     }
 
-    private final boolean ends(String s) {
-        int l = s.length();
-        int o = k - l + 1;
+    private final boolean ends(final String s) {
+        final int l = s.length();
+        final int o = k - l + 1;
         if (o < 0) return false;
         for (int i = 0; i < l; i++) if (b[o + i] != s.charAt(i)) return false;
         j = k - l;
@@ -214,16 +214,16 @@ class PorterStemmer {
    /* setto(s) sets (j+1),...k to the characters in the string s, readjusting
       k. */
 
-    private final void setto(String s) {
-        int l = s.length();
-        int o = j + 1;
+    private final void setto(final String s) {
+        final int l = s.length();
+        final int o = j + 1;
         for (int i = 0; i < l; i++) b[o + i] = s.charAt(i);
         k = j + l;
     }
 
     /* r(s) is used further down. */
 
-    private final void r(String s) {
+    private final void r(final String s) {
         if (m() > 0) setto(s);
     }
 
@@ -265,7 +265,7 @@ class PorterStemmer {
             else if (doublec(k)) {
                 k--;
                 {
-                    int ch = b[k];
+                    final int ch = b[k];
                     if (ch == 'l' || ch == 's' || ch == 'z') k++;
                 }
             } else if (m() == 1 && cvc(k)) setto("e");
@@ -492,7 +492,7 @@ class PorterStemmer {
     private final void step6() {
         j = k;
         if (b[k] == 'e') {
-            int a = m();
+            final int a = m();
             if (a > 1 || a == 1 && !cvc(k - 1)) k--;
         }
         if (b[k] == 'l' && doublec(k) && m() > 1) k--;
@@ -525,56 +525,56 @@ class PorterStemmer {
      * forcing lower case must be done outside the Stemmer class.
      * Usage: Stemmer file-name file-name ...
      */
-    public static void main(String[] args) {
-        char[] w = new char[501];
-        PorterStemmer s = new PorterStemmer();
-        for (int i = 0; i < args.length; i++)
-            try {
-                FileInputStream in = new FileInputStream(args[i]);
+    public static void main(final String[] args) {
+        final char[] w = new char[501];
+        final PorterStemmer s = new PorterStemmer();
+      for (String arg : args)
+        try {
+          final FileInputStream in = new FileInputStream(arg);
 
-                try {
-                    while (true) {
-                        int ch = in.read();
-                        if (Character.isLetter((char) ch)) {
-                            int j = 0;
-                            while (true) {
-                                ch = Character.toLowerCase((char) ch);
-                                w[j] = (char) ch;
-                                if (j < 500) j++;
-                                ch = in.read();
-                                if (!Character.isLetter((char) ch)) {
-                                    /* to test add(char ch) */
-                                    for (int c = 0; c < j; c++) s.add(w[c]);
+          try {
+            while (true) {
+              int ch = in.read();
+              if (Character.isLetter((char) ch)) {
+                int j = 0;
+                while (true) {
+                  ch = Character.toLowerCase((char) ch);
+                  w[j] = (char) ch;
+                  if (j < 500) j++;
+                  ch = in.read();
+                  if (!Character.isLetter((char) ch)) {
+                    /* to test add(char ch) */
+                    for (int c = 0; c < j; c++) s.add(w[c]);
 
-                                    /* or, to test add(char[] w, int j) */
-                                    /* s.add(w, j); */
+                    /* or, to test add(char[] w, int j) */
+                    /* s.add(w, j); */
 
-                                    s.stem();
-                                    {
-                                        String u;
+                    s.stem();
+                    {
+                      final String u;
 
-                                        /* and now, to test toString() : */
-                                        u = s.toString();
+                      /* and now, to test toString() : */
+                      u = s.toString();
 
-                                        /* to test getResultBuffer(), getResultLength() : */
-                                        /* u = new String(s.getResultBuffer(), 0, s.getResultLength()); */
+                      /* to test getResultBuffer(), getResultLength() : */
+                      /* u = new String(s.getResultBuffer(), 0, s.getResultLength()); */
 
-                                        System.out.print(u);
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                        if (ch < 0) break;
-                        System.out.print((char) ch);
+                      System.out.print(u);
                     }
-                } catch (IOException e) {
-                    System.out.println("error reading " + args[i]);
                     break;
+                  }
                 }
-            } catch (FileNotFoundException e) {
-                System.out.println("file " + args[i] + " not found");
-                break;
+              }
+              if (ch < 0) break;
+              System.out.print((char) ch);
             }
+          } catch (final IOException e) {
+            System.out.println("error reading " + arg);
+            break;
+          }
+        } catch (final FileNotFoundException e) {
+          System.out.println("file " + arg + " not found");
+          break;
+        }
     }
 }
