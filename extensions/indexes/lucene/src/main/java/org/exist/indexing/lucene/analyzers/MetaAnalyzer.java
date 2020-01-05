@@ -50,7 +50,7 @@ public class MetaAnalyzer extends DelegatingAnalyzerWrapper {
     }
 
     @Override
-    protected Analyzer getWrappedAnalyzer(@Nullable String fieldName) {
+    public Analyzer getWrappedAnalyzer(@Nullable String fieldName) {
         if (fieldName == null) {
             return defaultAnalyzer;
         }

@@ -25,6 +25,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.*;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
+import org.exist.indexing.lucene.suggest.LuceneSuggest;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -34,6 +35,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -102,6 +104,17 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         final String cond = configElement.getAttribute(ATTR_IF);
         if (StringUtils.isNotEmpty(cond)) {
             this.condition = Optional.of(cond);
+        }
+
+        Node child = configElement.getFirstChild();
+        while (child != null) {
+            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                final String localName = child.getLocalName();
+                if (LuceneSuggest.ELEMENT_SUGGEST.equals(localName)) {
+                    config.index.suggestService.configure(fieldName, (Element) child, analyzer);
+                }
+            }
+            child = child.getNextSibling();
         }
     }
 
