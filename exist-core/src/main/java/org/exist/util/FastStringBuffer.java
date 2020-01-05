@@ -7,19 +7,19 @@
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *  
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  * This class is to large extents copied from Saxon 2003-01-21 (version ?).
  * See comment at the back about licensing for those parts.
- * 
+ *
  *  $Id$
  */
 package org.exist.util;
@@ -36,10 +36,15 @@ import java.io.Writer;
 
 public final class FastStringBuffer implements CharSequence, Serializable {
 
-	private static final long serialVersionUID = -504264698052799896L;
+    private static final long serialVersionUID = -504264698052799896L;
 
-	private char[] array;
+    private char[] array;
     private int used = 0;
+
+    /**
+     * Create a FastStringBuffer with a given initial capacity
+     * @param initialSize the initial capacity
+     */
 
     public FastStringBuffer(int initialSize) {
         array = new char[initialSize];
@@ -322,9 +327,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
             throw new IndexOutOfBoundsException(""+index);
         }
         ensureCapacity(1);
-        for (int i=used; i>index; i--) {
-            array[i] = array[i-1];
-        }
+        System.arraycopy(array, index, array, index + 1, used - index);
         used++;
         array[index] = ch;
     }
@@ -339,9 +342,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
             throw new IndexOutOfBoundsException(""+index);
         }
         used--;
-        for (int i=index; i<used; i++) {
-            array[i] = array[i+1];
-        }
+        System.arraycopy(array, index + 1, array, index, used - index);
     }
 
     /**
@@ -425,9 +426,9 @@ public final class FastStringBuffer implements CharSequence, Serializable {
         }
         return buff.toString();
     }
-    
+
     //Quick copies from old eXist's FastStringBuffer
-  
+
     /**
      *  Manefest constant: Suppress leading whitespace. This should be used when
      *  normalize-to-SAX is called for the first chunk of a multi-chunk output,
@@ -452,8 +453,8 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * see    sendNormalizedSAXcharacters(char[],int,int,org.xml.sax.ContentHandler,int)
      */
     public final static int SUPPRESS_BOTH
-             = SUPPRESS_LEADING_WS | SUPPRESS_TRAILING_WS;
-   
+            = SUPPRESS_LEADING_WS | SUPPRESS_TRAILING_WS;
+
     /**
      *  Gets the normalizedString attribute of the FastStringBuffer object
      *
@@ -471,12 +472,12 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      *@param  sb    Description of the Parameter
      *@param  mode  Description of the Parameter
      *@return       The normalizedString value
-     */    
+     */
     public StringBuffer getNormalizedString(StringBuffer sb, int mode ) {
-    	//TODO : switch (mode)
-    	return new StringBuffer(toString().trim());   	
-    }    
-    
+        //TODO : switch (mode)
+        return new StringBuffer(toString().trim());
+    }
+
 }
 
 //
