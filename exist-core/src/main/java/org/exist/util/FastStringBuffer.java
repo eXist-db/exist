@@ -41,6 +41,11 @@ public final class FastStringBuffer implements CharSequence, Serializable {
 	private char[] array;
     private int used = 0;
 
+    /**
+     * Create a FastStringBuffer with a given initial capacity
+     * @param initialSize the initial capacity
+     */
+
     public FastStringBuffer(int initialSize) {
         array = new char[initialSize];
     }
@@ -322,7 +327,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
             throw new IndexOutOfBoundsException(""+index);
         }
         ensureCapacity(1);
-        if (used - index >= 0) System.arraycopy(array, index, array, index + 1, used - index);
+        System.arraycopy(array, index, array, index + 1, used - index);
         used++;
         array[index] = ch;
     }
@@ -337,7 +342,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
             throw new IndexOutOfBoundsException(""+index);
         }
         used--;
-        if (used - index >= 0) System.arraycopy(array, index + 1, array, index, used - index);
+        System.arraycopy(array, index + 1, array, index, used - index);
     }
 
     /**
