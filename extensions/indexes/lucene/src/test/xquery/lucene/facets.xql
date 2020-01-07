@@ -15,6 +15,7 @@ declare variable $facet:XML :=
             <likes>9</likes>
             <score>6.0</score>
             <subject>art</subject>
+            <subject>math</subject>
         </letter>
         <letter>
             <from>Rudi</from>
@@ -246,6 +247,90 @@ function facet:query-and-drill-down($from as xs:string+) {
         count(collection("/db/lucenetest")//letter[ft:query(., "Berlin", $options)])
 };
 
+declare
+    %test:assertEquals(5)
+function facet:query-and-drill-down-hierarchical-sequence() {
+    let $options := map {
+            "leading-wildcard": "yes",
+            "filter-rewrite": "yes",
+            "facets": map {
+                "subject": ("humanities", "history")
+            }
+        }
+    return
+        count(collection("/db/lucenetest")//letter[ft:query(., (), $options)])
+};
+
+declare
+    %test:assertEquals(5)
+function facet:query-and-drill-down-hierarchical-array-single() {
+    let $options := map {
+            "leading-wildcard": "yes",
+            "filter-rewrite": "yes",
+            "facets": map {
+                "subject": [("humanities", "history")]
+            }
+        }
+    return
+        count(collection("/db/lucenetest")//letter[ft:query(., (), $options)])
+};
+
+declare
+    %test:assertEquals(6)
+function facet:query-and-drill-down-hierarchical-array-multi() {
+    let $options := map {
+            "leading-wildcard": "yes",
+            "filter-rewrite": "yes",
+            "facets": map {
+                "subject": [("humanities", "history"), ("humanities", "art")]
+            }
+        }
+    return
+        count(collection("/db/lucenetest")//letter[ft:query(., (), $options)])
+};
+
+declare
+    %test:assertEquals(2)
+function facet:query-and-drill-down-hierarchical-array-multi2() {
+    let $options := map {
+            "leading-wildcard": "yes",
+            "filter-rewrite": "yes",
+            "facets": map {
+                "subject": [("humanities", "art"), ("science", "engineering")]
+            }
+        }
+    return
+        count(collection("/db/lucenetest")//letter[ft:query(., (), $options)])
+};
+
+declare
+    %test:assertEquals(5)
+function facet:query-and-drill-down-hierarchical-array-multi3() {
+    let $options := map {
+            "leading-wildcard": "yes",
+            "filter-rewrite": "yes",
+            "facets": map {
+                "subject": [("humanities", "history"), ("science", "engineering")]
+            }
+        }
+    return
+        count(collection("/db/lucenetest")//letter[ft:query(., (), $options)])
+};
+
+declare
+    %test:assertEquals(1)
+function facet:query-and-drill-down-hierarchical-array-multi4() {
+    let $options := map {
+            "leading-wildcard": "yes",
+            "filter-rewrite": "yes",
+            "facets": map {
+                "subject": [("humanities", "art"), ("science", "math")]
+            }
+        }
+    return
+        count(collection("/db/lucenetest")//letter[ft:query(., (), $options)])
+};
+
 (:~
  : The facet 'cat' is defined on both: the index on 'document' and 'document/abstract'.
  : Querying 'document' should return 1 as facet count, while 'abstract' should return 2
@@ -300,6 +385,28 @@ function facet:hierarchical-facets-query($paths as xs:string+) {
 };
 
 declare
+    %test:arg("paths", "science")
+    %test:assertEquals(2)
+    %test:arg("paths", "science", "engineering")
+    %test:assertEquals(1)
+    %test:arg("paths", "humanities", "history")
+    %test:assertEquals(5)
+    %test:arg("paths", "humanities", "art")
+    %test:assertEquals(1)
+    %test:arg("paths", "science", "math")
+    %test:assertEquals(1)
+function facet:hierarchical-facets-query-subjects($paths as xs:string+) {
+    let $options := map {
+            "facets": map {
+                "subject": $paths
+            }
+        }
+    let $result := collection("/db/lucenetest")//letter[ft:query(., (), $options)]
+    return
+        count($result)
+};
+
+declare
     %test:arg("paths", "2017")
     %test:assertEquals('{"03":2}')
     %test:arg("paths", "2019")
@@ -307,6 +414,16 @@ declare
 function facet:hierarchical-facets-retrieve($paths as xs:string*) {
     let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
     let $facets := ft:facets($result, "date", (), $paths)
+    return
+        serialize($facets, map { "method": "json" })
+};
+
+declare
+    %test:arg("paths", "science")
+    %test:assertEquals('{"math":1,"engineering":1}')
+function facet:hierarchical-facets-retrieve($paths as xs:string*) {
+    let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
+    let $facets := ft:facets($result, "subject", (), $paths)
     return
         serialize($facets, map { "method": "json" })
 };
@@ -326,7 +443,7 @@ function facet:hierarchical-place() {
 };
 
 declare
-    %test:assertEquals('{"art":1,"history":5}','{"engineering":1}')
+    %test:assertEquals('{"art":1,"history":5}','{"math":1,"engineering":1}')
 function facet:hierarchical-subject() {
     let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
     let $facets := ft:facets($result, "subject", 10) (: Returns facet counts for "science" and "humanities" :)

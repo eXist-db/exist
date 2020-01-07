@@ -442,7 +442,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     options.configureParser(parser.getConfiguration());
                     query = parser.parse(queryStr);
                 }
-                Optional<Map<String, List<String>>> facets = options.getFacets();
+                Optional<Map<String, QueryOptions.FacetQuery>> facets = options.getFacets();
                 if (facets.isPresent() && config != null) {
                     query = drilldown(facets.get(), query, config);
                 }
@@ -485,7 +485,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 LuceneConfig config = getLuceneConfig(broker, docs);
                 analyzer = getAnalyzer(config, null, qname);
                 Query query = queryRoot == null ? new ConstantScoreQuery(new FieldValueFilter(field)) : queryTranslator.parse(field, queryRoot, analyzer, options);
-                Optional<Map<String, List<String>>> facets = options.getFacets();
+                Optional<Map<String, QueryOptions.FacetQuery>> facets = options.getFacets();
                 if (facets.isPresent() && config != null) {
                     query = drilldown(facets.get(), query, config);
                 }
@@ -515,19 +515,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         });
     }
 
-    private Query drilldown(Map<String, List<String>> facets, Query baseQuery, LuceneConfig config) {
+    private Query drilldown(Map<String, QueryOptions.FacetQuery> facets, Query baseQuery, LuceneConfig config) {
         final DrillDownQuery drillDownQuery = new DrillDownQuery(config.facetsConfig, baseQuery);
-        for (final Map.Entry<String, List<String>> facet : facets.entrySet()) {
+        for (final Map.Entry<String, QueryOptions.FacetQuery> facet : facets.entrySet()) {
             final FacetsConfig.DimConfig dimConfig = config.facetsConfig.getDimConfig(facet.getKey());
-            if (dimConfig.hierarchical) {
-                final String[] values = new String[facet.getValue().size()];
-                facet.getValue().toArray(values);
-                drillDownQuery.add(facet.getKey(), values);
-            } else {
-                for (String value : facet.getValue()) {
-                    drillDownQuery.add(facet.getKey(), value);
-                }
-            }
+            facet.getValue().toQuery(facet.getKey(), drillDownQuery, dimConfig.hierarchical);
         }
         return drillDownQuery;
     }

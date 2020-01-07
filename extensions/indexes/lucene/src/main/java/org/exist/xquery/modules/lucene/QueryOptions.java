@@ -20,14 +20,18 @@
 
 package org.exist.xquery.modules.lucene;
 
+import org.apache.lucene.facet.DrillDownQuery;
+import org.apache.lucene.facet.FacetsConfig;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfiguration;
 import org.apache.lucene.search.MultiTermQuery;
+import org.apache.lucene.search.Query;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.value.*;
 
@@ -61,7 +65,7 @@ public class QueryOptions {
 
     protected boolean filterRewrite = false;
     protected boolean lowercaseExpandedTerms = false;
-    protected Optional<Map<String, List<String>>> facets = Optional.empty();
+    protected Optional<Map<String, FacetQuery>> facets = Optional.empty();
     protected Set<String> fields = null;
 
     public QueryOptions() {
@@ -101,11 +105,16 @@ public class QueryOptions {
                     fields.add(i.nextItem().getStringValue());
                 }
             } else if (key.equals(OPTION_FACETS) && entry.getValue().hasOne() && entry.getValue().getItemType() == Type.MAP) {
-                final Map<String, List<String>> tf = new HashMap<>();
+                // map to hold the facet values for each dimension
+                final Map<String, FacetQuery> tf = new HashMap<>();
+                // iterate over each dimension and collect its values into a FacetQuery
                 for (Map.Entry<AtomicValue, Sequence> facet: (AbstractMapType) entry.getValue().itemAt(0)) {
-                    final List<String> values = new ArrayList<>(5);
-                    for (SequenceIterator si = facet.getValue().unorderedIterator(); si.hasNext(); ) {
-                        values.add(si.nextItem().getStringValue());
+                    final Sequence value = facet.getValue();
+                    FacetQuery values;
+                    if (value.hasOne() && value.getItemType() == Type.ARRAY) {
+                        values = new FacetQuery((ArrayType) facet.getValue().itemAt(0));
+                    } else {
+                        values = new FacetQuery(value);
                     }
                     tf.put(facet.getKey().getStringValue(), values);
                 }
@@ -116,7 +125,76 @@ public class QueryOptions {
         }
     }
 
-    public Optional<Map<String, List<String>>> getFacets() {
+    /**
+     * Holds the values of a facet for drill down. To support
+     * multiple query values for a hierarchical facet, values are
+     * kept in a two-dimensional list.
+     */
+    public static class FacetQuery {
+        final List<List<String>> values;
+
+        /**
+         * Create a single query value from a flat sequence.
+         *
+         * @param input input sequence
+         * @throws XPathException in case of conversion errors
+         */
+        public FacetQuery(final Sequence input) throws XPathException {
+            values = new ArrayList<>(1);
+            List<String> subValues = new ArrayList<>(input.getItemCount());
+            for (SequenceIterator si = input.unorderedIterator(); si.hasNext(); ) {
+                final String value = si.nextItem().getStringValue();
+                if (value.length() > 0) {
+                    subValues.add(value);
+                }
+            }
+            values.add(subValues);
+        }
+
+        /**
+         * Create a multi-valued query from an XQuery array.
+         *
+         * @param input an XQuery array
+         * @throws XPathException in case of conversion errors
+         */
+        public FacetQuery(final ArrayType input) throws XPathException {
+            final Sequence items[] = input.toArray();
+            values = new ArrayList<>(items.length);
+            for (Sequence seq : items) {
+                final List<String> subValues = new ArrayList<>(seq.getItemCount());
+                for (SequenceIterator si = seq.unorderedIterator(); si.hasNext(); ) {
+                    final String value = si.nextItem().getStringValue();
+                    if (value.length() > 0) {
+                        subValues.add(value);
+                    }
+                }
+                values.add(subValues);
+            }
+        }
+
+        /**
+         * Add the values for the facet dimension to the drill down query.
+         *
+         * @param dimension the facet dimension
+         * @param query the lucene drill down query
+         * @param hierarchical true if the facet is hierarchical
+         */
+        public void toQuery(final String dimension, final DrillDownQuery query, final boolean hierarchical) {
+            for (List<String> subValues : values) {
+                if (hierarchical) {
+                    final String[] result = new String[subValues.size()];
+                    subValues.toArray(result);
+                    query.add(dimension, result);
+                } else {
+                    for (String value : subValues) {
+                        query.add(dimension, value);
+                    }
+                }
+            }
+        }
+    }
+
+    public Optional<Map<String, FacetQuery>> getFacets() {
         return facets;
     }
 
