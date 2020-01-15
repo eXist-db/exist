@@ -116,7 +116,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     public void replace(final Expression oldExpr, final Expression newExpr) {
         final int idx = steps.indexOf(oldExpr);
         if (idx < 0) {
-            LOG.warn("Expression not found: " + ExpressionDumper.dump(oldExpr) + "; in: " + ExpressionDumper.dump(this));
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Expression not found when trying to replace: {}; in: {}", ExpressionDumper.dump(oldExpr), ExpressionDumper.dump(this));
+            }
             return;
         }
         steps.set(idx, newExpr);
@@ -140,7 +142,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     public void remove(final Expression oldExpr) {
         final int idx = steps.indexOf(oldExpr);
         if (idx < 0) {
-            LOG.warn("Expression to remove not found: " + ExpressionDumper.dump(oldExpr) + "; in: " + ExpressionDumper.dump(this));
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Expression not found when trying to remove: {}; in: {}", ExpressionDumper.dump(oldExpr), ExpressionDumper.dump(this));
+            }
             return;
         }
         steps.remove(idx);
