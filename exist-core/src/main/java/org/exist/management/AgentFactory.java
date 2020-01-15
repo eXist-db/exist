@@ -50,7 +50,7 @@ public class AgentFactory {
                     // 1. try for default constructor
                     try {
                         final MethodHandle mhConstructor = lookup.findConstructor(clazz, methodType(void.class));
-                        instance = (Agent) mhConstructor.invokeExact();
+                        instance = (Agent) mhConstructor.invoke();
                     } catch (final NoSuchMethodException | IllegalAccessException e) {
                         LOG.warn("No default constructor found for Agent: " + className + ". Will try singleton pattern...");
 
