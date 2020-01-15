@@ -374,8 +374,12 @@ public class SubSequence extends AbstractSequence {
         }
 
         while (iterator.hasNext()) {
-            final NodeValue item = (NodeValue) iterator.nextItem();
-            if (item.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+            final Item item = iterator.nextItem();
+            if (!(item instanceof NodeValue)) {
+                return false;
+            }
+            final NodeValue nv = (NodeValue) item;
+            if (nv.getImplementationType() != NodeValue.PERSISTENT_NODE) {
                 return false;
             }
         }
