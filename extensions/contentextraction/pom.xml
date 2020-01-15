@@ -19,7 +19,11 @@
         <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
         <url>scm:git:https://github.com/exist-db/exist.git</url>
       <tag>HEAD</tag>
-  </scm>
+    </scm>
+
+    <properties>
+        <tika.version>1.22</tika.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -36,12 +40,31 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
-            <version>1.22</version>
+            <version>${tika.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parsers</artifactId>
+            <version>${tika.version}</version>
+            <scope>runtime</scope>
+            <exclusions>
+                <exclusion> <!-- conflicts with eXist-db's Xerces 2.12.0 with schema 1.1-->
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>xml-apis</groupId>
             <artifactId>xml-apis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
@@ -57,6 +80,34 @@
                 <filtering>true</filtering>
             </testResource>
         </testResources>
+        <plugins>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <configuration>
+                    <!-- clashes with com.sun:tools from transient dependency of tika-parsers, see https://github.com/jeremylong/DependencyCheck/issues/1914 -->
+                    <skipSystemScope>true</skipSystemScope>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>analyze</id>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <failOnWarning>true</failOnWarning>
+                            <ignoredUnusedDeclaredDependencies>
+                                <ignoredUnusedDeclaredDependency>org.apache.tika:tika-parsers</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
     
 </project>
