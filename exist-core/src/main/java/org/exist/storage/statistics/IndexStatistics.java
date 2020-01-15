@@ -107,7 +107,8 @@ public class IndexStatistics extends AbstractIndex implements RawBackupSupport {
     }
 
     public void sync() throws DBException {
-        try(final SeekableByteChannel chan = Files.newByteChannel(dataFile,StandardOpenOption.WRITE)) {
+        try(final SeekableByteChannel chan = Files.newByteChannel(dataFile,
+                StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
             dataGuide.write(chan, getBrokerPool().getSymbols());
         } catch (final IOException e) {
             LOG.error(e.getMessage(), e);
