@@ -33,6 +33,7 @@ import org.exist.util.DatabaseConfigurationException;
 import java.text.NumberFormat;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -172,13 +173,10 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
     @Override
     public void deregisterCache( Cache cache )
     {
-        Cache next;
-
-        for( int i = 0; i < caches.size(); i++ ) {
-            next = (Cache)caches.get( i );
-
-            if( cache == next ) {
-                caches.remove( i );
+        for (final Iterator<Cache> cacheIt = caches.iterator(); cacheIt.hasNext(); ) {
+            if (cache == cacheIt.next()) {
+                cache.setCacheManager( null );
+                cacheIt.remove();
                 break;
             }
         }
