@@ -48,7 +48,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * @param initialSize the initial capacity
      */
 
-    public FastStringBuffer(int initialSize) {
+    public FastStringBuffer(final int initialSize) {
         array = new char[initialSize];
     }
 
@@ -57,8 +57,8 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * @param s the String to be appended
      */
 
-    public void append(String s) {
-        int len = s.length();
+    public void append(final String s) {
+        final int len = s.length();
         ensureCapacity(len);
         s.getChars(0, len, array, used);
         used += len;
@@ -69,8 +69,8 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * @param s the String to be appended
      */
 
-    public void append(CharSlice s) {
-        int len = s.length();
+    public void append(final CharSlice s) {
+        final int len = s.length();
         ensureCapacity(len);
         s.copyTo(array, used);
         used += len;
@@ -81,8 +81,8 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * @param s the FastStringBuffer to be appended
      */
 
-    public void append(FastStringBuffer s) {
-        int len = s.length();
+    public void append(final FastStringBuffer s) {
+        final int len = s.length();
         ensureCapacity(len);
         s.getChars(0, len, array, used);
         used += len;
@@ -93,8 +93,8 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * @param s the StringBuffer to be appended
      */
 
-    public void append(StringBuilder s) {
-        int len = s.length();
+    public void append(final StringBuilder s) {
+        final int len = s.length();
         ensureCapacity(len);
         s.getChars(0, len, array, used);
         used += len;
@@ -105,7 +105,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * @param s the CharSequence to be appended
      */
 
-    public void append(CharSequence s) {
+    public void append(final CharSequence s) {
         // Although we provide variants of this method for different subtypes, Java decides which to use based
         // on the static type of the operand. We want to use the right method based on the dynamic type, to avoid
         // creating objects and copying strings unnecessarily. So we do a dynamic dispatch.
@@ -133,7 +133,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * @param length the number of characters to be copied
      */
 
-    public void append(char[] srcArray, int start, int length) {
+    public void append(final char[] srcArray, final int start, final int length) {
         ensureCapacity(length);
         System.arraycopy(srcArray, start, array, used, length);
         used += length;
@@ -144,7 +144,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * @param srcArray the array whose contents are to be added
      */
 
-    public void append(char[] srcArray) {
+    public void append(final char[] srcArray) {
         final int length = srcArray.length;
         ensureCapacity(length);
         System.arraycopy(srcArray, 0, array, used, length);
@@ -156,7 +156,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * @param ch the character to be added
      */
 
-    public void append(char ch) {
+    public void append(final char ch) {
         ensureCapacity(1);
         array[used++] = ch;
     }
@@ -180,7 +180,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      *
      * @param ch the character
      */
-    public void prependWideChar(int ch) {
+    public void prependWideChar(final int ch) {
         if (ch > 0xffff) {
             insertCharAt(0, XMLChar.lowSurrogate(ch));
             insertCharAt(0, XMLChar.highSurrogate(ch));
@@ -214,7 +214,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * @throws IndexOutOfBoundsException if the <code>index</code> argument is negative or not less than
      *                                   <code>length()</code>
      */
-    public char charAt(int index) {
+    public char charAt(final int index) {
         if (index >= used) {
             throw new IndexOutOfBoundsException("" + index);
         }
@@ -236,7 +236,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      *                                   if <code>end</code> is greater than <code>length()</code>,
      *                                   or if <code>start</code> is greater than <code>end</code>
      */
-    public CharSequence subSequence(int start, int end) {
+    public CharSequence subSequence(final int start, final int end) {
         return new CharSlice(array, start, end - start);
     }
 
@@ -270,7 +270,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      *            <li><code>dstBegin+(srcEnd-srcBegin)</code> is larger than
      *                <code>dst.length</code></ul>
      */
-    public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {
+    public void getChars(final int srcBegin, final int srcEnd, final char[] dst, final int dstBegin) {
         if (srcBegin < 0) {
             throw new StringIndexOutOfBoundsException(srcBegin);
         }
@@ -288,7 +288,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * @param ch the character to search for
      * @return the position of the first occurrence, or -1 if not found
      */
-    public int indexOf(char ch) {
+    public int indexOf(final char ch) {
         for (int i=0; i<used; i++) {
             if (array[i] == ch) {
                 return i;
@@ -311,7 +311,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * @param ch the new character to overwrite the existing character at that location
      * @throws IndexOutOfBoundsException if {@code int < 0 || int >= length()}
      */
-    public void setCharAt(int index, char ch) {
+    public void setCharAt(final int index, final char ch) {
         if (index<0 || index>used) {
             throw new IndexOutOfBoundsException(""+index);
         }
@@ -324,7 +324,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * @param ch the new character to insert at that location
      * @throws IndexOutOfBoundsException if {@code int < 0 || int >= length()}
      */
-    public void insertCharAt(int index, char ch) {
+    public void insertCharAt(final int index, final char ch) {
         if (index<0 || index>used) {
             throw new IndexOutOfBoundsException(""+index);
         }
@@ -339,7 +339,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * @param index the index of the character to be set
      * @throws IndexOutOfBoundsException if {@code int < 0 || int >= length()}
      */
-    public void removeCharAt(int index) {
+    public void removeCharAt(final int index) {
         if (index<0 || index>used) {
             throw new IndexOutOfBoundsException(""+index);
         }
@@ -354,7 +354,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      *
      * @param length the new length
      */
-    public void setLength(int length) {
+    public void setLength(final int length) {
         if (length < 0 || length > used) {
             return;
         }
@@ -366,13 +366,13 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      *
      * @param extra the extra capacity needed.
      */
-    public void ensureCapacity(int extra) {
+    public void ensureCapacity(final int extra) {
         if (used + extra > array.length) {
             int newlen = array.length * 2;
             if (newlen < used + extra) {
                 newlen = used + extra*2;
             }
-            char[] array2 = new char[newlen];
+            final char[] array2 = new char[newlen];
             System.arraycopy(array, 0, array2, 0, used);
             array = array2;
         }
@@ -388,7 +388,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      */
     public CharSequence condense() {
         if (array.length - used > 256 || array.length > used * 2) {
-            char[] array2 = new char[used];
+            final char[] array2 = new char[used];
             System.arraycopy(array, 0, array2, 0, used);
             array = array2;
         }
@@ -413,7 +413,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      *
      * @return the diagnostic print
      */
-    public static String diagnosticPrint(CharSequence in) {
+    public static String diagnosticPrint(final CharSequence in) {
         final FastStringBuffer buff = new FastStringBuffer(in.length()*2);
         for (int i=0; i<in.length(); i++) {
             final char c = in.charAt(i);
@@ -462,7 +462,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      *@param  mode  Trim mode
      *@return       The normalizedString value
      */
-    public String getNormalizedString( int mode ) {
+    public String getNormalizedString(final int mode ) {
 
         switch(mode){
             case SUPPRESS_BOTH:
