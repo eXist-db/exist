@@ -88,4 +88,32 @@ public class FastStringBufferTest {
         assertEquals(0, fsb.length());
     }
 
+    @Test
+    public void getNormalizedString0(){
+        FastStringBuffer fsb = new FastStringBuffer(0);
+        fsb.append(" 12345 ");
+        assertEquals("12345", fsb.getNormalizedString(0));
+    }
+
+    @Test
+    public void getNormalizedStringBoth(){
+        FastStringBuffer fsb = new FastStringBuffer(0);
+        fsb.append(" 12345 ");
+        assertEquals("12345", fsb.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH));
+    }
+
+    @Test
+    public void getNormalizedStringLeading(){
+        FastStringBuffer fsb = new FastStringBuffer(0);
+        fsb.append(" 12345 ");
+        assertEquals("12345 ", fsb.getNormalizedString(FastStringBuffer.SUPPRESS_LEADING_WS));
+    }
+
+    @Test
+    public void getNormalizedStringTrailing(){
+        FastStringBuffer fsb = new FastStringBuffer(0);
+        fsb.append(" 12345 ");
+        assertEquals(" 12345", fsb.getNormalizedString(FastStringBuffer.SUPPRESS_TRAILING_WS));
+    }
+
 }
