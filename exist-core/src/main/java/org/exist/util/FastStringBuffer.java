@@ -24,6 +24,8 @@
  */
 package org.exist.util;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.Serializable;
 import java.io.Writer;
 
@@ -91,7 +93,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      * @param s the StringBuffer to be appended
      */
 
-    public void append(StringBuffer s) {
+    public void append(StringBuilder s) {
         int len = s.length();
         ensureCapacity(len);
         s.getChars(0, len, array, used);
@@ -452,31 +454,34 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      *
      * see    sendNormalizedSAXcharacters(char[],int,int,org.xml.sax.ContentHandler,int)
      */
-    public final static int SUPPRESS_BOTH
-            = SUPPRESS_LEADING_WS | SUPPRESS_TRAILING_WS;
+    public final static int SUPPRESS_BOTH = SUPPRESS_LEADING_WS | SUPPRESS_TRAILING_WS;
 
     /**
      *  Gets the normalizedString attribute of the FastStringBuffer object
      *
-     *@param  mode  Description of the Parameter
+     *@param  mode  Trim mode
      *@return       The normalizedString value
      */
     public String getNormalizedString( int mode ) {
-        return getNormalizedString( new StringBuffer(toString()), mode ).toString();
+
+        switch(mode){
+            case SUPPRESS_BOTH:
+                return toString().trim();
+
+            case SUPPRESS_LEADING_WS:
+                return StringUtils.stripStart(toString(),null);
+
+            case SUPPRESS_TRAILING_WS:
+                return StringUtils.stripEnd(toString(),null);
+
+            default:
+                return toString().trim();
+        }
+
     }
 
 
-    /**
-     *  Gets the normalizedString attribute of the FastStringBuffer object
-     *
-     *@param  sb    Description of the Parameter
-     *@param  mode  Description of the Parameter
-     *@return       The normalizedString value
-     */
-    public StringBuffer getNormalizedString(StringBuffer sb, int mode ) {
-        //TODO : switch (mode)
-        return new StringBuffer(toString().trim());
-    }
+
 
 }
 
