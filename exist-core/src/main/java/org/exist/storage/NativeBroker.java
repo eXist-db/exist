@@ -333,7 +333,7 @@ public class NativeBroker extends DBBroker {
         clearContentLoadingObservers();
     }
 
-    private void notifyCloseAndRemove() {
+    private void notifyCloseAndRemove() throws DBException {
         for(final ContentLoadingObserver observer : contentLoadingObservers) {
             observer.closeAndRemove();
         }
@@ -3626,8 +3626,8 @@ public class NativeBroker extends DBBroker {
         }
 
         LOG.info("Removing index files ...");
-        notifyCloseAndRemove();
         try {
+            notifyCloseAndRemove();
             pool.getIndexManager().removeIndexes();
         } catch(final DBException e) {
             LOG.error("Failed to remove index files during repair: " + e.getMessage(), e);

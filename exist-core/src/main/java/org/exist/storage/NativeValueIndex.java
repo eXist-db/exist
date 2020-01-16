@@ -1048,7 +1048,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
     @Override
-    public void closeAndRemove() {
+    public void closeAndRemove() throws DBException {
         try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeWriteLock(dbValues.getLockName())) {
             config.setProperty(getConfigKeyForFile(), null);
             dbValues.closeAndRemove();

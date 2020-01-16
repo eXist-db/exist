@@ -5,6 +5,11 @@ package org.exist.util;
  */
 public interface Lockable {
 
+    /**
+     * Get the name of the Lock.
+     *
+     * @return the name of the Lock
+     */
     String getLockName();
     
 }
