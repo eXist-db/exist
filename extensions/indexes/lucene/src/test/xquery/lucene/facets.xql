@@ -99,18 +99,57 @@ declare variable $facet:MULTI_LANGUAGE :=
         </body>
     </text>;
 
-declare variable $facet:MODULE :=
-    ``[
-        xquery version "3.1";
-        module namespace idx="http://exist-db.org/lucene/test/";
 
-        declare function idx:place-hierarchy($key as xs:string?) {
-            if (exists($key)) then
-                doc('/db/lucenetest/places.xml')//place[@name=$key]/ancestor-or-self::place/@name
-            else
-                ()
-        };
-    ]``;
+declare variable $facet:RECORDS := 10;
+
+declare variable $facet:CITIES :=
+    <cities>{
+        for $id in 1 to $facet:RECORDS
+        return
+            <city>
+                <id>{$id}</id>
+                <label>City {$id}</label>
+            </city>
+    }</cities>;
+
+declare variable $facet:PERSONS :=
+    for $id in 1 to $facet:RECORDS
+    return
+        <person>
+            <id>{$id}</id>
+            <city-id>{ $facet:RECORDS - $id + 1 }</city-id>
+        </person>;
+
+declare variable $facet:MODULE :=
+    ``[xquery version "3.1";
+
+module namespace idx="http://exist-db.org/lucene/test/";
+
+declare function idx:place-hierarchy($key as xs:string?) {
+    if (exists($key)) then
+        doc('/db/lucenetest/places.xml')//place[@name=$key]/ancestor-or-self::place/@name
+    else
+        ()
+};
+
+declare function idx:city-id-to-label($id as xs:string) {
+    let $city := doc('/db/lucenetest/cities.xml')//city[id eq $id]
+    return
+        if (exists($city)) then
+            $city/label/string()
+        else
+            "unknown"
+};
+
+declare function idx:people-from-city($city-id as xs:string) {
+    let $people := collection('/db/lucenetest')//person[city-id eq $city-id]/id/string()
+    return
+        if (exists($people)) then
+            $people
+        else
+            "none"
+};
+]``;
 
 declare variable $facet:XCONF1 :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
@@ -151,7 +190,17 @@ declare variable $facet:XCONF1 :=
                     <facet dimension="language" expression="ancestor::body/@xml:lang"/>
                     <ignore qname="note"/>
                 </text>
+                <text qname="person">
+                    <facet dimension="city" expression="idx:city-id-to-label(city-id)"/>
+                </text>
+                <text qname="city">
+                    <facet dimension="person" expression="idx:people-from-city(id)"/>
+                </text>
             </lucene>
+            <range>
+                <create qname="id" type="xs:string"/>
+                <create qname="city-id" type="xs:string"/>
+            </range>
         </index>
     </collection>;
 
@@ -159,6 +208,7 @@ declare
     %test:setUp
 function facet:setup() {
     let $testCol := xmldb:create-collection("/db", "lucenetest")
+    let $personsCol := xmldb:create-collection("/db/lucenetest", "persons")
     let $confCol := xmldb:create-collection("/db/system/config/db", "lucenetest")
     return (
         xmldb:store($testCol, "module.xql", $facet:MODULE, "application/xquery"),
@@ -166,7 +216,10 @@ function facet:setup() {
         xmldb:store($testCol, "places.xml", $facet:TAXONOMY),
         xmldb:store($testCol, "test.xml", $facet:XML),
         xmldb:store($testCol, "documents.xml", $facet:DOCUMENTS),
-        xmldb:store($testCol, "multi-lang.xml", $facet:MULTI_LANGUAGE)
+        xmldb:store($testCol, "multi-lang.xml", $facet:MULTI_LANGUAGE),
+        $facet:PERSONS ! xmldb:store($personsCol, ./id || ".xml", .),
+        xmldb:store($testCol, "cities.xml", $facet:CITIES),
+        xmldb:reindex($personsCol)
     )
 };
 
@@ -506,4 +559,28 @@ function facet:query-with-union-and-facets($query as xs:string) {
         doc("/db/lucenetest/documents.xml")//document[ft:query(abstract, $query)]
     return
         ft:facets($results, "cat")?nature
+};
+
+declare
+    %test:assertEmpty
+function facet:avoid-range-index-conflict-person() {
+    let $people := collection("/db/lucenetest")//person[ft:query(., ())]
+    let $city-facet := ft:facets($people, "city")
+    return
+        if ($people and $city-facet?unknown) then
+            $city-facet?unknown || " person values were calculated without id range indexes present"
+        else
+            ()
+};
+
+declare
+    %test:assertEmpty
+function facet:avoid-range-index-conflict-city() {
+    let $cities := collection("/db/lucenetest")//city[ft:query(., ())]
+    let $persons-facet := ft:facets($cities, "person")
+    return
+        if ($cities and $persons-facet?none) then
+            $persons-facet?none || " city values were calculated without id range indexes present"
+        else
+            ()
 };

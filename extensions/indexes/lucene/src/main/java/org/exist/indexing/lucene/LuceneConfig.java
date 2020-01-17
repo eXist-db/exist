@@ -36,6 +36,8 @@ import org.w3c.dom.NodeList;
 
 public class LuceneConfig {
 
+    public final static LuceneConfig DEFAULT_CONFIG = new LuceneConfig();
+
 	private final static Logger LOG = LogManager.getLogger(LuceneConfig.class);
 	
     private final static String CONFIG_ROOT = "lucene";
@@ -72,6 +74,9 @@ public class LuceneConfig {
     private List<ModuleImport> imports = null;
 
     protected FacetsConfig facetsConfig = new FacetsConfig();
+
+    public LuceneConfig() {
+    }
 
     public LuceneConfig(NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
         parseConfig(configNodes, namespaces);
