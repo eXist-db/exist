@@ -128,7 +128,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
             //	sb.append(Double.toString(ms).substring(2));
             //}
             //0 is a dummy parameter
-            FloatingPointConverter.appendFloat(sb, s.floatValue()).getNormalizedString(0);
+            FloatingPointConverter.appendFloat(sb, s.floatValue()).getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
             sb.append("S");
             /*
             if (micros == 0) {

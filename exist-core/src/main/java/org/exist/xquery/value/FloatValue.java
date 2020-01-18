@@ -101,7 +101,7 @@ public class FloatValue extends NumericValue {
 
         final FastStringBuffer sb = new FastStringBuffer(20);
         //0 is a dummy parameter
-        FloatingPointConverter.appendFloat(sb, value).getNormalizedString(0);
+        FloatingPointConverter.appendFloat(sb, value).getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
         return sb.toString();
     }
 
