@@ -31,7 +31,6 @@ import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
 import java.util.Arrays;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 
 /**
@@ -65,29 +64,28 @@ public class LockManager {
     // org.exist.util.Configuration properties
     public final static String CONFIGURATION_UPGRADE_CHECK = "lock-manager.upgrade-check";
     public final static String CONFIGURATION_WARN_WAIT_ON_READ_FOR_WRITE = "lock-manager.warn-wait-on-read-for-write";
-    public final static String CONFIGURATION_COLLECTION_MULTI_WRITER = "lock-manager.collection.multi-writer";
-    public final static String CONFIGURATION_DOCUMENT_MULTI_LOCK = "lock-manager.document.multi-lock";
+    public final static String CONFIGURATION_PATH_LOCKS_FOR_DOCUMENTS = "lock-manager.document.use-path-locks";
+    public final static String CONFIGURATION_PATHS_MULTI_WRITER = "lock-manager.paths-multi-writer";
 
     //TODO(AR) remove eventually!
     // legacy properties for overriding the config
-    public final static String PROP_ENABLE_COLLECTIONS_MULTI_WRITER = "exist.lockmanager.collections.multiwriter";
+    public final static String PROP_ENABLE_PATHS_MULTI_WRITER = "exist.lockmanager.paths-multiwriter";
     public final static String PROP_UPGRADE_CHECK = "exist.lockmanager.upgrade.check";
     public final static String PROP_WARN_WAIT_ON_READ_FOR_WRITE = "exist.lockmanager.warn.waitonreadforwrite";
-    public final static String PROP_USE_MULTILOCK_FOR_DOCUMENTS = "exist.lockmanager.documents.multilock";
 
     private static final Logger LOG = LogManager.getLogger(LockManager.class);
-    private static final boolean USE_FAIR_SCHEDULER = true;  //Java's ReentrantReadWriteLock must use the Fair Scheduler to get FIFO like ordering
 
     /**
-     * Set to true to use MultiLock instead of ReentrantReadWriteLock
+     * Set to true to use the path Hierarchy for document locks
+     * as opposed to separating Collection and Document locks
      */
-    private final boolean useMultiLockForDocuments;
+    private final boolean usePathLocksForDocuments;
 
     /**
      * Set to true to enable Multi-Writer/Multi-Reader semantics for
-     * the Collection Hierarchy as opposed to the default Single-Writer/Multi-Reader
+     * the path Hierarchy as opposed to the default Single-Writer/Multi-Reader
      */
-    private final boolean collectionsMultiWriter;
+    private final boolean pathsMultiWriter;
 
     /**
      * Set to true to enable checking for lock upgrading within the same
@@ -103,8 +101,8 @@ public class LockManager {
 
 
     private final LockTable lockTable;
-    private final WeakLazyStripes<String, MultiLock> collectionLocks;
-    private final WeakLazyStripes<String, DocumentLock> documentLocks;
+    private final WeakLazyStripes<String, MultiLock> pathLocks;
+    private final WeakLazyStripes<String, MultiLock> documentLocks;
     private final WeakLazyStripes<String, ReentrantLock> btreeLocks;
 
     /**
@@ -113,21 +111,21 @@ public class LockManager {
      */
     public LockManager(final Configuration configuration, final int concurrencyLevel) {
         // set configuration
-        this.useMultiLockForDocuments = getLegacySystemPropertyOrConfigPropertyBool(PROP_USE_MULTILOCK_FOR_DOCUMENTS, configuration, CONFIGURATION_DOCUMENT_MULTI_LOCK, false);
-        this.collectionsMultiWriter = getLegacySystemPropertyOrConfigPropertyBool(PROP_ENABLE_COLLECTIONS_MULTI_WRITER, configuration, CONFIGURATION_COLLECTION_MULTI_WRITER, false);
+        this.usePathLocksForDocuments = getConfigPropertyBool(configuration, CONFIGURATION_PATH_LOCKS_FOR_DOCUMENTS, false);
+        this.pathsMultiWriter = getLegacySystemPropertyOrConfigPropertyBool(PROP_ENABLE_PATHS_MULTI_WRITER, configuration, CONFIGURATION_PATHS_MULTI_WRITER, false);
         this.upgradeCheck = getLegacySystemPropertyOrConfigPropertyBool(PROP_UPGRADE_CHECK, configuration, CONFIGURATION_UPGRADE_CHECK, false);
         this.warnWaitOnReadForWrite = getLegacySystemPropertyOrConfigPropertyBool(PROP_WARN_WAIT_ON_READ_FOR_WRITE, configuration, CONFIGURATION_WARN_WAIT_ON_READ_FOR_WRITE, false);
 
         this.lockTable = new LockTable(configuration);
-        this.collectionLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createCollectionLock);
-        if (useMultiLockForDocuments) {
-            this.documentLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createDocumentMultiLock);
+        this.pathLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createCollectionLock);
+        if (!usePathLocksForDocuments) {
+            this.documentLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createDocumentLock);
         } else {
-            this.documentLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createDocumentReentrantLock);
+            this.documentLocks = null;
         }
         this.btreeLocks = new WeakLazyStripes<>(concurrencyLevel, LockManager::createBtreeLock);
 
-        LOG.info("Configured LockManager with concurrencyLevel={}", concurrencyLevel);
+        LOG.info("Configured LockManager with concurrencyLevel={} use-path-locks-for-documents={} paths-multi-writer={}", concurrencyLevel, usePathLocksForDocuments, pathsMultiWriter);
     }
 
     /**
@@ -150,34 +148,26 @@ public class LockManager {
 
     /**
      * Creates a new lock for a Collection
-     * will be Striped by the collectionPath
+     * will be Striped by the collectionPath.
+     *
+     * @param collectionPath the collection path
+     *
+     * @return the document lock
      */
     private static MultiLock createCollectionLock(final String collectionPath) {
         return new MultiLock();
     }
 
     /**
-     * Creates a new Reentrant lock for a Document
-     * will be Striped by the collectionPath.
-     *
-     * @param documentPath the document path
-     *
-     * @return the document lock
-     */
-    private static DocumentLock createDocumentReentrantLock(final String documentPath) {
-        return new ReentrantReadWriteLockDocumentLockAdapter(new ReentrantReadWriteLock());
-    }
-
-    /**
      * Creates a new MultiLock lock for a Document
-     * will be Striped by the collectionPath.
+     * will be Striped by the documentPath.
      *
      * @param documentPath the document path
      *
      * @return the document lock
      */
-    private static DocumentLock createDocumentMultiLock(final String documentPath) {
-        return new MultiLockDocumentLockAdapter(new MultiLock());
+    private static MultiLock createDocumentLock(final String documentPath) {
+        return new MultiLock();
     }
 
     /**
@@ -189,19 +179,19 @@ public class LockManager {
     }
 
     /**
-     * Retrieves a lock for a Collection
+     * Retrieves a lock for a Path
      *
      * This function is concerned with just the lock object
      * and has no knowledge of the state of the lock. The only
      * guarantee is that if this lock has not been requested before
      * then it will be provided in the unlocked state
      *
-     * @param collectionPath The path of the Collection for which a lock is requested
+     * @param path The path for which a lock is requested
      *
-     * @return A lock for the Collection
+     * @return A lock for the path
      */
-    MultiLock getCollectionLock(final String collectionPath) {
-        return collectionLocks.get(collectionPath);
+    MultiLock getPathLock(final String path) {
+        return pathLocks.get(path);
     }
 
     /**
@@ -213,41 +203,67 @@ public class LockManager {
      * @throws LockException if a lock error occurs
      */
     public ManagedCollectionLock acquireCollectionReadLock(final XmldbURI collectionPath) throws LockException {
-        final XmldbURI[] segments = collectionPath.getPathSegments();
+        final LockGroup lockGroup = acquirePathReadLock(LockType.COLLECTION, collectionPath);
+        return new ManagedCollectionLock(
+                collectionPath,
+                Arrays.stream(lockGroup.locks).map(Tuple3::get_1).toArray(MultiLock[]::new),
+                () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l._3, LockType.COLLECTION, l._2))
+        );
+    }
+
+    private static class LockGroup {
+        final long groupId;
+        final Tuple3<MultiLock, Lock.LockMode, String>[] locks;
+
+        private LockGroup(final long groupId, final Tuple3<MultiLock, Lock.LockMode, String>[] locks) {
+            this.groupId = groupId;
+            this.locks = locks;
+        }
+    }
+
+    /**
+     * Acquires a READ_LOCK on a database path (and implicitly all descendant paths).
+     *
+     * @param lockType The type of the lock
+     * @param path The path for which a lock is requested.
+     *
+     * @return A READ_LOCK on the Collection.
+     *
+     * @throws LockException if a lock error occurs
+     */
+    public LockGroup acquirePathReadLock(final LockType lockType, final XmldbURI path) throws LockException {
+        final XmldbURI[] segments = path.getPathSegments();
 
         final long groupId = System.nanoTime();
 
-        String path = "";
+        String pathStr = "";
         final Tuple3<MultiLock, Lock.LockMode, String>[] locked = new Tuple3[segments.length];
-        for(int i = 0; i < segments.length; i++) {
-            path += '/' + segments[i].toString();
+        for (int i = 0; i < segments.length; i++) {
+            pathStr += '/' + segments[i].toString();
 
             final Lock.LockMode lockMode;
-            if(i + 1 == segments.length) {
+            if (i + 1 == segments.length) {
                 lockMode = Lock.LockMode.READ_LOCK; //leaf
             } else {
                 lockMode = Lock.LockMode.INTENTION_READ; //ancestor
             }
-            final MultiLock lock = getCollectionLock(path);
 
-            lockTable.attempt(groupId, path, LockType.COLLECTION, lockMode);
-            if(lock(lock, lockMode)) {
-                locked[i] = new Tuple3<>(lock, lockMode, path);
-                lockTable.acquired(groupId, path, LockType.COLLECTION, lockMode);
+            final MultiLock lock = getPathLock(pathStr);
+
+            lockTable.attempt(groupId, pathStr, lockType, lockMode);
+            if (lock(lock, lockMode)) {
+                locked[i] = new Tuple3<>(lock, lockMode, pathStr);
+                lockTable.acquired(groupId, pathStr, lockType, lockMode);
             } else {
-                lockTable.attemptFailed(groupId, path, LockType.COLLECTION, lockMode);
+                lockTable.attemptFailed(groupId, pathStr, lockType, lockMode);
 
-                unlockAll(locked, l -> lockTable.released(groupId, l._3, LockType.COLLECTION, l._2));
+                unlockAll(locked, l -> lockTable.released(groupId, l._3, lockType, l._2));
 
-                throw new LockException("Unable to acquire " + lockMode + " for: " + path);
+                throw new LockException("Unable to acquire " + lockType + " " + lockMode + " for: " + pathStr);
             }
         }
 
-        return new ManagedCollectionLock(
-                collectionPath,
-                Arrays.stream(locked).map(Tuple3::get_1).toArray(MultiLock[]::new),
-                () -> unlockAll(locked, l -> lockTable.released(groupId, l._3, LockType.COLLECTION, l._2))
-        );
+        return new LockGroup(groupId, locked);
     }
 
     /**
@@ -259,7 +275,7 @@ public class LockManager {
      * @return true, if we were able to lock with the mode.
      */
     private boolean lock(final MultiLock lock, final Lock.LockMode lockMode) {
-        switch(lockMode) {
+        switch (lockMode) {
             case INTENTION_READ:
                 lock.intentionReadLock();
                 break;
@@ -348,24 +364,42 @@ public class LockManager {
      * @return A WRITE_LOCK on the Collection.
      */
     ManagedCollectionLock acquireCollectionWriteLock(final XmldbURI collectionPath, final boolean lockParent) throws LockException {
-        final XmldbURI[] segments = collectionPath.getPathSegments();
+        final LockGroup lockGroup = acquirePathWriteLock(LockType.COLLECTION, collectionPath, lockParent);
+        return new ManagedCollectionLock(
+                collectionPath,
+                Arrays.stream(lockGroup.locks).map(Tuple3::get_1).toArray(MultiLock[]::new),
+                () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l._3, LockType.COLLECTION, l._2))
+        );
+    }
+
+    /**
+     * Acquires a WRITE_LOCK on a path (and implicitly all descendant paths).
+     *
+     * @param path The path for which a lock is requested.
+     * @param lockParent true if we should also explicitly write lock the parent path.
+     *
+     * @return A WRITE_LOCK on the path.
+     */
+    LockGroup acquirePathWriteLock(final LockType lockType, final XmldbURI path,
+            final boolean lockParent) throws LockException {
+        final XmldbURI[] segments = path.getPathSegments();
 
         final long groupId = System.nanoTime();
 
-        String path = "";
+        String pathStr = "";
         final Tuple3<MultiLock, Lock.LockMode, String>[] locked = new Tuple3[segments.length];
-        for(int i = 0; i < segments.length; i++) {
-            path += '/' + segments[i].toString();
+        for (int i = 0; i < segments.length; i++) {
+            pathStr += '/' + segments[i].toString();
 
             final Lock.LockMode lockMode;
-            if(lockParent && i + 2 == segments.length) {
+            if (lockParent && i + 2 == segments.length) {
                 lockMode = Lock.LockMode.WRITE_LOCK;    // parent
             } else if(i + 1 == segments.length) {
                 lockMode = Lock.LockMode.WRITE_LOCK;    // leaf
             } else {
                 // ancestor
 
-                if(!collectionsMultiWriter) {
+                if (!pathsMultiWriter) {
                     // single-writer/multi-reader
                     lockMode = Lock.LockMode.WRITE_LOCK;
                 } else {
@@ -373,38 +407,35 @@ public class LockManager {
                     lockMode = Lock.LockMode.INTENTION_WRITE;
                 }
             }
-            final MultiLock lock = getCollectionLock(path);
 
-            if(upgradeCheck && lockMode == Lock.LockMode.WRITE_LOCK && (lock.getIntentionReadHoldCount() > 0  || lock.getReadHoldCount() > 0)) {
-                throw new LockException("Lock upgrading would lead to a self-deadlock: " + path);
+            final MultiLock lock = getPathLock(pathStr);
+
+            if (upgradeCheck && lockMode == Lock.LockMode.WRITE_LOCK && (lock.getIntentionReadHoldCount() > 0  || lock.getReadHoldCount() > 0)) {
+                throw new LockException("Lock upgrading would lead to a self-deadlock: " + pathStr);
             }
 
-            if(warnWaitOnReadForWrite && lockMode == Lock.LockMode.WRITE_LOCK) {
-                if(lock.getIntentionReadLockCount() > 0) {
-                    LOG.warn("About to acquire WRITE_LOCK for: {}, but INTENTION_READ_LOCK held by other thread(s): ", path);
+            if (warnWaitOnReadForWrite && lockMode == Lock.LockMode.WRITE_LOCK) {
+                if (lock.getIntentionReadLockCount() > 0) {
+                    LOG.warn("About to acquire WRITE_LOCK for: {}, but INTENTION_READ_LOCK held by other thread(s): ", pathStr);
                 } else if(lock.getReadLockCount() > 0) {
-                    LOG.warn("About to acquire WRITE_LOCK for: {}, but READ_LOCK held by other thread(s): ", path);
+                    LOG.warn("About to acquire WRITE_LOCK for: {}, but READ_LOCK held by other thread(s): ", pathStr);
                 }
             }
 
-            lockTable.attempt(groupId, path, LockType.COLLECTION, lockMode);
-            if(lock(lock, lockMode)) {
-                locked[i] = new Tuple3<>(lock, lockMode, path);
-                lockTable.acquired(groupId, path, LockType.COLLECTION, lockMode);
+            lockTable.attempt(groupId, pathStr, lockType, lockMode);
+            if (lock(lock, lockMode)) {
+                locked[i] = new Tuple3<>(lock, lockMode, pathStr);
+                lockTable.acquired(groupId, pathStr, lockType, lockMode);
             } else {
-                lockTable.attemptFailed(groupId, path, LockType.COLLECTION, lockMode);
+                lockTable.attemptFailed(groupId, pathStr, lockType, lockMode);
 
-                unlockAll(locked, l -> lockTable.released(groupId, l._3, LockType.COLLECTION, l._2));
+                unlockAll(locked, l -> lockTable.released(groupId, l._3, lockType, l._2));
 
-                throw new LockException("Unable to acquire " + lockMode + " for: " + path);
+                throw new LockException("Unable to acquire " + lockType + " " + lockMode + " for: " + pathStr);
             }
         }
 
-        return new ManagedCollectionLock(
-                collectionPath,
-                Arrays.stream(locked).map(Tuple3::get_1).toArray(MultiLock[]::new),
-                () -> unlockAll(locked, l -> lockTable.released(groupId, l._3, LockType.COLLECTION, l._2))
-        );
+        return new LockGroup(groupId, locked);
     }
 
     /**
@@ -415,7 +446,7 @@ public class LockManager {
      * @return true if a WRITE_LOCK is held
      */
     public boolean isCollectionLockedForWrite(final XmldbURI collectionPath) {
-        final MultiLock existingLock = getCollectionLock(collectionPath.toString());
+        final MultiLock existingLock = getPathLock(collectionPath.toString());
         return existingLock.getWriteLockCount() > 0;
     }
 
@@ -427,7 +458,7 @@ public class LockManager {
      * @return true if a READ_LOCK is held
      */
     public boolean isCollectionLockedForRead(final XmldbURI collectionPath) {
-        final MultiLock existingLock = getCollectionLock(collectionPath.toString());
+        final MultiLock existingLock = getPathLock(collectionPath.toString());
         return existingLock.getReadLockCount() > 0;
     }
 
@@ -443,7 +474,7 @@ public class LockManager {
      *
      * @return A lock for the Document
      */
-    DocumentLock getDocumentLock(final String documentPath) {
+    MultiLock getDocumentLock(final String documentPath) {
         return documentLocks.get(documentPath);
     }
 
@@ -457,25 +488,33 @@ public class LockManager {
      * @throws LockException if the lock could not be acquired
      */
     public ManagedDocumentLock acquireDocumentReadLock(final XmldbURI documentPath) throws LockException {
-        final long groupId = System.nanoTime();
-        final String path = documentPath.toString();
+        if (usePathLocksForDocuments) {
+            final LockGroup lockGroup = acquirePathReadLock(LockType.DOCUMENT, documentPath);
+            return new ManagedDocumentLock(
+                    documentPath,
+                    Arrays.stream(lockGroup.locks).map(Tuple3::get_1).toArray(MultiLock[]::new),
+                    () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l._3, LockType.DOCUMENT, l._2))
+            );
+        } else {
+            final long groupId = System.nanoTime();
+            final String path = documentPath.toString();
 
-        final DocumentLock lock = getDocumentLock(path);
-        try {
+            final MultiLock lock = getDocumentLock(path);
             lockTable.attempt(groupId, path, LockType.DOCUMENT, Lock.LockMode.READ_LOCK);
 
-            lock.readLock().lockInterruptibly();
+            if (lock(lock, Lock.LockMode.READ_LOCK)) {
 
-            lockTable.acquired(groupId, path, LockType.DOCUMENT, Lock.LockMode.READ_LOCK);
-        } catch(final InterruptedException e) {
-            lockTable.attemptFailed(groupId, path, LockType.DOCUMENT, Lock.LockMode.READ_LOCK);
-            throw new LockException("Unable to acquire READ_LOCK for: " + path, e);
+                lockTable.acquired(groupId, path, LockType.DOCUMENT, Lock.LockMode.READ_LOCK);
+            } else {
+                lockTable.attemptFailed(groupId, path, LockType.DOCUMENT, Lock.LockMode.READ_LOCK);
+                throw new LockException("Unable to acquire READ_LOCK for: " + path);
+            }
+
+            return new ManagedDocumentLock(documentPath, lock, () -> {
+                lock.asReadLock().unlock();
+                lockTable.released(groupId, path, LockType.DOCUMENT, Lock.LockMode.READ_LOCK);
+            });
         }
-
-        return new ManagedDocumentLock(documentPath, lock.readLock(), () -> {
-            lock.readLock().unlock();
-            lockTable.released(groupId, path, LockType.DOCUMENT, Lock.LockMode.READ_LOCK);
-        });
     }
 
     /**
@@ -488,25 +527,32 @@ public class LockManager {
      * @throws LockException if the lock could not be acquired
      */
     public ManagedDocumentLock acquireDocumentWriteLock(final XmldbURI documentPath) throws LockException {
-        final long groupId = System.nanoTime();
-        final String path = documentPath.toString();
+        if (usePathLocksForDocuments) {
+            final LockGroup lockGroup = acquirePathWriteLock(LockType.DOCUMENT, documentPath, false);
+            return new ManagedDocumentLock(
+                    documentPath,
+                    Arrays.stream(lockGroup.locks).map(Tuple3::get_1).toArray(MultiLock[]::new),
+                    () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l._3, LockType.DOCUMENT, l._2))
+            );
+        } else {
+            final long groupId = System.nanoTime();
+            final String path = documentPath.toString();
 
-        final DocumentLock lock = getDocumentLock(path);
-        try {
+            final MultiLock lock = getDocumentLock(path);
             lockTable.attempt(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
 
-            lock.writeLock().lockInterruptibly();
+            if (lock(lock, Lock.LockMode.WRITE_LOCK)) {
+                lockTable.acquired(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
+            } else {
+                lockTable.attemptFailed(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
+                throw new LockException("Unable to acquire WRITE_LOCK for: " + path);
+            }
 
-            lockTable.acquired(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
-        } catch(final InterruptedException e) {
-            lockTable.attemptFailed(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
-            throw new LockException("Unable to acquire WRITE_LOCK for: " + path, e);
+            return new ManagedDocumentLock(documentPath, lock, () -> {
+                lock.asWriteLock().unlock();
+                lockTable.released(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
+            });
         }
-
-        return new ManagedDocumentLock(documentPath, lock.writeLock(), () -> {
-            lock.writeLock().unlock();
-            lockTable.released(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
-        });
     }
 
     /**
@@ -517,8 +563,8 @@ public class LockManager {
      * @return true if a WRITE_LOCK is held
      */
     public boolean isDocumentLockedForWrite(final XmldbURI documentPath) {
-        final DocumentLock existingLock = getDocumentLock(documentPath.toString());
-        return existingLock.isWriteLocked();
+        final MultiLock existingLock = getDocumentLock(documentPath.toString());
+        return existingLock.getWriteLockCount() > 0;
     }
 
     /**
@@ -529,7 +575,7 @@ public class LockManager {
      * @return true if a READ_LOCK is held
      */
     public boolean isDocumentLockedForRead(final XmldbURI documentPath) {
-        final DocumentLock existingLock = getDocumentLock(documentPath.toString());
+        final MultiLock existingLock = getDocumentLock(documentPath.toString());
         return existingLock.getReadLockCount() > 0;
     }
 
@@ -636,91 +682,6 @@ public class LockManager {
     }
 
     /**
-     * Simple interface which describes
-     * the minimum methods needed by LockManager
-     * on a Document Lock.
-     */
-    interface DocumentLock {
-        java.util.concurrent.locks.Lock readLock();
-        java.util.concurrent.locks.Lock writeLock();
-        boolean isWriteLocked();
-        int getReadLockCount();
-        boolean hasQueuedThreads();
-    }
-
-    /**
-     * Adapts {@link MultiLock} to a {@link DocumentLock}.
-     */
-    private static class MultiLockDocumentLockAdapter implements DocumentLock {
-        private final MultiLock multiLock;
-
-        public MultiLockDocumentLockAdapter(final MultiLock multiLock) {
-            this.multiLock = multiLock;
-        }
-
-        @Override
-        public java.util.concurrent.locks.Lock readLock() {
-            return multiLock.asReadLock();
-        }
-
-        @Override
-        public java.util.concurrent.locks.Lock writeLock() {
-            return multiLock.asWriteLock();
-        }
-
-        @Override
-        public boolean isWriteLocked() {
-            return multiLock.getWriteLockCount() > 0;
-        }
-
-        @Override
-        public int getReadLockCount() {
-            return multiLock.getReadLockCount();
-        }
-
-        @Override
-        public boolean hasQueuedThreads() {
-            return multiLock.hasQueuedThreads();
-        }
-    }
-
-    /**
-     * Adapts {@link ReentrantReadWriteLock} to a {@link DocumentLock}.
-     */
-    private static class ReentrantReadWriteLockDocumentLockAdapter implements DocumentLock {
-        private final ReentrantReadWriteLock reentrantReadWriteLock;
-
-        private ReentrantReadWriteLockDocumentLockAdapter(final ReentrantReadWriteLock reentrantReadWriteLock) {
-            this.reentrantReadWriteLock = reentrantReadWriteLock;
-        }
-
-        @Override
-        public java.util.concurrent.locks.Lock readLock() {
-            return reentrantReadWriteLock.readLock();
-        }
-
-        @Override
-        public java.util.concurrent.locks.Lock writeLock() {
-            return reentrantReadWriteLock.writeLock();
-        }
-
-        @Override
-        public boolean isWriteLocked() {
-            return reentrantReadWriteLock.isWriteLocked();
-        }
-
-        @Override
-        public int getReadLockCount() {
-            return reentrantReadWriteLock.getReadLockCount();
-        }
-
-        @Override
-        public boolean hasQueuedThreads() {
-            return reentrantReadWriteLock.hasQueuedThreads();
-        }
-    }
-
-    /**
      * Gets a configuration option from a (legacy) System Property
      * or if that is not set, then from an eXist-db Configuration file
      * property.
@@ -737,7 +698,24 @@ public class LockManager {
         final String legacyPropertyValue = System.getProperty(legacyPropertyName);
         if (legacyPropertyValue != null && !legacyPropertyValue.isEmpty()) {
             return Boolean.getBoolean(legacyPropertyName);
-        } else if (configuration != null) {
+        } else {
+            return getConfigPropertyBool(configuration, configProperty, defaultValue);
+        }
+    }
+
+    /**
+     * Gets a configuration option from an eXist-db Configuration file
+     * property.
+     *
+     * @param configuration eXist-db configuration
+     * @param configProperty name of an eXist-db configuration property
+     * @param defaultValue the default value if no system property of config property is found.
+     *
+     * @return the value of the property
+     */
+    static boolean getConfigPropertyBool(final Configuration configuration, final String configProperty,
+            final boolean defaultValue) {
+        if (configuration != null) {
             return configuration.getProperty(configProperty, defaultValue);
         } else {
             return defaultValue;

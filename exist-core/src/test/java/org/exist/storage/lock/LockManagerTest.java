@@ -2,7 +2,6 @@ package org.exist.storage.lock;
 
 import com.evolvedbinary.j8fu.function.RunnableE;
 import net.jcip.annotations.ThreadSafe;
-import org.exist.storage.lock.LockManager.DocumentLock;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
@@ -28,7 +27,7 @@ public class LockManagerTest {
 
     private static final int CONCURRENCY_LEVEL = 100;
     private static String previousLockEventsState = null;
-    private static String previousCollectionsMultiWriterState = null;
+    private static String previousPathsMultiWriterState = null;
 
     @Parameterized.Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
@@ -42,18 +41,18 @@ public class LockManagerTest {
     public String apiName;
 
     @Parameterized.Parameter(value = 1)
-    public boolean enableCollectionsMultiWriterState;
+    public boolean enablePathsMultiWriterState;
 
     @Before
     public void enableLockEventsState() {
         previousLockEventsState = System.setProperty(LockTable.PROP_DISABLE, "false");
-        previousCollectionsMultiWriterState = System.setProperty(LockManager.PROP_ENABLE_COLLECTIONS_MULTI_WRITER, Boolean.toString(enableCollectionsMultiWriterState));
+        previousPathsMultiWriterState = System.setProperty(LockManager.PROP_ENABLE_PATHS_MULTI_WRITER, Boolean.toString(enablePathsMultiWriterState));
     }
 
     @After
     public void restoreLockEventsState() {
         restorePreviousPropertyState(LockTable.PROP_DISABLE, previousLockEventsState);
-        restorePreviousPropertyState(LockManager.PROP_ENABLE_COLLECTIONS_MULTI_WRITER, previousCollectionsMultiWriterState);
+        restorePreviousPropertyState(LockManager.PROP_ENABLE_PATHS_MULTI_WRITER, previousPathsMultiWriterState);
     }
 
     private static void restorePreviousPropertyState(final String propertyName, final String previousValue) {
@@ -68,19 +67,19 @@ public class LockManagerTest {
     public void getCollectionLock_isStripedByPath() {
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
 
-        final MultiLock dbLock1 = lockManager.getCollectionLock("/db");
+        final MultiLock dbLock1 = lockManager.getPathLock("/db");
         assertNotNull(dbLock1);
 
-        final MultiLock dbLock2 = lockManager.getCollectionLock("/db");
+        final MultiLock dbLock2 = lockManager.getPathLock("/db");
         assertNotNull(dbLock2);
 
         assertTrue(dbLock1 == dbLock2);
 
-        final MultiLock abcLock = lockManager.getCollectionLock("/db/a/b/c");
+        final MultiLock abcLock = lockManager.getPathLock("/db/a/b/c");
         assertNotNull(abcLock);
         assertFalse(dbLock1 == abcLock);
 
-        final MultiLock defLock = lockManager.getCollectionLock("/db/d/e/f");
+        final MultiLock defLock = lockManager.getPathLock("/db/d/e/f");
         assertNotNull(defLock);
         assertFalse(dbLock1 == defLock);
 
@@ -560,19 +559,19 @@ public class LockManagerTest {
     public void getDocumentLock_isStripedByPath() {
         final LockManager lockManager = new LockManager(CONCURRENCY_LEVEL);
 
-        final DocumentLock doc1Lock1 = lockManager.getDocumentLock("/db/1.xml");
+        final MultiLock doc1Lock1 = lockManager.getDocumentLock("/db/1.xml");
         assertNotNull(doc1Lock1);
 
-        final DocumentLock doc1Lock2 = lockManager.getDocumentLock("/db/1.xml");
+        final MultiLock doc1Lock2 = lockManager.getDocumentLock("/db/1.xml");
         assertNotNull(doc1Lock2);
 
         assertTrue(doc1Lock1 == doc1Lock2);
 
-        final DocumentLock doc2Lock = lockManager.getDocumentLock("/db/a/b/c/2.xml");
+        final MultiLock doc2Lock = lockManager.getDocumentLock("/db/a/b/c/2.xml");
         assertNotNull(doc2Lock);
         assertFalse(doc1Lock1 == doc2Lock);
 
-        final DocumentLock doc3Lock = lockManager.getDocumentLock("/db/d/e/f/3.xml");
+        final MultiLock doc3Lock = lockManager.getDocumentLock("/db/d/e/f/3.xml");
         assertNotNull(doc3Lock);
         assertFalse(doc1Lock1 == doc3Lock);
 
@@ -766,7 +765,7 @@ public class LockManagerTest {
     }
 
     private void assertIntentionWriteOrWriteMode(final Lock.LockMode lockMode) {
-        final Lock.LockMode writeMode = enableCollectionsMultiWriterState ? Lock.LockMode.INTENTION_WRITE : Lock.LockMode.WRITE_LOCK;
+        final Lock.LockMode writeMode = enablePathsMultiWriterState ? Lock.LockMode.INTENTION_WRITE : Lock.LockMode.WRITE_LOCK;
         assertEquals(writeMode, lockMode);
     }
 

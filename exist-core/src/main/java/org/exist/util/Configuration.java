@@ -299,9 +299,11 @@ public class Configuration implements ErrorHandler
     private void configureLockManager(final Element lockManager) throws DatabaseConfigurationException {
         final boolean upgradeCheck = parseBoolean(getConfigAttributeValue(lockManager, "upgrade-check"), false);
         final boolean warnWaitOnReadForWrite = parseBoolean(getConfigAttributeValue(lockManager, "warn-wait-on-read-for-write"), false);
+        final boolean pathsMultiWriter = parseBoolean(getConfigAttributeValue(lockManager, "paths-multi-writer"), false);
 
         config.put(LockManager.CONFIGURATION_UPGRADE_CHECK, upgradeCheck);
         config.put(LockManager.CONFIGURATION_WARN_WAIT_ON_READ_FOR_WRITE, warnWaitOnReadForWrite);
+        config.put(LockManager.CONFIGURATION_PATHS_MULTI_WRITER, pathsMultiWriter);
 
         final NodeList nlLockTable = lockManager.getElementsByTagName("lock-table");
         if(nlLockTable.getLength() > 0) {
@@ -313,20 +315,12 @@ public class Configuration implements ErrorHandler
             config.put(LockTable.CONFIGURATION_TRACE_STACK_DEPTH, lockTableTraceStackDepth);
         }
 
-        final NodeList nlCollection = lockManager.getElementsByTagName("collection");
-        if(nlCollection.getLength() > 0) {
-            final Element collection = (Element)nlCollection.item(0);
-            final boolean collectionMultipleWriters = parseBoolean(getConfigAttributeValue(collection, "multiple-writers"), false);
-
-            config.put(LockManager.CONFIGURATION_COLLECTION_MULTI_WRITER, collectionMultipleWriters);
-        }
-
         final NodeList nlDocument = lockManager.getElementsByTagName("document");
         if(nlDocument.getLength() > 0) {
             final Element document = (Element)nlDocument.item(0);
-            final boolean documentMultiLock = parseBoolean(getConfigAttributeValue(document, "multi-lock"), false);
+            final boolean documentUsePathLocks = parseBoolean(getConfigAttributeValue(document, "use-path-locks"), false);
 
-            config.put(LockManager.CONFIGURATION_DOCUMENT_MULTI_LOCK, documentMultiLock);
+            config.put(LockManager.CONFIGURATION_PATHS_MULTI_WRITER, documentUsePathLocks);
         }
     }
 
