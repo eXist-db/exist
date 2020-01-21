@@ -175,8 +175,7 @@ public class NativeBroker extends DBBroker {
 
     private final NodeProcessor nodeProcessor = new NodeProcessor();
 
-    private final IEmbeddedXMLStreamReader streamReader = null;
-    private IEmbeddedXMLStreamReader streamReaderNG = null;
+    private IEmbeddedXMLStreamReader streamReader;
 
     private final LockManager lockManager;
     private final Optional<JournalManager> logManager;
@@ -480,13 +479,13 @@ public class NativeBroker extends DBBroker {
     @Override
     public IEmbeddedXMLStreamReader getXMLStreamReader(final NodeHandle node, final boolean reportAttributes)
             throws IOException, XMLStreamException {
-        if(streamReaderNG == null) {
+        if(streamReader == null) {
             final RawNodeIterator iterator = new RawNodeIterator(this, domDb, node);
-            streamReaderNG = new EmbeddedXMLStreamReader(this, node.getOwnerDocument(), iterator, node, reportAttributes);
+            streamReader = new EmbeddedXMLStreamReader(this, node.getOwnerDocument(), iterator, node, reportAttributes);
         } else {
-            streamReaderNG.reposition(this, node, reportAttributes);
+            streamReader.reposition(this, node, reportAttributes);
         }
-        return streamReaderNG;
+        return streamReader;
     }
 
     @Override

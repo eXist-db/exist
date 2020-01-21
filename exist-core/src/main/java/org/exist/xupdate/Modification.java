@@ -204,12 +204,9 @@ public abstract class Modification {
 	 * @throws XPathException if an error occurs whilst declaring the namespaces
 	 */
 	protected void declareNamespaces(XQueryContext context) throws XPathException {
-		Map.Entry<String, String> entry;
-        for (Map.Entry<String, String> stringStringEntry : namespaces.entrySet()) {
-            entry = stringStringEntry;
-            context.declareNamespace(
-                    entry.getKey(),
-                    entry.getValue());
+
+        for (Map.Entry<String, String> entry : namespaces.entrySet()) {
+            context.declareNamespace(entry.getKey(), entry.getValue());
         }
 	}
 
