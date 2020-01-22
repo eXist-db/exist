@@ -250,7 +250,7 @@
         <dependency>
             <groupId>org.exist-db.thirdparty.xerces</groupId>
             <artifactId>xercesImpl</artifactId>
-            <version>2.12.0</version>
+            <version>2.12.1</version>
             <classifier>xml-schema-1.1</classifier>
         </dependency>
 
