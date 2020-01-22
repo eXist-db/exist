@@ -229,7 +229,14 @@ public class WeakLazyStripes<K, S> {
     private @Nullable WeakValueReference<K, S> getOptimistic(final K key, final Holder<Boolean> written) {
         // optimistic read
         final long stamp = stripesLock.tryOptimisticRead();
-        WeakValueReference<K, S> stripeRef = stripes.get(key);
+        WeakValueReference<K, S> stripeRef;
+        try {
+            stripeRef = stripes.get(key);
+        } catch (final ArrayIndexOutOfBoundsException e) {
+            // this can occur as we don't hold a lock, we just have a stamp for an optimistic read,
+            // so `stripes` might be concurrently modified
+            return null;
+        }
         if (stripeRef == null || stripeRef.get() == null) {
             final long writeStamp = stripesLock.tryConvertToWriteLock(stamp);
             if (writeStamp != 0l) {
