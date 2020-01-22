@@ -141,7 +141,7 @@ public class IndexKeys extends BasicFunction {
                 if (indexWorker == null) {
                     throw new XPathException(this, "Unknown index: " + args[4].itemAt(0).getStringValue());
                 }
-                final Map<String, Object> hints = new HashMap<String, Object>();
+                final Map<String, Object> hints = new HashMap<>();
                 if (max != -1) {
                     hints.put(IndexWorker.VALUE_COUNT, new IntegerValue(max));
                 }
@@ -151,7 +151,7 @@ public class IndexKeys extends BasicFunction {
                     logger.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedValuesIndex. Start value '" + args[1] + "' ignored.");
                 }
                 if (qnames != null) {
-                    final List<QName> qnameList = new ArrayList<QName>(qnames.getItemCount());
+                    final List<QName> qnameList = new ArrayList<>(qnames.getItemCount());
                     for (final SequenceIterator i = qnames.iterate(); i.hasNext(); ) {
                         final QNameValue qv = (QNameValue) i.nextItem();
                         qnameList.add(qv.getQName());
@@ -235,14 +235,14 @@ public class IndexKeys extends BasicFunction {
      * @param docs
      */
     private QName[] getDefinedIndexes(DBBroker broker, DocumentSet docs) {
-        final Set<QName> indexes = new HashSet<QName>();
+        final Set<QName> indexes = new HashSet<>();
         for (final Iterator<org.exist.collections.Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
             final org.exist.collections.Collection collection = i.next();
             final IndexSpec idxConf = collection.getIndexConfiguration(broker);
             if (idxConf != null) {
                 final List<QName> qnames = idxConf.getIndexedQNames();
-                for (int j = 0; j < qnames.size(); j++) {
-                    final QName qName = (QName) qnames.get(j);
+                for (QName qname : qnames) {
+                    final QName qName = (QName) qname;
                     indexes.add(qName);
                 }
             }

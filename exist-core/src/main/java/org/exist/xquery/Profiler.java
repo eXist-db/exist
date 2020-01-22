@@ -102,28 +102,28 @@ public class Profiler {
     public final void configure(Option pragma) {
         final String options[] = pragma.tokenizeContents();
         String params[];
-        for (int i = 0; i < options.length; i++) {
-            params = Option.parseKeyValuePair(options[i]);
+        for (String option : options) {
+            params = Option.parseKeyValuePair(option);
             if (params != null) {
                 if ("trace".equals(params[0])) {
                     stats.setEnabled(true);
-                    
+
                 } else if ("tracelog".equals(params[0])) {
                     logEnabled = "yes".equals(params[1]);
-                
+
                 } else if ("logger".equals(params[0])) {
                     log = LogManager.getLogger(params[1]);
-                
+
                 } else if ("enabled".equals(params[0])) {
                     enabled = "yes".equals(params[1]);
-                
+
                 } else if ("verbosity".equals(params[0])) {
                     try {
                         verbosity = Integer.parseInt(params[1]);
                     } catch (final NumberFormatException e) {
-                    	log.warn( "invalid value for verbosity: " +
-                    			"should be an integer between 0 and " + 
-                    			SEQUENCE_DUMP );                   	
+                        log.warn("invalid value for verbosity: " +
+                                "should be an integer between 0 and " +
+                                SEQUENCE_DUMP);
                     }
                 }
             }
@@ -145,7 +145,7 @@ public class Profiler {
         try {
             final DBBroker broker = db.getActiveBroker();
             final Boolean globalProp = (Boolean) broker.getConfiguration().getProperty(CONFIG_PROPERTY_TRACELOG);
-            return logEnabled || (globalProp != null && globalProp.booleanValue());
+            return logEnabled || (globalProp != null && globalProp);
         } catch (Throwable t) {
             log.debug("Ignored exception: " + t.getMessage());
             return logEnabled;
@@ -250,7 +250,7 @@ public class Profiler {
         buf.append(expr.toString()); 
         log.debug(buf.toString());
 
-        if (message != null && !"".equals(message)) {           
+        if (message != null && !message.isEmpty()) {
             buf.setLength(0);
 	    	for (int i = 0; i < stack.size(); i++) {
                 buf.append('\t');
@@ -288,7 +288,7 @@ public class Profiler {
             
             final long elapsed = System.currentTimeMillis() - e.start;
             
-            if (message != null && !"".equals(message)) {                
+            if (message != null && !message.isEmpty()) {
                 buf.setLength(0);
     	    	for (int i = 0; i < stack.size(); i++) {
                     buf.append('\t');
@@ -371,7 +371,7 @@ public class Profiler {
     	for (int i = 0; i < stack.size() - 1; i++) {
             buf.append('\t');
         }
-        if (title != null && !"".equals(title))
+        if (title != null && !title.isEmpty())
             {buf.append(title);}
         else
             {buf.append("MSG");}        
@@ -398,11 +398,11 @@ public class Profiler {
     	for (int i = 0; i < stack.size() - 1; i++) {
             buf.append('\t');
         }
-        if (title != null && !"".equals(title))
+        if (title != null && !title.isEmpty())
             {buf.append(title);}
         else
             {buf.append("MSG");}        
-        if (message != null && !"".equals(message)) {
+        if (message != null && !message.isEmpty()) {
             buf.append("\t");
             buf.append(message);        	
         }

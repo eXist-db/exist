@@ -318,8 +318,8 @@ public class FunctionFactory {
                 throw new XPathException(ast.getLine(), ast.getColumn(), ErrorCodes.XPST0017, buf.toString());
             }
         }
-        if (((Boolean) context.getBroker().getConfiguration()
-                .getProperty(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS)).booleanValue() &&
+        if ((Boolean) context.getBroker().getConfiguration()
+                .getProperty(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS) &&
                 def.getSignature().isDeprecated()) {
             throw new XPathException(ast.getLine(), ast.getColumn(),
                 "Access to deprecated functions is not allowed. Call to '" + qname.getStringValue() + "()' denied. " + def.getSignature().getDeprecated());

@@ -119,7 +119,7 @@ public class UserAider implements Account {
         }
 
         final List<Map.Entry<String, Group>> entries = new ArrayList<>(groups.entrySet());
-        Collections.sort(entries, (final Map.Entry<String, Group> o1, final Map.Entry<String, Group> o2) -> {
+        entries.sort((final Map.Entry<String, Group> o1, final Map.Entry<String, Group> o2) -> {
             if (o1.getKey().equals(group.getName())) {
                 return -1;
             } else {

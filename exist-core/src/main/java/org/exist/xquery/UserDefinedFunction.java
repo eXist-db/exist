@@ -38,7 +38,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
 
 	private Expression body;
 	
-	private List<QName> parameters = new ArrayList<QName>(5);
+	private List<QName> parameters = new ArrayList<>(5);
 	
 	private Sequence[] currentArguments = null;
 

@@ -291,7 +291,7 @@ public class LockTable {
 
                 // try to upgrade optimistic-read or read lock to write lock
                 stamp = entriesLock.tryConvertToWriteLock(stamp);
-                if (stamp == 0l) {
+                if (stamp == 0L) {
 
                     // failed to upgrade
                     if (readStamp != -1) {
@@ -337,7 +337,7 @@ public class LockTable {
             // if count is equal to 1 we can just remove from the list rather than decrementing
             if (local.count == 1) {
                 final long writeStamp = entriesLock.tryConvertToWriteLock(stamp);
-                if (writeStamp != 0l) {
+                if (writeStamp != 0L) {
                     try {
                         entries.remove(local);
                         local.count--;
@@ -372,7 +372,7 @@ public class LockTable {
                 if (local.count == 1) {
 
                     final long writeStamp = entriesLock.tryConvertToWriteLock(stamp);
-                    if (writeStamp != 0l) {
+                    if (writeStamp != 0L) {
                         stamp = writeStamp;  // NOTE: this causes the write lock to be released in the finally further down
                         entries.remove(local);
                         local.count--;
@@ -509,10 +509,7 @@ public class LockTable {
     public Map<String, Map<LockType, List<LockModeOwner>>> getAttempting() {
         final Map<String, Map<LockType, List<LockModeOwner>>> result = new HashMap<>();
 
-        final Iterator<Entry> it = attempting.values().iterator();
-        while (it.hasNext()) {
-            final Entry entry = it.next();
-
+        for (Entry entry : attempting.values()) {
             // read count (volatile) first to ensure visibility
             final int localCount = entry.count;
             if (localCount == 0) {
@@ -548,10 +545,7 @@ public class LockTable {
     public Map<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> getAcquired() {
         final Map<String, Map<LockType, Map<LockMode, Map<String, LockCountTraces>>>> result = new HashMap<>();
 
-        final Iterator<Entries> it = acquired.values().iterator();
-        while (it.hasNext()) {
-            final Entries entries = it.next();
-
+        for (Entries entries : acquired.values()) {
             entries.forEach(entry -> {
 
                 // read count (volatile) first to ensure visibility
@@ -651,11 +645,11 @@ public class LockTable {
 
         final long stamp = listenersLock.readLock();
         try {
-            for (int i = 0; i < listeners.length; i ++) {
+            for (LockEventListener listener : listeners) {
                 try {
-                    listeners[i].accept(lockEventType, timestamp, groupId, entry);
+                    listener.accept(lockEventType, timestamp, groupId, entry);
                 } catch (final Exception e) {
-                    LOG.error("Listener '{}' error: ", listeners[i].getClass().getName(), e);
+                    LOG.error("Listener '{}' error: ", listener.getClass().getName(), e);
                 }
             }
         } finally {

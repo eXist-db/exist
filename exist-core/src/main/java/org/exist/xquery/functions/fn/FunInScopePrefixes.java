@@ -96,7 +96,7 @@ public class FunInScopePrefixes extends BasicFunction {
     }
 
     public static Map<String, String> collectPrefixes(XQueryContext context, NodeValue nodeValue) {
-        final Map<String, String> prefixes = new LinkedHashMap<String, String>();
+        final Map<String, String> prefixes = new LinkedHashMap<>();
         prefixes.put("xml", Namespaces.XML_NS);
 
         final Map<String, String> inScopePrefixes = context.getInScopePrefixes();

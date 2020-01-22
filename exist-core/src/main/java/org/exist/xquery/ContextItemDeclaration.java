@@ -80,9 +80,8 @@ public class ContextItemDeclaration extends AbstractExpression implements Rewrit
 
     @Override
     public int returnsType() {
-        return itemType.map(it -> it.getPrimaryType())
-                .orElseGet(() -> value.map(exp -> exp.returnsType())
-                        .orElse(Type.ITEM));
+        return itemType.map(SequenceType::getPrimaryType)
+                .orElseGet(() -> value.map(Expression::returnsType).orElse(Type.ITEM));
     }
 
     @Override

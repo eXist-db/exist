@@ -384,9 +384,9 @@ public class Configuration implements ErrorHandler
         config.put( PerformanceStats.CONFIG_PROPERTY_TRACE, trace );
 
         // built-in-modules
-        final Map<String, Class<?>> classMap      = new HashMap<String, Class<?>>();
-        final Map<String, String>   knownMappings = new HashMap<String, String>();
-        final Map<String, Map<String, List<? extends Object>>> moduleParameters = new HashMap<String, Map<String, List<? extends Object>>>();
+        final Map<String, Class<?>> classMap      = new HashMap<>();
+        final Map<String, String>   knownMappings = new HashMap<>();
+        final Map<String, Map<String, List<? extends Object>>> moduleParameters = new HashMap<>();
         loadModuleClasses(xquery, classMap, knownMappings, moduleParameters);
         config.put( XQueryContext.PROPERTY_BUILT_IN_MODULES, classMap);
         config.put( XQueryContext.PROPERTY_STATIC_MODULE_MAP, knownMappings);
@@ -748,7 +748,7 @@ public class Configuration implements ErrorHandler
             return;
         }
 
-        final List<JobConfig> jobList = new ArrayList<JobConfig>();
+        final List<JobConfig> jobList = new ArrayList<>();
 
         for(int i = 0; i < nlJobs.getLength(); i++) {
             final Element job = (Element)nlJobs.item( i );
@@ -911,19 +911,19 @@ public class Configuration implements ErrorHandler
             try {
                 final int collectionCacheBytes;
                 if(collectionCache.endsWith("k")) {
-                    collectionCacheBytes = 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 1));
+                    collectionCacheBytes = 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 1));
                 } else if(collectionCache.endsWith("kb")) {
-                    collectionCacheBytes = 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 2));
+                    collectionCacheBytes = 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 2));
                 } else if(collectionCache.endsWith("m")) {
-                    collectionCacheBytes = 1024 * 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 1));
+                    collectionCacheBytes = 1024 * 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 1));
                 } else if(collectionCache.endsWith("mb")) {
-                    collectionCacheBytes = 1024 * 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 2));
+                    collectionCacheBytes = 1024 * 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 2));
                 } else if(collectionCache.endsWith("g")) {
-                    collectionCacheBytes = 1024 * 1024 * 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 1));
+                    collectionCacheBytes = 1024 * 1024 * 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 1));
                 } else if(collectionCache.endsWith("gb")) {
-                    collectionCacheBytes = 1024 * 1024 * 1024 * Integer.valueOf(collectionCache.substring(0, collectionCache.length() - 2));
+                    collectionCacheBytes = 1024 * 1024 * 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 2));
                 } else {
-                    collectionCacheBytes = Integer.valueOf(collectionCache);
+                    collectionCacheBytes = Integer.parseInt(collectionCache);
                 }
 
                 config.put(CollectionCache.PROPERTY_CACHE_SIZE_BYTES, collectionCacheBytes);
@@ -999,7 +999,7 @@ public class Configuration implements ErrorHandler
         if(posixChownRestrictedStr == null) {
             posixChownRestricted = true;  // default
         } else {
-            if(Boolean.valueOf(posixChownRestrictedStr)) {
+            if(Boolean.parseBoolean(posixChownRestrictedStr)) {
                 posixChownRestricted = true;
             } else {
                 // configuration explicitly specifies that posix chown should NOT be restricted
@@ -1013,7 +1013,7 @@ public class Configuration implements ErrorHandler
         if(preserveOnCopyStr == null) {
             preserveOnCopy = DBBroker.PreserveType.NO_PRESERVE;  // default
         } else {
-            if(Boolean.valueOf(preserveOnCopyStr)) {
+            if(Boolean.parseBoolean(preserveOnCopyStr)) {
                 // configuration explicitly specifies that attributes should be preserved on copy
                 preserveOnCopy = DBBroker.PreserveType.PRESERVE;
             } else {
@@ -1027,7 +1027,7 @@ public class Configuration implements ErrorHandler
             configureStartup((Element)startupConf.item(0));
         } else {
             // Prevent NPE
-            final List<StartupTriggerConfig> startupTriggers = new ArrayList<StartupTriggerConfig>();
+            final List<StartupTriggerConfig> startupTriggers = new ArrayList<>();
             config.put(BrokerPool.PROPERTY_STARTUP_TRIGGERS, startupTriggers);
         }
         
@@ -1108,7 +1108,7 @@ public class Configuration implements ErrorHandler
         if( option != null ) {
             value = "yes".equals(option);
         }
-        setProperty( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART, Boolean.valueOf( value ) );
+        setProperty( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART, value);
         LOG.debug( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART + ": " + config.get( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART ) );
 
         option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_POST_RECOVERY_CHECK );
@@ -1117,7 +1117,7 @@ public class Configuration implements ErrorHandler
         if( option != null ) {
             value = "yes".equals(option);
         }
-        setProperty( BrokerPool.PROPERTY_RECOVERY_CHECK, Boolean.valueOf( value ) );
+        setProperty( BrokerPool.PROPERTY_RECOVERY_CHECK, value);
         LOG.debug( BrokerPool.PROPERTY_RECOVERY_CHECK + ": " + config.get( BrokerPool.PROPERTY_RECOVERY_CHECK ) );
     }
 
@@ -1239,7 +1239,7 @@ public class Configuration implements ErrorHandler
                 // Initialize trigger configuration
                 List<StartupTriggerConfig> startupTriggers = (List<StartupTriggerConfig>)config.get(BrokerPool.PROPERTY_STARTUP_TRIGGERS);
                 if(startupTriggers == null) {
-                    startupTriggers = new ArrayList<StartupTriggerConfig>();
+                    startupTriggers = new ArrayList<>();
                     config.put(BrokerPool.PROPERTY_STARTUP_TRIGGERS, startupTriggers);
                 }
                 
@@ -1369,7 +1369,7 @@ public class Configuration implements ErrorHandler
                     LOG.warn( "parameter index-depth should be >= 3 or you will experience a severe " + "performance loss for node updates (XUpdate or XQuery update extensions)" );
                     depth = 3;
                 }
-                config.put( NativeBroker.PROPERTY_INDEX_DEPTH, Integer.valueOf(depth) );
+                config.put( NativeBroker.PROPERTY_INDEX_DEPTH, depth);
                 LOG.debug( NativeBroker.PROPERTY_INDEX_DEPTH + ": " + config.get( NativeBroker.PROPERTY_INDEX_DEPTH ) );
             }
             catch( final NumberFormatException e ) {

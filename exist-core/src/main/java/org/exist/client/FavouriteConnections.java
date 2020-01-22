@@ -91,7 +91,7 @@ public class FavouriteConnections {
         }
         
         // Copy for each connection data into Favourite array
-        final List<FavouriteConnection> favourites = new ArrayList<FavouriteConnection>();
+        final List<FavouriteConnection> favourites = new ArrayList<>();
         
         for(final String favouriteNodeName : favouriteNodeNames) {        
             final Preferences node = favouritesNode.node(favouriteNodeName);

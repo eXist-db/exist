@@ -74,9 +74,7 @@ public class Repair {
 
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
-        } catch (DatabaseConfigurationException e) {
-            e.printStackTrace();
-        } catch (EXistException e) {
+        } catch (DatabaseConfigurationException | EXistException e) {
             e.printStackTrace();
         }
     }

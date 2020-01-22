@@ -73,7 +73,7 @@ public class Accounting {
     private SequencedLongHashMap<Object> map;
     
     public Accounting(double thrashingFactor) {
-        map = new SequencedLongHashMap<Object>((maxEntries * 3) / 2);
+        map = new SequencedLongHashMap<>((maxEntries * 3) / 2);
         this.thrashingFactor = thrashingFactor;
     }
     

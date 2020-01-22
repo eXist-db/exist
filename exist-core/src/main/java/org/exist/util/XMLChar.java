@@ -309,19 +309,19 @@ public class XMLChar {
         }
 
         // remove special characters
-        for (int i = 0; i < specialChar.length; i++) {
-            CHARS[specialChar[i]] = (byte)(CHARS[specialChar[i]] & ~MASK_CONTENT);
+        for (int i5 : specialChar) {
+            CHARS[i5] = (byte) (CHARS[i5] & ~MASK_CONTENT);
         }
 
         // set space characters
-        for (int i = 0; i < spaceChar.length; i++) {
-            CHARS[spaceChar[i]] |= MASK_SPACE;
+        for (int i4 : spaceChar) {
+            CHARS[i4] |= MASK_SPACE;
         }
 
         // set name start characters
-        for (int i = 0; i < nameStartChar.length; i++) {
-            CHARS[nameStartChar[i]] |= MASK_NAME_START | MASK_NAME |
-                                       MASK_NCNAME_START | MASK_NCNAME;
+        for (int i3 : nameStartChar) {
+            CHARS[i3] |= MASK_NAME_START | MASK_NAME |
+                    MASK_NCNAME_START | MASK_NCNAME;
         }
         for (int i = 0; i < letterRange.length; i += 2) {
             for (int j = letterRange[i]; j <= letterRange[i + 1]; j++) {
@@ -329,14 +329,14 @@ public class XMLChar {
                             MASK_NCNAME_START | MASK_NCNAME;
             }
         }
-        for (int i = 0; i < letterChar.length; i++) {
-            CHARS[letterChar[i]] |= MASK_NAME_START | MASK_NAME |
-                                    MASK_NCNAME_START | MASK_NCNAME;
+        for (int i2 : letterChar) {
+            CHARS[i2] |= MASK_NAME_START | MASK_NAME |
+                    MASK_NCNAME_START | MASK_NCNAME;
         }
 
         // set name characters
-        for (int i = 0; i < nameChar.length; i++) {
-            CHARS[nameChar[i]] |= MASK_NAME | MASK_NCNAME;
+        for (int i1 : nameChar) {
+            CHARS[i1] |= MASK_NAME | MASK_NCNAME;
         }
         for (int i = 0; i < digitRange.length; i += 2) {
             for (int j = digitRange[i]; j <= digitRange[i + 1]; j++) {
@@ -348,24 +348,24 @@ public class XMLChar {
                 CHARS[j] |= MASK_NAME | MASK_NCNAME;
             }
         }
-        for (int i = 0; i < combiningCharChar.length; i++) {
-            CHARS[combiningCharChar[i]] |= MASK_NAME | MASK_NCNAME;
+        for (int element : combiningCharChar) {
+            CHARS[element] |= MASK_NAME | MASK_NCNAME;
         }
         for (int i = 0; i < extenderRange.length; i += 2) {
             for (int j = extenderRange[i]; j <= extenderRange[i + 1]; j++) {
                 CHARS[j] |= MASK_NAME | MASK_NCNAME;
             }
         }
-        for (int i = 0; i < extenderChar.length; i++) {
-            CHARS[extenderChar[i]] |= MASK_NAME | MASK_NCNAME;
+        for (int item : extenderChar) {
+            CHARS[item] |= MASK_NAME | MASK_NCNAME;
         }
 
         // remove ':' from allowable MASK_NCNAME_START and MASK_NCNAME chars
         CHARS[':'] &= ~(MASK_NCNAME_START | MASK_NCNAME);
 
         // set Pubid characters
-        for (int i = 0; i < pubidChar.length; i++) {
-            CHARS[pubidChar[i]] |= MASK_PUBID;
+        for (int value : pubidChar) {
+            CHARS[value] |= MASK_PUBID;
         }
         for (int i = 0; i < pubidRange.length; i += 2) {
             for (int j = pubidRange[i]; j <= pubidRange[i + 1]; j++) {

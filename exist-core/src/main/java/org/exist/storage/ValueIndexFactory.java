@@ -85,12 +85,9 @@ public class ValueIndexFactory {
                                 data[start + 6],
                                 0);
                 return new DateValue(xmlutccal);
-            } catch (final DatatypeConfigurationException dtce) {
+            } catch (final DatatypeConfigurationException | XPathException dtce) {
                 throw new EXistException("Could not deserialize xs:date data type" +
                         " for range index key: " + Type.getTypeName(type) + " - " + dtce.getMessage());
-            } catch (final XPathException xpe) {
-                throw new EXistException("Could not deserialize xs:date data type" +
-                        " for range index key: " + Type.getTypeName(type) + " - " + xpe.getMessage());
             }
         }
         /* xs:integer */
@@ -252,8 +249,8 @@ public class ValueIndexFactory {
 
     private static void print(final AtomicValue dtv, final byte[] data) throws XPathException {
         System.out.print(dtv.getStringValue() + " = ");
-        for (int i = 0; i < data.length; i++) {
-            System.out.print(" " + Integer.toHexString(data[i] & 0xff));
+        for (byte datum : data) {
+            System.out.print(" " + Integer.toHexString(datum & 0xff));
         }
         System.out.println();
     }

@@ -108,8 +108,8 @@ public class FunResolveQName extends BasicFunction {
                     if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                         NodeProxy proxy = (NodeProxy) node;
                         final NodeSet ancestors = proxy.getAncestors(contextId, true);
-                        for (final Iterator<NodeProxy> i = ancestors.iterator(); i.hasNext(); ) {
-                            proxy = i.next();
+                        for (NodeProxy ancestor : ancestors) {
+                            proxy = ancestor;
                             final ElementImpl e = (ElementImpl) proxy.getNode();
                             uri = findNamespaceURI(e, prefix);
                             if (uri != null) {
@@ -128,7 +128,7 @@ public class FunResolveQName extends BasicFunction {
                         } while (next != null && next.getNodeType() == Node.ELEMENT_NODE);
                     }
 
-                    if (uri == null && prefix != null && !"".equals(prefix)) {
+                    if (uri == null && prefix != null && !prefix.isEmpty()) {
                         throw new XPathException(this, ErrorCodes.FONS0004, "No namespace found for prefix. No binding for prefix '" + prefix
                                 + "' was found.", args[0]);
                     }

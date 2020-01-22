@@ -118,9 +118,9 @@ public class CSVExtractingTrigger extends FilteringTrigger {
                 String pathExpr;
                 String attrPredicate = null;
                 if(xpath.contains("[")) {
-                    pathExpr = xpath.substring(0, xpath.indexOf("["));
+                    pathExpr = xpath.substring(0, xpath.indexOf('['));
                     if(xpath.contains("[@")) {
-                        attrPredicate = xpath.substring(xpath.indexOf("[@")+2, xpath.indexOf("]"));
+                        attrPredicate = xpath.substring(xpath.indexOf("[@")+2, xpath.indexOf(']'));
                     }
                 } else {
                     pathExpr = xpath;

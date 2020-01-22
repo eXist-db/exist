@@ -140,7 +140,7 @@ public class RemoteRestoreService implements EXistRestoreService {
                 // dispatch event to the listener
                 switch (RpcAPI.RestoreTaskEvent.fromCode(event.charAt(0))) {
                     case STARTED:
-                        restoreListener.started(Long.valueOf(event.substring(1)));
+                        restoreListener.started(Long.parseLong(event.substring(1)));
                         break;
 
                     case PROCESSING_DESCRIPTOR:

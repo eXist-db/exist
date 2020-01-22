@@ -73,33 +73,34 @@ public class Update extends Modification {
         try {
             final StoredNode ql[] = selectAndLock(transaction);
             final NotificationService notifier = broker.getBrokerPool().getNotificationService();
-            for (int i = 0; i < ql.length; i++) {
-            	final StoredNode node = ql[i];
+            for (final StoredNode node : ql) {
                 if (node == null) {
                     LOG.warn("select " + selectStmt + " returned empty node");
                     continue;
                 }
                 final DocumentImpl doc = node.getOwnerDocument();
                 if (!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE)) {
-                     throw new PermissionDeniedException("User '" + broker.getCurrentSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
+                    throw new PermissionDeniedException("User '" + broker.getCurrentSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
                 }
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
-                        if (modifications == 0) {modifications = 1;}
+                        if (modifications == 0) {
+                            modifications = 1;
+                        }
                         ((ElementImpl) node).update(transaction, children);
                         break;
 
                     case Node.TEXT_NODE:
                         final ElementImpl textParent = (ElementImpl) node.getParentNode();
-                    	final Node textTemp = children.item(0);
-                    	final TextImpl text = new TextImpl(textTemp.getNodeValue());
+                        final Node textTemp = children.item(0);
+                        final TextImpl text = new TextImpl(textTemp.getNodeValue());
                         modifications = 1;
                         text.setOwnerDocument(doc);
                         textParent.updateChild(transaction, node, text);
                         break;
 
                     case Node.ATTRIBUTE_NODE:
-                        final ElementImpl attrParent = (ElementImpl) ((Attr)node).getOwnerElement();
+                        final ElementImpl attrParent = (ElementImpl) ((Attr) node).getOwnerElement();
                         if (attrParent == null) {
                             LOG.warn("parent node not found for "
                                     + node.getNodeId());

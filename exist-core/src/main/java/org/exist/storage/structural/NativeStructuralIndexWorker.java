@@ -544,19 +544,17 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     }
 
     protected List<QName> getQNamesForDoc(DocumentImpl doc) {
-        final List<QName> qnames = new ArrayList<QName>();
+        final List<QName> qnames = new ArrayList<>();
         if (index.btree == null)
             {return qnames;}
         final byte[] fromKey = computeDocKey(doc.getDocId());
         final byte[] toKey = computeDocKey(doc.getDocId() + 1);
         final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
         try(final ManagedLock<ReentrantLock> btreeLock = index.lockManager.acquireBtreeWriteLock(index.btree.getLockName())) {
-            index.btree.query(query, new BTreeCallback() {
-                public boolean indexInfo(Value value, long pointer) throws TerminatedException {
-                    final QName qname = readQName(value.getData());
-                    qnames.add(qname);
-                    return true;
-                }
+            index.btree.query(query, (value, pointer) -> {
+                final QName qname = readQName(value.getData());
+                qnames.add(qname);
+                return true;
             });
         } catch (final LockException e) {
             NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
@@ -594,7 +592,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
      * @return the matching occurrences
      */
     public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
-        final Map<String, Occurrences> occurrences = new TreeMap<String, Occurrences>();
+        final Map<String, Occurrences> occurrences = new TreeMap<>();
         for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
             final DocumentImpl doc = i.next();
             final List<QName> qnames = getQNamesForDoc(doc);
@@ -610,20 +608,18 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                 final IndexQuery query = new IndexQuery(IndexQuery.RANGE, new Value(fromKey), new Value(toKey));
 
                 try(final ManagedLock<ReentrantLock> btreeLock = index.lockManager.acquireBtreeReadLock(index.btree.getLockName())) {
-                    index.btree.query(query, new BTreeCallback() {
-                        public boolean indexInfo(Value value, long pointer) throws TerminatedException {
-                            Occurrences oc = occurrences.get(name);
-                            if (oc == null) {
-                                oc = new Occurrences(name);
-                                occurrences.put(name, oc);
-                                oc.addDocument(doc);
-                                oc.addOccurrences(1);
-                            } else {
-                                oc.addOccurrences(1);
-                                oc.addDocument(doc);
-                            }
-                            return true;
+                    index.btree.query(query, (value, pointer) -> {
+                        Occurrences oc = occurrences.get(name);
+                        if (oc == null) {
+                            oc = new Occurrences(name);
+                            occurrences.put(name, oc);
+                            oc.addDocument(doc);
+                            oc.addOccurrences(1);
+                        } else {
+                            oc.addOccurrences(1);
+                            oc.addDocument(doc);
                         }
+                        return true;
                     });
                 } catch (final LockException e) {
                     NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
@@ -655,13 +651,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
     		throw new IllegalArgumentException("Document id ('" + document.getDocId() + "') and proxy id ('" +
     				proxy.getOwnerDocument().getDocId() + "') differ !");
     	}
-        //Is this qname already pending ?
-        List<NodeProxy> buf = pending.get(qname);
-        if (buf == null) {
-            //Create a node list
-            buf = new ArrayList<NodeProxy>(50);
-            pending.put(qname, buf);
-        }
+        //Is this qname already pending ? Create a node list when not present.
+        List<NodeProxy> buf = pending.computeIfAbsent(qname, k -> new ArrayList<>(50));
+
         //Add node's proxy to the list
         buf.add(proxy);
     }

@@ -52,7 +52,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
     private final boolean disableEmbeddedConnectionType;
     private Path config;
 
-    private final List<DialogCompleteWithResponse<Connection>> dialogCompleteWithResponseCallbacks = new ArrayList<DialogCompleteWithResponse<Connection>>();
+    private final List<DialogCompleteWithResponse<Connection>> dialogCompleteWithResponseCallbacks = new ArrayList<>();
 
     private enum ConnectionType {
         Remote,
@@ -104,7 +104,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
 
     private void storeFavourites(final ListModel model) {
 
-        final List<FavouriteConnection> favourites = new ArrayList<FavouriteConnection>();
+        final List<FavouriteConnection> favourites = new ArrayList<>();
 
         // Write a node for each item in model.
         for (int i = 0; i < model.getSize(); i++) {
@@ -577,7 +577,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
                 tpConnectionType.setSelectedIndex(cmbConnectionType.getSelectedIndex());
 
                 txtServerUri.setText(favourite.getUri());
-                chkSsl.setSelected(Boolean.valueOf(favourite.isSsl()));
+                chkSsl.setSelected(favourite.isSsl());
 
                 txtConfiguration.setText(favourite.getConfiguration());
 

@@ -387,7 +387,7 @@ public class Predicate extends PathExpr {
             // ... but grab some context positions ! -<8-P
             if (Type.subTypeOf(inner.returnsType(), Type.NUMBER)
                     && Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
-                final Set<NumericValue> positions = new TreeSet<NumericValue>();
+                final Set<NumericValue> positions = new TreeSet<>();
                 for (final SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
                     context.setContextSequencePosition(p, contextSequence);
                     final Item item = i.nextItem();
@@ -407,7 +407,7 @@ public class Predicate extends PathExpr {
                         {result.add(contextSequence.itemAt(position));}
                 }
             } else {
-                final Set<NumericValue> positions = new TreeSet<NumericValue>();
+                final Set<NumericValue> positions = new TreeSet<>();
                 for (final SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
                     context.setContextSequencePosition((reverseAxis ? contextSequence.getItemCount() - p - 1: p), contextSequence);
                     final Item item = i.nextItem();
@@ -455,8 +455,7 @@ public class Predicate extends PathExpr {
             return cached.getResult();
         }
         DocumentImpl lastDoc = null;
-        for (final Iterator<NodeProxy> i = nodes.iterator(); i.hasNext();) {
-            final NodeProxy currentNode = i.next();
+        for (final NodeProxy currentNode : nodes) {
             int sizeHint = Constants.NO_SIZE_HINT;
             if (lastDoc == null || currentNode.getOwnerDocument() != lastDoc) {
                 lastDoc = currentNode.getOwnerDocument();
@@ -465,8 +464,8 @@ public class Predicate extends PathExpr {
             ContextItem contextItem = currentNode.getContext();
             if (contextItem == null) {
                 throw new XPathException(this,
-                    "Internal evaluation error: context is missing for node " +
-                    currentNode.getNodeId() + " !");
+                        "Internal evaluation error: context is missing for node " +
+                                currentNode.getNodeId() + " !");
             }
             // TODO : review to consider transverse context
             while (contextItem != null) {
@@ -625,7 +624,7 @@ public class Predicate extends PathExpr {
                     Type.NODE) && (mode == Constants.ANCESTOR_AXIS ||
                     mode == Constants.ANCESTOR_SELF_AXIS || mode == Constants.PARENT_AXIS ||
                     mode == Constants.PRECEDING_AXIS || mode == Constants.PRECEDING_SIBLING_AXIS);
-            final Set<NumericValue> set = new TreeSet<NumericValue>();
+            final Set<NumericValue> set = new TreeSet<>();
             final ValueSequence result = new ValueSequence();
             for (final SequenceIterator i = innerSeq.iterate(); i.hasNext();) {
                 final NumericValue v = (NumericValue) i.nextItem();

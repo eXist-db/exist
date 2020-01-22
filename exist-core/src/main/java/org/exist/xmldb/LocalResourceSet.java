@@ -141,8 +141,8 @@ public class LocalResourceSet extends AbstractLocal implements ResourceSet {
                 handler.startElement(Namespaces.EXIST_NS, "result", "exist:result", attribs);
                 Item current;
                 char[] value;
-                for (final Iterator<Object> i = resources.iterator(); i.hasNext(); ) {
-                    current = (Item) i.next();
+                for (Object resource : resources) {
+                    current = (Item) resource;
                     if (Type.subTypeOf(current.getType(), Type.NODE)) {
                         ((NodeValue) current).toSAX(broker, handler, outputProperties);
                     } else {

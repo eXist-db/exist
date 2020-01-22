@@ -111,8 +111,8 @@ public abstract class Modification {
 		this.selectStmt = selectStmt;
 		this.broker = broker;
 		this.docs = docs;
-		this.namespaces = new HashMap<String, String>(namespaces);
-		this.variables = new TreeMap<String, Object>(variables);
+		this.namespaces = new HashMap<>(namespaces);
+		this.variables = new TreeMap<>(variables);
         this.triggers = new Int2ObjectOpenHashMap<>();
         // DESIGN_QUESTION : wouldn't that be nice to apply selectStmt right here ?
 	}
@@ -194,10 +194,9 @@ public abstract class Modification {
 	 * @throws XPathException if an error occurs whilst declaring the variables
 	 */
 	protected void declareVariables(XQueryContext context) throws XPathException {
-		for (final Iterator<Map.Entry<String, Object>> i = variables.entrySet().iterator(); i.hasNext(); ) {
-			final Map.Entry<String, Object> entry = (Map.Entry<String, Object>) i.next();
-			context.declareVariable(entry.getKey(), entry.getValue());
-		}
+        for (final Map.Entry<String, Object> entry : variables.entrySet()) {
+            context.declareVariable(entry.getKey(), entry.getValue());
+        }
 	}
 
 	/**
@@ -205,13 +204,10 @@ public abstract class Modification {
 	 * @throws XPathException if an error occurs whilst declaring the namespaces
 	 */
 	protected void declareNamespaces(XQueryContext context) throws XPathException {
-		Map.Entry<String, String> entry;
-		for (final Iterator<Map.Entry<String, String>> i = namespaces.entrySet().iterator(); i.hasNext();) {
-			entry = (Map.Entry<String, String>) i.next();
-			context.declareNamespace(
-				entry.getKey(),
-				entry.getValue());
-		}
+
+        for (Map.Entry<String, String> entry : namespaces.entrySet()) {
+            context.declareNamespace(entry.getKey(), entry.getValue());
+        }
 	}
 
 	/**
@@ -309,7 +305,7 @@ public abstract class Modification {
         int fragmentationLimit = -1;
         final Object property = broker.getBrokerPool().getConfiguration().getProperty(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
         if (property != null)
-	        {fragmentationLimit = ((Integer)property).intValue();}		
+	        {fragmentationLimit = (Integer) property;}
 	    for(final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
 	        final DocumentImpl next = i.next();
 	        if(next.getMetadata().getSplitCount() > fragmentationLimit)

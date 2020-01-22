@@ -48,8 +48,8 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
     @Override
     public void addAll(final NodeSet other) {
-        for(final Iterator<NodeProxy> i = other.iterator(); i.hasNext(); ) {
-            add(i.next());
+        for (NodeProxy nodeProxy : other) {
+            add(nodeProxy);
         }
     }
 

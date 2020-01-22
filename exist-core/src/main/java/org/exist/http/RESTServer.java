@@ -785,7 +785,7 @@ public class RESTServer {
                         }
 
                         option = root.getAttribute(Method.xmlKey());
-                        if ((option != null) && (!"".equals(option))) {
+                        if ((option != null) && (!option.isEmpty())) {
                             outputProperties.setProperty(SERIALIZATION_METHOD_PROPERTY, option);
                         }
 
@@ -797,7 +797,7 @@ public class RESTServer {
                         }
 
                         option = root.getAttribute(Mime.xmlKey());
-                        if ((option != null) && (!"".equals(option))) {
+                        if ((option != null) && (!option.isEmpty())) {
                             mimeType = option;
                         }
 
@@ -918,8 +918,8 @@ public class RESTServer {
                     long mods = 0;
                     try(final Reader reader = new StringReader(content)) {
                         final Modification modifications[] = processor.parse(new InputSource(reader));
-                        for (int i = 0; i < modifications.length; i++) {
-                            mods += modifications[i].process(transaction);
+                        for (Modification modification : modifications) {
+                            mods += modification.process(transaction);
                             broker.flush();
                         }
                     }
@@ -984,7 +984,7 @@ public class RESTServer {
 
     private class NamespaceExtractor extends XMLFilterImpl {
 
-        final List<Namespace> namespaces = new ArrayList<Namespace>();
+        final List<Namespace> namespaces = new ArrayList<>();
 
         @Override
         public void startPrefixMapping(final String prefix, final String uri)
@@ -2216,11 +2216,7 @@ public class RESTServer {
 
             writer.flush();
             writer.close();
-        } catch (final IOException e) {
-            throw new BadRequestException("Error while serializing xml: " + e.toString(), e);
-        } catch (final SAXException e) {
-            throw new BadRequestException("Error while serializing xml: " + e.toString(), e);
-        } catch (final XPathException e) {
+        } catch (final IOException | XPathException | SAXException e) {
             throw new BadRequestException("Error while serializing xml: " + e.toString(), e);
         }
     }

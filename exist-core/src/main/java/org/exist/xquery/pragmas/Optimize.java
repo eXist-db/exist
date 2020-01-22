@@ -95,10 +95,10 @@ public class Optimize extends Pragma {
                 {optimize = cachedOptimize;}
             else {
                 if (optimizables != null && optimizables.length > 0) {
-                    for (int i = 0; i < optimizables.length; i++) {
-                        if (optimizables[i].canOptimize(contextSequence))
-                            {optimize = true;}
-                        else {
+                    for (Optimizable optimizable : optimizables) {
+                        if (optimizable.canOptimize(contextSequence)) {
+                            optimize = true;
+                        } else {
                             optimize = false;
                             break;
                         }

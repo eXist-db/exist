@@ -281,7 +281,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         response.addHeader( "Cache-Control", "no-cache" );
 
         String requestPath = request.getRequestURI();
-        final int p = requestPath.lastIndexOf("/");
+        final int p = requestPath.lastIndexOf('/');
         if(p != Constants.STRING_NOT_FOUND)
             {requestPath = requestPath.substring(0, p);}
         

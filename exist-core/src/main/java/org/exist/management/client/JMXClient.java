@@ -90,11 +90,11 @@ public class JMXClient {
             echo("\nINSTANCE:");
             final ObjectName name = new ObjectName("org.exist.management." + instance + ":type=Database");
             final Long memReserved = (Long) connection.getAttribute(name, "ReservedMem");
-            echo(String.format("%25s: %10d k", "Reserved memory", memReserved.longValue() / 1024));
+            echo(String.format("%25s: %10d k", "Reserved memory", memReserved / 1024));
             final Long memCache = (Long) connection.getAttribute(name, "CacheMem");
-            echo(String.format("%25s: %10d k", "Cache memory", memCache.longValue() / 1024));
+            echo(String.format("%25s: %10d k", "Cache memory", memCache / 1024));
             final Long memCollCache = (Long) connection.getAttribute(name, "CollectionCacheMem");
-            echo(String.format("%25s: %10d k", "Collection cache memory", memCollCache.longValue() / 1024));
+            echo(String.format("%25s: %10d k", "Collection cache memory", memCollCache / 1024));
 
             final String cols[] = { "MaxBrokers", "AvailableBrokers", "ActiveBrokers" };
             echo(String.format("\n%17s %17s %17s", cols[0], cols[1], cols[2]));
@@ -106,9 +106,9 @@ public class JMXClient {
             if (table.size() > 0) {
                 echo("\nCurrently active threads:");
             }
-            
-            for (final Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
-                final CompositeData data = (CompositeData) i.next();
+
+            for (Object o : table.values()) {
+                final CompositeData data = (CompositeData) o;
                 echo(String.format("\t%20s: %3d", data.get("owner"), data.get("referenceCount")));
             }
         } catch (final Exception e) {
@@ -127,12 +127,12 @@ public class JMXClient {
             final Set<ObjectName> beans = connection.queryNames(new ObjectName("org.exist.management." + instance + ":type=CacheManager.Cache,*"), null);
             cols = new String[] {"Type", "FileName", "Size", "Used", "Hits", "Fails"};
             echo(String.format("%10s %20s %10s %10s %10s %10s", cols[0], cols[1], cols[2], cols[3], cols[4], cols[5]));
-            for (final Iterator<ObjectName> i = beans.iterator(); i.hasNext();) {
-                name = i.next();
+            for (ObjectName bean : beans) {
+                name = bean;
                 attrs = connection.getAttributes(name, cols);
                 values = getValues(attrs);
                 echo(String.format("%10s %20s %,10d %,10d %,10d %,10d", values[0], values[1], values[2], values[3], values[4], values[5]));
-           }
+            }
             
             echo("");
            name = new ObjectName("org.exist.management." + instance + ":type=CollectionCacheManager");
@@ -151,8 +151,8 @@ public class JMXClient {
         echo("-----------------------------------------------");
         try {
             final TabularData table = (TabularData) connection.getAttribute(new ObjectName("org.exist.management:type=LockManager"), "WaitingThreads");
-            for (final Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
-                final CompositeData data = (CompositeData) i.next();
+            for (Object o : table.values()) {
+                final CompositeData data = (CompositeData) o;
                 echo("Thread " + data.get("waitingThread"));
                 echo(String.format("%20s: %s", "Lock type", data.get("lockType")));
                 echo(String.format("%20s: %s", "Lock mode", data.get("lockMode")));
@@ -188,8 +188,8 @@ public class JMXClient {
 
             final TabularData table = (TabularData)
                     connection.getAttribute(name, "Errors");
-            for (final Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
-                final CompositeData data = (CompositeData) i.next();
+            for (Object o : table.values()) {
+                final CompositeData data = (CompositeData) o;
                 echo(String.format("%22s: %s", "Error code", data.get("errcode")));
                 echo(String.format("%22s: %s", "Description", data.get("description")));
             }
@@ -208,8 +208,8 @@ public class JMXClient {
                     connection.getAttribute(name, "RunningJobs");
             String[] cols = new String[] { "ID", "Action", "Info" };
             echo(String.format("%15s %30s %30s", cols[0], cols[1], cols[2]));
-            for (final Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
-                final CompositeData data = (CompositeData) i.next();
+            for (Object value : table.values()) {
+                final CompositeData data = (CompositeData) value;
                 echo(String.format("%15s %30s %30s", data.get("id"), data.get("action"), data.get("info")));
             }
 
@@ -219,8 +219,8 @@ public class JMXClient {
                     connection.getAttribute(name, "RunningQueries");
             cols = new String[] { "ID", "Type", "Key", "Terminating" };
             echo(String.format("%10s %10s %30s %s", cols[0], cols[1], cols[2], cols[3]));
-            for (final Iterator<?> i = table.values().iterator(); i.hasNext(); ) {
-                final CompositeData data = (CompositeData) i.next();
+            for (Object o : table.values()) {
+                final CompositeData data = (CompositeData) o;
                 echo(String.format("%15s %15s %30s %6s", data.get("id"), data.get("sourceType"), data.get("sourceKey"), data.get("terminating")));
             }
         } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException | MalformedObjectNameException e) {

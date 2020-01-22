@@ -745,11 +745,7 @@ public class Resource extends File {
                     final URL url = new URL("xmldb:exist://jsessionid:" + subject.getSessionId() + "@" + uri.toString());
                     connection = url.openConnection();
                 }
-            } catch (final IllegalArgumentException e) {
-                throw new IOException(e);
-            } catch (final MalformedURLException e) {
-                throw new IOException(e);
-            } catch (final EXistException e) {
+            } catch (final IllegalArgumentException | EXistException | MalformedURLException e) {
                 throw new IOException(e);
             }
         }

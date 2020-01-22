@@ -566,7 +566,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
     public int numSegments() {
         final String name = getRawCollectionPath();
 
-        if ((name == null) || "".equals(name)) {
+        if ((name == null) || name.isEmpty()) {
             return 0;
         }
         final String[] split = name.split("/");

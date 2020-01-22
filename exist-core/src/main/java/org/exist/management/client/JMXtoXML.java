@@ -372,11 +372,11 @@ public class JMXtoXML {
             builder.addAttribute(new QName("name", XMLConstants.NULL_NS_URI), name.toString());
 
             final MBeanAttributeInfo[] beanAttribs = info.getAttributes();
-            for (int i = 0; i < beanAttribs.length; i++) {
-                if (beanAttribs[i].isReadable()) {
+            for (MBeanAttributeInfo beanAttrib : beanAttribs) {
+                if (beanAttrib.isReadable()) {
                     try {
-                        final QName attrQName = new QName(beanAttribs[i].getName(), JMX_NAMESPACE, JMX_PREFIX);
-                        final Object attrib = conn.getAttribute(name, beanAttribs[i].getName());
+                        final QName attrQName = new QName(beanAttrib.getName(), JMX_NAMESPACE, JMX_PREFIX);
+                        final Object attrib = conn.getAttribute(name, beanAttrib.getName());
 
                         builder.startElement(attrQName, null);
                         serializeObject(builder, attrib);

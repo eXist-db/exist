@@ -223,7 +223,7 @@ public class Eval extends BasicFunction {
             querySource = loadQueryFromURI(expr);
         } else {
             final String queryStr = expr.getStringValue();
-            if ("".equals(queryStr.trim())) {
+            if (queryStr.trim().isEmpty()) {
                 return new EmptySequence();
             }
             querySource = new StringSource(queryStr);
@@ -454,10 +454,8 @@ public class Eval extends BasicFunction {
 
             return sequence;
 
-        } catch (final IOException ioe) {
+        } catch (final IOException | PermissionDeniedException ioe) {
             throw new XPathException(this, ioe);
-        } catch (final PermissionDeniedException e) {
-            throw new XPathException(this, e);
         } finally {
             if (compiled != null) {
                 compiled.getContext().runCleanupTasks();
@@ -486,7 +484,7 @@ public class Eval extends BasicFunction {
                 // If location is relative (does not contain any / and does
                 // not start with . or .. then the path of the module need to
                 // be added.
-                if (location.indexOf("/") < 0 || location.startsWith(".")) {
+                if (location.indexOf('/') < 0 || location.startsWith(".")) {
                     final XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor(context.getModuleLoadPath());
                     locationUri = moduleLoadPathUri.resolveCollectionPath(locationUri);
                 }

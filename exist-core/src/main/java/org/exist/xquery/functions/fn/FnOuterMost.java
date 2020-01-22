@@ -65,7 +65,7 @@ public class FnOuterMost extends BasicFunction {
                 final NodeId currentNodeId = node.getNodeId();
 
                 if(!found.contains(currentNodeId) &&
-                        nodeIds.parallelStream().noneMatch(nodeId -> currentNodeId.isDescendantOf(nodeId))) {
+                        nodeIds.parallelStream().noneMatch(currentNodeId::isDescendantOf)) {
                     results.add(node);
                     found.add(currentNodeId);
                 }

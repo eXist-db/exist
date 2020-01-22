@@ -185,9 +185,9 @@ public class PerformanceStats implements BrokerPoolService {
         }
     }
 
-    private HashMap<String, QueryStats> queries = new HashMap<String, QueryStats>();
-    private HashMap<FunctionStats, FunctionStats> functions = new HashMap<FunctionStats, FunctionStats>();
-    private HashMap<IndexStats, IndexStats> indexStats = new HashMap<IndexStats, IndexStats>();
+    private HashMap<String, QueryStats> queries = new HashMap<>();
+    private HashMap<FunctionStats, FunctionStats> functions = new HashMap<>();
+    private HashMap<IndexStats, IndexStats> indexStats = new HashMap<>();
     private HashSet<OptimizationStats> optimizations = new HashSet<>();
     
     private boolean enabled = false;
@@ -300,8 +300,8 @@ public class PerformanceStats implements BrokerPoolService {
         final StringWriter sw = new StringWriter();
         final PrintWriter pw = new PrintWriter(sw);
         final FunctionStats[] stats = sort();
-        for (int i = 0; i < stats.length; i++) {
-            pw.format("\n%30s %8.3f %8d", stats[i].qname, stats[i].executionTime / 1000.0, stats[i].callCount);
+        for (FunctionStats stat : stats) {
+            pw.format("\n%30s %8.3f %8d", stat.qname, stat.executionTime / 1000.0, stat.callCount);
         }
         pw.flush();
         return sw.toString();

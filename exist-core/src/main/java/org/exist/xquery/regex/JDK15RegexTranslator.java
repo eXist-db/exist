@@ -341,8 +341,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
 
         private static List toList(CharClass[] v) {
             final List members = new ArrayList(5);
-            for (int i = 0; i < v.length; i++)
-                members.add(v[i]);
+            for (CharClass charClass : v) members.add(charClass);
             return members;
         }
 
@@ -352,8 +351,8 @@ public class JDK15RegexTranslator extends RegexTranslator {
 
         void output(FastStringBuffer buf) {
             buf.append('[');
-            for (int i = 0, len = members.size(); i < len; i++) {
-                final CharClass cc = (CharClass) members.get(i);
+            for (Object member : members) {
+                final CharClass cc = (CharClass) member;
                 cc.output(buf);
             }
             buf.append(']');
@@ -362,8 +361,8 @@ public class JDK15RegexTranslator extends RegexTranslator {
         void outputComplement(FastStringBuffer buf) {
             boolean first = true;
             final int len = members.size();
-            for (int i = 0; i < len; i++) {
-                final CharClass cc = (CharClass) members.get(i);
+            for (Object o : members) {
+                final CharClass cc = (CharClass) o;
                 if (cc instanceof SimpleCharClass) {
                     if (first) {
                         buf.append("[^");
@@ -372,8 +371,8 @@ public class JDK15RegexTranslator extends RegexTranslator {
                     ((SimpleCharClass) cc).inClassOutput(buf);
                 }
             }
-            for (int i = 0; i < len; i++) {
-                final CharClass cc = (CharClass) members.get(i);
+            for (Object member : members) {
+                final CharClass cc = (CharClass) member;
                 if (!(cc instanceof SimpleCharClass)) {
                     if (first) {
                         buf.append('[');
@@ -828,8 +827,8 @@ public class JDK15RegexTranslator extends RegexTranslator {
                         } else {
                             for (int k = lower.getSingleChar(); k <= upper.getSingleChar(); k++) {
                                 final int[] variants = CaseVariants.getCaseVariants(k);
-                                for (int v=0; v<variants.length; v++) {
-                                    members.add(new SingleChar(variants[v]));
+                                for (int variant : variants) {
+                                    members.add(new SingleChar(variant));
                                 }
                             }
                         }
@@ -868,8 +867,8 @@ public class JDK15RegexTranslator extends RegexTranslator {
     private void addCaseVariant(CharClass lower, List members) {
         if (caseBlind) {
             final int[] variants = CaseVariants.getCaseVariants(lower.getSingleChar());
-            for (int v=0; v<variants.length; v++) {
-                members.add(new SingleChar(variants[v]));
+            for (int variant : variants) {
+                members.add(new SingleChar(variant));
             }
         }
     }
@@ -968,16 +967,21 @@ public class JDK15RegexTranslator extends RegexTranslator {
         final int[] addRanges = RegexData.CATEGORY_RANGES[sci / 2];
         for (int i = 0; i < addRanges.length; i += 2)
             classes.add(new CharRange(addRanges[i], addRanges[i + 1]));
-        if ("Lu".equals(name))
-            {classes.add(new SingleChar(RegexData.UNICODE_3_1_ADD_Lu));}
-        else if ("Ll".equals(name))
-            {classes.add(new SingleChar(RegexData.UNICODE_3_1_ADD_Ll));}
-        else if ("Nl".equals(name))
-            {classes.add(new CharRange(RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MIN, RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MAX));}
-        else if ("No".equals(name))
-            {return new Subtraction(new Union(classes),
-                    new CharRange(RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MIN,
-                            RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MAX));}
+        switch (name) {
+            case "Lu":
+                classes.add(new SingleChar(RegexData.UNICODE_3_1_ADD_Lu));
+                break;
+            case "Ll":
+                classes.add(new SingleChar(RegexData.UNICODE_3_1_ADD_Ll));
+                break;
+            case "Nl":
+                classes.add(new CharRange(RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MIN, RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MAX));
+                break;
+            case "No":
+                return new Subtraction(new Union(classes),
+                        new CharRange(RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MIN,
+                                RegexData.UNICODE_3_1_CHANGE_No_to_Nl_MAX));
+        }
         return new Union(classes);
     }
 

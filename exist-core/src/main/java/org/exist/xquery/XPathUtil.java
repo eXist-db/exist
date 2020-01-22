@@ -135,6 +135,7 @@ public class XPathUtil {
             for (Object next : ((List<?>) obj)) {
                 if (!(next instanceof NodeProxy)) {
                     createNodeSequence = false;
+                    break;
                 }
             }
             Sequence seq = createNodeSequence ? new AVLTreeNodeSet() : new ValueSequence();
@@ -175,6 +176,7 @@ public class XPathUtil {
             for (Object arrayItem : array) {
                 if (!(arrayItem instanceof NodeProxy)) {
                     createNodeSequence = false;
+                    break;
                 }
             }
 

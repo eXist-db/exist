@@ -70,7 +70,7 @@ public class ParametersExtractor {
 
     private static Map<String, List<? extends Object>> extractParameters(final NodeList nlParameter) {
 
-        final Map<String, List<?>> parameters = new HashMap<String, List<?>>(nlParameter.getLength());
+        final Map<String, List<?>> parameters = new HashMap<>(nlParameter.getLength());
 
         for (int i = 0 ; i < nlParameter.getLength();  i++) {
             final Element param = (Element)nlParameter.item(i);

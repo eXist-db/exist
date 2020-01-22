@@ -38,7 +38,6 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
 import static org.exist.xquery.FunctionDSL.*;
-import static org.exist.xquery.functions.xmldb.XMLDBModule.functionSignature;
 import static org.exist.xquery.functions.xmldb.XMLDBModule.functionSignatures;
 
 /**

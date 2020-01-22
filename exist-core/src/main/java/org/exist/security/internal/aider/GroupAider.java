@@ -46,8 +46,8 @@ public class GroupAider implements Group {
 	private final String name;
 	private final int id;
 	
-	private final List<Account> managers = new ArrayList<Account>();
-        private final Map<SchemaType, String> metadataValues = new HashMap<SchemaType, String>();
+	private final List<Account> managers = new ArrayList<>();
+        private final Map<SchemaType, String> metadataValues = new HashMap<>();
 	
 	public GroupAider(int id) {
             this(id, null, null);

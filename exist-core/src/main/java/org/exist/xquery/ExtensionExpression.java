@@ -40,7 +40,7 @@ import java.util.List;
 public class ExtensionExpression extends AbstractExpression {
 
     private Expression innerExpression;
-    private List<Pragma> pragmas = new ArrayList<Pragma>(3);
+    private List<Pragma> pragmas = new ArrayList<>(3);
 
     public ExtensionExpression(XQueryContext context) {
         super(context);

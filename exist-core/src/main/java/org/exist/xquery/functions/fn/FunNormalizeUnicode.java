@@ -129,7 +129,7 @@ public class FunNormalizeUnicode extends Function {
 			if (getArgumentCount() > 1)
 				{newNormalizationForm = getArgument(1).eval(contextSequence).getStringValue().toUpperCase().trim();}
 			//TODO : handle the "FULLY-NORMALIZED" string...
-			if ("".equals(newNormalizationForm))
+			if (newNormalizationForm.isEmpty())
 				{result =  new StringValue(s1.getStringValue());}
 			else {
                 try {

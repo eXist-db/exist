@@ -32,7 +32,7 @@ import org.exist.xmldb.XmldbURI;
  */
 public abstract class AbstractCommandResolver implements CommandResolver {
 
-	protected Map<String, Command> commands = new HashMap<String, Command>();
+	protected Map<String, Command> commands = new HashMap<>();
 
 	public void plug(Class<? extends Command> commandClass) {
 		Command cmd;
@@ -46,10 +46,10 @@ public abstract class AbstractCommandResolver implements CommandResolver {
 		final String[] names = cmd.getNames();
 		
 		if (names == null) {return;} //TODO: report for debug
-		
-		for (int i = 0; i < names.length; i++ ) {
+
+		for (String name : names) {
 			//TODO: check for conflicts
-			commands.put(names[i], cmd);
+			commands.put(name, cmd);
 		}
 	}
 	

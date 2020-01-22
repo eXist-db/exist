@@ -57,11 +57,11 @@ public class PartialFunctionApplication extends AbstractExpression {
 		final SequenceType[] paramTypes = signature.getArgumentTypes();
 		// the parameters of the newly created inline function:
 		// old params except the fixed ones
-		final List<SequenceType> newParamTypes = new ArrayList<SequenceType>();
+		final List<SequenceType> newParamTypes = new ArrayList<>();
 		// the arguments to pass to the inner call
-		final List<Expression> callArgs = new ArrayList<Expression>();
+		final List<Expression> callArgs = new ArrayList<>();
 		// parameter variables of the new inline function
-		final List<QName> variables = new ArrayList<QName>();
+		final List<QName> variables = new ArrayList<>();
 		// the inline function
 		final int argCount = staticCall.getArgumentCount();
 		for (int i = 0; i < argCount; i++) {

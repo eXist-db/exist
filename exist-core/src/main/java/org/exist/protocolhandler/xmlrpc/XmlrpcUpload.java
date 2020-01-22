@@ -84,7 +84,7 @@ public class XmlrpcUpload {
             }
             
             // Initialize xmlrpc parameters
-            final List<Object> params = new ArrayList<Object>(5);
+            final List<Object> params = new ArrayList<>(5);
             String handle=null;
             
             // Copy data from inputstream to database
@@ -96,7 +96,7 @@ public class XmlrpcUpload {
                     params.add(handle);
                 }
                 params.add(buf);
-                params.add(Integer.valueOf(len));
+                params.add(len);
                 handle = (String)client.execute("upload", params);
             }
             
@@ -109,7 +109,7 @@ public class XmlrpcUpload {
             final Boolean result =(Boolean)client.execute("parseLocal", params);
             
             // Check XMLRPC result
-            if(result.booleanValue()){
+            if(result){
                 LOG.debug("Document stored.");
             } else {
                 LOG.debug("Could not store document.");

@@ -23,14 +23,9 @@ import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.security.*;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
-import org.exist.security.AbstractUnixStylePermission;
-import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.PermissionFactory;
-import org.exist.security.SimpleACLPermission;
-import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
@@ -338,9 +333,7 @@ public class PermissionsFunction extends BasicFunction {
     }
 
     private Sequence functionClearACL(final DBBroker broker, final Txn transaction, final XmldbURI pathUri) throws PermissionDeniedException {
-        PermissionFactory.chacl(broker, transaction, pathUri,
-                aclPermission -> aclPermission.clear()
-        );
+        PermissionFactory.chacl(broker, transaction, pathUri, ACLPermission::clear);
         return Sequence.EMPTY_SEQUENCE;
     }
 

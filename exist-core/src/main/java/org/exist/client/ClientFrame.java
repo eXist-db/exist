@@ -767,7 +767,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         //get an array of collection paths
         try {
             final Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
-            final List<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
+            final List<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<>());
             collections = new PrettyXmldbURI[alCollections.size()];
             alCollections.toArray(collections);
         } catch (final XMLDBException e) {
@@ -786,12 +786,12 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             try {
                 final EXistCollectionManagementService service = (EXistCollectionManagementService)
                         client.current.getService("CollectionManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
-                for (int i = 0; i < res.length; i++) {
-                    setStatus(Messages.getString("ClientFrame.115") + res[i].getName() + Messages.getString("ClientFrame.116") + destinationPath + Messages.getString("ClientFrame.117")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    if (res[i].isCollection()) {
-                        service.move(res[i].getName(), destinationPath, null);
+                for (ResourceDescriptor re : res) {
+                    setStatus(Messages.getString("ClientFrame.115") + re.getName() + Messages.getString("ClientFrame.116") + destinationPath + Messages.getString("ClientFrame.117")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    if (re.isCollection()) {
+                        service.move(re.getName(), destinationPath, null);
                     } else {
-                        service.moveResource(res[i].getName(), destinationPath, null);
+                        service.moveResource(re.getName(), destinationPath, null);
                     }
                 }
                 client.reloadCollection();
@@ -828,12 +828,12 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             try {
                 final EXistCollectionManagementService service = (EXistCollectionManagementService)
                         client.current.getService("CollectionManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
-                for (int i = 0; i < res.length; i++) {
-                    setStatus(Messages.getString("ClientFrame.124") + res[i].getName() + Messages.getString("ClientFrame.125") + destinationFilename + Messages.getString("ClientFrame.126")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    if (res[i].isCollection()) {
-                        service.move(res[i].getName(), null, destinationFilename);
+                for (ResourceDescriptor re : res) {
+                    setStatus(Messages.getString("ClientFrame.124") + re.getName() + Messages.getString("ClientFrame.125") + destinationFilename + Messages.getString("ClientFrame.126")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    if (re.isCollection()) {
+                        service.move(re.getName(), null, destinationFilename);
                     } else {
-                        service.moveResource(res[i].getName(), null, destinationFilename);
+                        service.moveResource(re.getName(), null, destinationFilename);
                     }
                 }
                 client.reloadCollection();
@@ -853,7 +853,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         //get an array of collection paths
         try {
             final Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
-            final List<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<PrettyXmldbURI>());
+            final List<PrettyXmldbURI> alCollections = getCollections(root, new ArrayList<>());
             collections = new PrettyXmldbURI[alCollections.size()];
             alCollections.toArray(collections);
         } catch (final XMLDBException e) {
@@ -873,7 +873,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             try {
                 final EXistCollectionManagementService service = (EXistCollectionManagementService)
                         client.current.getService("CollectionManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
-                for (int i = 0; i < res.length; i++) {
+                for (ResourceDescriptor re : res) {
 
                     //TODO
                     //what happens if the source and destination paths are the same?
@@ -884,11 +884,11 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     //
                     //Its too late and brain hurts - deliriumsky
 
-                    setStatus(Messages.getString("ClientFrame.132") + res[i].getName() + Messages.getString("ClientFrame.133") + destinationPath + Messages.getString("ClientFrame.134")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    if (res[i].isCollection()) {
-                        service.copy(res[i].getName(), destinationPath, null);
+                    setStatus(Messages.getString("ClientFrame.132") + re.getName() + Messages.getString("ClientFrame.133") + destinationPath + Messages.getString("ClientFrame.134")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    if (re.isCollection()) {
+                        service.copy(re.getName(), destinationPath, null);
                     } else {
-                        service.copyResource(res[i].getName(), destinationPath, null);
+                        service.copyResource(re.getName(), destinationPath, null);
                     }
                 }
                 client.reloadCollection();
@@ -904,9 +904,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         collectionsList.add(new PrettyXmldbURI(XmldbURI.create(root.getName())));
         final String[] childCollections = root.listChildCollections();
         Collection child = null;
-        for (int i = 0; i < childCollections.length; i++) {
+        for (String childCollection : childCollections) {
             try {
-                child = root.getChildCollection(childCollections[i]);
+                child = root.getChildCollection(childCollection);
             } catch (final XMLDBException xmldbe) {
                 if (xmldbe.getCause() instanceof PermissionDeniedException) {
                     continue;
@@ -955,8 +955,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 try {
                     service = (IndexQueryService)
                             client.current.getService("IndexQueryService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
-                    for (int i = 0; i < collections.length; i++) {
-                        final ResourceDescriptor next = collections[i];
+                    for (final ResourceDescriptor next : collections) {
                         setStatus(Messages.getString("ClientFrame.142") + next.getName() + Messages.getString("ClientFrame.143")); //$NON-NLS-1$ //$NON-NLS-2$
                         service.reindexCollection(next.getName());
                     }
@@ -1305,10 +1304,10 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 permAider = PermissionAiderFactory.getPermission(account.getName(), account.getPrimaryGroup(), Permission.DEFAULT_RESOURCE_PERM); //$NON-NLS-1$ //$NON-NLS-2$
             }
 
-            final List<ResourceDescriptor> selected = new ArrayList<ResourceDescriptor>();
+            final List<ResourceDescriptor> selected = new ArrayList<>();
             final int rows[] = fileman.getSelectedRows();
-            for (int i = 0; i < rows.length; i++) {
-                selected.add(resources.getRow(fileman.convertRowIndexToModel(rows[i])));
+            for (int row : rows) {
+                selected.add(resources.getRow(fileman.convertRowIndexToModel(row)));
             }
 
             final EditPropertiesDialog editPropertiesDialog = new EditPropertiesDialog(service, client.getProperties().getProperty(InteractiveClient.USER), collection, name, mimeType, created, modified, size, messageDigest, permAider, selected);
@@ -1491,7 +1490,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         public void setData(final List<ResourceDescriptor> rows) {
-            Collections.sort(rows, new ResourceComparator());
+            rows.sort(new ResourceComparator());
             this.rows = rows;
             fireTableDataChanged();
         }
@@ -1688,7 +1687,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         if (result == null) {
             return 2;
         }
-        return ((Integer) optionPane.getValue()).intValue();
+        return (Integer) optionPane.getValue();
     }
 
     /*

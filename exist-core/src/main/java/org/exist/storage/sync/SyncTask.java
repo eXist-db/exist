@@ -69,7 +69,7 @@ public class SyncTask implements SystemTask {
 
     @Override
     public void configure(final Configuration config, final Properties properties) throws EXistException {
-        this.diskSpaceMin = 1024l * 1024l * config.getProperty(BrokerPool.DISK_SPACE_MIN_PROPERTY, BrokerPool.DEFAULT_DISK_SPACE_MIN);
+        this.diskSpaceMin = 1024L * 1024L * config.getProperty(BrokerPool.DISK_SPACE_MIN_PROPERTY, BrokerPool.DEFAULT_DISK_SPACE_MIN);
 
         // fixme! - Shouldn't it be data dir AND journal dir we check
         // rather than EXIST_HOME? /ljo

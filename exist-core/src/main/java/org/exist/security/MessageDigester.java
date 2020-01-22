@@ -112,8 +112,8 @@ public class MessageDigester {
 
     public static String byteArrayToHex( byte[] b ) {
         final StringBuilder buf = new StringBuilder( b.length * 2 );
-        for ( int i = 0; i < b.length; i++ ) {
-            byteToHex( buf, b[i] );
+        for (byte value : b) {
+            byteToHex(buf, value);
         }
         return buf.toString();
     }

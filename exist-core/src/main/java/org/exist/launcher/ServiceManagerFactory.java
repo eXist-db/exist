@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 
 public class ServiceManagerFactory {
 
-    private static final AtomicLazyVal<ServiceManager> WINDOWS_SERVICE_MANAGER = new AtomicLazyVal<>(() -> new WindowsServiceManager());
+    private static final AtomicLazyVal<ServiceManager> WINDOWS_SERVICE_MANAGER = new AtomicLazyVal<>(WindowsServiceManager::new);
 
     /**
      * Returns the service manager for the current

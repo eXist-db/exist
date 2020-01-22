@@ -513,7 +513,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
                 u.addGroup((String) group);
             }
 
-            u.setEnabled(Boolean.valueOf((String) tab.get("enabled")));
+            u.setEnabled(Boolean.parseBoolean((String) tab.get("enabled")));
             u.setUserMask((Integer) tab.get("umask"));
 
             final Map<String, String> metadata = (Map<String, String>) tab.get("metadata");
@@ -548,11 +548,11 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
 
             u[i] = new UserAider(uid, (String) tab.get("realmId"), (String) tab.get("name"));
             final Object[] groups = (Object[]) tab.get("groups");
-            for (int j = 0; j < groups.length; j++) {
-                u[i].addGroup((String) groups[j]);
+            for (Object group : groups) {
+                u[i].addGroup((String) group);
             }
 
-            u[i].setEnabled(Boolean.valueOf((String) tab.get("enabled")));
+            u[i].setEnabled(Boolean.parseBoolean((String) tab.get("enabled")));
             u[i].setUserMask((Integer) tab.get("umask"));
 
             final Map<String, String> metadata = (Map<String, String>) tab.get("metadata");

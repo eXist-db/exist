@@ -47,7 +47,7 @@ import org.exist.xquery.value.Sequence;
  */
 public class Conditional extends Modification {
 
-	private List<Modification> modifications = new ArrayList<Modification>(5);
+	private List<Modification> modifications = new ArrayList<>(5);
 	
 	/**
 	 * @param broker the database broker.

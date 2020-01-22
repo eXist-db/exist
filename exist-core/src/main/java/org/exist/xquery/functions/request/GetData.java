@@ -102,8 +102,8 @@ public class GetData extends StrictRequestFunction {
                 String contentType = request.getContentType();
                 if (contentType != null) {
                     //strip off any charset encoding info
-                    if (contentType.indexOf(";") > -1) {
-                        contentType = contentType.substring(0, contentType.indexOf(";"));
+                    if (contentType.indexOf(';') > -1) {
+                        contentType = contentType.substring(0, contentType.indexOf(';'));
                     }
 
                     final MimeType mimeType = MimeTable.getInstance().getContentType(contentType);
@@ -203,9 +203,7 @@ public class GetData extends StrictRequestFunction {
             final Document doc = receiver.getDocument();
 
             result = (NodeValue) doc;
-        } catch (final SAXException saxe) {
-            //do nothing, we will default to trying to return a string below
-        } catch (final IOException ioe) {
+        } catch (final SAXException | IOException saxe) {
             //do nothing, we will default to trying to return a string below
         } finally {
             context.popDocumentContext();

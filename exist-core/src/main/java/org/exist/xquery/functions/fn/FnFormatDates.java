@@ -201,7 +201,7 @@ public class FnFormatDates extends BasicFunction {
                 sb.append('[');
                 i++;
             } else {
-                final int close = (i < pic.length() ? pic.indexOf("]", i) : -1);
+                final int close = (i < pic.length() ? pic.indexOf(']', i) : -1);
                 if (close == -1) {
                     throw new XPathException(this, ErrorCodes.FOFD1340, "Date format contains a '[' with no matching ']'");
                 }

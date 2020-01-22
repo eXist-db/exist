@@ -332,8 +332,8 @@ public class InteractiveClient {
 
     protected void setProperties() throws XMLDBException {
         String key;
-        for (final Iterator i = properties.keySet().iterator(); i.hasNext(); ) {
-            key = (String) i.next();
+        for (Object o : properties.keySet()) {
+            key = (String) o;
             current.setProperty(key, properties.getProperty(key));
         }
     }
@@ -373,7 +373,7 @@ public class InteractiveClient {
         //Collection child;
         Permission perm;
 
-        final List<ResourceDescriptor> tableData = new ArrayList<ResourceDescriptor>(resources.length); // A list of ResourceDescriptor for the GUI
+        final List<ResourceDescriptor> tableData = new ArrayList<>(resources.length); // A list of ResourceDescriptor for the GUI
 
         int i = 0;
         for (; i < childCollections.length; i++) {
@@ -503,7 +503,7 @@ public class InteractiveClient {
             tok.quoteChar('"');
             tok.whitespaceChars(0x20, 0x20);
 
-            final List<String> argList = new ArrayList<String>(3);
+            final List<String> argList = new ArrayList<>(3);
             // int i = 0;
             int token;
             try {
@@ -531,8 +531,8 @@ public class InteractiveClient {
                 // list collection contents
                 getResources();
                 if ("true".equals(properties.getProperty(PERMISSIONS))) {
-                    for (int i = 0; i < resources.length; i++) {
-                        messageln(resources[i]);
+                    for (String resource : resources) {
+                        messageln(resource);
                     }
                 } else {
                     for (int i = 0; i < resources.length; i++) {
@@ -847,8 +847,8 @@ public class InteractiveClient {
                     String p1;
                     String p2;
                     while (true) {
-                        p1 = console.readLine("password: ", Character.valueOf('*'));
-                        p2 = console.readLine("re-enter password: ", Character.valueOf('*'));
+                        p1 = console.readLine("password: ", '*');
+                        p2 = console.readLine("re-enter password: ", '*');
                         if (p1.equals(p2)) {
                             break;
                         }
@@ -883,9 +883,9 @@ public class InteractiveClient {
                 final Account users[] = mgtService.getAccounts();
                 messageln("User\t\tGroups");
                 messageln("-----------------------------------------");
-                for (int i = 0; i < users.length; i++) {
-                    System.out.print(users[i].getName() + "\t\t");
-                    final String[] groups = users[i].getGroups();
+                for (Account user : users) {
+                    System.out.print(user.getName() + "\t\t");
+                    final String[] groups = user.getGroups();
                     for (int j = 0; j < groups.length; j++) {
                         System.out.print(groups[j]);
                         if (j + 1 < groups.length) {
@@ -914,8 +914,8 @@ public class InteractiveClient {
                     String p1;
                     String p2;
                     while (true) {
-                        p1 = console.readLine("password: ", Character.valueOf('*'));
-                        p2 = console.readLine("re-enter password: ", Character.valueOf('*'));
+                        p1 = console.readLine("password: ", '*');
+                        p2 = console.readLine("re-enter password: ", '*');
                         if (p1.equals(p2)) {
                             break;
                         }
@@ -1032,10 +1032,10 @@ public class InteractiveClient {
                 final IndexQueryService service = (IndexQueryService) current
                         .getService("IndexQueryService", "1.0");
                 final Occurrences[] elements = service.getIndexedElements(true);
-                for (int i = 0; i < elements.length; i++) {
+                for (Occurrences element : elements) {
                     System.out
-                            .println(formatString(elements[i].getTerm().toString(),
-                                    Integer.toString(elements[i]
+                            .println(formatString(element.getTerm().toString(),
+                                    Integer.toString(element
                                             .getOccurrences()), 50));
                 }
                 return true;
@@ -1247,10 +1247,10 @@ public class InteractiveClient {
             resources = new Resource[1];
             resources[0] = res;
         }
-        for (int i = 0; i < resources.length; i++) {
-            message("removing document " + resources[i].getId() + " ...");
-            final Collection parent = resources[i].getParentCollection();
-            parent.removeResource(resources[i]);
+        for (Resource resource : resources) {
+            message("removing document " + resource.getId() + " ...");
+            final Collection parent = resource.getParentCollection();
+            parent.removeResource(resource);
             messageln("done.");
         }
     }
@@ -1475,8 +1475,7 @@ public class InteractiveClient {
                     String localName = compressedName;
                     final String[] cSuffix = {".gz", ".Z"};
                     boolean isCompressed = false;
-                    for (int isuf = 0; isuf < cSuffix.length; isuf++) {
-                        final String suf = cSuffix[isuf];
+                    for (final String suf : cSuffix) {
                         if (localName.endsWith(suf)) {
                             // Removing compressed prefix to validate
                             localName = compressedName.substring(0, localName.length() - suf.length());
@@ -1560,8 +1559,7 @@ public class InteractiveClient {
             String localName = compressedName;
             final String[] cSuffix = {".gz", ".Z"};
             boolean isCompressed = false;
-            for (int isuf = 0; isuf < cSuffix.length; isuf++) {
-                final String suf = cSuffix[isuf];
+            for (final String suf : cSuffix) {
                 if (localName.endsWith(suf)) {
                     // Removing compressed prefix to validate
                     localName = compressedName.substring(0, localName.length() - suf.length());
@@ -2195,7 +2193,7 @@ public class InteractiveClient {
 
             } else if (options.username.isPresent() && !options.password.isPresent()) {
                 try {
-                    properties.setProperty(PASSWORD, console.readLine("password: ", Character.valueOf('*')));
+                    properties.setProperty(PASSWORD, console.readLine("password: ", '*'));
                 } catch (final Exception e) {
                 }
             }

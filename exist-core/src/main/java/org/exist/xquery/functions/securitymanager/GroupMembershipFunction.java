@@ -220,10 +220,8 @@ public class GroupMembershipFunction extends BasicFunction {
                     throw new XPathException("Unknown function call: " + getSignature());
                 }
             }
-        } catch(final PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException | EXistException pde) {
             throw new XPathException(this, pde);
-        } catch(final EXistException ee) {
-            throw new XPathException(this, ee);
         }
 
         return result;
@@ -292,7 +290,7 @@ public class GroupMembershipFunction extends BasicFunction {
     }
 
     private List<Account> getUsers(final SecurityManager securityManager, final Sequence seq) throws XPathException {
-        final List<Account> accounts = new ArrayList<Account>();
+        final List<Account> accounts = new ArrayList<>();
         for(int i = 0; i < seq.getItemCount(); i++) {
             final String user = seq.itemAt(i).toString();
             final Account account = securityManager.getAccount(user);

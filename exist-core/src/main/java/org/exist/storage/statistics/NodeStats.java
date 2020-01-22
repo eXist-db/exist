@@ -74,8 +74,7 @@ class NodeStats {
 
     protected NodeStats addChild(QName qn) {
         if (children != null) {
-            for (int i = 0; i < children.length; i++) {
-                final NodeStats child = children[i];
+            for (final NodeStats child : children) {
                 if (child.qname.equals(qn)) {
                     return child;
                 }
@@ -103,8 +102,7 @@ class NodeStats {
         }
 
         if (children != null) {
-            for (int i = 0; i < children.length; i++) {
-                final NodeStats child = children[i];
+            for (final NodeStats child : children) {
                 child.mergeInto(other, newPath);
             }
         }
@@ -119,8 +117,8 @@ class NodeStats {
     protected int getSize() {
         int s = qname == null ? 0 : 1;
         if (children != null) {
-            for (int i = 0; i < children.length; i++) {
-                s += children[i].getSize();
+            for (NodeStats child : children) {
+                s += child.getSize();
             }
         }
         return s;
@@ -131,8 +129,8 @@ class NodeStats {
             max.maxDepth = Math.max(parent.maxDepth, max.maxDepth);
         }
         if (children != null) {
-            for (int i = 0; i < children.length; i++) {
-                children[i].getMaxParentDepth(name, max);
+            for (NodeStats child : children) {
+                child.getMaxParentDepth(name, max);
             }
         }
     }
@@ -145,8 +143,8 @@ class NodeStats {
 
         buffer.putInt(children == null ? 0: children.length);
         if (children != null) {
-            for (int i = 0; i < children.length; i++) {
-                children[i].write(buffer, symbols);
+            for (NodeStats child : children) {
+                child.write(buffer, symbols);
             }
         }
     }
@@ -185,8 +183,7 @@ class NodeStats {
         }
         paths.add(newPath);
         if (children != null) {
-            for (int i = 0; i < children.length; i++) {
-                final NodeStats child = children[i];
+            for (final NodeStats child : children) {
                 child.dump(newPath, paths);
             }
         }
@@ -200,8 +197,8 @@ class NodeStats {
         attribs.addAttribute("", "max-depth", "max-depth", "CDATA", Integer.toString(maxDepth));
         handler.startElement(Namespaces.EXIST_NS, "node", "node", attribs);
         if (children != null) {
-            for (int i = 0; i < children.length; i++) {
-                children[i].toSAX(handler);
+            for (NodeStats child : children) {
+                child.toSAX(handler);
             }
         }
         handler.endElement(Namespaces.EXIST_NS, "node", "node");

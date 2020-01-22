@@ -239,7 +239,7 @@ public class WeakLazyStripes<K, S> {
         }
         if (stripeRef == null || stripeRef.get() == null) {
             final long writeStamp = stripesLock.tryConvertToWriteLock(stamp);
-            if (writeStamp != 0l) {
+            if (writeStamp != 0L) {
                 final boolean wasGCd = stripeRef != null && stripeRef.get() == null;
                 try {
                     stripeRef = new WeakValueReference<>(key, creator.apply(key), referenceQueue);
@@ -287,7 +287,7 @@ public class WeakLazyStripes<K, S> {
             stripeRef = stripes.get(key);
             if (stripeRef == null || stripeRef.get() == null) {
                 final long writeStamp = stripesLock.tryConvertToWriteLock(stamp);
-                if (writeStamp != 0l) {
+                if (writeStamp != 0L) {
                     final boolean wasGCd = stripeRef != null && stripeRef.get() == null;
 
                     stamp = writeStamp;  // NOTE: this causes the write lock to be released in the finally further down

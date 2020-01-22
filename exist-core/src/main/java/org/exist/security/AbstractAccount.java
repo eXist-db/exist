@@ -133,8 +133,8 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
             addGroup(group);
         }
 
-        Collections.sort(groups, (final Group o1, final Group o2) -> {
-            if(o1.getName().equals(group.getName())) {
+        groups.sort((final Group o1, final Group o2) -> {
+            if (o1.getName().equals(group.getName())) {
                 return -1;
             } else {
                 return 1;

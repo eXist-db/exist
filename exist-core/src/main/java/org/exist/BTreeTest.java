@@ -28,9 +28,7 @@ public class BTreeTest {
 
             BrokerPool.configure(1, 5, config);
             pool = BrokerPool.getInstance();
-        } catch (DatabaseConfigurationException e) {
-            e.printStackTrace();
-        } catch (EXistException e) {
+        } catch (DatabaseConfigurationException | EXistException e) {
             e.printStackTrace();
         }
     }
@@ -41,9 +39,7 @@ public class BTreeTest {
 
     public void create(int count) throws DBException, IOException {
         FileUtils.deleteQuietly(file);
-        BTree btree = null;
-        try {
-            btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file);
+        try (BTree btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file)) {
             btree.create((short) -1);
 
             String prefixStr = "KEY";
@@ -53,13 +49,9 @@ public class BTreeTest {
             }
             btree.flush();
 
-            try(final OutputStreamWriter writer = new OutputStreamWriter(System.out)) {
+            try (final OutputStreamWriter writer = new OutputStreamWriter(System.out)) {
                 btree.dump(writer);
                 writer.flush();
-            }
-        } finally {
-            if (btree != null) {
-                btree.close();
             }
         }
     }
@@ -125,11 +117,7 @@ public class BTreeTest {
             } else if ("rebuild".equals(command)) {
                 test.rebuild();
             }
-        } catch (DBException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TerminatedException e) {
+        } catch (DBException | TerminatedException | IOException e) {
             e.printStackTrace();
         } finally {
             test.shutdown();

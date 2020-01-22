@@ -48,7 +48,7 @@ public class PatternFactory {
     }
 
     public Pattern getPattern(final String pattern) {
-        return cache.get(pattern, ptn -> Pattern.compile(ptn));
+        return cache.get(pattern, Pattern::compile);
     }
 
     public Pattern getPattern(final String pattern, final int flags) {

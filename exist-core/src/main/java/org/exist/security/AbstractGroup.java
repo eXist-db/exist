@@ -48,10 +48,10 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     
     @ConfigurationFieldAsElement("manager")
     @ConfigurationReferenceBy("name")
-    private List<Reference<SecurityManager, Account>> managers = new ArrayList<Reference<SecurityManager, Account>>();
+    private List<Reference<SecurityManager, Account>> managers = new ArrayList<>();
     
     @ConfigurationFieldAsElement("metadata")
-    private Map<String, String> metadata = new HashMap<String, String>();
+    private Map<String, String> metadata = new HashMap<>();
 
     public AbstractGroup(final DBBroker broker, final AbstractRealm realm, final int id, final String name, final List<Account> managers) throws ConfigurationException {
         super(broker, realm, realm.collectionGroups, id, name);
@@ -136,11 +136,11 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
 
         //add the manager
         managers.add(
-            new ReferenceImpl<SecurityManager, Account>(
-                getRealm().getSecurityManager(),
-                account,
-                account.getName()
-            )
+                new ReferenceImpl<>(
+                        getRealm().getSecurityManager(),
+                        account,
+                        account.getName()
+                )
         );
     }
 
@@ -173,7 +173,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
             }
         }
 
-        managers.add(new ReferenceImpl<SecurityManager, Account>(getRealm().getSecurityManager(), "getAccount", name));
+        managers.add(new ReferenceImpl<>(getRealm().getSecurityManager(), "getAccount", name));
     }
 
     @Override
@@ -183,7 +183,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
         //under some cases it is possible for the same manager to
         //appear twice in a group config file, but we only want
         //to know about them once!
-    	final Set<Account> set = new HashSet<Account>();
+    	final Set<Account> set = new HashSet<>();
     	
         if(managers != null) {
             for(final Reference<SecurityManager, Account> ref : managers) {
@@ -196,7 +196,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
             }
         }
     	
-        return new ArrayList<Account>(set);
+        return new ArrayList<>(set);
     }
 
     @Override
@@ -231,7 +231,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
 
     @Override
     public Set<SchemaType> getMetadataKeys() {
-        final Set<SchemaType> metadataKeys = new HashSet<SchemaType>();
+        final Set<SchemaType> metadataKeys = new HashSet<>();
         
         for(final String key : metadata.keySet()) {
             //XXX: other types?

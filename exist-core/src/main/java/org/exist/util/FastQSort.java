@@ -488,9 +488,8 @@ public final class FastQSort {
 				"Willi",
 				"Heinz"
 			};
-		
-			for (int i = 0; i < a.length; i++)
-				l.add(a[i]);
+
+            for (String s : a) l.add(s);
 		} else {
 			System.err.println("Ordering file "+args[0]+"\n");
 			try(final java.io.BufferedReader is=new java.io.BufferedReader(new java.io.FileReader(args[0]))) {
@@ -507,7 +506,6 @@ public final class FastQSort {
 		sort(l, 0, l.size() - 1);
 		b=System.currentTimeMillis();
 		System.err.println("Ellapsed time: "+(b-a)+" size: "+l.size());
-		for (int i = 0; i < l.size(); i++)
-			System.out.println(l.get(i));
+        for (String s : l) System.out.println(s);
 	}
 }

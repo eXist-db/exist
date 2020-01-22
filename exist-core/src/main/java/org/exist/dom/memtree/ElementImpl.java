@@ -516,7 +516,7 @@ public class ElementImpl extends NodeImpl implements Element {
      * @return a <code>Map</code> value
      */
     public Map<String, String> getNamespaceMap() {
-        return getNamespaceMap(new HashMap<String, String>());
+        return getNamespaceMap(new HashMap<>());
     }
 
     public Map<String, String> getNamespaceMap(final Map<String, String> map) {

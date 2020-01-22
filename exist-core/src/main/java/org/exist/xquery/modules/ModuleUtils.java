@@ -344,7 +344,7 @@ public class ModuleUtils {
             Map<Long, T> map = (Map<Long, T>)context.getAttribute(contextMapName);
             if(map == null) {
                 //create a new map if it doesnt exist
-                map = new HashMap<Long, T>();
+                map = new HashMap<>();
                 context.setAttribute(contextMapName, map);
             }
             
@@ -388,7 +388,7 @@ public class ModuleUtils {
 
             if(map == null) {
                 // if there is no map, create a new one
-                map = new HashMap<Long, T>();
+                map = new HashMap<>();
             }
 
             // get an id for the map

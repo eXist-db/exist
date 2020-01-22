@@ -284,29 +284,28 @@ public class VirtualNodeSet extends AbstractNodeSet {
      */
     private NodeSet getNodes() {
         final NewArrayNodeSet result = new NewArrayNodeSet();
-        for(final Iterator<NodeProxy> i = context.iterator(); i.hasNext(); ) {
-            final NodeProxy proxy = i.next();
-            if(proxy.getNodeId() == NodeId.DOCUMENT_NODE) {
-                if(proxy.getOwnerDocument().getResourceType() == DocumentImpl.BINARY_FILE) {
+        for (final NodeProxy proxy : context) {
+            if (proxy.getNodeId() == NodeId.DOCUMENT_NODE) {
+                if (proxy.getOwnerDocument().getResourceType() == DocumentImpl.BINARY_FILE) {
                     // skip binary resources
                     continue;
                 }
                 // Add root node if axis is either self, ancestor-self or descendant-self /ljo
-                if((axis == Constants.SELF_AXIS ||
-                    axis == Constants.ANCESTOR_SELF_AXIS ||
-                    axis == Constants.DESCENDANT_SELF_AXIS) &&
-                    test.matches(proxy)) {
+                if ((axis == Constants.SELF_AXIS ||
+                        axis == Constants.ANCESTOR_SELF_AXIS ||
+                        axis == Constants.DESCENDANT_SELF_AXIS) &&
+                        test.matches(proxy)) {
                     result.add(proxy);
                 }
-                if((axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS) &&
-                    proxy.getOwnerDocument().getChildCount() == 1) {
+                if ((axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS) &&
+                        proxy.getOwnerDocument().getChildCount() == 1) {
                     // Optimization: if the document has just 1 child node, we know that
                     // it has to be an element. Instead of calling Document.getChildNodes(),
                     // we just create a NodeProxy for the first child and return it if the
                     // test matches
                     final NodeProxy p = proxy.getOwnerDocument().getFirstChildProxy();
-                    if(test.matches(p)) {
-                        if(useSelfAsContext && inPredicate) {
+                    if (test.matches(p)) {
+                        if (useSelfAsContext && inPredicate) {
                             p.addContextNode(contextId, p);
                         }
                         p.addMatches(proxy);
@@ -314,44 +313,44 @@ public class VirtualNodeSet extends AbstractNodeSet {
                     }
                 } else {
                     final NodeList cl = proxy.getOwnerDocument().getChildNodes();
-                    for(int j = 0; j < cl.getLength(); j++) {
+                    for (int j = 0; j < cl.getLength(); j++) {
                         final IStoredNode<?> node = (IStoredNode<?>) cl.item(j);
                         final NodeProxy p = new NodeProxy(node);
-                        if(test.matches(p)) {
+                        if (test.matches(p)) {
                             // fixme! check for unwanted
                             // side effects. /ljo
                             //p.deepCopyContext(proxy);
-                            if(useSelfAsContext && inPredicate) {
+                            if (useSelfAsContext && inPredicate) {
                                 p.addContextNode(contextId, p);
                             }
                             result.add(p);
                         }
-                        if(node.getNodeType() == Node.ELEMENT_NODE &&
-                            (axis == Constants.DESCENDANT_AXIS ||
-                                axis == Constants.DESCENDANT_SELF_AXIS ||
-                                axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
+                        if (node.getNodeType() == Node.ELEMENT_NODE &&
+                                (axis == Constants.DESCENDANT_AXIS ||
+                                        axis == Constants.DESCENDANT_SELF_AXIS ||
+                                        axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
                             // note: we create a copy of the docElemProxy here to
                             // be used as context when traversing the tree.
                             final NodeProxy contextNode = new NodeProxy(p);
                             contextNode.deepCopyContext(proxy);
                             //TODO : is this StoredNode construction necessary ?
-                            try(final INodeIterator domIter = broker.getNodeIterator(contextNode.asStoredNode())) {
+                            try (final INodeIterator domIter = broker.getNodeIterator(contextNode.asStoredNode())) {
                                 domIter.next();
                                 contextNode.setMatches(proxy.getMatches());
                                 addChildren(contextNode, result, node, domIter, 0);
-                            } catch(final IOException ioe) {
+                            } catch (final IOException ioe) {
                                 LOG.warn("Unable to close iterator", ioe);
                             }
                         }
-                        if(node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
-                            && (axis == Constants.CHILD_AXIS ||
-                            axis == Constants.DESCENDANT_AXIS ||
-                            axis == Constants.DESCENDANT_SELF_AXIS ||
-                            // fixme! self axis probably not needed /ljo
-                            axis == Constants.SELF_AXIS ||
-                            axis == Constants.PRECEDING_AXIS ||
-                            axis == Constants.FOLLOWING_AXIS)
-                            && test.matches(node)) {
+                        if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
+                                && (axis == Constants.CHILD_AXIS ||
+                                axis == Constants.DESCENDANT_AXIS ||
+                                axis == Constants.DESCENDANT_SELF_AXIS ||
+                                // fixme! self axis probably not needed /ljo
+                                axis == Constants.SELF_AXIS ||
+                                axis == Constants.PRECEDING_AXIS ||
+                                axis == Constants.FOLLOWING_AXIS)
+                                && test.matches(node)) {
 
                             result.add(p);
                         }
@@ -359,46 +358,46 @@ public class VirtualNodeSet extends AbstractNodeSet {
                 }
                 continue;
             }
-            if((axis == Constants.SELF_AXIS ||
-                axis == Constants.ANCESTOR_SELF_AXIS ||
-                axis == Constants.DESCENDANT_SELF_AXIS) &&
-                test.matches(proxy)) {
-                if(useSelfAsContext && inPredicate) {
+            if ((axis == Constants.SELF_AXIS ||
+                    axis == Constants.ANCESTOR_SELF_AXIS ||
+                    axis == Constants.DESCENDANT_SELF_AXIS) &&
+                    test.matches(proxy)) {
+                if (useSelfAsContext && inPredicate) {
                     proxy.addContextNode(contextId, proxy);
                 }
                 result.add(proxy);
             }
-            if(test.getType() == Type.PROCESSING_INSTRUCTION ||
-                test.getType() == Type.COMMENT ||
-                test.getType() == Type.CDATA_SECTION) {
+            if (test.getType() == Type.PROCESSING_INSTRUCTION ||
+                    test.getType() == Type.COMMENT ||
+                    test.getType() == Type.CDATA_SECTION) {
                 final DocumentImpl doc = proxy.getOwnerDocument();
-                if(axis == Constants.PRECEDING_AXIS) {
+                if (axis == Constants.PRECEDING_AXIS) {
                     IStoredNode<?> ps = (IStoredNode<?>) doc.getFirstChild();
                     final IStoredNode<?> pe = (IStoredNode<?>) doc.getDocumentElement();
-                    while(ps != null && !ps.equals(pe)) {
-                        if(test.matches(ps)) {
+                    while (ps != null && !ps.equals(pe)) {
+                        if (test.matches(ps)) {
                             result.add(new NodeProxy(ps));
                         }
                         ps = (IStoredNode<?>) doc.getFollowingSibling(ps);
                     }
                 }
-                if(axis == Constants.FOLLOWING_AXIS) {
+                if (axis == Constants.FOLLOWING_AXIS) {
                     final IStoredNode<?> pe = (IStoredNode<?>) doc.getDocumentElement();
                     IStoredNode<?> pf = (IStoredNode<?>) doc.getFollowingSibling(pe);
-                    while(pf != null) {
-                        if(test.matches(pf)) {
+                    while (pf != null) {
+                        if (test.matches(pf)) {
                             result.add(new NodeProxy(pf));
                         }
                         pf = (IStoredNode<?>) doc.getFollowingSibling(pf);
                     }
                 }
-                if(axis == Constants.SELF_AXIS ||
-                    axis == Constants.ANCESTOR_SELF_AXIS ||
-                    axis == Constants.DESCENDANT_SELF_AXIS) {
+                if (axis == Constants.SELF_AXIS ||
+                        axis == Constants.ANCESTOR_SELF_AXIS ||
+                        axis == Constants.DESCENDANT_SELF_AXIS) {
                     result.add(proxy);
                 }
             }
-            if(axis != Constants.SELF_AXIS) {
+            if (axis != Constants.SELF_AXIS) {
                 addChildren(proxy, result);
             }
         }
@@ -527,13 +526,11 @@ public class VirtualNodeSet extends AbstractNodeSet {
                     ++level;
                 }
             }
-        } catch(final IOException e) {
+        } catch(final IOException | XMLStreamException e) {
             LOG.error(e);
             //TODO : throw exception ,
-        } catch(final XMLStreamException e) {
-            LOG.error(e);
-            //TODO : throw exception ? -pb
-        }
+        } //TODO : throw exception ? -pb
+
     }
 
     /**
@@ -557,8 +554,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
     public void setSelfIsContext() {
         useSelfAsContext = true;
         if(realSet != null && realSetIsComplete) {
-            for(final Iterator<NodeProxy> i = realSet.iterator(); i.hasNext(); ) {
-                final NodeProxy p = i.next();
+            for (final NodeProxy p : realSet) {
                 p.addContextNode(contextId, p);
             }
         }

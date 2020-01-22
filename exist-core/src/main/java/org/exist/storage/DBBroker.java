@@ -137,7 +137,7 @@ public abstract class DBBroker implements AutoCloseable {
         this.config = config;
         final Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
         if (temp != null) {
-            caseSensitive = temp.booleanValue();
+            caseSensitive = temp;
         }
         this.pool = pool;
         this.preserveOnCopy = config.getProperty(PRESERVE_ON_COPY_PROPERTY, PreserveType.NO_PRESERVE);
@@ -240,7 +240,7 @@ public abstract class DBBroker implements AutoCloseable {
     }
 
     /** Observer Design Pattern: List of ContentLoadingObserver objects */
-    protected List<ContentLoadingObserver> contentLoadingObservers = new ArrayList<ContentLoadingObserver>();	
+    protected List<ContentLoadingObserver> contentLoadingObservers = new ArrayList<>();
 
     /** Remove all observers */
     public void clearContentLoadingObservers() {
@@ -1100,7 +1100,7 @@ public abstract class DBBroker implements AutoCloseable {
     /**
      * Reads and populates the metadata for a sub-Collection
      *
-     * The entry to read is determined by {@link SubCollectionEntry#uri}
+     * The entry to read is determined by {@link SubCollectionEntry#getUri()}
      *
      * NOTE: It is assumed that the caller holds a {@link LockMode#READ_LOCK} (or better)
      * on the Collection indicated in `entry`.

@@ -68,7 +68,7 @@ public class StylesheetResolverAndCompiler implements Stylesheet {
   public StylesheetResolverAndCompiler(String uri) {
     this.uri = uri;
 
-    final int p = uri.lastIndexOf("/");
+    final int p = uri.lastIndexOf('/');
     if (p != Constants.STRING_NOT_FOUND) {
       base = uri.substring(0, p);
     } else {

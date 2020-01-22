@@ -124,13 +124,11 @@ class IndexDialog extends JFrame {
         {
             final Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
             final ArrayList alAllCollections = getCollections(root, new ArrayList());
-            for(int i = 0; i < alAllCollections.size(); i++)
-            {
-            	//TODO : use XmldbURIs !
-            	if(alAllCollections.get(i).toString().contains(CollectionConfigurationManager.CONFIG_COLLECTION))
-            	{
-            		alCollections.add(alAllCollections.get(i));
-            	}
+            for (Object alAllCollection : alAllCollections) {
+                //TODO : use XmldbURIs !
+                if (alAllCollection.toString().contains(CollectionConfigurationManager.CONFIG_COLLECTION)) {
+                    alCollections.add(alAllCollection);
+                }
             }
         }
         catch (final XMLDBException e)
@@ -278,9 +276,8 @@ class IndexDialog extends JFrame {
 
                                 ArrayList subCollections = getCollections(client.getCollection((String)cmbCollections.getSelectedItem()), new ArrayList());
 
-                                for(int i = 0; i < subCollections.size(); i++)
-                                {
-                                    service.reindexCollection(((ResourceDescriptor)subCollections.get(i)).getName());
+                                for (Object subCollection : subCollections) {
+                                    service.reindexCollection(((ResourceDescriptor) subCollection).getName());
                                 }
 
                                 //reindex done

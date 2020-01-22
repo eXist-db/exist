@@ -203,7 +203,7 @@ public class BlockingInputStream extends InputStream {
      * 
      * 
      * @param b   the <code>byte</code>.
-     * @throws ExistIOException  if an I/O error occurs. In particular, 
+     * @throws IOException  if an I/O error occurs. In particular,
      *             an <code>ExistIOException</code> may be thrown if the 
      *             output stream has been closed.
      */

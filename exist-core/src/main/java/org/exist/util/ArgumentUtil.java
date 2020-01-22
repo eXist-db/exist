@@ -67,7 +67,7 @@ public class ArgumentUtil {
      */
     public static <T> List<T> getListOpt(final ParsedArguments parsedArguments, final Argument<List<T>> argument) {
         return getOpt(parsedArguments, argument)
-                .orElseGet(() -> Collections.emptyList());
+                .orElseGet(Collections::emptyList);
     }
 
     /**

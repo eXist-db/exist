@@ -327,9 +327,7 @@ public class Deployment {
                 }
 
                 return target.map(e -> Optional.ofNullable(e.getStringValue())).orElseGet(() -> Optional.of(getTargetFallback(pkg.get()).getCollectionPath()));
-            } catch (final XPathException e) {
-                throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
-            } catch (final IOException e) {
+            } catch (final XPathException | IOException e) {
                 throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
             }
         } else {
@@ -636,7 +634,7 @@ public class Deployment {
             if (!secman.hasAccount(requestedPerms.user)) {
                 final UserAider aider = new UserAider(requestedPerms.user);
                 aider.setPassword(requestedPerms.password);
-                requestedPerms.group.ifPresent(groupName -> aider.addGroup(groupName));
+                requestedPerms.group.ifPresent(aider::addGroup);
                 secman.addAccount(broker, aider);
             }
         } catch (final PermissionDeniedException | EXistException e) {

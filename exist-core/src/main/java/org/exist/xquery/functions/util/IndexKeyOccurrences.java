@@ -99,7 +99,7 @@ public class IndexKeyOccurrences extends BasicFunction {
 	        	//IndexWorker indexWorker = context.getBroker().getBrokerPool().getIndexManager().getIndexByName(args[2].itemAt(0).getStringValue()).getWorker();
 	        	if (indexWorker == null)
 	        		{throw new XPathException(this, "Unknown index: " + args[2].itemAt(0).getStringValue());}
-	        	final Map<String, Object> hints = new HashMap<String, Object>();
+	        	final Map<String, Object> hints = new HashMap<>();
 	        	if (indexWorker instanceof OrderedValuesIndex)
 	        		{hints.put(OrderedValuesIndex.START_VALUE, args[1]);}
 	        	else

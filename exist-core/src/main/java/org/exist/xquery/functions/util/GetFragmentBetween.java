@@ -253,7 +253,7 @@ public class GetFragmentBetween extends BasicFunction {
             final String nsPrefix = reader.getNamespacePrefix(ni);
             final String nsUri = reader.getNamespaceURI(ni);
             String nsString = "xmlns:" + nsPrefix + "=\"" + nsUri + "\"";
-            if (nsPrefix != null && "".equals(nsPrefix)) {
+            if (nsPrefix != null && nsPrefix.isEmpty()) {
                 nsString = "xmlns" + "=\"" + nsUri + "\"";
             }
             elemNsString.append(" ").append(nsString);

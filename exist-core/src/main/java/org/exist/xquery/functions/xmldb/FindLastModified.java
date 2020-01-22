@@ -82,21 +82,21 @@ public class FindLastModified extends BasicFunction {
 		final DateTimeValue dtv = (DateTimeValue) args[1].itemAt(0);
 		final long lastModified = dtv.getDate().getTime();
 
-		for (final NodeSetIterator i = nodes.iterator(); i.hasNext(); ) {
-			final NodeProxy proxy = i.next();
-			final DocumentImpl doc = proxy.getOwnerDocument();
-			final long modified = doc.getMetadata().getLastModified();
+        for (final NodeProxy proxy : nodes) {
+            final DocumentImpl doc = proxy.getOwnerDocument();
+            final long modified = doc.getMetadata().getLastModified();
 
-			boolean matches;
-			if (this.isCalledAs("find-last-modified-since")) {
-				matches = modified > lastModified;
-			} else {
-				matches = modified <= lastModified;
-			}
+            boolean matches;
+            if (this.isCalledAs("find-last-modified-since")) {
+                matches = modified > lastModified;
+            } else {
+                matches = modified <= lastModified;
+            }
 
-			if (matches)
-				{result.add(proxy);}
-		}
+            if (matches) {
+                result.add(proxy);
+            }
+        }
 		return result;
 	}
 

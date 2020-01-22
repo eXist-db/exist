@@ -82,7 +82,7 @@ public class CallFunction extends Function {
         try (final FunctionReference ref = (FunctionReference)item0) {
 
             // pass the remaining parameters to the function call
-            final List<Expression> params = new ArrayList<Expression>(getArgumentCount() - 1);
+            final List<Expression> params = new ArrayList<>(getArgumentCount() - 1);
             for (int i = 1; i < getArgumentCount(); i++) {
                 params.add(getArgument(i));
             }

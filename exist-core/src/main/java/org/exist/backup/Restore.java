@@ -71,9 +71,8 @@ public class Restore {
 
         // count all files
         long totalNrOfFiles = 0;
-        Iterator<BackupDescriptor> bdIterator = descriptors.iterator();
-        while(bdIterator.hasNext()){
-            totalNrOfFiles += bdIterator.next().getNumberOfFiles();
+        for (BackupDescriptor backupDescriptor : descriptors) {
+            totalNrOfFiles += backupDescriptor.getNumberOfFiles();
         }
 
         // continue restore

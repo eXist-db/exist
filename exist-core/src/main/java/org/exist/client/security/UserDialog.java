@@ -406,11 +406,8 @@ public class UserDialog extends javax.swing.JFrame {
             try {
                 groupAider.addManager(userAider);
                 getUserManagementService().updateGroup(groupAider);
-            } catch(final XMLDBException xmldbe) {
+            } catch(final XMLDBException | PermissionDeniedException xmldbe) {
                 JOptionPane.showMessageDialog(this, "Could not set user '" + txtUsername.getText() + "' as manager of personal group '" + txtUsername.getText() + "': " + xmldbe.getMessage(), "Create User Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            } catch(final PermissionDeniedException pde) {
-                JOptionPane.showMessageDialog(this, "Could not set user '" + txtUsername.getText() + "' as manager of personal group '" + txtUsername.getText() + "': " + pde.getMessage(), "Create User Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
         }
@@ -514,7 +511,7 @@ public class UserDialog extends javax.swing.JFrame {
         if(availableGroupsModel == null) {
             try {
                 final String groupNames[] = getUserManagementService().getGroups();
-                availableGroupsModel = new SortedListModel<String>();
+                availableGroupsModel = new SortedListModel<>();
                 availableGroupsModel.addAll(groupNames);
             } catch (final XMLDBException xmldbe) {
                 JOptionPane.showMessageDialog(this, "Could not get available groups: " + xmldbe.getMessage(), "Create User Error", JOptionPane.ERROR_MESSAGE);
@@ -525,7 +522,7 @@ public class UserDialog extends javax.swing.JFrame {
     
     protected SortedListModel getMemberOfGroupsListModel() {
         if(memberOfGroupsModel == null) {
-            memberOfGroupsModel = new SortedListModel<String>();
+            memberOfGroupsModel = new SortedListModel<>();
         }
         return memberOfGroupsModel;
     }

@@ -265,7 +265,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
 
     @Override
     public String getName() throws XMLDBException {
-        return withDb((broker, transaction) -> getName(broker, transaction));
+        return withDb(this::getName);
     }
 
     /**
@@ -784,7 +784,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      * @throws XMLDBException if the collection could not be read
      */
     protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read() throws XMLDBException {
-        return readOp -> this.<R>read(path).apply((collection, broker, transaction) -> readOp.apply(collection, broker, transaction));
+        return readOp -> this.<R>read(path).apply(readOp::apply);
     }
 
     /**
@@ -799,7 +799,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      * @throws XMLDBException if the collection could not be read
      */
     private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final int errorCode) throws XMLDBException {
-        return readOp -> this.<R>read(path, errorCode).apply((collection, broker, transaction) -> readOp.apply(collection, broker, transaction));
+        return readOp -> this.<R>read(path, errorCode).apply(readOp::apply);
     }
 
     /**
@@ -813,7 +813,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      * @return A function to receive a read-only operation to perform against the collection
      */
     private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final DBBroker broker, final Txn transaction) throws XMLDBException {
-        return readOp -> this.<R>read(broker, transaction, path).apply((collection, broker1, transaction1) -> readOp.apply(collection, broker1, transaction1));
+        return readOp -> this.<R>read(broker, transaction, path).apply(readOp::apply);
     }
 
     /**
@@ -830,7 +830,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      * @throws XMLDBException if the collection could not be read
      */
     private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final DBBroker broker, final Txn transaction, final int errorCode) throws XMLDBException {
-        return readOp -> this.<R>read(broker, transaction, path, errorCode).apply((collection, broker1, transaction1) -> readOp.apply(collection, broker1, transaction1));
+        return readOp -> this.<R>read(broker, transaction, path, errorCode).apply(readOp::apply);
     }
 
     /**
@@ -845,7 +845,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      * @throws XMLDBException if the collection could not be modified
      */
     private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> modify() throws XMLDBException {
-        return modifyOp -> this.<R>modify(path).apply((collection, broker, transaction) -> modifyOp.apply(collection, broker, transaction));
+        return modifyOp -> this.<R>modify(path).apply(modifyOp::apply);
     }
 
     /**
@@ -862,7 +862,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      * @throws XMLDBException if the collection could not be modified
      */
     private <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> modify(final DBBroker broker, final Txn transaction) throws XMLDBException {
-        return modifyOp -> this.<R>modify(broker, transaction, path).apply((collection, broker1, transaction1) -> modifyOp.apply(collection, broker1, transaction1));
+        return modifyOp -> this.<R>modify(broker, transaction, path).apply(modifyOp::apply);
     }
 
     /**
@@ -878,6 +878,6 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      * @throws XMLDBException if the the operation raises an error
      */
     protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> with(final LockMode lockMode, final DBBroker broker, final Txn transaction) throws XMLDBException {
-        return op -> this.<R>with(lockMode, broker, transaction, path).apply((collection, broker1, transaction1) -> op.apply(collection, broker1, transaction1));
+        return op -> this.<R>with(lockMode, broker, transaction, path).apply(op::apply);
     }
 }

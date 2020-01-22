@@ -87,20 +87,21 @@ public class ValueComparison extends GeneralComparison {
 		final NodeSet result = new ExtArrayNodeSet();
         final Collator collator = getCollator(contextSequence);
         if (contextSequence != null && !contextSequence.isEmpty()) {
-            for (final Iterator<NodeProxy> i = nodes.iterator(); i.hasNext();) {
-                final NodeProxy current = i.next();
+            for (final NodeProxy current : nodes) {
                 ContextItem context = current.getContext();
-                if (context==null) {
-                   throw new XPathException(this,"Context is missing for node set comparison");
+                if (context == null) {
+                    throw new XPathException(this, "Context is missing for node set comparison");
                 }
                 do {
                     final AtomicValue lv = current.atomize();
-                    final Sequence rs = getRight().eval(context.getNode().toSequence());                    
-                    if (!rs.hasOne())
-                        {throw new XPathException(this,
-                                "Type error: sequence with less or more than one item is not allowed here");}                    
-                    if (compareAtomic(collator, lv, rs.itemAt(0).atomize(), StringTruncationOperator.NONE, relation))
-                        {result.add(current);}
+                    final Sequence rs = getRight().eval(context.getNode().toSequence());
+                    if (!rs.hasOne()) {
+                        throw new XPathException(this,
+                                "Type error: sequence with less or more than one item is not allowed here");
+                    }
+                    if (compareAtomic(collator, lv, rs.itemAt(0).atomize(), StringTruncationOperator.NONE, relation)) {
+                        result.add(current);
+                    }
                 } while ((context = context.getNextDirect()) != null);
             }
         } else {
@@ -109,11 +110,11 @@ public class ValueComparison extends GeneralComparison {
                 {throw new XPathException(this,
                         "Type error: sequence with less or more than one item is not allowed here");}
             final AtomicValue rv = rs.itemAt(0).atomize();
-            for (final Iterator<NodeProxy> i = nodes.iterator(); i.hasNext();) {
-                final NodeProxy current = i.next();
+            for (final NodeProxy current : nodes) {
                 final AtomicValue lv = current.atomize();
-                if (compareAtomic(collator, lv, rv, StringTruncationOperator.NONE, Comparison.EQ))
-                    {result.add(current);}
+                if (compareAtomic(collator, lv, rv, StringTruncationOperator.NONE, Comparison.EQ)) {
+                    result.add(current);
+                }
             }
         }
         return result;

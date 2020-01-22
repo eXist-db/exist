@@ -147,7 +147,7 @@ public class FunId extends Function {
     			nextId = i.nextItem().getStringValue();
                 if (nextId.length() == 0)
                     {continue;}
-    			if(nextId.indexOf(" ") != Constants.STRING_NOT_FOUND) {
+    			if(nextId.indexOf(' ') != Constants.STRING_NOT_FOUND) {
     				// parse idrefs
     				final StringTokenizer tok = new StringTokenizer(nextId, " ");
     				while(tok.hasMoreTokens()) {

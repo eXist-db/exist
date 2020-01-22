@@ -21,6 +21,8 @@
  */
 package org.exist.dom.persistent;
 
+import antlr.RecognitionException;
+import antlr.TokenStreamException;
 import antlr.collections.AST;
 
 import org.exist.EXistException;
@@ -82,8 +84,7 @@ public class SortedNodeSet extends AbstractNodeSet {
     public void addAll(final NodeSet other) {
         final long start = System.currentTimeMillis();
         final MutableDocumentSet docs = new DefaultDocumentSet();
-        for(final Iterator<NodeProxy> i = other.iterator(); i.hasNext(); ) {
-            final NodeProxy p = i.next();
+        for (final NodeProxy p : other) {
             docs.add(p.getOwnerDocument());
         }
         // TODO(pkaminsk2): why replicate XQuery.compile here?
@@ -111,13 +112,9 @@ public class SortedNodeSet extends AbstractNodeSet {
                 final IteratorItem item = new IteratorItem(p, expr);
                 list.add(item);
             }
-        } catch(final antlr.RecognitionException re) {
+        } catch(final RecognitionException | TokenStreamException re) {
             LOG.debug(re); //TODO : throw exception ! -pb
-        } catch(final antlr.TokenStreamException tse) {
-            LOG.debug(tse); //TODO : throw exception ! -pb
-        } catch(final EXistException e) {
-            LOG.debug("Exception during sort", e); //TODO : throw exception ! -pb
-        } catch(final XPathException e) {
+        } catch(final EXistException | XPathException e) {
             LOG.debug("Exception during sort", e); //TODO : throw exception ! -pb
         }
         LOG.debug("sort-expression found " + list.size() + " in "

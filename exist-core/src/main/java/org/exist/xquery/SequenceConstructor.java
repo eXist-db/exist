@@ -45,15 +45,15 @@ public class SequenceConstructor extends PathExpr {
         unordered = (contextInfo.getFlags() & UNORDERED) > 0;
         contextId = contextInfo.getContextId();
         int staticType = Type.ANY_TYPE;
-        for (int i = 0 ; i < steps.size() ; i++) {
-            final Expression expr = steps.get(i);
+        for (final Expression expr : steps) {
             //Create a new context info because each sequence expression could modify it (add/remove flags...)
             final AnalyzeContextInfo info = new AnalyzeContextInfo(contextInfo);
             expr.analyze(info);
-            if (staticType == Type.ANY_TYPE)
-                {staticType = info.getStaticReturnType();}
-            else if (staticType != Type.ITEM && staticType != info.getStaticReturnType())
-                {staticType = Type.ITEM;}
+            if (staticType == Type.ANY_TYPE) {
+                staticType = info.getStaticReturnType();
+            } else if (staticType != Type.ITEM && staticType != info.getStaticReturnType()) {
+                staticType = Type.ITEM;
+            }
         }
         contextInfo.setStaticReturnType(staticType);
     }

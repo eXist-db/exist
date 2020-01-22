@@ -35,10 +35,10 @@ public abstract class NumberFormatter {
      * @return the zero digit
      */
     public static int getZeroDigit(int val) {
-        for (int z = 0; z < zeroDigits.length; z++) {
-            if (val <= zeroDigits[z] + 9) {
-                if (val >= zeroDigits[z]) {
-                    return zeroDigits[z];
+        for (int zeroDigit : zeroDigits) {
+            if (val <= zeroDigit + 9) {
+                if (val >= zeroDigit) {
+                    return zeroDigit;
                 } else {
                     return -1;
                 }

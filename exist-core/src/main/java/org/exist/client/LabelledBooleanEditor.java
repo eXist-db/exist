@@ -52,12 +52,9 @@ public class LabelledBooleanEditor extends AbstractCellEditor implements TableCe
         chkBox.setHorizontalAlignment(SwingConstants.LEFT);
         chkBox.setHorizontalTextPosition(SwingConstants.RIGHT);
         
-        chkBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                current = lb.copy(!lb.isSet());
-                fireEditingStopped(); //notify that editing is done!
-            }
+        chkBox.addActionListener(e -> {
+            current = lb.copy(!lb.isSet());
+            fireEditingStopped(); //notify that editing is done!
         });
         
         return chkBox;

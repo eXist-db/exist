@@ -163,7 +163,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
      * within the XUpdate will be added to this list. The final list
      * will be returned to the caller.
      */
-    private List<Modification> modifications = new ArrayList<Modification>();
+    private List<Modification> modifications = new ArrayList<>();
 
     /** Temporary string buffer used for collecting text chunks */
     private FastStringBuffer charBuf = new FastStringBuffer(64);
@@ -174,12 +174,12 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
      * Maps variable QName to the Sequence returned by
      * evaluating the variable expression.
      */
-    private Map<String, Object> variables = new TreeMap<String, Object>();
+    private Map<String, Object> variables = new TreeMap<>();
 
     /**
      * Keeps track of namespaces declared within the XUpdate.
      */
-    private Map<String, String> namespaces = new HashMap<String, String>(10);
+    private Map<String, String> namespaces = new HashMap<>(10);
 
     /**
      * Stack used to track conditionals.
@@ -209,7 +209,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			Boolean temp;
 			if ((temp = (Boolean) config.getProperty("indexer.preserve-whitespace-mixed-content"))
 				!= null)
-				{preserveWhitespaceTemp = temp.booleanValue();}
+				{preserveWhitespaceTemp = temp;}
 		}
 	}
 	
@@ -361,142 +361,166 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			}
 
 			// start a new modification section
-			if (APPEND.equals(localName)) {
-			    final String child = atts.getValue("child");
-				modification = new Append(broker, documentSet, select, child, namespaces, variables);
-			} else if (UPDATE.equals(localName))
-				{modification = new Update(broker, documentSet, select, namespaces, variables);}
-			else if (INSERT_BEFORE.equals(localName))
-				{modification =
-					new Insert(broker, documentSet, select, Insert.INSERT_BEFORE, namespaces, variables);}
-			else if (INSERT_AFTER.equals(localName))
-				{modification =
-					new Insert(broker, documentSet, select, Insert.INSERT_AFTER, namespaces, variables);}
-			else if (REMOVE.equals(localName))
-				{modification = new Remove(broker, documentSet, select, namespaces, variables);}
-			else if (RENAME.equals(localName))
-				{modification = new Rename(broker, documentSet, select, namespaces, variables);}
-			else if (REPLACE.equals(localName))
-				{modification = new Replace(broker, documentSet, select, namespaces, variables);}
+			switch (localName) {
+				case APPEND:
+					final String child = atts.getValue("child");
+					modification = new Append(broker, documentSet, select, child, namespaces, variables);
+					break;
+				case UPDATE:
+					modification = new Update(broker, documentSet, select, namespaces, variables);
+					break;
+				case INSERT_BEFORE:
+					modification =
+							new Insert(broker, documentSet, select, Insert.INSERT_BEFORE, namespaces, variables);
+					break;
+				case INSERT_AFTER:
+					modification =
+							new Insert(broker, documentSet, select, Insert.INSERT_AFTER, namespaces, variables);
+					break;
+				case REMOVE:
+					modification = new Remove(broker, documentSet, select, namespaces, variables);
+					break;
+				case RENAME:
+					modification = new Rename(broker, documentSet, select, namespaces, variables);
+					break;
+				case REPLACE:
+					modification = new Replace(broker, documentSet, select, namespaces, variables);
+					break;
 
-			// process commands for node creation
-			else if (ELEMENT.equals(localName)) {
-				String name = atts.getValue("name");
-				if (name == null)
-					{throw new SAXException("element requires a name attribute");}
-				final int p = name.indexOf(':');
-				String namespace = null;
-				String prefix = "";
-				if (p != Constants.STRING_NOT_FOUND) {
-					prefix = name.substring(0, p);
-					if (name.length() == p + 1)
-						{throw new SAXException(
-							"illegal prefix in qname: " + name);}
-					name = name.substring(p + 1);
-					namespace = atts.getValue("namespace");
-					if(namespace == null)
-						{namespace = (String) namespaces.get(prefix);}
-					if (namespace == null) {
-						throw new SAXException(
-							"no namespace defined for prefix " + prefix);
+				// process commands for node creation
+				case ELEMENT: {
+					String name = atts.getValue("name");
+					if (name == null) {
+						throw new SAXException("element requires a name attribute");
 					}
-				}
-				Element elem;
-				if (namespace != null && namespace.length() > 0)
-				{
-					elem = doc.createElementNS(namespace, name);
-				elem.setPrefix(prefix);
-				}
-				else
-					{elem = doc.createElement(name);}
-
-				final Element last = stack.peek();
-				if (last == null) {
-					contents.add(elem);
-				} else {
-					last.appendChild(elem);
-				}
-
-				stack.push(elem);
-				this.setWhitespaceHandling(elem);
-			} else if (ATTRIBUTE.equals(localName)) {
-				final String name = atts.getValue("name");
-				if (name == null)
-					{throw new SAXException("attribute requires a name attribute");}
-				final int p = name.indexOf(':');
-				String namespace = null;
-				if (p != Constants.STRING_NOT_FOUND) {
-					final String prefix = name.substring(0, p);
-					if (name.length() == p + 1)
-						{throw new SAXException(
-							"illegal prefix in qname: " + name);}
-					namespace = atts.getValue("namespace");
-					if(namespace == null)
-						{namespace = (String) namespaces.get(prefix);}
-					if (namespace == null)
-						{throw new SAXException(
-							"no namespace defined for prefix " + prefix);}
-				}
-				Attr attrib = namespace != null && namespace.length() > 0 ?
-								doc.createAttributeNS(namespace, name) :
-								doc.createAttribute(name);
-				if (stack.isEmpty()) {
-					for(int i = 0; i < contents.getLength(); i++) {
-						final Node n = contents.item(i);
-						String ns = n.getNamespaceURI();
-						final String nname = ns == null ? n.getNodeName() : n.getLocalName();
-						if(ns == null) {
-							ns = XMLConstants.NULL_NS_URI;
+					final int p = name.indexOf(':');
+					String namespace = null;
+					String prefix = "";
+					if (p != Constants.STRING_NOT_FOUND) {
+						prefix = name.substring(0, p);
+						if (name.length() == p + 1) {
+							throw new SAXException(
+									"illegal prefix in qname: " + name);
 						}
-						// check for duplicate attributes
-						if(n.getNodeType() == Node.ATTRIBUTE_NODE &&
-								nname.equals(name) &&
-								ns.equals(namespace))
-							{throw new SAXException("The attribute " + attrib.getNodeName() + " cannot be specified twice");}
+						name = name.substring(p + 1);
+						namespace = atts.getValue("namespace");
+						if (namespace == null) {
+							namespace = (String) namespaces.get(prefix);
+						}
+						if (namespace == null) {
+							throw new SAXException(
+									"no namespace defined for prefix " + prefix);
+						}
 					}
-					contents.add(attrib);
-				} else {
+					Element elem;
+					if (namespace != null && namespace.length() > 0) {
+						elem = doc.createElementNS(namespace, name);
+						elem.setPrefix(prefix);
+					} else {
+						elem = doc.createElement(name);
+					}
+
 					final Element last = stack.peek();
-					if(namespace != null && last.hasAttributeNS(namespace, name) ||
-					   namespace == null && last.hasAttribute(name))
-						{throw new SAXException("The attribute " + attrib.getNodeName() + " cannot be specified " +
-								"twice on the same element");}
-					if (namespace != null)
-					{last.setAttributeNodeNS(attrib);}
-					else
-					  {last.setAttributeNode(attrib);}
-				}
-				inAttribute = true;
-				currentNode = attrib;
+					if (last == null) {
+						contents.add(elem);
+					} else {
+						last.appendChild(elem);
+					}
 
-				// process value-of
-			} else if (VALUE_OF.equals(localName)) {
-				select = atts.getValue("select");
-				if (select == null)
-					{throw new SAXException("value-of requires a select attribute");}
-				final Sequence seq = processQuery(select);
-				if (LOG.isDebugEnabled())
-					{LOG.debug("Found " + seq.getItemCount() + " items for value-of");}
-				Item item;
-				try {
-					for (final SequenceIterator i = seq.iterate(); i.hasNext();) {
-						item = i.nextItem();
-						if(Type.subTypeOf(item.getType(), Type.NODE)) { 
-							final Node node = NodeSetHelper.copyNode(doc, ((NodeValue)item).getNode());
-							final Element last = stack.peek();
-							if (last == null) {
-								contents.add(node);
-							} else {
-								last.appendChild(node);
-							}
-						} else {
-							final String value = item.getStringValue();
-							characters(value.toCharArray(), 0, value.length());
+					stack.push(elem);
+					this.setWhitespaceHandling(elem);
+					break;
+				}
+				case ATTRIBUTE: {
+					final String name = atts.getValue("name");
+					if (name == null) {
+						throw new SAXException("attribute requires a name attribute");
+					}
+					final int p = name.indexOf(':');
+					String namespace = null;
+					if (p != Constants.STRING_NOT_FOUND) {
+						final String prefix = name.substring(0, p);
+						if (name.length() == p + 1) {
+							throw new SAXException(
+									"illegal prefix in qname: " + name);
+						}
+						namespace = atts.getValue("namespace");
+						if (namespace == null) {
+							namespace = (String) namespaces.get(prefix);
+						}
+						if (namespace == null) {
+							throw new SAXException(
+									"no namespace defined for prefix " + prefix);
 						}
 					}
-				} catch (final XPathException e) {
-					throw new SAXException(e.getMessage(), e);
+					Attr attrib = namespace != null && namespace.length() > 0 ?
+							doc.createAttributeNS(namespace, name) :
+							doc.createAttribute(name);
+					if (stack.isEmpty()) {
+						for (int i = 0; i < contents.getLength(); i++) {
+							final Node n = contents.item(i);
+							String ns = n.getNamespaceURI();
+							final String nname = ns == null ? n.getNodeName() : n.getLocalName();
+							if (ns == null) {
+								ns = XMLConstants.NULL_NS_URI;
+							}
+							// check for duplicate attributes
+							if (n.getNodeType() == Node.ATTRIBUTE_NODE &&
+									nname.equals(name) &&
+									ns.equals(namespace)) {
+								throw new SAXException("The attribute " + attrib.getNodeName() + " cannot be specified twice");
+							}
+						}
+						contents.add(attrib);
+					} else {
+						final Element last = stack.peek();
+						if (namespace != null && last.hasAttributeNS(namespace, name) ||
+								namespace == null && last.hasAttribute(name)) {
+							throw new SAXException("The attribute " + attrib.getNodeName() + " cannot be specified " +
+									"twice on the same element");
+						}
+						if (namespace != null) {
+							last.setAttributeNodeNS(attrib);
+						} else {
+							last.setAttributeNode(attrib);
+						}
+					}
+					inAttribute = true;
+					currentNode = attrib;
+
+					// process value-of
+					break;
 				}
+				case VALUE_OF:
+					select = atts.getValue("select");
+					if (select == null) {
+						throw new SAXException("value-of requires a select attribute");
+					}
+					final Sequence seq = processQuery(select);
+					if (LOG.isDebugEnabled()) {
+						LOG.debug("Found " + seq.getItemCount() + " items for value-of");
+					}
+					Item item;
+					try {
+						for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+							item = i.nextItem();
+							if (Type.subTypeOf(item.getType(), Type.NODE)) {
+								final Node node = NodeSetHelper.copyNode(doc, ((NodeValue) item).getNode());
+								final Element last = stack.peek();
+								if (last == null) {
+									contents.add(node);
+								} else {
+									last.appendChild(node);
+								}
+							} else {
+								final String value = item.getStringValue();
+								characters(value.toCharArray(), 0, value.length());
+							}
+						}
+					} catch (final XPathException e) {
+						throw new SAXException(e.getMessage(), e);
+					}
+					break;
 			}
 		} else if (inModification) {
 			final Element elem = namespaceURI != null && namespaceURI.length() > 0 ?
@@ -721,15 +745,15 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			context = new XQueryContext(broker.getBrokerPool());
 			context.setStaticallyKnownDocuments(documentSet);
 			Map.Entry<String, String> namespaceEntry;
-			for (final Iterator<Map.Entry<String, String>> i = namespaces.entrySet().iterator(); i.hasNext();) {
-				namespaceEntry = (Map.Entry<String, String>) i.next();
+			for (Map.Entry<String, String> stringStringEntry : namespaces.entrySet()) {
+				namespaceEntry = stringStringEntry;
 				context.declareNamespace(
-					namespaceEntry.getKey(),
-					namespaceEntry.getValue());
+						namespaceEntry.getKey(),
+						namespaceEntry.getValue());
 			}
 			Map.Entry<String, Object> entry;
-			for (final Iterator<Map.Entry<String, Object>> i = variables.entrySet().iterator(); i.hasNext(); ) {
-				entry = (Map.Entry<String, Object>) i.next();
+			for (Map.Entry<String, Object> stringObjectEntry : variables.entrySet()) {
+				entry = stringObjectEntry;
 				context.declareVariable(entry.getKey(), entry.getValue());
 			}
 			// TODO(pkaminsk2): why replicate XQuery.compile here?
@@ -754,10 +778,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			expr.analyze(new AnalyzeContextInfo());
 			final Sequence seq = expr.eval(null, null);
 			return seq;
-		} catch (final RecognitionException e) {
-			LOG.warn("error while creating variable", e);
-			throw new SAXException(e);
-		} catch (final TokenStreamException e) {
+		} catch (final RecognitionException | TokenStreamException e) {
 			LOG.warn("error while creating variable", e);
 			throw new SAXException(e);
 		} catch (final XPathException e) {

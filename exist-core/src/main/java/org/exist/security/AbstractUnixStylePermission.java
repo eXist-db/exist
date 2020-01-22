@@ -100,27 +100,27 @@ public abstract class AbstractUnixStylePermission implements Permission {
                 switch(c) {
                     case ALL_CHAR:
                         final int newMode = (perm << 6) | (perm << 3) | perm | (sticky ? (STICKY << 9) : 0) | (uidgid ? ((SET_UID | SET_GID) << 9) : 0);
-                        if(clause.indexOf("+") > -1) {
+                        if(clause.indexOf('+') > -1) {
                             setMode(getMode() | newMode);
-                        } else if(clause.indexOf("-") > -1) {
+                        } else if(clause.indexOf('-') > -1) {
                             setMode(getMode() & ~newMode);
-                        } else if(clause.indexOf("=") > -1) {
+                        } else if(clause.indexOf('=') > -1) {
                             setMode(newMode);
                         }
                         break;
 
                     case USER_CHAR:
-                        if(clause.indexOf("+") > -1) {
+                        if(clause.indexOf('+') > -1) {
                             setOwnerMode(getOwnerMode() | perm);
                             if(uidgid) {
                                 setSetUid(true);
                             }
-                        } else if(clause.indexOf("-") > -1) {
+                        } else if(clause.indexOf('-') > -1) {
                             setOwnerMode(getOwnerMode() & ~perm);
                             if(uidgid) {
                                 setSetUid(false);
                             }
-                        } else if(clause.indexOf("=") > -1) {
+                        } else if(clause.indexOf('=') > -1) {
                             setOwnerMode(perm);
                             if(uidgid) {
                                 setSetUid(true);
@@ -129,17 +129,17 @@ public abstract class AbstractUnixStylePermission implements Permission {
                         break;
 
                     case GROUP_CHAR:
-                        if(clause.indexOf("+") > -1) {
+                        if(clause.indexOf('+') > -1) {
                             setGroupMode(getGroupMode() | perm);
                             if(uidgid) {
                                 setSetGid(true);
                             }
-                        } else if(clause.indexOf("-") > -1) {
+                        } else if(clause.indexOf('-') > -1) {
                             setGroupMode(getGroupMode() & ~perm);
                             if(uidgid) {
                                 setSetGid(false);
                             }
-                        } else if(clause.indexOf("=") > -1) {
+                        } else if(clause.indexOf('=') > -1) {
                             setGroupMode(perm);
                             if(uidgid) {
                                 setSetGid(true);
@@ -148,17 +148,17 @@ public abstract class AbstractUnixStylePermission implements Permission {
                         break;
 
                     case OTHER_CHAR:
-                        if(clause.indexOf("+") > -1) {
+                        if(clause.indexOf('+') > -1) {
                             setOtherMode(getOtherMode() | perm);
                             if(sticky) {
                                 setSticky(true);
                             }
-                        } else if(clause.indexOf("-") > -1) {
+                        } else if(clause.indexOf('-') > -1) {
                             setOtherMode(getOtherMode() & ~perm);
                             if(sticky) {
                                 setSticky(false);
                             }
-                        } else if(clause.indexOf("=") > -1) {
+                        } else if(clause.indexOf('=') > -1) {
                             setOtherMode(perm);
                             if(sticky) {
                                 setSticky(true);

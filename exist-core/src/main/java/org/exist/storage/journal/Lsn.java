@@ -52,7 +52,7 @@ public class Lsn implements Comparable<Lsn> {
     /**
      * Singleton which represents an Invalid LSN
      */
-	public static final Lsn LSN_INVALID = new Lsn((short)-1, -1l);
+	public static final Lsn LSN_INVALID = new Lsn((short)-1, -1L);
 
     private final byte[] lsn;
 

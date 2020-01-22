@@ -42,11 +42,12 @@ public class TimerPragma extends Pragma {
         super(qname, contents);
         if (contents != null && contents.length() > 0) {
             final String options[] = Option.tokenize(contents);
-            for (int i = 0; i < options.length; i++) {
-                final String param[] = Option.parseKeyValuePair(options[i]);
-                if (param == null)
-                    {throw new XPathException("Invalid content found for pragma " + TIMER_PRAGMA.getStringValue() +
-                        ": " + contents);}
+            for (String option : options) {
+                final String param[] = Option.parseKeyValuePair(option);
+                if (param == null) {
+                    throw new XPathException("Invalid content found for pragma " + TIMER_PRAGMA.getStringValue() +
+                            ": " + contents);
+                }
                 if ("verbose".equals(param[0])) {
                     verbose = "yes".equals(param[1]);
                 } else if ("logger".equals(param[0])) {

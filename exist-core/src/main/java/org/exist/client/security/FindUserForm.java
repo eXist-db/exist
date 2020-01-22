@@ -39,14 +39,14 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class FindUserForm extends javax.swing.JFrame implements DialogWithResponse<String> {
     private final UserManagementService userManagementService;
-    private final List<DialogCompleteWithResponse<String>> dialogCompleteWithResponseCallbacks = new ArrayList<DialogCompleteWithResponse<String>>();
+    private final List<DialogCompleteWithResponse<String>> dialogCompleteWithResponseCallbacks = new ArrayList<>();
     private final Set<String> allUsernames;
     private DefaultComboBoxModel usernameModel;
 
     public FindUserForm(final UserManagementService userManagementService) throws XMLDBException {
         this.userManagementService = userManagementService;
         
-        allUsernames = new HashSet<String>();
+        allUsernames = new HashSet<>();
         for(final Account account : userManagementService.getAccounts()) {
             allUsernames.add(account.getName());
         }

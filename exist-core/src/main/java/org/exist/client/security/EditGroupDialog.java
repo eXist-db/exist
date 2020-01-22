@@ -76,12 +76,10 @@ public class EditGroupDialog extends GroupDialog {
                     isGroupManager(groupManagers, groupMember)
                 });
             }
-        } catch(final XMLDBException xmldbe) {
+        } catch(final XMLDBException | PermissionDeniedException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not get group members: " + xmldbe.getMessage(), "Edit Group Error", JOptionPane.ERROR_MESSAGE);
-        } catch(final PermissionDeniedException pde) {
-            JOptionPane.showMessageDialog(this, "Could not get group members: " + pde.getMessage(), "Edit Group Error", JOptionPane.ERROR_MESSAGE);
         }
-        
+
         //enable additions to the group?
         miAddGroupMember.setEnabled(canModifyGroupMembers());
         btnAddMember.setEnabled(canModifyGroupMembers());
@@ -101,10 +99,8 @@ public class EditGroupDialog extends GroupDialog {
             
             getUserManagementService().updateGroup(getGroup());
             
-        } catch(final PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException | XMLDBException pde) {
             JOptionPane.showMessageDialog(this, "Could not update group '" + txtGroupName.getText() + "': " + pde.getMessage(), "Edit Group Error", JOptionPane.ERROR_MESSAGE);
-        } catch(final XMLDBException xmldbe) {
-            JOptionPane.showMessageDialog(this, "Could not update group '" + txtGroupName.getText() + "': " + xmldbe.getMessage(), "Edit Group Error", JOptionPane.ERROR_MESSAGE);
         }
     }
     
@@ -129,9 +125,9 @@ public class EditGroupDialog extends GroupDialog {
     }
     
     private void updateGroupMembers() throws XMLDBException, PermissionDeniedException {
-        final Set<String> currentGroupMembers = new HashSet<String>(Arrays.asList(getUserManagementService().getGroupMembers(group.getName())));
+        final Set<String> currentGroupMembers = new HashSet<>(Arrays.asList(getUserManagementService().getGroupMembers(group.getName())));
         
-        final Set<String> groupMembers = new HashSet<String>();
+        final Set<String> groupMembers = new HashSet<>();
         for(int i = 0; i < getGroupMembersTableModel().getRowCount(); i++) {
             groupMembers.add((String)getGroupMembersTableModel().getValueAt(i, 0));
         }
@@ -159,11 +155,8 @@ public class EditGroupDialog extends GroupDialog {
     protected boolean canModifyGroupMembers() {
         try {
             return (getUserManagementService().getAccount(getCurrentUser()).hasDbaRole() || isGroupManager(group.getManagers(), getCurrentUser()));
-        } catch(final XMLDBException xmldbe) {
+        } catch(final XMLDBException | PermissionDeniedException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not establish user " + getCurrentUser() + "'s group permissions: " + xmldbe.getMessage(), "Edit Group Error", JOptionPane.ERROR_MESSAGE);
-            return false;
-        } catch(final PermissionDeniedException pde) {
-            JOptionPane.showMessageDialog(this, "Could not establish user " + getCurrentUser() + "'s group permissions: " + pde.getMessage(), "Edit Group Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
     }

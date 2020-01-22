@@ -77,7 +77,7 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
         if (inMemoryBufferSize == null) {
             inMemoryBufferSize = new LazyVal<>(() -> Integer.parseInt(properties.getProperty("in-memory-buffer-size", Integer.toString(VirtualTempPath.DEFAULT_IN_MEMORY_SIZE))));
         }
-        return inMemoryBufferSize.get().intValue();
+        return inMemoryBufferSize.get();
     }
     
     @Override
@@ -119,7 +119,7 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
     @Override
     public Resource getMembersAsResource() throws XMLDBException {
         final List<Object> params = new ArrayList<>();
-        params.add(Integer.valueOf(handle));
+        params.add(handle);
         params.add(outputProperties);
 
         VirtualTempPath tempFile = new VirtualTempPath(getInMemorySize(outputProperties), TemporaryFileManager.getInstance());
@@ -127,7 +127,7 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
 
             Map<?, ?> table = (Map<?, ?>) collection.execute("retrieveAllFirstChunk", params);
 
-            long offset = ((Integer) table.get("offset")).intValue();
+            long offset = (Integer) table.get("offset");
             byte[] data = (byte[]) table.get("data");
             final boolean isCompressed = "yes".equals(outputProperties.getProperty(EXistOutputKeys.COMPRESS_OUTPUT, "no"));
             // One for the local cached file

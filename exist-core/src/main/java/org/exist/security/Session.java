@@ -60,7 +60,7 @@ public class Session {
 		return id;
 	}
 	
-	private Map<String, Object> properties = new HashMap<String, Object>();
+	private Map<String, Object> properties = new HashMap<>();
 	
 	public void setProperty(String name, Object value) {
 		used();

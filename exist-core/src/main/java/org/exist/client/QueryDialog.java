@@ -328,7 +328,7 @@ public class QueryDialog extends JFrame {
         label = new JLabel(Messages.getString("QueryDialog.contextlabel"));
         optionsPanel.add(label);
 
-        final List<String> data = new ArrayList<String>();
+        final List<String> data = new ArrayList<>();
         try {
             final Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
             data.add(collection.getName());
@@ -366,9 +366,9 @@ public class QueryDialog extends JFrame {
         }
         final String[] childCollections = root.listChildCollections();
         Collection child = null;
-        for (int i = 0; i < childCollections.length; i++) {
+        for (String childCollection : childCollections) {
             try {
-                child = root.getChildCollection(childCollections[i]);
+                child = root.getChildCollection(childCollection);
             } catch (final XMLDBException xmldbe) {
                 if (xmldbe.getCause() instanceof PermissionDeniedException) {
                     continue;
@@ -422,7 +422,7 @@ public class QueryDialog extends JFrame {
     }
 
     private void save(String stringToSave, String fileCategory) {
-        if (stringToSave == null || "".equals(stringToSave)) {
+        if (stringToSave == null || stringToSave.isEmpty()) {
             return;
         }
         final String workDir = properties.getProperty("working-dir", System.getProperty("user.dir"));

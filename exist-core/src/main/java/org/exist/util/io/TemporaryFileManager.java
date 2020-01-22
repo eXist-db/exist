@@ -151,17 +151,14 @@ public class TemporaryFileManager {
                     FileUtils.deleteQuietly(dir);
                 } else {
                     // there is a lock file present, we must determine if it is locked (by another eXist-db instance)
-                    final FileChannel otherLockChannel = FileChannel.open(lockPath, StandardOpenOption.WRITE);
-                    try {
+                    try (FileChannel otherLockChannel = FileChannel.open(lockPath, StandardOpenOption.WRITE)) {
                         if (otherLockChannel.tryLock() != null) {
                             // not locked... so we now have the lock
 
                             FileUtils.deleteQuietly(dir);
                         }
-                    } finally {
-                        // will release the lock
-                        otherLockChannel.close();
                     }
+                    // will release the lock
                 }
             }
         } catch(final IOException ioe) {

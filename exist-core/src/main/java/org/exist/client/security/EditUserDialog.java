@@ -44,7 +44,7 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
     private final static String HIDDEN_PASSWORD_CONST = "password";
     
     private final Account account;
-    private final List<DialogCompleteWithResponse<String>> dialogCompleteWithResponseCallbacks = new ArrayList<DialogCompleteWithResponse<String>>();
+    private final List<DialogCompleteWithResponse<String>> dialogCompleteWithResponseCallbacks = new ArrayList<>();
     
     public EditUserDialog(final UserManagementService userManagementService, final Account account) {
         super(userManagementService);
@@ -137,10 +137,8 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
                 acct.setPassword(newPassword.get());
                 getUserManagementService().updateAccount(acct);
             }
-        } catch(final PermissionDeniedException pde) {
+        } catch(final PermissionDeniedException | XMLDBException pde) {
             JOptionPane.showMessageDialog(this, "Could not update user '" + txtUsername.getText() + "': " + pde.getMessage(), "Edit User Error", JOptionPane.ERROR_MESSAGE);
-        } catch(final XMLDBException xmldbe) {
-            JOptionPane.showMessageDialog(this, "Could not update user '" + txtUsername.getText() + "': " + xmldbe.getMessage(), "Edit User Error", JOptionPane.ERROR_MESSAGE);
         }
     }
     
@@ -151,10 +149,10 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
     
     private void modifyAccountGroupMembership() throws XMLDBException {
         //get the current groups of the user
-        final Set<String> currentGroups = new HashSet<String>(Arrays.asList(getAccount().getGroups()));
+        final Set<String> currentGroups = new HashSet<>(Arrays.asList(getAccount().getGroups()));
         
         //get the new groups of the user to be set
-        final Set<String> memberOfGroups = new HashSet<String>();
+        final Set<String> memberOfGroups = new HashSet<>();
         for(int i = 0; i < getMemberOfGroupsListModel().getSize(); i++) {
             memberOfGroups.add((String)getMemberOfGroupsListModel().getElementAt(i));
         }

@@ -135,8 +135,8 @@ public class ElementConstructor extends NodeConstructor {
             namespaceDecls = new QName[1];
             namespaceDecls[0] = qn;
         } else {
-            for(int i = 0; i < namespaceDecls.length; i++) {
-                if (qn.equals(namespaceDecls[i])) {
+            for (QName namespaceDecl : namespaceDecls) {
+                if (qn.equals(namespaceDecl)) {
                     throw new XPathException(this, ErrorCodes.XQST0071, "duplicate definition for '" + qn + "'");
                 }
             }
@@ -154,14 +154,14 @@ public class ElementConstructor extends NodeConstructor {
         context.pushInScopeNamespaces();
         // declare namespaces
         if(namespaceDecls != null) {
-            for(int i = 0; i < namespaceDecls.length; i++) {
-                if (XMLConstants.NULL_NS_URI.equals(namespaceDecls[i].getNamespaceURI())) {
+            for (QName namespaceDecl : namespaceDecls) {
+                if (XMLConstants.NULL_NS_URI.equals(namespaceDecl.getNamespaceURI())) {
                     // TODO: the specs are unclear here: should we throw XQST0085 or not?
-                    context.inScopeNamespaces.remove(namespaceDecls[i].getLocalPart());
+                    context.inScopeNamespaces.remove(namespaceDecl.getLocalPart());
 //					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalPart()) == null)
 //		        		throw new XPathException(getASTNode(), "XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
                 } else {
-                    context.declareInScopeNamespace(namespaceDecls[i].getLocalPart(), namespaceDecls[i].getNamespaceURI());
+                    context.declareInScopeNamespace(namespaceDecl.getLocalPart(), namespaceDecl.getNamespaceURI());
                 }
             }
         }
@@ -170,8 +170,8 @@ public class ElementConstructor extends NodeConstructor {
         newContextInfo.addFlag(IN_NODE_CONSTRUCTOR);
         qnameExpr.analyze(newContextInfo);
         if(attributes != null) {
-            for(int i = 0; i < attributes.length; i++) {
-                attributes[i].analyze(newContextInfo);
+            for (AttributeConstructor attribute : attributes) {
+                attribute.analyze(newContextInfo);
             }
         }
         if(content != null) {
@@ -191,25 +191,24 @@ public class ElementConstructor extends NodeConstructor {
             final MemTreeBuilder builder = context.getDocumentBuilder();
             // declare namespaces
             if(namespaceDecls != null) {
-                for(int i = 0; i < namespaceDecls.length; i++) {
+                for (QName namespaceDecl : namespaceDecls) {
                     //if ("".equals(namespaceDecls[i].getNamespaceURI())) {
-                        // TODO: the specs are unclear here: should we throw XQST0085 or not?
+                    // TODO: the specs are unclear here: should we throw XQST0085 or not?
                     //	context.inScopeNamespaces.remove(namespaceDecls[i].getLocalPart());
 //					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalPart()) == null)
 //		        		throw new XPathException(getAS      TNode(), "XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
                     //} else
-                        context.declareInScopeNamespace(namespaceDecls[i].getLocalPart(), namespaceDecls[i].getNamespaceURI());
+                    context.declareInScopeNamespace(namespaceDecl.getLocalPart(), namespaceDecl.getNamespaceURI());
                 }
             }
             // process attributes
             final AttributesImpl attrs = new AttributesImpl();
             if(attributes != null) {
                 // first, search for xmlns attributes and declare in-scope namespaces
-                for (int i = 0; i < attributes.length; i++) {
-                    final AttributeConstructor constructor = attributes[i];
-                    if(constructor.isNamespaceDeclaration()) {
+                for (final AttributeConstructor constructor : attributes) {
+                    if (constructor.isNamespaceDeclaration()) {
                         final int p = constructor.getQName().indexOf(':');
-                        if(p == Constants.STRING_NOT_FOUND) {
+                        if (p == Constants.STRING_NOT_FOUND) {
                             context.declareInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX, constructor.getLiteralValue());
                         } else {
                             final String prefix = constructor.getQName().substring(p + 1);
@@ -305,8 +304,8 @@ public class ElementConstructor extends NodeConstructor {
             // add namespace declaration nodes
             final int nodeNr = builder.startElement(qn, attrs);
             if(namespaceDecls != null) {
-                for(int i = 0; i < namespaceDecls.length; i++) {
-                    builder.namespaceNode(namespaceDecls[i]);
+                for (QName namespaceDecl : namespaceDecls) {
+                    builder.namespaceNode(namespaceDecl);
                 }
             }
             // do we need to add a namespace declaration for the current node?
@@ -425,10 +424,9 @@ public class ElementConstructor extends NodeConstructor {
 		    content.resetState(postOptimization);
 		}
 		if(attributes != null)
-		    for(int i = 0; i < attributes.length; i++) {
-				final Expression next = attributes[i];
-				next.resetState(postOptimization);
-			}
+            for (final Expression next : attributes) {
+                next.resetState(postOptimization);
+            }
 	}
 
 	@Override

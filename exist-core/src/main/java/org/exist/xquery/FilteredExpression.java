@@ -41,7 +41,7 @@ public class FilteredExpression extends AbstractExpression {
 
     final protected Expression expression;
     protected boolean abbreviated = false;
-    final protected List<Predicate> predicates = new ArrayList<Predicate>(2);
+    final protected List<Predicate> predicates = new ArrayList<>(2);
     private Expression parent;
 
     public FilteredExpression(XQueryContext context, Expression expr) {

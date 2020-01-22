@@ -130,7 +130,7 @@ public class JnlpServlet extends HttpServlet {
             return jf.getLastModified();
         } catch (final IOException e) {
             LOGGER.error(e);
-            return -1l;
+            return -1L;
         }
     }
 }

@@ -201,7 +201,7 @@ public class RestoreHandler extends DefaultHandler {
             }
 
             if (version >= BLOB_STORE_VERSION) {
-                this.deduplicateBlobs = Boolean.valueOf(atts.getValue("deduplicate-blobs"));
+                this.deduplicateBlobs = Boolean.parseBoolean(atts.getValue("deduplicate-blobs"));
             } else {
                 this.deduplicateBlobs = false;
             }

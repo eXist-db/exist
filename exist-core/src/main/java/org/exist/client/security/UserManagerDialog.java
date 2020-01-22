@@ -132,11 +132,11 @@ public class UserManagerDialog extends javax.swing.JFrame {
 
             Arrays.sort(accounts, new AccountComparator());
 
-            for(int i = 0; i < accounts.length; i++) {
+            for (Account account : accounts) {
                 usersTableModel.addRow(new String[]{
-                    accounts[i].getName(),
-                    accounts[i].getMetadataValue(AXSchemaType.FULLNAME),
-                    accounts[i].getMetadataValue(EXistSchemaType.DESCRIPTION)
+                        account.getName(),
+                        account.getMetadataValue(AXSchemaType.FULLNAME),
+                        account.getMetadataValue(EXistSchemaType.DESCRIPTION)
                 });
             }
         } catch(final XMLDBException xmldbe) {
@@ -155,10 +155,10 @@ public class UserManagerDialog extends javax.swing.JFrame {
 
             Arrays.sort(groupNames);
 
-            for(int i = 0; i < groupNames.length; i++) {
+            for (String groupName : groupNames) {
                 groupsTableModel.addRow(new String[]{
-                    groupNames[i],
-                    userManagementService.getGroup(groupNames[i]).getMetadataValue(EXistSchemaType.DESCRIPTION)
+                        groupName,
+                        userManagementService.getGroup(groupName).getMetadataValue(EXistSchemaType.DESCRIPTION)
                 });
             }
         } catch(final XMLDBException xmldbe) {

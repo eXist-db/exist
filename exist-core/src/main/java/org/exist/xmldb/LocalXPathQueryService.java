@@ -447,11 +447,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements EXis
 
     @Override
     public void removeNamespace(final String ns) throws XMLDBException {
-        for (final Iterator<String> i = namespaceDecls.values().iterator(); i.hasNext();) {
-            if (i.next().equals(ns)) {
-                i.remove();
-            }
-        }
+        namespaceDecls.values().removeIf(s -> s.equals(ns));
     }
 
     @Override

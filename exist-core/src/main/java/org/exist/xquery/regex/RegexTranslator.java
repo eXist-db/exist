@@ -276,8 +276,8 @@ public abstract class RegexTranslator {
 
     protected static String highSurrogateRanges(List ranges) {
         final FastStringBuffer highRanges = new FastStringBuffer(ranges.size() * 2);
-        for (int i = 0, len = ranges.size(); i < len; i++) {
-            final Range r = (Range)ranges.get(i);
+        for (Object range : ranges) {
+            final Range r = (Range) range;
             char min1 = XMLChar.highSurrogate(r.getMin());
             final char min2 = XMLChar.lowSurrogate(r.getMin());
             char max1 = XMLChar.highSurrogate(r.getMax());
@@ -298,8 +298,8 @@ public abstract class RegexTranslator {
 
     protected static String lowSurrogateRanges(List ranges) {
         final FastStringBuffer lowRanges = new FastStringBuffer(ranges.size() * 2);
-        for (int i = 0, len = ranges.size(); i < len; i++) {
-            final Range r = (Range)ranges.get(i);
+        for (Object range : ranges) {
+            final Range r = (Range) range;
             final char min1 = XMLChar.highSurrogate(r.getMin());
             final char min2 = XMLChar.lowSurrogate(r.getMin());
             final char max1 = XMLChar.highSurrogate(r.getMax());

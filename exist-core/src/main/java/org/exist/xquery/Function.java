@@ -263,7 +263,7 @@ public abstract class Function extends PathExpr {
                     throw new XPathException(this,
                             ErrorCodes.XPTY0004,
                             Messages.getMessage(Error.FUNC_EMPTY_SEQ_DISALLOWED,
-                                    Integer.valueOf(argPosition), ExpressionDumper.dump(expr)));
+                                    argPosition, ExpressionDumper.dump(expr)));
                 }
             }
         }

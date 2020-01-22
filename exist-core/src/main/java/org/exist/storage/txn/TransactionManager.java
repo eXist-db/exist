@@ -537,7 +537,7 @@ public class TransactionManager implements BrokerPoolService {
                         return 0;
                     }
                 },
-                (a, b) -> a + b
+                Integer::sum
         );
 
         if (uncommittedCount == null) {

@@ -121,7 +121,7 @@ public class Result {
      */
     public List<Result.Value> getValue() {
         if (value == null) {
-            value = new ArrayList<Result.Value>();
+            value = new ArrayList<>();
         }
         return this.value;
     }
@@ -304,7 +304,7 @@ public class Result {
          */
         public List<Object> getContent() {
             if (content == null) {
-                content = new ArrayList<Object>();
+                content = new ArrayList<>();
             }
             return this.content;
         }

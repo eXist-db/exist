@@ -232,45 +232,25 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         lblSizeValue = new javax.swing.JLabel();
 
         miInsertAceBefore.setText("Insert ACE before...");
-        miInsertAceBefore.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miInsertAceBeforeActionPerformed(evt);
-            }
-        });
+        miInsertAceBefore.addActionListener(evt -> miInsertAceBeforeActionPerformed(evt));
         pmAcl.add(miInsertAceBefore);
 
         miInsertAceAfter.setText("Insert ACE after...");
-        miInsertAceAfter.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miInsertAceAfterActionPerformed(evt);
-            }
-        });
+        miInsertAceAfter.addActionListener(evt -> miInsertAceAfterActionPerformed(evt));
         pmAcl.add(miInsertAceAfter);
         pmAcl.add(jSeparator3);
 
         miMoveUp.setText("Move ACE up");
-        miMoveUp.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miMoveUpActionPerformed(evt);
-            }
-        });
+        miMoveUp.addActionListener(evt -> miMoveUpActionPerformed(evt));
         pmAcl.add(miMoveUp);
 
         miMoveDown.setText("Move ACE down");
-        miMoveDown.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miMoveDownActionPerformed(evt);
-            }
-        });
+        miMoveDown.addActionListener(evt -> miMoveDownActionPerformed(evt));
         pmAcl.add(miMoveDown);
         pmAcl.add(jSeparator4);
 
         miRemoveAce.setText("Remove ACE");
-        miRemoveAce.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miRemoveAceActionPerformed(evt);
-            }
-        });
+        miRemoveAce.addActionListener(evt -> miRemoveAceActionPerformed(evt));
         pmAcl.add(miRemoveAce);
 
         jTextArea1.setColumns(20);
@@ -305,18 +285,10 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         lblGroupValue.setText("<group>");
 
         btnChangeOwner.setText("...");
-        btnChangeOwner.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnChangeOwnerActionPerformed(evt);
-            }
-        });
+        btnChangeOwner.addActionListener(evt -> btnChangeOwnerActionPerformed(evt));
 
         btnChangeGroup.setText("...");
-        btnChangeGroup.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnChangeGroupActionPerformed(evt);
-            }
-        });
+        btnChangeGroup.addActionListener(evt -> btnChangeGroupActionPerformed(evt));
 
         tblBasePermissions.setModel(getBasicPermissionsTableModel());
         tblBasePermissions.setRowSelectionAllowed(false);
@@ -336,25 +308,13 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         jScrollPane3.setViewportView(tblAcl);
 
         btnSave.setText("Save");
-        btnSave.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSaveActionPerformed(evt);
-            }
-        });
+        btnSave.addActionListener(evt -> btnSaveActionPerformed(evt));
 
         btnClose.setText("Close");
-        btnClose.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCloseActionPerformed(evt);
-            }
-        });
+        btnClose.addActionListener(evt -> btnCloseActionPerformed(evt));
 
         btnAddAce.setText("Add Access Control Entry...");
-        btnAddAce.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAddAceActionPerformed(evt);
-            }
-        });
+        btnAddAce.addActionListener(evt -> btnAddAceActionPerformed(evt));
 
         lblDigest.setText("Digest:");
 
@@ -493,7 +453,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
         
         try {
-            final List<ACEAider> dlgAces = new ArrayList<ACEAider>();
+            final List<ACEAider> dlgAces = new ArrayList<>();
             if(permission instanceof ACLPermission) {
                 for(int i = 0; i < tblAcl.getRowCount(); i++) {
                     final ACE_TARGET target = ACE_TARGET.valueOf((String)getAclTableModel().getValueAt(i, 0));
@@ -643,7 +603,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     }//GEN-LAST:event_miInsertAceAfterActionPerformed
 
     private boolean isDba() throws XMLDBException {
-        final Set<String> dbaMembers = new HashSet<String>(Arrays.asList(getUserManagementService().getGroupMembers(SecurityManager.DBA_GROUP)));
+        final Set<String> dbaMembers = new HashSet<>(Arrays.asList(getUserManagementService().getGroupMembers(SecurityManager.DBA_GROUP)));
         return dbaMembers.contains(currentUser);
     }
     

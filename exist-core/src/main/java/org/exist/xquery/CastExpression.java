@@ -209,7 +209,7 @@ public class CastExpression extends AbstractExpression {
 
         protected FunctionWrapper(XQueryContext context, FunctionSignature signature) throws XPathException {
             super(context, signature);
-            final List<Expression> args = new ArrayList<Expression>(1);
+            final List<Expression> args = new ArrayList<>(1);
             args.add(new Function.Placeholder(context));
             super.setArguments(args);
         }
