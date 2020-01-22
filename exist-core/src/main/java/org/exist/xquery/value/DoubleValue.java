@@ -75,7 +75,7 @@ public class DoubleValue extends NumericValue {
     public String getStringValue() {
         final FastStringBuffer sb = new FastStringBuffer(20);
         //0 is a dummy parameter
-        FloatingPointConverter.appendDouble(sb, value).getNormalizedString(0);
+        FloatingPointConverter.appendDouble(sb, value).getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
         return sb.toString();
     }
 

@@ -89,6 +89,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
         final IndexSpec indexConf = proxy.getOwnerDocument().getCollection().getIndexConfiguration(broker);
         if (indexConf != null) {
             config = (LuceneConfig) indexConf.getCustomIndexSpec(LuceneIndex.ID);
+        } else {
+            config = LuceneConfig.DEFAULT_CONFIG;
         }
 
         getTerms();

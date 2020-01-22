@@ -21,16 +21,22 @@
 package org.exist.storage.lock;
 
 import org.exist.xmldb.XmldbURI;
+import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class ManagedDocumentLock extends ManagedLock<java.util.concurrent.locks.Lock> {
+public class ManagedDocumentLock extends ManagedLock<MultiLock[]> {
 
     private final XmldbURI documentUri;
 
-    public ManagedDocumentLock(final XmldbURI documentUri, final java.util.concurrent.locks.Lock lock, final Runnable closer) {
-        super(lock, closer);
+    public ManagedDocumentLock(final XmldbURI documentUri, final MultiLock lock, final Runnable closer) {
+        super(new MultiLock[] { lock }, closer);
+        this.documentUri = documentUri;
+    }
+
+    public ManagedDocumentLock(final XmldbURI documentUri, final MultiLock[] locks, final Runnable closer) {
+        super(locks, closer);
         this.documentUri = documentUri;
     }
 
@@ -39,6 +45,6 @@ public class ManagedDocumentLock extends ManagedLock<java.util.concurrent.locks.
     }
 
     public static ManagedDocumentLock notLocked(final XmldbURI documentUri) {
-        return new ManagedDocumentLock(documentUri, null, () -> {});
+        return new ManagedDocumentLock(documentUri, (MultiLock[])null, () -> {});
     }
 }

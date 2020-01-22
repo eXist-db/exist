@@ -41,7 +41,7 @@ declare variable $val:XSD11_2 := <xs:schema xmlns:xs="http://www.w3.org/2001/XML
 
 (: Verify that for JAXV it is required to specify the XSD version :)
 declare
-    %test:assertEquals("s4s-elt-invalid-content.1: The content of '#AnonType_root' is invalid.  Element 'assert' is invalid, misplaced, or occurs too often.")
+    %test:assertEquals("s4s-elt-invalid-content.1: The content of '#AnonType_root' is invalid. Element 'assert' is invalid, misplaced, or occurs too often.")
 function val:xsd11_no_xsd11_namespace() {
     data(validation:jaxv-report($val:XML ,$val:XSD11_1)//message)
 };

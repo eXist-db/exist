@@ -21,6 +21,7 @@
  */
 package org.exist.management;
 
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,13 +30,14 @@ import java.lang.invoke.MethodHandles;
 
 import static java.lang.invoke.MethodType.methodType;
 
+@ThreadSafe
 public class AgentFactory {
 
     private final static Logger LOG = LogManager.getLogger(AgentFactory.class);
 
     private static Agent instance = null;
 
-    public static Agent getInstance() {
+    public static synchronized Agent getInstance() {
         if (instance == null) {
             final String className = System.getProperty("exist.jmxagent", "org.exist.management.impl.JMXAgent");
             try {
@@ -48,7 +50,7 @@ public class AgentFactory {
                     // 1. try for default constructor
                     try {
                         final MethodHandle mhConstructor = lookup.findConstructor(clazz, methodType(void.class));
-                        instance = (Agent) mhConstructor.invokeExact();
+                        instance = (Agent) mhConstructor.invoke();
                     } catch (final NoSuchMethodException | IllegalAccessException e) {
                         LOG.warn("No default constructor found for Agent: " + className + ". Will try singleton pattern...");
 

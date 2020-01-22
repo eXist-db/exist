@@ -181,6 +181,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             	// Create a copy of the original LuceneConfig (there's only one per db instance), 
             	// so we can safely work with it.
             	config = new LuceneConfig(config);
+        } else {
+            config = LuceneConfig.DEFAULT_CONFIG;
         }
         mode = newMode;
     }
@@ -1088,7 +1090,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
             }
         }
-        return null;
+        return LuceneConfig.DEFAULT_CONFIG;
     }
 
     protected QueryParserWrapper getQueryParser(String field, Analyzer analyzer, DocumentSet docs) {
