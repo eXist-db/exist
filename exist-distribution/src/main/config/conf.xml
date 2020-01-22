@@ -397,10 +397,26 @@
 
             This can also be set via the Java System Properties `org.exist.lock-manager.warn-wait-on-read-for-write`,
                 or (legacy) `exist.lockmanager.warn.waitonreadforwrite`.
+
+        - paths-multi-writer
+            Set to true to enable Multi-Writer/Multi-Reader semantics for
+            the database Collection/Document Hierarchy as opposed to the default (false)
+            for Single-Writer/Multi-Reader.
+
+            NOTE: Whilst enabling Multiple-Writers on the Collection and Document Hierarchy can improve concurrent
+            through-put for write-heavy workloads, it can also can lead to deadlocks unless the User's
+            Collection Hierarchy is carefully designed to isolate query/database writes between Collection combs.
+            It is highly recommended that users leave this as the default setting. For more information, see:
+            "Locking and Cache Improvements for eXist-db", 2018-02-05, Section "Attempt 6" Page 58 -
+            https://www.evolvedbinary.com/technical-reports/exist-db/locking-and-cache-improvements/
+
+            This can also be set via the Java System Properties `org.exist.lock-manager.paths-multiple-writers`,
+            or (legacy) `exist.lockmanager.paths-multiwriter`.
     -->
     <lock-manager
             upgrade-check="false"
-            warn-wait-on-read-for-write="false">
+            warn-wait-on-read-for-write="false"
+            paths-multi-writer="false">
 
         <!--
             Settings for the Lock Table
@@ -428,39 +444,20 @@
         <lock-table disabled="false" trace-stack-depth="0"/>
 
 
-        <!--
-            Settings for Collection Locking
-
-            - multiple-writers
-                Set to true to enable Multi-Writer/Multi-Reader semantics for
-                the Collection Hierarchy as opposed to the default (false) for Single-Writer/Multi-Reader.
-
-                NOTE: Whilst enabling Multiple-Writers on the Collection Hierarchy can improve concurrent
-                through-put for write-heavy workloads, it can also can lead to deadlocks unless the User's
-                Collection Hierarchy is carefully designed to isolate query/database writes between Collection combs.
-                It is highly recommended that users leave this as the default setting. For more information, see:
-                "Locking and Cache Improvements for eXist-db", 2018-02-05, Section "Attempt 6" Page 58 -
-                https://www.evolvedbinary.com/technical-reports/exist-db/locking-and-cache-improvements/
-
-                This can also be set via the Java System Properties `org.exist.lock-manager.collection.multiple-writers`,
-                or (legacy) `exist.lockmanager.collections.multiwriter`.
-        -->
-        <collection multiple-writers="false"/>
-
-
         <!-- Settings for Document Locking
 
-            - multi-lock
-                Set to true to use the "Fast Multi-Level locks" implementation
-                (uk.ac.ic.doc.slurp.multilock.MultiLock) for locking documents, instead of the default of Java's
-                Reentrant Read Write Lock implementation (java.util.concurrent.locks.ReentrantReadWriteLock).
+            - use-path-locks
+                Set to true to have documents participate in the same hierarchical
+                path based locking strategy as Collections.
 
-                NOTE: At present changing this option has little effect.
+                This has a performance and concurrency impact, but will ensure
+                that you cannot have deadlocks between Collections and Documents.
 
-                This can also be set via the Java System Properties `org.exist.lock-manager.document.multi-lock`,
-                or (legacy) `exist.lockmanager.documents.multilock`.
+                NOTE: in future this will likely be set to `true` by default.
+
+                This can also be set via the Java System Property `org.exist.lock-manager.document.use-path-locks`.
         -->
-        <document multi-lock="false"/>
+        <document use-path-locks="false"/>
 
     </lock-manager>
 
