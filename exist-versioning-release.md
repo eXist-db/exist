@@ -163,7 +163,7 @@ You will require a system with:
 
 4.  Prepare the release, if you wish you can do a dry-run first by specifiying `-DdryRun=true`:
     ```
-    $ mvn -Ddocker=true -Dmac-signing=true release:prepare
+    $ mvn -Ddocker=true -Dmac-signing=true -Darguments="-Ddocker=true -Dmac-signing=true" release:prepare
     ```
     
     Maven will start the release process and prompt you for any information that it requires, for example:
@@ -183,7 +183,7 @@ You will require a system with:
 5.  Once the prepare process completes you can perform the release. This will upload Maven Artifacts to Maven
 Central (staging), Docker images to Docker Hub, and eXist-db distributions and installer to BinTray:
     ```
-    $ mvn -Ddocker=true -Dmac-signing=true release:perform
+    $ mvn -Ddocker=true -Dmac-signing=true -Darguments="-Ddocker=true -Dmac-signing=true" release:perform
     ```
 
 6.  Update the stable branch (`master`) of eXist-db to reflect the latest release:
