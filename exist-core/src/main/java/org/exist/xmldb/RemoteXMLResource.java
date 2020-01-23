@@ -135,7 +135,7 @@ public class RemoteXMLResource
      *
      * @throws XMLDBException if an error occurs during construction
      *
-     * @deprecared Use {@link #RemoteXMLResource(RemoteCollection, int, int, XmldbURI, Optional, Optional)}.
+     * @deprecated Use {@link #RemoteXMLResource(RemoteCollection, int, int, XmldbURI, Optional, Optional)}.
      */
     @Deprecated
     public RemoteXMLResource(
