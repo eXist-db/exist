@@ -29,11 +29,15 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Element;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -62,7 +66,7 @@ public class LuceneFacetConfig extends AbstractFieldConfig {
                 (hierarchicalOpt.equalsIgnoreCase("true") || hierarchicalOpt.equalsIgnoreCase("yes"));
 
         config.facetsConfig.setHierarchical(dimension, isHierarchical);
-        config.facetsConfig.setMultiValued(dimension, !isHierarchical);
+        config.facetsConfig.setMultiValued(dimension, true);
     }
 
     @Nonnull
@@ -71,17 +75,19 @@ public class LuceneFacetConfig extends AbstractFieldConfig {
     }
 
     @Override
-    protected void processResult(Sequence result, Document luceneDoc) throws XPathException {
+    protected void processResult(final Sequence result, final Document luceneDoc) throws XPathException {
         if (isHierarchical) {
-            String paths[] = new String[result.getItemCount()];
-            int j = 0;
-            for (SequenceIterator i = result.unorderedIterator(); i.hasNext(); j++) {
-                final String value = i.nextItem().getStringValue();
-                if (value.length() > 0) {
-                    paths[j] = value;
+            // hierarchical facets may be multi-valued, so if we receive an array,
+            // create one hierarchical facet for each member
+            if (result.hasOne() && result.getItemType() == Type.ARRAY) {
+                final ArrayType array = (ArrayType) result.itemAt(0);
+                for (Sequence seq : array.toArray()) {
+                    createHierarchicalFacet(luceneDoc, seq);
                 }
+            } else {
+                // otherwise create a single hierarchical facet
+                createHierarchicalFacet(luceneDoc, result);
             }
-            luceneDoc.add(new FacetField(dimension, paths));
         } else {
             for (SequenceIterator i = result.unorderedIterator(); i.hasNext(); ) {
                 final String value = i.nextItem().getStringValue();
@@ -89,6 +95,19 @@ public class LuceneFacetConfig extends AbstractFieldConfig {
                     luceneDoc.add(new FacetField(dimension, value));
                 }
             }
+        }
+    }
+
+    private void createHierarchicalFacet(Document luceneDoc, Sequence seq) throws XPathException {
+        final List<String> paths = new ArrayList<>(seq.getItemCount());
+        for (SequenceIterator i = seq.unorderedIterator(); i.hasNext(); ) {
+            final String value = i.nextItem().getStringValue();
+            if (value.length() > 0) {
+                paths.add(value);
+            }
+        }
+        if (!paths.isEmpty()) {
+            luceneDoc.add(new FacetField(dimension, paths.toArray(new String[0])));
         }
     }
 
