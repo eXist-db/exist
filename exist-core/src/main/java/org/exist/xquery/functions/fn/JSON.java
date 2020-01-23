@@ -174,7 +174,7 @@ public class JSON extends BasicFunction {
             final MemTreeBuilder builder = context.getDocumentBuilder();
             builder.startDocument();
             factory.configure(JsonParser.Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER, false);
-            jsonToXml(context, builder, parser, handleDuplicates);
+            jsonToXml(builder, parser);
             return builder.getDocument() == null ? Sequence.EMPTY_SEQUENCE : builder.getDocument();
         }  catch (IOException e) {
             throw new XPathException(this, ErrorCodes.FOJS0001, e.getMessage());
@@ -292,14 +292,12 @@ public class JSON extends BasicFunction {
     /**
      * Generate an XML from the tokens delivered by the JSON parser.
      *
-     * @param context the XQueryContext
+     * @param builder the memtree builder
      * @param parser parser to use
-     * @param handleDuplicates string indicating how to handle duplicate property names
-     * @return the top item read
-     * @throws IOException
-     * @throws XPathException
+     *
+     * @throws IOException if an I/O error occurs
      */
-    public static void jsonToXml(XQueryContext context, MemTreeBuilder builder, JsonParser parser, String handleDuplicates) throws IOException, XPathException {
+    public static void jsonToXml(MemTreeBuilder builder, JsonParser parser) throws IOException {
         JsonToken token;
 
         while ((token = parser.nextValue()) != null) {
