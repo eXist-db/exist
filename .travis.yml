@@ -27,7 +27,7 @@ deploy:
     skip_cleanup: true
     on:
       jdk: openjdk8
-      branch: master
+      tag: true
       condition: $BUILD_DOCKER = true
   #  before_script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   # see https://github.com/travis-ci/dpl/issues/673
