@@ -15,10 +15,18 @@
                     <!-- Lucene index is configured below -->
                     <lucene>
                         <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+                        <analyzer id="ws" class="org.apache.lucene.analysis.core.WhitespaceAnalyzer"/>
                         <analyzer id="keyword" class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
                         <analyzer id="de" class="org.apache.lucene.analysis.de.GermanAnalyzer"/>
-                        <text field="line" qname="l"/>
-                        <text qname="l" analyzer="de"/>
+                        <analyzer id="de-nostop" class="org.apache.lucene.analysis.de.GermanAnalyzer">
+                            <param name="stopwords" type="org.apache.lucene.analysis.util.CharArraySet"></param>
+                        </analyzer>
+
+                        <text qname="l" field="line" />
+                        <text qname="l" analyzer="de">
+                            <field name="l_ws" analyzer="ws"/>
+                            <field name="l_nostop" analyzer="de-nostop"/>
+                        </text>
                         <text field="lineno" qname="@n" analyzer="keyword"/>
                     </lucene>
                 </index>
@@ -102,6 +110,50 @@
         <expected/>
     </test>
     <test output="xml">
+        <task>query new field "l_no-stop" with the GermanAnalyzer without stopwords</task>
+        <code>doc("/db/lucene/text.xml")//l[ft:query(., 'l_nostop:(ich OR bin)')]</code>
+        <expected>
+            <l n="l1.5">Da steh ich nun, ich armer Tor!</l>
+            <l n="l1.6">Und bin so klug als wie zuvor;</l>
+        </expected>
+    </test>
+    <test output="xml">
+        <task>query new field "l_no-stop" with the default GermanAnalyzer</task>
+        <code>doc("/db/lucene/text.xml")//l[ft:query(., 'l_nostop:(ich OR bin)', map { "query-analyzer-id": "de" })]</code>
+        <expected />
+    </test>
+    <test output="xml">
+        <task>query new field "l_ws" with the WhitespaceAnalyzer - no result</task>
+        <code>doc("/db/lucene/text.xml")//l[ft:query(., "l_ws:(nun\!)")]</code>
+        <expected />
+    </test>
+    <test output="xml">
+        <task>query new field "l_ws" with GermanAnalyzer</task>
+        <code>doc("/db/lucene/text.xml")//l[ft:query(., "l_ws:(nun\!)", map { "query-analyzer-id": "de" })]</code>
+        <expected />
+    </test>
+    <test output="xml">
+        <task>query new field "l_ws" with the WhitespaceAnalyzer - 2 results</task>
+        <code>doc("/db/lucene/text.xml")//l[ft:query(., "l_ws:(nun,)")]</code>
+        <expected>
+            <l n="l1.1">Habe nun, ach! Philosophie,</l>
+            <l n="l1.5">Da steh ich nun, ich armer Tor!</l> 
+        </expected>
+    </test>
+    <test output="xml">
+        <task>query new field "l_ws" with the GermanAnalyzer - still no results</task>
+        <code>doc("/db/lucene/text.xml")//l[ft:query(., "l_ws:(nun,)", map { "query-analyzer-id": "de" })]</code>
+        <expected />
+    </test>
+    <test output="xml">
+        <task>query new field "l_ws" with the GermanAnalyzer and wildcard - 2 results</task>
+        <code>doc("/db/lucene/text.xml")//l[ft:query(., "l_ws:(nun*)", map { "query-analyzer-id": "de" })]</code>
+        <expected>
+            <l n="l1.1">Habe nun, ach! Philosophie,</l>
+            <l n="l1.5">Da steh ich nun, ich armer Tor!</l>
+        </expected>
+    </test>
+    <test output="xml">
         <task>Query field with standard analyzer, no match</task>
         <code>ft:query-field("line", "herzen")</code>
         <expected/>
@@ -116,7 +168,7 @@
     <test output="xml">
         <task>Query field with query analyzer overridden (options as xml)</task>
         <code>ft:query-field("line", "herzen",
-            &lt;options&gt;&lt;query-analyzer-id&gt;de&lt;/query-analyzer-id&gt;&lt;/options&gt;
+                &lt;options&gt;&lt;query-analyzer-id&gt;de&lt;/query-analyzer-id&gt;&lt;/options&gt;
                             )
         </code>
         <expected>
