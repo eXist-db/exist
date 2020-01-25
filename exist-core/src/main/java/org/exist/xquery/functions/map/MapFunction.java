@@ -145,9 +145,16 @@ public class MapFunction extends BasicFunction {
         return null;
     }
 
-    private Sequence remove(final Sequence[] args) {
+    private Sequence remove(final Sequence[] args) throws XPathException {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
-        return map.remove((AtomicValue) args[1].itemAt(0));
+
+        final int length = args[1].getItemCount();
+        final AtomicValue[] keys = new AtomicValue[length];
+
+        for (int i = 0; i < length; i++) {
+            keys[i] = (AtomicValue) args[1].itemAt(i);
+        }
+        return map.remove(keys);
     }
 
     private Sequence keys(final Sequence[] args) {

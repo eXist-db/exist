@@ -1,5 +1,6 @@
 package org.exist.xquery.functions.map;
 
+import com.github.krukow.clj_lang.IPersistentMap;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -59,12 +60,18 @@ public class SingleKeyMapType extends AbstractMapType {
     }
 
     @Override
-    public AbstractMapType remove(AtomicValue key) {
-        try {
+    public AbstractMapType remove(final AtomicValue[] keysAtomicValues) throws XPathException {
+        for (final AtomicValue key: keysAtomicValues) {
+            if (key != this.key) {
+                continue;
+            }
+            this.key = null;
+            value = null;
             return new MapType(context);
-        } catch (final XPathException e) {
-            return null;
         }
+        final MapType map = new MapType(context);
+        map.add(this);
+        return map;
     }
 
     @Override
