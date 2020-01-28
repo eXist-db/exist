@@ -1,4 +1,4 @@
-xquery version "3.0";
+xquery version "3.1";
 
 module namespace mt="http://exist-db.org/xquery/test/maps";
 
@@ -274,6 +274,46 @@ function mt:removeSingleKey() {
     let $empty := map:remove(map { "Su": "Sunday" }, "Su")
     return
         map:keys($empty)
+};
+
+declare
+    %test:assertEquals("Su")
+function mt:removeSingleNonExistentKey() {
+    let $map := map:remove(map { "Su": "Sunday" }, "Xx")
+    return
+        map:keys($map)
+};
+
+declare
+    %test:assertEquals("Sa")
+function mt:removeSequenceOfStringKeys() {
+    mt:getMapFixture()
+        => map:remove(("Mo", "Tu", "We", "Th", "Fr", "Su"))
+        => map:keys()
+};
+
+declare
+    %test:assertEquals("Sa")
+function mt:removeSequenceOfStringKeysWithNonExistent() {
+    mt:getMapFixture()
+        => map:remove(("Mo", "Tu", "We", "Th", "Fr", "Su", "Xx"))
+        => map:keys()
+};
+
+declare
+    %test:assertEquals(7)
+function mt:removeRangeOfIntegerKeys() {
+    $mt:integerKeys
+        => map:remove(1 to 6)
+        => map:keys()
+};
+
+declare
+    %test:assertEquals(7)
+function mt:removeIntegerKeysWithNonExistent() {
+    $mt:integerKeys
+        => map:remove((1, 2, 3, 4, 5, 6, 10))
+        => map:keys()
 };
 
 declare

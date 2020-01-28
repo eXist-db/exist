@@ -54,7 +54,7 @@ public abstract class AbstractMapType extends FunctionReference
 
     public abstract Sequence keys();
 
-    public abstract AbstractMapType remove(AtomicValue key);
+    public abstract AbstractMapType remove(AtomicValue[] keysAtomicValues) throws XPathException;
 
     public abstract int getKeyType();
 

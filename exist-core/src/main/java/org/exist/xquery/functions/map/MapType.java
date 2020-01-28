@@ -102,12 +102,13 @@ public class MapType extends AbstractMapType {
         return seq;
     }
 
-    public AbstractMapType remove(AtomicValue key) {
-        try {
-            return new MapType(this.context, this.map.without(key), type);
-        } catch (final Exception e) {
-            return this;
+    public AbstractMapType remove(final AtomicValue[] keysAtomicValues) {
+        IPersistentMap<AtomicValue, Sequence> tempmap = this.map;
+        for (final AtomicValue key: keysAtomicValues) {
+            if (!tempmap.containsKey(key)) { continue; }
+            tempmap = tempmap.without(key);
         }
+        return new MapType(this.context, tempmap, type);
     }
 
     @Override
