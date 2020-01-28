@@ -41,23 +41,17 @@ import java.util.*;
 /**
  * Real implementation of interface {@link org.exist.management.Agent}
  * which registers MBeans with the MBeanServer.
+ *
+ * Note that the agent will be constructed via reflection by the
+ * {@link org.exist.management.AgentFactory}
  */
-public class JMXAgent implements Agent {
+public final class JMXAgent implements Agent {
 
     private final static Logger LOG = LogManager.getLogger(JMXAgent.class);
-
-    private static volatile Agent agent = null;
 
     private final MBeanServer server;
     private final Map<String, Deque<ObjectName>> registeredMBeans = new HashMap<>();
     private final Map<ObjectName, Object> beanInstances = new HashMap<>();
-
-    public static Agent getInstance() {
-        if (agent == null) {
-            agent = new JMXAgent();
-        }
-        return agent;
-    }
 
     public JMXAgent() {
         if (LOG.isDebugEnabled()) {
@@ -65,18 +59,11 @@ public class JMXAgent implements Agent {
         }
 
         final ArrayList<MBeanServer> servers = MBeanServerFactory.findMBeanServer(null);
-        if (servers.size() > 0)
-            {server = servers.get(0);}
-        else
-            {server = MBeanServerFactory.createMBeanServer();}
-
-//        try {
-//            JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://127.0.0.1:9999/server");
-//            JMXConnectorServer cs = JMXConnectorServerFactory.newJMXConnectorServer(url, null, server);
-//            cs.start();
-//        } catch (IOException e) {
-//            LOG.warn("ERROR: failed to initialize JMX connector: " + e.getMessage(), e);
-//        }
+        if (servers.size() > 0) {
+            server = servers.get(0);
+        } else {
+            server = MBeanServerFactory.createMBeanServer();
+        }
         registerSystemMBeans();
     }
 
@@ -96,19 +83,20 @@ public class JMXAgent implements Agent {
     @Override
     public void initDBInstance(BrokerPool instance) {
         try {
-            addMBean(instance.getId(), "org.exist.management." + instance.getId() + ":type=Database",
+            final String instanceId = instance.getId();
+            addMBean(instanceId, "org.exist.management." + instanceId + ":type=Database",
                     new org.exist.management.impl.Database(instance));
             
-            addMBean(instance.getId(), "org.exist.management." + instance.getId() + ".tasks:type=SanityReport",
+            addMBean(instanceId, "org.exist.management." + instanceId + ".tasks:type=SanityReport",
                     new SanityReport(instance));
             
-            addMBean(instance.getId(), "org.exist.management." + instance.getId() + ":type=DiskUsage",
+            addMBean(instanceId, "org.exist.management." + instanceId + ":type=DiskUsage",
                     new DiskUsage(instance));
 
-            addMBean(instance.getId(), "org.exist.management." + instance.getId() + ":type=ProcessReport",
+            addMBean(instanceId, "org.exist.management." + instanceId + ":type=ProcessReport",
                     new ProcessReport(instance));
 
-            addMBean(instance.getId(), "org.exist.management." + instance.getId() + ":type=BinaryValues",
+            addMBean(instanceId, "org.exist.management." + instanceId + ":type=BinaryValues",
                     new BinaryValues());
                         
         } catch (final DatabaseConfigurationException e) {
@@ -117,20 +105,25 @@ public class JMXAgent implements Agent {
     }
 
     @Override
-    public synchronized void closeDBInstance(BrokerPool instance) {
-        try {
-            final Deque<ObjectName> stack = registeredMBeans.get(instance.getId());
-            while (!stack.isEmpty()) {
-                final ObjectName on = stack.pop();
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("deregistering JMX MBean: " + on);
-                }
-                if (server.isRegistered(on)) {
-                    server.unregisterMBean(on);
-                }
+    public synchronized void closeDBInstance(final BrokerPool instance) {
+        final Deque<ObjectName> stack = registeredMBeans.get(instance.getId());
+        while (!stack.isEmpty()) {
+            final ObjectName on = stack.pop();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("deregistering JMX MBean: " + on);
             }
-        } catch (final InstanceNotFoundException | MBeanRegistrationException e) {
-            LOG.warn("Problem found while unregistering JMX", e);
+            beanInstances.remove(on);
+            removeMBean(on);
+        }
+    }
+
+    private void removeMBean(final ObjectName name) {
+        try {
+            if (server.isRegistered(name)) {
+                server.unregisterMBean(name);
+            }
+        } catch (final InstanceNotFoundException | MBeanRegistrationException  e) {
+            LOG.warn("Problem unregistering mbean: " + e.getMessage(), e);
         }
     }
 

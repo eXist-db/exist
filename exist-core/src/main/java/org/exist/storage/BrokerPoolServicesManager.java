@@ -294,5 +294,7 @@ class BrokerPoolServicesManager {
             }
             brokerPoolService.shutdown();
         }
+
+        brokerPoolServices.clear();
     }
 }

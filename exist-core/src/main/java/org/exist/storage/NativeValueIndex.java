@@ -1086,7 +1086,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
     @Override
-    public void closeAndRemove() {
+    public void closeAndRemove() throws DBException {
         final Lock lock = dbValues.getLock();
         try {
             lock.acquire(LockMode.WRITE_LOCK);
@@ -1676,3 +1676,4 @@ public class NativeValueIndex implements ContentLoadingObserver {
         }
     }
 }
+
