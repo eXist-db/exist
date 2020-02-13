@@ -6,6 +6,7 @@ import org.exist.xquery.*;
 import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
 
+import java.util.Optional;
 import java.util.Random;
 
 import static org.exist.xquery.FunctionDSL.*;
@@ -38,12 +39,20 @@ public class FnRandomNumberGenerator extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        final Random random;
-        if (args.length == 1 && !args[0].isEmpty()) {
-            random = new Random(args[0].itemAt(0).toJavaObject(long.class));
+        final Sequence arg = getArgument(0).eval(contextSequence);
+        Optional<Long> result;
+
+        if(arg.isEmpty()) {
+            result = Optional.empty();
         } else {
-            random = new Random();
+            try {
+                result = Optional.of(arg.convertTo(Type.LONG).toJavaObject(long.class));
+            } catch(final XPathException e) {
+                result = Optional.empty();
+            }
         }
+
+        final Random random = result.map(Random::new).orElse(new Random());
 
         return buildResult(context, random);
     }
