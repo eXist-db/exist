@@ -39,20 +39,23 @@ public class FnRandomNumberGenerator extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        final Sequence arg = getArgument(0).eval(contextSequence);
-        Optional<Long> result;
-
-        if(arg.isEmpty()) {
-            result = Optional.empty();
+        Optional<Long> seed;
+        if (args.length < 1) {
+            seed = Optional.empty();
         } else {
-            try {
-                result = Optional.of(arg.convertTo(Type.LONG).toJavaObject(long.class));
-            } catch(final XPathException e) {
-                result = Optional.empty();
+            final Sequence seedArg = getArgument(0).eval(contextSequence);
+            if (seedArg.isEmpty()) {
+                seed = Optional.empty();
+            } else {
+                try {
+                    seed = Optional.of(seedArg.convertTo(Type.LONG).toJavaObject(long.class));
+                } catch(final XPathException e) {
+                    seed = Optional.empty();
+                }
             }
         }
 
-        final Random random = result.map(Random::new).orElse(new Random());
+        final Random random = seed.map(Random::new).orElse(new Random());
 
         return buildResult(context, random);
     }
