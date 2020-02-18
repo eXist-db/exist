@@ -13,6 +13,8 @@
 
 
 ### Main Server Config
+jetty-bytebufferpool.xml
+jetty-threadpool.xml
 standalone-jetty.xml
 
 
