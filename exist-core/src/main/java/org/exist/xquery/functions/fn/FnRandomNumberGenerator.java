@@ -2,10 +2,15 @@ package org.exist.xquery.functions.fn;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import net.jcip.annotations.NotThreadSafe;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.Optional;
 import java.util.Random;
 
 import static org.exist.xquery.FunctionDSL.*;
@@ -38,17 +43,31 @@ public class FnRandomNumberGenerator extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        final Random random;
-        if (args.length == 1 && !args[0].isEmpty()) {
-            random = new Random(args[0].itemAt(0).toJavaObject(long.class));
+        Optional<Long> seed;
+        if (args.length < 1) {
+            seed = Optional.empty();
         } else {
-            random = new Random();
+            final Sequence seedArg = getArgument(0).eval(contextSequence);
+            if (seedArg.isEmpty()) {
+                seed = Optional.empty();
+            } else {
+                try {
+                    seed = Optional.of(seedArg.convertTo(Type.LONG).toJavaObject(long.class));
+                } catch(final XPathException e) {
+                    seed = Optional.empty();
+                }
+            }
         }
+
+        final XORShiftRandom random = seed.map(XORShiftRandom::new).orElseGet(() -> new XORShiftRandom());
 
         return buildResult(context, random);
     }
 
-    private static MapType buildResult(final XQueryContext context, final Random random) throws XPathException {
+    private static MapType buildResult(final XQueryContext context, XORShiftRandom random) throws XPathException {
+        // NOTE: we must create a copy so that `Random#nextDouble` does not interfere with multiple `next()` calls on the same random number generator
+        random = random.copy();
+
         final MapType result = new MapType(context);
         result.add(new StringValue("number"), new DoubleValue(random.nextDouble()));
         result.add(new StringValue("next"), nextFunction(context, random));
@@ -56,22 +75,22 @@ public class FnRandomNumberGenerator extends BasicFunction {
         return result;
     }
 
-    private static FunctionReference nextFunction(final XQueryContext context, final Random random) {
+    private static FunctionReference nextFunction(final XQueryContext context, final XORShiftRandom random) {
         final NextFunction nextFunction = new NextFunction(context, random);
         final FunctionCall nextFunctionCall = new FunctionCall(context, nextFunction);
         return new FunctionReference(nextFunctionCall);
     }
 
-    private static FunctionReference permuteFunction(final XQueryContext context, final Random random) {
+    private static FunctionReference permuteFunction(final XQueryContext context, final XORShiftRandom random) {
         final PermuteFunction permuteFunction = new PermuteFunction(context, random);
         final FunctionCall permuteFunctionCall = new FunctionCall(context, permuteFunction);
         return new FunctionReference(permuteFunctionCall);
     }
 
     private static class NextFunction extends UserDefinedFunction {
-        private final Random random;
+        private final XORShiftRandom random;
 
-        public NextFunction(final XQueryContext context, final Random random) {
+        public NextFunction(final XQueryContext context, final XORShiftRandom random) {
             super(context, functionSignature(
                     "random-number-generator-next",
                     "Gets the next random number generator.",
@@ -94,9 +113,9 @@ public class FnRandomNumberGenerator extends BasicFunction {
     }
 
     private static class PermuteFunction extends UserDefinedFunction {
-        private final Random random;
+        private final XORShiftRandom random;
 
-        public PermuteFunction(final XQueryContext context, final Random random) {
+        public PermuteFunction(final XQueryContext context, final XORShiftRandom random) {
             super(context, functionSignature(
                     "random-number-generator-permute",
                     "Takes an arbitrary sequence as its argument, and returns a random permutation of that sequence.",
@@ -143,6 +162,62 @@ public class FnRandomNumberGenerator extends BasicFunction {
                 return;
             }
             visited = true;
+        }
+    }
+
+    @NotThreadSafe
+    private static class XORShiftRandom extends Random implements Cloneable {
+        private long seed;
+
+        public XORShiftRandom() {
+            this.seed = System.nanoTime();
+        }
+
+        public XORShiftRandom(final long seed) {
+            this.seed = seed;
+        }
+
+        @Override
+        protected int next(final int nbits) {
+            long x = this.seed;
+            x ^= (x << 21);
+            x ^= (x >>> 35);
+            x ^= (x << 4);
+            this.seed = x;
+            x &= ((1L << nbits) -1);
+            return (int) x;
+        }
+
+        @Override
+        public long nextLong() {
+            long x = this.seed;
+            x ^= (x << 21);
+            x ^= (x >>> 35);
+            x ^= (x << 4);
+            this.seed = x;
+            x &= ((1L << 64) -1);
+            return x;
+        }
+
+        private void writeObject(final ObjectOutputStream out) throws IOException {
+            out.writeLong(seed);
+        }
+
+        private void readObject(final ObjectInputStream in) throws IOException {
+            this.seed = in.readLong();
+        }
+
+        private void readObjectNoData() {
+            this.seed = System.nanoTime();
+        }
+
+        @Override
+        protected Object clone() {
+            return copy();
+        }
+
+        public XORShiftRandom copy() {
+            return new XORShiftRandom(seed);
         }
     }
 }
