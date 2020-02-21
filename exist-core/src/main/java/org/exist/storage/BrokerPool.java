@@ -1755,11 +1755,13 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     }
 
     private void clearThreadLocals() {
-        for (final Thread thread : Thread.getAllStackTraces().keySet()){
+        for (final Thread thread : Thread.getAllStackTraces().keySet()) {
             try {
                 cleanThreadLocalsForThread(thread);
             } catch (final EXistException ex) {
-                LOG.warn("Could not clear ThreadLocals for thread: " + thread.getName());
+                if (LOG.isDebugEnabled()) {
+                    LOG.warn("Could not clear ThreadLocals for thread: " + thread.getName());
+                }
             }
         }
     }
