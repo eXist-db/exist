@@ -33,7 +33,9 @@ public class FnRandomNumberGenerator extends BasicFunction {
             FS_RANDOM_NUMBER_GENERATOR_RETURN_TYPE,
             arities(
                     arity(),
-                    arity(param("seed", Type.ATOMIC, "A seed value for the random generator"))
+                    arity(
+                            optParam("seed", Type.ATOMIC, "A seed value for the random generator")
+                    )
             )
     );
 
