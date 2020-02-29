@@ -21,6 +21,10 @@
       <tag>HEAD</tag>
   </scm>
 
+    <properties>
+        <jakarta.activation.version>1.2.2</jakarta.activation.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.exist-db</groupId>
@@ -47,7 +51,7 @@
         <dependency>
             <groupId>com.sun.activation</groupId>
             <artifactId>jakarta.activation</artifactId>
-            <version>1.2.1</version>
+            <version>${jakarta.activation.version}</version>
         </dependency>
 
         <dependency>
@@ -74,7 +78,7 @@
                                 <ignoredUsedUndeclaredDependency>javax.activation:javax.activation-api:jar:1.2.0</ignoredUsedUndeclaredDependency>
                             </ignoredUsedUndeclaredDependencies>
                             <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>com.sun.activation:jakarta.activation:jar:1.2.1</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>com.sun.activation:jakarta.activation:jar:${jakarta.activation.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
