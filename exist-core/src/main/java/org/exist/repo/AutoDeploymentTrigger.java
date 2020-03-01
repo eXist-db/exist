@@ -22,6 +22,7 @@ package org.exist.repo;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -44,6 +45,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
     public final static String AUTODEPLOY_DIRECTORY = "autodeploy";
 
     public final static String AUTODEPLOY_PROPERTY = "exist.autodeploy";
+    public final static String AUTODEPLOY_DIRECTORY_PROPERTY = "exist.autodeploy.dir";
 
     @Override
     public void execute(final DBBroker sysBroker, final Txn transaction, final Map<String, List<? extends Object>> params) {
@@ -53,8 +55,12 @@ public class AutoDeploymentTrigger implements StartupTrigger {
             return;
         }
 
-        final Optional<Path> homeDir = sysBroker.getConfiguration().getExistHome();
-        final Path autodeployDir = FileUtils.resolve(homeDir, AUTODEPLOY_DIRECTORY);
+        Path autodeployDir = Optional.ofNullable(System.getProperty(AUTODEPLOY_DIRECTORY_PROPERTY)).map(Paths::get).orElse(null);
+        if (autodeployDir == null) {
+            final Optional<Path> homeDir = sysBroker.getConfiguration().getExistHome();
+            autodeployDir = FileUtils.resolve(homeDir, AUTODEPLOY_DIRECTORY);
+        }
+
         if (!Files.isReadable(autodeployDir) && Files.isDirectory(autodeployDir)) {
             return;
         }
