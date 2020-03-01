@@ -19,26 +19,33 @@
  */
 package org.exist.xslt;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
 import net.jcip.annotations.ThreadSafe;
+import org.exist.repo.PkgXsltModuleURIResolver;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.util.EXistURISchemeURIResolver;
+import org.exist.util.URIResolverHierarchy;
 import org.exist.xquery.Constants;
 import org.exist.xquery.value.NodeValue;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
+import static org.exist.xslt.XsltURIResolverHelper.getXsltURIResolver;
 
 /**
  * Factory for stylesheet resolver and compiler instances
@@ -113,9 +120,9 @@ public class TemplatesFactory {
       }
     }
 
-    if (base != null) {
-      factory.setURIResolver(new EXistURIResolver(broker.getBrokerPool(), base));
-    }
+    // setup any URI resolvers
+    final URIResolver uriResolver = getXsltURIResolver(broker.getBrokerPool(), factory.getURIResolver(), base, true);
+    factory.setURIResolver(uriResolver);
 
     return new Stylesheet() {
       @Override

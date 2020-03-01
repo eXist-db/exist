@@ -212,6 +212,17 @@ public class ExistRepository extends Observable implements BrokerPoolService {
         return null;
     }
 
+    public Source resolveXSLTModule(final String namespace) throws PackageException {
+        for (final Packages pp : myParent.listPackages()) {
+            final Package pkg = pp.latest();
+            final Source src = pkg.resolve(namespace, URISpace.XSLT);
+            if (src != null) {
+                return src;
+            }
+        }
+        return null;
+    }
+
     public List<URI> getJavaModules() {
         final List<URI> modules = new ArrayList<>();
         for (final Packages pp : myParent.listPackages()) {

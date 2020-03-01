@@ -180,6 +180,14 @@
                     <!-- Keep's stream data in memory -->
                     <parameter name="mode" value="memory"/>
                 </trigger>
+
+                <!--
+                    AutoDeploymentTrigger will install any .xar application package it finds
+                    in the autodeploy directory unless the application has already been installed
+                    in the db.
+                -->
+                <trigger class="org.exist.repo.AutoDeploymentTrigger"/>
+
             </triggers>
         </startup>
 
