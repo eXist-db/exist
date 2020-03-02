@@ -19,6 +19,7 @@
  */
 package org.exist.xquery.functions.transform;
 
+import org.exist.config.TwoDatabasesTest;
 import org.exist.repo.AutoDeploymentTrigger;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.*;
@@ -30,6 +31,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static com.ibm.icu.impl.Assert.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -38,25 +40,21 @@ import static org.junit.Assert.assertNotNull;
  */
 public class TransformFromPkgTest {
 
-    @Rule
-    public ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(true, false, true);
+    private static Path getConfigFile() {
+        final ClassLoader loader = TransformFromPkgTest.class.getClassLoader();
+        final char separator = System.getProperty("file.separator").charAt(0);
+        final String packagePath = TransformFromPkgTest.class.getPackage().getName().replace('.', separator);
 
-    private static String PREV_AUTODEPLOY_DIRECTORY = null;
-
-    @BeforeClass
-    public static void setup() throws URISyntaxException {
-        final URL functxPkgUrl = TransformFromPkgTest.class.getResource("/functx/functx-1.0.1.xar");
-        final Path functxDir = Paths.get(functxPkgUrl.toURI());
-        PREV_AUTODEPLOY_DIRECTORY = System.getProperty(AutoDeploymentTrigger.AUTODEPLOY_DIRECTORY_PROPERTY);
-        System.setProperty(AutoDeploymentTrigger.AUTODEPLOY_DIRECTORY_PROPERTY, functxDir.getParent().toAbsolutePath().toString());
-    }
-
-    @AfterClass
-    public static void cleanup() {
-        if (PREV_AUTODEPLOY_DIRECTORY != null && !PREV_AUTODEPLOY_DIRECTORY.isEmpty()) {
-            System.setProperty(AutoDeploymentTrigger.AUTODEPLOY_DIRECTORY_PROPERTY, PREV_AUTODEPLOY_DIRECTORY);
+        try {
+            return Paths.get(loader.getResource(packagePath + separator + "conf.xml").toURI());
+        } catch (final URISyntaxException e) {
+            fail(e);
+            return null;
         }
     }
+
+    @ClassRule
+    public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(true, false, true, getConfigFile());
 
     @Test
     public void transformWithModuleFromPkg() throws XMLDBException {
