@@ -182,14 +182,31 @@ public class LuceneConfig {
         return analyzers.getDefaultAnalyzer();
     }
 
+
     public Analyzer getAnalyzer(String field) {
         LuceneIndexConfig config = namedIndexes.get(field);
-        if (config != null) {
-            String id = config.getAnalyzerId();
-            if (id != null)
-                return analyzers.getAnalyzerById(config.getAnalyzerId());
+        String id = config != null ? config.getAnalyzerId() : null;
+        if (id == null)
+            return analyzers.getDefaultAnalyzer();
+
+        final String indexSuffix = ":index";
+        if (id.endsWith(indexSuffix)) {
+            // Substitute <analyzer-id>:index with <analyzer-id>:query
+            String qid = id.substring(0, id.length() - indexSuffix.length()) + ":query";
+            Analyzer queryAnalyzer = analyzers.getAnalyzerById(qid);
+            if (queryAnalyzer != null)
+                return queryAnalyzer;
+
+            LOG.warn(String.format("Failed to substitute %s with %s analyzer", id, qid));
         }
-        return analyzers.getDefaultAnalyzer();
+        return analyzers.getAnalyzerById(config.getAnalyzerId());
+    }
+
+    /** Gets the Analyzer (defined in this LuceneConfig) with the specified id.
+     *  Returns null if no match was found.
+     */
+    public Analyzer getAnalyzerById(String analyzerId) {
+        return analyzers.getAnalyzerById(analyzerId);
     }
 
     /**

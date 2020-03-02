@@ -53,12 +53,14 @@ public class QueryOptions {
     public static final String OPTION_LOWERCASE_EXPANDED_TERMS = "lowercase-expanded-terms";
     public static final String OPTION_FACETS = "facets";
     public static final String OPTION_FIELDS = "fields";
+    public static final String OPTION_QUERY_ANALYZER_ID = "query-analyzer-id";
 
     protected enum DefaultOperator {
         OR,
         AND
     }
 
+    protected String queryAnalyzerId = null;
     protected DefaultOperator defaultOperator = DefaultOperator.AND;
     protected boolean allowLeadingWildcard = false;
     protected Optional<Integer> phraseSlop = Optional.empty();
@@ -229,6 +231,8 @@ public class QueryOptions {
             case OPTION_LOWERCASE_EXPANDED_TERMS:
                 lowercaseExpandedTerms = value.equalsIgnoreCase("yes");
                 break;
+            case OPTION_QUERY_ANALYZER_ID:
+                queryAnalyzerId = value;
             default:
                 // unknown option, ignore
                 break;
@@ -259,4 +263,6 @@ public class QueryOptions {
             parser.setLowercaseExpandedTerms(lowercaseExpandedTerms);
         }
     }
+
+    public String  getQueryAnalyzerId() { return queryAnalyzerId; }
 }
