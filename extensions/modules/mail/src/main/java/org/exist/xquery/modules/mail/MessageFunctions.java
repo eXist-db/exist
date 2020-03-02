@@ -101,136 +101,141 @@ public class MessageFunctions extends BasicFunction {
             return ret; // no messages requested
         }
 
-        MemTreeBuilder builder = context.getDocumentBuilder();
-
-        builder.startDocument();
-        builder.startElement(new QName("messages", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
-
+        context.pushDocumentContext();
         try {
-            int counter = args[1].getItemCount();
-            for (int i = 0; i < counter; i++) {
-                Message message = null;
-                int msgNum = ((IntegerValue)args[1].itemAt(i)).getInt();
-                try {
-                    message = folder.getMessage(msgNum); // get the requested message number
-                } catch (IndexOutOfBoundsException iex) {
-                    logger.info("There is no message number " + msgNum);
-                    continue;
-                }
+            MemTreeBuilder builder = context.getDocumentBuilder();
+
+            builder.startDocument();
+            builder.startElement(new QName("messages", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
+
+            try {
+                int counter = args[1].getItemCount();
+                for (int i = 0; i < counter; i++) {
+                    Message message = null;
+                    int msgNum = ((IntegerValue) args[1].itemAt(i)).getInt();
+                    try {
+                        message = folder.getMessage(msgNum); // get the requested message number
+                    } catch (IndexOutOfBoundsException iex) {
+                        logger.info("There is no message number " + msgNum);
+                        continue;
+                    }
 
 
-                builder.startElement(new QName("message", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
-                builder.addAttribute(new QName("number", null, null), String.valueOf(message.getMessageNumber()));
+                    builder.startElement(new QName("message", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
+                    builder.addAttribute(new QName("number", null, null), String.valueOf(message.getMessageNumber()));
 
-                String contentType = message.getContentType();
-                mimeParamsToAttributes(builder, contentType);
+                    String contentType = message.getContentType();
+                    mimeParamsToAttributes(builder, contentType);
 
 
-                // Subject
-                builder.startElement( new QName( "subject", MailModule.NAMESPACE_URI, MailModule.PREFIX ), null );
-                builder.characters( message.getSubject() );
-                builder.endElement();
-
-                // Sent Date
-                if (message.getSentDate() != null) {
-                    builder.startElement(new QName("sent", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
-                    builder.characters(formatDate(message.getSentDate()));
+                    // Subject
+                    builder.startElement(new QName("subject", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
+                    builder.characters(message.getSubject());
                     builder.endElement();
-                }
 
-                // Received Date
-                if (message.getReceivedDate() != null) {
-                    builder.startElement(new QName("received", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
-                    builder.characters(formatDate(message.getReceivedDate()));
-                    builder.endElement();
-                }
-
-                // From
-                if (message.getFrom() != null) {
-                    addAddress(builder,"from", null, message.getFrom()[0]);
-                }
-
-                // Recipients
-                builder.startElement(new QName("recipients", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
-                // To Recipients
-                Address[] toAddresses = message.getRecipients(Message.RecipientType.TO);
-                if (toAddresses != null) {
-                    for (Address to : toAddresses) {
-                        addAddress(builder, "recipient","to",to);
-                    }
-                }
-
-                // cc Recipients
-                Address[] ccAddresses = message.getRecipients(Message.RecipientType.CC);
-                if (ccAddresses != null) {
-                    for (Address ccAddress : ccAddresses) {
-                        addAddress(builder,"recipient", "cc", ccAddress);
-                    }
-                }
-
-                // bcc Recipients
-                Address[] bccAddresses = message.getRecipients(Message.RecipientType.BCC);
-                if (bccAddresses != null) {
-                    for (Address bccAddress : bccAddresses) {
-                        addAddress(builder,"recipient", "bcc", bccAddress);
-                    }
-                }
-                builder.endElement(); // recipients
-
-                // Handle the content
-                Object content = message.getContent();
-                if (content instanceof Multipart) {
-                    handleMultipart((Multipart)content, builder);
-                } else {
-                    handlePart(message, builder);
-                }
-
-                // Flags
-                Flags flags = message.getFlags();
-                Flags.Flag[] systemFlags = flags.getSystemFlags();
-                String[] userFlags = flags.getUserFlags();
-
-                if (systemFlags.length > 0 || userFlags.length > 0) {
-                    builder.startElement(new QName("flags", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
-
-                    for (Flags.Flag systemFlag : systemFlags) {
-                        if (systemFlag == Flags.Flag.ANSWERED) {
-                            addFlag(builder,"answered");
-                        } else if (systemFlag == Flags.Flag.DELETED) {
-                            addFlag(builder,"deleted");
-                        } else if (systemFlag == Flags.Flag.DRAFT) {
-                            addFlag(builder, "draft");
-                        } else if (systemFlag == Flags.Flag.FLAGGED) {
-                            addFlag(builder,"flagged");
-                        } else if (systemFlag == Flags.Flag.RECENT) {
-                            addFlag(builder,"recent");
-                        } else if (systemFlag == Flags.Flag.SEEN) {
-                            addFlag(builder,"seen");
-                        }
-                    }
-
-                    for (String userFlag : userFlags) {
-                        builder.startElement(new QName("flag", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
-                        builder.addAttribute(new QName("type", null, null), "user");
-                        builder.addAttribute(new QName("value", null, null), userFlag);
+                    // Sent Date
+                    if (message.getSentDate() != null) {
+                        builder.startElement(new QName("sent", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
+                        builder.characters(formatDate(message.getSentDate()));
                         builder.endElement();
                     }
 
+                    // Received Date
+                    if (message.getReceivedDate() != null) {
+                        builder.startElement(new QName("received", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
+                        builder.characters(formatDate(message.getReceivedDate()));
+                        builder.endElement();
+                    }
+
+                    // From
+                    if (message.getFrom() != null) {
+                        addAddress(builder, "from", null, message.getFrom()[0]);
+                    }
+
+                    // Recipients
+                    builder.startElement(new QName("recipients", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
+                    // To Recipients
+                    Address[] toAddresses = message.getRecipients(Message.RecipientType.TO);
+                    if (toAddresses != null) {
+                        for (Address to : toAddresses) {
+                            addAddress(builder, "recipient", "to", to);
+                        }
+                    }
+
+                    // cc Recipients
+                    Address[] ccAddresses = message.getRecipients(Message.RecipientType.CC);
+                    if (ccAddresses != null) {
+                        for (Address ccAddress : ccAddresses) {
+                            addAddress(builder, "recipient", "cc", ccAddress);
+                        }
+                    }
+
+                    // bcc Recipients
+                    Address[] bccAddresses = message.getRecipients(Message.RecipientType.BCC);
+                    if (bccAddresses != null) {
+                        for (Address bccAddress : bccAddresses) {
+                            addAddress(builder, "recipient", "bcc", bccAddress);
+                        }
+                    }
+                    builder.endElement(); // recipients
+
+                    // Handle the content
+                    Object content = message.getContent();
+                    if (content instanceof Multipart) {
+                        handleMultipart((Multipart) content, builder);
+                    } else {
+                        handlePart(message, builder);
+                    }
+
+                    // Flags
+                    Flags flags = message.getFlags();
+                    Flags.Flag[] systemFlags = flags.getSystemFlags();
+                    String[] userFlags = flags.getUserFlags();
+
+                    if (systemFlags.length > 0 || userFlags.length > 0) {
+                        builder.startElement(new QName("flags", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
+
+                        for (Flags.Flag systemFlag : systemFlags) {
+                            if (systemFlag == Flags.Flag.ANSWERED) {
+                                addFlag(builder, "answered");
+                            } else if (systemFlag == Flags.Flag.DELETED) {
+                                addFlag(builder, "deleted");
+                            } else if (systemFlag == Flags.Flag.DRAFT) {
+                                addFlag(builder, "draft");
+                            } else if (systemFlag == Flags.Flag.FLAGGED) {
+                                addFlag(builder, "flagged");
+                            } else if (systemFlag == Flags.Flag.RECENT) {
+                                addFlag(builder, "recent");
+                            } else if (systemFlag == Flags.Flag.SEEN) {
+                                addFlag(builder, "seen");
+                            }
+                        }
+
+                        for (String userFlag : userFlags) {
+                            builder.startElement(new QName("flag", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
+                            builder.addAttribute(new QName("type", null, null), "user");
+                            builder.addAttribute(new QName("value", null, null), userFlag);
+                            builder.endElement();
+                        }
+
+                        builder.endElement();
+                    }
                     builder.endElement();
                 }
-                builder.endElement();
+
+            } catch (MessagingException me) {
+                throw (new XPathException(this, "Failed to retrieve messages from list", me));
+            } catch (IOException | SAXException e) {
+                e.printStackTrace();
             }
 
-        } catch (MessagingException me) {
-            throw (new XPathException(this, "Failed to retrieve messages from list", me));
-        } catch (IOException | SAXException e) {
-            e.printStackTrace();
+            builder.endElement();
+            builder.endDocument();
+            ret = (NodeValue) builder.getDocument().getDocumentElement();
+            return (ret);
+        } finally {
+            context.popDocumentContext();
         }
-
-        builder.endElement();
-        builder.endDocument();
-        ret = (NodeValue) builder.getDocument().getDocumentElement();
-        return (ret);
     }
 
     private void addFlag(MemTreeBuilder builder, String flag) {

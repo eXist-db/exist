@@ -64,29 +64,34 @@ public class GetRunningJobs extends BasicFunction {
             throw( new XPathException( this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to get the list of running xqueries" ) );
         }
 
-        final MemTreeBuilder builder = context.getDocumentBuilder();
+        context.pushDocumentContext();
+        try {
+            final MemTreeBuilder builder = context.getDocumentBuilder();
 
-        builder.startDocument();
-        builder.startElement( new QName( "jobs", NAMESPACE_URI, PREFIX ), null );
+            builder.startDocument();
+            builder.startElement(new QName("jobs", NAMESPACE_URI, PREFIX), null);
 
-        final BrokerPool brokerPool = context.getBroker().getBrokerPool();
-		final ProcessMonitor monitor = brokerPool.getProcessMonitor();
-        final ProcessMonitor.JobInfo[] jobs = monitor.runningJobs();
-        
-        for (ProcessMonitor.JobInfo job : jobs) {
-            final Thread process = job.getThread();
-            final Date startDate = new Date(job.getStartTime());
-            builder.startElement(new QName("job", NAMESPACE_URI, PREFIX), null);
-            builder.addAttribute(new QName("id", null, null), process.getName());
-            builder.addAttribute(new QName("action", null, null), job.getAction());
-            builder.addAttribute(new QName("start", null, null), new DateTimeValue(startDate).getStringValue());
-            builder.addAttribute(new QName("info", null, null), job.getAddInfo().toString());
+            final BrokerPool brokerPool = context.getBroker().getBrokerPool();
+            final ProcessMonitor monitor = brokerPool.getProcessMonitor();
+            final ProcessMonitor.JobInfo[] jobs = monitor.runningJobs();
+
+            for (ProcessMonitor.JobInfo job : jobs) {
+                final Thread process = job.getThread();
+                final Date startDate = new Date(job.getStartTime());
+                builder.startElement(new QName("job", NAMESPACE_URI, PREFIX), null);
+                builder.addAttribute(new QName("id", null, null), process.getName());
+                builder.addAttribute(new QName("action", null, null), job.getAction());
+                builder.addAttribute(new QName("start", null, null), new DateTimeValue(startDate).getStringValue());
+                builder.addAttribute(new QName("info", null, null), job.getAddInfo().toString());
+                builder.endElement();
+            }
+
             builder.endElement();
+            builder.endDocument();
+
+            return (NodeValue) builder.getDocument().getDocumentElement();
+        } finally {
+            context.popDocumentContext();
         }
-
-        builder.endElement();
-        builder.endDocument();
-
-        return (NodeValue)builder.getDocument().getDocumentElement();
     }
 }

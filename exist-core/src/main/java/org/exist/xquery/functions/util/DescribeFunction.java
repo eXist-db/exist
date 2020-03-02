@@ -83,30 +83,35 @@ public class DescribeFunction extends Function {
 			throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + fname);
 		}
 		final String uri = qname.getNamespaceURI();
-		
-		final MemTreeBuilder builder = context.getDocumentBuilder();
-		final AttributesImpl attribs = new AttributesImpl();
-		attribs.addAttribute("", "name", "name", "CDATA", qname.getStringValue());
-		attribs.addAttribute("", "module", "module", "CDATA", uri);
-		final int nodeNr = builder.startElement("", "function", "function", attribs);
-		
-		FunctionSignature signature;
-		final Module module = context.getModule(uri);
-		if(module != null) {
-			final Iterator<FunctionSignature> i = module.getSignaturesForFunction(qname);
-			while(i.hasNext()) {
-				signature = i.next();
-				writeSignature(signature, builder);
+
+		context.pushDocumentContext();
+		try {
+			final MemTreeBuilder builder = context.getDocumentBuilder();
+			final AttributesImpl attribs = new AttributesImpl();
+			attribs.addAttribute("", "name", "name", "CDATA", qname.getStringValue());
+			attribs.addAttribute("", "module", "module", "CDATA", uri);
+			final int nodeNr = builder.startElement("", "function", "function", attribs);
+
+			FunctionSignature signature;
+			final Module module = context.getModule(uri);
+			if (module != null) {
+				final Iterator<FunctionSignature> i = module.getSignaturesForFunction(qname);
+				while (i.hasNext()) {
+					signature = i.next();
+					writeSignature(signature, builder);
+				}
+			} else {
+				final Iterator<FunctionSignature> i = context.getSignaturesForFunction(qname);
+				while (i.hasNext()) {
+					signature = i.next();
+					writeSignature(signature, builder);
+				}
 			}
-		} else {
-			final Iterator<FunctionSignature> i = context.getSignaturesForFunction(qname);
-			while(i.hasNext()) {
-				signature = i.next();
-				writeSignature(signature, builder);
-			}
+			builder.endElement();
+			return ((DocumentImpl) builder.getDocument()).getNode(nodeNr);
+		} finally {
+			context.popDocumentContext();
 		}
-		builder.endElement();
-		return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
 	}
 
 	/**

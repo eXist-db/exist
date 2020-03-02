@@ -109,9 +109,10 @@ public class XPathUtil {
             return getNode(context.getBroker(), (XMLResource) obj);
 
         } else if (obj instanceof Node) {
+            context.pushDocumentContext();
             final DOMStreamer streamer = (DOMStreamer) SerializerPool.getInstance().borrowObject(DOMStreamer.class);
             try {
-                final MemTreeBuilder builder = new MemTreeBuilder(context);
+                final MemTreeBuilder builder = context.getDocumentBuilder();
                 builder.startDocument();
                 final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
                 streamer.setContentHandler(receiver);
@@ -126,6 +127,7 @@ public class XPathUtil {
                         "Failed to transform node into internal model: "
                         + e.getMessage());
             } finally {
+                context.popDocumentContext();
                 SerializerPool.getInstance().returnObject(streamer);
             }
 
@@ -145,9 +147,10 @@ public class XPathUtil {
             return seq;
 
         } else if (obj instanceof NodeList) {
+            context.pushDocumentContext();
             final DOMStreamer streamer = (DOMStreamer) SerializerPool.getInstance().borrowObject(DOMStreamer.class);
             try {
-                final MemTreeBuilder builder = new MemTreeBuilder();
+                final MemTreeBuilder builder = context.getDocumentBuilder();
                 builder.startDocument();
                 final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
                 streamer.setContentHandler(receiver);
@@ -167,6 +170,7 @@ public class XPathUtil {
                         "Failed to transform node into internal model: "
                         + e.getMessage());
             } finally {
+                context.popDocumentContext();
                 SerializerPool.getInstance().returnObject(streamer);
             }
 

@@ -84,25 +84,30 @@ public class GetRunningXQueries extends BasicFunction
 	private Sequence getRunningXQueries() throws XPathException
 	{
 		Sequence    xmlResponse     = null;
-        
-        final MemTreeBuilder builder = context.getDocumentBuilder();
-        
-        builder.startDocument();
-        builder.startElement( new QName( "xqueries", NAMESPACE_URI, PREFIX ), null );
-        
-        //Add all the running xqueries
-        final XQueryWatchDog watchdogs[] = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
 
-		for (XQueryWatchDog watchdog : watchdogs) {
-			final XQueryContext context = watchdog.getContext();
-			getRunningXQuery(builder, context, watchdog);
+		context.pushDocumentContext();
+		try {
+			final MemTreeBuilder builder = context.getDocumentBuilder();
+
+			builder.startDocument();
+			builder.startElement(new QName("xqueries", NAMESPACE_URI, PREFIX), null);
+
+			//Add all the running xqueries
+			final XQueryWatchDog watchdogs[] = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
+
+			for (XQueryWatchDog watchdog : watchdogs) {
+				final XQueryContext context = watchdog.getContext();
+				getRunningXQuery(builder, context, watchdog);
+			}
+
+			builder.endElement();
+
+			xmlResponse = (NodeValue) builder.getDocument().getDocumentElement();
+
+			return (xmlResponse);
+		} finally {
+			context.popDocumentContext();
 		}
-        
-        builder.endElement();
-        
-        xmlResponse = (NodeValue)builder.getDocument().getDocumentElement();
-        
-        return( xmlResponse );
 	}
 	
 	private void getRunningXQuery( MemTreeBuilder builder, XQueryContext context, XQueryWatchDog watchdog ) throws XPathException

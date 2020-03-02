@@ -61,57 +61,63 @@ public class InspectModule extends BasicFunction {
         if (module == null) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        final MemTreeBuilder builder = context.getDocumentBuilder();
-        final AttributesImpl attribs = new AttributesImpl();
-        attribs.addAttribute("", "uri", "uri", "CDATA", module.getNamespaceURI());
-        attribs.addAttribute("", "prefix", "prefix", "CDATA", module.getDefaultPrefix());
-        if (module.isInternalModule()) {
-            attribs.addAttribute("", "location", "location", "CDATA", "java:" + module.getClass().getName());
-        } else if (isCalledAs("inspect-module")) {
-            attribs.addAttribute("", "location", "location", "CDATA", args[0].getStringValue());
-        }
-        final int nodeNr = builder.startElement(MODULE_QNAME, attribs);
-        if (!module.isInternalModule()) {
-            XQDocHelper.parse((ExternalModule) module);
-        }
-        if (module.getDescription() != null) {
-            builder.startElement(InspectFunction.DESCRIPTION_QNAME, null);
-            builder.characters(module.getDescription());
-            builder.endElement();
-        }
-        if (!module.isInternalModule()) {
-            final ExternalModule externalModule = (ExternalModule) module;
-            if (externalModule.getMetadata() != null) {
-                for (final Map.Entry<String, String> entry : externalModule.getMetadata().entrySet()) {
-                    builder.startElement(new QName(entry.getKey(), XMLConstants.NULL_NS_URI), null);
-                    builder.characters(entry.getValue());
+
+        try {
+            context.pushDocumentContext();
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            final AttributesImpl attribs = new AttributesImpl();
+            attribs.addAttribute("", "uri", "uri", "CDATA", module.getNamespaceURI());
+            attribs.addAttribute("", "prefix", "prefix", "CDATA", module.getDefaultPrefix());
+            if (module.isInternalModule()) {
+                attribs.addAttribute("", "location", "location", "CDATA", "java:" + module.getClass().getName());
+            } else if (isCalledAs("inspect-module")) {
+                attribs.addAttribute("", "location", "location", "CDATA", args[0].getStringValue());
+            }
+            final int nodeNr = builder.startElement(MODULE_QNAME, attribs);
+            if (!module.isInternalModule()) {
+                XQDocHelper.parse((ExternalModule) module);
+            }
+            if (module.getDescription() != null) {
+                builder.startElement(InspectFunction.DESCRIPTION_QNAME, null);
+                builder.characters(module.getDescription());
+                builder.endElement();
+            }
+            if (!module.isInternalModule()) {
+                final ExternalModule externalModule = (ExternalModule) module;
+                if (externalModule.getMetadata() != null) {
+                    for (final Map.Entry<String, String> entry : externalModule.getMetadata().entrySet()) {
+                        builder.startElement(new QName(entry.getKey(), XMLConstants.NULL_NS_URI), null);
+                        builder.characters(entry.getValue());
+                        builder.endElement();
+                    }
+                }
+                // variables
+                for (final VariableDeclaration var : externalModule.getVariableDeclarations()) {
+                    attribs.clear();
+                    attribs.addAttribute("", "name", "name", "CDATA", var.getName().toString());
+                    final SequenceType type = var.getSequenceType();
+                    if (type != null) {
+                        attribs.addAttribute("", "type", "type", "CDATA", Type.getTypeName(type.getPrimaryType()));
+                        attribs.addAttribute("", "cardinality", "cardinality", "CDATA", Cardinality.getDescription(type.getCardinality()));
+                    }
+                    builder.startElement(VARIABLE_QNAME, attribs);
                     builder.endElement();
                 }
             }
-            // variables
-            for (final VariableDeclaration var : externalModule.getVariableDeclarations()) {
-                attribs.clear();
-                attribs.addAttribute("", "name", "name", "CDATA", var.getName().toString());
-                final SequenceType type = var.getSequenceType();
-                if (type != null) {
-                    attribs.addAttribute("", "type", "type", "CDATA", Type.getTypeName(type.getPrimaryType()));
-                    attribs.addAttribute("", "cardinality", "cardinality", "CDATA", Cardinality.getDescription(type.getCardinality()));
+            // functions
+            for (final FunctionSignature sig : module.listFunctions()) {
+                if (!sig.isPrivate()) {
+                    UserDefinedFunction func = null;
+                    if (!module.isInternalModule()) {
+                        func = ((ExternalModule) module).getFunction(sig.getName(), sig.getArgumentCount(), null);
+                    }
+                    InspectFunction.generateDocs(sig, func, builder);
                 }
-                builder.startElement(VARIABLE_QNAME, attribs);
-                builder.endElement();
             }
+            builder.endElement();
+            return builder.getDocument().getNode(nodeNr);
+        } finally {
+            context.popDocumentContext();
         }
-        // functions
-        for (final FunctionSignature sig : module.listFunctions()) {
-            if (!sig.isPrivate()) {
-                UserDefinedFunction func = null;
-                if (!module.isInternalModule()) {
-                    func = ((ExternalModule) module).getFunction(sig.getName(), sig.getArgumentCount(), null);
-                }
-                InspectFunction.generateDocs(sig, func, builder);
-            }
-        }
-        builder.endElement();
-        return builder.getDocument().getNode(nodeNr);
     }
 }

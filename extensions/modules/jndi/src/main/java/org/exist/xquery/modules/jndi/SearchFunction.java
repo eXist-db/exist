@@ -157,74 +157,79 @@ public class SearchFunction extends BasicFunction
 	private Sequence renderSearchResultsAsDSML( NamingEnumeration results, String dn ) throws NamingException
 	{
 		Sequence    xmlResult     = Sequence.EMPTY_SEQUENCE;
-		
-		MemTreeBuilder builder = context.getDocumentBuilder();
-					
-		builder.startDocument();
-    	builder.startElement( new QName( "dsml", DSML_NAMESPACE, DSML_PREFIX ), null );
-		builder.addAttribute( new QName( "dn", null, null ), dn );
-		builder.startElement( new QName( "directory-entries", DSML_NAMESPACE, DSML_PREFIX ), null );
-		
-		while( results.hasMore() ) {
-			SearchResult result = (SearchResult)results.next();
-			
-			builder.startElement( new QName( "entry", DSML_NAMESPACE, DSML_PREFIX ), null );
-			builder.addAttribute( new QName( "dn", null, null ), result.getName() );
 
-			// Handle objectClass attributes
-			Attribute ocattr = result.getAttributes().get( "objectClass" );
-			
-			if( ocattr != null ) {
-				builder.startElement( new QName( "objectclass", DSML_NAMESPACE, DSML_PREFIX ), null );
-				
-				for( int i = 0; i < ocattr.size(); i++ ) {
-						Object value = ocattr.get( i );
-						
-						builder.startElement( new QName( "oc-value", DSML_NAMESPACE, DSML_PREFIX ), null );
-						builder.characters( value.toString() );
+		context.pushDocumentContext();
+		try {
+			MemTreeBuilder builder = context.getDocumentBuilder();
+
+			builder.startDocument();
+			builder.startElement(new QName("dsml", DSML_NAMESPACE, DSML_PREFIX), null);
+			builder.addAttribute(new QName("dn", null, null), dn);
+			builder.startElement(new QName("directory-entries", DSML_NAMESPACE, DSML_PREFIX), null);
+
+			while (results.hasMore()) {
+				SearchResult result = (SearchResult) results.next();
+
+				builder.startElement(new QName("entry", DSML_NAMESPACE, DSML_PREFIX), null);
+				builder.addAttribute(new QName("dn", null, null), result.getName());
+
+				// Handle objectClass attributes
+				Attribute ocattr = result.getAttributes().get("objectClass");
+
+				if (ocattr != null) {
+					builder.startElement(new QName("objectclass", DSML_NAMESPACE, DSML_PREFIX), null);
+
+					for (int i = 0; i < ocattr.size(); i++) {
+						Object value = ocattr.get(i);
+
+						builder.startElement(new QName("oc-value", DSML_NAMESPACE, DSML_PREFIX), null);
+						builder.characters(value.toString());
 						builder.endElement();
 					}
-				
-				builder.endElement();
-			}
-			
-			NamingEnumeration attrs = result.getAttributes().getAll();
-			
-			// Handle all other attributes
-			while( attrs.hasMore() ) {
-				Attribute attr = (Attribute)attrs.next();
-				
-				String name = attr.getID();
-				
-				if( !name.equals( "objectClass" ) ) {
-				
-					builder.startElement( new QName( "attr", DSML_NAMESPACE, DSML_PREFIX ), null );
-					builder.addAttribute( new QName( "name", null, null ), name );
-					
-					for( int i = 0; i < attr.size(); i++ ) {
-						Object value = attr.get( i );
-						
-						builder.startElement( new QName( "value", DSML_NAMESPACE, DSML_PREFIX ), null );
-						if( name.equals( "userPassword" ) ) {
-							builder.characters( new String( (byte[])value ) );
-						} else {
-							builder.characters( value.toString() );
-						}
-						builder.endElement();
-					}
-					
+
 					builder.endElement();
 				}
+
+				NamingEnumeration attrs = result.getAttributes().getAll();
+
+				// Handle all other attributes
+				while (attrs.hasMore()) {
+					Attribute attr = (Attribute) attrs.next();
+
+					String name = attr.getID();
+
+					if (!name.equals("objectClass")) {
+
+						builder.startElement(new QName("attr", DSML_NAMESPACE, DSML_PREFIX), null);
+						builder.addAttribute(new QName("name", null, null), name);
+
+						for (int i = 0; i < attr.size(); i++) {
+							Object value = attr.get(i);
+
+							builder.startElement(new QName("value", DSML_NAMESPACE, DSML_PREFIX), null);
+							if (name.equals("userPassword")) {
+								builder.characters(new String((byte[]) value));
+							} else {
+								builder.characters(value.toString());
+							}
+							builder.endElement();
+						}
+
+						builder.endElement();
+					}
+				}
+
+				builder.endElement();
 			}
-			
+
 			builder.endElement();
+			builder.endElement();
+
+			xmlResult = (NodeValue) builder.getDocument().getDocumentElement();
+
+			return (xmlResult);
+		} finally {
+			context.popDocumentContext();
 		}
-		
-		builder.endElement();
-		builder.endElement();
-    
-    	xmlResult = (NodeValue)builder.getDocument().getDocumentElement();
-		
-		return( xmlResult );
 	}
 }

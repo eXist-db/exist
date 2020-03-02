@@ -51,9 +51,14 @@ public class InspectFunction extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         final FunctionReference ref = (FunctionReference) args[0].itemAt(0);
         final FunctionSignature sig = ref.getSignature();
-        final MemTreeBuilder builder = context.getDocumentBuilder();
-        final int nodeNr = generateDocs(sig, null, builder);
-        return builder.getDocument().getNode(nodeNr);
+        try {
+            context.pushDocumentContext();
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            final int nodeNr = generateDocs(sig, null, builder);
+            return builder.getDocument().getNode(nodeNr);
+        } finally {
+            context.popDocumentContext();
+        }
     }
 
     /**

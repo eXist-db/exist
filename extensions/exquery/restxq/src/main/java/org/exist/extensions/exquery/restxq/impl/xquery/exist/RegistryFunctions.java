@@ -152,7 +152,8 @@ public class RegistryFunctions extends BasicFunction {
         final RestXqServiceRegistry registry = RestXqServiceRegistryManager.getRegistry(getContext().getBroker().getBrokerPool());
                 
         Sequence result = Sequence.EMPTY_SEQUENCE;
-                
+
+        context.pushDocumentContext();
         try {
             if(isCalledAs(qnRegisterModule.getLocalPart())) {
                 final XmldbURI moduleUri = args[0].toJavaObject(XmldbURI.class);
@@ -250,23 +251,31 @@ public class RegistryFunctions extends BasicFunction {
             return result;
         } catch(final PermissionDeniedException pde) {
             throw new XPathException(this, pde.getMessage(), pde);
+        } finally {
+            context.popDocumentContext();
         }
     }
 
     private Sequence serializeDependenciesTree(final Map<String, Set<String>> dependenciesTree) {
-        final MemTreeBuilder builder = getContext().getDocumentBuilder();
+        context.pushDocumentContext();
+        try {
+            final MemTreeBuilder builder = getContext().getDocumentBuilder();
 
-        builder.startDocument();
-        builder.startElement(DEPENDENCIES, null);
+            builder.startDocument();
+            builder.startElement(DEPENDENCIES, null);
 
-        for(final Map.Entry<String, Set<String>> dependencyTree : dependenciesTree.entrySet()) {
-            serializeDependencyTree(builder, dependencyTree);
+            for (final Map.Entry<String, Set<String>> dependencyTree : dependenciesTree.entrySet()) {
+                serializeDependencyTree(builder, dependencyTree);
+            }
+
+            builder.endElement();
+            builder.endDocument();
+
+            return builder.getDocument();
+        } finally {
+            context.popDocumentContext();
         }
 
-        builder.endElement();
-        builder.endDocument();
-
-        return builder.getDocument();
     }
 
     private void serializeDependencyTree(final MemTreeBuilder builder, final Map.Entry<String, Set<String>> dependencyTree) {
@@ -287,19 +296,24 @@ public class RegistryFunctions extends BasicFunction {
     }
 
     private Sequence serializeMissingDependencies(final Map<String, Set<String>> missingDependencies) {
-        final MemTreeBuilder builder = getContext().getDocumentBuilder();
+        context.pushDocumentContext();
+        try {
+            final MemTreeBuilder builder = getContext().getDocumentBuilder();
 
-        builder.startDocument();
-        builder.startElement(MISSING_DEPENDENCIES, null);
+            builder.startDocument();
+            builder.startElement(MISSING_DEPENDENCIES, null);
 
-        for(final Map.Entry<String, Set<String>> missingDependency : missingDependencies.entrySet()) {
-            serializeMissingDependency(builder, missingDependency);
+            for (final Map.Entry<String, Set<String>> missingDependency : missingDependencies.entrySet()) {
+                serializeMissingDependency(builder, missingDependency);
+            }
+
+            builder.endElement();
+            builder.endDocument();
+
+            return builder.getDocument();
+        } finally {
+            context.popDocumentContext();
         }
-
-        builder.endElement();
-        builder.endDocument();
-
-        return builder.getDocument();
     }
 
     private void serializeMissingDependency(final MemTreeBuilder builder, final Map.Entry<String, Set<String>> missingDependency) {

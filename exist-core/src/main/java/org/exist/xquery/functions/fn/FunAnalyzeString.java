@@ -85,24 +85,29 @@ public class FunAnalyzeString extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        final MemTreeBuilder builder = new MemTreeBuilder(context);
-        builder.startDocument();
-        builder.startElement(new QName("analyze-string-result", Function.BUILTIN_FUNCTION_NS), null);
-        String input = "";
-        if (!args[0].isEmpty()) {
-            input = args[0].itemAt(0).getStringValue();
-        }
-        if (!"".equals(input)) {
-            final String pattern = args[1].itemAt(0).getStringValue();
-            String flags = null;
-            if(args.length == 3) {
-                flags = args[2].itemAt(0).getStringValue();
+        context.pushDocumentContext();
+        try {
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            builder.startDocument();
+            builder.startElement(new QName("analyze-string-result", Function.BUILTIN_FUNCTION_NS), null);
+            String input = "";
+            if (!args[0].isEmpty()) {
+                input = args[0].itemAt(0).getStringValue();
             }
-            analyzeString(builder, input, pattern, flags);
+            if (!"" .equals(input)) {
+                final String pattern = args[1].itemAt(0).getStringValue();
+                String flags = null;
+                if (args.length == 3) {
+                    flags = args[2].itemAt(0).getStringValue();
+                }
+                analyzeString(builder, input, pattern, flags);
+            }
+            builder.endElement();
+            builder.endDocument();
+            return (NodeValue) builder.getDocument().getDocumentElement();
+        } finally {
+            context.popDocumentContext();
         }
-        builder.endElement();
-        builder.endDocument();
-        return (NodeValue)builder.getDocument().getDocumentElement();
     }
 
     private void analyzeString(final MemTreeBuilder builder, final String input, String pattern, final String flags) throws XPathException {

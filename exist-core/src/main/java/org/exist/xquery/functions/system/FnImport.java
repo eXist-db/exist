@@ -115,27 +115,34 @@ public class FnImport extends BasicFunction {
                 {adminPassAfter = args[2].getStringValue();}
 
         MemTreeBuilder builder = null;
-        if (NAME.equals( mySignature.getName() )) {
-            builder = context.getDocumentBuilder();
-	        builder.startDocument();
-	        builder.startElement(IMPORT_ELEMENT, null);
-        }
-        
+        context.pushDocumentContext();
         try {
-        	final SystemImport restore = new SystemImport(context.getDatabase());
-            final RestoreListener listener = new XMLRestoreListener(builder);
-            restore.restore(org.exist.security.SecurityManager.DBA_USER, adminPass, adminPassAfter, Paths.get(dirOrFile), listener);
-        } catch (final Exception e) {
-            throw new XPathException(this, "restore failed with exception: " + e.getMessage(), e);
-        }
-        
-        if (builder == null) {
-        	return Sequence.EMPTY_SEQUENCE;
-        } else {
-	        builder.endElement();
-	        builder.endDocument();
-	        return (NodeValue) builder.getDocument().getDocumentElement();
-        }
+			if (NAME.equals(mySignature.getName())) {
+				builder = context.getDocumentBuilder();
+				builder.startDocument();
+				builder.startElement(IMPORT_ELEMENT, null);
+			}
+
+			try {
+				final SystemImport restore = new SystemImport(context.getDatabase());
+				final RestoreListener listener = new XMLRestoreListener(builder);
+				restore.restore(org.exist.security.SecurityManager.DBA_USER, adminPass, adminPassAfter, Paths.get(dirOrFile), listener);
+			} catch (final Exception e) {
+				throw new XPathException(this, "restore failed with exception: " + e.getMessage(), e);
+			}
+
+			if (builder == null) {
+				return Sequence.EMPTY_SEQUENCE;
+			} else {
+				builder.endElement();
+				builder.endDocument();
+				return (NodeValue) builder.getDocument().getDocumentElement();
+			}
+		} finally {
+        	if (builder != null) {
+        		context.popDocumentContext();
+			}
+		}
     }
 
     private static class XMLRestoreListener extends AbstractRestoreListener {

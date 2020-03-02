@@ -66,26 +66,31 @@ public class IdFunction extends BasicFunction {
      * @return An in-memory document describing the accounts
      */
     private org.exist.dom.memtree.DocumentImpl functionId() throws XPathException {
-        final MemTreeBuilder builder = context.getDocumentBuilder();
-        builder.startDocument();
+        context.pushDocumentContext();
+        try {
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            builder.startDocument();
 
-        builder.startElement(new QName("id", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
-        
-        builder.startElement(new QName("real", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
-        subjectToXml(builder, context.getRealUser());
-        builder.endElement();
+            builder.startElement(new QName("id", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
 
-        if(context.getRealUser().getId() != context.getEffectiveUser().getId()) {
-            builder.startElement(new QName("effective", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
-            subjectToXml(builder, context.getEffectiveUser());
+            builder.startElement(new QName("real", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
+            subjectToXml(builder, context.getRealUser());
             builder.endElement();
-        }
 
-        builder.endElement();
-        
-        builder.endDocument();
-        
-        return builder.getDocument();
+            if (context.getRealUser().getId() != context.getEffectiveUser().getId()) {
+                builder.startElement(new QName("effective", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
+                subjectToXml(builder, context.getEffectiveUser());
+                builder.endElement();
+            }
+
+            builder.endElement();
+
+            builder.endDocument();
+
+            return builder.getDocument();
+        } finally {
+            context.popDocumentContext();
+        }
     }
     
     private void subjectToXml(final MemTreeBuilder builder, final Subject subject) {

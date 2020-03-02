@@ -684,7 +684,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @throws XPathException if an error occurs executing the query
      * @throws IOException if an I/O error occurs
      */
-    public NodeImpl search(final List<String> toBeMatchedURIs, String queryText, String[] fieldsToGet, QueryOptions options) throws XPathException, IOException {
+    public NodeImpl search(final XQueryContext context, final List<String> toBeMatchedURIs, String queryText, String[] fieldsToGet, QueryOptions options) throws XPathException, IOException {
 
         return index.withSearcher(searcher -> {
             // Get analyzer : to be retrieved from configuration
@@ -705,23 +705,28 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
             final PlainTextHighlighter highlighter = new PlainTextHighlighter(query, searcher.searcher.getIndexReader());
 
-            final MemTreeBuilder builder = new MemTreeBuilder();
-            builder.startDocument();
+            context.pushDocumentContext();
+            try {
+                final MemTreeBuilder builder = context.getDocumentBuilder();
+                builder.startDocument();
 
-            // start root element
-            final int nodeNr = builder.startElement("", "results", "results", null);
+                // start root element
+                final int nodeNr = builder.startElement("", "results", "results", null);
 
-            // Perform actual search
-            final BinarySearchCollector collector = new BinarySearchCollector(toBeMatchedURIs, builder, fields, searchAnalyzer, highlighter);
-            searcher.searcher.search(query, collector);
+                // Perform actual search
+                final BinarySearchCollector collector = new BinarySearchCollector(toBeMatchedURIs, builder, fields, searchAnalyzer, highlighter);
+                searcher.searcher.search(query, collector);
 
-            // finish root element
-            builder.endElement();
+                // finish root element
+                builder.endElement();
 
-            //System.out.println(builder.getDocument().toString());
+                //System.out.println(builder.getDocument().toString());
 
-            // TODO check
-            return builder.getDocument().getNode(nodeNr);
+                // TODO check
+                return builder.getDocument().getNode(nodeNr);
+            } finally {
+                context.popDocumentContext();
+            }
 
         });
     }
