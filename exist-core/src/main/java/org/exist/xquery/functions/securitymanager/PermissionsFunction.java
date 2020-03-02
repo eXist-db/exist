@@ -53,7 +53,7 @@ import java.util.Optional;
  * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
 public class PermissionsFunction extends BasicFunction {
-    
+
     private final static QName qnGetPermissions = new QName("get-permissions", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnAddUserACE = new QName("add-user-ace", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     private final static QName qnAddGroupACE = new QName("add-group-ace", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
@@ -424,7 +424,9 @@ public class PermissionsFunction extends BasicFunction {
     }
 
     private org.exist.dom.memtree.DocumentImpl permissionsToXml(final Permission permission) {
+        context.pushDocumentContext();
         final MemTreeBuilder builder = context.getDocumentBuilder();
+
         builder.startDocument();
 
         builder.startElement(new QName("permission", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
@@ -454,6 +456,10 @@ public class PermissionsFunction extends BasicFunction {
 
         builder.endDocument();
 
-        return builder.getDocument();
+        final org.exist.dom.memtree.DocumentImpl doc = builder.getDocument();
+
+        context.popDocumentContext();
+
+        return doc;
     }
 }
