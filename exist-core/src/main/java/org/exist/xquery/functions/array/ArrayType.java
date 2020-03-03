@@ -22,11 +22,12 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
 
     // the signature of the function which is evaluated if the map is called as a function item
     private static final FunctionSignature ACCESSOR =
+
         new FunctionSignature(
             new QName("get", ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
             "Internal accessor function for arrays.",
-            new SequenceType[]{
-                new FunctionParameterSequenceType("n", Type.POSITIVE_INTEGER, Cardinality.EXACTLY_ONE, "the position of the item to retrieve from the array")
+            new SequenceType[] {
+                    new FunctionParameterSequenceType("index", Type.INTEGER, Cardinality.EXACTLY_ONE, "The index")
             },
             new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
 

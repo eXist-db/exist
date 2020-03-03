@@ -24,7 +24,7 @@ package org.exist.xquery.value;
 import com.ibm.icu.text.Collator;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
-    
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
