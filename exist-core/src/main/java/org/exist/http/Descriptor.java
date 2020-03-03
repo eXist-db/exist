@@ -100,6 +100,8 @@ public class Descriptor implements ErrorHandler {
                 f = f.getParent().resolve("etc").resolve(file);
                 if (!Files.isReadable(f)) {
                     LOG.warn("Giving up unable to read descriptor file from " + f);
+                } else {
+                    is = Files.newInputStream(f);
                 }
             } else {
                 is = Files.newInputStream(f);
