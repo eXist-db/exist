@@ -104,13 +104,23 @@ public class UntypedValueCheck extends AbstractExpression {
     private Item convert(Item item) throws XPathException {
         if (atomize || item.getType() == Type.UNTYPED_ATOMIC || Type.subTypeOf(requiredType, Type.NUMBER) && Type.subTypeOf(item.getType(), Type.NUMBER)) {
             try {
-                if (Type.subTypeOf(item.getType(), requiredType))
-                    {return item;}
+                if (Type.subTypeOf(item.getType(), requiredType)) {
+                    return item;
+                }
+                if (item.getType() == Type.INTEGER && requiredType == Type.POSITIVE_INTEGER) {
+                    throw new XPathException(ErrorCodes.FORG0001,
+                            "cannot convert '"
+                                    + Type.getTypeName(item.getType())
+                                    + " ("
+                                    + item.getStringValue()
+                                    + ")' into "
+                                    + Type.getTypeName(requiredType));
+                }
                 item = item.convertTo(requiredType);
             } catch (final XPathException e) {
                 error.addArgs(ExpressionDumper.dump(expression), Type.getTypeName(requiredType),
                     Type.getTypeName(item.getType()));
-                throw new XPathException(expression, error.toString());
+                throw new XPathException(expression, e.getErrorCode(), error.toString());
             }
         }
         return item;

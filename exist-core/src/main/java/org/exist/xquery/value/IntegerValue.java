@@ -24,7 +24,7 @@ package org.exist.xquery.value;
 import com.ibm.icu.text.Collator;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
-
+    
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -67,40 +67,34 @@ public class IntegerValue extends NumericValue {
     private static final BigInteger LARGEST_UNSIGNED_BYTE = new BigInteger("255");
 
     private final BigInteger value;
-    // 	private long value;
-
-    //should default type be NUMBER or LONG ? -shabanovd
     private final int type;
 
-    public IntegerValue(final BigInteger value, final int requiredType) {
-        this.value = value;
-        this.type = requiredType;
+    public IntegerValue(final long value) {
+        this.value = BigInteger.valueOf(value);
+        this.type = Type.INTEGER;
     }
 
     public IntegerValue(final BigInteger integer) {
-        this(integer, Type.INTEGER);
-    }
-
-    public IntegerValue(final long value) {
-        this(BigInteger.valueOf(value));
+        this.value = integer;
+        this.type = Type.INTEGER;
     }
 
     public IntegerValue(final long value, final int type) throws XPathException {
         this(BigInteger.valueOf(value), type);
-        if (!checkType(value, type)) {
-            throw new XPathException(
-                    "Value is not a valid integer for type " + Type.getTypeName(type));
+    }
+
+    public IntegerValue(final BigInteger value, final int requiredType) throws XPathException {
+        this.value = value;
+        this.type = requiredType;
+
+        if (!checkType()) {
+            throw new XPathException(ErrorCodes.FORG0001, "can not convert '" +
+                    value + "' to " + Type.getTypeName(type));
         }
     }
 
     public IntegerValue(final String stringValue) throws XPathException {
-        try {
-            this.value = new BigInteger(StringValue.trimWhitespace(stringValue));
-            this.type = Type.INTEGER;
-        } catch (final NumberFormatException e) {
-            throw new XPathException(ErrorCodes.FORG0001,
-                    "failed to convert '" + stringValue + "' to an integer: " + e.getMessage(), e);
-        }
+        this(stringValue, Type.INTEGER);
     }
 
     public IntegerValue(final String stringValue, final int requiredType) throws XPathException {
@@ -115,38 +109,6 @@ public class IntegerValue extends NumericValue {
             throw new XPathException(ErrorCodes.FORG0001, "can not convert '" +
                     stringValue + "' to " + Type.getTypeName(requiredType));
         }
-    }
-
-    private static boolean checkType(final long value, final int type) throws XPathException {
-        switch (type) {
-            case Type.LONG:
-            case Type.INTEGER:
-            case Type.DECIMAL:
-                return true;
-            case Type.NON_POSITIVE_INTEGER:
-                return value < 1;
-            case Type.NEGATIVE_INTEGER:
-                return value < 0;
-            case Type.INT:
-                return value >= -4294967295L && value <= 4294967295L;
-            case Type.SHORT:
-                return value >= -65535 && value <= 65535;
-            case Type.BYTE:
-                return value >= -255 && value <= 255;
-            case Type.NON_NEGATIVE_INTEGER:
-                return value > -1;
-            case Type.UNSIGNED_LONG:
-                return value > -1;
-            case Type.UNSIGNED_INT:
-                return value > -1 && value <= 4294967295L;
-            case Type.UNSIGNED_SHORT:
-                return value > -1 && value <= 65535;
-            case Type.UNSIGNED_BYTE:
-                return value > -1 && value <= 255;
-            case Type.POSITIVE_INTEGER:
-                return value > 0; // jmv >= 0;
-        }
-        throw new XPathException("Unknown type: " + Type.getTypeName(type));
     }
 
     private boolean checkType() throws XPathException {
@@ -432,7 +394,7 @@ public class IntegerValue extends NumericValue {
     }
 
     @Override
-    public NumericValue abs() {
+    public NumericValue abs() throws XPathException {
         return new IntegerValue(value.abs(), type);
     }
 
