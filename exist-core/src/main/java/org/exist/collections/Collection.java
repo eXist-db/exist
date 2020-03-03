@@ -65,11 +65,22 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
     XmldbURI getURI();
 
     /**
-     * Set the URI path of the Collection
+     * Set the URI path of the Collection.
+     *
+     * Simply calls {@link #setPath(XmldbURI, boolean)}
+     * with updateChildren=false.
      *
      * @param path The URI path of the Collection
      */
     void setPath(XmldbURI path);
+
+    /**
+     * Set the URI path of the Collection
+     *
+     * @param path The URI path of the Collection
+     * @param updateChildren true if paths of child documents and collections should be updated (if needed), false otherwise
+     */
+    void setPath(XmldbURI path, boolean updateChildren);
 
     /**
      * Get the metadata of the Collection

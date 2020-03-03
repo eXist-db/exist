@@ -1538,7 +1538,7 @@ public class NativeBroker extends DBBroker {
         }
 
         // set source path to destination... source is now the destination
-        sourceCollection.setPath(destinationCollectionUri);
+        sourceCollection.setPath(destinationCollectionUri, true);
         saveCollection(transaction, sourceCollection);
 
         // add destination to target
