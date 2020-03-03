@@ -245,7 +245,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
 
     public static final Pattern UNIX_SYMBOLIC_MODE_PATTERN = Pattern.compile("((?:[augo]*(?:[+\\-=](?:[" + READ_CHAR + SETUID_CHAR + STICKY_CHAR + WRITE_CHAR + EXECUTE_CHAR + "])+)+),?)+");
     public static final Pattern EXIST_SYMBOLIC_MODE_PATTERN = Pattern.compile("(?:(?:" + USER_STRING + "|" + GROUP_STRING + "|" + OTHER_STRING + ")=(?:[+-](?:" + READ_STRING + "|" + WRITE_STRING + "|" + EXECUTE_STRING + "),?)+)+");
-    public static final Pattern SIMPLE_SYMBOLIC_MODE_PATTERN = Pattern.compile("(?:(?:" + READ_CHAR + "|" + UNSET_CHAR + ")(?:" + WRITE_CHAR + "|" + UNSET_CHAR + ")(?:[" + EXECUTE_CHAR + SETUID_CHAR + SETUID_CHAR_NO_EXEC + "]|" + UNSET_CHAR + ")){2}(?:" + READ_CHAR + "|" + UNSET_CHAR + ")(?:" + WRITE_CHAR + "|" + UNSET_CHAR + ")(?:[" + EXECUTE_CHAR + STICKY_CHAR + "]|" + UNSET_CHAR + ")");
+    public static final Pattern SIMPLE_SYMBOLIC_MODE_PATTERN = Pattern.compile("(?:(?:" + READ_CHAR + "|" + UNSET_CHAR + ")(?:" + WRITE_CHAR + "|" + UNSET_CHAR + ")(?:[" + EXECUTE_CHAR + SETUID_CHAR + SETUID_CHAR_NO_EXEC + "]|" + UNSET_CHAR + ")){2}(?:" + READ_CHAR + "|" + UNSET_CHAR + ")(?:" + WRITE_CHAR + "|" + UNSET_CHAR + ")(?:[" + EXECUTE_CHAR + STICKY_CHAR + STICKY_CHAR_NO_EXEC + "]|" + UNSET_CHAR + ")");
 
     /**
      * Note: we don't need @PermissionRequired(user = IS_DBA | IS_OWNER) here
@@ -312,8 +312,12 @@ public abstract class AbstractUnixStylePermission implements Permission {
                         mode |= (EXECUTE << shift);
                     }
                     break;
-                case STICKY:
+                case STICKY_CHAR_NO_EXEC:
+                case STICKY_CHAR:
                     mode |= (STICKY << 9);
+                    if (c == STICKY_CHAR) {
+                        mode |= (EXECUTE << shift);
+                    }
                     break;
 
                 case UNSET_CHAR:
