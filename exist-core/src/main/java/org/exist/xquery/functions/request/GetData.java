@@ -88,16 +88,7 @@ public class GetData extends StrictRequestFunction {
             isRequest = request.getInputStream();
 
             //was there any POST content?
-            /**
-             * There is a bug in HttpInput.available() in Jetty 7.2.2.v20101205
-             * This has been filed as Bug 333415 -
-             * https://bugs.eclipse.org/bugs/show_bug.cgi?id=333415 It is
-             * expected to be fixed in the Jetty 7.3.0 release
-             */
-            //TODO reinstate call to .available() when Jetty 7.3.0 is released, use of .getContentLength() is not reliable because of http mechanics
-            //if(is != null && is.available() > 0) {
-            if (isRequest != null && request.getContentLength() > 0) {
-
+            if (isRequest != null && isRequest.available() > 0) {
                 // 1) determine if exists mime database considers this binary data
                 String contentType = request.getContentType();
                 if (contentType != null) {
@@ -115,7 +106,7 @@ public class GetData extends StrictRequestFunction {
                 }
 
                 if (result == Sequence.EMPTY_SEQUENCE) {
-                    //2) not binary, try and parse as an XML documemnt, otherwise 3) return a string representation
+                    //2) not binary, try and parse as an XML document, otherwise 3) return a string representation
 
                     //parsing will consume the stream so we must cache!
                     InputStream is = null;
