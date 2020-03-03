@@ -119,6 +119,7 @@ public class DirectoryList extends BasicFunction {
             logger.debug("Listing matching files in directory: " + baseDir);
         }
 
+        context.pushDocumentContext();
         final MemTreeBuilder builder = context.getDocumentBuilder();
 
         builder.startDocument();
@@ -174,6 +175,8 @@ public class DirectoryList extends BasicFunction {
             return (NodeValue) builder.getDocument().getDocumentElement();
         } catch (final IOException e) {
             throw new XPathException(this, e.getMessage());
+        } finally {
+            context.popDocumentContext();
         }
     }
 

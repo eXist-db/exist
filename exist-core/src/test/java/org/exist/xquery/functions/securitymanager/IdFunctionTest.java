@@ -28,17 +28,14 @@ import org.custommonkey.xmlunit.XpathEngine;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.easymock.EasyMock;
 
-import static org.easymock.EasyMock.createMockBuilder;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
-
 import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.Subject;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 
+import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -60,12 +57,20 @@ public class IdFunctionTest {
     @Test
     public void differingRealAndEffectiveUsers() throws XPathException, XpathException {
         final XQueryContext mckContext = createMockBuilder(XQueryContext.class)
+                .addMockedMethod("pushDocumentContext")
+                .addMockedMethod("getDocumentBuilder", new Class[0])
+                .addMockedMethod("popDocumentContext")
                 .addMockedMethod("getRealUser")
                 .addMockedMethod("getEffectiveUser")
                 .createMock();
 
         final Subject mckRealUser = EasyMock.createMock(Subject.class);
         final String realUsername = "real";
+        mckContext.pushDocumentContext();
+        expectLastCall().once();
+        expect(mckContext.getDocumentBuilder()).andReturn(new MemTreeBuilder());
+        mckContext.popDocumentContext();
+        expectLastCall().once();
         expect(mckContext.getRealUser()).andReturn(mckRealUser).times(2);
         expect(mckRealUser.getName()).andReturn(realUsername);
         expect(mckRealUser.getGroups()).andReturn(new String[]{"realGroup1", "realGroup2"});
@@ -108,12 +113,20 @@ public class IdFunctionTest {
     @Test
     public void sameRealAndEffectiveUsers() throws XPathException, XpathException {
         final XQueryContext mckContext = createMockBuilder(XQueryContext.class)
+                .addMockedMethod("pushDocumentContext")
+                .addMockedMethod("getDocumentBuilder", new Class[0])
+                .addMockedMethod("popDocumentContext")
                 .addMockedMethod("getRealUser")
                 .addMockedMethod("getEffectiveUser")
                 .createMock();
 
         final Subject mckUser = EasyMock.createMock(Subject.class);
         final String username = "user1";
+        mckContext.pushDocumentContext();
+        expectLastCall().once();
+        expect(mckContext.getDocumentBuilder()).andReturn(new MemTreeBuilder());
+        mckContext.popDocumentContext();
+        expectLastCall().once();
         expect(mckContext.getRealUser()).andReturn(mckUser).times(2);
         expect(mckUser.getName()).andReturn(username);
         expect(mckUser.getGroups()).andReturn(new String[]{"group1", "group2"});

@@ -73,38 +73,43 @@ public class GetScheduledJobs extends BasicFunction {
 			throw xPathException;
         }
 
-        final MemTreeBuilder builder = context.getDocumentBuilder();
+        context.pushDocumentContext();
+        try {
+            final MemTreeBuilder builder = context.getDocumentBuilder();
 
-        builder.startDocument();
-        builder.startElement( new QName( "jobs", NAMESPACE_URI, PREFIX ), null );
+            builder.startDocument();
+            builder.startElement(new QName("jobs", NAMESPACE_URI, PREFIX), null);
 
-        final BrokerPool brokerPool = context.getBroker().getBrokerPool();
-        logger.trace("brokerPool = " + brokerPool.toString());
-        
-        if( brokerPool != null ) {
-            final org.exist.scheduler.Scheduler existScheduler = brokerPool.getScheduler();
-            
-            if( existScheduler != null ) {
-                final List<ScheduledJobInfo> scheduledJobsInfo = existScheduler.getScheduledJobs();
-                final ScheduledJobInfo[] executingJobsInfo = existScheduler.getExecutingJobs();
-                
-                if( scheduledJobsInfo != null ) {
-                    for(final ScheduledJobInfo scheduledJobInfo : scheduledJobsInfo) {
-                    	addRow(scheduledJobInfo, builder, false );
+            final BrokerPool brokerPool = context.getBroker().getBrokerPool();
+            logger.trace("brokerPool = " + brokerPool.toString());
+
+            if (brokerPool != null) {
+                final org.exist.scheduler.Scheduler existScheduler = brokerPool.getScheduler();
+
+                if (existScheduler != null) {
+                    final List<ScheduledJobInfo> scheduledJobsInfo = existScheduler.getScheduledJobs();
+                    final ScheduledJobInfo[] executingJobsInfo = existScheduler.getExecutingJobs();
+
+                    if (scheduledJobsInfo != null) {
+                        for (final ScheduledJobInfo scheduledJobInfo : scheduledJobsInfo) {
+                            addRow(scheduledJobInfo, builder, false);
+                        }
                     }
-                }
-                if( executingJobsInfo != null ) {
-                    for (ScheduledJobInfo jobInfo : executingJobsInfo) {
-                        addRow(jobInfo, builder, true);
+                    if (executingJobsInfo != null) {
+                        for (ScheduledJobInfo jobInfo : executingJobsInfo) {
+                            addRow(jobInfo, builder, true);
+                        }
                     }
                 }
             }
+
+            builder.endElement();
+            builder.endDocument();
+
+            return ((NodeValue) builder.getDocument().getDocumentElement());
+        } finally {
+            context.popDocumentContext();
         }
-
-        builder.endElement();
-        builder.endDocument();
-
-        return( (NodeValue)builder.getDocument().getDocumentElement() );
     }
     
     private void addRow(ScheduledJobInfo scheduledJobInfo, MemTreeBuilder builder, boolean isRunning) {

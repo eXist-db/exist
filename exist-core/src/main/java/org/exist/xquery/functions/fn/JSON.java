@@ -168,8 +168,7 @@ public class JSON extends BasicFunction {
         if (json.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        try (
-            final JsonParser parser = factory.createParser(json.itemAt(0).getStringValue())) {
+        try (final JsonParser parser = factory.createParser(json.itemAt(0).getStringValue())) {
             context.pushDocumentContext();
             final MemTreeBuilder builder = context.getDocumentBuilder();
             builder.startDocument();

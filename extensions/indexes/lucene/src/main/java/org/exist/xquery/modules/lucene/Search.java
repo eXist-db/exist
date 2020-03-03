@@ -158,7 +158,7 @@ public class Search extends BasicFunction {
             QueryOptions options = Query.parseOptions(this, contextSequence, null, 4);
 
             // Perform search
-            report = index.search(toBeMatchedURIs, query, fields, options);
+            report = index.search(context, toBeMatchedURIs, query, fields, options);
         } catch (IOException e) {
             throw new XPathException(this, e.getMessage(), e);
 

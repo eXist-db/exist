@@ -92,31 +92,36 @@ public class DecodeExiFunction extends BasicFunction {
         }
 		try {
 			BinaryValue exiBinary = ((BinaryValue)args[0].itemAt(0));
-			
-			MemTreeBuilder builder = context.getDocumentBuilder();
-			
-			// create default factory and EXI grammar for schema
-			EXIFactory exiFactory = DefaultEXIFactory.newInstance();
-			if(args.length > 1) {
-				if(!args[1].isEmpty()) {
-					Item xsdItem = args[1].itemAt(0);
-					try (InputStream xsdInputStream = EXIUtils.getInputStream(xsdItem, context)) {
-						GrammarFactory grammarFactory = GrammarFactory.newInstance();
-						Grammars grammar = grammarFactory.createGrammars(xsdInputStream);
-						exiFactory.setGrammars(grammar);
+
+			context.pushDocumentContext();
+			try {
+				MemTreeBuilder builder = context.getDocumentBuilder();
+
+				// create default factory and EXI grammar for schema
+				EXIFactory exiFactory = DefaultEXIFactory.newInstance();
+				if (args.length > 1) {
+					if (!args[1].isEmpty()) {
+						Item xsdItem = args[1].itemAt(0);
+						try (InputStream xsdInputStream = EXIUtils.getInputStream(xsdItem, context)) {
+							GrammarFactory grammarFactory = GrammarFactory.newInstance();
+							Grammars grammar = grammarFactory.createGrammars(xsdInputStream);
+							exiFactory.setGrammars(grammar);
+						}
+
 					}
-
 				}
-			}
-			SAXDecoder decoder = new SAXDecoder(exiFactory);
-			SAXAdapter adapter = new AppendingSAXAdapter(builder);
-            decoder.setContentHandler(adapter);
+				SAXDecoder decoder = new SAXDecoder(exiFactory);
+				SAXAdapter adapter = new AppendingSAXAdapter(builder);
+				decoder.setContentHandler(adapter);
 
-			try (InputStream inputStream = exiBinary.getInputStream()) {
-				decoder.parse(new InputSource(inputStream));
-			}
+				try (InputStream inputStream = exiBinary.getInputStream()) {
+					decoder.parse(new InputSource(inputStream));
+				}
 
-			return (NodeValue)builder.getDocument().getDocumentElement();
+				return (NodeValue) builder.getDocument().getDocumentElement();
+			} finally {
+				context.popDocumentContext();
+			}
 		}
 		catch(EXIException | SAXException | IOException exie) {
 			throw new XPathException(this, new JavaErrorCode(exie.getCause()), exie.getMessage());

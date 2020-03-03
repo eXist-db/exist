@@ -273,221 +273,231 @@ public class ExecuteFunction extends BasicFunction {
 
     private ElementImpl resultAsElement(final boolean makeNodeFromColumnName,
             final boolean executeResult, final Statement stmt) throws SQLException, XPathException {
-        final MemTreeBuilder builder = context.getDocumentBuilder();
-
-        builder.startDocument();
-
-        builder.startElement(new QName("result", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
-        builder.addAttribute(new QName("count", null, null), "-1");
-        builder.addAttribute(new QName("updateCount", null, null), String.valueOf(stmt.getUpdateCount()));
-
-        int rowCount = 0;
-        ResultSet rs = null;
+        context.pushDocumentContext();
         try {
+            final MemTreeBuilder builder = context.getDocumentBuilder();
 
-            if (executeResult) {
-                rs = stmt.getResultSet();
-            }
+            builder.startDocument();
 
-            // for executing Stored Procedures that return results (e.g. SQL Server)
-            if (rs == null) {
-                try {
-                    rs = stmt.getGeneratedKeys();
-                } catch (final SQLException e) {
-                    // no-op - getGeneratedKeys is not always supported
+            builder.startElement(new QName("result", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+            builder.addAttribute(new QName("count", null, null), "-1");
+            builder.addAttribute(new QName("updateCount", null, null), String.valueOf(stmt.getUpdateCount()));
+
+            int rowCount = 0;
+            ResultSet rs = null;
+            try {
+
+                if (executeResult) {
+                    rs = stmt.getResultSet();
                 }
-            }
 
-            if (rs != null) {
-                /* SQL Query returned results */
+                // for executing Stored Procedures that return results (e.g. SQL Server)
+                if (rs == null) {
+                    try {
+                        rs = stmt.getGeneratedKeys();
+                    } catch (final SQLException e) {
+                        // no-op - getGeneratedKeys is not always supported
+                    }
+                }
 
-                // iterate through the result set building an XML document
-                final ResultSetMetaData rsmd = rs.getMetaData();
-                final int iColumns = rsmd.getColumnCount();
+                if (rs != null) {
+                    /* SQL Query returned results */
 
-                while (rs.next()) {
-                    builder.startElement(new QName("row", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
-                    builder.addAttribute(new QName("index", null, null), String.valueOf(rs.getRow()));
+                    // iterate through the result set building an XML document
+                    final ResultSetMetaData rsmd = rs.getMetaData();
+                    final int iColumns = rsmd.getColumnCount();
 
-                    // get each tuple in the row
-                    for (int i = 0; i < iColumns; i++) {
-                        final String columnName = rsmd.getColumnLabel(i + 1);
+                    while (rs.next()) {
+                        builder.startElement(new QName("row", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+                        builder.addAttribute(new QName("index", null, null), String.valueOf(rs.getRow()));
 
-                        if (columnName != null) {
+                        // get each tuple in the row
+                        for (int i = 0; i < iColumns; i++) {
+                            final String columnName = rsmd.getColumnLabel(i + 1);
 
-                            String colElement = "field";
+                            if (columnName != null) {
 
-                            if (makeNodeFromColumnName && columnName.length() > 0) {
-                                // use column names as the XML node
+                                String colElement = "field";
 
-                                /*
-                                 * Spaces in column names are replaced with
-                                 * underscore's
-                                 */
-                                colElement = SQLUtils.escapeXmlAttr(columnName.replace(' ', '_'));
-                            }
+                                if (makeNodeFromColumnName && columnName.length() > 0) {
+                                    // use column names as the XML node
 
-                            builder.startElement(new QName(colElement, SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
-
-                            if (!makeNodeFromColumnName || columnName.length() <= 0) {
-                                final String name;
-                                if (columnName.length() > 0) {
-                                    name = SQLUtils.escapeXmlAttr(columnName);
-                                } else {
-                                    name = "Column: " + (i + 1);
+                                    /*
+                                     * Spaces in column names are replaced with
+                                     * underscore's
+                                     */
+                                    colElement = SQLUtils.escapeXmlAttr(columnName.replace(' ', '_'));
                                 }
 
-                                builder.addAttribute(new QName("name", null, null), name);
-                            }
+                                builder.startElement(new QName(colElement, SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
 
-                            builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX), rsmd.getColumnTypeName(i + 1));
-                            builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, Namespaces.SCHEMA_NS, "xs"), Type.getTypeName(SQLUtils.sqlTypeToXMLType(rsmd.getColumnType(i + 1))));
+                                if (!makeNodeFromColumnName || columnName.length() <= 0) {
+                                    final String name;
+                                    if (columnName.length() > 0) {
+                                        name = SQLUtils.escapeXmlAttr(columnName);
+                                    } else {
+                                        name = "Column: " + (i + 1);
+                                    }
 
-                            //get the content
-                            if (rsmd.getColumnType(i + 1) == Types.SQLXML) {
-                                //parse sqlxml value
-                                try {
-                                    final SQLXML sqlXml = rs.getSQLXML(i + 1);
+                                    builder.addAttribute(new QName("name", null, null), name);
+                                }
+
+                                builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX), rsmd.getColumnTypeName(i + 1));
+                                builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, Namespaces.SCHEMA_NS, "xs"), Type.getTypeName(SQLUtils.sqlTypeToXMLType(rsmd.getColumnType(i + 1))));
+
+                                //get the content
+                                if (rsmd.getColumnType(i + 1) == Types.SQLXML) {
+                                    //parse sqlxml value
+                                    try {
+                                        final SQLXML sqlXml = rs.getSQLXML(i + 1);
+
+                                        if (rs.wasNull()) {
+                                            // Add a null indicator attribute if the value was SQL Null
+                                            builder.addAttribute(new QName("null", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), "true");
+                                        } else {
+                                            try (final Reader charStream = sqlXml.getCharacterStream()) {
+                                                final InputSource src = new InputSource(charStream);
+                                                final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getParserPool();
+                                                XMLReader reader = null;
+                                                try {
+                                                    reader = parserPool.borrowXMLReader();
+
+                                                    final SAXAdapter adapter = new AppendingSAXAdapter(builder);
+                                                    reader.setContentHandler(adapter);
+                                                    reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
+                                                    reader.parse(src);
+                                                } finally {
+                                                    if (reader != null) {
+                                                        parserPool.returnXMLReader(reader);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } catch (final Exception e) {
+                                        throw new XPathException("Could not parse column of type SQLXML: " + e.getMessage(), e);
+                                    }
+                                } else {
+                                    //otherwise assume string value
+                                    final String colValue = rs.getString(i + 1);
 
                                     if (rs.wasNull()) {
                                         // Add a null indicator attribute if the value was SQL Null
                                         builder.addAttribute(new QName("null", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), "true");
                                     } else {
-                                        try (final Reader charStream = sqlXml.getCharacterStream()) {
-                                            final InputSource src = new InputSource(charStream);
-                                            final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getParserPool();
-                                            XMLReader reader = null;
-                                            try {
-                                                reader = parserPool.borrowXMLReader();
-
-                                                final SAXAdapter adapter = new AppendingSAXAdapter(builder);
-                                                reader.setContentHandler(adapter);
-                                                reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
-                                                reader.parse(src);
-                                            } finally {
-                                                if (reader != null) {
-                                                    parserPool.returnXMLReader(reader);
-                                                }
-                                            }
+                                        if (colValue != null) {
+                                            builder.characters(colValue);
                                         }
                                     }
-                                } catch (final Exception e) {
-                                    throw new XPathException("Could not parse column of type SQLXML: " + e.getMessage(), e);
                                 }
-                            } else {
-                                //otherwise assume string value
-                                final String colValue = rs.getString(i + 1);
 
-                                if (rs.wasNull()) {
-                                    // Add a null indicator attribute if the value was SQL Null
-                                    builder.addAttribute(new QName("null", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), "true");
-                                } else {
-                                    if (colValue != null) {
-                                        builder.characters(colValue);
-                                    }
-                                }
+                                builder.endElement();
                             }
-
-                            builder.endElement();
                         }
+
+                        builder.endElement();
+                        rowCount++;
                     }
+                }
 
-                    builder.endElement();
-                    rowCount++;
+                // close `result` element
+                builder.endElement();
+
+                // Change the root element count attribute to have the correct value
+                final ElementImpl docElement = (ElementImpl) builder.getDocument().getDocumentElement();
+                final Node count = docElement.getNode().getAttributes().getNamedItem("count");
+                if (count != null) {
+                    count.setNodeValue(String.valueOf(rowCount));
+                }
+
+                builder.endDocument();
+
+                return docElement;
+            } finally {
+                // close record set
+                if (rs != null) {
+                    try {
+                        rs.close();
+                    } catch (final SQLException se) {
+                        LOG.warn("Unable to close JDBC RecordSet: " + se.getMessage(), se);
+                    }
                 }
             }
-
-            // close `result` element
-            builder.endElement();
-
-            // Change the root element count attribute to have the correct value
-            final ElementImpl docElement = (ElementImpl) builder.getDocument().getDocumentElement();
-            final Node count = docElement.getNode().getAttributes().getNamedItem("count");
-            if (count != null) {
-                count.setNodeValue(String.valueOf(rowCount));
-            }
-
-            builder.endDocument();
-
-            return docElement;
         } finally {
-            // close record set
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (final SQLException se) {
-                    LOG.warn("Unable to close JDBC RecordSet: " + se.getMessage(), se);
-                }
-            }
+            context.popDocumentContext();
         }
     }
 
     private ElementImpl sqlExceptionAsElement(final SQLException sqle, final String sql,
             @Nullable final Element parametersElement) {
-        final MemTreeBuilder builder = context.getDocumentBuilder();
+        context.pushDocumentContext();
+        try {
+            final MemTreeBuilder builder = context.getDocumentBuilder();
 
-        builder.startDocument();
-        builder.startElement(new QName("exception", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+            builder.startDocument();
+            builder.startElement(new QName("exception", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
 
-        final boolean recoverable = sqle instanceof SQLRecoverableException;
-        builder.addAttribute(new QName("recoverable", null, null), String.valueOf(recoverable));
+            final boolean recoverable = sqle instanceof SQLRecoverableException;
+            builder.addAttribute(new QName("recoverable", null, null), String.valueOf(recoverable));
 
-        builder.startElement(new QName("state", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
-        builder.characters(sqle.getSQLState());
-        builder.endElement();
+            builder.startElement(new QName("state", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+            builder.characters(sqle.getSQLState());
+            builder.endElement();
 
-        builder.startElement(new QName("message", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
-        final String state = sqle.getMessage();
-        if (state != null) {
-            builder.characters(state);
-        }
-        builder.endElement();
+            builder.startElement(new QName("message", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+            final String state = sqle.getMessage();
+            if (state != null) {
+                builder.characters(state);
+            }
+            builder.endElement();
 
-        builder.startElement(new QName("stack-trace", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
-        try (final FastByteArrayOutputStream bufStackTrace = new FastByteArrayOutputStream();
-             final PrintStream ps = new PrintStream(bufStackTrace)) {
-            sqle.printStackTrace(ps);
-            builder.characters(bufStackTrace.toString(UTF_8));
-        } catch (final IOException e) {
-            LOG.warn("Unable to get stack-trace of JDBC SQLException: " + e.getMessage(), e);
-        }
-        builder.endElement();
+            builder.startElement(new QName("stack-trace", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+            try (final FastByteArrayOutputStream bufStackTrace = new FastByteArrayOutputStream();
+                 final PrintStream ps = new PrintStream(bufStackTrace)) {
+                sqle.printStackTrace(ps);
+                builder.characters(bufStackTrace.toString(UTF_8));
+            } catch (final IOException e) {
+                LOG.warn("Unable to get stack-trace of JDBC SQLException: " + e.getMessage(), e);
+            }
+            builder.endElement();
 
-        builder.startElement(new QName("sql", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
-        builder.characters(sql);
-        builder.endElement();
+            builder.startElement(new QName("sql", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+            builder.characters(sql);
+            builder.endElement();
 
-        if (parametersElement != null) {
-            final String ns = parametersElement.getNamespaceURI();
-            if (ns != null && ns.equals(SQLModule.NAMESPACE_URI) && parametersElement.getLocalName().equals(PARAMETERS_ELEMENT_NAME)) {
-                final NodeList paramElements = parametersElement.getElementsByTagNameNS(SQLModule.NAMESPACE_URI, PARAM_ELEMENT_NAME);
+            if (parametersElement != null) {
+                final String ns = parametersElement.getNamespaceURI();
+                if (ns != null && ns.equals(SQLModule.NAMESPACE_URI) && parametersElement.getLocalName().equals(PARAMETERS_ELEMENT_NAME)) {
+                    final NodeList paramElements = parametersElement.getElementsByTagNameNS(SQLModule.NAMESPACE_URI, PARAM_ELEMENT_NAME);
 
-                builder.startElement(new QName(PARAMETERS_ELEMENT_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+                    builder.startElement(new QName(PARAMETERS_ELEMENT_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
 
-                for (int i = 0; i < paramElements.getLength(); i++) {
-                    final Element param = ((Element) paramElements.item(i));
-                    final Node valueNode = param.getFirstChild();
-                    final String value = valueNode != null ? valueNode.getNodeValue() : null;
-                    final String type = param.getAttributeNS(SQLModule.NAMESPACE_URI, TYPE_ATTRIBUTE_NAME);
+                    for (int i = 0; i < paramElements.getLength(); i++) {
+                        final Element param = ((Element) paramElements.item(i));
+                        final Node valueNode = param.getFirstChild();
+                        final String value = valueNode != null ? valueNode.getNodeValue() : null;
+                        final String type = param.getAttributeNS(SQLModule.NAMESPACE_URI, TYPE_ATTRIBUTE_NAME);
 
-                    builder.startElement(new QName(PARAM_ELEMENT_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
-                    builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX), type);
-                    builder.characters(value);
+                        builder.startElement(new QName(PARAM_ELEMENT_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+                        builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX), type);
+                        builder.characters(value);
+                        builder.endElement();
+                    }
+
                     builder.endElement();
                 }
-
-                builder.endElement();
             }
+
+            builder.startElement(new QName("xquery", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+            builder.addAttribute(new QName("line", null, null), String.valueOf(getLine()));
+            builder.addAttribute(new QName("column", null, null), String.valueOf(getColumn()));
+            builder.endElement();
+
+            builder.endElement();
+            builder.endDocument();
+
+            return (ElementImpl) builder.getDocument().getDocumentElement();
+        } finally {
+            context.popDocumentContext();
         }
-
-        builder.startElement(new QName("xquery", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
-        builder.addAttribute(new QName("line", null, null), String.valueOf(getLine()));
-        builder.addAttribute(new QName("column", null, null), String.valueOf(getColumn()));
-        builder.endElement();
-
-        builder.endElement();
-        builder.endDocument();
-
-        return (ElementImpl) builder.getDocument().getDocumentElement();
     }
 }

@@ -119,9 +119,14 @@ public class Parse extends BasicFunction {
         if (report.isValid()) {
             return adapter.getDocument();
         } else {
-        	final MemTreeBuilder builder = context.getDocumentBuilder();
-            final NodeImpl result = Shared.writeReport(report, builder);
-    		throw new XPathException(this, ErrorCodes.EXXQDY0002, report.toString(), result);
+            context.pushDocumentContext();
+            try {
+                final MemTreeBuilder builder = context.getDocumentBuilder();
+                final NodeImpl result = Shared.writeReport(report, builder);
+                throw new XPathException(this, ErrorCodes.EXXQDY0002, report.toString(), result);
+            } finally {
+                context.popDocumentContext();
+            }
         }
     }
 }

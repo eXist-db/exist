@@ -168,25 +168,30 @@ public class Compile extends BasicFunction {
 
 	private Sequence response(XQueryContext pContext, String error, ErrorCode code, int line, int column) {
 		context.pushDocumentContext();
-		final MemTreeBuilder builder = context.getDocumentBuilder();
-		
-		builder.startElement(QNAME_INFO, null);
-		builder.addAttribute(QNAME_RESULT_ATTR, error == null ? "pass" : "fail");
-		
-		if (error != null) {
-			builder.startElement(ERROR_INFO, null);
-			if (code != null)
-				{builder.addAttribute(QNAME_ERRCODE_ATTR, code.toString());}
-			if (line > -1) {
-				builder.addAttribute(QNAME_LINE_ATTR, Integer.toString(line));
-				builder.addAttribute(QNAME_COLUMN_ATTR, Integer.toString(column));
-			}
-			builder.characters(error);
-			builder.endElement();
-		}
+		try {
+			final MemTreeBuilder builder = context.getDocumentBuilder();
 
-		builder.endElement();
-		
-		return builder.getDocument().getNode(1);
+			builder.startElement(QNAME_INFO, null);
+			builder.addAttribute(QNAME_RESULT_ATTR, error == null ? "pass" : "fail");
+
+			if (error != null) {
+				builder.startElement(ERROR_INFO, null);
+				if (code != null) {
+					builder.addAttribute(QNAME_ERRCODE_ATTR, code.toString());
+				}
+				if (line > -1) {
+					builder.addAttribute(QNAME_LINE_ATTR, Integer.toString(line));
+					builder.addAttribute(QNAME_COLUMN_ATTR, Integer.toString(column));
+				}
+				builder.characters(error);
+				builder.endElement();
+			}
+
+			builder.endElement();
+
+			return builder.getDocument().getNode(1);
+		} finally {
+			context.popDocumentContext();
+		}
 	}
 }

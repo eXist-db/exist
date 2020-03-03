@@ -172,39 +172,44 @@ public class ZipFileFunctions extends BasicFunction {
         ZipInputStream zis = null;
 
         Sequence xmlResponse = null;
-        MemTreeBuilder builder = context.getDocumentBuilder();
-
-        builder.startDocument();
-        builder.startElement( new QName( "file", ZipModule.NAMESPACE_URI, ZipModule.PREFIX ), null );
-        builder.addAttribute( new QName( "href", null, null ), uri.toString() );
-
+        context.pushDocumentContext();
         try {
-            zis = zipFileSource.getStream();
-            ZipEntry zipEntry;
-            while ((zipEntry = zis.getNextEntry()) != null) {
+            MemTreeBuilder builder = context.getDocumentBuilder();
 
-                if (zipEntry.isDirectory()) {
-                    builder.startElement(new QName("dir",ZipModule.NAMESPACE_URI,ZipModule.PREFIX),null);
-                    builder.addAttribute(new QName("name",null,null), zipEntry.toString());
-                    builder.endElement();
-                } else {
-                    logger.debug("file: " + zipEntry.getName());
-                    builder.startElement(new QName("entry",ZipModule.NAMESPACE_URI,ZipModule.PREFIX),null);
-                    builder.addAttribute(new QName("name",null,null), zipEntry.toString());
-                    builder.endElement();
+            builder.startDocument();
+            builder.startElement(new QName("file", ZipModule.NAMESPACE_URI, ZipModule.PREFIX), null);
+            builder.addAttribute(new QName("href", null, null), uri.toString());
+
+            try {
+                zis = zipFileSource.getStream();
+                ZipEntry zipEntry;
+                while ((zipEntry = zis.getNextEntry()) != null) {
+
+                    if (zipEntry.isDirectory()) {
+                        builder.startElement(new QName("dir", ZipModule.NAMESPACE_URI, ZipModule.PREFIX), null);
+                        builder.addAttribute(new QName("name", null, null), zipEntry.toString());
+                        builder.endElement();
+                    } else {
+                        logger.debug("file: " + zipEntry.getName());
+                        builder.startElement(new QName("entry", ZipModule.NAMESPACE_URI, ZipModule.PREFIX), null);
+                        builder.addAttribute(new QName("name", null, null), zipEntry.toString());
+                        builder.endElement();
+                    }
                 }
+            } catch (PermissionDeniedException pde) {
+                logger.error(pde.getMessage(), pde);
+                throw new XPathException("Permission denied to read the source zip");
+            } catch (IOException ioe) {
+                logger.error(ioe.getMessage(), ioe);
+                throw new XPathException("IO exception while reading the source zip");
             }
-        }catch(PermissionDeniedException pde) {
-            logger.error(pde.getMessage(), pde);
-            throw new XPathException("Permission denied to read the source zip");
-        }catch(IOException ioe){
-            logger.error(ioe.getMessage(), ioe);
-            throw new XPathException("IO exception while reading the source zip");
-        }
 
-        builder.endElement();
-        xmlResponse = (NodeValue) builder.getDocument().getDocumentElement();
-        return(xmlResponse);
+            builder.endElement();
+            xmlResponse = (NodeValue) builder.getDocument().getDocumentElement();
+            return (xmlResponse);
+        } finally {
+            context.popDocumentContext();
+        }
     }
 
     private Sequence createZip(Element zipFile) {

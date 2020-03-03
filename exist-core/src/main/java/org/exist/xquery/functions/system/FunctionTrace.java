@@ -100,14 +100,20 @@ public class FunctionTrace extends BasicFunction {
         } else {
         	logger.info("Entering the " + SystemModule.PREFIX + ":trace XQuery function");
             context.getProfiler().reset();
-            final MemTreeBuilder builder = context.getDocumentBuilder();
 
-            builder.startDocument();
-            final BrokerPool brokerPool = context.getBroker().getBrokerPool();
-            brokerPool.getPerformanceStats().toXML(builder);
-            builder.endDocument();
-        	logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalPart());
-            return (NodeValue)builder.getDocument().getDocumentElement();
+            context.pushDocumentContext();
+            try {
+                final MemTreeBuilder builder = context.getDocumentBuilder();
+
+                builder.startDocument();
+                final BrokerPool brokerPool = context.getBroker().getBrokerPool();
+                brokerPool.getPerformanceStats().toXML(builder);
+                builder.endDocument();
+                logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalPart());
+                return (NodeValue) builder.getDocument().getDocumentElement();
+            } finally {
+                context.popDocumentContext();
+            }
         }
     	logger.info("Exiting " + SystemModule.PREFIX + ":" + getName().getLocalPart());
         return Sequence.EMPTY_SEQUENCE;

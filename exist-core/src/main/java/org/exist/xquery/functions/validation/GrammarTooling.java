@@ -164,9 +164,14 @@ public class GrammarTooling extends BasicFunction  {
             
             
         } else if (isCalledAs("show-grammar-cache")){
-            final MemTreeBuilder builder = context.getDocumentBuilder();
-            final NodeImpl result = writeReport(grammarpool, builder);
-            return result;
+            context.pushDocumentContext();
+            try {
+                final MemTreeBuilder builder = context.getDocumentBuilder();
+                final NodeImpl result = writeReport(grammarpool, builder);
+                return result;
+            } finally {
+                context.popDocumentContext();
+            }
             
         } else if (isCalledAs("pre-parse-grammar")){
             

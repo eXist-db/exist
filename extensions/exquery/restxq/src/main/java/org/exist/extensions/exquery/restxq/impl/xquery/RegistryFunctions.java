@@ -94,7 +94,12 @@ public class RegistryFunctions extends BasicFunction {
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         
         final RestXqServiceRegistry registry = RestXqServiceRegistryManager.getRegistry(getContext().getBroker().getBrokerPool());
-        return (NodeValue)serializeRestXqServices(getContext().getDocumentBuilder(), registry).getDocumentElement();
+        context.pushDocumentContext();
+        try {
+            return (NodeValue) serializeRestXqServices(getContext().getDocumentBuilder(), registry).getDocumentElement();
+        } finally {
+            context.popDocumentContext();
+        }
     }
 
     /**

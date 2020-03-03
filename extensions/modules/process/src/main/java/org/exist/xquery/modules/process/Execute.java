@@ -135,33 +135,38 @@ public class Execute extends BasicFunction {
     }
 
     private ElementImpl createReport(int exitValue, List<String> output, List<String> cmdArgs) {
-        MemTreeBuilder builder = context.getDocumentBuilder();
-        AttributesImpl attribs = new AttributesImpl();
-        attribs.addAttribute("", "exitCode", "exitCode", "CDATA", Integer.toString(exitValue));
-        builder.startDocument();
-        int nodeNr = builder.startElement(RESULT_QNAME, attribs);
+        context.pushDocumentContext();
+        try {
+            MemTreeBuilder builder = context.getDocumentBuilder();
+            AttributesImpl attribs = new AttributesImpl();
+            attribs.addAttribute("", "exitCode", "exitCode", "CDATA", Integer.toString(exitValue));
+            builder.startDocument();
+            int nodeNr = builder.startElement(RESULT_QNAME, attribs);
 
-        // print command line
-        StringBuilder cmdLine = new StringBuilder();
-        for (String param : cmdArgs) {
-            cmdLine.append(param).append(' ');
-        }
-        builder.startElement(COMMAND_LINE_QNAME, null);
-        builder.characters(cmdLine.toString());
-        builder.endElement();
-
-        // print received output to <stdout>
-        builder.startElement(STDOUT_QNAME, null);
-        for (String line : output) {
-            builder.startElement(LINE_QNAME, null);
-            builder.characters(line);
+            // print command line
+            StringBuilder cmdLine = new StringBuilder();
+            for (String param : cmdArgs) {
+                cmdLine.append(param).append(' ');
+            }
+            builder.startElement(COMMAND_LINE_QNAME, null);
+            builder.characters(cmdLine.toString());
             builder.endElement();
+
+            // print received output to <stdout>
+            builder.startElement(STDOUT_QNAME, null);
+            for (String line : output) {
+                builder.startElement(LINE_QNAME, null);
+                builder.characters(line);
+                builder.endElement();
+            }
+            builder.endElement();
+
+            builder.endElement();
+
+            return (ElementImpl) builder.getDocument().getNode(nodeNr);
+        } finally {
+            context.popDocumentContext();
         }
-        builder.endElement();
-
-        builder.endElement();
-
-        return (ElementImpl) builder.getDocument().getNode(nodeNr);
     }
 
     private List<String> readOutput(Process process) throws XPathException {

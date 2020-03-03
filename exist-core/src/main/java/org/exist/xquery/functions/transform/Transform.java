@@ -201,45 +201,48 @@ public class Transform extends BasicFunction {
             final ValueSequence seq = new ValueSequence();
             context.pushDocumentContext();
 
-            final MemTreeBuilder builder = context.getDocumentBuilder();
-            final DocumentBuilderReceiver builderReceiver = new DocumentBuilderReceiver(builder, true);
-            final SAXResult result = new SAXResult(builderReceiver);
-            result.setLexicalHandler(builderReceiver);        //preserve comments etc... from xslt output
-            handler.setResult(result);
-            final Receiver receiver = new ReceiverToSAX(handler);
-            final Serializer serializer = context.getBroker().getSerializer();
-            serializer.reset();
-
             try {
-                serializer.setProperties(serializationProps);
-                serializer.setReceiver(receiver, true);
-                if (expandXIncludes) {
-                    String xiPath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
-                    if(xiPath != null && !xiPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
-                        final Path f = Paths.get(xiPath).normalize();
-                        if (!f.isAbsolute()) {
-                            xiPath = Paths.get(context.getModuleLoadPath(), xiPath).normalize().toAbsolutePath().toString();
+                final MemTreeBuilder builder = context.getDocumentBuilder();
+                final DocumentBuilderReceiver builderReceiver = new DocumentBuilderReceiver(builder, true);
+                final SAXResult result = new SAXResult(builderReceiver);
+                result.setLexicalHandler(builderReceiver);        //preserve comments etc... from xslt output
+                handler.setResult(result);
+                final Receiver receiver = new ReceiverToSAX(handler);
+                final Serializer serializer = context.getBroker().getSerializer();
+                serializer.reset();
+
+                try {
+                    serializer.setProperties(serializationProps);
+                    serializer.setReceiver(receiver, true);
+                    if (expandXIncludes) {
+                        String xiPath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
+                        if (xiPath != null && !xiPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+                            final Path f = Paths.get(xiPath).normalize();
+                            if (!f.isAbsolute()) {
+                                xiPath = Paths.get(context.getModuleLoadPath(), xiPath).normalize().toAbsolutePath().toString();
+                            }
+                        } else {
+                            xiPath = context.getModuleLoadPath();
                         }
-                    } else {
-                        xiPath = context.getModuleLoadPath();
+                        serializer.getXIncludeFilter().setModuleLoadPath(xiPath);
                     }
-                    serializer.getXIncludeFilter().setModuleLoadPath(xiPath);
+                    serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false, 0, 0);
+
+                } catch (final Exception e) {
+                    throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
                 }
-                serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false, 0, 0);
 
-            } catch (final Exception e) {
-                throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
+                errorListener.checkForErrors();
+                Node next = builder.getDocument().getFirstChild();
+                while (next != null) {
+                    seq.add((NodeValue) next);
+                    next = next.getNextSibling();
+                }
+
+                return seq;
+            } finally {
+                context.popDocumentContext();
             }
-
-            errorListener.checkForErrors();
-            Node next = builder.getDocument().getFirstChild();
-            while (next != null) {
-                seq.add((NodeValue) next);
-                next = next.getNextSibling();
-            }
-
-            context.popDocumentContext();
-            return seq;
 
         } else {
             //transform:stream-transform()

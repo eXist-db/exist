@@ -102,29 +102,34 @@ public class Restore extends BasicFunction {
 
         final boolean overwriteApps = args.length == 4 && args[3].effectiveBooleanValue();
 
-        final MemTreeBuilder builder = context.getDocumentBuilder();
-        builder.startDocument();
-        builder.startElement(RESTORE_ELEMENT, null);
-
-        final BrokerPool pool = context.getBroker().getBrokerPool();
+        context.pushDocumentContext();
         try {
-            final Subject admin = pool.getSecurityManager().authenticate(SecurityManager.DBA_USER, adminPass);
-            try (final DBBroker broker = pool.get(Optional.of(admin));
-                    final Txn transaction = broker.continueOrBeginTransaction()) {
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            builder.startDocument();
+            builder.startElement(RESTORE_ELEMENT, null);
 
-                final RestoreListener listener = new XMLRestoreListener(builder);
-                final org.exist.backup.Restore restore = new org.exist.backup.Restore();
-                restore.restore(broker, transaction, adminPassAfter, Paths.get(dirOrFile), listener, overwriteApps);
+            final BrokerPool pool = context.getBroker().getBrokerPool();
+            try {
+                final Subject admin = pool.getSecurityManager().authenticate(SecurityManager.DBA_USER, adminPass);
+                try (final DBBroker broker = pool.get(Optional.of(admin));
+                     final Txn transaction = broker.continueOrBeginTransaction()) {
 
-                transaction.commit();
+                    final RestoreListener listener = new XMLRestoreListener(builder);
+                    final org.exist.backup.Restore restore = new org.exist.backup.Restore();
+                    restore.restore(broker, transaction, adminPassAfter, Paths.get(dirOrFile), listener, overwriteApps);
+
+                    transaction.commit();
+                }
+            } catch (final Exception e) {
+                throw new XPathException(this, "restore failed with exception: " + e.getMessage(), e);
             }
-        } catch (final Exception e) {
-            throw new XPathException(this, "restore failed with exception: " + e.getMessage(), e);
+
+            builder.endElement();
+            builder.endDocument();
+            return (NodeValue) builder.getDocument().getDocumentElement();
+        } finally {
+            context.popDocumentContext();
         }
-        
-        builder.endElement();
-        builder.endDocument();
-        return (NodeValue) builder.getDocument().getDocumentElement();
     }
 
     private static class XMLRestoreListener extends AbstractRestoreListener {

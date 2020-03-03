@@ -21,6 +21,7 @@ public class EXistTreeBuilder implements TreeBuilder {
     final MemTreeBuilder builder;
     
     public EXistTreeBuilder(final XQueryContext context) {
+        context.pushDocumentContext();
         builder = context.getDocumentBuilder();
         builder.startDocument();
     }
@@ -51,7 +52,9 @@ public class EXistTreeBuilder implements TreeBuilder {
     
     public DocumentImpl close() {
         builder.endDocument();
-        return builder.getDocument();
+        final DocumentImpl doc = builder.getDocument();
+        builder.getContext().popDocumentContext();
+        return doc;
     }
 
     @Override

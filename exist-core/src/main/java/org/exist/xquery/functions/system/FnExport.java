@@ -110,26 +110,33 @@ public class FnExport extends BasicFunction {
         	{zip = args[2].effectiveBooleanValue();}
         
         MemTreeBuilder builder = null;
-        if (NAME.equals( mySignature.getName() )) {
-	        builder = context.getDocumentBuilder();
-	        builder.startDocument();
-	        builder.startElement(EXPORT_ELEMENT, null);
-        }
-        
-        try (final Txn transaction = context.getBroker().continueOrBeginTransaction()) {
-        	final SystemExport export = new SystemExport(context.getBroker(), transaction, new Callback(builder), null, true);
-            export.export(dirOrFile, incremental, zip, null);
-            transaction.commit();
-        } catch (final Exception e) {
-            throw new XPathException(this, "export failed with exception: " + e.getMessage(), e);
-        }
-        if (builder == null) {
-        	return Sequence.EMPTY_SEQUENCE;
-        } else {
-	        builder.endElement();
-	        builder.endDocument();
-	        return (NodeValue) builder.getDocument().getDocumentElement();
-        }
+        try {
+			if (NAME.equals(mySignature.getName())) {
+				context.pushDocumentContext();
+				builder = context.getDocumentBuilder();
+				builder.startDocument();
+				builder.startElement(EXPORT_ELEMENT, null);
+			}
+
+			try (final Txn transaction = context.getBroker().continueOrBeginTransaction()) {
+				final SystemExport export = new SystemExport(context.getBroker(), transaction, new Callback(builder), null, true);
+				export.export(dirOrFile, incremental, zip, null);
+				transaction.commit();
+			} catch (final Exception e) {
+				throw new XPathException(this, "export failed with exception: " + e.getMessage(), e);
+			}
+			if (builder == null) {
+				return Sequence.EMPTY_SEQUENCE;
+			} else {
+				builder.endElement();
+				builder.endDocument();
+				return (NodeValue) builder.getDocument().getDocumentElement();
+			}
+		} finally {
+        	if (builder != null) {
+        		context.popDocumentContext();
+			}
+		}
     }
     
     private static class Callback implements SystemExport.StatusCallback {

@@ -78,10 +78,10 @@ public class HighlightMatches extends BasicFunction {
         if (args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
 
+        context.pushDocumentContext();
         try (FunctionReference func = (FunctionReference) args[1].itemAt(0)) {
-
-            NGramIndexWorker index = (NGramIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(NGramIndex.ID);
             MemTreeBuilder builder = context.getDocumentBuilder();
+            NGramIndexWorker index = (NGramIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(NGramIndex.ID);
             DocumentBuilderReceiver docBuilder = new DocumentBuilderReceiver(builder);
             MatchCallback matchCb = new MatchCallback(func, docBuilder);
             Serializer serializer = context.getBroker().getSerializer();
@@ -113,6 +113,8 @@ public class HighlightMatches extends BasicFunction {
                 }
             }
             return result;
+        } finally {
+            context.popDocumentContext();
         }
     }
 

@@ -227,9 +227,14 @@ public class Jaxv extends BasicFunction  {
             return result;
 
         } else /* isCalledAs("jaxv-report") */ {
-            final MemTreeBuilder builder = context.getDocumentBuilder();
-            final NodeImpl result = Shared.writeReport(report, builder);
-            return result;
+            context.pushDocumentContext();
+            try {
+                final MemTreeBuilder builder = context.getDocumentBuilder();
+                final NodeImpl result = Shared.writeReport(report, builder);
+                return result;
+            } finally {
+                context.popDocumentContext();
+            }
         } 
     }
 

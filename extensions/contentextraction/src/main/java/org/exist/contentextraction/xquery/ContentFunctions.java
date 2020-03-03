@@ -137,27 +137,32 @@ public class ContentFunctions extends BasicFunction {
 
             try {
                 if (isCalledAs("get-metadata")) {
-                    final MemTreeBuilder builder = new MemTreeBuilder(context);
-                    builder.startDocument();
-                    builder.startElement(new QName("html", XHTML_NS), null);
-                    builder.startElement(new QName("head", XHTML_NS), null);
+                    context.pushDocumentContext();
+                    try {
+                        final MemTreeBuilder builder = context.getDocumentBuilder();
+                        builder.startDocument();
+                        builder.startElement(new QName("html", XHTML_NS), null);
+                        builder.startElement(new QName("head", XHTML_NS), null);
 
-                    final QName qnMeta = new QName("meta", XHTML_NS);
-                    final Metadata metadata = ce.extractMetadata((BinaryValue) args[0].itemAt(0));
-                    for (final String name : metadata.names()) {
-                        for (final String value : metadata.getValues(name)) {
-                            final AttributesImpl attributes = new AttributesImpl();
-                            attributes.addAttribute("", "name", "name", "string", name);
-                            attributes.addAttribute("", "content", "content", "string", value);
-                            builder.startElement(qnMeta, attributes);
-                            builder.endElement();
+                        final QName qnMeta = new QName("meta", XHTML_NS);
+                        final Metadata metadata = ce.extractMetadata((BinaryValue) args[0].itemAt(0));
+                        for (final String name : metadata.names()) {
+                            for (final String value : metadata.getValues(name)) {
+                                final AttributesImpl attributes = new AttributesImpl();
+                                attributes.addAttribute("", "name", "name", "string", name);
+                                attributes.addAttribute("", "content", "content", "string", value);
+                                builder.startElement(qnMeta, attributes);
+                                builder.endElement();
+                            }
                         }
-                    }
 
-                    builder.endElement();
-                    builder.endElement();
-                    builder.endDocument();
-                    return builder.getDocument();
+                        builder.endElement();
+                        builder.endElement();
+                        builder.endDocument();
+                        return builder.getDocument();
+                    } finally {
+                        context.popDocumentContext();
+                    }
                 } else {
                     final DocumentBuilderReceiver builder = new DocumentBuilderReceiver();
                     builder.setSuppressWhitespace(false);

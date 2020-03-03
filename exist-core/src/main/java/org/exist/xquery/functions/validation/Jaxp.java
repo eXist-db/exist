@@ -296,8 +296,13 @@ public class Jaxp extends BasicFunction {
 
             } else {
 
-                final MemTreeBuilder builder = context.getDocumentBuilder();
-                return Shared.writeReport(report, builder);
+                context.pushDocumentContext();
+                try {
+                    final MemTreeBuilder builder = context.getDocumentBuilder();
+                    return Shared.writeReport(report, builder);
+                } finally {
+                    context.popDocumentContext();
+                }
             }
 
         }
