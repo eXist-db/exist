@@ -35,6 +35,12 @@ public class RestoreDialog extends JDialog {
     JProgressBar progress;
     JButton dismissButton;
 
+    private long totalRestoreUncompressedSize = 0;
+    private long zippedUncompressedSize = 0;
+
+    private long totalTransferSize = 0;
+    private long transferredSize = 0;
+
     private long totalNumberOfFiles = 0;
     private long fileCounter = 0;
 
@@ -175,20 +181,51 @@ public class RestoreDialog extends JDialog {
         messages.setCaretPosition(messages.getDocument().getLength());
     }
 
+    public void setTotalRestoreUncompressedSize(final long totalRestoreUncompressedSize) {
+        this.totalRestoreUncompressedSize = totalRestoreUncompressedSize;
+    }
+
+    public void setTotalTransferSize(final long totalTransferSize) {
+        this.totalTransferSize = totalTransferSize;
+    }
+
     /**
      *  Set the total number of files in the backup.
      *
-     * @param nr Number of files.
+     * @param totalNumberOfFiles Number of files.
      */
-    public void setTotalNumberOfFiles(final long nr) {
-        totalNumberOfFiles = nr;
+    public void setTotalNumberOfFiles(final long totalNumberOfFiles) {
+        this.totalNumberOfFiles = totalNumberOfFiles;
+    }
+
+    public void addedFileToZip(final long uncompressedSize) {
+        zippedUncompressedSize += uncompressedSize;
+
+        if (totalRestoreUncompressedSize < 0L) {
+            progress.setString("N/A");
+        } else {
+            final double percentage = zippedUncompressedSize / (double)totalRestoreUncompressedSize;
+            progress.setString(PERCENTAGE_FORMAT.format(percentage));
+            progress.setValue((int)(percentage * 100));
+        }
+    }
+
+    public void transferred(final long chunkSize) {
+        transferredSize += chunkSize;
+
+        if (totalTransferSize < 0L) {
+            progress.setString("N/A");
+        } else {
+            final double percentage = transferredSize / (double)totalTransferSize;
+            progress.setString(PERCENTAGE_FORMAT.format(percentage));
+            progress.setValue((int)(percentage * 100));
+        }
     }
 
     /**
      * Increment the number of files that are restored and display the value.
      */
     public void incrementFileCounter() {
-
         fileCounter++;
 
         if (totalNumberOfFiles == 0L) {

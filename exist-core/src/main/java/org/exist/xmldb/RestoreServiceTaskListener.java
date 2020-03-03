@@ -21,6 +21,14 @@
 package org.exist.xmldb;
 
 public interface RestoreServiceTaskListener {
+    void startedZipForTransfer(final long totalUncompressedSize);
+    void addedFileToZipForTransfer(final long uncompressedSize);
+    void finishedZipForTransfer();
+
+    void startedTransfer(final long transferSize);
+    void transferred(final long chunkSize);
+    void finishedTransfer();
+
     void started(long numberOfFiles);
     void processingDescriptor(String backupDescriptor);
     void createdCollection(String collectionUri);
