@@ -138,7 +138,9 @@ public class Compile extends BasicFunction {
 			final AST ast = parser.getAST();
 			
 			final PathExpr path = new PathExpr(pContext);
-			astParser.xpath(ast, path);
+			path.add(this);
+
+			astParser.xpath(ast, this);
 			if(astParser.foundErrors()) {
 				throw astParser.getLastException();
 			}
