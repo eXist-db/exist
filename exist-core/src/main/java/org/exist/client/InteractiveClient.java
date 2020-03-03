@@ -397,9 +397,7 @@ public class InteractiveClient {
                     tableData.add(
                         new ResourceDescriptor.Collection(
                             XmldbURI.xmldbUriFor(childCollections[i]),
-                            getOwnerName(perm),
-                            getGroupName(perm),
-                            "c" + ((perm instanceof ACLPermission && ((ACLPermission) perm).getACECount() > 0) ? perm.toString() + '+' : perm.toString()),
+                            perm,
                             created
                         )
                     );
@@ -433,9 +431,7 @@ public class InteractiveClient {
                     tableData.add(
                         new ResourceDescriptor.Document(
                             XmldbURI.xmldbUriFor(childResources[j]),
-                            getOwnerName(perm),
-                            getGroupName(perm),
-                            "-" + ((perm instanceof ACLPermission && ((ACLPermission) perm).getACECount() > 0) ? perm.toString() + '+' : perm.toString()),
+                            perm,
                             lastModificationTime
                         )
                     );

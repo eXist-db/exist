@@ -21,6 +21,7 @@
  */
 package org.exist.client.security;
 
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.UnixStylePermissionAider;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -28,7 +29,7 @@ import static org.junit.Assert.assertEquals;
 public class BasicPermissionsTableModelTest {
     
     @Test
-    public void getMode() {
+    public void getMode() throws PermissionDeniedException {
         
         final int modes[] = {
             0,
@@ -56,8 +57,11 @@ public class BasicPermissionsTableModelTest {
         
         for(final int mode : modes) {
             final UnixStylePermissionAider permission = new UnixStylePermissionAider(mode);
-            final BasicPermissionsTableModel model = new BasicPermissionsTableModel(permission);
-            assertEquals(mode, model.getMode());
+            final ModeDisplay modeDisplay = ModeDisplay.fromPermission(permission);
+            final BasicPermissionsTableModel model = new BasicPermissionsTableModel(modeDisplay);
+            final UnixStylePermissionAider updatedPermission = new UnixStylePermissionAider();
+            model.getMode().writeToPermission(updatedPermission);
+            assertEquals(mode, updatedPermission.getMode());
         }
     }
 }

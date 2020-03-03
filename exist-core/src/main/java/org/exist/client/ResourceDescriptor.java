@@ -16,13 +16,13 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- *  $Id$
  */
 package org.exist.client;
 
 import java.util.Date;
 
+import org.exist.security.ACLPermission;
+import org.exist.security.Permission;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -33,22 +33,13 @@ import org.exist.xmldb.XmldbURI;
  */
 public abstract class ResourceDescriptor {
     private final XmldbURI name;
-    private final String owner;
-    private final String group;
-    private final String permissions;
+    protected final Permission permissions;
     private final Date date;
     
-    public ResourceDescriptor(final XmldbURI aName, final String aOwner,
-            final String aGroup, final String aPermissions, final Date date ) {
-        name = aName;
-        owner = aOwner;
-        group = aGroup;
-        permissions = aPermissions;
+    public ResourceDescriptor(final XmldbURI name, final Permission permissions, final Date date) {
+        this.name = name;
+        this.permissions = permissions;
         this.date = date;
-    }
-    
-    public String getGroup() {
-        return group;
     }
     
     public XmldbURI getName() {
@@ -56,10 +47,16 @@ public abstract class ResourceDescriptor {
     }
     
     public String getOwner() {
-        return owner;
+        return permissions.getOwner().getName();
+    }
+
+    public String getGroup() {
+        return permissions.getGroup().getName();
     }
     
-    public String getPermissions() {
+    public abstract String getPermissionsDescription();
+
+    public Permission getPermissions() {
         return permissions;
     }
     
@@ -70,30 +67,38 @@ public abstract class ResourceDescriptor {
     public abstract boolean isCollection();
     
     public static class Document extends ResourceDescriptor {
-        public Document(final XmldbURI aName, final String aOwner,
-                final String aGroup, final String aPermissions, final Date date) {
-            super(aName, aOwner, aGroup, aPermissions, date);
+        public Document(final XmldbURI name, final Permission permissions, final Date date) {
+            super(name, permissions, date);
         }
         
         @Override
         public boolean isCollection() {
             return false;
         }
+
+        @Override
+        public String getPermissionsDescription() {
+            return "-" + ((permissions instanceof ACLPermission && ((ACLPermission) permissions).getACECount() > 0) ? permissions.toString() + '+' : permissions.toString());
+        }
     }
     
     public static class Collection extends ResourceDescriptor {
-        public Collection(final XmldbURI aName) {
-            super(aName, null, null, null, null);
+        public Collection(final XmldbURI name) {
+            super(name, null, null);
         }
         
-        public Collection(final XmldbURI aName, final String aOwner,
-                final String aGroup, final String aPermissions, final Date date) {
-            super(aName, aOwner, aGroup, aPermissions, date);
+        public Collection(final XmldbURI name, final Permission permissions, final Date date) {
+            super(name, permissions, date);
         }
         
         @Override
         public boolean isCollection() {
             return true;
+        }
+
+        @Override
+        public String getPermissionsDescription() {
+            return "c" + ((permissions instanceof ACLPermission && ((ACLPermission) permissions).getACECount() > 0) ? permissions.toString() + '+' : permissions.toString());
         }
     }
     

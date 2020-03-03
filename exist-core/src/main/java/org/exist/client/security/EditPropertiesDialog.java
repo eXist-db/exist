@@ -21,36 +21,32 @@
  */
 package org.exist.client.security;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
-import org.exist.client.DialogCompleteWithResponse;
-import org.exist.client.InteractiveClient;
-import org.exist.client.LabelledBoolean;
-import org.exist.client.LabelledBooleanEditor;
-import org.exist.client.LabelledBooleanRenderer;
-import org.exist.client.ResourceDescriptor;
+
+import org.exist.client.*;
+import org.exist.client.tristatecheckbox.TristateCheckboxTableCellEditor;
+import org.exist.client.tristatecheckbox.TristateCheckBoxTableCellRenderer;
+import org.exist.client.tristatecheckbox.TristateState;
 import org.exist.security.ACLPermission;
-import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
-import org.exist.security.ACLPermission.ACE_TARGET;
 import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.ACEAider;
-import org.exist.security.internal.aider.PermissionAider;
-import org.exist.util.crypto.digest.MessageDigest;
+import org.exist.security.internal.aider.SimpleACLPermissionAider;
 import org.exist.xmldb.UserManagementService;
-import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.util.URIUtils;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
+import static org.exist.client.ClientFrame.MULTIPLE_INDICATOR;
 
 /**
  *
@@ -60,13 +56,17 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     private final UserManagementService userManagementService;
     private final String currentUser;
     private final Collection parent;
-    private final XmldbURI uri;
+    private final String uri;
     private final String internetMediaType;
-    private final Date created;
-    @Nullable private final Date lastModified;
-    @Nullable private Long size;
-    @Nullable private final MessageDigest messageDigest;
-    private final PermissionAider permission;
+    private final String created;
+    private final String lastModified;
+    private String size;
+    private final String messageDigestType;
+    private final String messageDigestValue;
+    private final String owner;
+    private final String group;
+    private final ModeDisplay mode;
+    @Nullable private final SimpleACLPermissionAider acl;
     private final List<ResourceDescriptor> applyTo;
     
     private BasicPermissionsTableModel basicPermissionsTableModel = null;
@@ -74,7 +74,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
 
     private final static String ERROR_TITLE = "Edit Properties Error";
 
-    public EditPropertiesDialog(final UserManagementService userManagementService, final String currentUser, final Collection parent, final XmldbURI uri, final String internetMediaType, final Date created, @Nullable final Date lastModified, @Nullable final Long size, @Nullable final MessageDigest messageDigest, final PermissionAider permission, final List<ResourceDescriptor> applyTo) {
+    public EditPropertiesDialog(final UserManagementService userManagementService, final String currentUser, final Collection parent, final String uri, final String internetMediaType, final String created, final String lastModified, final String size, final String messageDigestType, final String messageDigestValue, final String owner, final String group, final ModeDisplay mode, @Nullable final SimpleACLPermissionAider acl, final List<ResourceDescriptor> applyTo) {
         this.userManagementService = userManagementService;
         this.currentUser = currentUser;
         this.parent = parent;
@@ -83,8 +83,12 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         this.created = created;
         this.lastModified = lastModified;
         this.size = size;
-        this.messageDigest = messageDigest;
-        this.permission = permission;
+        this.messageDigestType = messageDigestType;
+        this.messageDigestValue = messageDigestValue;
+        this.owner = owner;
+        this.group = group;
+        this.mode = mode;
+        this.acl = acl;
         this.applyTo = applyTo;
         this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());        
         initComponents();
@@ -92,30 +96,17 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     }
 
     private void setFormProperties() {
-        lblResourceValue.setText(URIUtils.urlDecodeUtf8(uri));
-        lblInternetMediaTypeValue.setText(internetMediaType != null ? internetMediaType : "N/A");
-        lblCreatedValue.setText(DateFormat.getDateTimeInstance().format(created));
-        lblLastModifiedValue.setText(lastModified != null ? DateFormat.getDateTimeInstance().format(lastModified) : "N/A");
-        lblSizeValue.setText(size != null ? humanSize(size) : "N/A");
-        if (messageDigest != null) {
-            lblDigestAlgorithmValue.setText(messageDigest.getDigestType().getCommonNames()[0]);
-            txtDigest.setText(messageDigest.toHexString());
-            txtDigest.setVisible(true);
-            spDigest.setVisible(true);
-        } else {
-            lblDigestAlgorithmValue.setText("N/A");
-            txtDigest.setText("<digest>");
-            txtDigest.setVisible(false);
-            spDigest.setVisible(false);
-        }
-        
-        lblOwnerValue.setText(permission.getOwner().getName());
-        //final Point pntLblOwnerValue = lblOwnerValue.getLocation();
-        //btnChangeOwner.setLocation(pntLblOwnerValue.x + (lblOwnerValue.getText().length() * 4), pntLblOwnerValue.y);
-        
-        lblGroupValue.setText(permission.getGroup().getName());
-        //final Point pntLblGroupValue = lblGroupValue.getLocation();
-        //btnChangeGroup.setLocation(pntLblGroupValue.x + (lblGroupValue.getText().length() * 4), pntLblGroupValue.y);
+        lblResourceValue.setText(uri);
+        lblInternetMediaTypeValue.setText(internetMediaType);
+        lblCreatedValue.setText(created);
+        lblLastModifiedValue.setText(lastModified);
+        lblSizeValue.setText(size);
+        lblDigestAlgorithmValue.setText(messageDigestType);
+        txtDigest.setText(messageDigestValue);
+        txtDigest.setVisible(true);
+        spDigest.setVisible(true);
+        lblOwnerValue.setText(owner);
+        lblGroupValue.setText(group);
         
         try {
             final boolean canModify = canModifyPermissions();
@@ -124,16 +115,14 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
             btnChangeGroup.setEnabled(isDba());
             
             tblBasePermissions.setEnabled(canModify);
+
+            final boolean canModifyAcl = acl != null && canModify;
+
+            tblAcl.setEnabled(canModifyAcl);
             
-            if(!(permission instanceof ACLPermission)) {
-                tblAcl.setEnabled(false);
-            } else {
-                tblAcl.setEnabled(canModify);
-            }
-            
-            miInsertAceBefore.setEnabled(canModify);
-            miInsertAceAfter.setEnabled(canModify);
-            btnAddAce.setEnabled(canModify);
+            miInsertAceBefore.setEnabled(canModifyAcl);
+            miInsertAceAfter.setEnabled(canModifyAcl);
+            btnAddAce.setEnabled(canModifyAcl);
         
             miMoveUp.setEnabled(false);
             miMoveDown.setEnabled(false);
@@ -144,23 +133,9 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         }
     }
 
-    private static String humanSize(long bytes) {
-        if (bytes < 1024) {
-            return bytes + " bytes";
-        } else if (bytes < 1024 * 1024) {
-            return Math.round(bytes / 1024) + " KB";
-        } else if (bytes < 1024 * 1024 * 1024) {
-            return Math.round(bytes / (1024 * 1024)) + " MB";
-        } else if (bytes < 1024 * 1024 * 1024 * 1024) {
-            return Math.round(bytes / (1024 * 1024 * 1024)) + " GB";
-        } else {
-            return bytes + " bytes";
-        }
-    }
-
     private BasicPermissionsTableModel getBasicPermissionsTableModel() {
         if(basicPermissionsTableModel == null) {
-            basicPermissionsTableModel = new BasicPermissionsTableModel(permission);
+            basicPermissionsTableModel = new BasicPermissionsTableModel(mode);
         }
         
         return basicPermissionsTableModel;
@@ -168,7 +143,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     
     private DefaultTableModel getAclTableModel() {
         if(aclTableModel == null) {
-            aclTableModel = new AclTableModel(permission);
+            aclTableModel = new AclTableModel(acl);
         }
         return aclTableModel;
     }
@@ -213,8 +188,15 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         btnChangeGroup = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         tblBasePermissions = new javax.swing.JTable();
-        tblBasePermissions.setDefaultRenderer(LabelledBoolean.class, new LabelledBooleanRenderer());
-        tblBasePermissions.setDefaultEditor(LabelledBoolean.class, new LabelledBooleanEditor());
+        if (applyTo.size() > 1) {
+            tblBasePermissions.setDefaultRenderer(Boolean.class, new TristateCheckBoxTableCellRenderer<Boolean>(bool -> Tuple(null, TristateState.fromBoolean(bool))));
+            tblBasePermissions.setDefaultEditor(Boolean.class, new TristateCheckboxTableCellEditor<Boolean>(bool -> Tuple(null, TristateState.fromBoolean(bool)), state -> TristateState.toBoolean(state._2)));
+            tblBasePermissions.setDefaultRenderer(LabelledBoolean.class, new TristateCheckBoxTableCellRenderer<LabelledBoolean>(labelledBool -> Tuple(labelledBool.getLabel(), TristateState.fromBoolean(labelledBool.isSet()))));
+            tblBasePermissions.setDefaultEditor(LabelledBoolean.class, new TristateCheckboxTableCellEditor<LabelledBoolean>(labelledBool -> Tuple(labelledBool.getLabel(), TristateState.fromBoolean(labelledBool.isSet())), state -> new LabelledBoolean(state._1, TristateState.toBoolean(state._2))));
+        } else {
+            tblBasePermissions.setDefaultRenderer(LabelledBoolean.class, new CheckboxTableCellRenderer<LabelledBoolean>(labelledBoolean -> Tuple(labelledBoolean.getLabel(), labelledBoolean.isSet())));
+            tblBasePermissions.setDefaultEditor(LabelledBoolean.class, new CheckboxTableCellEditor<LabelledBoolean>(labelledBoolean -> Tuple(labelledBoolean.getLabel(), labelledBoolean.isSet()), state -> new LabelledBoolean(state._1, state._2)));
+        }
         lblAccessControlList = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         lblBasePermissions = new javax.swing.JLabel();
@@ -453,41 +435,68 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
         
         try {
-            final List<ACEAider> dlgAces = new ArrayList<>();
-            if(permission instanceof ACLPermission) {
-                for(int i = 0; i < tblAcl.getRowCount(); i++) {
-                    final ACE_TARGET target = ACE_TARGET.valueOf((String)getAclTableModel().getValueAt(i, 0));
-                    final String who = (String)getAclTableModel().getValueAt(i, 1);
-                    final ACE_ACCESS_TYPE access = ACE_ACCESS_TYPE.valueOf((String)getAclTableModel().getValueAt(i, 2));
-                    int mode = 0;
-                    if((Boolean)tblAcl.getValueAt(i, 3)) {
-                        mode |= Permission.READ;
-                    }
-                    if((Boolean)tblAcl.getValueAt(i, 4)) {
-                        mode |= Permission.WRITE;
-                    }
-                    if((Boolean)tblAcl.getValueAt(i, 5)) {
-                        mode |= Permission.EXECUTE;
-                    }
-                    
-                    dlgAces.add(new ACEAider(access, target, who, mode));
-                }
-            }
 
-            for(final ResourceDescriptor desc : applyTo) {
+            for (final ResourceDescriptor desc : applyTo) {
+
+                final String newOwner;
+                if (MULTIPLE_INDICATOR.equals(lblOwnerValue.getText()) || desc.getOwner().equals(lblOwnerValue.getText())) {
+                    newOwner = desc.getOwner();
+                } else {
+                    newOwner = lblOwnerValue.getText();
+                }
+
+                final String newGroup;
+                if (MULTIPLE_INDICATOR.equals(lblGroupValue.getText()) || desc.getGroup().equals(lblGroupValue.getText())) {
+                    newGroup = desc.getGroup();
+                } else {
+                    newGroup = lblGroupValue.getText();
+                }
+
+                final Permission existingPermission = desc.getPermissions();
+                final ModeDisplay modeChanges = getBasicPermissionsTableModel().getMode();
+                final Permission updatedPermission = getUpdatedPermission(existingPermission, modeChanges);
+
+                final List<ACEAider> dlgAces = new ArrayList<>();
+                if (acl == null) {
+                    if (existingPermission instanceof ACLPermission) {
+                        final ACLPermission existingAclPermission = (ACLPermission)existingPermission;
+                        for (int i = 0; i < existingAclPermission.getACECount(); i++) {
+                            dlgAces.add(new ACEAider(existingAclPermission.getACEAccessType(i), existingAclPermission.getACETarget(i), existingAclPermission.getACEWho(i), existingAclPermission.getACEMode(i)));
+                        }
+                    }
+                } else {
+                    for (int i = 0; i < tblAcl.getRowCount(); i++) {
+                        final ACLPermission.ACE_TARGET target = ACLPermission.ACE_TARGET.valueOf((String) getAclTableModel().getValueAt(i, 0));
+                        final String who = (String) getAclTableModel().getValueAt(i, 1);
+                        final ACLPermission.ACE_ACCESS_TYPE access = ACLPermission.ACE_ACCESS_TYPE.valueOf((String) getAclTableModel().getValueAt(i, 2));
+                        int mode = 0;
+                        if ((Boolean) tblAcl.getValueAt(i, 3)) {
+                            mode |= Permission.READ;
+                        }
+                        if ((Boolean) tblAcl.getValueAt(i, 4)) {
+                            mode |= Permission.WRITE;
+                        }
+                        if ((Boolean) tblAcl.getValueAt(i, 5)) {
+                            mode |= Permission.EXECUTE;
+                        }
+
+                        dlgAces.add(new ACEAider(access, target, who, mode));
+                    }
+                }
+
                 if (desc.isCollection()) {
                     final Collection coll = parent.getChildCollection(desc.getName().toString());
-                    getUserManagementService().setPermissions(coll, lblOwnerValue.getText(), lblGroupValue.getText(), getBasicPermissionsTableModel().getMode(), dlgAces);
+                    getUserManagementService().setPermissions(coll, newOwner, newGroup, updatedPermission.getMode(), dlgAces);
                 } else {
                     final Resource res = parent.getResource(desc.getName().toString());
-                    getUserManagementService().setPermissions(res, lblOwnerValue.getText(), lblGroupValue.getText(), getBasicPermissionsTableModel().getMode(), dlgAces);
+                    getUserManagementService().setPermissions(res, newOwner, newGroup, updatedPermission.getMode(), dlgAces);
                 }
             }
 
             setVisible(false);
             dispose();
-        } catch(final XMLDBException xmldbe) {
-            JOptionPane.showMessageDialog(this, "Could not update properties: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+        } catch(final PermissionDeniedException | XMLDBException e) {
+            JOptionPane.showMessageDialog(this, "Could not update properties: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnSaveActionPerformed
 
@@ -602,13 +611,19 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_miInsertAceAfterActionPerformed
 
+    private Permission getUpdatedPermission(final Permission existingMode, final ModeDisplay modeChanges) throws PermissionDeniedException {
+        final Permission newMode = existingMode.copy();
+        modeChanges.writeToPermission(newMode);
+        return newMode;
+    }
+
     private boolean isDba() throws XMLDBException {
         final Set<String> dbaMembers = new HashSet<>(Arrays.asList(getUserManagementService().getGroupMembers(SecurityManager.DBA_GROUP)));
         return dbaMembers.contains(currentUser);
     }
     
     private boolean canModifyPermissions() throws XMLDBException {
-        return isDba() || permission.getOwner().getName().equals(currentUser);
+        return isDba() || owner.equals(currentUser);
     }
     
     private void tblAclMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblAclMouseClicked

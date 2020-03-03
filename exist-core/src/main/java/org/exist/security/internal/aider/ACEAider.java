@@ -38,7 +38,7 @@ public class ACEAider implements Serializable {
     public ACEAider() {
     }
 
-    public ACEAider(ACE_ACCESS_TYPE accessType, ACE_TARGET target, String who, int mode) {
+    public ACEAider(final ACE_ACCESS_TYPE accessType, final ACE_TARGET target, final String who, final int mode) {
         this.accessType = accessType;
         this.target = target;
         this.who = who;
@@ -75,5 +75,9 @@ public class ACEAider implements Serializable {
 
     public void setWho(String who) {
         this.who = who;
+    }
+
+    public ACEAider copy() {
+        return new ACEAider(accessType, target, who, mode);
     }
 }

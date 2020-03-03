@@ -21,6 +21,8 @@
  */
 package org.exist.client;
 
+import javax.annotation.Nullable;
+
 /**
  * Simple Label and Boolean value
  *
@@ -28,9 +30,9 @@ package org.exist.client;
  */
 public class LabelledBoolean {  
     private final String label;
-    private final boolean set;
+    @Nullable private final Boolean set;
 
-    public LabelledBoolean(final String label, final boolean set) {
+    public LabelledBoolean(final String label, @Nullable final Boolean set) {
         this.label = label;
         this.set = set;
     }
@@ -39,7 +41,7 @@ public class LabelledBoolean {
         return label;
     }
 
-    public boolean isSet() {
+    public @Nullable Boolean isSet() {
         return set;
     }
     

@@ -386,6 +386,6 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
 
     @Override
     public Permission copy() {
-        throw new UnsupportedOperationException();
+        return new UnixStylePermissionAider(owner.getName(), ownerGroup.getName(), mode);
     }
 }

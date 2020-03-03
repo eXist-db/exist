@@ -532,5 +532,25 @@ public class FileUtils {
 			
 			return entryName.startsWith(prefix) && entryName.endsWith(suffix);
 		};
-	}    
+	}
+
+	/**
+     * Provides a humane string describing the number of bytes.
+     *
+     * @param bytes the number of bytes
+     * @return the humane string
+     */
+    public static String humanSize(final long bytes) {
+        if (bytes < 1024) {
+            return bytes + " bytes";
+        } else if (bytes < 1024 * 1024) {
+            return Math.round(bytes / 1024) + " KB";
+        } else if (bytes < 1024 * 1024 * 1024) {
+            return Math.round(bytes / (1024 * 1024)) + " MB";
+        } else if (bytes < 1024 * 1024 * 1024 * 1024) {
+            return Math.round(bytes / (1024 * 1024 * 1024)) + " GB";
+        } else {
+            return bytes + " bytes";
+        }
+    }
 }

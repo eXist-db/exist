@@ -220,10 +220,10 @@ public interface Permission {
     /**
      *  Set mode for the owner
      *
-     * @param  other  The new mode value
+     * @param  perm  The new mode value
      * @throws PermissionDeniedException is user has not sufficient rights
      */
-    void setOwnerMode(int other) throws PermissionDeniedException;
+    void setOwnerMode(int perm) throws PermissionDeniedException;
 
     boolean isSetUid();
     boolean isSetGid();
