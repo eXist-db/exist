@@ -368,7 +368,7 @@ public class Main {
                 final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
                 service.restore(f.toAbsolutePath().toString(), dbaPassword.orElse(null), listener, overwriteApps);
 
-                listener.hideDialog();
+                listener.enableDismissDialogButton();
 
                 if (JOptionPane.showConfirmDialog(null, "Would you like to rebuild the application repository?\nThis is only necessary if application packages were restored.", "Rebuild App Repository?",
                         JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {

@@ -21,6 +21,8 @@ package org.exist.backup;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 
 public class RestoreDialog extends JDialog {
@@ -31,6 +33,7 @@ public class RestoreDialog extends JDialog {
     JTextField resource;
     JTextArea messages;
     JProgressBar progress;
+    JButton dismissButton;
 
     private long totalNumberOfFiles = 0;
     private long fileCounter = 0;
@@ -143,6 +146,16 @@ public class RestoreDialog extends JDialog {
         c.weighty = 1.0;
         grid.setConstraints(scroll, c);
         getContentPane().add(scroll);
+
+        dismissButton = new JButton("Dismiss");
+        dismissButton.setEnabled(false);
+        dismissButton.addActionListener(e -> setVisible(false));
+        c.gridx = 0;
+        c.gridy = 5;
+        c.anchor = GridBagConstraints.CENTER;
+        c.fill = GridBagConstraints.NONE;
+        grid.setConstraints(dismissButton, c);
+        getContentPane().add(dismissButton);
     }
 
     public void setBackup(final String backup) {

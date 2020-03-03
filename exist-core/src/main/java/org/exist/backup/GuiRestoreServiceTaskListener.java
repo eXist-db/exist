@@ -82,6 +82,11 @@ public class GuiRestoreServiceTaskListener extends AbstractRestoreServiceTaskLis
         super.processingDescriptor(backupDescriptor);
     }
 
+    public void enableDismissDialogButton() {
+        dialog.dismissButton.setEnabled(true);
+        dialog.dismissButton.grabFocus();
+    }
+
     public void hideDialog() {
         dialog.setVisible(false);
     }
