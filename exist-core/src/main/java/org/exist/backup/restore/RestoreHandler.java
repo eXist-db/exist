@@ -383,8 +383,9 @@ public class RestoreHandler extends DefaultHandler {
             return deferredPermission;
 
         } catch(final Exception e) {
-            listener.warn(String.format("Failed to restore resource '%s'\nfrom file '%s'.\nReason: %s", name, descriptor.getSymbolicPath(name, false), e.getMessage()));
-            LOG.error(e.getMessage(), e);
+            final String message = String.format("Failed to restore resource '%s'\nfrom file '%s'.\nReason: %s", name, descriptor.getSymbolicPath(name, false), e.getMessage());
+            listener.warn(message);
+            LOG.error(message, e);
             return new SkippedEntryDeferredPermission();
         } finally {
             is.close();
