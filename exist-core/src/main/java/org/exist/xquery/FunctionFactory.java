@@ -46,7 +46,7 @@ public class FunctionFactory {
         try {
             qname = QName.parse(context, ast.getText(), context.getDefaultFunctionNamespace());
         } catch(final QName.IllegalQNameException xpe) {
-            throw new XPathException(ErrorCodes.XPST0081, "Invalid qname " +  ast.getText() + ". " + xpe.getMessage());
+            throw new XPathException(parent, ErrorCodes.XPST0081, "Invalid qname " +  ast.getText() + ". " + xpe.getMessage());
         }
         return createFunction(context, qname, ast, parent, params);
     }
