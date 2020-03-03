@@ -21,12 +21,12 @@ package org.exist.backup;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
 
 
 public class RestoreDialog extends JDialog {
     private static final long serialVersionUID = 3773486348231766907L;
+    private static final DecimalFormat PERCENTAGE_FORMAT = new DecimalFormat("###.##%");
 
     JTextField currentCollection;
     JTextField currentBackup;
@@ -194,9 +194,9 @@ public class RestoreDialog extends JDialog {
         if (totalNumberOfFiles == 0L) {
             progress.setString("N/A");
         } else {
-            final int percentage = (int) (fileCounter * 100 / totalNumberOfFiles);
-            progress.setString(percentage + "%");
-            progress.setValue(percentage);
+            final double percentage = fileCounter / (double)totalNumberOfFiles;
+            progress.setString(PERCENTAGE_FORMAT.format(percentage));
+            progress.setValue((int)(percentage * 100));
         }
     }
 
