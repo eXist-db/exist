@@ -25,11 +25,11 @@ import org.exist.backup.Backup;
 import org.exist.backup.CreateBackupDialog;
 import org.exist.backup.GuiRestoreServiceTaskListener;
 import org.exist.client.security.EditPropertiesDialog;
+import org.exist.client.security.ModeDisplay;
 import org.exist.client.security.UserManagerDialog;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
-import org.exist.security.internal.aider.PermissionAider;
-import org.exist.security.internal.aider.PermissionAiderFactory;
+import org.exist.security.internal.aider.SimpleACLPermissionAider;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
@@ -76,10 +76,12 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.function.Supplier;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.util.FileUtils.humanSize;
 
 /**
  * Main frame of the eXist GUI
@@ -102,6 +104,10 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         StyleConstants.setBold(promptAttrs, true);
         StyleConstants.setForeground(defaultAttrs, Color.black);
     }
+
+    public static final String MULTIPLE_INDICATOR = "[...]";
+    private static final String NON_APPLICABLE = "N/A";
+    private static final String COLLECTION_MIME_TYPE = "exist/collection";
 
     private int commandStart = 0;
 
@@ -1258,59 +1264,98 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         try {
             final Collection collection = client.getCollection();
             final UserManagementService service = getUserManagementService();
-            PermissionAider permAider = null;
-            XmldbURI name;
-            Date created = new Date();
-            Date modified = null;
-            Long size = null;
-            MessageDigest messageDigest = null;
+
+            String name = null;
+            String created = null;
+            String modified = null;
+            String size = null;
+            String messageDigestType = null;
+            String messageDigestValue = null;
             String mimeType = null;
+            String owner = null;
+            String group = null;
+            ModeDisplay mode = null;
+            SimpleACLPermissionAider acl = null;
 
-            if (fileman.getSelectedRowCount() == 1) {
-                final int row = fileman.convertRowIndexToModel(fileman.getSelectedRow());
-                final ResourceDescriptor desc = resources.getRow(row);
-                name = desc.getName();
-
-                final Permission perm;
-                if (desc.isCollection()) {
-                    final Collection coll = collection.getChildCollection(name.toString());
-                    created = ((EXistCollection) coll).getCreationTime();
-                    perm = service.getPermissions(coll);
-                } else {
-                    final Resource res = collection.getResource(name.toString());
-                    created = ((EXistResource) res).getCreationTime();
-                    modified = ((EXistResource) res).getLastModificationTime();
-                    mimeType = ((EXistResource) res).getMimeType();
-                    perm = service.getPermissions(res);
-                    if (res instanceof EXistBinaryResource) {
-                        messageDigest = ((EXistBinaryResource) res).getContentDigest(DigestType.BLAKE_256);
-                        size = ((EXistBinaryResource) res).getContentLength();
-                    }
-                }
-
-                //this is a local instance, we cannot use disconnected local instance in the ResourcePropertyDialog
-                permAider = PermissionAiderFactory.getPermission(perm.getOwner().getName(), perm.getGroup().getName(), perm.getMode());
-                //copy acl
-                if (perm instanceof ACLPermission && permAider instanceof ACLPermission) {
-                    final ACLPermission aclPermission = (ACLPermission) perm;
-                    for (int i = 0; i < aclPermission.getACECount(); i++) {
-                        ((ACLPermission) permAider).addACE(aclPermission.getACEAccessType(i), aclPermission.getACETarget(i), aclPermission.getACEWho(i), aclPermission.getACEMode(i));
-                    }
-                }
-
-            } else {
-                name = XmldbURI.create(".."); //$NON-NLS-1$
-                final Account account = service.getAccount(properties.getProperty(InteractiveClient.USER));
-                permAider = PermissionAiderFactory.getPermission(account.getName(), account.getPrimaryGroup(), Permission.DEFAULT_RESOURCE_PERM); //$NON-NLS-1$ //$NON-NLS-2$
-            }
+            final DateFormat dateTimeFormat = DateFormat.getDateTimeInstance();
 
             final List<ResourceDescriptor> selected = new ArrayList<>();
-            final int rows[] = fileman.getSelectedRows();
-            for (int row : rows) {
-                selected.add(resources.getRow(fileman.convertRowIndexToModel(row)));
+
+            boolean firstPerm = true;
+            for (final int row : fileman.getSelectedRows()) {
+                final ResourceDescriptor selectedRow = resources.getRow(row);
+
+                selected.add(selectedRow);
+
+                final XmldbURI thisName = selectedRow.getName();
+                final String thisCreated;
+                final String thisModified;
+                final String thisMessageDigestType;
+                final String thisMessageDigestValue;
+                final String thisSize;
+                final String thisMimeType;
+                final Permission thisPerm;
+
+                if (selectedRow.isCollection()) {
+                    final Collection coll = collection.getChildCollection(thisName.toString());
+                    thisCreated = dateTimeFormat.format(((EXistCollection) coll).getCreationTime());
+                    thisModified = NON_APPLICABLE;
+                    thisMimeType = COLLECTION_MIME_TYPE;
+                    thisMessageDigestType = NON_APPLICABLE;
+                    thisMessageDigestValue = NON_APPLICABLE;
+                    thisSize = NON_APPLICABLE;
+                    thisPerm = service.getPermissions(coll);
+                } else {
+                    final Resource res = collection.getResource(thisName.toString());
+                    thisCreated = dateTimeFormat.format(((EXistResource) res).getCreationTime());
+                    thisModified = dateTimeFormat.format(((EXistResource) res).getLastModificationTime());
+                    thisMimeType = ((EXistResource) res).getMimeType();
+                    if (res instanceof EXistBinaryResource) {
+                        final MessageDigest messageDigest = ((EXistBinaryResource) res).getContentDigest(DigestType.BLAKE_256);
+                        thisMessageDigestType = messageDigest.getDigestType().getCommonNames()[0];
+                        thisMessageDigestValue = messageDigest.toHexString();
+                        thisSize = humanSize(((EXistBinaryResource) res).getContentLength());
+                    } else {
+                        thisMessageDigestType = NON_APPLICABLE;
+                        thisMessageDigestValue = NON_APPLICABLE;
+                        thisSize = NON_APPLICABLE;
+                    }
+                    thisPerm = service.getPermissions(res);
+                }
+
+                name = getUpdated(name, () ->  URIUtils.urlDecodeUtf8(thisName));
+                created = getUpdated(created, thisCreated);
+                modified = getUpdated(modified, thisModified);
+                mimeType = getUpdated(mimeType, thisMimeType);
+                messageDigestType = getUpdated(messageDigestType, thisMessageDigestType);
+                messageDigestValue = getUpdated(messageDigestValue, thisMessageDigestValue);
+                size = getUpdated(size, thisSize);
+                owner = getUpdated(owner, () -> thisPerm.getOwner().getName());
+                group = getUpdated(group, () -> thisPerm.getGroup().getName());
+                mode = getUpdatedMode(mode, thisPerm);
+
+                if (firstPerm) {
+                    if (thisPerm instanceof ACLPermission) {
+                        final ACLPermission thisAcl = (ACLPermission) thisPerm;
+                        acl = new SimpleACLPermissionAider();
+                        for (int i = 0; i < thisAcl.getACECount(); i++) {
+                            acl.addACE(thisAcl.getACEAccessType(i), thisAcl.getACETarget(i), thisAcl.getACEWho(i), thisAcl.getACEMode(i));
+                        }
+                    } else {
+                        acl = null;
+                    }
+                    firstPerm = false;
+                } else {
+                    if (acl != null && thisPerm instanceof ACLPermission) {
+                        final ACLPermission thisAcl = (ACLPermission) thisPerm;
+                        if (!acl.aclEquals(thisAcl)) {
+                            acl = null;
+                        }
+                    }
+                }
             }
 
-            final EditPropertiesDialog editPropertiesDialog = new EditPropertiesDialog(service, client.getProperties().getProperty(InteractiveClient.USER), collection, name, mimeType, created, modified, size, messageDigest, permAider, selected);
+            final EditPropertiesDialog editPropertiesDialog = new EditPropertiesDialog(service, client.getProperties().getProperty(InteractiveClient.USER), collection, name, mimeType, created, modified, size, messageDigestType, messageDigestValue, owner, group, mode, acl, selected);
             editPropertiesDialog.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosed(final WindowEvent e) {
@@ -1328,6 +1373,85 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             showErrorMessage(Messages.getString("ClientFrame.197") + e.getMessage(), e); //$NON-NLS-1$
             e.printStackTrace();
         }
+    }
+
+    private String getUpdated(final String previousValue, final Supplier<String> nextValueSupplier) {
+        if (!MULTIPLE_INDICATOR.equals(previousValue)) {
+            final String nextValue = nextValueSupplier.get();
+            if (previousValue == null) {
+                return nextValue;
+            } else {
+                if (!previousValue.equals(nextValue)) {
+                    return MULTIPLE_INDICATOR;
+                }
+            }
+        }
+
+        return previousValue;
+    }
+
+    private String getUpdated(final String previousValue, final String nextValue) {
+        if (!MULTIPLE_INDICATOR.equals(previousValue)) {
+            if (previousValue == null) {
+                return nextValue;
+            } else {
+                if (!previousValue.equals(nextValue)) {
+                    return MULTIPLE_INDICATOR;
+                }
+            }
+        }
+
+        return previousValue;
+    }
+
+    private ModeDisplay getUpdatedMode(ModeDisplay previousMode, final Permission permission) {
+        if (previousMode == null) {
+            return ModeDisplay.fromPermission(permission);
+        }
+
+        final int ownerMode = permission.getOwnerMode();
+        final boolean ownerRead = (ownerMode & Permission.READ) == Permission.READ;
+        final boolean ownerWrite = (ownerMode & Permission.WRITE) == Permission.WRITE;
+        final boolean ownerExecute = (ownerMode & Permission.EXECUTE) == Permission.EXECUTE;
+
+        final int groupMode = permission.getGroupMode();
+        final boolean groupRead = (groupMode & Permission.READ) == Permission.READ;
+        final boolean groupWrite = (groupMode & Permission.WRITE) == Permission.WRITE;
+        final boolean groupExecute = (groupMode & Permission.EXECUTE) == Permission.EXECUTE;
+
+        final int otherMode = permission.getOtherMode();
+        final boolean otherRead = (otherMode & Permission.READ) == Permission.READ;
+        final boolean otherWrite = (otherMode & Permission.WRITE) == Permission.WRITE;
+        final boolean otherExecute = (otherMode & Permission.EXECUTE) == Permission.EXECUTE;
+
+        final boolean setUid = permission.isSetUid();
+        final boolean setGid = permission.isSetGid();
+        final boolean sticky = permission.isSticky();
+
+        previousMode.ownerRead = getUpdatedModeBit(previousMode.ownerRead, ownerRead);
+        previousMode.ownerWrite = getUpdatedModeBit(previousMode.ownerWrite, ownerWrite);
+        previousMode.ownerExecute = getUpdatedModeBit(previousMode.ownerExecute, ownerExecute);
+
+        previousMode.groupRead = getUpdatedModeBit(previousMode.groupRead, groupRead);
+        previousMode.groupWrite = getUpdatedModeBit(previousMode.groupWrite, groupWrite);
+        previousMode.groupExecute = getUpdatedModeBit(previousMode.groupExecute, groupExecute);
+
+        previousMode.otherRead = getUpdatedModeBit(previousMode.otherRead, otherRead);
+        previousMode.otherWrite = getUpdatedModeBit(previousMode.otherWrite, otherWrite);
+        previousMode.otherExecute = getUpdatedModeBit(previousMode.otherExecute, otherExecute);
+
+        previousMode.setUid = getUpdatedModeBit(previousMode.setUid, setUid);
+        previousMode.setGid = getUpdatedModeBit(previousMode.setGid, setGid);
+        previousMode.sticky = getUpdatedModeBit(previousMode.sticky, sticky);
+
+        return previousMode;
+    }
+
+    private Boolean getUpdatedModeBit(final Boolean previousModeBit, final boolean nextModeBit) {
+        if (previousModeBit == null || previousModeBit.booleanValue() != nextModeBit) {
+            return null;
+        }
+        return previousModeBit;
     }
 
     private void enter() {
@@ -1548,7 +1672,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     case 3:
                         return row.getGroup();
                     case 4:
-                        return row.getPermissions();
+                        return row.getPermissionsDescription();
                     default:
                         throw new RuntimeException(Messages.getString("ClientFrame.212")); //$NON-NLS-1$
                 }

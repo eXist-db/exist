@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.security.ACLPermission;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SimpleACLPermission;
 
@@ -33,18 +34,29 @@ import org.exist.security.SimpleACLPermission;
  */
 public class SimpleACLPermissionAider extends UnixStylePermissionAider implements ACLPermission {
 
-    private final List<ACEAider> aces = new ArrayList<>();
+    private final List<ACEAider> aces;
 
     public SimpleACLPermissionAider() {
         super();
+        this.aces = new ArrayList<>();
     }
 
     public SimpleACLPermissionAider(final int mode) {
         super(mode);
+        this.aces = new ArrayList<>();
     }
 
     public SimpleACLPermissionAider(final String user, final String group, final int mode) {
         super(user, group, mode);
+        this.aces = new ArrayList<>();
+    }
+
+    /**
+     * Used by {@link #copy()}.
+     */
+    private SimpleACLPermissionAider(final String user, final String group, final int mode, final List<ACEAider> aces) {
+        super(user, group, mode);
+        this.aces = aces;
     }
 
     @Override
@@ -177,5 +189,14 @@ public class SimpleACLPermissionAider extends UnixStylePermissionAider implement
             }
         }
         return mode;
+    }
+
+    @Override
+    public Permission copy() {
+        final List<ACEAider> copiedAces = new ArrayList<>(aces.size());
+        for (int i = 0; i < aces.size(); i++) {
+            copiedAces.add(aces.get(i).copy());
+        }
+        return new SimpleACLPermissionAider(getOwner().getName(), getGroup().getName(), getMode(), copiedAces);
     }
 }
