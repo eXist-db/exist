@@ -536,6 +536,14 @@ public class UnixStylePermissionTest {
         permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("rwxrws---");
         assertEquals(02770, permission.getMode());
+
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
+        permission.setMode("rwxrwxrwt");
+        assertEquals(01777, permission.getMode());
+
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
+        permission.setMode("rwxrwxrwT");
+        assertEquals(01776, permission.getMode());
     }
 
     @Test
