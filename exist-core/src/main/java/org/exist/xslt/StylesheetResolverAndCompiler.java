@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Properties;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
@@ -41,9 +42,12 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.EXistURISchemeURIResolver;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.xml.sax.SAXException;
+
+import static org.exist.xslt.XsltURIResolverHelper.getXsltURIResolver;
 
 /**
  * {@link javax.xml.transform.Templates} resolver and compiler.
@@ -168,7 +172,8 @@ public class StylesheetResolverAndCompiler implements Stylesheet {
           factory.setAttribute((String) attribute.getKey(), attribute.getValue());
         }
       }
-      factory.setURIResolver(new EXistURIResolver(db, base));
+      final URIResolver uriResolver = getXsltURIResolver(db, factory.getURIResolver(), base, true);
+      factory.setURIResolver(uriResolver);
     }
     return factory;
   }
@@ -182,7 +187,11 @@ public class StylesheetResolverAndCompiler implements Stylesheet {
         newFactory.setAttribute((String) attribute.getKey(), attribute.getValue());
       }
     }
-    newFactory.setURIResolver(new EXistURIResolver(db, base));
+
+    // setup any URI resolvers
+    final URIResolver uriResolver = getXsltURIResolver(db, newFactory.getURIResolver(), base, true);
+    newFactory.setURIResolver(uriResolver);
+
     newFactory.setErrorListener(errorListener);
     return newFactory;
   }

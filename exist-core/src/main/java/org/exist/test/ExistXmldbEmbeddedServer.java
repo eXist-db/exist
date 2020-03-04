@@ -16,8 +16,10 @@ import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
+import javax.annotation.Nullable;
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -61,6 +63,17 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
      */
     public ExistXmldbEmbeddedServer(final boolean asGuest, final boolean disableAutoDeploy, final boolean useTemporaryStorage) {
         this.existEmbeddedServer = new ExistEmbeddedServer(disableAutoDeploy, useTemporaryStorage);
+        this.asGuest = asGuest;
+    }
+
+    /**
+     * @param asGuest Use the guest account, default is the admin account
+     * @param disableAutoDeploy Whether auto-deployment of XARs should be disabled
+     * @param useTemporaryStorage Whether the data and journal folder should use temporary storage
+     * @param configFile path to eXist-db's conf.xml configuration file
+     */
+    public ExistXmldbEmbeddedServer(final boolean asGuest, final boolean disableAutoDeploy, final boolean useTemporaryStorage, @Nullable final Path configFile) {
+        this.existEmbeddedServer = new ExistEmbeddedServer(null, configFile, null, disableAutoDeploy, useTemporaryStorage);
         this.asGuest = asGuest;
     }
 

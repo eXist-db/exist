@@ -22,7 +22,9 @@ package org.exist.repo;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -32,6 +34,8 @@ import org.exist.storage.StartupTrigger;
 import org.exist.storage.txn.Txn;
 import org.exist.util.FileUtils;
 import org.expath.pkg.repo.*;
+
+import javax.annotation.Nullable;
 
 /**
  * Startup trigger for automatic deployment of application packages. Scans the "autodeploy" directory
@@ -44,17 +48,32 @@ public class AutoDeploymentTrigger implements StartupTrigger {
     public final static String AUTODEPLOY_DIRECTORY = "autodeploy";
 
     public final static String AUTODEPLOY_PROPERTY = "exist.autodeploy";
+    public final static String AUTODEPLOY_DIRECTORY_PROPERTY = "exist.autodeploy.dir";
+    public final static String IGNORE_AUTODEPLOY_SYSTEM_PROPERTY_PARAM = "ignore-autodeploy-system-property";
+    public final static String AUTODEPLOY_DIRECTORY_PARAM = "dir";
 
     @Override
     public void execute(final DBBroker sysBroker, final Txn transaction, final Map<String, List<? extends Object>> params) {
-        // do not process if the system property exist.autodeploy=off
-        final String property = System.getProperty(AUTODEPLOY_PROPERTY, "on");
-        if (property.equalsIgnoreCase("off")) {
-            return;
+        final boolean ignoreAutodeploySystemProperty = Optional.ofNullable(getFirstParamValue(params, IGNORE_AUTODEPLOY_SYSTEM_PROPERTY_PARAM, v -> Boolean.valueOf(v.toString()))).orElse(false);
+        if (!ignoreAutodeploySystemProperty) {
+            // do not execute if the system property exist.autodeploy=off
+            final String property = System.getProperty(AUTODEPLOY_PROPERTY, "on");
+            if (property.equalsIgnoreCase("off")) {
+                return;
+            }
         }
 
-        final Optional<Path> homeDir = sysBroker.getConfiguration().getExistHome();
-        final Path autodeployDir = FileUtils.resolve(homeDir, AUTODEPLOY_DIRECTORY);
+        Path autodeployDir = Optional.ofNullable(System.getProperty(AUTODEPLOY_DIRECTORY_PROPERTY)).map(Paths::get).orElse(null);
+        if (autodeployDir == null) {
+            final String dir = getFirstParamValue(params, AUTODEPLOY_DIRECTORY_PARAM, Object::toString);
+            if (dir != null) {
+                autodeployDir = Paths.get(dir);
+            } else {
+                final Optional<Path> homeDir = sysBroker.getConfiguration().getExistHome();
+                autodeployDir = FileUtils.resolve(homeDir, AUTODEPLOY_DIRECTORY);
+            }
+        }
+
         if (!Files.isReadable(autodeployDir) && Files.isDirectory(autodeployDir)) {
             return;
         }
@@ -104,5 +123,16 @@ public class AutoDeploymentTrigger implements StartupTrigger {
         } catch(final IOException ioe) {
             LOG.error(ioe);
         }
+    }
+
+    private @Nullable <T> T getFirstParamValue(final Map<String, List<? extends Object>> params, final String paramName, final Function<Object, T> valueConverter) {
+        final List<? extends Object> values = params.get(paramName);
+        if (values != null && values.size() > 0) {
+            final Object value = values.get(0);
+            if (value != null) {
+                return valueConverter.apply(value);
+            }
+        }
+        return null;
     }
 }

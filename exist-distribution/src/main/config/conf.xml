@@ -216,9 +216,27 @@
                 <!-- 
                     AutoDeploymentTrigger will install any .xar application package it finds
                     in the autodeploy directory unless the application has already been installed
-                    in the db. 
+                    in the db.
+
+                    The trigger can be disabled by setting the Java System Property `exist.autodeploy=off`,
+                    if you are running multiple instances in a single JVM, this global behaviour can be
+                    overridden on a per-instance basis by setting the trigger param `ignore-autodeploy-system-property`.
+
+                    Parameters:
+
+                        * ignore-autodeploy-system-property
+                            Causes the AutoDeploymentTrigger to ignore the system property `exist.autodeploy`.
+
+                        * dir
+                            An absolute path to the directory which contains the XARs to autodeploy.
                 -->   
-                <trigger class="org.exist.repo.AutoDeploymentTrigger"/>
+                <trigger class="org.exist.repo.AutoDeploymentTrigger">
+
+                    <!-- parameter name="ignore-autodeploy-system-property" value="true"/ -->
+
+                    <!-- parameter name="dir" value="${project.build.outputDirectory}/autodeploy"/ -->
+
+                </trigger>
                 
                 <!-- 
                     XQueryStartupTrigger will execute all xquery scripts stored in the

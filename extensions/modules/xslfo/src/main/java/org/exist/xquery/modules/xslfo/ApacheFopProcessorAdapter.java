@@ -22,7 +22,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.xmlgraphics.io.ResourceResolver;
 import org.apache.xmlgraphics.io.URIResolverAdapter;
+import org.exist.repo.PkgXsltModuleURIResolver;
 import org.exist.storage.DBBroker;
+import org.exist.util.EXistURISchemeURIResolver;
+import org.exist.util.URIResolverHierarchy;
 import org.exist.xslt.EXistURIResolver;
 import org.exist.xquery.value.NodeValue;
 import org.xml.sax.ContentHandler;
@@ -138,44 +141,12 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
     private ResourceResolver getResourceResolver(final DBBroker broker, final String baseUri) {
         final ResourceResolverFactory.SchemeAwareResourceResolverBuilder builder = ResourceResolverFactory.createSchemeAwareResourceResolverBuilder(ResourceResolverFactory.createDefaultResourceResolver());
         final URIResolverAdapter uriResolver = new URIResolverAdapter(
-            new ExistSchemeRewriter(new EXistURIResolver(broker.getBrokerPool(), baseUri))
+                new EXistURISchemeURIResolver(new EXistURIResolver(broker.getBrokerPool(), baseUri))
         );
         builder.registerResourceResolverForScheme("exist", uriResolver);
         builder.registerResourceResolverForScheme("http", uriResolver);
         builder.registerResourceResolverForScheme("https", uriResolver);
         return builder.build();
-    }
-
-    /**
-     * Rewrites URLs like:
-     *  exist://localhost/db -> /db
-     */
-    private static class ExistSchemeRewriter implements URIResolver {
-        private final EXistURIResolver eXistURIResolver;
-
-        public ExistSchemeRewriter(final EXistURIResolver eXistURIResolver) {
-            this.eXistURIResolver = eXistURIResolver;
-        }
-
-        @Override
-        public Source resolve(final String href, final String base) throws TransformerException {
-            return eXistURIResolver.resolve(
-                    rewriteScheme(href),
-                    rewriteScheme(base)
-            );
-        }
-
-        private String rewriteScheme(String uri) {
-            if(uri != null) {
-                if (uri.startsWith("exist://localhost")) {
-                    uri = uri.replace("exist://localhost/db", "/db");
-                } else if (uri.startsWith("exist://")) {
-                    uri = uri.replace("exist://", "xmldb:exist://");
-                }
-            }
-
-            return uri;
-        }
     }
 
     /**

@@ -181,6 +181,16 @@
                     <parameter name="mode" value="memory"/>
                 </trigger>
 
+                <!--
+                    AutoDeploymentTrigger will install any .xar application package it finds
+                    in the autodeploy directory unless the application has already been installed
+                    in the db.
+                -->
+                <trigger class="org.exist.repo.AutoDeploymentTrigger">
+                    <parameter name="ignore-autodeploy-system-property" value="true"/>
+                    <parameter name="dir" value="${project.build.testOutputDirectory}/functx"/>
+                </trigger>
+
             </triggers>
         </startup>
 

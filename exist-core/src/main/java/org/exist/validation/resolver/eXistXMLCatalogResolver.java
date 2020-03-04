@@ -49,6 +49,10 @@ import org.xml.sax.SAXException;
  */
 public class eXistXMLCatalogResolver extends XMLCatalogResolver {
 
+    //TODO(AR) refactor to org.apache.xml.resolver.tools.CatalogResolver which is reused within here for Xerces
+    // see https://github.com/eXist-db/exist/issues/350
+    // see https://www.saxonica.com/html/documentation/sourcedocs/xml-catalogs.html
+
     public eXistXMLCatalogResolver() {
         super();
         LOG.debug("Initializing");
