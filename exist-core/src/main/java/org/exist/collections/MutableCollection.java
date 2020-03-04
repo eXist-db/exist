@@ -186,10 +186,28 @@ public class MutableCollection implements Collection {
 
     @Override
     public final void setPath(XmldbURI path) {
+        setPath(path, false);
+    }
+
+    @Override
+    public final void setPath(XmldbURI path, final boolean updateChildren) {
         path = path.toCollectionPathURI();
         //TODO : see if the URI resolves against DBBroker.TEMP_COLLECTION
         this.isTempCollection = path.getRawCollectionPath().equals(XmldbURI.TEMP_COLLECTION);
         this.path = path;
+
+        if (updateChildren) {
+            for (final Map.Entry<String, DocumentImpl> docEntry : documents.entrySet()) {
+                final XmldbURI docUri = path.append(docEntry.getKey());
+                try (final ManagedDocumentLock documentLock = lockManager.acquireDocumentWriteLock(docUri)) {
+                    final DocumentImpl doc = docEntry.getValue();
+                    doc.setCollection(this);  // this will invalidate the cached `uri` in DocumentImpl
+                } catch (final LockException e) {
+                    LOG.error(e.getMessage(), e);
+                    throw new IllegalStateException(e);
+                }
+            }
+        }
     }
 
     @Override

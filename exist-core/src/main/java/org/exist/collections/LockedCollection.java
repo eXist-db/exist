@@ -105,6 +105,11 @@ public class LockedCollection implements Collection {
     }
 
     @Override
+    public void setPath(final XmldbURI path, final boolean updateChildren) {
+        collection.setPath(path, updateChildren);
+    }
+
+    @Override
     public CollectionMetadata getMetadata() {
         return collection.getMetadata();
     }
