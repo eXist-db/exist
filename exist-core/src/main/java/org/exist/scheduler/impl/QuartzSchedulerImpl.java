@@ -21,11 +21,10 @@ package org.exist.scheduler.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 import com.evolvedbinary.j8fu.Either;
@@ -40,6 +39,7 @@ import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.SystemTask;
 import org.exist.util.Configuration;
 
+import org.exist.util.ConfigurationHelper;
 import org.quartz.*;
 
 import static org.exist.util.ThreadUtils.nameInstanceSchedulerThread;
@@ -69,6 +69,8 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
 
     private final static Logger LOG = LogManager.getLogger(QuartzSchedulerImpl.class);
 
+    private final static String PROPERTIES_FILE_NAME = "quartz.properties";
+
     // the real scheduler
     private org.quartz.Scheduler scheduler;
 
@@ -89,7 +91,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
 
         // NOTE: we create the scheduler in a separate thread with its own thread-group so that the thread group is used by Quartz
         final ThreadGroup instanceQuartzThreadGroup = newInstanceSubThreadGroup(brokerPool, "scheduler.quartz-simple-thread-pool");
-        final QuartzSchedulerCreator creator = new QuartzSchedulerCreator();
+        final QuartzSchedulerCreator creator = new QuartzSchedulerCreator(getQuartzProperties());
         final Thread schedulerCreatorThread = new Thread(instanceQuartzThreadGroup, creator, nameInstanceThread(brokerPool, "prepare-quartz-scheduler"));
         schedulerCreatorThread.start();
 
@@ -116,7 +118,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
         defaultQuartzProperties.setProperty(PROP_SCHED_RMI_EXPORT, "false");
         defaultQuartzProperties.setProperty(PROP_SCHED_RMI_PROXY, "false");
         defaultQuartzProperties.setProperty(PROP_SCHED_WRAP_JOB_IN_USER_TX, "false");
-        defaultQuartzProperties.setProperty(PROP_THREAD_POOL_CLASS, "org.exist.scheduler.impl.ExistQuartzSimpleThreadPool");
+        defaultQuartzProperties.setProperty(PROP_THREAD_POOL_CLASS, "org.quartz.simpl.SimpleThreadPool");
         defaultQuartzProperties.setProperty("org.quartz.threadPool.threadCount", "4");
         defaultQuartzProperties.setProperty("org.quartz.threadPool.threadPriority", "5");
         defaultQuartzProperties.setProperty("org.quartz.threadPool.threadsInheritGroupOfInitializingThread", "true");
@@ -126,20 +128,23 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
     }
 
     private Properties getQuartzProperties() {
-        //try and load the properties for quartz
-        final Properties properties = new Properties();
-        try (final InputStream is = this.getClass().getResourceAsStream("quartz.properties")) {
-            if(is != null) {
-                properties.load(is);
-                LOG.info("Successfully loaded quartz.properties");
-            } else {
-                LOG.warn("Could not load quartz.properties, will use defaults.");
-            }
-        } catch(final IOException ioe) {
-            LOG.warn("Could not load quartz.properties, will defaults. " + ioe.getMessage(), ioe);
+        //try and load the properties for quartz from eXist-db's conf directory
+        Path f = ConfigurationHelper.lookup(PROPERTIES_FILE_NAME);
+        if (!Files.isReadable(f)) {
+            f = f.getParent().resolve("etc").resolve(PROPERTIES_FILE_NAME);
         }
-        if (properties == null || properties.size() == 0) {
-            LOG.warn("Using default properties for Quartz scheduler");
+
+        final Properties properties = new Properties();
+        if (Files.isReadable(f)) {
+            try (final InputStream is = Files.newInputStream(f)) {
+                properties.load(is);
+                LOG.info("Successfully loaded Quartz Scheduler properties from: " + f.normalize().toAbsolutePath());
+            } catch (final IOException e) {
+                LOG.warn("Could not load Quartz Scheduler properties, will use defaults. " + e.getMessage(), e);
+                properties.putAll(defaultQuartzProperties);
+            }
+        } else {
+            LOG.warn("Could not load Quartz Scheduler properties, will use defaults.");
             properties.putAll(defaultQuartzProperties);
         }
 
@@ -587,9 +592,14 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
     /**
      * Creates a new Scheduler
      */
-    private class QuartzSchedulerCreator implements Runnable {
+    private static class QuartzSchedulerCreator implements Runnable {
+        private final Properties quartzProperties;
         @Nullable
         private volatile Either<SchedulerException, org.quartz.Scheduler> scheduler = null;
+
+        public QuartzSchedulerCreator(final Properties quartzProperties) {
+            this.quartzProperties = quartzProperties;
+        }
 
         @Nullable
         public Either<SchedulerException, org.quartz.Scheduler> getScheduler() {
@@ -599,7 +609,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
         @Override
         public void run() {
             try {
-                final SchedulerFactory schedulerFactory = new StdSchedulerFactory(getQuartzProperties());
+                final SchedulerFactory schedulerFactory = new StdSchedulerFactory(quartzProperties);
                 this.scheduler = Either.Right(schedulerFactory.getScheduler());
             } catch(final SchedulerException e) {
                 this.scheduler = Either.Left(e);
