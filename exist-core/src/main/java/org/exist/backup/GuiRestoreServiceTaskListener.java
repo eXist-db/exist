@@ -101,6 +101,12 @@ public class GuiRestoreServiceTaskListener extends AbstractRestoreServiceTaskLis
     }
 
     @Override
+    public void skipResources(final String message, final long count) {
+        SwingUtilities.invokeLater(() -> dialog.incrementFileCounter(count));
+        super.skipResources(message, count);
+    }
+
+    @Override
     public void processingDescriptor(final String backupDescriptor) {
         SwingUtilities.invokeLater(() -> dialog.setBackup(backupDescriptor));
         super.processingDescriptor(backupDescriptor);

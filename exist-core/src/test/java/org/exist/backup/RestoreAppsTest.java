@@ -194,10 +194,10 @@ public class RestoreAppsTest {
             restore.restore(broker, transaction, null, backup, listener, false);
 
             if (expectedMessage != null) {
-                assertEquals(1, listener.info.size());
-                assertTrue(listener.info.get(0).endsWith(expectedMessage));
+                assertEquals(1, listener.skipped.size());
+                assertTrue(listener.skipped.get(0).endsWith(expectedMessage));
             } else {
-                assertEquals(0, listener.info.size());
+                assertEquals(0, listener.skipped.size());
             }
         }
         existEmbeddedServer.restart(true);
@@ -266,6 +266,7 @@ public class RestoreAppsTest {
     class TestRestoreListener implements RestoreListener {
 
         private List<String> info = new ArrayList<>();
+        private List<String> skipped = new ArrayList<>();
 
         @Override
         public void started(long numberOfFiles) {
@@ -285,6 +286,11 @@ public class RestoreAppsTest {
         @Override
         public void restoredResource(String resource) {
             // unused
+        }
+
+        @Override
+        public void skipResources(String message, long count) {
+            skipped.add(message);
         }
 
         @Override

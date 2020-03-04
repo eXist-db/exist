@@ -75,6 +75,11 @@ public abstract class AbstractRestoreServiceTaskListener implements RestoreServi
     }
 
     @Override
+    public void skipResources(final String message, final long count) {
+        warn("Skipping " + count + " resources. " + message);
+    }
+
+    @Override
     public void finished() {
         info("Finished restore of backup.");
     }

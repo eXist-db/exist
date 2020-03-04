@@ -226,7 +226,16 @@ public class RestoreDialog extends JDialog {
      * Increment the number of files that are restored and display the value.
      */
     public void incrementFileCounter() {
-        fileCounter++;
+        incrementFileCounter(1);
+    }
+
+    /**
+     * Increment the number of files that are restored and display the value.
+     *
+     * @param step the amount to increment by
+     */
+    public void incrementFileCounter(final long step) {
+        fileCounter += step;
 
         if (totalNumberOfFiles == 0L) {
             progress.setString("N/A");

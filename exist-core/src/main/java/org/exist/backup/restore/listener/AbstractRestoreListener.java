@@ -42,6 +42,11 @@ public abstract class AbstractRestoreListener implements RestoreListener {
     }
 
     @Override
+    public void skipResources(final String message, final long count) {
+        warn("Skipping " + count + " resources. " + message);
+    }
+
+    @Override
     public void restoredResource(final String resource) {
         info("Restored " + resource);
     }

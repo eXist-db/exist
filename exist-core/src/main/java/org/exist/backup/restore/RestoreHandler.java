@@ -410,8 +410,8 @@ public class RestoreHandler extends DefaultHandler {
         final BackupDescriptor subDescriptor = descriptor.getChildBackupDescriptor(name);
         if(subDescriptor != null) {
             if (pathsToIgnore.contains(subDescriptor.getSymbolicPath())) {
-                listener.info("Skipping app path " + subDescriptor.getSymbolicPath() + ". Newer version " +
-                        "is already installed.");
+                listener.skipResources("Skipping app path " + subDescriptor.getSymbolicPath() + ". Newer version " +
+                        "is already installed.", subDescriptor.getNumberOfFiles());
                 return;
             }
             final XMLReaderPool parserPool = broker.getBrokerPool().getParserPool();

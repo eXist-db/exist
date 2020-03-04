@@ -33,6 +33,7 @@ public interface RestoreServiceTaskListener {
     void processingDescriptor(String backupDescriptor);
     void createdCollection(String collectionUri);
     void restoredResource(String resourceUri);
+    void skipResources(String message, long count);
 
     void info(String message);
     void warn(String message);
