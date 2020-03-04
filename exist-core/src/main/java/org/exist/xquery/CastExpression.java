@@ -65,18 +65,14 @@ public class CastExpression extends AbstractExpression {
         this.expression = expr;
     }
 
-	/* (non-Javadoc)
-     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
-     */
+	@Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	contextInfo.setParent(this);
         expression.analyze(contextInfo);
         contextInfo.setStaticReturnType(requiredType);
     }
-    
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
+
+    @Override
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         
         if (context.getProfiler().isEnabled()) {
