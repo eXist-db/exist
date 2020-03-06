@@ -20,7 +20,39 @@
 
 package org.exist.xmldb;
 
+import org.exist.util.FileUtils;
+
 public abstract class AbstractRestoreServiceTaskListener implements RestoreServiceTaskListener {
+
+    @Override
+    public void startedZipForTransfer(final long totalUncompressedSize) {
+        info("Creating Zip of restore data (uncompressed=" + FileUtils.humanSize(totalUncompressedSize)  + ")...");
+    }
+
+    @Override
+    public void addedFileToZipForTransfer(final long uncompressedSize) {
+        //no-op
+    }
+
+    @Override
+    public void finishedZipForTransfer() {
+        info("Finished creating Zip of restore data.");
+    }
+
+    @Override
+    public void startedTransfer(final long transferSize) {
+        info("Transferring restore data to remote server (size=" + FileUtils.humanSize(transferSize)  + ")...");
+    }
+
+    @Override
+    public void transferred(final long chunkSize) {
+        //no-op
+    }
+
+    @Override
+    public void finishedTransfer() {
+        info("Finished transferring restore data to remote server.");
+    }
 
     @Override
     public void started(final long numberOfFiles) {
@@ -40,6 +72,11 @@ public abstract class AbstractRestoreServiceTaskListener implements RestoreServi
     @Override
     public void restoredResource(final String resource) {
         info("Restored " + resource);
+    }
+
+    @Override
+    public void skipResources(final String message, final long count) {
+        warn("Skipping " + count + " resources. " + message);
     }
 
     @Override

@@ -99,6 +99,11 @@ public class LocalRestoreService extends AbstractLocalService implements EXistRe
         }
 
         @Override
+        public void skipResources(final String message, final long count) {
+            restoreListener.skipResources(message, count);
+        }
+
+        @Override
         public void info(final String message) {
             restoreListener.info(message);
         }

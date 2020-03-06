@@ -1133,7 +1133,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     setStatus(Messages.getString("ClientFrame.226"));
                 }
 
-                listener.hideDialog();
+                listener.enableDismissDialogButton();
 
                 if (properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER).equals(SecurityManager.DBA_USER) && dbaPassword != null) {
                     properties.setProperty(InteractiveClient.PASSWORD, dbaPassword);

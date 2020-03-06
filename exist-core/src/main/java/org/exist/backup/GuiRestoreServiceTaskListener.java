@@ -41,6 +41,18 @@ public class GuiRestoreServiceTaskListener extends AbstractRestoreServiceTaskLis
     }
 
     @Override
+    public void startedZipForTransfer(final long totalUncompressedSize) {
+        dialog.setTotalRestoreUncompressedSize(totalUncompressedSize);
+        super.startedZipForTransfer(totalUncompressedSize);
+    }
+
+    @Override
+    public void startedTransfer(final long transferSize) {
+        dialog.setTotalTransferSize(transferSize);
+        super.startedTransfer(transferSize);
+    }
+
+    @Override
     public void started(final long numberOfFiles) {
         dialog.setTotalNumberOfFiles(numberOfFiles);
         super.started(numberOfFiles);
@@ -70,16 +82,39 @@ public class GuiRestoreServiceTaskListener extends AbstractRestoreServiceTaskLis
     }
 
     @Override
+    public void addedFileToZipForTransfer(final long uncompressedSize) {
+        SwingUtilities.invokeLater(() -> dialog.addedFileToZip(uncompressedSize));
+        super.addedFileToZipForTransfer(uncompressedSize);
+    }
+
+    @Override
+    public void transferred(final long chunkSize) {
+        SwingUtilities.invokeLater(() -> dialog.transferred(chunkSize));
+        super.transferred(chunkSize);
+    }
+
+    @Override
     public void restoredResource(final String resource) {
         SwingUtilities.invokeLater(() -> dialog.setResource(resource));
-        super.restoredResource(resource);
         SwingUtilities.invokeLater(dialog::incrementFileCounter);
+        super.restoredResource(resource);
+    }
+
+    @Override
+    public void skipResources(final String message, final long count) {
+        SwingUtilities.invokeLater(() -> dialog.incrementFileCounter(count));
+        super.skipResources(message, count);
     }
 
     @Override
     public void processingDescriptor(final String backupDescriptor) {
         SwingUtilities.invokeLater(() -> dialog.setBackup(backupDescriptor));
         super.processingDescriptor(backupDescriptor);
+    }
+
+    public void enableDismissDialogButton() {
+        dialog.dismissButton.setEnabled(true);
+        dialog.dismissButton.grabFocus();
     }
 
     public void hideDialog() {

@@ -1003,6 +1003,7 @@ public interface RpcAPI {
         PROCESSING_DESCRIPTOR('2'),
         CREATED_COLLECTION('3'),
         RESTORED_RESOURCE('4'),
+        SKIP_RESOURCES('9'),
         INFO('5'),
         WARN('6'),
         ERROR('7'),

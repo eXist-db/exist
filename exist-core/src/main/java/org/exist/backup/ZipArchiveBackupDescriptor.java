@@ -24,11 +24,11 @@ package org.exist.backup;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.repo.RepoBackup;
-import org.exist.util.EXistInputSource;
-import org.exist.util.FileUtils;
-import org.exist.util.ZipEntryInputSource;
+import org.exist.util.*;
 import org.exist.util.io.TemporaryFileManager;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,9 +52,6 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
     protected final String blob = "blob/";
 
     public ZipArchiveBackupDescriptor(final Path fileArchive) throws IOException {
-
-        // Count number of files
-        countFileEntries(fileArchive);
 
         archive = new ZipFile(fileArchive.toFile());
 
@@ -99,6 +96,9 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
         if (!fakeDbRoot.resolve(Paths.get(base)).normalize().startsWith(fakeDbRoot)) {
             throw new IOException("Detected archive exit attack! zipFile=" + fileArchive.toAbsolutePath().normalize().toString());
         }
+
+        // Count number of files
+        countDescendantResourceEntries(archive, base);
     }
 
 
@@ -107,11 +107,12 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
         this.base = base;
         descriptor = archive.getEntry(base + BackupDescriptor.COLLECTION_DESCRIPTOR);
 
-        if ((descriptor == null) || descriptor.isDirectory()) {
+        if (descriptor == null || descriptor.isDirectory()) {
             throw new FileNotFoundException(archive.getName() + " is a bit corrupted (" + base + " descriptor not found): not a valid eXist backup archive");
         }
 
-
+        // Count number of files
+        countDescendantResourceEntries(archive, base);
     }
 
     @Override
@@ -232,21 +233,25 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
         return FileUtils.fileName(Paths.get(archive.getName()));
     }
 
-    private void countFileEntries(final Path fileArchive) {
-        try (final ZipFile zipFile = new ZipFile(fileArchive.toFile())) {
+    private void countDescendantResourceEntries(final ZipFile zipFile, final String base) {
+        try {
+            final DescriptorResourceCounter descriptorResourceCounter = new DescriptorResourceCounter();
+
             final Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while (entries.hasMoreElements()) {
                 final ZipEntry zipEntry = entries.nextElement();
                 if (!zipEntry.isDirectory()
-                        && !zipEntry.getName().endsWith(COLLECTION_DESCRIPTOR)
-                        && !zipEntry.getName().equals("backup.properties")) {
-                    numberOfFiles++;
+                        && zipEntry.getName().startsWith(base)
+                        && zipEntry.getName().endsWith(COLLECTION_DESCRIPTOR)) {
+
+                    try (final InputStream is = zipFile.getInputStream(zipEntry)) {
+                        numberOfFiles += descriptorResourceCounter.count(is);
+                    }
                 }
             }
 
-        } catch (final IOException ex) {
-            LOG.error("Unable to count number of files in {}.", fileArchive.toString(), ex);
+        } catch (final IOException | ParserConfigurationException | SAXException e) {
+            LOG.error("Unable to count number of files in {}.", zipFile.toString(), e);
         }
     }
-
 }

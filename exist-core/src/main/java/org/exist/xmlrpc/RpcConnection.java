@@ -19,7 +19,6 @@
  */
 package org.exist.xmlrpc;
 
-import com.evolvedbinary.j8fu.lazy.LazyVal;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.backup.Restore;
@@ -3737,6 +3736,12 @@ public class RpcConnection implements RpcAPI {
         @Override
         public void restoredResource(final String resource) {
             add(RestoreTaskEvent.RESTORED_RESOURCE, resource);
+        }
+
+        @Override
+        public void skipResources(final String message, final long count) {
+            final String strCount = Long.toString(count);
+            add(RestoreTaskEvent.SKIP_RESOURCES, strCount + '@' + message);
         }
 
         @Override

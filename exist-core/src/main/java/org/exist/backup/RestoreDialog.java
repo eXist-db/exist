@@ -21,16 +21,25 @@ package org.exist.backup;
 
 import javax.swing.*;
 import java.awt.*;
+import java.text.DecimalFormat;
 
 
 public class RestoreDialog extends JDialog {
     private static final long serialVersionUID = 3773486348231766907L;
+    private static final DecimalFormat PERCENTAGE_FORMAT = new DecimalFormat("###.##%");
 
     JTextField currentCollection;
     JTextField currentBackup;
     JTextField resource;
     JTextArea messages;
     JProgressBar progress;
+    JButton dismissButton;
+
+    private long totalRestoreUncompressedSize = 0;
+    private long zippedUncompressedSize = 0;
+
+    private long totalTransferSize = 0;
+    private long transferredSize = 0;
 
     private long totalNumberOfFiles = 0;
     private long fileCounter = 0;
@@ -143,6 +152,16 @@ public class RestoreDialog extends JDialog {
         c.weighty = 1.0;
         grid.setConstraints(scroll, c);
         getContentPane().add(scroll);
+
+        dismissButton = new JButton("Dismiss");
+        dismissButton.setEnabled(false);
+        dismissButton.addActionListener(e -> setVisible(false));
+        c.gridx = 0;
+        c.gridy = 5;
+        c.anchor = GridBagConstraints.CENTER;
+        c.fill = GridBagConstraints.NONE;
+        grid.setConstraints(dismissButton, c);
+        getContentPane().add(dismissButton);
     }
 
     public void setBackup(final String backup) {
@@ -162,28 +181,68 @@ public class RestoreDialog extends JDialog {
         messages.setCaretPosition(messages.getDocument().getLength());
     }
 
+    public void setTotalRestoreUncompressedSize(final long totalRestoreUncompressedSize) {
+        this.totalRestoreUncompressedSize = totalRestoreUncompressedSize;
+    }
+
+    public void setTotalTransferSize(final long totalTransferSize) {
+        this.totalTransferSize = totalTransferSize;
+    }
+
     /**
      *  Set the total number of files in the backup.
      *
-     * @param nr Number of files.
+     * @param totalNumberOfFiles Number of files.
      */
-    public void setTotalNumberOfFiles(final long nr) {
-        totalNumberOfFiles = nr;
+    public void setTotalNumberOfFiles(final long totalNumberOfFiles) {
+        this.totalNumberOfFiles = totalNumberOfFiles;
+    }
+
+    public void addedFileToZip(final long uncompressedSize) {
+        zippedUncompressedSize += uncompressedSize;
+
+        if (totalRestoreUncompressedSize < 0L) {
+            progress.setString("N/A");
+        } else {
+            final double percentage = zippedUncompressedSize / (double)totalRestoreUncompressedSize;
+            progress.setString(PERCENTAGE_FORMAT.format(percentage));
+            progress.setValue((int)(percentage * 100));
+        }
+    }
+
+    public void transferred(final long chunkSize) {
+        transferredSize += chunkSize;
+
+        if (totalTransferSize < 0L) {
+            progress.setString("N/A");
+        } else {
+            final double percentage = transferredSize / (double)totalTransferSize;
+            progress.setString(PERCENTAGE_FORMAT.format(percentage));
+            progress.setValue((int)(percentage * 100));
+        }
     }
 
     /**
      * Increment the number of files that are restored and display the value.
      */
     public void incrementFileCounter() {
+        incrementFileCounter(1);
+    }
 
-        fileCounter++;
+    /**
+     * Increment the number of files that are restored and display the value.
+     *
+     * @param step the amount to increment by
+     */
+    public void incrementFileCounter(final long step) {
+        fileCounter += step;
 
         if (totalNumberOfFiles == 0L) {
             progress.setString("N/A");
         } else {
-            final int percentage = (int) (fileCounter * 100 / totalNumberOfFiles);
-            progress.setString(percentage + "%");
-            progress.setValue(percentage);
+            final double percentage = fileCounter / (double)totalNumberOfFiles;
+            progress.setString(PERCENTAGE_FORMAT.format(percentage));
+            progress.setValue((int)(percentage * 100));
         }
     }
 

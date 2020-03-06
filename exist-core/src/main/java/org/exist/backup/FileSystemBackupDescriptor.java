@@ -27,7 +27,9 @@ import org.exist.repo.RepoBackup;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileInputSource;
 import org.exist.util.FileUtils;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -167,21 +170,29 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
         return null;
     }
 
-    private void countFileEntries(final Path directory) {
+    private void countFileEntries(final Path descriptor) {
 
         // Only count files from top level.
-        if(!directory.toString().endsWith("/db/" + COLLECTION_DESCRIPTOR)){
+        if (!descriptor.toString().endsWith("/db/" + COLLECTION_DESCRIPTOR)) {
             return;
         }
 
-        try(final Stream<Path> walk = Files.walk(directory.getParent())){
-            numberOfFiles = walk
-                    .filter(f -> !Files.isDirectory(f))
-                    .filter(f -> !COLLECTION_DESCRIPTOR.equals(f.getFileName().toString()))
-                    .count();
+        try {
+            final DescriptorResourceCounter descriptorResourceCounter = new DescriptorResourceCounter();
 
-        } catch (final IOException e) {
-            LOG.error("Unable to count number of files in {}.", directory.toString(), e);
+            try (final Stream<Path> walk = Files.walk(descriptor.getParent());
+                final Stream<Path> ds = walk
+                        .filter(f -> !Files.isDirectory(f))
+                        .filter(f -> !COLLECTION_DESCRIPTOR.equals(f.getFileName().toString()))) {
+
+                for (final Path d : ds.collect(Collectors.toList())) {
+                    try (final InputStream is = Files.newInputStream(d)) {
+                        numberOfFiles += descriptorResourceCounter.count(is);
+                    }
+                }
+            }
+        } catch (final IOException | ParserConfigurationException | SAXException e) {
+            LOG.error("Unable to count number of files in {}.", descriptor.toString(), e);
         }
     }
 

@@ -36,6 +36,8 @@ public interface RestoreListener {
 
     void restoredResource(String resource);
 
+    void skipResources(String message, final long count);
+
     void info(String message);
 
     void warn(String message);

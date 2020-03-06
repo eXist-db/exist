@@ -85,8 +85,8 @@ public class Restore {
             while(!descriptors.isEmpty()) {
                 final BackupDescriptor descriptor = descriptors.pop();
                 if (appsToSkip.contains(descriptor.getSymbolicPath())) {
-                    listener.info("Skipping app path " + descriptor.getSymbolicPath() + ". Newer version " +
-                            "is already installed.");
+                    listener.skipResources("Skipping app path " + descriptor.getSymbolicPath() + ". Newer version " +
+                            "is already installed.", descriptor.getNumberOfFiles());
                 } else {
                     final EXistInputSource is = descriptor.getInputSource();
                     is.setEncoding(UTF_8.displayName());
