@@ -1273,7 +1273,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     @Override
     public String toString() {
         if(nodeId == NodeId.DOCUMENT_NODE) {
-            return "Document node for " + doc.getDocId();
+            return "Document node proxy (docId=" + doc.getDocId() + ")";
         } else {
             return doc.getNode(nodeId).getNodeName();
         }

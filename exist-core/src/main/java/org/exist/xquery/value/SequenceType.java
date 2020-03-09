@@ -25,6 +25,8 @@ package org.exist.xquery.value;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
@@ -129,8 +131,34 @@ public class SequenceType {
             return false;
         }
         if (nodeName != null) {
+
             //TODO : how to improve performance ?
-            final QName realName = ((NodeValue) item).getQName();
+
+            final NodeValue nvItem = (NodeValue) item;
+            QName realName = null;
+            if (item.getType() == Type.DOCUMENT) {
+                // it's a document... we need to get the document element's name
+                final Document doc;
+                if (nvItem instanceof Document) {
+                    doc = (Document) nvItem;
+                } else {
+                    doc = nvItem.getOwnerDocument();
+                }
+                if (doc != null) {
+                    final Element elem = doc.getDocumentElement();
+                    if (elem != null) {
+                        realName = new QName(elem.getLocalName(), elem.getNamespaceURI());
+                    }
+                }
+            } else {
+                // get the name of the element/attribute
+                realName = nvItem.getQName();
+            }
+
+            if (realName == null) {
+                return false;
+            }
+
             if (nodeName.getNamespaceURI() != null) {
                 if (!nodeName.getNamespaceURI().equals(realName.getNamespaceURI())) {
                     return false;
@@ -187,11 +215,20 @@ public class SequenceType {
         }
     }
 
+    @Override
     public String toString() {
         if (cardinality == Cardinality.EMPTY) {
             return Cardinality.toString(cardinality);
         }
-        return Type.getTypeName(primaryType) + Cardinality.toString(cardinality);
+
+        final String str;
+        if (primaryType == Type.DOCUMENT && nodeName != null) {
+            str = "document-node(" + nodeName.getStringValue()  + ")";
+        } else {
+            str = Type.getTypeName(primaryType);
+        }
+
+        return str + Cardinality.toString(cardinality);
     }
 
 }

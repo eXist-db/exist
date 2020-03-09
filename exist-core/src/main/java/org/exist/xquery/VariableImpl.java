@@ -26,12 +26,9 @@ import org.exist.dom.QName;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.Messages;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * An XQuery/XPath variable, consisting of a QName and a value.
@@ -92,13 +89,23 @@ public class VariableImpl implements Variable {
 	public QName getQName() {
 		return qname;
 	}
-	
+
+	@Override
     public int getType() {
-        if(type != null)
-            {return type.getPrimaryType();}
-        else
-            {return Type.ITEM;}
+        if (type != null) {
+        	return type.getPrimaryType();
+        } else {
+        	return Type.ITEM;
+        }
     }
+
+    private String getTypeDescription() {
+		if (type != null) {
+			return type.toString();
+		} else {
+			return Type.getTypeName(Type.ITEM) + Cardinality.toString(getCardinality());
+		}
+	}
     
     public void setSequenceType(SequenceType type) throws XPathException {
     	this.type = type;
@@ -162,17 +169,18 @@ public class VariableImpl implements Variable {
             {value.destroy(context, contextSequence);}
     }
 
+    @Override
 	public String toString() {
 		final StringBuilder result = new StringBuilder();
 		result.append("$").append(qname.getStringValue());
 		result.append(" as ");
-		result.append(Type.getTypeName(getType()));		
-		result.append(Cardinality.toString(getCardinality()));
+		result.append(getTypeDescription());
 		result.append(" ");	
-		if (value == null) 
-			{result.append("[not set]");}
-		else
-			{result.append(":= ").append(value.toString());}
+		if (value == null) {
+			result.append("[not set]");
+		} else {
+			result.append(":= ").append(value.toString());
+		}
 		return result.toString();
 	}
 	
@@ -189,7 +197,11 @@ public class VariableImpl implements Variable {
 	}
 	
 	public int getCardinality() {
-		return Cardinality.ZERO_OR_MORE;
+		if (type != null) {
+			return type.getCardinality();
+		} else {
+			return Cardinality.ZERO_OR_MORE;
+		}
 	}
 	
 	public void setStackPosition(int position) {
@@ -223,13 +235,33 @@ public class VariableImpl implements Variable {
             if(requiredType != Type.ATOMIC)
                 {value = convert(value);}
         }
-        if(!type.checkType(value))
-        	{throw new XPathException( Messages.getMessage( Error.VAR_TYPE_MISMATCH, 
-        		    toString(),
-        		    type.toString(),
-        		    new SequenceType(value.getItemType(), value.getCardinality()).toString()
-        		)
-        	);}
+        if(!type.checkType(value)) {
+			final SequenceType valueType = new SequenceType(value.getItemType(), value.getCardinality());
+			if ((!value.isEmpty()) && type.getPrimaryType() == Type.DOCUMENT && value.getItemType() == Type.DOCUMENT) {
+				// it's a document... we need to get the document element's name
+				final NodeValue nvItem = (NodeValue)value.itemAt(0);
+				final Document doc;
+				if (nvItem instanceof Document) {
+					doc = (Document) nvItem;
+				} else {
+					doc = nvItem.getOwnerDocument();
+				}
+				if (doc != null) {
+					final Element elem = doc.getDocumentElement();
+					if (elem != null) {
+						valueType.setNodeName(new QName(elem.getLocalName(), elem.getNamespaceURI()));
+					}
+				}
+			}
+
+        	throw new XPathException(
+        			Messages.getMessage(Error.VAR_TYPE_MISMATCH,
+							toString(),
+							type.toString(),
+							valueType.toString()
+					)
+			);
+        }
     }
     
     private Sequence convert(Sequence seq) throws XPathException {

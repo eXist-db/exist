@@ -42,17 +42,13 @@ public class InstanceOfExpression extends AbstractExpression {
 		this.type = type;
 	}
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
-     */
+    @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	contextInfo.setParent(this);
         expression.analyze(contextInfo);
     }
     
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
+	@Override
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
