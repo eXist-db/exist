@@ -12,3 +12,23 @@ function fnRefs:castFunctionReference() {
     return
         $as-uri("/db")
 };
+
+declare
+    %test:assertError("err:XPST0017")
+function fnRefs:concat-arity0() {
+    fn:concat#0
+};
+
+declare
+    %test:assertError("err:XPST0017")
+function fnRefs:concat-arity1() {
+    fn:concat#1
+};
+
+declare
+    %test:assertEquals(1)
+function fnRefs:concat-arity2() {
+    count(
+        fn:concat#2
+    )
+};

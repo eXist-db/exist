@@ -32,6 +32,12 @@ public class NamedFunctionReference extends AbstractExpression {
 	}
 
 	public static FunctionCall lookupFunction(Expression self, XQueryContext context, QName funcName, int arity) throws XPathException {
+		if (Function.BUILTIN_FUNCTION_NS.equals(funcName.getNamespaceURI())
+				&& "concat".equals(funcName.getLocalPart())
+				&& arity < 2) {
+			throw new XPathException(self, ErrorCodes.XPST0017, "No such function; fn:concat requires at least two arguments");
+		}
+
 		final XQueryAST ast = new XQueryAST();
 		ast.setLine(self.getLine());
 		ast.setColumn(self.getColumn());
