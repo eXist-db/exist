@@ -70,7 +70,9 @@ ENV JAVA_TOOL_OPTIONS \
 
 HEALTHCHECK CMD [ "java", \
     "org.exist.start.Main", "client", \
-    "--no-gui",  "--xpath", "system:get-version()" ]
+    "--no-gui",  \
+    "--user", "guest", "--password", "guest", \
+    "--xpath", "system:get-version()" ]
 
 ENTRYPOINT [ "java", \
     "org.exist.start.Main", "jetty" ]
