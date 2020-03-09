@@ -76,7 +76,7 @@
         <contact.email>info@exist-db.org</contact.email>
 
         <ant.version>1.10.7</ant.version>
-        <apache.httpcomponents.version>4.5.11</apache.httpcomponents.version>
+        <apache.httpcomponents.version>4.5.12</apache.httpcomponents.version>
         <apache.httpcomponents.core.version>4.4.13</apache.httpcomponents.core.version>
         <apache.xmlrpc.version>3.1.3</apache.xmlrpc.version>
         <aspectj.version>1.9.4</aspectj.version>
