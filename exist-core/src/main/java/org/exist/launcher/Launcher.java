@@ -54,6 +54,7 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.launcher.ConfigurationUtility.LAUNCHER_PROPERTY_NEVER_INSTALL_SERVICE;
 import static org.exist.util.ThreadUtils.newGlobalThread;
 
 /**
@@ -612,16 +613,43 @@ public class Launcher extends Observable implements Observer {
             checkInstalledApps();
             registerObserver();
         }
-        if (SystemUtils.IS_OS_WINDOWS && !isInstallingService && serviceManager != null && !serviceManager.isInstalled()) {
-            isInstallingService = true;
-            SwingUtilities.invokeLater(() -> {
-                if (JOptionPane.showConfirmDialog(splash, "It is recommended to run eXist-db as a service on " +
-                                "Windows.\nNot doing so may lead to data loss if you shut down the computer before " +
-                                "eXist-db.\n\nWould you like to install the service?", "Install as Service?",
-                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-                    SwingUtilities.invokeLater(this::installService);
-                }
-            });
+
+        final Properties properties = ConfigurationUtility.loadProperties();
+        final boolean neverInstallService = Boolean.parseBoolean(properties.getProperty(LAUNCHER_PROPERTY_NEVER_INSTALL_SERVICE, "false"));
+
+        if (!neverInstallService) {
+            if (SystemUtils.IS_OS_WINDOWS && !isInstallingService && serviceManager != null && !serviceManager.isInstalled()) {
+                isInstallingService = true;
+                SwingUtilities.invokeLater(() -> {
+                    final int installServiceResult = JOptionPane.showOptionDialog(
+                            splash,
+                            "It is recommended to run eXist-db as a service on " +
+                                    "Windows.\nNot doing so may lead to data loss if you shutdown the computer before " +
+                                    "eXist-db.\n\nWould you like to install the service?",
+                            "Install as Service?",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            new String[]{"Yes", "No", "Never"},
+                            "Yes"
+                    );
+
+                    if (installServiceResult == JOptionPane.YES_OPTION) {
+                        // install the service
+                        SwingUtilities.invokeLater(this::installService);
+
+                    } else if (installServiceResult == JOptionPane.CANCEL_OPTION) {
+                        // never - record that we should not be prompted again
+                        final Properties srvProps = new Properties();
+                        srvProps.setProperty(LAUNCHER_PROPERTY_NEVER_INSTALL_SERVICE, "true");
+                        try {
+                            ConfigurationUtility.saveProperties(srvProps);
+                        } catch (final IOException e) {
+                            JOptionPane.showMessageDialog(null, "Failed to update service settings in " + ConfigurationUtility.LAUNCHER_PROPERTIES_FILE_NAME + ": " + e.getMessage(), "Failed to save Launcher settings", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                });
+            }
         }
     }
 

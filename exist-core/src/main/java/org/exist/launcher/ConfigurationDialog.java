@@ -24,6 +24,9 @@ import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
 
+import static org.exist.launcher.ConfigurationUtility.LAUNCHER_PROPERTY_MAX_MEM;
+import static org.exist.launcher.ConfigurationUtility.LAUNCHER_PROPERTY_MIN_MEM;
+
 /**
  *
  * @author wolf
@@ -52,10 +55,10 @@ public class ConfigurationDialog extends JDialog {
 
         this.callback = callback;
         
-        final Properties launcherProperties = LauncherWrapper.getLauncherProperties();
-        final int maxMemProp = Integer.parseInt(launcherProperties.getProperty("memory.max", "2048"));
+        final Properties launcherProperties = ConfigurationUtility.loadProperties();
+        final int maxMemProp = Integer.parseInt(launcherProperties.getProperty(LAUNCHER_PROPERTY_MAX_MEM, "2048"));
         maxMemory.setValue(maxMemProp);
-        final int minMemProp = Integer.parseInt(launcherProperties.getProperty("memory.min", "64"));
+        final int minMemProp = Integer.parseInt(launcherProperties.getProperty(LAUNCHER_PROPERTY_MIN_MEM, "64"));
         minMemory.setValue(minMemProp);
         
         try {

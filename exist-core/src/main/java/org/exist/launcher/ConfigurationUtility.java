@@ -10,6 +10,8 @@ import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Writer;
 import java.nio.file.*;
 import java.text.SimpleDateFormat;
@@ -19,9 +21,15 @@ import java.util.Map;
 
 import java.util.Properties;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class ConfigurationUtility {
 
     public static final String LAUNCHER_PROPERTIES_FILE_NAME = "launcher.properties";
+    public static final String LAUNCHER_PROPERTY_MAX_MEM = "memory.max";
+    public static final String LAUNCHER_PROPERTY_MIN_MEM = "memory.min";
+    public static final String LAUNCHER_PROPERTY_VMOPTIONS = "vmoptions";
+    public static final String LAUNCHER_PROPERTY_NEVER_INSTALL_SERVICE = "service.install.never";
 
     /**
      * We try to resolve any config file relative to an eXist-db
@@ -82,9 +90,38 @@ public class ConfigurationUtility {
         }
     }
 
+    public static Properties loadProperties() {
+        final Properties launcherProperties = new Properties();
+        final java.nio.file.Path propFile = lookup(LAUNCHER_PROPERTIES_FILE_NAME, false);
+        InputStream is = null;
+        try {
+            if (Files.isReadable(propFile)) {
+                is = Files.newInputStream(propFile);
+            }
+            if (is == null) {
+                is = Launcher.class.getResourceAsStream(LAUNCHER_PROPERTIES_FILE_NAME);
+            }
+
+            if (is != null) {
+                launcherProperties.load(new InputStreamReader(is, UTF_8));
+            }
+        } catch (final IOException e) {
+            System.err.println(LAUNCHER_PROPERTIES_FILE_NAME + " not found");
+        } finally {
+            if(is != null) {
+                try {
+                    is.close();
+                } catch(final IOException ioe) {
+                    ioe.printStackTrace();
+                }
+            }
+        }
+        return launcherProperties;
+    }
+
     public static void saveProperties(final Properties properties) throws IOException {
         final Path propFile = lookup(LAUNCHER_PROPERTIES_FILE_NAME, false);
-        final Properties launcherProperties = LauncherWrapper.getLauncherProperties();
+        final Properties launcherProperties = loadProperties();
         for (final String key: properties.stringPropertyNames()) {
             launcherProperties.setProperty(key, properties.getProperty(key));
         }
