@@ -41,6 +41,8 @@ import static com.evolvedbinary.j8fu.Either.Left;
 import static com.evolvedbinary.j8fu.Either.Right;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.launcher.ConfigurationUtility.LAUNCHER_PROPERTY_MAX_MEM;
+import static org.exist.launcher.ConfigurationUtility.LAUNCHER_PROPERTY_MIN_MEM;
 
 @NotThreadSafe
 class WindowsServiceManager implements ServiceManager {
@@ -81,8 +83,9 @@ class WindowsServiceManager implements ServiceManager {
         final Path configFile = ConfigurationHelper.getFromSystemProperty()
                 .orElse(existHome.resolve("etc").resolve("conf.xml"));
 
-        final Properties launcherProperties = LauncherWrapper.getLauncherProperties();
-        final String minMemory = launcherProperties.getProperty("memory.min", "128") + "m";
+        final Properties launcherProperties = ConfigurationUtility.loadProperties();
+        final Optional<String> maxMemory = Optional.ofNullable(launcherProperties.getProperty(LAUNCHER_PROPERTY_MAX_MEM)).map(s -> s + "m");
+        final String minMemory = launcherProperties.getProperty(LAUNCHER_PROPERTY_MIN_MEM, "128") + "m";
 
         final StringBuilder jvmOptions = new StringBuilder();
         jvmOptions.append("-Dfile.encoding=UTF-8");
@@ -100,7 +103,7 @@ class WindowsServiceManager implements ServiceManager {
             }
         }
         final Path exe = prunsrvExe.get();
-        final List<String> args = Arrays.asList(exe.toAbsolutePath().toString(), "install", SERVICE_NAME,
+        final List<String> args = newList(exe.toAbsolutePath().toString(), "install", SERVICE_NAME,
                 "--DisplayName=" + SERVICE_NAME,
                 "--Description=eXist-db NoSQL Database Server",
                 "--StdError=auto",
@@ -122,6 +125,7 @@ class WindowsServiceManager implements ServiceManager {
                 "--JvmOptions=\"" + jvmOptions + "\"",
                 "--StartParams=\"" + configFile.toAbsolutePath().toString() + "\""
         );
+        maxMemory.ifPresent(xmx -> args.add("--JvmMx=" + xmx));
 
         try {
             final Tuple2<Integer, String> execResult = run(args, true);
@@ -140,6 +144,15 @@ class WindowsServiceManager implements ServiceManager {
             throw new ServiceManagerException("Could not install service: " + e.getMessage(), e);
         }
     }
+
+    private static <T> List<T> newList(final T... items) {
+        final List<T> list = new ArrayList<>(items.length);
+        for (final T item : items) {
+            list.add(item);
+        }
+        return list;
+    }
+
 
     @Override
     public boolean isInstalled() {
