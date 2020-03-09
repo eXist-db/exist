@@ -98,7 +98,30 @@ public class RootNode extends Step {
         // get statically known documents from the context
         DocumentSet ds = context.getStaticallyKnownDocuments();
         if (ds == null || ds.getDocumentCount() == 0) {return Sequence.EMPTY_SEQUENCE;}
-        
+
+        // fix for util:eval-with-context
+        if (contextSequence != null) {
+            if (!contextSequence.isEmpty()) {
+                final Item item = contextSequence.itemAt(0);
+                // context item must be a node
+                if (!Type.subTypeOf(item.getType(), Type.NODE)) {
+                    throw new XPathException(this, ErrorCodes.XPTY0020, "Context item is not a node");
+                }
+                final NodeValue node = (NodeValue)item;
+                // return fn:root(self::node()) treat as document-node()
+                if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                    return new NodeProxy(((NodeProxy)item).getOwnerDocument());
+                } else {
+                    if (node.getType() == Type.DOCUMENT) {
+                        return node;
+                    }
+                    return (org.exist.dom.memtree.DocumentImpl) node.getOwnerDocument();
+                }
+            } else {
+                return Sequence.EMPTY_SEQUENCE;
+            }
+        }
+
 //        // if the expression occurs in a nested context, we might have cached the
 //        // document set
 //        // TODO: disabled cache for now as it may cause concurrency issues

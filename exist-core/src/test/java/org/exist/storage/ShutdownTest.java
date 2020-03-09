@@ -90,7 +90,7 @@ public class ShutdownTest {
 
                 final XQuery xquery = pool.getXQueryService();
                 assertNotNull(xquery);
-                final Sequence result = xquery.execute(broker, "//SPEECH[contains(LINE, 'love')]", Sequence.EMPTY_SEQUENCE);
+                final Sequence result = xquery.execute(broker, "//SPEECH[contains(LINE, 'love')]", null);
                 assertNotNull(result);
                 assertEquals(187, result.getItemCount());
 
