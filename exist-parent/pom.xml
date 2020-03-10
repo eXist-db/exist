@@ -385,6 +385,12 @@
             </dependency>
 
             <dependency>
+                <groupId>io.lacuna</groupId>
+                <artifactId>bifurcan</artifactId>
+                <version>0.2.0-alpha1</version>
+            </dependency>
+
+            <dependency>
                 <groupId>xml-apis</groupId>
                 <artifactId>xml-apis</artifactId>
                 <version>1.4.01</version>

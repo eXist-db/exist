@@ -1,5 +1,6 @@
 package org.exist.xquery.functions.map;
 
+import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -213,7 +214,8 @@ public class MapFunction extends BasicFunction {
         if (args.length == 2) {
             collation = args[1].getStringValue();
         }
-        final MapType map = new MapType(this.context, collation);
+        final Collator collator = context.getCollator(collation);
+        final MapType map = new MapType(this.context, collator);
         for (final SequenceIterator i = args[0].unorderedIterator(); i.hasNext(); ) {
             final AbstractMapType m = (AbstractMapType) i.nextItem();
             map.add(m);

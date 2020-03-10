@@ -95,7 +95,7 @@ public abstract class AbstractMapType extends FunctionReference
         getAccessorFunc().resetState(postOptimization);
     }
 
-    protected Comparator<AtomicValue> getComparator(String collation)
+    protected Comparator<AtomicValue> getComparator(final String collation)
             throws XPathException {
         if (collation != null) {
             final Collator collator = this.context.getCollator(collation);
