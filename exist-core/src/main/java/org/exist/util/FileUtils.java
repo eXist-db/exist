@@ -553,4 +553,15 @@ public class FileUtils {
             return bytes + " bytes";
         }
     }
+
+    /**
+     * Replaces any Windows path separators with Unix path separators.
+     *
+     * @param pathString a path string
+     *
+     * @return the updated path string
+     */
+    public static String withUnixSep(final String pathString) {
+        return pathString.replace('\\', '/');
+    }
 }

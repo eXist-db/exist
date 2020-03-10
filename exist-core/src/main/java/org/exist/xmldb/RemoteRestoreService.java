@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static org.exist.util.FileUtils.withUnixSep;
 import static org.exist.xmldb.RemoteCollection.MAX_UPLOAD_CHUNK;
 
 public class RemoteRestoreService implements EXistRestoreService {
@@ -245,7 +246,8 @@ public class RemoteRestoreService implements EXistRestoreService {
                     @Override
                     public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
                         final Path zipEntryPath = dir.relativize(file);
-                        zos.putNextEntry(new ZipEntry(zipEntryPath.toString()));
+                        final String zipEntryName = withUnixSep(zipEntryPath.toString());
+                        zos.putNextEntry(new ZipEntry(zipEntryName));
                         final long written = Files.copy(file, zos);
                         zos.closeEntry();
 
