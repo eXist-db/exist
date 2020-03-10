@@ -25,7 +25,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.SAXAdapter;
@@ -33,15 +32,8 @@ import org.exist.util.XMLReaderPool;
 import org.exist.validation.ValidationReport;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.validation.Shared;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.exist.xquery.value.*;
+import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -50,6 +42,8 @@ import java.io.IOException;
 import java.io.StringReader;
 
 public class ParsingFunctions extends BasicFunction {
+
+    private static final String FRAGMENT_WRAPPER_NAME = "__parse-xml-fragment__";
 
 	protected static final FunctionReturnSequenceType RESULT_TYPE_FOR_PARSE_XML = new FunctionReturnSequenceType(Type.DOCUMENT,
 			Cardinality.ZERO_OR_ONE, "the parsed document");
@@ -73,77 +67,102 @@ public class ParsingFunctions extends BasicFunction {
 					"and returns the document node at the root of an XDM tree representing the parsed document fragment.",
 					new SequenceType[] { TO_BE_PARSED_PARAMETER }, RESULT_TYPE_FOR_PARSE_XML_FRAGMENT) };
 
-	public ParsingFunctions(XQueryContext context, FunctionSignature signature) {
+	public ParsingFunctions(final XQueryContext context, final FunctionSignature signature) {
 		super(context, signature);
 	}
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		
-		Sequence resultSequence;
-
+	@Override
+	public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 		if (args[0].getItemCount() == 0) {
 			return Sequence.EMPTY_SEQUENCE;
 		}
-		String xmlContent = args[0].itemAt(0).getStringValue();
+		final String xmlContent = args[0].itemAt(0).getStringValue();
 		if (xmlContent.length() == 0) {
 			return Sequence.EMPTY_SEQUENCE;
 		}
-
-		if (isCalledAs("parse-xml-fragment")) {
-			xmlContent = "<root>" + xmlContent + "</root>";
-		}
-		
-		final StringReader reader = new StringReader(xmlContent);
-        final InputSource src = new InputSource(reader);
         
-        return parse(src, context, args);
+        return parse(xmlContent, args);
 	}
 
-    private Sequence parse(final InputSource src, XQueryContext theContext, Sequence[] args) throws XPathException {
-        Sequence resultSequence;
-        final ValidationReport report = new ValidationReport();
-        final SAXAdapter adapter = new SAXAdapter(theContext);
 
-        final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getParserPool();
-        XMLReader xr = null;
-        try {
-            xr = parserPool.borrowXMLReader();
-            xr.setErrorHandler(report);
-            xr.setContentHandler(adapter);
-            xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
-            xr.parse(src);
-        } catch (final SAXException e) {
-            logger.debug("Error while parsing XML: " + e.getMessage(), e);
-        } catch (final IOException e) {
-            throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + ": " + e.getMessage(),
-                    args[0], e);
-        } finally {
-            if (xr != null) {
-                parserPool.returnXMLReader(xr);
-            }
-        }
-        
+    private Sequence parse(final String xmlContent, final Sequence[] args) throws XPathException {
+        final SAXAdapter adapter = new FragmentSAXAdapter(context, isCalledAs("parse-xml-fragment"));
+	    final ValidationReport report = validate(xmlContent, adapter);
+
         if (report.isValid()) {
-            if (isCalledAs("parse-xml-fragment")) {
-                resultSequence = new ValueSequence();
-                NodeList children = adapter.getDocument().getDocumentElement().getChildNodes();
-                for (int i = 0, il = children.getLength(); i < il; i++) {
-                    Node child = children.item(i);
-                    resultSequence.add((NodeValue)child);
-                }
-                
-                return resultSequence;
-            } else {
-                return (DocumentImpl) adapter.getDocument();
-            }
+            return adapter.getDocument();
         } else {
             try {
-                theContext.pushDocumentContext();
-                final MemTreeBuilder builder = theContext.getDocumentBuilder();
+                context.pushDocumentContext();
+                final MemTreeBuilder builder = context.getDocumentBuilder();
                 final NodeImpl result = Shared.writeReport(report, builder);
                 throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + ": " + report.toString(), result);
             } finally {
-                theContext.popDocumentContext();
+                context.popDocumentContext();
+            }
+        }
+    }
+
+    private ValidationReport validate(final String xmlContent, final SAXAdapter saxAdapter) throws XPathException {
+        final String xml;
+	    if (isCalledAs("parse-xml-fragment")) {
+            xml = "<" + FRAGMENT_WRAPPER_NAME + ">" + xmlContent + "</" + FRAGMENT_WRAPPER_NAME + ">";
+        } else {
+	        xml = xmlContent;
+        }
+
+        final ValidationReport report = new ValidationReport();
+
+        try (final StringReader reader = new StringReader(xml)) {
+            final InputSource src = new InputSource(reader);
+
+            final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getParserPool();
+            XMLReader xr = null;
+            try {
+                xr = parserPool.borrowXMLReader();
+                xr.setErrorHandler(report);
+                xr.setContentHandler(saxAdapter);
+                xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, saxAdapter);
+                xr.parse(src);
+            } catch (final SAXException e) {
+                logger.debug("Error while parsing XML: " + e.getMessage(), e);
+            } catch (final IOException e) {
+                throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + ": " + e.getMessage(),
+                        new StringValue(xml), e);
+            } finally {
+                if (xr != null) {
+                    parserPool.returnXMLReader(xr);
+                }
+            }
+        }
+
+        return report;
+    }
+
+    private static class FragmentSAXAdapter extends SAXAdapter {
+        private final boolean hasFragmentWrapper;
+        private boolean strippedFramentWrapper = false;
+
+        public FragmentSAXAdapter(final XQueryContext context, final boolean hasFragmentWrapper) {
+            super(context);
+            this.hasFragmentWrapper = hasFragmentWrapper;
+        }
+
+        @Override
+        public void startElement(final String namespaceURI, final String localName, final String qName, final Attributes atts) throws SAXException {
+            if (hasFragmentWrapper && !strippedFramentWrapper && localName.equals(FRAGMENT_WRAPPER_NAME)) {
+                // no-op
+            } else {
+                super.startElement(namespaceURI, localName, qName, atts);
+            }
+        }
+
+        @Override
+        public void endElement(final String namespaceURI, final String localName, final String qName) throws SAXException {
+            if (hasFragmentWrapper && !strippedFramentWrapper && localName.equals(FRAGMENT_WRAPPER_NAME)) {
+                strippedFramentWrapper = true;
+            } else {
+                super.endElement(namespaceURI, localName, qName);
             }
         }
     }
