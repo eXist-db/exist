@@ -2175,8 +2175,6 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public void pushInScopeNamespaces(final boolean inherit) {
         //TODO : push into an inheritedInScopeNamespaces HashMap... and return an empty HashMap
-        final Map<String, String> m = new HashMap<>(inScopeNamespaces);
-        final Map<String, String> p = new HashMap<>(inScopePrefixes);
         namespaceStack.push(inheritedInScopeNamespaces);
         namespaceStack.push(inheritedInScopePrefixes);
         namespaceStack.push(inScopeNamespaces);
@@ -2185,9 +2183,9 @@ public class XQueryContext implements BinaryValueManager, Context {
         //Current namespaces now become inherited just like the previous inherited ones
         if (inherit) {
             inheritedInScopeNamespaces = new HashMap<>(inheritedInScopeNamespaces);
-            inheritedInScopeNamespaces.putAll(m);
+            inheritedInScopeNamespaces.putAll(inScopeNamespaces);
             inheritedInScopePrefixes = new HashMap<>(inheritedInScopePrefixes);
-            inheritedInScopePrefixes.putAll(p);
+            inheritedInScopePrefixes.putAll(inScopePrefixes);
         } else {
             inheritedInScopeNamespaces = new HashMap<>();
             inheritedInScopePrefixes = new HashMap<>();
