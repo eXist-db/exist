@@ -2072,16 +2072,27 @@ public class XQueryContext implements BinaryValueManager, Context {
         return watchdog;
     }
 
+    private static final MemTreeBuilder NULL_DOCUMENT_BUILDER = new MemTreeBuilder();
+
     @Override
     public void pushDocumentContext() {
-        fragmentStack.push(getDocumentBuilder());
-        resetDocumentBuilder();
+        if (documentBuilder == null) {
+            fragmentStack.push(NULL_DOCUMENT_BUILDER);
+        } else {
+            fragmentStack.push(documentBuilder);
+            resetDocumentBuilder();
+        }
     }
 
     @Override
     public void popDocumentContext() {
         if (!fragmentStack.isEmpty()) {
-            setDocumentBuilder(fragmentStack.pop());
+            final MemTreeBuilder prevBuilder = fragmentStack.pop();
+            if (prevBuilder == NULL_DOCUMENT_BUILDER) {
+                setDocumentBuilder(null);
+            } else {
+                setDocumentBuilder(prevBuilder);
+            }
         }
     }
 
