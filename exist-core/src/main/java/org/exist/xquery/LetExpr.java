@@ -24,9 +24,9 @@ package org.exist.xquery;
 
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * Implements an XQuery let-expression.
@@ -134,11 +134,33 @@ public class LetExpr extends BindingExpression {
                     //Here is an attempt to process the nodes correctly
                     } else {
                         //Same as above : we probably may factorize 
-                        if (!var.getValue().isEmpty() && !Type.subTypeOf(var.getValue().getItemType(), sequenceType.getPrimaryType()))
-                            {throw new XPathException(this, ErrorCodes.XPTY0004,
-                                "Invalid type for variable $" + varName + ". Expected " +
-                                Type.getTypeName(sequenceType.getPrimaryType()) + ", got " +
-                                Type.getTypeName(var.getValue().getItemType()), in);}
+                        if (!var.getValue().isEmpty() && !sequenceType.checkType(var.getValue())) {
+                            final Sequence value = var.getValue();
+                            final SequenceType valueType = new SequenceType(value.getItemType(), value.getCardinality());
+                            if ((!value.isEmpty()) && sequenceType.getPrimaryType() == Type.DOCUMENT && value.getItemType() == Type.DOCUMENT) {
+                                // it's a document... we need to get the document element's name
+                                final NodeValue nvItem = (NodeValue) value.itemAt(0);
+                                final Document doc;
+                                if (nvItem instanceof Document) {
+                                    doc = (Document) nvItem;
+                                } else {
+                                    doc = nvItem.getOwnerDocument();
+                                }
+                                if (doc != null) {
+                                    final Element elem = doc.getDocumentElement();
+                                    if (elem != null) {
+                                        valueType.setNodeName(new QName(elem.getLocalName(), elem.getNamespaceURI()));
+                                    }
+                                }
+                            }
+
+                            throw new XPathException(
+                                    this,
+                                    ErrorCodes.XPTY0004,
+                                    "Invalid type for variable $" + varName + ". Expected " +
+                                    sequenceType.toString() + ", got " +
+                                    valueType.toString(), in);
+                        }
                     }
                 }
             } finally {
