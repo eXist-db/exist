@@ -13,7 +13,7 @@ function mlt:postfix_lookup_on_map() {
 };
 
 declare
-    %test:assertEquals("Jenna", "Scott")
+    %test:assertEqualsPermutation("Jenna", "Scott")
 function mlt:wildcard_lookup_on_map() {
     map { "first" : "Jenna", "last" : "Scott" }?*
 };
