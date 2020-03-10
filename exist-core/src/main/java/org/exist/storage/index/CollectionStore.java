@@ -10,15 +10,13 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.Value;
-import org.exist.storage.lock.ManagedLock;
 import org.exist.util.*;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Path;
-import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
  * Handles access to the central collection storage file (collections.dbx). 
@@ -40,8 +38,8 @@ public class CollectionStore extends BFile {
     public final static byte KEY_TYPE_COLLECTION = 0;
     public final static byte KEY_TYPE_DOCUMENT = 1;
 
-    private Deque<Integer> freeResourceIds = new ArrayDeque<>();
-    private Deque<Integer> freeCollectionIds = new ArrayDeque<>();
+    private final Deque<Integer> freeResourceIds = new ConcurrentLinkedDeque<>();
+    private final Deque<Integer> freeCollectionIds = new ConcurrentLinkedDeque<>();
 
     /**
      * @param pool the broker pool
@@ -80,46 +78,26 @@ public class CollectionStore extends BFile {
         return flushed;
     }
 
-    public void freeResourceId(int id) {
-        try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeWriteLock(getLockName())) {
-            freeResourceIds.push(id);
-        } catch (LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(getFile()), e);
-        }
+    public void freeResourceId(final int id) {
+        freeResourceIds.addFirst(id);
     }
 
     public int getFreeResourceId() {
-        int freeDocId = DocumentImpl.UNKNOWN_DOCUMENT_ID;
-        try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeWriteLock(getLockName())) {
-            if (!freeResourceIds.isEmpty()) {
-                freeDocId = freeResourceIds.pop();
-            }
-        } catch (final LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(getFile()), e);
-            return DocumentImpl.UNKNOWN_DOCUMENT_ID;
-            //TODO : rethrow ? -pb
+        Integer freeDocId = freeResourceIds.pollFirst();
+        if (freeDocId == null) {
+            freeDocId = DocumentImpl.UNKNOWN_DOCUMENT_ID;
         }
         return freeDocId;
     }
 
-    public void freeCollectionId(int id) {
-        try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeWriteLock(getLockName())) {
-            freeCollectionIds.push(id);
-        } catch (LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(getFile()), e);
-        }
+    public void freeCollectionId(final int id) {
+        freeCollectionIds.addFirst(id);
     }
 
     public int getFreeCollectionId() {
-        int freeCollectionId = Collection.UNKNOWN_COLLECTION_ID;
-        try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeWriteLock(getLockName())) {
-            if (!freeCollectionIds.isEmpty()) {
-                freeCollectionId = freeCollectionIds.pop();
-            }
-        } catch (final LockException e) {
-            LOG.warn("Failed to acquire lock on " + FileUtils.fileName(getFile()), e);
-            return Collection.UNKNOWN_COLLECTION_ID;
-            //TODO : rethrow ? -pb
+        Integer freeCollectionId = freeCollectionIds.pollFirst();
+        if (freeCollectionId == null) {
+            freeCollectionId = Collection.UNKNOWN_COLLECTION_ID;
         }
         return freeCollectionId;
     }
