@@ -34,7 +34,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.exist.launcher.ConfigurationUtility.LAUNCHER_PROPERTIES_FILE_NAME;
+import static org.exist.launcher.ConfigurationUtility.*;
 
 /**
  * A wrapper to start a Java process using start.jar with correct VM settings.
@@ -73,7 +73,7 @@ public class LauncherWrapper {
 
     public void launch() {
         final String debugLauncher = System.getProperty("exist.debug.launcher", "false");
-        final Properties launcherProperties = getLauncherProperties();
+        final Properties launcherProperties = ConfigurationUtility.loadProperties();
 
         final List<String> args = new ArrayList<>();
         args.add(getJavaCmd());
@@ -176,49 +176,20 @@ public class LauncherWrapper {
     protected void getLauncherOpts(final List<String> args, final Properties launcherProperties) {
         for (final String key : launcherProperties.stringPropertyNames()) {
             if (key.startsWith("memory.")) {
-                if ("memory.max".equals(key)) {
+                if (LAUNCHER_PROPERTY_MAX_MEM.equals(key)) {
                     args.add("-Xmx" + launcherProperties.getProperty(key) + 'm');
-                } else if ("memory.min".equals(key)) {
+                } else if (LAUNCHER_PROPERTY_MIN_MEM.equals(key)) {
                     args.add("-Xms" + launcherProperties.getProperty(key) + 'm');
                 }
-            } else if ("vmoptions".equals(key)) {
+            } else if (LAUNCHER_PROPERTY_VMOPTIONS.equals(key)) {
                 args.add(launcherProperties.getProperty(key));
-            } else if (key.startsWith("vmoptions.")) {
-                final String os = key.substring("vmoptions.".length()).toLowerCase();
+            } else if (key.startsWith(LAUNCHER_PROPERTY_VMOPTIONS + '.')) {
+                final String os = key.substring((LAUNCHER_PROPERTY_VMOPTIONS + '.').length()).toLowerCase();
                 if (OS.contains(os)) {
                     final String value = launcherProperties.getProperty(key);
                     Arrays.stream(value.split("\\s+")).forEach(args::add);
                 }
             }
         }
-    }
-
-    public static Properties getLauncherProperties() {
-        final Properties launcherProperties = new Properties();
-        final java.nio.file.Path propFile = ConfigurationUtility.lookup(LAUNCHER_PROPERTIES_FILE_NAME, false);
-        InputStream is = null;
-        try {
-            if (Files.isReadable(propFile)) {
-                is = Files.newInputStream(propFile);
-            }
-            if (is == null) {
-                is = LauncherWrapper.class.getResourceAsStream(LAUNCHER_PROPERTIES_FILE_NAME);
-            }
-
-            if (is != null) {
-                launcherProperties.load(new InputStreamReader(is, UTF_8));
-            }
-        } catch (final IOException e) {
-            System.err.println(LAUNCHER_PROPERTIES_FILE_NAME + " not found");
-        } finally {
-            if(is != null) {
-                try {
-                    is.close();
-                } catch(final IOException ioe) {
-                    ioe.printStackTrace();
-                }
-            }
-        }
-        return launcherProperties;
     }
 }
