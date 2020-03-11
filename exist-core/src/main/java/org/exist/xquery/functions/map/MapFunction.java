@@ -215,7 +215,7 @@ public class MapFunction extends BasicFunction {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
             ref.analyze(cachedContextInfo);
-            final ValueSequence result = new ValueSequence();
+            final ArrayListValueSequence result = new ArrayListValueSequence(map.size());
             for (final IEntry<AtomicValue, Sequence> entry : map) {
                 final Sequence s = ref.evalFunction(null, null, new Sequence[]{ entry.key(), entry.value() });
                 result.addAll(s);

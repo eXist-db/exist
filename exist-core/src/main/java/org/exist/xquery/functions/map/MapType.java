@@ -176,7 +176,7 @@ public class MapType extends AbstractMapType {
 
     @Override
     public Sequence keys() {
-        final ValueSequence seq = new ValueSequence();
+        final ArrayListValueSequence seq = new ArrayListValueSequence((int)map.size());
         for (final AtomicValue key: map.keys()) {
             seq.add(key);
         }
