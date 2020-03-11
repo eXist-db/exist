@@ -1,6 +1,24 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2020 The eXist-db Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 package org.exist.xquery.functions.inspect;
 
-import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
@@ -15,42 +33,36 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 
+import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.functions.inspect.InspectionModule.functionSignature;
+
 public class ModuleFunctions extends BasicFunction {
-        
-    public final static FunctionSignature FNS_MODULE_FUNCTIONS_CURRENT = new FunctionSignature(
-        new QName("module-functions", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
-        "Returns a sequence of function items pointing to each public function in the current module.",
-        new SequenceType[] {},
-        new FunctionReturnSequenceType(
-            Type.FUNCTION_REFERENCE,
-            Cardinality.ZERO_OR_MORE,
-            "Sequence of function items containing all public functions in the current module or the empty sequence " +
-            "if the module is not known in the current context.")
+
+    public static final FunctionSignature FNS_MODULE_FUNCTIONS_CURRENT = functionSignature(
+            "module-functions",
+            "Returns a sequence of function items pointing to each public function in the current module.",
+            returnsOptMany(Type.FUNCTION_REFERENCE, "Sequence of function items containing all public functions in the current module, " +
+                    "or the empty sequence if the module is not known in the current context."),
+            params()
     );
     
-    public final static FunctionSignature FNS_MODULE_FUNCTIONS_OTHER = new FunctionSignature(
-        new QName("module-functions", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
-        "Returns a sequence of function items pointing to each public function in the specified module.",
-        new SequenceType[] { new FunctionParameterSequenceType("location", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The location URI of the module to be loaded.") },
-        new FunctionReturnSequenceType(
-            Type.FUNCTION_REFERENCE,
-            Cardinality.ZERO_OR_MORE,
-            "Sequence of function items containing all public functions in the module or the empty sequence " +
-            "if the module is not known in the current context.")
+    public final static FunctionSignature FNS_MODULE_FUNCTIONS_OTHER = functionSignature(
+            "module-functions",
+            "Returns a sequence of function items pointing to each public function in the specified module.",
+            returnsOptMany(Type.FUNCTION_REFERENCE, "Sequence of function items containing all public functions in the module, " +
+                    "or the empty sequence if the module is not known in the current context."),
+            param("location", Type.ANY_URI, "The location URI of the module to be loaded.")
     );
     
-    public final static FunctionSignature FNS_MODULE_FUNCTIONS_OTHER_URI = new FunctionSignature(
-        new QName("module-functions-by-uri", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
-        "Returns a sequence of function items pointing to each public function in the specified module.",
-        new SequenceType[] { new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI of the module to be loaded.") },
-        new FunctionReturnSequenceType(
-            Type.FUNCTION_REFERENCE,
-            Cardinality.ZERO_OR_MORE,
-            "Sequence of function items containing all public functions in the module or the empty sequence " +
-            "if the module is not known in the current context.")
+    public final static FunctionSignature FNS_MODULE_FUNCTIONS_OTHER_URI = functionSignature(
+            "module-functions-by-uri",
+            "Returns a sequence of function items pointing to each public function in the specified module.",
+            returnsOptMany(Type.FUNCTION_REFERENCE, "Sequence of function items containing all public functions in the module, "
+                    + "or the empty sequence if the module is not known in the current context."),
+            param("uri", Type.ANY_URI, "The URI of the module to be loaded.")
     );     
 
-    public ModuleFunctions(XQueryContext context, FunctionSignature signature) {
+    public ModuleFunctions(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -77,9 +89,8 @@ public class ModuleFunctions extends BasicFunction {
                 }
             }
 
-
             // attempt to import the module
-           Module module = null;
+            Module module = null;
             try {
                 module = tempContext.importModule(null, null, uri);
             } catch (final XPathException e) {
@@ -127,7 +138,7 @@ public class ModuleFunctions extends BasicFunction {
         return list;
     }
 
-    private void addFunctionRefsFromContext(ValueSequence resultSeq) throws XPathException {
+    private void addFunctionRefsFromContext(final ValueSequence resultSeq) throws XPathException {
         for (final Iterator<UserDefinedFunction> i = context.localFunctions(); i.hasNext(); ) {
             final UserDefinedFunction f = i.next();
             final FunctionCall call =
