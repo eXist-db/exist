@@ -29,6 +29,7 @@ import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.NativeBroker;
 import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -92,13 +93,23 @@ public class ExistRepository extends Observable implements BrokerPoolService {
         return myParent;
     }
 
+
+    /**
+     * Resolve a Java Module.
+     *
+     * @param namespace the namespace of the module
+     * @return the Java module, or null
+     *
+     * @throws XPathException with:
+     *      XQST0046 if the namespace URI is invalid
+     */
     public Module resolveJavaModule(final String namespace, final XQueryContext ctxt) throws XPathException {
         final URI uri;
         try {
             uri = new URI(namespace);
         }
         catch (final URISyntaxException ex) {
-            throw new XPathException("Invalid URI: " + namespace, ex);
+            throw new XPathException(ErrorCodes.XQST0046, "Invalid URI: " + namespace, ex);
         }
         for (final Packages pp : myParent.listPackages()) {
             final Package pkg = pp.latest();
@@ -164,12 +175,22 @@ public class ExistRepository extends Observable implements BrokerPoolService {
         }
     }
 
+    /**
+     * Resolve an XQuery Module.
+     *
+     * @param namespace the namespace of the module
+     * @return the path to the module, or null
+     *
+     * @throws XPathException with:
+     *      XQST0046 if the namespace URI is invalid
+     *      XQST0059 if an error occurs loading the module
+     */
     public Path resolveXQueryModule(final String namespace) throws XPathException {
         final URI uri;
         try {
             uri = new URI(namespace);
         } catch (final URISyntaxException ex) {
-            throw new XPathException("Invalid URI: " + namespace, ex);
+            throw new XPathException(ErrorCodes.XQST0046, "Invalid URI: " + namespace, ex);
         }
         for (final Packages pp : myParent.listPackages()) {
             final Package pkg = pp.latest();
@@ -191,9 +212,9 @@ public class ExistRepository extends Observable implements BrokerPoolService {
                     return Paths.get(new URI(sysid));
                 }
             } catch (final URISyntaxException ex) {
-                throw new XPathException("Error parsing the URI of the query library: " + sysid, ex);
+                throw new XPathException(ErrorCodes.XQST0046, "Error parsing the URI of the query library: " + sysid, ex);
             } catch (final PackageException ex) {
-                throw new XPathException("Error resolving the query library: " + namespace, ex);
+                throw new XPathException(ErrorCodes.XQST0059, "Error resolving the query library: " + namespace, ex);
             } finally {
                 if (src != null && src instanceof StreamSource) {
                     final StreamSource streamSource = ((StreamSource)src);

@@ -2,23 +2,18 @@ package org.exist.xquery.functions.inspect;
 
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
-import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.xquery.*;
 import org.exist.xquery.Module;
 import org.exist.xquery.functions.fn.FunOnFunctions;
 import org.exist.xquery.functions.fn.LoadXQueryModule;
-import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.*;
 
-import javax.xml.xpath.XPath;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.net.URISyntaxException;
 import java.util.Iterator;
-import java.util.List;
 
 public class ModuleFunctions extends BasicFunction {
         
@@ -60,38 +55,62 @@ public class ModuleFunctions extends BasicFunction {
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final ValueSequence list = new ValueSequence();
         if (getArgumentCount() == 1) {
             final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), context.getProfiler());
             tempContext.setModuleLoadPath(context.getModuleLoadPath());
 
-            Module module = null;
+            final String uri = ((AnyURIValue)args[0]).getStringValue();
 
-            try {
-                if (isCalledAs("module-functions-by-uri")) {
-                    module = tempContext.importModule(args[0].getStringValue(), null, null);
-                } else {
-                    final URI locationUri = ((AnyURIValue) args[0]).toURI();
-                    try {
-                        final Source source = SourceFactory.getSource(context.getBroker(), tempContext.getModuleLoadPath(), locationUri.toString(), false);
-                        if (source != null) {
-                            tempContext.setSource(source);
-                        }
-                    } catch (final IllegalArgumentException e) {
-                        throw new XPathException(this, e.getMessage());
+            if (isCalledAs("module-functions")) {
+                try {
+                    final URI locationUri = new URI(AnyURIValue.escape(uri));
+                    final Source source = SourceFactory.getSource(context.getBroker(), tempContext.getModuleLoadPath(), locationUri.toString(), false);
+                    if (source != null) {
+                        tempContext.setSource(source);
                     }
-                    module = tempContext.importModule(null, null, args[0].getStringValue());
-                }
-            } catch (final IOException | PermissionDeniedException e) {
-                throw new XPathException(this, e.getMessage());
-            } catch (final XPathException e) {
-                LOG.error("Failed to import module: " + args[0].getStringValue() + ": " + e.getMessage(), e);
-                if (e.getErrorCode().equals(ErrorCodes.XPST0003)) {
-                    throw new XPathException(this, e.getMessage());
+                } catch (final URISyntaxException e) {
+                    throw new XPathException(this, ErrorCodes.XQST0046, e.getMessage());
+                } catch (final IOException | PermissionDeniedException e) {
+                    throw new XPathException(this, ErrorCodes.XQST0059, e.getMessage());
                 }
             }
-            
+
+
+            // attempt to import the module
+           Module module = null;
+            try {
+                module = tempContext.importModule(null, null, uri);
+            } catch (final XPathException e) {
+                /*
+                    Error Codes from Context#importModule can be either:
+                        XPST0003 - XPath/XQuery syntax error
+                        XQST0033 - namespace issue: multiple bindings for the same namespace prefix
+                        XQST0046 - namespace issue: invalid URI
+                        XQST0059 - no module with that target namespace
+                        XQST0070 - namespace issue: URI is bound to XML's namespace
+                        XQST0088 - namespace issue: import namespace URI or module declaration namespace URI is zero-length
+                        ERROR - other exceptional/undefined circumstance
+
+                    According to the description of the functions for this module, of a module cannot be found at the namespace/URI
+                    then an empty sequence is returned, therefore we can ignore error code XQST0059!
+                 */
+
+                if (e.getErrorCode().equals(ErrorCodes.XQST0059)) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Failed to import module: " + args[0].getStringValue() + ": " + e.getMessage(), e);
+                    }
+                    module = null;
+
+                } else {
+                    if (e.getLine() < 1) {
+                        e.setLocation(this.getLine(), this.getColumn(), this.getSource());
+                    }
+                    throw e;
+                }
+            }
+
             if (module == null) {
                 return Sequence.EMPTY_SEQUENCE;
             }
@@ -104,6 +123,7 @@ public class ModuleFunctions extends BasicFunction {
         } else {
             addFunctionRefsFromContext(list);
         }
+
         return list;
     }
 

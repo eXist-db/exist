@@ -140,7 +140,8 @@ public interface Context {
      * @param prefix the namespace prefix.
      * @param uri the namespace URI.
      *
-     * @throws XPathException if an error occurs when declaring the namespace.
+     * @throws XPathException if an error occurs when declaring the namespace
+     *     with error codes XQST0033 or XQST0070
      */
     void declareNamespace(String prefix, String uri) throws XPathException;
 
@@ -752,7 +753,13 @@ public interface Context {
      *
      * @return the imported module
      *
-     * @throws XPathException if an error occurs whilst importing the module
+     * @throws XPathException if an error occurs whilst importing the module, with the error codes:
+     *      XPST0003
+     *      XQST0033
+     *      XQST0046
+     *      XQST0059
+     *      XQST0070
+     *      XQST0088
      */
     Module importModule(String namespaceURI, String prefix, String location) throws XPathException;
 

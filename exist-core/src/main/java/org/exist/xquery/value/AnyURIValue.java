@@ -236,10 +236,8 @@ public class    AnyURIValue extends AtomicValue {
         return Type.ANY_URI;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#getStringValue()
-     */
-    public String getStringValue() throws XPathException {
+    @Override
+    public String getStringValue() {
         return uri;
     }
 

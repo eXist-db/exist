@@ -231,9 +231,8 @@ public class LoadXQueryModule extends BasicFunction {
         }
     }
 
-    public static void addFunctionRefsFromModule(Expression parent, XQueryContext tempContext, ValueSequence resultSeq,
-                                                 Module module)
-            throws XPathException {
+    public static void addFunctionRefsFromModule(final Expression parent, final XQueryContext tempContext,
+            final ValueSequence resultSeq, final Module module) throws XPathException {
         final FunctionSignature signatures[] = module.listFunctions();
         for (final FunctionSignature signature : signatures) {
             if (!signature.isPrivate()) {
@@ -272,7 +271,7 @@ public class LoadXQueryModule extends BasicFunction {
         }
     }
 
-    private static String getXQueryVersion(int version) {
+    private static String getXQueryVersion(final int version) {
         return String.valueOf(version / 10) + '.' + String.valueOf(version % 10);
     }
 }
