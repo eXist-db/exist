@@ -31,7 +31,6 @@ import org.exist.dom.QName;
 public class ErrorCodes {
 
 	/* XPath 2.0 http://www.w3.org/TR/xpath20/#id-errors */
-    public static final ErrorCode XPST0001 = new W3CErrorCode("XPST0001", "It is a static error if analysis of an expression relies on some component of the static context that has not been assigned a value.");
     public static final ErrorCode XPDY0002 = new W3CErrorCode("XPDY0002", "It is a dynamic error if evaluation of an expression relies on some part of the dynamic context that has not been assigned a value.");
     public static final ErrorCode XPST0003 = new W3CErrorCode("XPST0003", "It is a static error if an expression is not a valid instance of the grammar defined in A.1 EBNF.");
     public static final ErrorCode XPTY0004 = new W3CErrorCode("XPTY0004", "It is a type error if, during the static analysis phase, an expression is found to have a static type that is not appropriate for the context in which the expression occurs, or during the dynamic evaluation phase, the dynamic type of a value does not match a required type as specified by the matching rules in 2.5.4 SequenceType Matching.");
@@ -119,7 +118,7 @@ public class ErrorCodes {
     public static final ErrorCode XQST0085 = new W3CErrorCode("XQST0085", "It is a static error if the namespace URI in a namespace declaration attribute is a zero-length string, and the implementation does not support [XML Names 1.1].");
     public static final ErrorCode XQTY0086 = new W3CErrorCode("XQTY0086", "It is a type error if the typed value of a copied element or attribute node is namespace-sensitive when construction mode is preserve and copy-namespaces mode is no-preserve.");
     public static final ErrorCode XQST0087 = new W3CErrorCode("XQST0087", "It is a static error if the encoding specified in a Version Declaration does not conform to the definition of EncName specified in [XML 1.0].");
-    public static final ErrorCode XQST0088 = new W3CErrorCode("XQST0088", "It is a static    error if the literal that specifies the target namespace in a module import or a module declaration is of zero length.");
+    public static final ErrorCode XQST0088 = new W3CErrorCode("XQST0088", "It is a static error if the literal that specifies the target namespace in a module import or a module declaration is of zero length.");
     public static final ErrorCode XQST0089 = new W3CErrorCode("XQST0089", "It is a static error if a variable bound in a for clause of a FLWOR expression, and its associated positional variable, do not have distinct names (expanded QNames).");
     public static final ErrorCode XQST0090 = new W3CErrorCode("XQST0090", "It is a static error if a character reference does not identify a valid character in the version of XML that is in use.");
     public static final ErrorCode XQDY0091 = new W3CErrorCode("XQDY0091", "An implementation MAY raise a dynamic error if an xml:id error, as defined in [XML ID], is encountered during construction of an attribute named xml:id.");

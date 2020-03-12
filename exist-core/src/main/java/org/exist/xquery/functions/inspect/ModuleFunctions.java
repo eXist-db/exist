@@ -1,97 +1,127 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2020 The eXist-db Project
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 package org.exist.xquery.functions.inspect;
 
-import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
-import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.xquery.*;
 import org.exist.xquery.Module;
 import org.exist.xquery.functions.fn.FunOnFunctions;
 import org.exist.xquery.functions.fn.LoadXQueryModule;
-import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.*;
 
-import javax.xml.xpath.XPath;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.net.URISyntaxException;
 import java.util.Iterator;
-import java.util.List;
+
+import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.functions.inspect.InspectionModule.functionSignature;
 
 public class ModuleFunctions extends BasicFunction {
-        
-    public final static FunctionSignature FNS_MODULE_FUNCTIONS_CURRENT = new FunctionSignature(
-        new QName("module-functions", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
-        "Returns a sequence of function items pointing to each public function in the current module.",
-        new SequenceType[] {},
-        new FunctionReturnSequenceType(
-            Type.FUNCTION_REFERENCE,
-            Cardinality.ZERO_OR_MORE,
-            "Sequence of function items containing all public functions in the current module or the empty sequence " +
-            "if the module is not known in the current context.")
+
+    public static final FunctionSignature FNS_MODULE_FUNCTIONS_CURRENT = functionSignature(
+            "module-functions",
+            "Returns a sequence of function items pointing to each public function in the current module.",
+            returnsOptMany(Type.FUNCTION_REFERENCE, "Sequence of function items containing all public functions in the current module, " +
+                    "or the empty sequence if the module is not known in the current context."),
+            params()
     );
     
-    public final static FunctionSignature FNS_MODULE_FUNCTIONS_OTHER = new FunctionSignature(
-        new QName("module-functions", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
-        "Returns a sequence of function items pointing to each public function in the specified module.",
-        new SequenceType[] { new FunctionParameterSequenceType("location", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The location URI of the module to be loaded.") },
-        new FunctionReturnSequenceType(
-            Type.FUNCTION_REFERENCE,
-            Cardinality.ZERO_OR_MORE,
-            "Sequence of function items containing all public functions in the module or the empty sequence " +
-            "if the module is not known in the current context.")
+    public final static FunctionSignature FNS_MODULE_FUNCTIONS_OTHER = functionSignature(
+            "module-functions",
+            "Returns a sequence of function items pointing to each public function in the specified module.",
+            returnsOptMany(Type.FUNCTION_REFERENCE, "Sequence of function items containing all public functions in the module, " +
+                    "or the empty sequence if the module is not known in the current context."),
+            param("location", Type.ANY_URI, "The location URI of the module to be loaded.")
     );
     
-    public final static FunctionSignature FNS_MODULE_FUNCTIONS_OTHER_URI = new FunctionSignature(
-        new QName("module-functions-by-uri", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
-        "Returns a sequence of function items pointing to each public function in the specified module.",
-        new SequenceType[] { new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI of the module to be loaded.") },
-        new FunctionReturnSequenceType(
-            Type.FUNCTION_REFERENCE,
-            Cardinality.ZERO_OR_MORE,
-            "Sequence of function items containing all public functions in the module or the empty sequence " +
-            "if the module is not known in the current context.")
+    public final static FunctionSignature FNS_MODULE_FUNCTIONS_OTHER_URI = functionSignature(
+            "module-functions-by-uri",
+            "Returns a sequence of function items pointing to each public function in the specified module.",
+            returnsOptMany(Type.FUNCTION_REFERENCE, "Sequence of function items containing all public functions in the module, "
+                    + "or the empty sequence if the module is not known in the current context."),
+            param("uri", Type.ANY_URI, "The URI of the module to be loaded.")
     );     
 
-    public ModuleFunctions(XQueryContext context, FunctionSignature signature) {
+    public ModuleFunctions(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final ValueSequence list = new ValueSequence();
         if (getArgumentCount() == 1) {
             final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), context.getProfiler());
             tempContext.setModuleLoadPath(context.getModuleLoadPath());
 
-            Module module = null;
+            final String uri = ((AnyURIValue)args[0]).getStringValue();
 
-            try {
-                if (isCalledAs("module-functions-by-uri")) {
-                    module = tempContext.importModule(args[0].getStringValue(), null, null);
-                } else {
-                    final URI locationUri = ((AnyURIValue) args[0]).toURI();
-                    try {
-                        final Source source = SourceFactory.getSource(context.getBroker(), tempContext.getModuleLoadPath(), locationUri.toString(), false);
-                        if (source != null) {
-                            tempContext.setSource(source);
-                        }
-                    } catch (final IllegalArgumentException e) {
-                        throw new XPathException(this, e.getMessage());
+            if (isCalledAs("module-functions")) {
+                try {
+                    final URI locationUri = new URI(AnyURIValue.escape(uri));
+                    final Source source = SourceFactory.getSource(context.getBroker(), tempContext.getModuleLoadPath(), locationUri.toString(), false);
+                    if (source != null) {
+                        tempContext.setSource(source);
                     }
-                    module = tempContext.importModule(null, null, args[0].getStringValue());
-                }
-            } catch (final IOException | PermissionDeniedException e) {
-                throw new XPathException(this, e.getMessage());
-            } catch (final XPathException e) {
-                LOG.error("Failed to import module: " + args[0].getStringValue() + ": " + e.getMessage(), e);
-                if (e.getErrorCode().equals(ErrorCodes.XPST0003)) {
-                    throw new XPathException(this, e.getMessage());
+                } catch (final URISyntaxException e) {
+                    throw new XPathException(this, ErrorCodes.XQST0046, e.getMessage());
+                } catch (final IOException | PermissionDeniedException e) {
+                    throw new XPathException(this, ErrorCodes.XQST0059, e.getMessage());
                 }
             }
-            
+
+            // attempt to import the module
+            Module module = null;
+            try {
+                module = tempContext.importModule(null, null, uri);
+            } catch (final XPathException e) {
+                /*
+                    Error Codes from Context#importModule can be either:
+                        XPST0003 - XPath/XQuery syntax error
+                        XQST0033 - namespace issue: multiple bindings for the same namespace prefix
+                        XQST0046 - namespace issue: invalid URI
+                        XQST0059 - no module with that target namespace
+                        XQST0070 - namespace issue: URI is bound to XML's namespace
+                        XQST0088 - namespace issue: import namespace URI or module declaration namespace URI is zero-length
+                        ERROR - other exceptional/undefined circumstance
+
+                    According to the description of the functions for this module, of a module cannot be found at the namespace/URI
+                    then an empty sequence is returned, therefore we can ignore error code XQST0059!
+                 */
+
+                if (e.getErrorCode().equals(ErrorCodes.XQST0059)) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Failed to import module: " + args[0].getStringValue() + ": " + e.getMessage(), e);
+                    }
+                    module = null;
+
+                } else {
+                    if (e.getLine() < 1) {
+                        e.setLocation(this.getLine(), this.getColumn(), this.getSource());
+                    }
+                    throw e;
+                }
+            }
+
             if (module == null) {
                 return Sequence.EMPTY_SEQUENCE;
             }
@@ -104,10 +134,11 @@ public class ModuleFunctions extends BasicFunction {
         } else {
             addFunctionRefsFromContext(list);
         }
+
         return list;
     }
 
-    private void addFunctionRefsFromContext(ValueSequence resultSeq) throws XPathException {
+    private void addFunctionRefsFromContext(final ValueSequence resultSeq) throws XPathException {
         for (final Iterator<UserDefinedFunction> i = context.localFunctions(); i.hasNext(); ) {
             final UserDefinedFunction f = i.next();
             final FunctionCall call =

@@ -463,6 +463,17 @@ public class XQueryContext implements BinaryValueManager, Context {
         return getBroker().getBrokerPool().getExpathRepo();
     }
 
+    /**
+     * Resolve a Module from the EXPath Repository.
+     *
+     * @param namespace namespace URI
+     * @param prefix namespace prefix
+     *
+     * @return the module or null
+     *
+     * @throws XPathException if the namespace URI is invalid (XQST0046),
+     *     if the module could not be loaded (XQST0059) or compiled (XPST0003)
+     */
     private Module resolveInEXPathRepository(final String namespace, final String prefix)
             throws XPathException {
         // the repo and its eXist handler
@@ -2438,6 +2449,18 @@ public class XQueryContext implements BinaryValueManager, Context {
         return moduleMap.keySet().iterator();
     }
 
+    /**
+     * Compile of borrow an already compile module from the cache.
+     *
+     * @param prefix the module namespace prefix
+     * @param namespaceURI the module namespace URI
+     * @param location the location hint
+     * @param source the source for the module
+     *
+     * @return the module or null
+     *
+     * @throws XPathException if the module could not be loaded (XQST0059) or compiled (XPST0003)
+     */
     private ExternalModule compileOrBorrowModule(final String prefix, final String namespaceURI, final String location,
                                                  final Source source) throws XPathException {
         final ExternalModule module = compileModule(prefix, namespaceURI, location, source);
@@ -2456,7 +2479,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @param location     the location of the module
      * @param source       the source of the module.
      * @return The compiled module, or null if the source is not a module
-     * @throws XPathException if the module could not be loaded or compiled
+     * @throws XPathException if the module could not be loaded (XQST0059) or compiled (XPST0003)
      */
     private @Nullable
     ExternalModule compileModule(final String prefix, String namespaceURI, final String location,
@@ -2494,21 +2517,22 @@ public class XQueryContext implements BinaryValueManager, Context {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug(parser.getErrorMessage());
                     }
-                    throw new XPathException("error found while loading module from " + location + ": " + parser.getErrorMessage());
+                    throw new XPathException(ErrorCodes.XPST0003, "error found while loading module from " + location + ": " + parser.getErrorMessage());
                 }
+
                 final AST ast = parser.getAST();
 
                 final PathExpr path = new PathExpr(modContext);
                 astParser.xpath(ast, path);
 
                 if (astParser.foundErrors()) {
-                    throw new XPathException("error found while loading module from " + location + ": " + astParser.getErrorMessage(), astParser.getLastException());
+                    throw new XPathException(ErrorCodes.XPST0003, "error found while loading module from " + location + ": " + astParser.getErrorMessage(), astParser.getLastException());
                 }
 
                 modExternal.setRootExpression(path);
 
                 if (namespaceURI != null && !modExternal.getNamespaceURI().equals(namespaceURI)) {
-                    throw new XPathException("namespace URI declared by module (" + modExternal.getNamespaceURI() + ") does not match namespace URI in import statement, which was: " + namespaceURI);
+                    throw new XPathException(ErrorCodes.XQST0059, "namespace URI declared by module (" + modExternal.getNamespaceURI() + ") does not match namespace URI in import statement, which was: " + namespaceURI);
                 }
 
                 // Set source information on module context
@@ -2522,16 +2546,15 @@ public class XQueryContext implements BinaryValueManager, Context {
                 modExternal.setIsReady(true);
                 return modExternal;
             } catch (final RecognitionException e) {
-                throw new XPathException(e.getLine(), e.getColumn(), "error found while loading module from " + location + ": " + e.getMessage());
+                throw new XPathException(e.getLine(), e.getColumn(), ErrorCodes.XPST0003, "error found while loading module from " + location + ": " + e.getMessage());
             } catch (final TokenStreamException e) {
-                throw new XPathException("error found while loading module from " + location + ": " + e.getMessage(), e);
+                throw new XPathException(ErrorCodes.XPST0003, "error found while loading module from " + location + ": " + e.getMessage(), e);
             } catch (final XPathException e) {
                 e.prependMessage("Error while loading module " + location + ": ");
                 throw e;
             }
         } catch (final IOException e) {
-            throw moduleLoadException("IO exception while loading module '" + namespaceURI + "'" +
-                    " from '" + source + "'", location, e);
+            throw moduleLoadException("IO exception while loading module '" + namespaceURI + "'" + " from '" + source + "'", location, e);
         }
     }
 
