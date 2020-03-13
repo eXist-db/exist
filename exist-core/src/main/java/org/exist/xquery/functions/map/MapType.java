@@ -76,6 +76,38 @@ public class MapType extends AbstractMapType {
         }
     }
 
+    @Override
+    public AbstractMapType merge(final Iterable<AbstractMapType> others) {
+
+        // create a transient map
+        IMap<AtomicValue, Sequence> newMap = map.linear();
+
+        int prevType = type;
+        for (final AbstractMapType other: others) {
+            if (other instanceof MapType) {
+                // MapType - optimise merge
+                final MapType otherMap = (MapType) other;
+                newMap = map.union(otherMap.map);
+
+                if (prevType != otherMap.type) {
+                    prevType = Type.ITEM;
+                }
+            } else {
+                // non MapType
+                for (final IEntry<AtomicValue, Sequence> entry : other) {
+                    final AtomicValue key = entry.key();
+                    newMap = newMap.put(key, entry.value());
+                    if (prevType != key.getType()) {
+                        prevType = Type.ITEM;
+                    }
+                }
+            }
+        }
+
+        // return an immutable map
+        return new MapType(context, newMap.forked(), prevType);
+    }
+
     public void add(final AtomicValue key, final Sequence value) {
         setKeyType(key.getType());
         map = map.put(key, value);

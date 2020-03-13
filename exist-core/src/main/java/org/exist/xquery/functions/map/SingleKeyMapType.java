@@ -38,6 +38,12 @@ public class SingleKeyMapType extends AbstractMapType {
     }
 
     @Override
+    public AbstractMapType merge(final Iterable<AbstractMapType> others) {
+        final MapType map = new MapType(context, collator, key, value);
+        return map.merge(others);
+    }
+
+    @Override
     public AbstractMapType put(final AtomicValue key, final Sequence value) {
         final MapType map = new MapType(context);
         map.add(this);

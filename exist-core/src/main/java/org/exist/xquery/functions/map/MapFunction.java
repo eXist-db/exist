@@ -6,6 +6,9 @@ import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Implements all functions of the map module.
  */
@@ -192,16 +195,20 @@ public class MapFunction extends BasicFunction {
         return new IntegerValue(map.size(), Type.INTEGER);
     }
 
-    private Sequence merge(final Sequence[] args) throws XPathException {
-        if (args.length == 0) {
+    private Sequence merge(final Sequence[] args) {
+        if (args.length == 0 || args[0].getItemCount() == 0) {
             return new MapType(this.context);
         }
-        final MapType map = new MapType(this.context, null);
-        for (final SequenceIterator i = args[0].unorderedIterator(); i.hasNext(); ) {
-            final AbstractMapType m = (AbstractMapType) i.nextItem();
-            map.add(m);
+
+        final Sequence maps = args[0];
+        final AbstractMapType firstMap = (AbstractMapType) args[0].itemAt(0);
+        final List<AbstractMapType> others = new ArrayList<>(maps.getItemCount() - 1);
+        for (int i = 1; i < maps.getItemCount(); i ++) {
+            final AbstractMapType other = (AbstractMapType) maps.itemAt(i);
+            others.add(other);
         }
-        return map;
+
+        return firstMap.merge(others);
     }
 
     @Deprecated

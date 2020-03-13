@@ -47,6 +47,8 @@ public abstract class AbstractMapType extends FunctionReference
 
     public abstract AbstractMapType put(AtomicValue key, Sequence value) throws XPathException;
 
+    public abstract AbstractMapType merge(Iterable<AbstractMapType> others);
+
     public abstract boolean contains(AtomicValue key);
 
     public abstract Sequence keys();
