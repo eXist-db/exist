@@ -1,5 +1,6 @@
 package org.exist.xquery.functions.fn;
 
+import io.lacuna.bifurcan.IMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.jcip.annotations.NotThreadSafe;
@@ -16,6 +17,7 @@ import java.util.Random;
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.fn.FnModule.functionSignature;
 import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
+import static org.exist.xquery.functions.map.MapType.newLinearMap;
 
 public class FnRandomNumberGenerator extends BasicFunction {
 
@@ -70,11 +72,12 @@ public class FnRandomNumberGenerator extends BasicFunction {
         // NOTE: we must create a copy so that `Random#nextDouble` does not interfere with multiple `next()` calls on the same random number generator
         random = random.copy();
 
-        final MapType result = new MapType(context);
-        result.add(new StringValue("number"), new DoubleValue(random.nextDouble()));
-        result.add(new StringValue("next"), nextFunction(context, random));
-        result.add(new StringValue("permute"), permuteFunction(context, random));
-        return result;
+        final IMap<AtomicValue, Sequence> result = newLinearMap();
+        result.put(new StringValue("number"), new DoubleValue(random.nextDouble()));
+        result.put(new StringValue("next"), nextFunction(context, random));
+        result.put(new StringValue("permute"), permuteFunction(context, random));
+
+        return new MapType(context, result.forked(), Type.STRING);
     }
 
     private static FunctionReference nextFunction(final XQueryContext context, final XORShiftRandom random) {
