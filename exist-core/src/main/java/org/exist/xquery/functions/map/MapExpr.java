@@ -1,5 +1,6 @@
 package org.exist.xquery.functions.map;
 
+import io.lacuna.bifurcan.IMap;
 import org.exist.xquery.*;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
@@ -9,6 +10,8 @@ import org.exist.xquery.value.Type;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.exist.xquery.functions.map.MapType.newLinearMap;
 
 /**
  * Implements the literal syntax for creating maps.
@@ -44,7 +47,11 @@ public class MapExpr extends AbstractExpression {
         if (contextItem != null) {
             contextSequence = contextItem.toSequence();
         }
-        final MapType map = new MapType(this.context);
+        final IMap<AtomicValue, Sequence> map = newLinearMap();
+
+        boolean firstType = true;
+        int prevType = Type.ANY_TYPE;
+
         for (final Mapping mapping : this.mappings) {
             final Sequence key = mapping.key.eval(contextSequence);
             if (key.getItemCount() != 1) {
@@ -55,9 +62,20 @@ public class MapExpr extends AbstractExpression {
             if (map.contains(atomic)) {
                 throw new XPathException(this, ErrorCodes.XQDY0137, "Key \"" + atomic.getStringValue() + "\" already exists in map.");
             }
-            map.add(atomic, value);
+            map.put(atomic, value);
+
+            final int thisType = atomic.getType();
+            if (firstType) {
+                prevType = thisType;
+                firstType = false;
+            } else {
+                if (thisType != prevType) {
+                    prevType = Type.ITEM;
+                }
+            }
         }
-        return map;
+
+        return new MapType(context, map.forked(), prevType);
     }
 
     @Override
