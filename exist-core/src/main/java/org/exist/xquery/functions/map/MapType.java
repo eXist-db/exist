@@ -58,11 +58,7 @@ public class MapType extends AbstractMapType {
         keyValues.forEachRemaining(kv -> map.put(kv._1, kv._2));
         this.map = map.forked();
 
-        //TODO(AR) this is incorrect all types to be checked!
-        final long size = this.map.size();
-        if (size > 0) {
-            setKeyType(this.map.nth(size - 1).key().getType());
-        }
+        setKeyType(map);
     }
 
     public MapType(final XQueryContext context, final IMap<AtomicValue, Sequence> other, @Nullable final Integer type) {
@@ -77,11 +73,7 @@ public class MapType extends AbstractMapType {
         if (type != null) {
             this.type = type;
         } else {
-            //TODO(AR) this is incorrect all types to be checked!
-            final long size = this.map.size();
-            if (size > 0) {
-                setKeyType(this.map.nth(size - 1).key().getType());
-            }
+            setKeyType(map);
         }
     }
 
@@ -230,6 +222,20 @@ public class MapType extends AbstractMapType {
         }
         else if (type != newType) {
             type = Type.ITEM;
+        }
+    }
+
+    private void setKeyType(final IMap<AtomicValue, Sequence> newMap) {
+        for (final AtomicValue newKey : newMap.keys()) {
+            final int newType = newKey.getType();
+
+            if (type == Type.ANY_TYPE) {
+                type = newType;
+            }
+            else if (type != newType) {
+                type = Type.ITEM;
+                break; // done!
+            }
         }
     }
 
