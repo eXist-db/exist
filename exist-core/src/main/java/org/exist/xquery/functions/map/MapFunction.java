@@ -1,11 +1,10 @@
 package org.exist.xquery.functions.map;
 
 import com.ibm.icu.text.Collator;
+import io.lacuna.bifurcan.IEntry;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
-
-import java.util.Map;
 
 /**
  * Implements all functions of the map module.
@@ -228,8 +227,8 @@ public class MapFunction extends BasicFunction {
         try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
             ref.analyze(cachedContextInfo);
             final ValueSequence result = new ValueSequence();
-            for (final Map.Entry<AtomicValue, Sequence> entry : map) {
-                final Sequence s = ref.evalFunction(null, null, new Sequence[]{entry.getKey(), entry.getValue()});
+            for (final IEntry<AtomicValue, Sequence> entry : map) {
+                final Sequence s = ref.evalFunction(null, null, new Sequence[]{ entry.key(), entry.value() });
                 result.addAll(s);
             }
             return result;

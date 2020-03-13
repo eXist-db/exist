@@ -2,22 +2,19 @@ package org.exist.util.serializer.json;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import io.lacuna.bifurcan.IEntry;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
-import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -121,9 +118,9 @@ public class JSONSerializer {
 
     private void serializeMap(MapType map, JsonGenerator generator) throws IOException, XPathException, SAXException {
         generator.writeStartObject();
-        for (Map.Entry<AtomicValue, Sequence> entry: map) {
-            generator.writeFieldName(entry.getKey().getStringValue());
-            serializeSequence(entry.getValue(), generator);
+        for (final IEntry<AtomicValue, Sequence> entry: map) {
+            generator.writeFieldName(entry.key().getStringValue());
+            serializeSequence(entry.value(), generator);
         }
         generator.writeEndObject();
     }

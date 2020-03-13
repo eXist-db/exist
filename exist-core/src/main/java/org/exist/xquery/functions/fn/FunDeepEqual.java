@@ -21,9 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.Map;
-
 import com.ibm.icu.text.Collator;
+import io.lacuna.bifurcan.IEntry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
@@ -170,11 +169,11 @@ public class FunDeepEqual extends CollatingFunction {
                 if (amap.size() != bmap.size()) {
                     return false;
                 }
-                for (Map.Entry<AtomicValue, Sequence> aentry: amap) {
-                    if (!bmap.contains(aentry.getKey())) {
+                for (final IEntry<AtomicValue, Sequence> aentry: amap) {
+                    if (!bmap.contains(aentry.key())) {
                         return false;
                     }
-                    if (!deepEqualsSeq(aentry.getValue(), bmap.get(aentry.getKey()), collator)) {
+                    if (!deepEqualsSeq(aentry.value(), bmap.get(aentry.key()), collator)) {
                         return false;
                     }
                 }

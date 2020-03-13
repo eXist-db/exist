@@ -1,15 +1,15 @@
 package org.exist.xquery.functions.map;
 
 import com.ibm.icu.text.Collator;
+import io.lacuna.bifurcan.IEntry;
+import io.lacuna.bifurcan.Maps;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
 
 import javax.annotation.Nullable;
-import java.util.AbstractMap;
 import java.util.Iterator;
-import java.util.Map;
 
 public class SingleKeyMapType extends AbstractMapType {
 
@@ -75,21 +75,21 @@ public class SingleKeyMapType extends AbstractMapType {
     }
 
     @Override
-    public AtomicValue getKey() {
+    public AtomicValue key() {
         return key;
     }
 
     @Override
-    public Sequence getValue() {
+    public Sequence value() {
         return value;
     }
 
     @Override
-    public Iterator<Map.Entry<AtomicValue, Sequence>> iterator() {
+    public Iterator<IEntry<AtomicValue, Sequence>> iterator() {
         return new SingleKeyMapIterator();
     }
 
-    private class SingleKeyMapIterator implements Iterator<Map.Entry<AtomicValue, Sequence>> {
+    private class SingleKeyMapIterator implements Iterator<IEntry<AtomicValue, Sequence>> {
 
         boolean hasMore = true;
 
@@ -99,12 +99,12 @@ public class SingleKeyMapType extends AbstractMapType {
         }
 
         @Override
-        public Map.Entry<AtomicValue, Sequence> next() {
+        public IEntry<AtomicValue, Sequence> next() {
             if (!hasMore) {
                 return null;
             }
             hasMore = false;
-            return new AbstractMap.SimpleEntry<>(key, value);
+            return new Maps.Entry<>(key, value);
         }
     }
 }

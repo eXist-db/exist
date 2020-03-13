@@ -55,7 +55,7 @@ public class MapType extends AbstractMapType {
     }
 
     public void add(final AbstractMapType other) {
-        setKeyType(other.getKey() != null ? other.getKey().getType() : Type.ANY_TYPE);
+        setKeyType(other.key() != null ? other.key().getType() : Type.ANY_TYPE);
 
         if(other instanceof MapType) {
             //TODO(AR) is the union in the correct direction i.e. keys from `other` overwrite `this`
@@ -67,8 +67,8 @@ public class MapType extends AbstractMapType {
             // create a transient map
             final IMap<AtomicValue, Sequence> newMap = map.linear();
 
-            for (final java.util.Map.Entry<AtomicValue, Sequence> entry : other) {
-                newMap.put(entry.getKey(), entry.getValue());
+            for (final IEntry<AtomicValue, Sequence> entry : other) {
+                newMap.put(entry.key(), entry.value());
             }
 
             // return to immutable map
@@ -136,12 +136,12 @@ public class MapType extends AbstractMapType {
     }
 
     @Override
-    public Iterator<java.util.Map.Entry<AtomicValue, Sequence>> iterator() {
-        return map.toMap().entrySet().iterator();
+    public Iterator<IEntry<AtomicValue, Sequence>> iterator() {
+        return map.iterator();
     }
 
     @Override
-    public AtomicValue getKey() {
+    public AtomicValue key() {
         if (map.size() > 0) {
             final IEntry<AtomicValue, Sequence> entry = map.nth(0);
             if (entry != null) {
@@ -153,7 +153,7 @@ public class MapType extends AbstractMapType {
     }
 
     @Override
-    public Sequence getValue() {
+    public Sequence value() {
         if (map.size() > 0) {
             final IEntry<AtomicValue, Sequence> entry = map.nth(0);
             if (entry != null) {

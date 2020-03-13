@@ -1,6 +1,7 @@
 package org.exist.xquery.functions.map;
 
 import com.ibm.icu.text.Collator;
+import io.lacuna.bifurcan.IEntry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -9,7 +10,6 @@ import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Abstract base class for map types. A map item is also a function item. This class thus extends
@@ -19,7 +19,7 @@ import java.util.Map;
  * @author Wolfgang Meier
  */
 public abstract class AbstractMapType extends FunctionReference
-        implements Map.Entry<AtomicValue, Sequence>, Iterable<Map.Entry<AtomicValue, Sequence>>,
+        implements IEntry<AtomicValue, Sequence>, Iterable<IEntry<AtomicValue, Sequence>>,
         Lookup.LookupSupport {
 
     private final static Logger LOG = LogManager.getLogger(AbstractMapType.class);
@@ -65,11 +65,6 @@ public abstract class AbstractMapType extends FunctionReference
     @Override
     public int getType() {
         return Type.MAP;
-    }
-
-    @Override
-    public Sequence setValue(Sequence value) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

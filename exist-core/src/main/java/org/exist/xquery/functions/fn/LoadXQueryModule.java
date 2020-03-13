@@ -21,6 +21,7 @@
 package org.exist.xquery.functions.fn;
 
 import com.evolvedbinary.j8fu.function.ConsumerE;
+import io.lacuna.bifurcan.IEntry;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.Module;
@@ -219,14 +220,14 @@ public class LoadXQueryModule extends BasicFunction {
 
     private void setExternalVars(final AbstractMapType externalVars, final ConsumerE<Variable, XPathException> setter)
             throws XPathException {
-        for (final Map.Entry<AtomicValue, Sequence> entry: externalVars) {
-            if (!Type.subTypeOf(entry.getKey().getType(), Type.QNAME)) {
+        for (final IEntry<AtomicValue, Sequence> entry: externalVars) {
+            if (!Type.subTypeOf(entry.key().getType(), Type.QNAME)) {
                 throw new XPathException(this, ErrorCodes.XPTY0004, "name of external variable must be a qname: " +
-                        entry.getKey());
+                        entry.key());
             }
 
-            final Variable var = new VariableImpl(((QNameValue) entry.getKey()).getQName());
-            var.setValue(entry.getValue());
+            final Variable var = new VariableImpl(((QNameValue) entry.key()).getQName());
+            var.setValue(entry.value());
             setter.accept(var);
         }
     }
