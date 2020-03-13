@@ -5,10 +5,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
-import org.exist.xquery.functions.fn.FunDistinctValues;
 import org.exist.xquery.value.*;
 
-import java.util.Comparator;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -24,8 +23,6 @@ public abstract class AbstractMapType extends FunctionReference
         Lookup.LookupSupport {
 
     private final static Logger LOG = LogManager.getLogger(AbstractMapType.class);
-
-    private static final Comparator<AtomicValue> DEFAULT_COMPARATOR = new FunDistinctValues.ValueComparator(null);
 
     // the signature of the function which is evaluated if the map is called as a function item
     private static final FunctionSignature ACCESSOR =
@@ -95,13 +92,15 @@ public abstract class AbstractMapType extends FunctionReference
         getAccessorFunc().resetState(postOptimization);
     }
 
-    protected Comparator<AtomicValue> getComparator(final String collation)
-            throws XPathException {
-        if (collation != null) {
-            final Collator collator = this.context.getCollator(collation);
-            return new FunDistinctValues.ValueComparator(collator);
+    protected static boolean keysEqual(@Nullable final Collator collator, final AtomicValue k1, final AtomicValue k2) {
+        try {
+            return ValueComparison.compareAtomic(collator, k1, k2, Constants.StringTruncationOperator.NONE, Constants.Comparison.EQ);
+        } catch (final XPathException e) {
+            LOG.warn("Unable to compare with collation '" + collator + "', will fallback to non-collation comparision. Error: " + e.getMessage(), e);
         }
-        return DEFAULT_COMPARATOR;
+
+        // fallback
+        return k1.equals(k2);
     }
 
     @Override

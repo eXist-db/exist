@@ -1,14 +1,13 @@
 package org.exist.xquery.functions.map;
 
-import com.github.krukow.clj_lang.IPersistentMap;
-import org.exist.xquery.Constants;
+import com.ibm.icu.text.Collator;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
 
+import javax.annotation.Nullable;
 import java.util.AbstractMap;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -16,13 +15,13 @@ public class SingleKeyMapType extends AbstractMapType {
 
     private AtomicValue key;
     private Sequence value;
-    private Comparator<AtomicValue> comparator;
+    private @Nullable Collator collator;
 
-    public SingleKeyMapType(XQueryContext context, String collation, AtomicValue key, Sequence value) throws XPathException {
+    public SingleKeyMapType(final XQueryContext context, final @Nullable Collator collator, final AtomicValue key, final Sequence value) {
         super(context);
         this.key = key;
         this.value = value;
-        this.comparator = getComparator(collation);
+        this.collator = collator;
     }
 
     @Override
@@ -31,14 +30,15 @@ public class SingleKeyMapType extends AbstractMapType {
     }
 
     @Override
-    public Sequence get(AtomicValue key) {
-        if (comparator.compare(this.key, key) == Constants.EQUAL)
-            {return this.value;}
+    public Sequence get(final AtomicValue key) {
+        if (keysEqual(collator, this.key, key)) {
+            return this.value;
+        }
         return null;
     }
 
     @Override
-    public AbstractMapType put(final AtomicValue key, final Sequence value) throws XPathException {
+    public AbstractMapType put(final AtomicValue key, final Sequence value) {
         final MapType map = new MapType(context);
         map.add(this);
         return map.put(key, value);
@@ -46,7 +46,7 @@ public class SingleKeyMapType extends AbstractMapType {
 
     @Override
     public boolean contains(AtomicValue key) {
-        return (comparator.compare(this.key, key) == Constants.EQUAL);
+        return keysEqual(collator, this.key, key);
     }
 
     @Override
