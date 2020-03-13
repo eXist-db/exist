@@ -1,5 +1,6 @@
 package org.exist.xquery.functions.map;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import com.ibm.icu.text.Collator;
 import io.lacuna.bifurcan.IEntry;
 import io.lacuna.bifurcan.IMap;
@@ -48,10 +49,43 @@ public class MapType extends AbstractMapType {
         this.type = key.getType();
     }
 
-    private MapType(final XQueryContext context, final IMap<AtomicValue, Sequence> other, final int type) {
+    public MapType(final XQueryContext context, @Nullable final Collator collator, final Iterable<Tuple2<AtomicValue, Sequence>> keyValues) {
+        this(context, collator, keyValues.iterator());
+    }
+
+    public MapType(final XQueryContext context, @Nullable final Collator collator, final Iterator<Tuple2<AtomicValue, Sequence>> keyValues) {
         super(context);
+
+        // bulk put
+        final IMap<AtomicValue, Sequence> map = newMap(collator).linear();
+        keyValues.forEachRemaining(kv -> map.put(kv._1, kv._2));
+        this.map = map.forked();
+
+        //TODO(AR) this is incorrect all types to be checked!
+        final long size = this.map.size();
+        if (size > 0) {
+            setKeyType(this.map.nth(size - 1).key().getType());
+        }
+    }
+
+    public MapType(final XQueryContext context, final IMap<AtomicValue, Sequence> other, @Nullable final Integer type) {
+        super(context);
+
+        if (other.isLinear()) {
+            throw new IllegalArgumentException("Map must be immutable, but linear Map was provided");
+        }
+
         this.map = other;
-        this.type = type;
+
+        if (type != null) {
+            this.type = type;
+        } else {
+            //TODO(AR) this is incorrect all types to be checked!
+            final long size = this.map.size();
+            if (size > 0) {
+                setKeyType(this.map.nth(size - 1).key().getType());
+            }
+        }
     }
 
     public void add(final AbstractMapType other) {
@@ -226,5 +260,13 @@ public class MapType extends AbstractMapType {
     @Override
     public int getKeyType() {
         return type;
+    }
+
+    public static <K, V> IMap<K, V> newLinearMap() {
+        // TODO(AR) see bug in bifurcan - https://github.com/lacuna/bifurcan/issues/23
+        //return new LinearMap<K, V>();
+
+        // TODO(AR) workaround for the above bug
+        return new Map<K, V>().linear();
     }
 }

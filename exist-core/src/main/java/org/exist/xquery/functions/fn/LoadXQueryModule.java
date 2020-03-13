@@ -22,6 +22,9 @@ package org.exist.xquery.functions.fn;
 
 import com.evolvedbinary.j8fu.function.ConsumerE;
 import io.lacuna.bifurcan.IEntry;
+import io.lacuna.bifurcan.IMap;
+import io.lacuna.bifurcan.Map;
+import io.lacuna.bifurcan.Maps;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.Module;
@@ -31,6 +34,8 @@ import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.*;
 
 import java.util.*;
+
+import static org.exist.xquery.functions.map.MapType.newLinearMap;
 
 /**
  * Implements fn:load-xquery-module. Creates a temporary context for the imported module, so the
@@ -184,38 +189,39 @@ public class LoadXQueryModule extends BasicFunction {
             ((ExternalModule)module).analyzeGlobalVars();
         }
 
-        final MapType result = new MapType(context);
-
         final ValueSequence functionSeq = new ValueSequence();
         addFunctionRefsFromModule(this, tempContext, functionSeq, module);
-        final MapType functions = new MapType(context);
+        final IMap<AtomicValue, IMap<AtomicValue, Sequence>> functions = newLinearMap();
         for (final SequenceIterator i = functionSeq.iterate(); i.hasNext(); ) {
             final FunctionReference ref = (FunctionReference) i.nextItem();
             final FunctionSignature signature = ref.getSignature();
             final QNameValue qn = new QNameValue(context, signature.getName());
-            final MapType entry;
-            if (functions.contains(qn)) {
-                entry = (MapType) functions.get(qn);
-            } else {
-                entry = new MapType(context);
-                functions.add(qn, entry);
+            IMap<AtomicValue, Sequence> entry = functions.get(qn, null);
+            if (entry == null) {
+                entry = newLinearMap();
+                functions.put(qn, entry);
             }
-            entry.add(new IntegerValue(signature.getArgumentCount()), ref);
-        }
-        result.add(RESULT_FUNCTIONS, functions);
 
-        final MapType variables = new MapType(context);
+            entry.put(new IntegerValue(signature.getArgumentCount()), ref);
+        }
+
+        final IMap<AtomicValue, Sequence> variables = newLinearMap();
         for (final Iterator<QName> i = module.getGlobalVariables(); i.hasNext(); ) {
             final QName name = i.next();
             try {
                 final Variable var = module.resolveVariable(name);
-                variables.add(new QNameValue(context, name), var.getValue());
+                variables.put(new QNameValue(context, name), var.getValue());
             } catch (XPathException e) {
                 throw new XPathException(this, ErrorCodes.FOQM0005, "Incorrect type for external variable " + name);
             }
         }
-        result.add(RESULT_VARIABLES, variables);
-        return result;
+
+        final IMap<AtomicValue, Sequence> result = Map.from(Arrays.asList(
+                new Maps.Entry<>(RESULT_FUNCTIONS, new MapType(context, functions.mapValues((k, v) -> (Sequence)new MapType(context, v.forked(), Type.INTEGER)).forked(), Type.QNAME)),
+                new Maps.Entry<>(RESULT_VARIABLES, new MapType(context, variables.forked(), Type.QNAME))
+        ));
+
+        return new MapType(context, result, Type.STRING);
     }
 
     private void setExternalVars(final AbstractMapType externalVars, final ConsumerE<Variable, XPathException> setter)
