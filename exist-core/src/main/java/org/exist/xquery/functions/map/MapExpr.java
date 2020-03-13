@@ -50,7 +50,7 @@ public class MapExpr extends AbstractExpression {
         final IMap<AtomicValue, Sequence> map = newLinearMap();
 
         boolean firstType = true;
-        int prevType = Type.ANY_TYPE;
+        int prevType = AbstractMapType.UNKNOWN_KEY_TYPE;
 
         for (final Mapping mapping : this.mappings) {
             final Sequence key = mapping.key.eval(contextSequence);
@@ -70,7 +70,7 @@ public class MapExpr extends AbstractExpression {
                 firstType = false;
             } else {
                 if (thisType != prevType) {
-                    prevType = Type.ITEM;
+                    prevType = AbstractMapType.MIXED_KEY_TYPES;
                 }
             }
         }

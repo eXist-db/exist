@@ -24,7 +24,15 @@ public class MapType extends AbstractMapType {
 
     // TODO(AR) future potential optimisation... could the class member `map` remain `linear` ?
     private IMap<AtomicValue, Sequence> map;
-    private int type = Type.ANY_TYPE;
+
+    /**
+     * The type of the keys in the map,
+     * if not all keys have the same type
+     * then this is set to {@link #MIXED_KEY_TYPES}.
+     *
+     * Uses integer values from {@link org.exist.xquery.value.Type}.
+     */
+    private int keyType = UNKNOWN_KEY_TYPE;
 
     private static IMap<AtomicValue, Sequence> newMap(@Nullable final Collator collator) {
         return new Map<>(KEY_HASH_FN, (k1, k2) -> keysEqual(collator, k1, k2));
@@ -43,7 +51,7 @@ public class MapType extends AbstractMapType {
     public MapType(final XQueryContext context, @Nullable final Collator collator, final AtomicValue key, final Sequence value) {
         super(context);
         this.map = newMap(collator).put(key, value);
-        this.type = key.getType();
+        this.keyType = key.getType();
     }
 
     public MapType(final XQueryContext context, @Nullable final Collator collator, final Iterable<Tuple2<AtomicValue, Sequence>> keyValues) {
@@ -61,7 +69,7 @@ public class MapType extends AbstractMapType {
         setKeyType(map);
     }
 
-    public MapType(final XQueryContext context, final IMap<AtomicValue, Sequence> other, @Nullable final Integer type) {
+    public MapType(final XQueryContext context, final IMap<AtomicValue, Sequence> other, @Nullable final Integer keyType) {
         super(context);
 
         if (other.isLinear()) {
@@ -70,15 +78,15 @@ public class MapType extends AbstractMapType {
 
         this.map = other;
 
-        if (type != null) {
-            this.type = type;
+        if (keyType != null) {
+            this.keyType = keyType;
         } else {
             setKeyType(map);
         }
     }
 
     public void add(final AbstractMapType other) {
-        setKeyType(other.key() != null ? other.key().getType() : Type.ANY_TYPE);
+        setKeyType(other.key() != null ? other.key().getType() : UNKNOWN_KEY_TYPE);
 
         if(other instanceof MapType) {
             map = map.union(((MapType)other).map);
@@ -102,15 +110,15 @@ public class MapType extends AbstractMapType {
         // create a transient map
         IMap<AtomicValue, Sequence> newMap = map.linear();
 
-        int prevType = type;
+        int prevType = keyType;
         for (final AbstractMapType other: others) {
             if (other instanceof MapType) {
                 // MapType - optimise merge
                 final MapType otherMap = (MapType) other;
                 newMap = map.union(otherMap.map);
 
-                if (prevType != otherMap.type) {
-                    prevType = Type.ITEM;
+                if (prevType != otherMap.keyType) {
+                    prevType = MIXED_KEY_TYPES;
                 }
             } else {
                 // non MapType
@@ -118,7 +126,7 @@ public class MapType extends AbstractMapType {
                     final AtomicValue key = entry.key();
                     newMap = newMap.put(key, entry.value());
                     if (prevType != key.getType()) {
-                        prevType = Type.ITEM;
+                        prevType = MIXED_KEY_TYPES;
                     }
                 }
             }
@@ -147,7 +155,7 @@ public class MapType extends AbstractMapType {
     @Override
     public AbstractMapType put(final AtomicValue key, final Sequence value) {
         final IMap<AtomicValue, Sequence> newMap = map.put(key, value);
-        return new MapType(this.context, newMap, type == key.getType() ? type : Type.ITEM);
+        return new MapType(this.context, newMap, keyType == key.getType() ? keyType : MIXED_KEY_TYPES);
     }
 
     @Override
@@ -179,7 +187,7 @@ public class MapType extends AbstractMapType {
         }
 
         // return an immutable map
-        return new MapType(context, newMap.forked(), type);
+        return new MapType(context, newMap.forked(), keyType);
     }
 
     @Override
@@ -217,11 +225,11 @@ public class MapType extends AbstractMapType {
     }
 
     private void setKeyType(final int newType) {
-        if (type == Type.ANY_TYPE) {
-            type = newType;
-        }
-        else if (type != newType) {
-            type = Type.ITEM;
+        if (keyType == UNKNOWN_KEY_TYPE) {
+            keyType = newType;
+
+        } else if (keyType != newType) {
+            keyType = MIXED_KEY_TYPES;
         }
     }
 
@@ -229,20 +237,20 @@ public class MapType extends AbstractMapType {
         for (final AtomicValue newKey : newMap.keys()) {
             final int newType = newKey.getType();
 
-            if (type == Type.ANY_TYPE) {
-                type = newType;
-            }
-            else if (type != newType) {
-                type = Type.ITEM;
-                break; // done!
+            if (keyType == UNKNOWN_KEY_TYPE) {
+                keyType = newType;
+
+            } else if (keyType != newType) {
+                keyType = MIXED_KEY_TYPES;
+                break; // done, we only have to detect this once!
             }
         }
     }
 
     private AtomicValue convert(final AtomicValue key) {
-        if (type != Type.ANY_TYPE && type != Type.ITEM) {
+        if (keyType != UNKNOWN_KEY_TYPE && keyType != MIXED_KEY_TYPES) {
             try {
-                return key.convertTo(type);
+                return key.convertTo(keyType);
             } catch (final XPathException e) {
                 return null;
             }
@@ -252,7 +260,7 @@ public class MapType extends AbstractMapType {
 
     @Override
     public int getKeyType() {
-        return type;
+        return keyType;
     }
 
     public static <K, V> IMap<K, V> newLinearMap() {

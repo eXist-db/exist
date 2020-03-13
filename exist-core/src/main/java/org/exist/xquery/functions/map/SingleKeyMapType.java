@@ -8,7 +8,6 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -56,17 +55,17 @@ public class SingleKeyMapType extends AbstractMapType {
     @Override
     public AbstractMapType put(final AtomicValue key, final Sequence value) {
         final IMap<AtomicValue, Sequence> map = newLinearMap(collator);
-        int type = Type.ANY_TYPE;
+        int keyType = UNKNOWN_KEY_TYPE;
         if (this.key != null) {
             map.put(this.key, this.value);
-            type = this.key.getType();
+            keyType = this.key.getType();
         }
         map.put(key, value);
-        if (type != key.getType()) {
-            type = Type.ITEM;
+        if (keyType != key.getType()) {
+            keyType = MIXED_KEY_TYPES;
         }
 
-        return new MapType(context, map.forked(), type);
+        return new MapType(context, map.forked(), keyType);
     }
 
     @Override

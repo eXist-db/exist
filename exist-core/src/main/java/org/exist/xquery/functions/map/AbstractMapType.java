@@ -22,6 +22,17 @@ public abstract class AbstractMapType extends FunctionReference
         implements IEntry<AtomicValue, Sequence>, Iterable<IEntry<AtomicValue, Sequence>>,
         Lookup.LookupSupport {
 
+    /**
+     * Used when the type of the keys for the
+     * map is unknown.
+     */
+    public static final int UNKNOWN_KEY_TYPE = Type.ANY_SIMPLE_TYPE;
+
+    /**
+     * Used when a map contains keys of various xs:anyAtomicType
+     */
+    public static final int MIXED_KEY_TYPES = Type.ATOMIC;
+
     private final static Logger LOG = LogManager.getLogger(AbstractMapType.class);
 
     // the signature of the function which is evaluated if the map is called as a function item
