@@ -87,16 +87,14 @@ public class SingleKeyMapType extends AbstractMapType {
     @Override
     public AbstractMapType remove(final AtomicValue[] keysAtomicValues) throws XPathException {
         for (final AtomicValue key: keysAtomicValues) {
-            if (key != this.key) {
-                continue;
+            if (keysEqual(collator, key, this.key)) {
+                // single key map, and we matched on our key... return an empty map!
+                return new MapType(context);
             }
-            this.key = null;
-            value = null;
-            return new MapType(context);
         }
-        final MapType map = new MapType(context);
-        map.add(this);
-        return map;
+
+        // nothing to remove, return a copy
+        return new SingleKeyMapType(context, collator, key, value);
     }
 
     @Override
