@@ -496,7 +496,7 @@ function facet:hierarchical-place() {
 };
 
 declare
-    %test:assertEquals('{"art":1,"history":5}','{"math":1,"engineering":1}')
+    %test:assertEqualsPermutation('{"history":5,"art":1}','{"math":1,"engineering":1}')
 function facet:hierarchical-subject() {
     let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
     let $facets := ft:facets($result, "subject", 10) (: Returns facet counts for "science" and "humanities" :)

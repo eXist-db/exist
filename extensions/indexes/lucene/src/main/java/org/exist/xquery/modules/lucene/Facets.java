@@ -20,6 +20,7 @@
 
 package org.exist.xquery.modules.lucene;
 
+import io.lacuna.bifurcan.IMap;
 import org.apache.lucene.facet.FacetResult;
 import org.apache.lucene.search.Query;
 import org.exist.dom.QName;
@@ -34,6 +35,8 @@ import org.exist.xquery.value.*;
 import java.io.IOException;
 import java.util.IdentityHashMap;
 import java.util.Map;
+
+import static org.exist.xquery.functions.map.MapType.newLinearMap;
 
 public class Facets extends BasicFunction {
 
@@ -134,7 +137,7 @@ public class Facets extends BasicFunction {
         }
 
         // Iterate the found queries/matches and collect facets for each
-        final MapType map = new MapType(context);
+        final IMap<AtomicValue, Sequence> map = newLinearMap();
         for (LuceneMatch match : luceneQueries.values()) {
             try {
                 addFacetsToMap(map, dimension, count, paths, match);
@@ -142,10 +145,10 @@ public class Facets extends BasicFunction {
                 throw new XPathException(this, LuceneModule.EXXQDYFT0002, e.getMessage());
             }
         }
-        return map;
+        return new MapType(context, map.forked(), Type.STRING);
     }
 
-    private void addFacetsToMap(MapType map, String dimension, int count, String[] paths, LuceneMatch match) throws IOException {
+    private void addFacetsToMap(final IMap<AtomicValue, Sequence> map, String dimension, int count, String[] paths, LuceneMatch match) throws IOException {
         final org.apache.lucene.facet.Facets facets = match.getFacets();
         final FacetResult result;
         if (paths == null) {
@@ -159,12 +162,14 @@ public class Facets extends BasicFunction {
                 final String label = result.labelValues[i].label;
                 final Number value = result.labelValues[i].value;
                 final AtomicValue key = new StringValue(label);
-                if (map.contains(key)) {
-                    final IntegerValue existing = (IntegerValue)map.get(key);
-                    map.add(key, new IntegerValue(value.longValue() + existing.getLong()));
-                } else {
-                    map.add(new StringValue(label), new IntegerValue(value.longValue()));
-                }
+
+                map.update(key, v -> {
+                    if (v == null) {
+                        return new IntegerValue(value.longValue());
+                    } else {
+                        return new IntegerValue(value.longValue() + ((IntegerValue)v).getLong());
+                    }
+                });
             }
         }
     }
