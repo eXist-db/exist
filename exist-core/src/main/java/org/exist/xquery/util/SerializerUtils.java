@@ -9,7 +9,7 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.fn.FnModule;
-import org.exist.xquery.functions.map.MapType;
+import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.value.*;
 
 import javax.xml.XMLConstants;
@@ -152,7 +152,7 @@ public class SerializerUtils {
         }
     }
 
-    public static Properties getSerializationOptions(final Expression parent, final MapType entries) throws XPathException {
+    public static Properties getSerializationOptions(final Expression parent, final AbstractMapType entries) throws XPathException {
         try {
             final Properties properties = new Properties();
 
