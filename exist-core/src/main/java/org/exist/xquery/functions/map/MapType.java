@@ -269,4 +269,8 @@ public class MapType extends AbstractMapType {
         // TODO(AR) workaround for the above bug
         return new Map<K, V>().linear();
     }
+
+    public static IMap<AtomicValue, Sequence> newLinearMap(@Nullable final Collator collator) {
+        return newMap(collator).linear();
+    }
 }

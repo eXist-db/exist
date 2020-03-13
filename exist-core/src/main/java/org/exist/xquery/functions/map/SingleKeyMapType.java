@@ -2,14 +2,18 @@ package org.exist.xquery.functions.map;
 
 import com.ibm.icu.text.Collator;
 import io.lacuna.bifurcan.IEntry;
+import io.lacuna.bifurcan.IMap;
 import io.lacuna.bifurcan.Maps;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
+
+import static org.exist.xquery.functions.map.MapType.newLinearMap;
 
 public class SingleKeyMapType extends AbstractMapType {
 
@@ -45,9 +49,18 @@ public class SingleKeyMapType extends AbstractMapType {
 
     @Override
     public AbstractMapType put(final AtomicValue key, final Sequence value) {
-        final MapType map = new MapType(context);
-        map.add(this);
-        return map.put(key, value);
+        final IMap<AtomicValue, Sequence> map = newLinearMap(collator);
+        int type = Type.ANY_TYPE;
+        if (this.key != null) {
+            map.put(this.key, this.value);
+            type = this.key.getType();
+        }
+        map.put(key, value);
+        if (type != key.getType()) {
+            type = Type.ITEM;
+        }
+
+        return new MapType(context, map.forked(), type);
     }
 
     @Override
