@@ -211,24 +211,6 @@ public class MapFunction extends BasicFunction {
         return firstMap.merge(others);
     }
 
-    @Deprecated
-    private Sequence newMap(final Sequence[] args) throws XPathException {
-        if (args.length == 0) {
-            return new MapType(this.context);
-        }
-        String collation = null;
-        if (args.length == 2) {
-            collation = args[1].getStringValue();
-        }
-        final Collator collator = context.getCollator(collation);
-        final MapType map = new MapType(this.context, collator);
-        for (final SequenceIterator i = args[0].unorderedIterator(); i.hasNext(); ) {
-            final AbstractMapType m = (AbstractMapType) i.nextItem();
-            map.add(m);
-        }
-        return map;
-    }
-
     private Sequence forEach(final Sequence[] args) throws XPathException {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
