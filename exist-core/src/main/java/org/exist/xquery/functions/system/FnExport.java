@@ -112,8 +112,8 @@ public class FnExport extends BasicFunction {
             zip = args[2].effectiveBooleanValue();
         }
 
-        MemTreeBuilder builder = null;
         try {
+            MemTreeBuilder builder = null;
             if (NAME.equals(mySignature.getName())) {
                 context.pushDocumentContext();
                 builder = context.getDocumentBuilder();
@@ -128,6 +128,7 @@ public class FnExport extends BasicFunction {
             } catch (final Exception e) {
                 throw new XPathException(this, "export failed with exception: " + e.getMessage(), e);
             }
+
             if (builder == null) {
                 return Sequence.EMPTY_SEQUENCE;
             } else {
@@ -135,8 +136,9 @@ public class FnExport extends BasicFunction {
                 builder.endDocument();
                 return (NodeValue) builder.getDocument().getDocumentElement();
             }
+
         } finally {
-            if (builder != null) {
+            if (NAME.equals(mySignature.getName())) {
                 context.popDocumentContext();
             }
         }
