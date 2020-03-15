@@ -1,26 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2007-09 The eXist Project
- *  http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- * 
- *  $Id$
- *  
- *  @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
- *  @author ljo
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xquery.modules.spatial;
 
@@ -49,6 +46,10 @@ import org.w3c.dom.Element;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+/**
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
+ * @author ljo
+ */
 public class FunSpatialSearch extends BasicFunction implements IndexUseReporter {
     protected static final FunctionParameterSequenceType NODES_PARAMETER = new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "The nodes");
     protected static final FunctionParameterSequenceType GEOMETRY_PARAMETER = new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry");
