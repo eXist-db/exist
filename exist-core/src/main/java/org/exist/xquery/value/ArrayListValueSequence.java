@@ -433,6 +433,9 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
 
         @Override
         public Item nextItem() {
+            if (!hasNext()) {
+                return null;
+            }
             return iterator.next();
         }
     }
