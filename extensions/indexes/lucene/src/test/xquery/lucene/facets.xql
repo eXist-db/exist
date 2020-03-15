@@ -263,6 +263,14 @@ function facet:tearDown() {
 };
 
 declare
+    %private
+function facet:map-to-string($map) as xs:string* {
+    map:for-each($map, function($k, $v) {
+        $k || "=" || $v
+    })
+};
+
+declare
     %test:assertEquals(2, 1, 1, 2)
 function facet:query-all-and-facets() {
     let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
@@ -473,39 +481,37 @@ function facet:hierarchical-facets-retrieve($paths as xs:string*) {
 
 declare
     %test:arg("paths", "science")
-    %test:assertEquals('{"math":1,"engineering":1}')
+    %test:assertEqualsPermutation("math=1", "engineering=1")
 function facet:hierarchical-facets-retrieve($paths as xs:string*) {
     let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
     let $facets := ft:facets($result, "subject", (), $paths)
     return
-        serialize($facets, map { "method": "json" })
+        facet:map-to-string($facets)
 };
 
 declare
-    %test:assertEquals('{"Berlin":2,"Hamburg":1}','{"Wrocław":2}')
+    %test:assertEqualsPermutation("Berlin=2", "Hamburg=1", "Wrocław=2")
 function facet:hierarchical-place() {
     let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
     let $facets := ft:facets($result, "location", 10) (: Returns facet counts for "Germany" and "Poland" :)
     for $country in map:keys($facets)
     order by $country
     return
-        serialize(
-            ft:facets($result, "location", 10, $country), (: Get facet counts for sub-categories :)
-            map { "method": "json" }
+        facet:map-to-string(
+            ft:facets($result, "location", 10, $country) (: Get facet counts for sub-categories :)
         )
 };
 
 declare
-    %test:assertEqualsPermutation('{"history":5,"art":1}','{"math":1,"engineering":1}')
+    %test:assertEqualsPermutation("history=5", "art=1", "math=1", "engineering=1")
 function facet:hierarchical-subject() {
     let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
     let $facets := ft:facets($result, "subject", 10) (: Returns facet counts for "science" and "humanities" :)
     for $topic in map:keys($facets)
     order by $topic
     return
-        serialize(
-            ft:facets($result, "subject", 10, $topic), (: Get facet counts for sub-categories :)
-            map { "method": "json" }
+        facet:map-to-string(
+            ft:facets($result, "subject", 10, $topic) (: Get facet counts for sub-categories :)
         )
 };
 
