@@ -17,8 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id$
- *  
+*
  *  This file is in part based on code from the dbXML Group. The original license
  *  statement is included below:
  *  
