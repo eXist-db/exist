@@ -162,8 +162,8 @@
 
         <dependency>
             <groupId>org.exist-db.thirdparty.javax.xml.xquery</groupId>
-            <artifactId>xqjapi</artifactId>
-            <version>1.0-fr</version>
+            <artifactId>xqjri</artifactId>
+            <version>20080114-133351</version>
         </dependency>
 
         <dependency>
