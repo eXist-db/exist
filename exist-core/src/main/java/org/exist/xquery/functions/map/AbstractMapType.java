@@ -91,6 +91,12 @@ public abstract class AbstractMapType extends FunctionReference
     }
 
     @Override
+    public Sequence evalFunction(final Sequence contextSequence, final Item contextItem, final Sequence[] seq) throws XPathException {
+        final AccessorFunc accessorFunc =  (AccessorFunc) getAccessorFunc().getFunction();
+        return accessorFunc.eval(seq, contextSequence);
+    }
+
+    @Override
     public void setArguments(List<Expression> arguments) throws XPathException {
         getAccessorFunc().setArguments(arguments);
     }
@@ -177,9 +183,10 @@ public abstract class AbstractMapType extends FunctionReference
      * only instantiate it on demand.
      */
     protected void initFunction() {
-        if (this.accessorFunc != null)
-            {return;}
-        final Function fn = new AccessorFunc(this.context);
+        if (this.accessorFunc != null) {
+            return;
+        }
+        final Function fn = new AccessorFunc(context, this);
         this.accessorFunc = new InternalFunctionCall(fn);
     }
 
@@ -187,14 +194,17 @@ public abstract class AbstractMapType extends FunctionReference
      * The accessor function which will be evaluated if the map is called
      * as a function item.
      */
-    private class AccessorFunc extends BasicFunction {
+    private static class AccessorFunc extends BasicFunction {
+        private final AbstractMapType map;
 
-        public AccessorFunc(XQueryContext context) {
+        public AccessorFunc(final XQueryContext context, final AbstractMapType map) {
             super(context, ACCESSOR);
+            this.map = map;
         }
 
-        public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-            return AbstractMapType.this.get((AtomicValue) args[0].itemAt(0));
+        @Override
+        public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+            return map.get((AtomicValue) args[0].itemAt(0));
         }
     }
 }
