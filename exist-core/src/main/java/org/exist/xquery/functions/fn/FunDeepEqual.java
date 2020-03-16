@@ -41,7 +41,7 @@ import org.exist.xquery.ValueComparison;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.array.ArrayType;
-import org.exist.xquery.functions.map.MapType;
+import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -164,8 +164,8 @@ public class FunDeepEqual extends CollatingFunction {
                 if (a.getType() != b.getType()) {
                     return false;
                 }
-                final MapType amap = (MapType) a;
-                final MapType bmap = (MapType) b;
+                final AbstractMapType amap = (AbstractMapType) a;
+                final AbstractMapType bmap = (AbstractMapType) b;
                 if (amap.size() != bmap.size()) {
                     return false;
                 }
