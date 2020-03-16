@@ -19,7 +19,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
 package org.exist.xquery.regex;
 
 import org.exist.thirdparty.net.sf.saxon.functions.regex.JDK15RegexTranslator;
@@ -36,7 +35,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class RegexUtil {
 
@@ -92,6 +91,17 @@ public class RegexUtil {
      */
     public static boolean hasLiteral(final int flags) {
         return (flags & Pattern.LITERAL) != 0;
+    }
+
+    /**
+     * Determines if the XQuery Expression flags have the literal flag set.
+     *
+     * @param flags The XQuery Expression flags
+     *
+     * @return true if the literal flag is set
+     */
+    public static boolean hasLiteral(final String flags) {
+        return flags.contains("q");
     }
 
     /**
