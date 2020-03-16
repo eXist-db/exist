@@ -31,6 +31,7 @@ import org.exist.source.ClassLoaderSource;
 import org.exist.source.Source;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.ExistSAXParserFactory;
+import org.exist.util.FileUtils;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.junit.runner.Description;
@@ -86,9 +87,9 @@ public class XMLTestRunner extends AbstractTestRunner {
         String description = null;
         final List<String> testNames = new ArrayList<>();
 
-        final Node docElement = doc.getFirstChild();
+        final Node docElement = doc.getDocumentElement();
         if(docElement == null) {
-            throw new InitializationError("Invalid XML test document: " + path);
+            throw new InitializationError("Invalid XML test document: " + path.toAbsolutePath());
         }
 
         final NodeList children = docElement.getChildNodes();
