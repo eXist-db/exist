@@ -14,7 +14,7 @@
     </tearDown>
 
     <test output="text" id="for-where-001">
-        <task></task>
+        <task>for-where-001</task>
         <code><![CDATA[xquery version "3.1";
 
 let $f := function($x as xs:string) {true()}
@@ -26,7 +26,7 @@ return for $w in $words where $f($w) return $w
     </test>
 
     <test output="text" id="for-where-002">
-        <task></task>
+        <task>for-where-002</task>
         <code><![CDATA[xquery version "3.1";
 
 let $f := function($x as xs:string) {true()}
