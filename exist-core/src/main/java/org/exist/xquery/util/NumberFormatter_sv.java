@@ -30,12 +30,12 @@ import java.util.Locale;
  */
 public class NumberFormatter_sv extends NumberFormatter {
 
-    public NumberFormatter_sv(Locale locale) {
+    public NumberFormatter_sv(final Locale locale) {
         super(locale);
     }
 
     @Override
-    public String getOrdinalSuffix(long number) {
+    public String getOrdinalSuffix(final long number) {
 	// Swedish date ordinals do not usually use suffices,
 	// so this method is a bit coarse for both numbers *and* dates.
 	// For dates it should preferrably be a switch with:

@@ -30,12 +30,12 @@ import java.util.Locale;
  */
 public class NumberFormatter_nl extends NumberFormatter {
 
-    public NumberFormatter_nl(Locale locale) {
+    public NumberFormatter_nl(final Locale locale) {
         super(locale);
     }
 
     @Override
-    public String getOrdinalSuffix(long number) {
+    public String getOrdinalSuffix(final long number) {
         return ".";
     }
 }
