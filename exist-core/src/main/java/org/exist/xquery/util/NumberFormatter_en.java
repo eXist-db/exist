@@ -30,10 +30,11 @@ import java.util.Locale;
  */
 public class NumberFormatter_en extends NumberFormatter {
 
-    public NumberFormatter_en(Locale locale) {
+    public NumberFormatter_en(final Locale locale) {
         super(locale);
     }
 
+    @Override
     public String getOrdinalSuffix(long number) {
         if (number > 10 && number < 20)
             {return "th";}

@@ -31,7 +31,7 @@ import java.util.Locale;
  */
 public class NumberFormatter_ru extends NumberFormatter {
 
-    public NumberFormatter_ru(Locale locale) {
+    public NumberFormatter_ru(final Locale locale) {
         super(locale);
     }
 
@@ -47,7 +47,7 @@ public class NumberFormatter_ru extends NumberFormatter {
          * "Триллион","Триллиона","Триллионов",
          * "Ноль"
          */
-    public String getOrdinalSuffix(long number) {
+    public String getOrdinalSuffix(final long number) {
         return "";
     }
 }
