@@ -40,7 +40,7 @@ public class FindGroupForm extends javax.swing.JFrame implements DialogWithRespo
     private final UserManagementService userManagementService;
     private final List<DialogCompleteWithResponse<String>> dialogCompleteWithResponseCallbacks = new ArrayList<>();
     private final Set<String> allGroupNames;
-    private DefaultComboBoxModel groupNameModel;
+    private DefaultComboBoxModel<String> groupNameModel;
 
     public FindGroupForm(final UserManagementService userManagementService) throws XMLDBException {
         this.userManagementService = userManagementService;
@@ -66,7 +66,7 @@ public class FindGroupForm extends javax.swing.JFrame implements DialogWithRespo
         jSeparator1 = new javax.swing.JSeparator();
         btnOk = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
-        cmbGroupName = new javax.swing.JComboBox();
+        cmbGroupName = new javax.swing.JComboBox<>();
         AutoCompletion.enable(cmbGroupName);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -153,7 +153,7 @@ public class FindGroupForm extends javax.swing.JFrame implements DialogWithRespo
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnOk;
-    private javax.swing.JComboBox cmbGroupName;
+    private javax.swing.JComboBox<String> cmbGroupName;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel lblGroupName;
     // End of variables declaration//GEN-END:variables
@@ -163,9 +163,9 @@ public class FindGroupForm extends javax.swing.JFrame implements DialogWithRespo
         return allGroupNames.contains(groupName);
     }
     
-    private ComboBoxModel getGroupNameModel() {
+    private ComboBoxModel<String> getGroupNameModel() {
         if(groupNameModel == null) {
-            groupNameModel = new DefaultComboBoxModel();
+            groupNameModel = new DefaultComboBoxModel<>();
             groupNameModel.addElement("");
             for(final String groupName : allGroupNames) {
                groupNameModel.addElement(groupName);
