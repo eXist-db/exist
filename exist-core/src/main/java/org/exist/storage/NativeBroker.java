@@ -1814,7 +1814,7 @@ public class NativeBroker extends DBBroker {
 
         try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
             final Value name = new CollectionStore.CollectionKey(collection.getURI().toString());
-            try(final VariableByteOutputStream os = new VariableByteOutputStream(8)) {
+            try(final VariableByteOutputStream os = new VariableByteOutputStream(256)) {
                 collection.serialize(os);
                 final long address = collectionsDb.put(transaction, name, os.data(), true);
                 if (address == BFile.UNKNOWN_ADDRESS) {
@@ -2114,7 +2114,7 @@ public class NativeBroker extends DBBroker {
      */
     @Override
     public void storeXMLResource(final Txn transaction, final DocumentImpl doc) {
-        try(final VariableByteOutputStream os = new VariableByteOutputStream(8);
+        try(final VariableByteOutputStream os = new VariableByteOutputStream(256);
                 final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
             doc.write(os);
             final Value key = new CollectionStore.DocumentKey(doc.getCollection().getId(), doc.getResourceType(), doc.getDocId());

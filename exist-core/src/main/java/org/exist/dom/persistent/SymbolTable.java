@@ -112,7 +112,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      * the underlying symbols.dbx file
      */
     private Path file;
-    private final VariableByteOutputStream outBuffer = new VariableByteOutputStream(512);
+    private final VariableByteOutputStream outBuffer = new VariableByteOutputStream(256);
     private OutputStream os = null;
 
     @Override
@@ -360,7 +360,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      * @throws EXistException in response to eXist-db error
      */
     private void saveSymbols() throws EXistException {
-        try(final VariableByteOutputStream os = new VariableByteOutputStream(256);
+        try(final VariableByteOutputStream os = new VariableByteOutputStream(8192);
                 final OutputStream fos =  Files.newOutputStream(getFile())) {
             writeAll(os);
             fos.write(os.toByteArray());

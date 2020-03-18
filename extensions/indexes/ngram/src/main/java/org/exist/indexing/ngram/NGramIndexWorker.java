@@ -111,7 +111,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     @SuppressWarnings("unused")
     private IndexController controller;
     private final Map<QNameTerm, OccurrenceList> ngrams = new TreeMap<>();
-    private final VariableByteOutputStream os = new VariableByteOutputStream(7);
+    private final VariableByteOutputStream os = new VariableByteOutputStream(128);
 
     private NGramMatchListener matchListener = null;
 
@@ -182,6 +182,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             return;
         }
 
+        final VariableByteOutputStream buf = new VariableByteOutputStream();
         for (final Map.Entry<QNameTerm, OccurrenceList> entry : ngrams.entrySet()) {
             final QNameTerm key = entry.getKey();
             final OccurrenceList occurences = entry.getValue();
@@ -190,27 +191,34 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             os.writeInt(currentDoc.getDocId());
             os.writeByte(key.qname.getNameType());
             os.writeInt(occurences.getTermCount());
-            //Mark position
-            final int lenOffset = os.position();
-            //Dummy value : actual one will be written below
-            os.writeFixedInt(0);
 
-            NodeId previous = null;
-            for (int m = 0; m < occurences.getSize(); ) {
-                try {
-                    previous = occurences.getNode(m).write(previous, os);
-                } catch (final IOException e) {
-                    LOG.error("IOException while writing nGram index: " + e.getMessage(), e);
+            // write nodeids, freq, and offsets to a `temp` buf
+            try {
+                NodeId previous = null;
+                for (int m = 0; m < occurences.getSize(); ) {
+                    previous = occurences.getNode(m).write(previous, buf);
+
+                    final int freq = occurences.getOccurrences(m);
+                    buf.writeInt(freq);
+                    for (int n = 0; n < freq; n++) {
+                        buf.writeInt(occurences.getOffset(m + n));
+                    }
+                    m += freq;
                 }
-                final int freq = occurences.getOccurrences(m);
-                os.writeInt(freq);
-                for (int n = 0; n < freq; n++) {
-                    os.writeInt(occurences.getOffset(m + n));
-                }
-                m += freq;
+
+                final byte[] bufData = buf.toByteArray();
+
+                // clear the buf for the next iteration
+                buf.clear();
+
+                // Write length of node IDs + frequency + offsets (bytes)
+                os.writeFixedInt(bufData.length);
+
+                // Write the node IDs + frequency + offset
+                os.write(bufData);
+            } catch (final IOException e) {
+                LOG.error("IOException while writing nGram index: " + e.getMessage(), e);
             }
-            //Write (variable) length of node IDs + frequency + offsets
-            os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
 
             final ByteArray data = os.data();
             if (data.size() == 0) {
@@ -238,6 +246,8 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (ngrams.isEmpty()) {
             return;
         }
+
+        final VariableByteOutputStream buf = new VariableByteOutputStream();
 
         for (final Map.Entry<QNameTerm, OccurrenceList> entry : ngrams.entrySet()) {
             final QNameTerm key = entry.getKey();
@@ -300,22 +310,29 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                 os.writeInt(currentDoc.getDocId());
                                 os.writeByte(nameType);
                                 os.writeInt(newOccurrences.getTermCount());
-                                //Mark position
-                                final int lenOffset = os.position();
-                                //Dummy value : actual one will be written below
-                                os.writeFixedInt(0);
+
+                                // write nodeids, freq, and offsets to a `temp` buf
                                 previous = null;
                                 for (int m = 0; m < newOccurrences.getSize(); ) {
-                                    previous = newOccurrences.getNode(m).write(previous, os);
+                                    previous = newOccurrences.getNode(m).write(previous, buf);
                                     final int freq = newOccurrences.getOccurrences(m);
-                                    os.writeInt(freq);
+                                    buf.writeInt(freq);
                                     for (int n = 0; n < freq; n++) {
-                                        os.writeInt(newOccurrences.getOffset(m + n));
+                                        buf.writeInt(newOccurrences.getOffset(m + n));
                                     }
                                     m += freq;
                                 }
-                                //Write (variable) length of node IDs + frequency + offsets
-                                os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
+
+                                final byte[] bufData = buf.toByteArray();
+
+                                // clear the buf for the next iteration
+                                buf.clear();
+
+                                // Write length of node IDs + frequency + offsets (bytes)
+                                os.writeFixedInt(bufData.length);
+
+                                // Write the node IDs + frequency + offset
+                                os.write(bufData);
                             }
                         }
                         changed = true;

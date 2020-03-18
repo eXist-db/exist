@@ -703,10 +703,7 @@ public class SimpleACLPermissionTest {
         assertEquals(mode2, permission.getACEMode(1));
         
         //get the written acl data
-        ByteArray buf = os.data();
-        byte data[] = new byte[buf.size()];
-        buf.copyTo(data, 0);
-        
+        final byte data[] = os.toByteArray();
         
         //create a new permission instance
         SimpleACLPermission permission2 = new SimpleACLPermission(mockSecurityManager);
