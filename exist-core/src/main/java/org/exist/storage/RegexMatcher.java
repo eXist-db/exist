@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.exist.EXistException;
-import org.exist.util.GlobToRegex;
 
 /**
  * A {@link org.exist.storage.TermMatcher} that matches index entries against a
@@ -40,18 +39,12 @@ class RegexMatcher implements TermMatcher {
 	private Matcher matcher;
     private boolean matchAll = false;
 
-    public RegexMatcher(String expr, int type, int flags) throws EXistException {
-        this(expr, type, flags, false);
+    public RegexMatcher(String expr, int flags) throws EXistException {
+        this(expr, flags, false);
     }
     
-    public RegexMatcher(String expr, int type, int flags, boolean matchAll) throws EXistException {
+    public RegexMatcher(String expr, int flags, boolean matchAll) throws EXistException {
         try {
-            // if expr is a file glob, translate it to a regular expression first
-            if (type == DBBroker.MATCH_WILDCARDS) {
-                expr = GlobToRegex.globToRegexp(expr);
-                flags = Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-            }
-            
             final Pattern pattern = Pattern.compile(expr, flags);
             matcher = pattern.matcher("");
         } catch(final PatternSyntaxException e) {

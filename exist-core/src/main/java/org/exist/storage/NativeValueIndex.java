@@ -836,7 +836,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     break;
 
                 default:
-                    matcher = new RegexMatcher(expr, type, flags);
+                    matcher = new RegexMatcher(expr, flags);
             }
         } else {
             matcher = new CollatorMatcher(expr, truncation, collator);

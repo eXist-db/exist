@@ -80,7 +80,7 @@ public abstract class DBBroker implements AutoCloseable {
 	// Matching types
 	public final static int MATCH_EXACT 		= 0;
 	public final static int MATCH_REGEXP 		= 1;
-	public final static int MATCH_WILDCARDS 	= 2;
+//	public final static int MATCH_WILDCARDS 	= 2;  // no longer used!
 	public final static int MATCH_CONTAINS 		= 3;
 	public final static int MATCH_STARTSWITH 	= 4;
 	public final static int MATCH_ENDSWITH 		= 5;
