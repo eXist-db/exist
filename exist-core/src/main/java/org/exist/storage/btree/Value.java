@@ -75,7 +75,7 @@ public class Value implements Comparable<Object> {
         this.data = value.data;
         this.pos = value.pos;
         this.len = value.len;
-	}
+    }
 
     public Value(byte[] data) {
         this.data = data;
@@ -93,7 +93,7 @@ public class Value implements Comparable<Object> {
         this.len = this.data.length;
     }
 
-    public void setAddress( long addr ) {
+    public void setAddress(long addr) {
         address = addr;
     }
 
@@ -111,8 +111,9 @@ public class Value implements Comparable<Object> {
             final byte[] b = new byte[len];
             System.arraycopy(data, pos, b, 0, len);
             return b;
-        } else
-            {return data;}
+        } else {
+            return data;
+        }
     }
 
     public final byte[] data() {
@@ -133,7 +134,7 @@ public class Value implements Comparable<Object> {
     }
 
     public String toString() {
-    	return dump();
+        return dump();
     }
 
     public int hashCode() {
@@ -145,12 +146,14 @@ public class Value implements Comparable<Object> {
     }
 
     public boolean equals(Object obj) {
-        if (this == obj)
-            {return true;}
-        if (obj instanceof Value)
-            {return equals((Value) obj);}
-        else
-            {return equals(new Value(obj.toString()));}
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof Value) {
+            return equals((Value) obj);
+        } else {
+            return equals(new Value(obj.toString()));
+        }
     }
 
     public final int compareTo(Value value) {
@@ -158,33 +161,35 @@ public class Value implements Comparable<Object> {
         for (int i = 0; i < stop; i++) {
             final byte b1 = data[pos + i];
             final byte b2 = value.data[value.pos + i];
-            if (b1 != b2){
+            if (b1 != b2) {
                 final short s1 = (short) (b1 & 0xFF);
                 final short s2 = (short) (b2 & 0xFF);
-                return s1 > s2 ? (i + 1) : - (i + 1);
+                return s1 > s2 ? (i + 1) : -(i + 1);
             }
         }
-        if (len == value.len)
-            {return 0;}
-        else
-            {return len > value.len ? stop + 1 : - (stop + 1);}
+        if (len == value.len) {
+            return 0;
+        } else {
+            return len > value.len ? stop + 1 : -(stop + 1);
+        }
     }
 
     public final int compareTo(Object obj) {
-        if (obj instanceof Value)
-            {return compareTo((Value) obj);}
-        else
-            {return compareTo(new Value(obj.toString()));}
+        if (obj instanceof Value) {
+            return compareTo((Value) obj);
+        } else {
+            return compareTo(new Value(obj.toString()));
+        }
     }
 
     public final int comparePrefix(Value value) {
         for (int i = 0; i < value.len; i++) {
             final byte b1 = data[pos + i];
             final byte b2 = value.data[value.pos + i];
-            if (b1 != b2){
+            if (b1 != b2) {
                 final short s1 = (short) (b1 & 0xFF);
                 final short s2 = (short) (b2 & 0xFF);
-                return s1 > s2 ? (i + 1) : - (i + 1);
+                return s1 > s2 ? (i + 1) : -(i + 1);
             }
         }
         return 0;
@@ -193,15 +198,16 @@ public class Value implements Comparable<Object> {
     public final int comparePrefix(Value prefix, Value keyPrefix) {
         if (keyPrefix.getLength() >= prefix.getLength()) {
             final int cmp = keyPrefix.comparePrefix(prefix);
-            if (cmp != 0 || keyPrefix.getLength() == prefix.getLength())
-                {return cmp;}
+            if (cmp != 0 || keyPrefix.getLength() == prefix.getLength()) {
+                return cmp;
+            }
             for (int i = prefix.getLength(); i < keyPrefix.getLength(); i++) {
                 final byte b1 = data[pos + i];
                 final byte b2 = keyPrefix.data[keyPrefix.pos + i];
-                if (b1 != b2){
+                if (b1 != b2) {
                     final short s1 = (short) (b1 & 0xFF);
                     final short s2 = (short) (b2 & 0xFF);
-                    return s1 > s2 ? (i + 1) : - (i + 1);
+                    return s1 > s2 ? (i + 1) : -(i + 1);
                 }
             }
             return 0;
@@ -211,26 +217,30 @@ public class Value implements Comparable<Object> {
     }
 
     public final boolean startsWith(Value value) {
-        if (len < value.len)
-            {return false;}
+        if (len < value.len) {
+            return false;
+        }
         final byte[] vdata = value.data;
         final int vpos = value.pos;
         for (int i = 0; i < value.len; i++) {
-            if (data[i + pos] != vdata[i + vpos])
-                {return false;}
+            if (data[i + pos] != vdata[i + vpos]) {
+                return false;
+            }
         }
         return true;
     }
 
     public final boolean endsWith(Value value) {
-        if (len < value.len)
-            {return false;}
+        if (len < value.len) {
+            return false;
+        }
         final byte[] vdata = value.data;
         final int vpos = value.pos;
         final int d = len - value.len;
         for (int i = 0; i < value.len; ++i) {
-            if (data[d + i + pos] != vdata[i + vpos])
-                {return false;}
+            if (data[d + i + pos] != vdata[i + vpos]) {
+                return false;
+            }
         }
         return true;
     }
@@ -245,10 +255,11 @@ public class Value implements Comparable<Object> {
     public int commonPrefix(Value other) {
         final int l = Math.min(len, other.len);
         int i = 0;
-        for ( ; i < l; i++) {
+        for (; i < l; i++) {
             final byte b = data[pos + i];
-            if (b != other.data[other.pos + i])
-                {break;}
+            if (b != other.data[other.pos + i]) {
+                break;
+            }
         }
         return i;
     }
@@ -256,8 +267,9 @@ public class Value implements Comparable<Object> {
     public int checkPrefix(Value prefix) {
         final int l = Math.min(prefix.len, len);
         for (int i = 0; i < l; i++) {
-            if (prefix.data[prefix.pos + i] != data[pos + i])
-                {return i;}
+            if (prefix.data[prefix.pos + i] != data[pos + i]) {
+                return i;
+            }
         }
         return l;
     }

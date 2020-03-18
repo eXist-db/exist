@@ -89,150 +89,150 @@ public class IndexQuery {
     protected int op;
     protected Value[] vals;
 
-   public IndexQuery() {
-      op = ANY;
-   }
+    public IndexQuery() {
+        op = ANY;
+    }
 
-   public IndexQuery(int op, Value[] vals) {
-      this.op = op;
-      this.vals = vals;
-   }
+    public IndexQuery(int op, Value[] vals) {
+        this.op = op;
+        this.vals = vals;
+    }
 
-   public IndexQuery(Value[] vals) {
-      this(IN, vals);
-   }
+    public IndexQuery(Value[] vals) {
+        this(IN, vals);
+    }
 
-   public IndexQuery(int op, Value val1) {
-      this.op = op;
-      vals = new Value[] { val1 };
-   }
+    public IndexQuery(int op, Value val1) {
+        this.op = op;
+        vals = new Value[]{val1};
+    }
 
-   public IndexQuery(Value val1) {
-      this(EQ, val1);
-   }
+    public IndexQuery(Value val1) {
+        this(EQ, val1);
+    }
 
-   public IndexQuery(int op, Value val1, Value val2) {
-      this.op = op;
-      vals = new Value[] { val1, val2 };
-   }
+    public IndexQuery(int op, Value val1, Value val2) {
+        this.op = op;
+        vals = new Value[]{val1, val2};
+    }
 
-   public IndexQuery(Value val1, Value val2) {
-      this(IN, val1, val2);
-   }
+    public IndexQuery(Value val1, Value val2) {
+        this(IN, val1, val2);
+    }
 
-   public IndexQuery(int op, String val1) {
-      this(op, new Value(val1));
-   }
+    public IndexQuery(int op, String val1) {
+        this(op, new Value(val1));
+    }
 
-   public IndexQuery(String val1) {
-      this(new Value(val1));
-   }
+    public IndexQuery(String val1) {
+        this(new Value(val1));
+    }
 
-   public IndexQuery(int op, String val1, String val2) {
-      this(op, new Value(val1), new Value(val2));
-   }
+    public IndexQuery(int op, String val1, String val2) {
+        this(op, new Value(val1), new Value(val2));
+    }
 
-   public IndexQuery(String val1, String val2) {
-      this(new Value(val1), new Value(val2));
-   }
+    public IndexQuery(String val1, String val2) {
+        this(new Value(val1), new Value(val2));
+    }
 
-   /**
-    * getOperator returns the operator associated with this query.
-    *
-    * @return The operator
-    */
-   public int getOperator() {
-      return op;
-   }
+    /**
+     * getOperator returns the operator associated with this query.
+     *
+     * @return The operator
+     */
+    public int getOperator() {
+        return op;
+    }
 
-   /**
-    * getValue returns one of the Values associated with this query.
-    *
-    * @param index The Value index
-    * @return The request Value
-    */
-   public final Value getValue(int index) {
-      return vals[index];
-   }
+    /**
+     * getValue returns one of the Values associated with this query.
+     *
+     * @param index The Value index
+     * @return The request Value
+     */
+    public final Value getValue(int index) {
+        return vals[index];
+    }
 
-   /**
-    * getValues returns the Values associated with this query.
-    *
-    * @return The Value set
-    */
-   public Value[] getValues() {
-      return vals;
-   }
+    /**
+     * getValues returns the Values associated with this query.
+     *
+     * @return The Value set
+     */
+    public Value[] getValues() {
+        return vals;
+    }
 
-   /**
-    * getLength returns the length of the Value set associated with
-    * this query.
-    *
-    * @return The Value set length
-    */
-   public final int getLength() {
-      return vals.length;
-   }
+    /**
+     * getLength returns the length of the Value set associated with
+     * this query.
+     *
+     * @return The Value set length
+     */
+    public final int getLength() {
+        return vals.length;
+    }
 
-   /**
-    * testValue tests the specified value for validity against this
-    * IndexQuery.  The helper classes in org.dbxml.core.indexer.helpers
-    * should be used for optimized performance.
-    *
-    * @param value The Value to compare
-    * @return Whether or not the value matches
-    */
+    /**
+     * testValue tests the specified value for validity against this
+     * IndexQuery.  The helper classes in org.dbxml.core.indexer.helpers
+     * should be used for optimized performance.
+     *
+     * @param value The Value to compare
+     * @return Whether or not the value matches
+     */
     public boolean testValue(Value value) {
-        switch ( op ) {
-        // No Comparison (Any)
-        case ANY:
-            return true;
-        // Singleton Comparisons
-        case EQ:
-            return value.equals(vals[0]);
-        case NEQ:
-            return !value.equals(vals[0]);
-        case GT:
-            return value.compareTo(vals[0]) > 0;
-        case GEQ:
-            return value.compareTo(vals[0]) >= 0;
-        case LT:
-            return value.compareTo(vals[0]) < 0;
-        case LEQ:
-            return value.compareTo(vals[0]) <= 0;
-        // Range Comparisons
-        case BW:
-            return value.compareTo(vals[0]) >= 0 && value.compareTo(vals[1]) <= 0;
-        case NBW:
-            return value.compareTo(vals[0]) <= 0 || value.compareTo(vals[1]) >= 0;
-        case BWX:
-            return value.compareTo(vals[0]) > 0 && value.compareTo(vals[1]) < 0;
-        case NBWX:
-            return value.compareTo(vals[0]) < 0 || value.compareTo(vals[1]) > 0;
-        case RANGE:
-            return value.compareTo(vals[0]) >= 0 && value.compareTo(vals[1]) < 0;
-        // Set Comparisons
-        case IN:
-        case NIN:
-            return Arrays.binarySearch(vals, value)>= 0 ? op == IN : op == NIN;
-        case TRUNC_RIGHT:
-            return value.startsWith(vals[0]);
-        case TRUNC_LEFT:
-            return value.endsWith(vals[0]);
+        switch (op) {
+            // No Comparison (Any)
+            case ANY:
+                return true;
+            // Singleton Comparisons
+            case EQ:
+                return value.equals(vals[0]);
+            case NEQ:
+                return !value.equals(vals[0]);
+            case GT:
+                return value.compareTo(vals[0]) > 0;
+            case GEQ:
+                return value.compareTo(vals[0]) >= 0;
+            case LT:
+                return value.compareTo(vals[0]) < 0;
+            case LEQ:
+                return value.compareTo(vals[0]) <= 0;
+            // Range Comparisons
+            case BW:
+                return value.compareTo(vals[0]) >= 0 && value.compareTo(vals[1]) <= 0;
+            case NBW:
+                return value.compareTo(vals[0]) <= 0 || value.compareTo(vals[1]) >= 0;
+            case BWX:
+                return value.compareTo(vals[0]) > 0 && value.compareTo(vals[1]) < 0;
+            case NBWX:
+                return value.compareTo(vals[0]) < 0 || value.compareTo(vals[1]) > 0;
+            case RANGE:
+                return value.compareTo(vals[0]) >= 0 && value.compareTo(vals[1]) < 0;
+            // Set Comparisons
+            case IN:
+            case NIN:
+                return Arrays.binarySearch(vals, value) >= 0 ? op == IN : op == NIN;
+            case TRUNC_RIGHT:
+                return value.startsWith(vals[0]);
+            case TRUNC_LEFT:
+                return value.endsWith(vals[0]);
         }
         return false;
     }
 
-   /**
-    * testValue tests the specified value for validity against this
-    * IndexQuery.  The helper classes in org.dbxml.core.indexer.helpers
-    * should be used for optimized performance.
-    *
-    * @param value The Value to compare
-    * @return Whether or not the value matches
-    */
-   public final boolean testValue(String value) {
-      return testValue(new Value(value));
-   }
+    /**
+     * testValue tests the specified value for validity against this
+     * IndexQuery.  The helper classes in org.dbxml.core.indexer.helpers
+     * should be used for optimized performance.
+     *
+     * @param value The Value to compare
+     * @return Whether or not the value matches
+     */
+    public final boolean testValue(String value) {
+        return testValue(new Value(value));
+    }
 }
 
