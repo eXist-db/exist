@@ -599,6 +599,10 @@
                         <exclude>src/test/resources/**/*.xar</exclude>
                         <exclude>src/test/resources/**/*.bin</exclude>
                         <exclude>src/test/resources/org/exist/validation/entities/**</exclude>
+
+                        <!-- Already under LGPL 2.1, but with a different Copyright -->
+                        <exclude>src/main/java/org/exist/util/UTF8.java</exclude>
+
                     </excludes>
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
