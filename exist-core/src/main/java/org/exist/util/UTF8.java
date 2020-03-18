@@ -17,10 +17,11 @@
  *  Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
  *  02111-1307 USA
  */
-
 package org.exist.util;
 
 import javax.annotation.Nullable;
+
+//TODO(AR) For eXist-db 6.0.0, this should be replaced with String.getBytes(UTF_8) and new String(bytes, UTF_8)
 
 /**
  * This class contains two static tools for doing UTF-8 encoding and
