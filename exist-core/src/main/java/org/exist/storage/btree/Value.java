@@ -47,9 +47,6 @@
  */
 package org.exist.storage.btree;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -59,42 +56,47 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class Value implements Comparable<Object> {
 
-    private static Logger LOG = LogManager.getLogger(Value.class.getName());
-
     public final static Value EMPTY_VALUE = new Value(new byte[0]);
 
-    protected long address = -1;
+    // TOOD(AR) could be make private final in future
     protected byte[] data = null;
     protected int pos = 0;
     protected int len = -1;
 
+    private long address = -1;
+
     public Value() {
+        this.data = null;
+        this.pos = 0;
+        this.len = -1;
     }
 
-    public Value(Value value) {
+    public Value(final Value value) {
         this.data = value.data;
         this.pos = value.pos;
         this.len = value.len;
     }
 
-    public Value(byte[] data) {
+    public Value(final byte[] data) {
         this.data = data;
+        this.pos = 0;
         this.len = data.length;
     }
 
-    public Value(byte[] data, int pos, int len) {
+    public Value(final byte[] data, final int pos, final int len) {
         this.data = data;
         this.pos = pos;
         this.len = len;
     }
 
-    public Value(String data) {
+    public Value(final String data) {
         this.data = data.getBytes(UTF_8);
+        this.pos = 0;
         this.len = this.data.length;
     }
 
-    public void setAddress(long addr) {
-        address = addr;
+    public void setAddress(final long address) {
+        this.address = address;
     }
 
     public long getAddress() {
@@ -133,19 +135,22 @@ public class Value implements Comparable<Object> {
         return len;
     }
 
+    @Override
     public String toString() {
         return dump();
     }
 
+    @Override
     public int hashCode() {
         return toString().hashCode();
     }
 
-    public boolean equals(Value value) {
-        return len == value.len ? compareTo(value) == 0 : false;
+    public boolean equals(final Value value) {
+        return len == value.len && compareTo(value) == 0;
     }
 
-    public boolean equals(Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -156,8 +161,8 @@ public class Value implements Comparable<Object> {
         }
     }
 
-    public final int compareTo(Value value) {
-        final int stop = len > value.len ? value.len : len;
+    public final int compareTo(final Value value) {
+        final int stop = Math.min(len, value.len);
         for (int i = 0; i < stop; i++) {
             final byte b1 = data[pos + i];
             final byte b2 = value.data[value.pos + i];
@@ -174,7 +179,8 @@ public class Value implements Comparable<Object> {
         }
     }
 
-    public final int compareTo(Object obj) {
+    @Override
+    public final int compareTo(final Object obj) {
         if (obj instanceof Value) {
             return compareTo((Value) obj);
         } else {
@@ -182,7 +188,7 @@ public class Value implements Comparable<Object> {
         }
     }
 
-    public final int comparePrefix(Value value) {
+    public final int comparePrefix(final Value value) {
         for (int i = 0; i < value.len; i++) {
             final byte b1 = data[pos + i];
             final byte b2 = value.data[value.pos + i];
@@ -195,7 +201,7 @@ public class Value implements Comparable<Object> {
         return 0;
     }
 
-    public final int comparePrefix(Value prefix, Value keyPrefix) {
+    public final int comparePrefix(final Value prefix, final Value keyPrefix) {
         if (keyPrefix.getLength() >= prefix.getLength()) {
             final int cmp = keyPrefix.comparePrefix(prefix);
             if (cmp != 0 || keyPrefix.getLength() == prefix.getLength()) {
@@ -216,7 +222,7 @@ public class Value implements Comparable<Object> {
         }
     }
 
-    public final boolean startsWith(Value value) {
+    public final boolean startsWith(final Value value) {
         if (len < value.len) {
             return false;
         }
@@ -230,7 +236,7 @@ public class Value implements Comparable<Object> {
         return true;
     }
 
-    public final boolean endsWith(Value value) {
+    public final boolean endsWith(final Value value) {
         if (len < value.len) {
             return false;
         }
@@ -252,7 +258,7 @@ public class Value implements Comparable<Object> {
      * @param other the other value
      * @return length of the common prefix, 0 if there is none
      */
-    public int commonPrefix(Value other) {
+    public int commonPrefix(final Value other) {
         final int l = Math.min(len, other.len);
         int i = 0;
         for (; i < l; i++) {
@@ -264,7 +270,7 @@ public class Value implements Comparable<Object> {
         return i;
     }
 
-    public int checkPrefix(Value prefix) {
+    public int checkPrefix(final Value prefix) {
         final int l = Math.min(prefix.len, len);
         for (int i = 0; i < l; i++) {
             if (prefix.data[prefix.pos + i] != data[pos + i]) {
@@ -274,7 +280,7 @@ public class Value implements Comparable<Object> {
         return l;
     }
 
-    public Value getSeparator(Value other) {
+    public Value getSeparator(final Value other) {
         final int offset = commonPrefix(other) + 1;
         final byte[] data = new byte[Math.abs(offset)];
         System.arraycopy(other.getData(), 0, data, 0, data.length);

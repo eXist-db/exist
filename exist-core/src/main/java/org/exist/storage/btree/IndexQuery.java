@@ -86,54 +86,52 @@ public class IndexQuery {
 
     public static final int RANGE = 10;
 
-    protected int op;
-    protected Value[] vals;
+    private final int op;
+    private final Value[] vals;
 
     public IndexQuery() {
-        op = ANY;
+        this(ANY, (Value[]) null);
     }
 
-    public IndexQuery(int op, Value[] vals) {
-        this.op = op;
-        this.vals = vals;
-    }
-
-    public IndexQuery(Value[] vals) {
-        this(IN, vals);
-    }
-
-    public IndexQuery(int op, Value val1) {
-        this.op = op;
-        vals = new Value[]{val1};
-    }
-
-    public IndexQuery(Value val1) {
+    public IndexQuery(final Value val1) {
         this(EQ, val1);
     }
 
-    public IndexQuery(int op, Value val1, Value val2) {
-        this.op = op;
-        vals = new Value[]{val1, val2};
-    }
-
-    public IndexQuery(Value val1, Value val2) {
-        this(IN, val1, val2);
-    }
-
-    public IndexQuery(int op, String val1) {
-        this(op, new Value(val1));
-    }
-
-    public IndexQuery(String val1) {
+    public IndexQuery(final String val1) {
         this(new Value(val1));
     }
 
-    public IndexQuery(int op, String val1, String val2) {
+    public IndexQuery(final int op, final Value val1) {
+        this(op, new Value[]{val1});
+    }
+
+    public IndexQuery(final int op, final String val1) {
+        this(op, new Value(val1));
+    }
+
+    public IndexQuery(final Value val1, final Value val2) {
+        this(IN, val1, val2);
+    }
+
+    public IndexQuery(final String val1, final String val2) {
+        this(new Value(val1), new Value(val2));
+    }
+
+    public IndexQuery(final int op, final Value val1, final Value val2) {
+        this(op, new Value[]{val1, val2});
+    }
+
+    public IndexQuery(final int op, final String val1, final String val2) {
         this(op, new Value(val1), new Value(val2));
     }
 
-    public IndexQuery(String val1, String val2) {
-        this(new Value(val1), new Value(val2));
+    public IndexQuery(final Value[] vals) {
+        this(IN, vals);
+    }
+
+    public IndexQuery(final int op, final Value[] vals) {
+        this.op = op;
+        this.vals = vals;
     }
 
     /**
@@ -151,7 +149,7 @@ public class IndexQuery {
      * @param index The Value index
      * @return The request Value
      */
-    public final Value getValue(int index) {
+    public final Value getValue(final int index) {
         return vals[index];
     }
 
@@ -182,7 +180,7 @@ public class IndexQuery {
      * @param value The Value to compare
      * @return Whether or not the value matches
      */
-    public boolean testValue(Value value) {
+    public boolean testValue(final Value value) {
         switch (op) {
             // No Comparison (Any)
             case ANY:
@@ -222,17 +220,4 @@ public class IndexQuery {
         }
         return false;
     }
-
-    /**
-     * testValue tests the specified value for validity against this
-     * IndexQuery.  The helper classes in org.dbxml.core.indexer.helpers
-     * should be used for optimized performance.
-     *
-     * @param value The Value to compare
-     * @return Whether or not the value matches
-     */
-    public final boolean testValue(String value) {
-        return testValue(new Value(value));
-    }
 }
-
