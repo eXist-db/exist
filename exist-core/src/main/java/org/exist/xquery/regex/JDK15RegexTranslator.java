@@ -3,10 +3,11 @@ package org.exist.xquery.regex;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.exist.util.FastStringBuffer;
 import org.exist.util.UTF16CharacterSet;
 import org.exist.util.XMLString;
 import org.exist.xquery.value.StringValue;
+
+import static org.exist.util.StringBuilderUtil.appendWideChar;
 
 /**
  * This class translates XML Schema regex syntax into JDK 1.5 regex syntax. This differs from the JDK 1.4
@@ -159,9 +160,9 @@ public class JDK15RegexTranslator extends RegexTranslator {
         protected CharClass() {
         }
 
-        abstract void output(FastStringBuffer buf);
+        abstract void output(StringBuilder buf);
 
-        abstract void outputComplement(FastStringBuffer buf);
+        abstract void outputComplement(StringBuilder buf);
 
 
         int getSingleChar() {
@@ -175,19 +176,19 @@ public class JDK15RegexTranslator extends RegexTranslator {
 
         }
 
-        void output(FastStringBuffer buf) {
+        void output(final StringBuilder buf) {
             buf.append('[');
             inClassOutput(buf);
             buf.append(']');
         }
 
-        void outputComplement(FastStringBuffer buf) {
+        void outputComplement(StringBuilder buf) {
             buf.append("[^");
             inClassOutput(buf);
             buf.append(']');
         }
 
-        abstract void inClassOutput(FastStringBuffer buf);
+        abstract void inClassOutput(StringBuilder buf);
     }
 
     static class SingleChar extends SimpleCharClass {
@@ -207,11 +208,11 @@ public class JDK15RegexTranslator extends RegexTranslator {
             return c;
         }
 
-        void output(FastStringBuffer buf) {
+        void output(final StringBuilder buf) {
             inClassOutput(buf);
         }
 
-        void inClassOutput(FastStringBuffer buf) {
+        void inClassOutput(final StringBuilder buf) {
             if (isJavaMetaChar(c)) {
                 buf.append('\\');
                 buf.append((char) c);
@@ -230,7 +231,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
                         buf.append("\\x20");
                         break;
                     default:
-                        buf.appendWideChar(c);
+                        appendWideChar(buf, c);
                 }
             }
         }
@@ -248,15 +249,15 @@ public class JDK15RegexTranslator extends RegexTranslator {
             return instance;
         }
 
-        void output(FastStringBuffer buf) {
+        void output(final StringBuilder buf) {
             buf.append("\\x00");        // no character matches
         }
 
-        void outputComplement(FastStringBuffer buf) {
+        void outputComplement(final StringBuilder buf) {
             buf.append("[^\\x00]");    // every character matches
         }
 
-        void inClassOutput(FastStringBuffer buf) {
+        void inClassOutput(final StringBuilder buf) {
             throw new RuntimeException("BMP output botch");
         }
 
@@ -271,16 +272,16 @@ public class JDK15RegexTranslator extends RegexTranslator {
             this.upper = upper;
         }
 
-        void inClassOutput(FastStringBuffer buf) {
+        void inClassOutput(final StringBuilder buf) {
             if (isJavaMetaChar(lower)) {
                 buf.append('\\');
             }
-            buf.appendWideChar(lower);
+            appendWideChar(buf, lower);
             buf.append('-');
             if (isJavaMetaChar(upper)) {
                 buf.append('\\');
             }
-            buf.appendWideChar(upper);
+            appendWideChar(buf, upper);
         }
 
     }
@@ -292,13 +293,13 @@ public class JDK15RegexTranslator extends RegexTranslator {
             this.name = name;
         }
 
-        void inClassOutput(FastStringBuffer buf) {
+        void inClassOutput(final StringBuilder buf) {
             buf.append("\\p{");
             buf.append(name);
             buf.append('}');
         }
 
-        void outputComplement(FastStringBuffer buf) {
+        void outputComplement(StringBuilder buf) {
             buf.append("\\P{");
             buf.append(name);
             buf.append('}');
@@ -316,7 +317,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
             this.cc2 = cc2;
         }
 
-        void output(FastStringBuffer buf) {
+        void output(final StringBuilder buf) {
             buf.append('[');
             cc1.output(buf);
             buf.append("&&");
@@ -324,7 +325,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
             buf.append(']');
         }
 
-        void outputComplement(FastStringBuffer buf) {
+        void outputComplement(final StringBuilder buf) {
             buf.append('[');
             cc1.outputComplement(buf);
             cc2.output(buf);
@@ -349,7 +350,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
             this.members = members;
         }
 
-        void output(FastStringBuffer buf) {
+        void output(final StringBuilder buf) {
             buf.append('[');
             for (Object member : members) {
                 final CharClass cc = (CharClass) member;
@@ -358,7 +359,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
             buf.append(']');
         }
 
-        void outputComplement(FastStringBuffer buf) {
+        void outputComplement(final StringBuilder buf) {
             boolean first = true;
             final int len = members.size();
             for (Object o : members) {
@@ -386,7 +387,7 @@ public class JDK15RegexTranslator extends RegexTranslator {
             if (first) {
                 // empty union, so the complement is everything
                 buf.append("[\u0001-");
-                buf.appendWideChar(UTF16CharacterSet.NONBMP_MAX);
+                appendWideChar(buf, UTF16CharacterSet.NONBMP_MAX);
                 buf.append("]");
             } else {
                 buf.append(']');
@@ -401,15 +402,15 @@ public class JDK15RegexTranslator extends RegexTranslator {
             this.i = i;
         }
 
-        void output(FastStringBuffer buf) {
+        void output(final StringBuilder buf) {
             inClassOutput(buf);
         }
 
-        void outputComplement(FastStringBuffer buf) {
+        void outputComplement(final StringBuilder buf) {
             inClassOutput(buf);
         }
 
-        void inClassOutput(FastStringBuffer buf) {
+        void inClassOutput(final StringBuilder buf) {
             if (i != -1) {
             	buf.append("(?:\\" + i + ")");  // terminate the back-reference with a syntactic separator
             } else {
@@ -426,11 +427,11 @@ public class JDK15RegexTranslator extends RegexTranslator {
             this.cc = cc;
         }
 
-        void output(FastStringBuffer buf) {
+        void output(final StringBuilder buf) {
             cc.outputComplement(buf);
         }
 
-        void outputComplement(FastStringBuffer buf) {
+        void outputComplement(final StringBuilder buf) {
             cc.output(buf);
         }
     }

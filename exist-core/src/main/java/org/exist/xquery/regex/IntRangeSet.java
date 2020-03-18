@@ -3,8 +3,6 @@ package org.exist.xquery.regex;
 import java.io.Serializable;
 import java.util.Arrays;
 
-import org.exist.util.FastStringBuffer;
-
 /**
  * Set of int values. This implementation of IntSet uses a sorted array
  * of integer ranges.
@@ -240,7 +238,7 @@ public class IntRangeSet implements Serializable {
     }
 
     public String toString() {
-        final FastStringBuffer sb = new FastStringBuffer(used*8);
+        final StringBuilder sb = new StringBuilder(used*8);
         for (int i=0; i<used; i++) {
             sb.append(startPoints[i] + "-" + endPoints[i] + ",");
         }

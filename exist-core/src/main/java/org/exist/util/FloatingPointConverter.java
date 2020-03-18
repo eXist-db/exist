@@ -74,7 +74,7 @@ public class FloatingPointConverter {
      * @return the supplied string buffer, containing the appended integer
      */
 
-    public static FastStringBuffer appendInt(FastStringBuffer s, int i) {
+    public static StringBuilder appendInt(final StringBuilder s, int i) {
         if (i < 0) {
             if (i == Integer.MIN_VALUE) {
                 //cannot make this positive due to integer overflow
@@ -185,7 +185,7 @@ public class FloatingPointConverter {
      * @param p the precision
      */
 
-    private static void fppfpp(FastStringBuffer sb, int e, long f, int p) {
+    private static void fppfpp(final StringBuilder sb, int e, long f, int p) {
         long R = f << Math.max(e-p, 0);
         long S = 1L << Math.max(0, -(e-p));
         long Mminus = 1L << Math.max(e-p, 0);
@@ -270,7 +270,7 @@ public class FloatingPointConverter {
      * @param p the precision
      */
 
-    private static void fppfppBig(FastStringBuffer sb, int e, long f, int p) {
+    private static void fppfppBig(final StringBuilder sb, int e, long f, int p) {
         //long R = f << Math.max(e-p, 0);
         BigInteger R = BigInteger.valueOf(f).shiftLeft(Math.max(e-p, 0));
 
@@ -366,7 +366,7 @@ public class FloatingPointConverter {
      * @param p the precision
      */
 
-    private static void fppfppExponential(FastStringBuffer sb, int e, long f, int p) {
+    private static void fppfppExponential(final StringBuilder sb, int e, long f, int p) {
         //long R = f << Math.max(e-p, 0);
         BigInteger R = BigInteger.valueOf(f).shiftLeft(Math.max(e-p, 0));
 
@@ -447,7 +447,7 @@ public class FloatingPointConverter {
      * @return the original string buffer, now containing the string representation of the supplied double
      */
 
-    public static FastStringBuffer appendDouble(FastStringBuffer s, double value) {
+    public static StringBuilder appendDouble(final StringBuilder s, double value) {
         double d = value;
         if (d == Double.NEGATIVE_INFINITY) {
             s.append(NEGATIVE_INFINITY);
@@ -515,7 +515,7 @@ public class FloatingPointConverter {
      * @return the original string buffer, now containing the string representation of the supplied float
      */
 
-    public static FastStringBuffer appendFloat(FastStringBuffer s, float value) {
+    public static StringBuilder appendFloat(final StringBuilder s, float value) {
         float f = value;
         if (f == Float.NEGATIVE_INFINITY) {
             s.append(NEGATIVE_INFINITY);

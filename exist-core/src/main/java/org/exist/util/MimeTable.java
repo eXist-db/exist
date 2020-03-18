@@ -303,7 +303,7 @@ public class MimeTable {
         private static final String MIME_TYPES = "mime-types";
         
         private MimeType mime = null;
-        private FastStringBuffer charBuf = new FastStringBuffer(64);
+        private final StringBuilder charBuf = new StringBuilder(64);
         
         /* (non-Javadoc)
          * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
@@ -374,12 +374,12 @@ public class MimeTable {
                 mime = null;
             } else if (DESCRIPTION.equals(qName)) {
                 if (mime != null) {
-                    final String description = charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+                    final String description = charBuf.toString().trim();
                     mime.setDescription(description);
                 }
             } else if (EXTENSIONS.equals(qName)) {
                 if (mime != null) {
-                    final String extList = charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+                    final String extList = charBuf.toString().trim();
                     final StringTokenizer tok = new StringTokenizer(extList, ", ");
                     String preferred = null;
                     while (tok.hasMoreTokens()) {

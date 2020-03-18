@@ -22,7 +22,6 @@
 package org.exist.xquery.value;
 
 import com.ibm.icu.text.Collator;
-import org.exist.util.FastStringBuffer;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
@@ -165,7 +164,7 @@ public class DecimalValue extends NumericValue {
         } else if (scale < 0) {
             final String s = value.abs().unscaledValue().toString();
 
-            final FastStringBuffer sb = new FastStringBuffer(s.length() + (-scale) + 2);
+            final StringBuilder sb = new StringBuilder(s.length() + (-scale) + 2);
             if (value.signum() < 0) {
                 sb.append('-');
             }
@@ -183,7 +182,7 @@ public class DecimalValue extends NumericValue {
                 return s;
             }
             final int len = s.length();
-            final FastStringBuffer sb = new FastStringBuffer(len + 1);
+            final StringBuilder sb = new StringBuilder(len + 1);
             if (value.signum() < 0) {
                 sb.append('-');
             }

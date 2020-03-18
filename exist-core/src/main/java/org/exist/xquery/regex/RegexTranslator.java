@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.exist.util.FastStringBuffer;
 import org.exist.util.UTF16CharacterSet;
 import org.exist.util.XMLChar;
 import org.exist.util.XMLString;
@@ -30,7 +29,7 @@ public abstract class RegexTranslator {
     protected boolean eos = false;
     protected int currentCapture = 0;
     protected Set<Integer> captures = new HashSet<>();
-    protected final FastStringBuffer result = new FastStringBuffer(64);
+    protected final StringBuilder result = new StringBuilder(64);
 
     protected void translateTop() throws RegexSyntaxException {
          translateRegExp();
@@ -105,7 +104,7 @@ public abstract class RegexTranslator {
     }
 
     protected CharSequence parseQuantExact() throws RegexSyntaxException {
-        final FastStringBuffer buf = new FastStringBuffer(16);
+        final StringBuilder buf = new StringBuilder(16);
         do {
             if ("0123456789".indexOf(curChar) < 0)
                 {throw makeException("expected digit in quantifier");}
@@ -275,7 +274,7 @@ public abstract class RegexTranslator {
     }
 
     protected static String highSurrogateRanges(List ranges) {
-        final FastStringBuffer highRanges = new FastStringBuffer(ranges.size() * 2);
+        final StringBuilder highRanges = new StringBuilder(ranges.size() * 2);
         for (Object range : ranges) {
             final Range r = (Range) range;
             char min1 = XMLChar.highSurrogate(r.getMin());
@@ -297,7 +296,7 @@ public abstract class RegexTranslator {
     }
 
     protected static String lowSurrogateRanges(List ranges) {
-        final FastStringBuffer lowRanges = new FastStringBuffer(ranges.size() * 2);
+        final StringBuilder lowRanges = new StringBuilder(ranges.size() * 2);
         for (Object range : ranges) {
             final Range r = (Range) range;
             final char min1 = XMLChar.highSurrogate(r.getMin());

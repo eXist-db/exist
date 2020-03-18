@@ -31,7 +31,7 @@ package org.exist.util;
      */
 public final class Base64Encoder {
 
-    private FastStringBuffer out = new FastStringBuffer(256);
+    private StringBuilder out = new StringBuilder(256);
 
     private int buf = 0;                     // a 24-bit quantity
 

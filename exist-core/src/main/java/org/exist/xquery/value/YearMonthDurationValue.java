@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.value;
 
-import org.exist.util.FastStringBuffer;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
@@ -83,7 +82,7 @@ public class YearMonthDurationValue extends OrderedDurationValue {
     }
 
     public String getStringValue() {
-        final FastStringBuffer sb = new FastStringBuffer(32);
+        final StringBuilder sb = new StringBuilder(32);
         if (getCanonicalDuration().getSign() < 0) {
             sb.append('-');
         }
