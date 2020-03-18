@@ -6,8 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.xerces.util.XMLChar;
 import org.exist.util.UTF16CharacterSet;
-import org.exist.util.XMLChar;
+import org.exist.util.XMLCharUtil;
 import org.exist.util.XMLString;
 
 /**
@@ -204,7 +205,7 @@ public abstract class RegexTranslator {
     }
 
     protected int absorbSurrogatePair() throws RegexSyntaxException {
-        if (XMLChar.isSurrogate(curChar)) {
+        if (XMLCharUtil.isSurrogate(curChar)) {
             if (!XMLChar.isHighSurrogate(curChar))
                 {throw makeException("invalid surrogate pair");}
             final char c1 = curChar;

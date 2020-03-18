@@ -24,8 +24,8 @@ package org.exist.xquery.functions.fn;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.xerces.util.XMLChar;
 import org.exist.dom.QName;
-import org.exist.util.XMLChar;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
