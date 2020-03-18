@@ -24,10 +24,9 @@ package org.exist.security;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import org.exist.util.Base64Encoder;
 
 
 public class MessageDigester {
@@ -45,14 +44,9 @@ public class MessageDigester {
             md5.update( message.getBytes() );
             final byte[] digestData = md5.digest();
             
-            if(base64)
-            {
-            	final Base64Encoder enc = new Base64Encoder();
-            	enc.translate(digestData);
-            	digest = new String(enc.getCharArray());
-            }
-            else
-            {
+            if (base64) {
+                digest = Base64.encodeBase64String(digestData);
+            } else {
                digest = byteArrayToHex( digestData );
             }
         } catch ( final NoSuchAlgorithmException e ) {
@@ -84,12 +78,8 @@ public class MessageDigester {
 
         // Write digest as string
         String digest = null;
-        if(base64)
-        {
-            final Base64Encoder enc = new Base64Encoder();
-            enc.translate(digestData);
-            digest = new String(enc.getCharArray());
-
+        if (base64) {
+            digest = Base64.encodeBase64String(digestData);
         } else {
            digest = byteArrayToHex( digestData );
         }

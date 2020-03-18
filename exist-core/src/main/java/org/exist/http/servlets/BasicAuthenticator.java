@@ -27,14 +27,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
-import org.exist.util.Base64Decoder;
 import org.exist.xquery.XQueryContext;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author wolf
@@ -60,10 +62,8 @@ public class BasicAuthenticator implements Authenticator {
 		String password = null;
                 try {
                     if (credentials != null) {
-                            final Base64Decoder dec = new Base64Decoder();
-                            dec.translate(credentials.substring("Basic ".length()));
-                            final byte[] c = dec.getByteArray();
-                            final String s = new String(c);
+							final byte[] c = Base64.decodeBase64(credentials.substring("Basic ".length()));
+                            final String s = new String(c, UTF_8);
                             // LOG.debug("BASIC auth credentials: "+s);
                             final int p = s.indexOf(':');
                             username = p < 0 ? s : s.substring(0, p);

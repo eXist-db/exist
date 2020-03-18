@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.compression;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
@@ -31,7 +32,6 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.serializers.Serializer;
-import org.exist.util.Base64Decoder;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.util.io.FastByteArrayInputStream;
@@ -316,11 +316,9 @@ public abstract class AbstractCompressFunction extends BasicFunction
                 } else {
                     if(content.getNodeType() == Node.TEXT_NODE) {
                         String text = content.getNodeValue();
-                        Base64Decoder dec = new Base64Decoder();
                         if("binary".equals(type)) {
                             //base64 binary
-                            dec.translate(text);
-                            value = dec.getByteArray();
+                            value = Base64.decodeBase64(text);
                         } else {
                             //text
                             value = text.getBytes();

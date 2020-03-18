@@ -21,9 +21,9 @@
  */
 package org.exist.xquery.modules.persistentlogin;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.util.Base64Encoder;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.DurationValue;
@@ -142,18 +142,13 @@ public class PersistentLogin {
         byte[] newSeries = new byte[DEFAULT_SERIES_LENGTH];
         random.nextBytes(newSeries);
 
-        Base64Encoder encoder = new Base64Encoder();
-        encoder.translate(newSeries);
-        return new String(encoder.getCharArray());
+        return Base64.encodeBase64String(newSeries);
     }
 
     private String generateToken() {
         byte[] newSeries = new byte[DEFAULT_TOKEN_LENGTH];
         random.nextBytes(newSeries);
-
-        Base64Encoder encoder = new Base64Encoder();
-        encoder.translate(newSeries);
-        return new String(encoder.getCharArray());
+        return Base64.encodeBase64String(newSeries);
     }
 
     public class LoginDetails {
