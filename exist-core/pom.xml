@@ -334,7 +334,6 @@
         <dependency>
             <groupId>net.sf.saxon</groupId>
             <artifactId>Saxon-HE</artifactId>
-            <scope>runtime</scope> <!-- You can use either Xalan (XSLT 1.0) or Saxon (XSLT 1.0 and 2.0) with eXist at runtime. Saxon is preferred! -->
         </dependency>
 
         <dependency>
