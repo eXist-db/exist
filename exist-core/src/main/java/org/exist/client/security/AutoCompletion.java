@@ -1,13 +1,23 @@
 /*
- * Public Domain Code
- * Taken from: http://www.orbital-computer.de/JComboBox/
- * Original Author: Thomas Bierhance
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- * Accompanying statement from Thomas:
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- * This work is hereby released into the Public Domain.
- * To view a copy of the public domain dedication, visit
- * http://creativecommons.org/licenses/publicdomain/
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.client.security;
 
@@ -15,6 +25,14 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
+/**
+ * Provides Auto Completion for JComboBox's.
+ * See {@link #enable(JComboBox)}.
+ *
+ * The original code for this class was Public Domain
+ * code by Thomas Bierhance, and was downloaded
+ * from http://www.orbital-computer.de/JComboBox/.
+ */
 public class AutoCompletion<E> extends PlainDocument {
     private final JComboBox<E> comboBox;
     private ComboBoxModel<E> model;
