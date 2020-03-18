@@ -24,7 +24,6 @@ package org.exist.indexing.lucene;
 import org.exist.dom.QName;
 import org.exist.storage.NodePath;
 import org.exist.storage.NodePath2;
-import org.exist.util.FastStringBuffer;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -125,7 +124,7 @@ public class NodePathPattern {
     }
 
     private void parseXPathExpression(final Map<String, String> namespaces, final String matchPattern) {
-        final FastStringBuffer token = new FastStringBuffer(matchPattern.length());
+        final StringBuilder token = new StringBuilder(matchPattern.length());
         int pos = 0;
         while (pos < matchPattern.length()) {
             final char ch = matchPattern.charAt(pos);

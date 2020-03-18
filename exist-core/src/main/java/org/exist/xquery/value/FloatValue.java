@@ -22,7 +22,6 @@
 package org.exist.xquery.value;
 
 import com.ibm.icu.text.Collator;
-import org.exist.util.FastStringBuffer;
 import org.exist.util.FloatingPointConverter;
 import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes;
@@ -101,9 +100,9 @@ public class FloatValue extends NumericValue {
 		return s;	
 		*/
 
-        final FastStringBuffer sb = new FastStringBuffer(20);
+        final StringBuilder sb = new StringBuilder(20);
         //0 is a dummy parameter
-        FloatingPointConverter.appendFloat(sb, value).getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+        FloatingPointConverter.appendFloat(sb, value);
         return sb.toString();
     }
 

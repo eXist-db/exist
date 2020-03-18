@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.value;
 
-import org.exist.util.FastStringBuffer;
 import org.exist.util.FloatingPointConverter;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
@@ -100,7 +99,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
         }
 
         //Copied from Saxon 8.6.1
-        final FastStringBuffer sb = new FastStringBuffer(32);
+        final StringBuilder sb = new StringBuilder(32);
         if (canonicalDuration.getSign() < 0) {
             sb.append('-');
         }
@@ -126,7 +125,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
             //	sb.append(Double.toString(ms).substring(2));
             //}
             //0 is a dummy parameter
-            FloatingPointConverter.appendFloat(sb, s.floatValue()).getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+            FloatingPointConverter.appendFloat(sb, s.floatValue());
             sb.append("S");
             /*
             if (micros == 0) {

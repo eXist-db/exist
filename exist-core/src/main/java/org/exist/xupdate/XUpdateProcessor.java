@@ -38,7 +38,6 @@ import org.exist.dom.NodeListImpl;
 import org.exist.dom.persistent.NodeSetHelper;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
-import org.exist.util.FastStringBuffer;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Constants;
 import org.exist.xquery.PathExpr;
@@ -166,7 +165,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
     private List<Modification> modifications = new ArrayList<>();
 
     /** Temporary string buffer used for collecting text chunks */
-    private FastStringBuffer charBuf = new FastStringBuffer(64);
+    private final StringBuilder charBuf = new StringBuilder(64);
 
     // Environment
 
@@ -287,7 +286,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		if (inModification && charBuf.length() > 0) {
 //            String normalized = charBuf.toString();
 			final String normalized = preserveWhitespace ? charBuf.toString() :
-				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+					charBuf.toString().trim();
 
 			if (normalized.length() > 0) {
 				final Text text = doc.createTextNode(charBuf.toString());
@@ -584,7 +583,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		throws SAXException {
 		if (inModification && charBuf.length() > 0) {
 			final String normalized = preserveWhitespace ? charBuf.toString() :
-				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+					charBuf.toString().trim();
 			if (normalized.length() > 0) {
 				final Text text = doc.createTextNode(charBuf.toString());
 				final Element last = stack.peek();
@@ -695,7 +694,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		throws SAXException {
 		if (inModification && charBuf.length() > 0) {
 			final String normalized =
-				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+					charBuf.toString().trim();
 			if (normalized.length() > 0) {
 				final Text text = doc.createTextNode(normalized);
 				final Element last = stack.peek();
@@ -793,7 +792,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	public void comment(char[] ch, int start, int length) throws SAXException {
 		if (inModification && charBuf.length() > 0) {
 			final String normalized =
-				charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+					charBuf.toString().trim();
 			if (normalized.length() > 0) {
 				final Text text = doc.createTextNode(normalized);
 				final Element last = stack.peek();
@@ -856,7 +855,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		this.broker = null;
 		this.documentSet = null;
 		this.modifications.clear();
-		this.charBuf = new FastStringBuffer(64);
+		this.charBuf.setLength(0);
 		this.variables.clear();
 		this.namespaces.clear();
 		this.conditionals.clear();

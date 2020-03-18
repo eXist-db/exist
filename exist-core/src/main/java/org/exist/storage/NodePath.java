@@ -26,7 +26,6 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.util.FastStringBuffer;
 
 import javax.xml.XMLConstants;
 
@@ -245,7 +244,7 @@ public class NodePath implements Comparable<NodePath> {
 
     private void init(final Map<String, String> namespaces, final String path) {
         //TODO : compute better length
-        final FastStringBuffer token = new FastStringBuffer(path.length());
+        final StringBuilder token = new StringBuilder(path.length());
         int pos = 0;
         while (pos < path.length()) {
             final char ch = path.charAt(pos);

@@ -100,9 +100,9 @@ public class CompressedWhitespace implements CharSequence {
      * supplied in the argument, this will be the same buffer.
      */
 
-    public FastStringBuffer uncompress(FastStringBuffer buffer) {
+    public final StringBuilder uncompress(StringBuilder buffer) {
         if (buffer == null) {
-            buffer = new FastStringBuffer(length());
+            buffer = new StringBuilder(length());
         }
         final long val = value;
         for (int s=56; s>=0; s-=8) {
