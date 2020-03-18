@@ -24,14 +24,11 @@ package org.exist.xquery.functions.xmldb;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
+import org.apache.tools.ant.DirectoryScanner;
 import org.exist.dom.QName;
-import org.exist.util.DirectoryScanner;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
@@ -43,7 +40,6 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
@@ -54,6 +50,7 @@ import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author wolf
+ * @author Adam Retter
  */
 public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
     protected static final Logger logger = LogManager.getLogger(XMLDBLoadFromPattern.class);
@@ -116,6 +113,13 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
         final Path baseDir = Paths.get(args[1].getStringValue()).normalize();
         logger.debug("Loading files from directory: " + baseDir.toAbsolutePath().toString());
 
+        final Sequence patternsSeq = args[2];
+        final int patternsLen = patternsSeq.getItemCount();
+        final String includes[] = new String[patternsLen];
+        for (int i = 0; i < patternsLen; i++) {
+            includes[i] = patternsSeq.itemAt(0).getStringValue();
+        }
+
         //determine resource type - xml or binary?
         MimeType mimeTypeFromArgs = null;
         if (getSignature().getArgumentCount() > 3 && args[3].hasOne()) {
@@ -132,97 +136,78 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
             keepDirStructure = args[4].effectiveBooleanValue();
         }
 
-        final List<String> excludes = new ArrayList<>();
+        final String[] excludes;
         if (getSignature().getArgumentCount() == 6) {
-            for (final SequenceIterator i = args[5].iterate(); i.hasNext(); ) {
-                excludes.add(i.nextItem().getStringValue());
+            final Sequence excludesSeq = args[5];
+            final int excludesLen = excludesSeq.getItemCount();
+            excludes = new String[excludesLen];
+            for (int i = 0; i < excludesLen; i++) {
+                excludes[i] = excludesSeq.itemAt(i).getStringValue();
             }
+        } else {
+            excludes = null;
         }
 
         final ValueSequence stored = new ValueSequence();
 
-        //store according to each pattern
-        try {
-            final Sequence patterns = args[2];
-            for (final SequenceIterator i = patterns.iterate(); i.hasNext(); ) {
-                //get the files to store
-                final String pattern = i.nextItem().getStringValue();
-                final List<Path> files = DirectoryScanner.scanDir(baseDir, pattern);
-                logger.debug("Found: " + files.size());
+        // scan for files
+        final DirectoryScanner directoryScanner = new DirectoryScanner();
+        directoryScanner.setIncludes(includes);
+        directoryScanner.setExcludes(excludes);
+        directoryScanner.setBasedir(baseDir.toFile());
+        directoryScanner.setCaseSensitive(true);
+        directoryScanner.scan();
 
-                Collection col = collection;
-                String relDir;
-                String prevDir = null;
+        Collection col = collection;
+        String relDir;
+        String prevDir = null;
 
-                for (final Path file : files) {
-                    try {
-                        logger.debug(file.toAbsolutePath().toString());
-                        String relPath = file.toString().substring(baseDir.toString().length());
-                        final int p = relPath.lastIndexOf(java.io.File.separatorChar);
+        // store according to each pattern
+        for (final String includedFile : directoryScanner.getIncludedFiles()) {
+            final Path file = baseDir.resolve(includedFile);
+            try {
+                if (logger.isDebugEnabled()) {
+                    logger.debug(file.toAbsolutePath().toString());
+                }
 
-                        if (checkExcludes(excludes, relPath)) {
-                            continue;
-                        }
+                String relPath = file.toString().substring(baseDir.toString().length());
+                final int p = relPath.lastIndexOf(java.io.File.separatorChar);
 
-                        if (p >= 0) {
-                            relDir = relPath.substring(0, p);
-                            relDir = relDir.replace(java.io.File.separatorChar, '/');
-                        } else {
-                            relDir = relPath;
-                        }
+                if (p >= 0) {
+                    relDir = relPath.substring(0, p);
+                    relDir = relDir.replace(java.io.File.separatorChar, '/');
+                } else {
+                    relDir = relPath;
+                }
 
-                        if (keepDirStructure && (prevDir == null || (!relDir.equals(prevDir)))) {
-                            col = createCollectionPath(collection, relDir);
-                            prevDir = relDir;
-                        }
+                if (keepDirStructure && (prevDir == null || (!relDir.equals(prevDir)))) {
+                    col = createCollectionPath(collection, relDir);
+                    prevDir = relDir;
+                }
 
-                        MimeType mimeType = mimeTypeFromArgs;
-                        if (mimeType == null) {
-                            mimeType = MimeTable.getInstance().getContentTypeFor(FileUtils.fileName(file));
-                            if (mimeType == null) {
-                                mimeType = MimeType.BINARY_TYPE;
-                            }
-                        }
-
-                        //TODO  : these probably need to be encoded and checked for right mime type
-                        final Resource resource = col.createResource(FileUtils.fileName(file), mimeType.getXMLDBType());
-                        resource.setContent(file.toFile());
-
-                        ((EXistResource) resource).setMimeType(mimeType.getName());
-
-                        col.storeResource(resource);
-
-                        //TODO : use dedicated function in XmldbURI
-                        stored.add(new StringValue(col.getName() + "/" + resource.getId()));
-                    } catch (final XMLDBException e) {
-                        logger.error("Could not store file " + file.toAbsolutePath() + ": " + e.getMessage());
+                MimeType mimeType = mimeTypeFromArgs;
+                if (mimeType == null) {
+                    mimeType = MimeTable.getInstance().getContentTypeFor(FileUtils.fileName(file));
+                    if (mimeType == null) {
+                        mimeType = MimeType.BINARY_TYPE;
                     }
                 }
+
+                //TODO  : these probably need to be encoded and checked for right mime type
+                final Resource resource = col.createResource(FileUtils.fileName(file), mimeType.getXMLDBType());
+                resource.setContent(file.toFile());
+
+                ((EXistResource) resource).setMimeType(mimeType.getName());
+
+                col.storeResource(resource);
+
+                //TODO : use dedicated function in XmldbURI
+                stored.add(new StringValue(col.getName() + "/" + resource.getId()));
+            } catch (final XMLDBException e) {
+                logger.error("Could not store file " + file.toAbsolutePath() + ": " + e.getMessage());
             }
-        } catch (final IOException e) {
-            logger.error(e);
         }
 
         return stored;
-    }
-
-    /**
-     * Check if path matches any of the exclude patterns.
-     */
-    private static boolean checkExcludes(final List<String> excludes, String path) {
-        if (excludes == null || excludes.isEmpty()) {
-            return false;
-        }
-        if (path.charAt(0) == java.io.File.separatorChar) {
-            path = path.substring(1);
-        }
-        boolean skip = false;
-        for (final String exclude : excludes) {
-            if (DirectoryScanner.match(exclude, path)) {
-                skip = true;
-                break;
-            }
-        }
-        return skip;
     }
 }

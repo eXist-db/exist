@@ -43,6 +43,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 
+import org.apache.tools.ant.DirectoryScanner;
 import org.exist.SystemProperties;
 import org.exist.dom.persistent.XMLUtil;
 import org.exist.security.ACLPermission;
@@ -1408,7 +1409,15 @@ public class InteractiveClient {
                     files.add(file);
                 }
             } else {
-                files = DirectoryScanner.scanDir(file.toString());
+                final DirectoryScanner directoryScanner = new DirectoryScanner();
+                directoryScanner.setIncludes(new String[] { file.toString() });
+                //TODO(AR) do we need to call scanner.setBasedir()?
+                directoryScanner.setCaseSensitive(true);
+                directoryScanner.scan();
+                for (final String includedFile : directoryScanner.getIncludedFiles()) {
+//                    files.add(baseDir.resolve(includedFile));
+                    files.add(Paths.get(includedFile));
+                }
             }
 
             final long start0 = System.currentTimeMillis();
@@ -1540,7 +1549,18 @@ public class InteractiveClient {
                 files.add(file);
             }
         } else {
-            files = DirectoryScanner.scanDir(fileName);
+            final DirectoryScanner directoryScanner = new DirectoryScanner();
+            directoryScanner.setIncludes(new String[] { fileName });
+            //TODO(AR) do we need to call scanner.setBasedir()?
+            directoryScanner.setCaseSensitive(true);
+            directoryScanner.scan();
+
+            final String[] includedFiles = directoryScanner.getIncludedFiles();
+            files = new ArrayList<>(includedFiles.length);
+            for (final String includedFile : includedFiles) {
+//                files.add(baseDir.resolve(includedFile));
+                files.add(Paths.get(includedFile));
+            }
         }
 
         final long start0 = System.currentTimeMillis();

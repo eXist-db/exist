@@ -24,6 +24,8 @@ package org.exist.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
@@ -53,7 +55,7 @@ public class CollectionScanner {
 		for (String sub : childCollections) {
 			name = vpath + sub;
 			System.out.println("checking " + name + " = " + pattern);
-			if (DirectoryScanner.matchStart(pattern, name))
+			if (SelectorUtils.matchPatternStart(pattern, name))
 			///TODO : use dedicated function in XmldbURI
 			{
 				scan(list, current.getChildCollection(sub), name + "/", pattern);

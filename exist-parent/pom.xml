@@ -500,6 +500,9 @@
                         <rubygemsAnalyzerEnabled>false</rubygemsAnalyzerEnabled>
                         <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
                         <swiftPackageManagerAnalyzerEnabled>false</swiftPackageManagerAnalyzerEnabled>
+
+                        <!-- clashes with Ant 1.10.7, see https://github.com/jeremylong/DependencyCheck/issues/1914 -->
+                        <skipSystemScope>true</skipSystemScope>
                     </configuration>
                 </plugin>
                 <plugin>
