@@ -21,11 +21,11 @@
  */
 package org.exist.xquery.modules.mail;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.util.Base64Encoder;
 import org.exist.util.MimeTable;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.system.GetVersion;
@@ -1211,10 +1211,7 @@ public class SendEmailFunction extends BasicFunction
      */
     private String encode64 (String str) throws java.io.UnsupportedEncodingException
     {
-        Base64Encoder enc = new Base64Encoder();
-        enc.translate(str.getBytes(charset));
-        String result = new String(enc.getCharArray());
-
+        String result = Base64.encodeBase64String(str.getBytes(charset));
         result = result.replaceAll("\n","?=\n =?" + charset + "?B?");
         result = "=?" + charset + "?B?" + result + "?=";
         return(result);

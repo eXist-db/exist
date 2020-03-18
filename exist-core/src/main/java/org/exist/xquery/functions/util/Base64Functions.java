@@ -21,11 +21,10 @@
  */
 package org.exist.xquery.functions.util;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.util.Base64Decoder;
-import org.exist.util.Base64Encoder;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -37,6 +36,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Base64 String conversion functions.
@@ -97,22 +98,16 @@ public class Base64Functions extends BasicFunction
 				trim = args[1].effectiveBooleanValue();
 			}
 	
-	        if( isCalledAs( "base64-encode" ) ) {
-	           	final Base64Encoder enc = new Base64Encoder();
-					
-	        	enc.translate( str.getBytes()  );
-				
-				if( trim ) {
-	        		value = new StringValue( new String( enc.getCharArray() ).trim() );
-				} else {
-					value = new StringValue( new String( enc.getCharArray() ) );
+	        if (isCalledAs("base64-encode")) {
+				String b64Str = Base64.encodeBase64String(str.getBytes(UTF_8));
+				if (trim) {
+					b64Str = b64Str.trim();
 				}
+				value = new StringValue(b64Str);
 	        } else {
-	            final Base64Decoder dec = new Base64Decoder();
-				
-	            dec.translate( str );
-				
-				value = new StringValue( new String( dec.getByteArray() ) );
+
+	        	final byte[] data = Base64.decodeBase64(str);
+				value = new StringValue(new String(data, UTF_8));
 	        }
 		}
 		

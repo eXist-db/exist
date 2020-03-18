@@ -28,9 +28,9 @@ import java.net.URISyntaxException;
 
 import javax.xml.transform.OutputKeys;
 
+import org.apache.commons.codec.binary.Base64;
 import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.Base64Decoder;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
@@ -403,9 +403,8 @@ public class XQueryTriggerTest {
 
         // this will fire the trigger
         final Resource res = testCollection.createResource(BINARY_DOCUMENT_NAME, "BinaryResource");
-        Base64Decoder dec = new Base64Decoder();
-        dec.translate(BINARY_DOCUMENT_CONTENT);
-        res.setContent(dec.getByteArray());
+        final byte[] content = Base64.decodeBase64(BINARY_DOCUMENT_CONTENT);
+        res.setContent(content);
         testCollection.storeResource(res);
 
         // remove the trigger for the Collection under test
@@ -439,9 +438,9 @@ public class XQueryTriggerTest {
 
         // this will fire the trigger
         final Resource res = testCollection.createResource(BINARY_DOCUMENT_NAME, "BinaryResource");
-        final Base64Decoder dec = new Base64Decoder();
-        dec.translate(BINARY_DOCUMENT_CONTENT);
-        res.setContent(dec.getByteArray());
+        final byte[] content = Base64.decodeBase64(BINARY_DOCUMENT_CONTENT);
+        res.setContent(content);
+
         testCollection.storeResource(res);
 
         testCollection.removeResource(testCollection.getResource(BINARY_DOCUMENT_NAME));

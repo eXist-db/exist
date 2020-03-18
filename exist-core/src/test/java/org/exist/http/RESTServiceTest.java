@@ -34,11 +34,11 @@ import java.net.URLEncoder;
 import javax.xml.parsers.ParserConfigurationException;
 
 import com.googlecode.junittoolbox.ParallelRunner;
+import org.apache.commons.codec.binary.Base64;
 import org.eclipse.jetty.http.HttpStatus;
 import org.exist.Namespaces;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.test.ExistWebServer;
-import org.exist.util.Base64Encoder;
 import org.exist.util.ExistSAXParserFactory;
 import org.exist.xmldb.XmldbURI;
 import org.junit.runner.RunWith;
@@ -227,13 +227,8 @@ public class RESTServiceTest {
 
     @BeforeClass
     public static void createCredentials() {
-        final Base64Encoder enc = new Base64Encoder();
-        enc.translate("admin:".getBytes());
-        credentials = new String(enc.getCharArray());
-
-        enc.reset();
-        enc.translate("johndoe:this pw should fail".getBytes());
-        badCredentials = new String(enc.getCharArray());
+        credentials = Base64.encodeBase64String("admin:".getBytes(UTF_8));
+        badCredentials = Base64.encodeBase64String("johndoe:this pw should fail".getBytes(UTF_8));
     }
 
     @Test

@@ -117,8 +117,6 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     protected WKBReader wkbReader = new WKBReader();
     protected WKTWriter wktWriter = new WKTWriter();
     protected WKTReader wktReader = new WKTReader();
-    protected Base64Encoder base64Encoder = new Base64Encoder();
-    protected Base64Decoder base64Decoder = new Base64Decoder();
 
     public AbstractGMLJDBCIndexWorker(AbstractGMLJDBCIndex index, DBBroker broker) {
         this.index = index;
