@@ -62,15 +62,15 @@ public class DBException extends Exception {
 		this(0, "");
 	}
 
-	public DBException(int faultCode) {
+	public DBException(final int faultCode) {
 		this(faultCode, "");
 	}
 
-	public DBException(String message) {
+	public DBException(final String message) {
 		this(0, message);
 	}
 
-	public DBException(int faultCode, String message) {
+	public DBException(final int faultCode, final String message) {
 		super(message);
 		this.faultCode = faultCode;
 	}

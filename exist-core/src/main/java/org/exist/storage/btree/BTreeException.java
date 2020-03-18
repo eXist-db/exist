@@ -59,15 +59,15 @@ public class BTreeException extends DBException {
 	public BTreeException() {
 	}
 
-	public BTreeException(String message) {
+	public BTreeException(final String message) {
 		super(message);
 	}
 
-	public BTreeException(int faultCode) {
+	public BTreeException(final int faultCode) {
 		super(faultCode);
 	}
 
-	public BTreeException(int faultCode, String message) {
+	public BTreeException(final int faultCode, final String message) {
 		super(faultCode, message);
 	}
 }
