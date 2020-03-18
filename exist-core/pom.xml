@@ -600,12 +600,59 @@
                         <exclude>src/test/resources/**/*.bin</exclude>
                         <exclude>src/test/resources/org/exist/validation/entities/**</exclude>
 
-                        <!-- Already under LGPL 2.1, but with a different Copyright -->
+                        <!--
+                            Already under LGPL 2.1, but with a different Copyright
+                        -->
                         <exclude>src/main/java/org/exist/util/UTF8.java</exclude>
+
+                        <!--
+                            Derivative work licensed under dbXML 1.0 and LGPL 2.1
+                        -->
+                        <exclude>src/main/java/org/exist/storage/btree/BTree.java</exclude>
+                        <exclude>src/main/java/org/exist/storage/btree/BTreeCallback.java</exclude>
+                        <exclude>src/main/java/org/exist/storage/btree/BTreeException.java</exclude>
+                        <exclude>src/main/java/org/exist/storage/btree/DBException.java</exclude>
+                        <exclude>src/main/java/org/exist/storage/btree/IndexQuery.java</exclude>
+                        <exclude>src/main/java/org/exist/storage/btree/Paged.java</exclude>
+                        <exclude>src/main/java/org/exist/storage/btree/Value.java</exclude>
 
                     </excludes>
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>check-headers</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+
+                    <!-- TODO(AR) the below execution doesn't appear to do anything we need to investigate this! -->
+                    <execution>
+                        <!--
+                            Derivative work licensed under dbXML 1.0 and LGPL 2.1
+                        -->
+                        <id>check-dbxml-headers</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <excludes/>
+                            <includes>
+                                <include>src/main/java/org/exist/storage/btree/BTree.java</include>
+                                <include>src/main/java/org/exist/storage/btree/BTreeCallback.java</include>
+                                <include>src/main/java/org/exist/storage/btree/BTreeException.java</include>
+                                <include>src/main/java/org/exist/storage/btree/DBException.java</include>
+                                <include>src/main/java/org/exist/storage/btree/IndexQuery.java</include>
+                                <include>src/main/java/org/exist/storage/btree/Paged.java</include>
+                                <include>src/main/java/org/exist/storage/btree/Value.java</include>
+                            </includes>
+                            <encoding>${project.build.sourceEncoding}</encoding>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
