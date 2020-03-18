@@ -41,7 +41,7 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
     private final UserManagementService userManagementService;
     private final List<DialogCompleteWithResponse<String>> dialogCompleteWithResponseCallbacks = new ArrayList<>();
     private final Set<String> allUsernames;
-    private DefaultComboBoxModel usernameModel;
+    private DefaultComboBoxModel<String> usernameModel;
 
     public FindUserForm(final UserManagementService userManagementService) throws XMLDBException {
         this.userManagementService = userManagementService;
@@ -67,7 +67,7 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
         jSeparator1 = new javax.swing.JSeparator();
         btnOk = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
-        cmbUsername = new javax.swing.JComboBox();
+        cmbUsername = new javax.swing.JComboBox<>();
         AutoCompletion.enable(cmbUsername);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -154,7 +154,7 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnOk;
-    private javax.swing.JComboBox cmbUsername;
+    private javax.swing.JComboBox<String> cmbUsername;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel lblUsername;
     // End of variables declaration//GEN-END:variables
@@ -164,9 +164,9 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
         return allUsernames.contains(username);
     }
     
-    private ComboBoxModel getUsernameModel() {
+    private ComboBoxModel<String> getUsernameModel() {
         if(usernameModel == null) {
-            usernameModel = new DefaultComboBoxModel();
+            usernameModel = new DefaultComboBoxModel<String>();
             usernameModel.addElement("");
             for(final String username : allUsernames) {
                usernameModel.addElement(username);
