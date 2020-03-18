@@ -22,10 +22,11 @@
 package org.exist.xquery.value;
 
 import com.ibm.icu.text.Collator;
+import org.apache.xerces.util.XMLChar;
 import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.util.UTF8;
-import org.exist.util.XMLChar;
+import org.exist.util.XMLCharUtil;
 import org.exist.util.XMLNames;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
@@ -409,7 +410,7 @@ public class StringValue extends AtomicValue {
             char ch;
             for (int i = 0; i < value.length(); i++) {
                 ch = value.charAt(i);
-                if (XMLChar.isSurrogate(ch)) {
+                if (XMLCharUtil.isSurrogate(ch)) {
                     // Compose supplemental from high and low surrogate
                     final int suppChar = XMLChar.supplemental(ch, value.charAt(++i));
                     buf.append("&#");

@@ -21,8 +21,9 @@
  */
 package org.exist.xquery.functions.fn;
 
+import org.apache.xerces.util.XMLChar;
 import org.exist.dom.QName;
-import org.exist.util.XMLChar;
+import org.exist.util.XMLCharUtil;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
@@ -89,7 +90,7 @@ public class FunStringToCodepoints extends BasicFunction {
         IntegerValue next;
         for (int i = 0; i < s.length(); i++) {
             ch = s.charAt(i);
-            if (XMLChar.isSurrogate(ch)) {
+            if (XMLCharUtil.isSurrogate(ch)) {
                 final int supp = XMLChar.supplemental(ch, s.charAt(++i));
                 next = new IntegerValue(supp);
             } else {
@@ -110,7 +111,7 @@ public class FunStringToCodepoints extends BasicFunction {
         char ch;
         for (int i = 0; i < s.length(); i++) {
             ch = s.charAt(i);
-            if (XMLChar.isSurrogate(ch)) {
+            if (XMLCharUtil.isSurrogate(ch)) {
                 i++;
             }
             count++;

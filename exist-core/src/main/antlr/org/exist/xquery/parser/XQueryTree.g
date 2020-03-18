@@ -35,6 +35,7 @@ header {
 	import java.util.HashMap;
 	import java.util.Stack;
 	import javax.xml.XMLConstants;
+	import org.apache.xerces.util.XMLChar;
 	import org.exist.storage.BrokerPool;
 	import org.exist.storage.DBBroker;
 	import org.exist.EXistException;
@@ -44,7 +45,6 @@ header {
 	import org.exist.dom.QName;
 	import org.exist.dom.QName.IllegalQNameException;
 	import org.exist.security.PermissionDeniedException;
-	import org.exist.util.XMLChar;
 	import org.exist.xquery.*;
 	import org.exist.xquery.Constants.ArithmeticOperator;
 	import org.exist.xquery.Constants.Comparison;

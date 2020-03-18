@@ -46,7 +46,6 @@ import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.ProgressIndicator;
-import org.exist.util.XMLChar;
 import org.exist.util.XMLString;
 import org.exist.util.pool.NodePool;
 import org.exist.xquery.Constants;
