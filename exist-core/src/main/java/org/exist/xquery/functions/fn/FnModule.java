@@ -214,7 +214,8 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunXmlToJson.FS_XML_TO_JSON[1], FunXmlToJson.class),
         new FunctionDef(FunZeroOrOne.signature, FunZeroOrOne.class),
         new FunctionDef(FunUnordered.signature, FunUnordered.class),
-        new FunctionDef(ExtCollection.signature, ExtCollection.class),
+        new FunctionDef(ExtCollection.FS_COLLECTION[0], ExtCollection.class),
+        new FunctionDef(ExtCollection.FS_COLLECTION[1], ExtCollection.class),
         new FunctionDef(QNameFunctions.localNameFromQName, QNameFunctions.class),
         new FunctionDef(QNameFunctions.prefixFromQName, QNameFunctions.class),
         new FunctionDef(QNameFunctions.namespaceURIFromQName, QNameFunctions.class),
@@ -302,5 +303,4 @@ public class FnModule extends AbstractInternalModule {
     static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
         return FunctionDSL.functionSignatures(new QName(name, Function.BUILTIN_FUNCTION_NS), description, returnType, variableParamTypes);
     }
-
 }
