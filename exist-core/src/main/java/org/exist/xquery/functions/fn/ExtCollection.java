@@ -21,15 +21,14 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.*;
 import org.exist.dom.QName;
-import org.exist.numbering.NodeId;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedDocumentLock;
@@ -41,35 +40,33 @@ import org.exist.xquery.value.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
+
+import static org.exist.xquery.FunctionDSL.*;
 
 /**
- * @author wolf
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class ExtCollection extends Function {
+public class ExtCollection extends BasicFunction {
 
-    private static final Logger LOG = LogManager.getLogger(ExtCollection.class);
-
-    public final static FunctionSignature signature =
-            new FunctionSignature(
-                    new QName("collection", Function.BUILTIN_FUNCTION_NS),
-                    "Returns the documents contained in the collections specified in " +
-                            "the input sequence. " + XMLDBModule.COLLECTION_URI +
-                            " Documents contained in sub-collections are also included. If no value is supplied, the statically know documents are used, for the REST Server this could be the addressed collection.",
-                    new SequenceType[]{
-                            //Different from the official specs
-                            new FunctionParameterSequenceType("collection-uri", Type.STRING,
-                                    Cardinality.ZERO_OR_ONE, "The collection URI for which to include the documents")},
-                    new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE,
-                            "The document nodes contained in or under the given collections"),
-                    true);
+    private static final String FS_COLLECTION_NAME = "collection";
+    static final FunctionSignature[] FS_COLLECTION = functionSignatures(
+            new QName(FS_COLLECTION_NAME, Function.BUILTIN_FUNCTION_NS),
+            "Returns the documents contained in the Collection specified in the input sequence. "
+                    + XMLDBModule.COLLECTION_URI + " Documents contained in sub-collections are also included. "
+                    + "If no value is supplied, the statically know documents are used; for the REST Server this could be the collection in the URI path.",
+            returnsOptMany(Type.ITEM, "The items indicated by the Collection URI"),
+            arities(
+                    arity(),
+                    arity(
+                            optParam("arg", Type.STRING,"The Collection URI")
+                    )
+            )
+    );
 
     private final boolean includeSubCollections;
-    private UpdateListener listener = null;
 
-    public ExtCollection(final XQueryContext context) {
+    public ExtCollection(final XQueryContext context, final FunctionSignature signature) {
         this(context, signature, true);
     }
 
@@ -79,100 +76,78 @@ public class ExtCollection extends Function {
     }
 
     @Override
-    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null) {
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
-            }
-            if (contextItem != null) {
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-            }
-        }
-        final List<String> args = getParameterValues(contextSequence, contextItem);
-        final Sequence result;
-        try {
-            if (args.isEmpty()) {
-                final Sequence docs = toSequence(context.getStaticallyKnownDocuments());
-                final Sequence dynamicCollection = context.getDynamicallyAvailableCollection("");
-                if (dynamicCollection != null) {
-                    result = new ValueSequence();
-                    result.addAll(docs);
-                    result.addAll(dynamicCollection);
-                } else {
-                    result = docs;
-                }
-            } else {
-                final Sequence dynamicCollection = context.getDynamicallyAvailableCollection(asUri(args.get(0)).toString());
-                if (dynamicCollection != null) {
-                    result = dynamicCollection;
-                } else {
-                    final MutableDocumentSet ndocs = new DefaultDocumentSet();
-                    final XmldbURI uri = new AnyURIValue(this, args.get(0)).toXmldbURI();
-                    try (final Collection coll = context.getBroker().openCollection(uri, Lock.LockMode.READ_LOCK)) {
-                        if (coll == null) {
-                            if (context.isRaiseErrorOnFailedRetrieval()) {
-                                throw new XPathException(this, ErrorCodes.FODC0002, "Can not access collection '" + uri + "'");
-                            }
-                        } else {
-                            if (context.inProtectedMode()) {
-                                context.getProtectedDocs().getDocsByCollection(coll, ndocs);
-                            } else {
-                                coll.allDocs(context.getBroker(), ndocs,
-                                        includeSubCollections, context.getProtectedDocs());
-                            }
-                        }
-                    }
-                    result = toSequence(ndocs);
-                }
-            }
-        } catch (final XPathException e) { //From AnyURIValue constructor
-            e.setLocation(line, column);
-            Sequence flattenedArgs = Sequence.EMPTY_SEQUENCE;
-            try {
-                flattenedArgs = argsToSeq(contextSequence, contextItem);
-            } catch (final XPathException xe) {
-                LOG.warn(e.getMessage(), xe);
-            }
-            throw new XPathException(this, ErrorCodes.FODC0002, e.getMessage(), flattenedArgs, e);
-        } catch (final PermissionDeniedException e) {
-            Sequence flattenedArgs = Sequence.EMPTY_SEQUENCE;
-            try {
-                flattenedArgs = argsToSeq(contextSequence, contextItem);
-            } catch (final XPathException xe) {
-                LOG.warn(e.getMessage(), xe);
-            }
-            throw new XPathException(this, ErrorCodes.FODC0002, "Can not access collection '" + e.getMessage() + "'", flattenedArgs, e);
-        } catch (final LockException e) {
-            Sequence flattenedArgs = Sequence.EMPTY_SEQUENCE;
-            try {
-                flattenedArgs = argsToSeq(contextSequence, contextItem);
-            } catch (final XPathException xe) {
-                LOG.warn(e.getMessage(), xe);
-            }
-            throw new XPathException(this, ErrorCodes.FODC0002, e.getMessage(), flattenedArgs, e);
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+        final URI collectionUri;
+        if (args.length == 0 || args[0].isEmpty()) {
+            collectionUri = null;
+        } else {
+            collectionUri = asUri(args[0].itemAt(0).getStringValue());
         }
 
-        // iterate through all docs and create the node set
+        return getCollectionItems(new URI[] { collectionUri });
+    }
 
-        registerUpdateListener();
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().end(this, "", result);
+    protected Sequence getCollectionItems(final URI[] collectionUris) throws XPathException {
+        if (collectionUris == null) {
+            // no collection-uri(s)
+            return getDefaultCollectionItems();
+        }
+
+        final Sequence result = new ValueSequence();
+        for (final URI collectionUri : collectionUris) {
+            getCollectionItems(collectionUri, result);
         }
         return result;
     }
 
-    private Sequence argsToSeq(final Sequence contextSequence, final Item contextItem) throws XPathException {
-        final ValueSequence sequence = new ValueSequence();
-        for (int i = 0; i < getArgumentCount(); i++) {
-            final Sequence seq = getArgument(i).eval(contextSequence, contextItem);
-            sequence.addAll(seq);
+    private Sequence getDefaultCollectionItems() throws XPathException {
+        final Sequence docs = new ValueSequence();
+        addAll(context.getStaticallyKnownDocuments(), docs);
+        final Sequence dynamicCollection = context.getDynamicallyAvailableCollection("");
+        if (dynamicCollection != null) {
+            final Sequence result = new ValueSequence();
+            result.addAll(docs);
+            result.addAll(dynamicCollection);
+            return result;
+
+        } else {
+            return docs;
         }
-        return sequence;
     }
 
-    private URI asUri(final String path) throws XPathException {
+    private void getCollectionItems(final URI collectionUri, final Sequence items) throws XPathException {
+        final Sequence dynamicCollection = context.getDynamicallyAvailableCollection(collectionUri.toString());
+        if (dynamicCollection != null) {
+            items.addAll(dynamicCollection);
+
+        } else {
+            final MutableDocumentSet ndocs = new DefaultDocumentSet();
+            final XmldbURI uri = XmldbURI.create(collectionUri);
+            try (final Collection coll = context.getBroker().openCollection(uri, Lock.LockMode.READ_LOCK)) {
+                if (coll == null) {
+                    if (context.isRaiseErrorOnFailedRetrieval()) {
+                        throw new XPathException(this, ErrorCodes.FODC0002, "Can not access collection '" + uri + "'");
+                    }
+                } else {
+                    if (context.inProtectedMode()) {
+                        context.getProtectedDocs().getDocsByCollection(coll, ndocs);
+                    } else {
+                        coll.allDocs(context.getBroker(), ndocs,
+                                includeSubCollections, context.getProtectedDocs());
+                    }
+                }
+            } catch (final PermissionDeniedException e) {
+                throw new XPathException(this, ErrorCodes.FODC0002, "Can not access collection '" + e.getMessage() + "'", new StringValue(collectionUri.toString()), e);
+            } catch (final LockException e) {
+                throw new XPathException(this, ErrorCodes.FODC0002, e.getMessage(), new StringValue(collectionUri.toString()), e);
+            }
+
+            // add the docs to the items
+            addAll(ndocs, items);
+        }
+    }
+
+    protected URI asUri(final String path) throws XPathException {
         try {
             URI uri = new URI(path);
             if (!uri.isAbsolute()) {
@@ -193,20 +168,7 @@ public class ExtCollection extends Function {
         }
     }
 
-    private List<String> getParameterValues(final Sequence contextSequence, final Item contextItem) throws XPathException {
-        final List<String> args = new ArrayList<>(getArgumentCount() + 10);
-        for (int i = 0; i < getArgumentCount(); i++) {
-            final Sequence seq = getArgument(i).eval(contextSequence, contextItem);
-            for (final SequenceIterator j = seq.iterate(); j.hasNext(); ) {
-                final Item next = j.nextItem();
-                args.add(next.getStringValue());
-            }
-        }
-        return args;
-    }
-
-    private Sequence toSequence(final DocumentSet docs) throws XPathException {
-        final Sequence result = new ValueSequence();
+    private void addAll(final DocumentSet docs, final Sequence items) throws XPathException {
         final LockManager lockManager = context.getBroker().getBrokerPool().getLockManager();
         for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
             final DocumentImpl doc = i.next();
@@ -219,7 +181,7 @@ public class ExtCollection extends Function {
                     if (!context.inProtectedMode()) {
                         dlock = lockManager.acquireDocumentReadLock(doc.getURI());
                     }
-                    result.add(new NodeProxy(null, doc));
+                    items.add(new NodeProxy(this, doc));
                 } catch (final LockException e) {
                     throw new XPathException(this, ErrorCodes.FODC0002, e);
                 } finally {
@@ -228,38 +190,6 @@ public class ExtCollection extends Function {
                     }
                 }
             }
-        }
-
-        return result;
-    }
-
-    protected void registerUpdateListener() {
-        if (listener == null) {
-            listener = new UpdateListener() {
-
-                @Override
-                public void documentUpdated(final DocumentImpl document, final int event) {
-                    //Nothing to do (previously was cache management)
-                }
-
-                @Override
-                public void unsubscribe() {
-                    ExtCollection.this.listener = null;
-                }
-
-                @Override
-                public void nodeMoved(final NodeId oldNodeId, final NodeHandle newNode) {
-                    // not relevant
-                }
-
-                @Override
-                public void debug() {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("UpdateListener: Line: {}: {}", getLine(), ExtCollection.this.toString());
-                    }
-                }
-            };
-            context.registerUpdateListener(listener);
         }
     }
 
