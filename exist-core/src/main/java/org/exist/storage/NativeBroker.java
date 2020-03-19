@@ -1555,12 +1555,12 @@ public class NativeBroker extends DBBroker {
         for(final Iterator<XmldbURI> i = sourceCollection.collectionIteratorNoLock(this); i.hasNext(); ) {  // NOTE: we already have a WRITE lock on sourceCollection
             final XmldbURI childName = i.next();
             final XmldbURI childUri = sourceCollectionUri.append(childName);
-            try(final Collection child = getCollection(childUri)) {        // NOTE: we already have a WRITE lock on child
-                if (child == null) {
-                    throw new IOException("Child collection " + childUri + " not found");
-                } else {
-                    moveCollectionRecursive(transaction, trigger, null, child, sourceCollection, childName, true);
-                }
+
+            final Collection child = getCollectionForOpen(collectionsCache, childUri);        // NOTE: we have a write lock on the sourceCollection, which means we don't need to lock sub-collections in the tree
+            if (child == null) {
+                throw new IOException("Child collection " + childUri + " not found");
+            } else {
+                moveCollectionRecursive(transaction, trigger, null, child, sourceCollection, childName, true);
             }
         }
     }
