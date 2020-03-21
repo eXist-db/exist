@@ -1,5 +1,27 @@
+/*
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
+ *
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 package org.exist.xquery.util;
 
+import net.sf.saxon.expr.number.Alphanumeric;
 import org.exist.xquery.XPathException;
 
 import java.text.DateFormatSymbols;
@@ -14,32 +36,8 @@ import java.util.Locale;
  * @author Wolfgang
  */
 public abstract class NumberFormatter {
-    private static int[] zeroDigits = {
-            0x0030, 0x0660, 0x06f0, 0x0966, 0x09e6, 0x0a66, 0x0ae6, 0x0b66, 0x0be6, 0x0c66, 0x0ce6,
-            0x0d66, 0x0e50, 0x0ed0, 0x0f20, 0x1040, 0x17e0, 0x1810, 0x1946, 0x19d0, 0xff10,
-            0x104a0, 0x107ce, 0x107d8, 0x107e2, 0x107ec, 0x107f6 };
 
     private static char OPTIONAL_DIGIT_SIGN = '#';
-
-    /**
-     * Get the zero digit corresponding to the digit family of the given value.
-     * This method was taken from saxon, see <a href="http://saxon.sourceforge.net/">http://saxon.sourceforge.net/</a>.
-     *
-     * @param val an integer value
-     * @return the zero digit
-     */
-    public static int getZeroDigit(int val) {
-        for (int zeroDigit : zeroDigits) {
-            if (val <= zeroDigit + 9) {
-                if (val >= zeroDigit) {
-                    return zeroDigit;
-                } else {
-                    return -1;
-                }
-            }
-        }
-        return -1;
-    }
 
     private final Locale locale;
 
@@ -66,13 +64,13 @@ public abstract class NumberFormatter {
 
     public abstract String getOrdinalSuffix(long number);
 
-    public String formatNumber(long number, String picture) throws XPathException {
+    public String formatNumber(final long number, final String picture) throws XPathException {
         final int min = getMinDigits(picture);
         final int max = getMaxDigits(picture);
         return formatNumber(number, picture, min, max);
     }
 
-    public String formatNumber(long number, String picture, int min, int max) throws XPathException {
+    public String formatNumber(final long number, String picture, final int min, final int max) throws XPathException {
         if (picture == null)
             {return "" + number;}
 
@@ -86,7 +84,7 @@ public abstract class NumberFormatter {
 
         final StringBuilder sb = new StringBuilder();
         final int digitSign = getFirstDigit(picture);
-        final int zero = getZeroDigit(digitSign);
+        final int zero = Alphanumeric.getDigitFamily(digitSign);
 
         int count = 0;
         long n = number;
