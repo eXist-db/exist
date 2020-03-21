@@ -43,6 +43,58 @@
         <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
         <url>scm:git:https://github.com/exist-db/exist.git</url>
       <tag>HEAD</tag>
-  </scm>
+    </scm>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+
+                        <!--
+                            Derivative work licensed under Apache 2.0 and LGPL 2.1
+                        -->
+                        <exclude>src/main/java/org/exist/start/Classpath.java</exclude>
+                        <exclude>src/main/java/org/exist/start/Main.java</exclude>
+                        <exclude>src/main/java/org/exist/start/Version.java</exclude>
+
+                    </excludes>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check-headers</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+
+                    <!-- TODO(AR) the below execution doesn't appear to do anything we need to investigate this! -->
+                    <execution>
+                        <!--
+                            Derivative work licensed under Apache 2.0 and LGPL 2.1
+                        -->
+                        <id>check-dbxml-headers</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <excludes/>
+                            <includes>
+                                <exclude>src/main/java/org/exist/start/Classpath.java</exclude>
+                                <exclude>src/main/java/org/exist/start/Main.java</exclude>
+                                <exclude>src/main/java/org/exist/start/Version.java</exclude>
+                            </includes>
+                            <encoding>${project.build.sourceEncoding}</encoding>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
