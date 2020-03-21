@@ -28,13 +28,14 @@ import org.exist.EXistException;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.thirdparty.net.sf.saxon.functions.regex.JDK15RegexTranslator;
+import org.exist.thirdparty.net.sf.saxon.functions.regex.RegexSyntaxException;
+import org.exist.thirdparty.net.sf.saxon.functions.regex.RegularExpression;
 import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.dom.memtree.SAXAdapter;
-import org.exist.xquery.regex.JDK15RegexTranslator;
-import org.exist.xquery.regex.RegexSyntaxException;
 import org.exist.xquery.Constants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -270,11 +271,11 @@ public class RewriteConfig {
 
         private Mapping(String regex, final URLRewrite action) throws ServletException {
             try {
-                final int xmlVersion = 11;
-                final boolean ignoreWhitespace = false;
-                final boolean caseBlind = false;
+                final int options = RegularExpression.XML11 | RegularExpression.XPATH30;
+                int flagbits = 0;
 
-                regex = JDK15RegexTranslator.translate(regex, xmlVersion, true, ignoreWhitespace, caseBlind);
+                final List<RegexSyntaxException> warnings = new ArrayList<>();
+                regex = JDK15RegexTranslator.translate(regex, options, flagbits, warnings);
 
                 this.pattern = Pattern.compile(regex, 0);
                 this.action = action;
