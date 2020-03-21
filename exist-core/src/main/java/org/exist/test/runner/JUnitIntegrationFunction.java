@@ -23,11 +23,16 @@ package org.exist.test.runner;
 import org.exist.dom.QName;
 import org.exist.xquery.ExpressionVisitor;
 import org.exist.xquery.UserDefinedFunction;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.Sequence;
 import org.junit.runner.notification.RunNotifier;
 
 import javax.xml.XMLConstants;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.exist.xquery.FunctionDSL.functionSignature;
 import static org.exist.xquery.FunctionDSL.returnsNothing;
