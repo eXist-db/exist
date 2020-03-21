@@ -22,12 +22,17 @@
 
 package org.exist.xquery.regex;
 
+import org.exist.thirdparty.net.sf.saxon.functions.regex.JDK15RegexTranslator;
+import org.exist.thirdparty.net.sf.saxon.functions.regex.RegexSyntaxException;
+import org.exist.thirdparty.net.sf.saxon.functions.regex.RegularExpression;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.StringValue;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -127,8 +132,18 @@ public class RegexUtil {
     public static String translateRegexp(final Expression context, final String pattern, final boolean ignoreWhitespace, final boolean caseBlind) throws XPathException {
         // convert pattern to Java regex syntax
         try {
-            final int xmlVersion = 11;
-            return JDK15RegexTranslator.translate(pattern, xmlVersion, true, ignoreWhitespace, caseBlind);
+            final int options = RegularExpression.XML11 | RegularExpression.XPATH30;
+
+            int flagbits = 0;
+            if (ignoreWhitespace) {
+                flagbits |= Pattern.COMMENTS;
+            }
+            if (caseBlind) {
+                flagbits |= Pattern.CASE_INSENSITIVE;
+            }
+
+            final List<RegexSyntaxException> warnings = new ArrayList<>();
+            return JDK15RegexTranslator.translate(pattern, options, flagbits, warnings);
         } catch (final RegexSyntaxException e) {
             throw new XPathException(context, ErrorCodes.FORX0002, "Conversion from XPath F&O 3.0 regular expression syntax to Java regular expression syntax failed: " + e.getMessage(), new StringValue(pattern), e);
         }
