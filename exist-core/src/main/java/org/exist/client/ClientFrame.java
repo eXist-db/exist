@@ -834,15 +834,21 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             try {
                 final EXistCollectionManagementService service = (EXistCollectionManagementService)
                         client.current.getService("CollectionManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
-                for (ResourceDescriptor re : res) {
-                    setStatus(Messages.getString("ClientFrame.124") + re.getName() + Messages.getString("ClientFrame.125") + destinationFilename + Messages.getString("ClientFrame.126")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    if (re.isCollection()) {
-                        service.move(re.getName(), null, destinationFilename);
-                    } else {
-                        service.moveResource(re.getName(), null, destinationFilename);
+                boolean changed = false;
+                for (final ResourceDescriptor re : res) {
+                    if (!re.getName().equals(destinationFilename)) {
+                        setStatus(Messages.getString("ClientFrame.124") + re.getName() + Messages.getString("ClientFrame.125") + destinationFilename + Messages.getString("ClientFrame.126")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                        if (re.isCollection()) {
+                            service.move(re.getName(), null, destinationFilename);
+                        } else {
+                            service.moveResource(re.getName(), null, destinationFilename);
+                        }
+                        changed = true;
                     }
                 }
-                client.reloadCollection();
+                if (changed) {
+                    client.reloadCollection();
+                }
             } catch (final XMLDBException e) {
                 showErrorMessage(e.getMessage(), e);
             }

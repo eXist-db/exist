@@ -25,6 +25,8 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
+import javax.annotation.Nullable;
+
 
 /**
  * Extends the {@link org.xmldb.api.modules.CollectionManagementService}
@@ -36,18 +38,18 @@ import org.xmldb.api.modules.CollectionManagementService;
 public interface EXistCollectionManagementService extends CollectionManagementService {
 
     /**
-     * Move a Collection.
+     * Move and/or rename a Collection.
      *
-     * @param collection the source collection.
-     * @param destination the destination collection.
-     * @param newName the new name in the destination collection.
-     *
-     * @deprecated Use XmldbURI version instead.
+     * @param collectionName name of the collection to move/rename
+     * @param destination the destination collection, or null if just renaming
+     * @param newName the new name, or null if just moving
+
+     * @deprecated Use {@link #move(XmldbURI, XmldbURI, XmldbURI)} instead.
      *
      * @throws XMLDBException if an error occurs when moving the collection.
      */
     @Deprecated
-    void move(String collection, String destination, String newName) throws XMLDBException;
+    void move(String collectionName, @Nullable String destination, @Nullable String newName) throws XMLDBException;
 
     /**
      * Move a Resource.
@@ -106,7 +108,14 @@ public interface EXistCollectionManagementService extends CollectionManagementSe
     @Deprecated
     Collection createCollection(String collName, Date created) throws XMLDBException;
 
-    void move(XmldbURI collection, XmldbURI destination, XmldbURI newName) throws XMLDBException;
+    /**
+     * Move and/or rename a Collection.
+     *
+     * @param collectionName name of the collection to move/rename
+     * @param destination the destination collection, or null if just renaming
+     * @param newName the new name, or null if just moving
+     */
+    void move(XmldbURI collectionName, @Nullable XmldbURI destination, @Nullable XmldbURI newName) throws XMLDBException;
 
     void moveResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName) throws XMLDBException;
 

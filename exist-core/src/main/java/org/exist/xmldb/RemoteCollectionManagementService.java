@@ -31,6 +31,8 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
+import javax.annotation.Nullable;
+
 
 public class RemoteCollectionManagementService extends AbstractRemote implements EXistCollectionManagementService {
 
@@ -144,9 +146,13 @@ public class RemoteCollectionManagementService extends AbstractRemote implements
      */
     @Deprecated
     @Override
-    public void move(final String collectionPath, final String destinationPath, final String newName) throws XMLDBException {
+    public void move(final String collectionPath, @Nullable final String destinationPath, @Nullable final String newName) throws XMLDBException {
         try {
-            move(XmldbURI.xmldbUriFor(collectionPath), XmldbURI.xmldbUriFor(destinationPath), XmldbURI.xmldbUriFor(newName));
+            move(
+                    XmldbURI.xmldbUriFor(collectionPath),
+                    destinationPath != null ? XmldbURI.xmldbUriFor(destinationPath) : null,
+                    newName != null ? XmldbURI.xmldbUriFor(newName) : null
+            );
         } catch (final URISyntaxException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI, e);
         }
@@ -154,7 +160,7 @@ public class RemoteCollectionManagementService extends AbstractRemote implements
 
     @Deprecated
     @Override
-    public void move(final XmldbURI src, final XmldbURI dest, final XmldbURI name) throws XMLDBException {
+    public void move(final XmldbURI src, @Nullable final XmldbURI dest, @Nullable final XmldbURI name) throws XMLDBException {
         final XmldbURI srcPath = resolve(src);
         final XmldbURI destPath = dest == null ? srcPath.removeLastSegment() : resolve(dest);
         final XmldbURI newName;
