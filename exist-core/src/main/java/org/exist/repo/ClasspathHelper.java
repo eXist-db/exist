@@ -47,9 +47,6 @@ public class ClasspathHelper implements BrokerPoolService {
 
     private final static Logger LOG = LogManager.getLogger(ClasspathHelper.class);
 
-    // if no eXist version is specified in the expath-pkg.xml, we assume it is 2.2 or older
-    private final static PackageLoader.Version DEFAULT_VERSION = new PackageLoader.Version("1.4.0", "2.2.1");
-
     @Override
     public void prepare(final BrokerPool brokerPool) {
         final ClassLoader loader = brokerPool.getClassLoader();
@@ -110,7 +107,7 @@ public class ClasspathHelper implements BrokerPoolService {
         // determine the eXist-db version this package is compatible with
         final Collection<ProcessorDependency> processorDeps = pkg.getProcessorDeps();
         final String procVersion = SystemProperties.getInstance().getSystemProperty("product-version", "1.0");
-        PackageLoader.Version requiresExistVersion = DEFAULT_VERSION;
+        PackageLoader.Version requiresExistVersion = null;
         for (final ProcessorDependency dependency: processorDeps) {
             if (Deployment.PROCESSOR_NAME.equals(dependency.getProcessor())) {
                 if (dependency.getSemver() != null) {
@@ -123,7 +120,11 @@ public class ClasspathHelper implements BrokerPoolService {
                 break;
             }
         }
-        return requiresExistVersion.getDependencyVersion().isCompatible(procVersion);
+        if (requiresExistVersion == null) {
+            return true;
+        } else {
+            return requiresExistVersion.getDependencyVersion().isCompatible(procVersion);
+        }
     }
 
     private static void scanPackageDir(Classpath classpath, Path module) throws IOException {
