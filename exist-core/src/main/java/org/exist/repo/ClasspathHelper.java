@@ -51,7 +51,7 @@ public class ClasspathHelper implements BrokerPoolService {
     private final static PackageLoader.Version DEFAULT_VERSION = new PackageLoader.Version("1.4.0", "2.2.1");
 
     @Override
-    public void prepare(final BrokerPool brokerPool) throws BrokerPoolServiceException {
+    public void prepare(final BrokerPool brokerPool) {
         final ClassLoader loader = brokerPool.getClassLoader();
         if (!(loader instanceof EXistClassLoader)) {
             return;
@@ -106,24 +106,24 @@ public class ClasspathHelper implements BrokerPoolService {
         }
     }
 
-    private static boolean isCompatible(Package pkg) throws PackageException {
+    private static boolean isCompatible(final Package pkg) throws PackageException {
         // determine the eXist-db version this package is compatible with
         final Collection<ProcessorDependency> processorDeps = pkg.getProcessorDeps();
         final String procVersion = SystemProperties.getInstance().getSystemProperty("product-version", "1.0");
-        PackageLoader.Version processorVersion = DEFAULT_VERSION;
-        for (ProcessorDependency dependency: processorDeps) {
+        PackageLoader.Version requiresExistVersion = DEFAULT_VERSION;
+        for (final ProcessorDependency dependency: processorDeps) {
             if (Deployment.PROCESSOR_NAME.equals(dependency.getProcessor())) {
                 if (dependency.getSemver() != null) {
-                    processorVersion = new PackageLoader.Version(dependency.getSemver(), true);
+                    requiresExistVersion = new PackageLoader.Version(dependency.getSemver(), true);
                 } else if (dependency.getSemverMax() != null || dependency.getSemverMin() != null) {
-                    processorVersion = new PackageLoader.Version(dependency.getSemverMin(), dependency.getSemverMax());
+                    requiresExistVersion = new PackageLoader.Version(dependency.getSemverMin(), dependency.getSemverMax());
                 } else if (dependency.getVersions() != null) {
-                    processorVersion = new PackageLoader.Version(dependency.getVersions(), false);
+                    requiresExistVersion = new PackageLoader.Version(dependency.getVersions(), false);
                 }
                 break;
             }
         }
-        return processorVersion.getDependencyVersion().isCompatible(procVersion);
+        return requiresExistVersion.getDependencyVersion().isCompatible(procVersion);
     }
 
     private static void scanPackageDir(Classpath classpath, Path module) throws IOException {
