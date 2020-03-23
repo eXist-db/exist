@@ -30,6 +30,9 @@ import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static org.exist.xquery.FunctionDSL.optParam;
 import static org.exist.xquery.FunctionDSL.param;
 import static org.exist.xquery.FunctionDSL.params;
@@ -99,6 +102,42 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
             columnNumber = -1;
         }
 
-        return new XPathException(lineNumber, columnNumber, errorCode, description);
+        final XPathException xpe = new XPathException(lineNumber, columnNumber, errorCode, description);
+
+        final Sequence seqJavaStackTrace = errorMap.get(new StringValue("java-stack-trace"));
+        if(seqJavaStackTrace != null && !seqJavaStackTrace.isEmpty()) {
+            xpe.setStackTrace(convertStackTraceElements(seqJavaStackTrace));
+        }
+
+        return xpe;
+    }
+
+    private static final Pattern PTN_CAUSED_BY = Pattern.compile("Caused by:\\s([a-zA-Z0-9_$\\.]+)");
+    private static final Pattern PTN_AT = Pattern.compile("at\\s((?:[a-zA-Z0-9_$]+)(?:\\.[a-zA-Z0-9_$]+)*)\\.([a-zA-Z0-9_$-]+)\\(([a-zA-Z0-9_]+\\.java):([0-9]+)\\)");
+
+    protected StackTraceElement[] convertStackTraceElements(final Sequence seqJavaStackTrace) throws XPathException {
+        final StackTraceElement[] traceElements = new StackTraceElement[seqJavaStackTrace.getItemCount() - 1];
+
+        final Matcher matcher = PTN_AT.matcher("");
+
+        for (int i = 1; i < seqJavaStackTrace.getItemCount(); i++) {
+            final String item = seqJavaStackTrace.itemAt(i).getStringValue();
+            traceElements[i-1] = convertStackTraceElement(matcher, item);
+        }
+
+        return traceElements;
+    }
+
+    private StackTraceElement convertStackTraceElement(final Matcher matcher, final String s) {
+        matcher.reset(s);
+        if (matcher.matches()) {
+            final String declaringClass = matcher.group(1);
+            final String methodName = matcher.group(2);
+            final String fileName = matcher.group(3);
+            final String lineNumber = matcher.group(4);
+            return new StackTraceElement(declaringClass, methodName, fileName, Integer.valueOf(lineNumber));
+        } else {
+            return null;
+        }
     }
 }

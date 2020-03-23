@@ -1983,7 +1983,13 @@ public class DOMFile extends BTree implements Lockable {
                 getNodeValue(broker.getBrokerPool(), (DocumentImpl) node.getOwnerDocument(),
                         os, recordPos, true, addWhitespace);
                 final byte[] data = os.toByteArray();
-                return new String(data, UTF_8);
+
+                final XMLString str = UTF8.decode(data);
+                if (str != null) {
+                    return str.toString();
+                } else {
+                    return "";
+                }
             }
         } catch (final BTreeException e) {
             LOG.error("BTree error while reading node value", e);
