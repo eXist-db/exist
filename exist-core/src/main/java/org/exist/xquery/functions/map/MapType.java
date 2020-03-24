@@ -115,7 +115,7 @@ public class MapType extends AbstractMapType {
             if (other instanceof MapType) {
                 // MapType - optimise merge
                 final MapType otherMap = (MapType) other;
-                newMap = map.union(otherMap.map);
+                newMap = newMap.union(otherMap.map);
 
                 if (prevType != otherMap.keyType) {
                     prevType = MIXED_KEY_TYPES;
