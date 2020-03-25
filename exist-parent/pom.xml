@@ -892,6 +892,33 @@
 
     <profiles>
         <profile>
+            <id>java8-runtime-compatibility</id>
+            <!--
+                By default, this sets the `-release 8` flag to javac
+                on JDK 9+, so that the produced class files
+                are runtime compatible with Java 8.
+
+                See - https://github.com/eclipse/jetty.project/issues/3244
+
+                You can disable at build time, by using the mvn
+                args: `-P !java8-runtime-compatibility`
+            -->
+            <activation>
+                <jdk>[1.9,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <release>8</release>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
             <id>exist-release</id>
             <build>
                 <plugins>
