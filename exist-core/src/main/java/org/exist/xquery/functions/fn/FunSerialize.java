@@ -6,7 +6,7 @@ import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.*;
-import org.exist.xquery.functions.map.MapType;
+import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
@@ -73,7 +73,7 @@ public class FunSerialize extends BasicFunction {
     public static Properties getSerializationProperties(final Expression callingExpr, final Item parametersItem) throws XPathException {
         final Properties outputProperties;
         if(parametersItem.getType() == Type.MAP) {
-            outputProperties = SerializerUtils.getSerializationOptions(callingExpr, (MapType) parametersItem);
+            outputProperties = SerializerUtils.getSerializationOptions(callingExpr, (AbstractMapType) parametersItem);
         } else if(isSerializationParametersElement(parametersItem)) {
             outputProperties = new Properties();
             SerializerUtils.getSerializationOptions(callingExpr, (NodeValue) parametersItem, outputProperties);

@@ -1,28 +1,36 @@
 package org.exist.xquery.functions.map;
 
-import com.github.krukow.clj_lang.IPersistentMap;
-import org.exist.xquery.Constants;
+import com.ibm.icu.text.Collator;
+import io.lacuna.bifurcan.IEntry;
+import io.lacuna.bifurcan.IMap;
+import io.lacuna.bifurcan.Maps;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
 
-import java.util.AbstractMap;
-import java.util.Comparator;
+import javax.annotation.Nullable;
 import java.util.Iterator;
-import java.util.Map;
 
+import static org.exist.xquery.functions.map.MapType.newLinearMap;
+
+/**
+ * Implementation of the XDM map() type for a map that only
+ * contains a single key and value.
+ *
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
+ */
 public class SingleKeyMapType extends AbstractMapType {
 
     private AtomicValue key;
     private Sequence value;
-    private Comparator<AtomicValue> comparator;
+    private @Nullable Collator collator;
 
-    public SingleKeyMapType(XQueryContext context, String collation, AtomicValue key, Sequence value) throws XPathException {
+    public SingleKeyMapType(final XQueryContext context, final @Nullable Collator collator, final AtomicValue key, final Sequence value) {
         super(context);
         this.key = key;
         this.value = value;
-        this.comparator = getComparator(collation);
+        this.collator = collator;
     }
 
     @Override
@@ -31,22 +39,38 @@ public class SingleKeyMapType extends AbstractMapType {
     }
 
     @Override
-    public Sequence get(AtomicValue key) {
-        if (comparator.compare(this.key, key) == Constants.EQUAL)
-            {return this.value;}
+    public Sequence get(final AtomicValue key) {
+        if (keysEqual(collator, this.key, key)) {
+            return this.value;
+        }
         return null;
     }
 
     @Override
-    public AbstractMapType put(final AtomicValue key, final Sequence value) throws XPathException {
-        final MapType map = new MapType(context);
-        map.add(this);
-        return map.put(key, value);
+    public AbstractMapType merge(final Iterable<AbstractMapType> others) {
+        final MapType map = new MapType(context, collator, key, value);
+        return map.merge(others);
     }
 
     @Override
-    public boolean contains(AtomicValue key) {
-        return (comparator.compare(this.key, key) == Constants.EQUAL);
+    public AbstractMapType put(final AtomicValue key, final Sequence value) {
+        final IMap<AtomicValue, Sequence> map = newLinearMap(collator);
+        int keyType = UNKNOWN_KEY_TYPE;
+        if (this.key != null) {
+            map.put(this.key, this.value);
+            keyType = this.key.getType();
+        }
+        map.put(key, value);
+        if (keyType != key.getType()) {
+            keyType = MIXED_KEY_TYPES;
+        }
+
+        return new MapType(context, map.forked(), keyType);
+    }
+
+    @Override
+    public boolean contains(final AtomicValue key) {
+        return keysEqual(collator, this.key, key);
     }
 
     @Override
@@ -62,34 +86,32 @@ public class SingleKeyMapType extends AbstractMapType {
     @Override
     public AbstractMapType remove(final AtomicValue[] keysAtomicValues) throws XPathException {
         for (final AtomicValue key: keysAtomicValues) {
-            if (key != this.key) {
-                continue;
+            if (keysEqual(collator, key, this.key)) {
+                // single key map, and we matched on our key... return an empty map!
+                return new MapType(context);
             }
-            this.key = null;
-            value = null;
-            return new MapType(context);
         }
-        final MapType map = new MapType(context);
-        map.add(this);
-        return map;
+
+        // nothing to remove, return a copy
+        return new SingleKeyMapType(context, collator, key, value);
     }
 
     @Override
-    public AtomicValue getKey() {
+    public AtomicValue key() {
         return key;
     }
 
     @Override
-    public Sequence getValue() {
+    public Sequence value() {
         return value;
     }
 
     @Override
-    public Iterator<Map.Entry<AtomicValue, Sequence>> iterator() {
+    public Iterator<IEntry<AtomicValue, Sequence>> iterator() {
         return new SingleKeyMapIterator();
     }
 
-    private class SingleKeyMapIterator implements Iterator<Map.Entry<AtomicValue, Sequence>> {
+    private class SingleKeyMapIterator implements Iterator<IEntry<AtomicValue, Sequence>> {
 
         boolean hasMore = true;
 
@@ -99,12 +121,12 @@ public class SingleKeyMapType extends AbstractMapType {
         }
 
         @Override
-        public Map.Entry<AtomicValue, Sequence> next() {
+        public IEntry<AtomicValue, Sequence> next() {
             if (!hasMore) {
                 return null;
             }
             hasMore = false;
-            return new AbstractMap.SimpleEntry<>(key, value);
+            return new Maps.Entry<>(key, value);
         }
     }
 }

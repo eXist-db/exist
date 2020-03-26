@@ -1,10 +1,13 @@
 package org.exist.xquery.functions.map;
 
+import com.ibm.icu.text.Collator;
+import io.lacuna.bifurcan.IEntry;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implements all functions of the map module.
@@ -192,42 +195,29 @@ public class MapFunction extends BasicFunction {
         return new IntegerValue(map.size(), Type.INTEGER);
     }
 
-    private Sequence merge(final Sequence[] args) throws XPathException {
-        if (args.length == 0) {
+    private Sequence merge(final Sequence[] args) {
+        if (args.length == 0 || args[0].getItemCount() == 0) {
             return new MapType(this.context);
         }
-        final MapType map = new MapType(this.context, null);
-        for (final SequenceIterator i = args[0].unorderedIterator(); i.hasNext(); ) {
-            final AbstractMapType m = (AbstractMapType) i.nextItem();
-            map.add(m);
-        }
-        return map;
-    }
 
-    @Deprecated
-    private Sequence newMap(final Sequence[] args) throws XPathException {
-        if (args.length == 0) {
-            return new MapType(this.context);
+        final Sequence maps = args[0];
+        final AbstractMapType firstMap = (AbstractMapType) args[0].itemAt(0);
+        final List<AbstractMapType> others = new ArrayList<>(maps.getItemCount() - 1);
+        for (int i = 1; i < maps.getItemCount(); i ++) {
+            final AbstractMapType other = (AbstractMapType) maps.itemAt(i);
+            others.add(other);
         }
-        String collation = null;
-        if (args.length == 2) {
-            collation = args[1].getStringValue();
-        }
-        final MapType map = new MapType(this.context, collation);
-        for (final SequenceIterator i = args[0].unorderedIterator(); i.hasNext(); ) {
-            final AbstractMapType m = (AbstractMapType) i.nextItem();
-            map.add(m);
-        }
-        return map;
+
+        return firstMap.merge(others);
     }
 
     private Sequence forEach(final Sequence[] args) throws XPathException {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
             ref.analyze(cachedContextInfo);
-            final ValueSequence result = new ValueSequence();
-            for (final Map.Entry<AtomicValue, Sequence> entry : map) {
-                final Sequence s = ref.evalFunction(null, null, new Sequence[]{entry.getKey(), entry.getValue()});
+            final ArrayListValueSequence result = new ArrayListValueSequence(map.size());
+            for (final IEntry<AtomicValue, Sequence> entry : map) {
+                final Sequence s = ref.evalFunction(null, null, new Sequence[]{ entry.key(), entry.value() });
                 result.addAll(s);
             }
             return result;

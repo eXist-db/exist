@@ -1,11 +1,10 @@
 package org.exist.xquery;
 
+import io.lacuna.bifurcan.IEntry;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
-
-import java.util.Map;
 
 /**
  * Implements the XQuery 3.1 lookup operator on maps and arrays.
@@ -93,8 +92,8 @@ public class Lookup extends AbstractExpression {
                 } else if(item instanceof ArrayType) {
                     result.addAll(item.keys());
                 } else if(item instanceof AbstractMapType) {
-                    for(final Map.Entry<AtomicValue, Sequence> entry : ((AbstractMapType)item)) {
-                        result.addAll(entry.getValue());
+                    for(final IEntry<AtomicValue, Sequence> entry : ((AbstractMapType)item)) {
+                        result.addAll(entry.value());
                     }
                 }
             }
@@ -145,8 +144,8 @@ public class Lookup extends AbstractExpression {
 
     public interface LookupSupport {
 
-        public Sequence get(AtomicValue key) throws XPathException;
+        Sequence get(AtomicValue key) throws XPathException;
 
-        public Sequence keys() throws XPathException;
+        Sequence keys() throws XPathException;
     }
 }

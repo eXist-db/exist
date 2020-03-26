@@ -193,6 +193,12 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     }
 
     @Override
+    public Sequence evalFunction(final Sequence contextSequence, final Item contextItem, final Sequence[] seq) throws XPathException {
+        final AccessorFunc af =  (AccessorFunc) accessorFunc.getFunction();
+        return af.eval(seq, contextSequence);
+    }
+
+    @Override
     public void setArguments(List<Expression> arguments) throws XPathException {
         accessorFunc.setArguments(arguments);
     }
@@ -332,11 +338,12 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
      */
     private class AccessorFunc extends BasicFunction {
 
-        public AccessorFunc(XQueryContext context) {
+        public AccessorFunc(final XQueryContext context) {
             super(context, ACCESSOR);
         }
 
-        public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        @Override
+        public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
             final IntegerValue v = (IntegerValue) args[0].itemAt(0);
             final int n = v.getInt();
             if (n <= 0 || n > ArrayType.this.getSize()) {

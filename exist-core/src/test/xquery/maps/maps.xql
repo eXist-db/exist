@@ -595,3 +595,14 @@ declare
 function mt:no-such-entry() {
     map:get(map {"foo": "bar"}, "baz")
 };
+
+declare
+    %test:assertEqualsPermutation("uk", "nl", "se", "de")
+function mt:multi-merge() {
+    map:merge((
+  	    map { "adam": "uk" },
+  	    map { "dannes": "nl" },
+  	    map { "leif": "se" },
+  	    map { "wolfgang": "de" }
+  	))?*
+};

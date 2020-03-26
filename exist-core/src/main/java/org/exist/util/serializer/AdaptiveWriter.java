@@ -20,6 +20,7 @@
 
 package org.exist.util.serializer;
 
+import io.lacuna.bifurcan.IEntry;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.NamespaceNode;
@@ -46,7 +47,6 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -218,12 +218,12 @@ public class AdaptiveWriter extends IndentingXMLWriter {
             writer.write('{');
             addIndent();
             indent();
-            for (final Iterator<Map.Entry<AtomicValue, Sequence>> i = map.iterator(); i.hasNext(); ) {
-                final Map.Entry<AtomicValue, Sequence> entry = i.next();
-                write(entry.getKey(), "", false);
+            for (final Iterator<IEntry<AtomicValue, Sequence>> i = map.iterator(); i.hasNext(); ) {
+                final IEntry<AtomicValue, Sequence> entry = i.next();
+                write(entry.key(), "", false);
                 writer.write(':');
                 addSpaceIfIndent();
-                write(entry.getValue(), ",", true);
+                write(entry.value(), ",", true);
                 if (i.hasNext()) {
                     writer.write(',');
                     indent();

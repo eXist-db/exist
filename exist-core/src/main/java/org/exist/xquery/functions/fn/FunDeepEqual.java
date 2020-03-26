@@ -21,9 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.Map;
-
 import com.ibm.icu.text.Collator;
+import io.lacuna.bifurcan.IEntry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
@@ -42,7 +41,7 @@ import org.exist.xquery.ValueComparison;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.array.ArrayType;
-import org.exist.xquery.functions.map.MapType;
+import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -165,16 +164,16 @@ public class FunDeepEqual extends CollatingFunction {
                 if (a.getType() != b.getType()) {
                     return false;
                 }
-                final MapType amap = (MapType) a;
-                final MapType bmap = (MapType) b;
+                final AbstractMapType amap = (AbstractMapType) a;
+                final AbstractMapType bmap = (AbstractMapType) b;
                 if (amap.size() != bmap.size()) {
                     return false;
                 }
-                for (Map.Entry<AtomicValue, Sequence> aentry: amap) {
-                    if (!bmap.contains(aentry.getKey())) {
+                for (final IEntry<AtomicValue, Sequence> aentry: amap) {
+                    if (!bmap.contains(aentry.key())) {
                         return false;
                     }
-                    if (!deepEqualsSeq(aentry.getValue(), bmap.get(aentry.getKey()), collator)) {
+                    if (!deepEqualsSeq(aentry.value(), bmap.get(aentry.key()), collator)) {
                         return false;
                     }
                 }

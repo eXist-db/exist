@@ -1,172 +1,256 @@
 package org.exist.xquery.functions.map;
 
-import com.github.krukow.clj_lang.IPersistentMap;
-import com.github.krukow.clj_lang.ITransientMap;
-import com.github.krukow.clj_lang.PersistentHashMap;
-import com.github.krukow.clj_lang.PersistentTreeMap;
+import com.evolvedbinary.j8fu.tuple.Tuple2;
+import com.ibm.icu.text.Collator;
+import io.lacuna.bifurcan.IEntry;
+import io.lacuna.bifurcan.IMap;
+import io.lacuna.bifurcan.Map;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.function.ToIntFunction;
 
 /**
- * Full implementation of the map type based on a persistent,
- * immutable tree map.
+ * Full implementation of the XDM map() type based on an
+ * immutable hash-map.
+ *
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Rettter</a>
  */
 public class MapType extends AbstractMapType {
 
-    // underlying map: a persistent, immutable tree map
-    private IPersistentMap<AtomicValue, Sequence> map;
-    private int type = Type.ANY_TYPE;
+    private static final ToIntFunction<AtomicValue> KEY_HASH_FN = AtomicValue::hashCode;
 
-    public MapType(XQueryContext context)
-            throws XPathException {
-        this(context, (String) null);
+    // TODO(AR) future potential optimisation... could the class member `map` remain `linear` ?
+    private IMap<AtomicValue, Sequence> map;
+
+    /**
+     * The type of the keys in the map,
+     * if not all keys have the same type
+     * then this is set to {@link #MIXED_KEY_TYPES}.
+     *
+     * Uses integer values from {@link org.exist.xquery.value.Type}.
+     */
+    private int keyType = UNKNOWN_KEY_TYPE;
+
+    private static IMap<AtomicValue, Sequence> newMap(@Nullable final Collator collator) {
+        return new Map<>(KEY_HASH_FN, (k1, k2) -> keysEqual(collator, k1, k2));
     }
 
-    public MapType(XQueryContext context, String collation) throws XPathException {
+    public MapType(final XQueryContext context) {
+        this(context,null);
+    }
+
+    public MapType(final XQueryContext context, @Nullable final Collator collator) {
         super(context);
         // if there's no collation, we'll use a hash map for better performance
-        if (collation == null)
-            {this.map = PersistentHashMap.EMPTY;}
-        else
-            {this.map = PersistentTreeMap.create(getComparator(collation), null);}
+        this.map = newMap(collator);
     }
 
-    public MapType(XQueryContext context, String collation, AtomicValue key, Sequence value) throws XPathException {
+    public MapType(final XQueryContext context, @Nullable final Collator collator, final AtomicValue key, final Sequence value) {
         super(context);
-        if (collation == null)
-            {this.map = PersistentHashMap.EMPTY;}
-        else
-            {this.map = PersistentTreeMap.create(getComparator(collation), null);}
-        this.type = key.getType();
-        this.map = this.map.assoc(key, value);
+        this.map = newMap(collator).put(key, value);
+        this.keyType = key.getType();
     }
 
-    protected MapType(XQueryContext context, IPersistentMap<AtomicValue, Sequence> other, int type) {
+    public MapType(final XQueryContext context, @Nullable final Collator collator, final Iterable<Tuple2<AtomicValue, Sequence>> keyValues) {
+        this(context, collator, keyValues.iterator());
+    }
+
+    public MapType(final XQueryContext context, @Nullable final Collator collator, final Iterator<Tuple2<AtomicValue, Sequence>> keyValues) {
         super(context);
+
+        // bulk put
+        final IMap<AtomicValue, Sequence> map = newMap(collator).linear();
+        keyValues.forEachRemaining(kv -> map.put(kv._1, kv._2));
+        this.map = map.forked();
+
+        setKeyType(map);
+    }
+
+    public MapType(final XQueryContext context, final IMap<AtomicValue, Sequence> other, @Nullable final Integer keyType) {
+        super(context);
+
+        if (other.isLinear()) {
+            throw new IllegalArgumentException("Map must be immutable, but linear Map was provided");
+        }
+
         this.map = other;
-        this.type = type;
-    }
 
-    public void add(AbstractMapType other) {
-        if (other.size() == 1) {
-            setKeyType(other.getKey().getType());
-            map = map.assoc(other.getKey(), other.getValue());
-        } else if (other.size() > 0) {
-            setKeyType(other.getKeyType());
-            if (map instanceof PersistentHashMap) {
-                ITransientMap<AtomicValue, Sequence> tmap = ((PersistentHashMap)map).asTransient();
-                for (final Map.Entry<AtomicValue, Sequence> entry : other) {
-                    tmap = tmap.assoc(entry.getKey(), entry.getValue());
-                }
-                map = tmap.persistentMap();
-            } else {
-                for (final Map.Entry<AtomicValue, Sequence> entry : other)
-                    map = map.assoc(entry.getKey(), entry.getValue());
-            }
+        if (keyType != null) {
+            this.keyType = keyType;
+        } else {
+            setKeyType(map);
         }
     }
 
-    public void add(AtomicValue key, Sequence value) {
-        setKeyType(key.getType());
-        this.map = this.map.assoc(key, value);
-    }
+    public void add(final AbstractMapType other) {
+        setKeyType(other.key() != null ? other.key().getType() : UNKNOWN_KEY_TYPE);
 
-    public Sequence get(AtomicValue key) {
-        key = convert(key);
-        if (key == null)
-            {return Sequence.EMPTY_SEQUENCE;}
-        final Map.Entry<AtomicValue, Sequence> e = this.map.entryAt(key);
-        return e == null ? Sequence.EMPTY_SEQUENCE : e.getValue();
+        if(other instanceof MapType) {
+            map = map.union(((MapType)other).map);
+        } else {
+
+            // create a transient map
+            final IMap<AtomicValue, Sequence> newMap = map.linear();
+
+            for (final IEntry<AtomicValue, Sequence> entry : other) {
+                newMap.put(entry.key(), entry.value());
+            }
+
+            // return to immutable map
+            map = newMap.forked();
+        }
     }
 
     @Override
-    public AbstractMapType put(AtomicValue key, final Sequence value) throws XPathException {
-        return new MapType(this.context, this.map.assoc(key, value), type);
+    public AbstractMapType merge(final Iterable<AbstractMapType> others) {
+
+        // create a transient map
+        IMap<AtomicValue, Sequence> newMap = map.linear();
+
+        int prevType = keyType;
+        for (final AbstractMapType other: others) {
+            if (other instanceof MapType) {
+                // MapType - optimise merge
+                final MapType otherMap = (MapType) other;
+                newMap = newMap.union(otherMap.map);
+
+                if (prevType != otherMap.keyType) {
+                    prevType = MIXED_KEY_TYPES;
+                }
+            } else {
+                // non MapType
+                for (final IEntry<AtomicValue, Sequence> entry : other) {
+                    final AtomicValue key = entry.key();
+                    newMap = newMap.put(key, entry.value());
+                    if (prevType != key.getType()) {
+                        prevType = MIXED_KEY_TYPES;
+                    }
+                }
+            }
+        }
+
+        // return an immutable map
+        return new MapType(context, newMap.forked(), prevType);
     }
 
+    public void add(final AtomicValue key, final Sequence value) {
+        setKeyType(key.getType());
+        map = map.put(key, value);
+    }
+
+    @Override
+    public Sequence get(AtomicValue key) {
+        key = convert(key);
+        if (key == null) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+
+        final Sequence result = map.get(key, null);
+        return result == null ? Sequence.EMPTY_SEQUENCE : result;
+    }
+
+    @Override
+    public AbstractMapType put(final AtomicValue key, final Sequence value) {
+        final IMap<AtomicValue, Sequence> newMap = map.put(key, value);
+        return new MapType(this.context, newMap, keyType == key.getType() ? keyType : MIXED_KEY_TYPES);
+    }
+
+    @Override
     public boolean contains(AtomicValue key) {
         key = convert(key);
-        if (key == null)
-            {return false;}
-        return this.map.containsKey(key);
+        if (key == null) {
+            return false;
+        }
+
+        return map.contains(key);
     }
 
+    @Override
     public Sequence keys() {
-        final ValueSequence seq = new ValueSequence();
-        for (final Map.Entry<AtomicValue, Sequence> entry: this.map) {
-            seq.add(entry.getKey());
+        final ArrayListValueSequence seq = new ArrayListValueSequence((int)map.size());
+        for (final AtomicValue key: map.keys()) {
+            seq.add(key);
         }
         return seq;
     }
 
     public AbstractMapType remove(final AtomicValue[] keysAtomicValues) {
-        IPersistentMap<AtomicValue, Sequence> tempmap = this.map;
+
+        // create a transient map
+        IMap<AtomicValue, Sequence> newMap = map.linear();
+
         for (final AtomicValue key: keysAtomicValues) {
-            if (!tempmap.containsKey(key)) { continue; }
-            tempmap = tempmap.without(key);
+            newMap = newMap.remove(key);
         }
-        return new MapType(this.context, tempmap, type);
+
+        // return an immutable map
+        return new MapType(context, newMap.forked(), keyType);
     }
 
     @Override
     public int size() {
-        return map.count();
+        return (int)map.size();
     }
 
     @Override
-    public Iterator<Map.Entry<AtomicValue, Sequence>> iterator() {
+    public Iterator<IEntry<AtomicValue, Sequence>> iterator() {
         return map.iterator();
     }
 
     @Override
-    public AtomicValue getKey() {
-        if (map.count() == 0)
-            {return null;}
-        final Iterator<Map.Entry<AtomicValue,Sequence>> iter = this.map.iterator();
-        return iter.next().getKey();
+    public AtomicValue key() {
+        if (map.size() > 0) {
+            final IEntry<AtomicValue, Sequence> entry = map.nth(0);
+            if (entry != null) {
+                return entry.key();
+            }
+        }
+
+        return null;
     }
 
     @Override
-    public Sequence getValue() {
-        return mapToSequence(this.map);
-    }
-
-    /**
-     * Get a Sequence from an internal map representation
-     */
-    private Sequence mapToSequence(final IPersistentMap<AtomicValue, Sequence> map) {
-        if (map.count() == 0) {
-            return null;
+    public Sequence value() {
+        if (map.size() > 0) {
+            final IEntry<AtomicValue, Sequence> entry = map.nth(0);
+            if (entry != null) {
+                return entry.value();
+            }
         }
-        final Iterator<Map.Entry<AtomicValue,Sequence>> iter = map.iterator();
-        return iter.next().getValue();
+
+        return null;
     }
 
-    private void setKeyType(int newType) {
-        if (type == Type.ANY_TYPE)
-            {type = newType;}
-        else if (type != newType) {
-            type = Type.ITEM;
-            if (map instanceof PersistentHashMap) {
-                try {
-                    PersistentTreeMap tmap = PersistentTreeMap.create(getComparator(null), null);
-                    for (final Map.Entry<AtomicValue, Sequence> entry : map) {
-                        tmap = tmap.assoc(entry.getKey(), entry.getValue());
-                    }
-                    map = tmap;
-                } catch (final XPathException e) {
-                }
+    private void setKeyType(final int newType) {
+        if (keyType == UNKNOWN_KEY_TYPE) {
+            keyType = newType;
+
+        } else if (keyType != newType) {
+            keyType = MIXED_KEY_TYPES;
+        }
+    }
+
+    private void setKeyType(final IMap<AtomicValue, Sequence> newMap) {
+        for (final AtomicValue newKey : newMap.keys()) {
+            final int newType = newKey.getType();
+
+            if (keyType == UNKNOWN_KEY_TYPE) {
+                keyType = newType;
+
+            } else if (keyType != newType) {
+                keyType = MIXED_KEY_TYPES;
+                break; // done, we only have to detect this once!
             }
         }
     }
 
-    private AtomicValue convert(AtomicValue key) {
-        if (type != Type.ANY_TYPE && type != Type.ITEM) {
+    private AtomicValue convert(final AtomicValue key) {
+        if (keyType != UNKNOWN_KEY_TYPE && keyType != MIXED_KEY_TYPES) {
             try {
-                return key.convertTo(type);
+                return key.convertTo(keyType);
             } catch (final XPathException e) {
                 return null;
             }
@@ -176,6 +260,16 @@ public class MapType extends AbstractMapType {
 
     @Override
     public int getKeyType() {
-        return type;
+        return keyType;
+    }
+
+    public static <K, V> IMap<K, V> newLinearMap() {
+        // TODO(AR) see bug in bifurcan - https://github.com/lacuna/bifurcan/issues/23
+        //return new LinearMap<K, V>();
+        return new Map<K, V>().linear();
+    }
+
+    public static IMap<AtomicValue, Sequence> newLinearMap(@Nullable final Collator collator) {
+        return newMap(collator).linear();
     }
 }

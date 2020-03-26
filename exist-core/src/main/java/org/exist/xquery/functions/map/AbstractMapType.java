@@ -1,16 +1,15 @@
 package org.exist.xquery.functions.map;
 
 import com.ibm.icu.text.Collator;
+import io.lacuna.bifurcan.IEntry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
-import org.exist.xquery.functions.fn.FunDistinctValues;
 import org.exist.xquery.value.*;
 
-import java.util.Comparator;
+import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Abstract base class for map types. A map item is also a function item. This class thus extends
@@ -20,12 +19,21 @@ import java.util.Map;
  * @author Wolfgang Meier
  */
 public abstract class AbstractMapType extends FunctionReference
-        implements Map.Entry<AtomicValue, Sequence>, Iterable<Map.Entry<AtomicValue, Sequence>>,
+        implements IEntry<AtomicValue, Sequence>, Iterable<IEntry<AtomicValue, Sequence>>,
         Lookup.LookupSupport {
 
-    private final static Logger LOG = LogManager.getLogger(AbstractMapType.class);
+    /**
+     * Used when the type of the keys for the
+     * map is unknown.
+     */
+    public static final int UNKNOWN_KEY_TYPE = Type.ANY_SIMPLE_TYPE;
 
-    private static final Comparator<AtomicValue> DEFAULT_COMPARATOR = new FunDistinctValues.ValueComparator(null);
+    /**
+     * Used when a map contains keys of various xs:anyAtomicType
+     */
+    public static final int MIXED_KEY_TYPES = Type.ATOMIC;
+
+    private final static Logger LOG = LogManager.getLogger(AbstractMapType.class);
 
     // the signature of the function which is evaluated if the map is called as a function item
     private static final FunctionSignature ACCESSOR =
@@ -50,6 +58,8 @@ public abstract class AbstractMapType extends FunctionReference
 
     public abstract AbstractMapType put(AtomicValue key, Sequence value) throws XPathException;
 
+    public abstract AbstractMapType merge(Iterable<AbstractMapType> others);
+
     public abstract boolean contains(AtomicValue key);
 
     public abstract Sequence keys();
@@ -71,11 +81,6 @@ public abstract class AbstractMapType extends FunctionReference
     }
 
     @Override
-    public Sequence setValue(Sequence value) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         getAccessorFunc().analyze(contextInfo);
     }
@@ -83,6 +88,12 @@ public abstract class AbstractMapType extends FunctionReference
     @Override
     public Sequence eval(Sequence contextSequence) throws XPathException {
         return getAccessorFunc().eval(contextSequence);
+    }
+
+    @Override
+    public Sequence evalFunction(final Sequence contextSequence, final Item contextItem, final Sequence[] seq) throws XPathException {
+        final AccessorFunc accessorFunc =  (AccessorFunc) getAccessorFunc().getFunction();
+        return accessorFunc.eval(seq, contextSequence);
     }
 
     @Override
@@ -95,13 +106,15 @@ public abstract class AbstractMapType extends FunctionReference
         getAccessorFunc().resetState(postOptimization);
     }
 
-    protected Comparator<AtomicValue> getComparator(String collation)
-            throws XPathException {
-        if (collation != null) {
-            final Collator collator = this.context.getCollator(collation);
-            return new FunDistinctValues.ValueComparator(collator);
+    protected static boolean keysEqual(@Nullable final Collator collator, final AtomicValue k1, final AtomicValue k2) {
+        try {
+            return ValueComparison.compareAtomic(collator, k1, k2, Constants.StringTruncationOperator.NONE, Constants.Comparison.EQ);
+        } catch (final XPathException e) {
+            LOG.warn("Unable to compare with collation '" + collator + "', will fallback to non-collation comparision. Error: " + e.getMessage(), e);
         }
-        return DEFAULT_COMPARATOR;
+
+        // fallback
+        return k1.equals(k2);
     }
 
     @Override
@@ -170,9 +183,10 @@ public abstract class AbstractMapType extends FunctionReference
      * only instantiate it on demand.
      */
     protected void initFunction() {
-        if (this.accessorFunc != null)
-            {return;}
-        final Function fn = new AccessorFunc(this.context);
+        if (this.accessorFunc != null) {
+            return;
+        }
+        final Function fn = new AccessorFunc(context, this);
         this.accessorFunc = new InternalFunctionCall(fn);
     }
 
@@ -180,14 +194,17 @@ public abstract class AbstractMapType extends FunctionReference
      * The accessor function which will be evaluated if the map is called
      * as a function item.
      */
-    private class AccessorFunc extends BasicFunction {
+    private static class AccessorFunc extends BasicFunction {
+        private final AbstractMapType map;
 
-        public AccessorFunc(XQueryContext context) {
+        public AccessorFunc(final XQueryContext context, final AbstractMapType map) {
             super(context, ACCESSOR);
+            this.map = map;
         }
 
-        public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-            return AbstractMapType.this.get((AtomicValue) args[0].itemAt(0));
+        @Override
+        public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+            return map.get((AtomicValue) args[0].itemAt(0));
         }
     }
 }
