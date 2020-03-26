@@ -139,3 +139,60 @@ function et:nl-in-comment() {
         $err:line-number
     }
 };
+
+declare 
+    %test:assertXPath("/error[@line='2'][contains(., 'Invalid qname console:log')]")
+function et:compile-query-unknown-func() {
+    let $query := ``[
+        console:log('foo')
+    ]``
+    return
+        util:compile-query($query, "xmldb:exist://")
+};
+
+declare 
+    %test:assertXPath("/self::info[@result='pass']")
+function et:compile-query-variable-decl-pass() {
+    let $query := ``[
+        declare variable $v := map {
+            "a": "b",
+            "f": function() {
+                ()
+            }
+        };
+        $v?f()
+    ]``
+    return
+        util:compile-query($query, "xmldb:exist://")
+};
+
+(: Should not result in an NPE, see https://github.com/eXist-db/exist/pull/1520#issuecomment-604514099 :)
+declare 
+    %test:assertXPath("/error[@line='5'][contains(., 'Invalid qname console:log')]")
+function et:compile-query-variable-decl() {
+    let $query := ``[
+        declare variable $v := map {
+            "a": "b",
+            "f": function() {
+                console:log('foo')
+            }
+        };
+        $v?f()
+    ]``
+    return
+        util:compile-query($query, "xmldb:exist://")
+};
+
+declare 
+    %test:assertXPath("/error[@line='6'][contains(., 'local:test')]")
+function et:compile-query-func-decl() {
+    let $query := ``[
+        declare function local:test($x) {
+            $x
+        };
+
+        local:test(123, 345)
+    ]``
+    return
+        util:compile-query($query, "xmldb:exist://")
+};
