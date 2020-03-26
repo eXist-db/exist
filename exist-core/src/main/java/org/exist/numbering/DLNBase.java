@@ -479,7 +479,16 @@ public class DLNBase {
         return (int) Math.ceil(units / 8.0);
     }
 
-    public boolean equals(final DLNBase other) {
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || !(o instanceof DLNBase)) {
+            return false;
+        }
+
+        final DLNBase other = (DLNBase) o;
         if (bitIndex != other.bitIndex) {
             return false;
         }

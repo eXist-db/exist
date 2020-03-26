@@ -315,11 +315,6 @@ public class DLN extends DLNBase implements NodeId {
     }
 
     @Override
-    public boolean equals(final NodeId other) {
-        return super.equals((DLNBase) other);
-    }
-
-    @Override
     public int compareTo(final NodeId otherId) {
         if(otherId == null) {
             return 1;
