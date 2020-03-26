@@ -120,7 +120,6 @@ public class Compile extends BasicFunction {
 		
 		final XQueryContext pContext = 
 			new XQueryContext(context.getBroker().getBrokerPool());
-		
 		if (getArgumentCount() == 2 && args[1].hasOne()) {
 			pContext.setModuleLoadPath(args[1].getStringValue());
 		}
@@ -138,9 +137,7 @@ public class Compile extends BasicFunction {
 			final AST ast = parser.getAST();
 			
 			final PathExpr path = new PathExpr(pContext);
-			path.add(this);
-
-			astParser.xpath(ast, this);
+			astParser.xpath(ast, path);
 			if(astParser.foundErrors()) {
 				throw astParser.getLastException();
 			}
