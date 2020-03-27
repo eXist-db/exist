@@ -415,7 +415,7 @@ public class Configurator {
                     }
                     
                     if (list == null) {
-                        list = new ArrayList<Configurable>(confs.size());
+                        list = new ArrayList(confs.size());  // has to be raw type as we don't know what it should be.
                         field.set(instance, list);
                     }
                     
@@ -931,7 +931,7 @@ public class Configurator {
             throws ConfigurationException {
         
         final Class<?> clazz = instance.getClass();
-        instance.getClass().getAnnotations();
+
         
         if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
             return; //UNDERSTAND: throw exception

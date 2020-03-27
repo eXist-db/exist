@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.exist.EXistException;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.UserManagementService;
-import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
@@ -22,15 +21,13 @@ import org.xmldb.api.base.XMLDBException;
  */
 public abstract class AbstractSecurityManagerRoundtripTest {
 
-    protected abstract String getBaseUri();
+    protected abstract Collection getRoot() throws XMLDBException;
 
     protected abstract void restartServer() throws XMLDBException, IOException;
 
     @Test
     public void checkGroupMembership() throws XMLDBException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
-
-        Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
-        UserManagementService ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+        UserManagementService ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
 
         final String group1Name = "testGroup1";
         final String group2Name = "testGroup2";
@@ -53,8 +50,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
             restartServer();
             /**************************/
 
-            root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
-            ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+            ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
 
             user = ums.getAccount(userName);
             assertNotNull(user);
@@ -88,9 +84,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
 
     @Test
     public void checkPrimaryGroupRemainsDBA() throws XMLDBException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
-
-        Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
-        UserManagementService ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+        UserManagementService ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
 
         final String group1Name = "testGroup1";
         final String group2Name = "testGroup2";
@@ -114,8 +108,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
             restartServer();
             /**************************/
 
-            root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
-            ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+            ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
 
             user = ums.getAccount(userName);
             assertNotNull(user);
@@ -151,8 +144,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
     @Test
     public void checkPrimaryGroupStability() throws XMLDBException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
 
-        Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
-        UserManagementService ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+        UserManagementService ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
 
         final String group1Name = "testGroupA";
         final String group2Name = "testGroupB";
@@ -175,8 +167,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
             restartServer();
             /**************************/
 
-            root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
-            ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+            ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
 
             user = ums.getAccount(userName);
             assertNotNull(user);

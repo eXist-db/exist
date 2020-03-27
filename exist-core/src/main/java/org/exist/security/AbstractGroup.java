@@ -22,12 +22,8 @@
 
 package org.exist.security;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.config.Configuration;
@@ -90,7 +86,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
         buf.append("<group name=\"");
         buf.append(name);
         buf.append("\" id=\"");
-        buf.append(Integer.toString(id));
+        buf.append(id);
         buf.append("\">");
         try {
             for(final Account manager : getManagers()) {
@@ -165,7 +161,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
         final Subject subject = getDatabase().getActiveBroker().getCurrentSubject();
         assertCanModifyGroup(subject);
         
-        //check the manager is not already present`
+        //check the manager is not already present
         for(final Reference<SecurityManager, Account> ref : managers) {
             final String refName = ref.getName();
             if(refName != null && refName.equals(name)) {
