@@ -172,6 +172,22 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
         managers.add(new ReferenceImpl<>(getRealm().getSecurityManager(), "getAccount", name));
     }
 
+    //this method is used by Configurator
+    public final void insertManager(final int index, final String name) throws PermissionDeniedException {
+        final Subject subject = getDatabase().getActiveBroker().getCurrentSubject();
+        assertCanModifyGroup(subject);
+
+        //check the manager is not already present
+        for(final Reference<SecurityManager, Account> ref : managers) {
+            final String refName = ref.getName();
+            if(refName != null && refName.equals(name)) {
+                return;
+            }
+        }
+
+        managers.add(index, new ReferenceImpl<>(getRealm().getSecurityManager(), "getAccount", name));
+    }
+
     @Override
     public List<Account> getManagers() {
     	
