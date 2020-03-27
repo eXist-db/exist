@@ -50,7 +50,29 @@ function gfb:tei-fragment() {
     let $pb1 := $pbs[1]
     let $pb2 := $pbs[2]
     return
-        util:get-fragment-between($pb1,$pb2,false(),true())
+        util:get-fragment-between($pb1, $pb2, false(), false())
+};
+
+declare
+    %test:assertEquals('<TEI><text><front><pb facs="1.jpg"></pb><p>Aus dem Leben einer Kartoffel.</p></front></text></TEI>')
+function gfb:tei-fragment-root() {
+    let $doc := doc("/db/test-gfb/doc1.xml")
+    let $pbs := $doc//tei:pb
+    let $pb1 := $pbs[1]
+    let $pb2 := $pbs[2]
+    return
+        fn:replace(util:get-fragment-between($pb1, $pb2, true(), false()), "\n", "")
+};
+
+declare
+    %test:assertEquals('<TEI xmlns="http://www.tei-c.org/ns/1.0"><text><front><pb facs="1.jpg"></pb><p>Aus dem Leben einer Kartoffel.</p></front></text></TEI>')
+function gfb:tei-fragment-root-ns() {
+    let $doc := doc("/db/test-gfb/doc1.xml")
+    let $pbs := $doc//tei:pb
+    let $pb1 := $pbs[1]
+    let $pb2 := $pbs[2]
+    return
+        fn:replace(util:get-fragment-between($pb1, $pb2, true(), true()), "\n", "")
 };
 
 declare
