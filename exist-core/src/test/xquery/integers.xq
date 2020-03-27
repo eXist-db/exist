@@ -191,3 +191,15 @@ declare
 function it:integer-instance-of-positive-integer($integer as xs:integer) as xs:boolean  {
     $integer instance of xs:positiveInteger
 };
+
+declare
+    %test:assertEquals(1)
+function it:cast-as-union-type()  {
+    (1 cast as xs:numeric) cast as xs:int
+};
+
+declare
+    %test:assertTrue
+function it:castable-as-union-type() as xs:boolean  {
+    1 castable as xs:numeric
+};

@@ -84,10 +84,14 @@ public class IntegerValue extends NumericValue {
     }
 
     public IntegerValue(final BigInteger value, final int requiredType) throws XPathException {
+        this(value, requiredType, true);
+    }
+
+    private IntegerValue(final BigInteger value, final int requiredType, boolean checkType) throws XPathException {
         this.value = value;
         this.type = requiredType;
 
-        if (!checkType()) {
+        if (checkType && !checkType()) {
             throw new XPathException(ErrorCodes.FORG0001, "can not convert '" +
                     value + "' to " + Type.getTypeName(type));
         }
@@ -231,6 +235,7 @@ public class IntegerValue extends NumericValue {
             case Type.UNTYPED_ATOMIC:
                 return new UntypedAtomicValue(getStringValue());
             case Type.NUMBER:
+                return new IntegerValue(value, requiredType, false);
             case Type.LONG:
             case Type.INTEGER:
             case Type.NON_POSITIVE_INTEGER:
