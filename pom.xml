@@ -29,7 +29,6 @@
         <module>exist-core-jcstress</module>
         <module>exist-core-jmh</module>
         <module>exist-distribution</module>
-        <module>exist-installer</module>
         <module>exist-jetty-config</module>
         <module>exist-samples</module>
         <module>exist-service</module>
@@ -38,6 +37,16 @@
     </modules>
 
     <profiles>
+        <profile>
+            <id>installer</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>exist-installer</module>
+            </modules>
+        </profile>
+
         <profile>
             <id>docker</id>
             <activation>
