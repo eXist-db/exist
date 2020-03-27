@@ -71,15 +71,16 @@ public class GetFragmentBetween extends BasicFunction {
     public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("get-fragment-between", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-                    "Returns an xml fragment or a sequence of nodes between two elements (normally milestone elements). " +
-                            "This function works only on documents which are stored in eXist DB." +
+                    "Serializes an XML fragment or a sequence of nodes between two elements (normally milestone elements). " +
+                            "This function works only on documents which are stored in the database itself." +
                             "The $beginning-node represents the first node/milestone element, $ending-node, the second one. " +
+                            "The results will be inclusive of $beginning-node and exclusive of the $ending-node." +
                             "The third argument, $make-fragment, is " +
                             "a boolean value for the path completion. If it is set to true() the " +
                             "result sequence is wrapped into a parent element node. " +
-                            "The fourth argument, display-root-namespace, is " +
+                            "The fourth argument  display-root-namespace (only used when $make-fragment is true()), is " +
                             "a boolean value for displaying the root node namespace. If it is set to true() the " +
-                            "attribute \"xmlns\" in the root node of the result sequence is determined explicitely from the $beginning-node. " +
+                            "attribute \"xmlns\" in the root node of the result sequence is determined from the $beginning-node. " +
                             "Example call of the function for getting the fragment between two TEI page break element nodes: " +
                             "  let $fragment := util:get-fragment-between(//pb[1], //pb[2], true(), true())",
                     new SequenceType[]{

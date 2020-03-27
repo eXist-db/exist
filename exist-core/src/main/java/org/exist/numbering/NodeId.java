@@ -177,8 +177,6 @@ public interface NodeId extends Comparable<NodeId> {
 
     int compareTo(NodeId other);
 
-    boolean equals(NodeId other);
-
     /**
      * Returns the size (in bytes) of this node id. Depends on
      * the concrete implementation.
