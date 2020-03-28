@@ -261,10 +261,14 @@ public class Predicate extends PathExpr {
     }
 
     /**
-     * @param contextSequence
-     * @param inner
+     * Evaluate the inner part of the predicate as a boolean.
+     *
+     * @param contextSequence the context sequence
+     * @param inner the inner expression
+     *
      * @return The result of the boolean evaluation of the predicate.
-     * @throws XPathException
+     *
+     * @throws XPathException if an error occurs
      */
     private Sequence evalBoolean(final Sequence contextSequence, final Expression inner, final int mode)
             throws XPathException {
@@ -349,9 +353,11 @@ public class Predicate extends PathExpr {
     }
 
     /**
-     * @param contextSequence
+     * @param contextSequence the context sequence
+     *
      * @return The result of the node set evaluation of the predicate.
-     * @throws XPathException
+     *
+     * @throws XPathException if an error occurs
      */
     private Sequence selectByNodeSet(final Sequence contextSequence) throws XPathException {
         final NewArrayNodeSet result = new NewArrayNodeSet();
@@ -403,12 +409,14 @@ public class Predicate extends PathExpr {
     }
 
     /**
-     * @param outerSequence
-     * @param contextSequence
-     * @param mode
-     * @param innerSeq
+     * @param outerSequence the outer sequence
+     * @param contextSequence the context sequence
+     * @param mode the mode
+     * @param innerSeq the inner sequence
+     *
      * @return The result of the positional evaluation of the predicate.
-     * @throws XPathException
+     *
+     * @throws XPathException if an error occurs
      */
     private Sequence selectByPosition(final Sequence outerSequence,
         final Sequence contextSequence, final int mode, final Sequence innerSeq) throws XPathException {
