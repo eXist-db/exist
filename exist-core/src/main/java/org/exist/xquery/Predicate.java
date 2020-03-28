@@ -108,7 +108,7 @@ public class Predicate extends PathExpr {
             // dependency with the context item.
         } else if (Type.subTypeOf(innerType, Type.NUMBER) &&
                 !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM) &&
-                inner.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EXACTLY_ONE)) {
+                    inner.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EXACTLY_ONE)) {
             executionMode = POSITIONAL;
         }
         // Case 3: all other cases, boolean evaluation (that can be "promoted" later)
@@ -193,7 +193,11 @@ public class Predicate extends PathExpr {
                         innerSeq = inner.eval(Dependency.dependsOn(inner.getDependencies(), Dependency.CONTEXT_ITEM)
                                 ? contextSequence : null);
                     }
-                    result = selectByPosition(outerSequence, contextSequence, mode, innerSeq);
+                    if (innerSeq.getCardinality().isSubCardinalityOrEqualOf(Cardinality.EXACTLY_ONE)) {
+                        result = selectByPosition(outerSequence, contextSequence, mode, innerSeq);
+                    } else {
+                        throw new XPathException(this, ErrorCodes.FORG0006, "Effective boolean value is not defined for a sequence of two or more items starting with a " + Type.getTypeName(innerSeq.itemAt(0).getType()) + " value");
+                    }
                     break;
                 default:
                     throw new IllegalArgumentException(

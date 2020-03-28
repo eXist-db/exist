@@ -78,3 +78,9 @@ declare
 function pf:computed-position-multi($offset as xs:integer) {
     $pf:XML/*[($offset - 1) * 1]/target/start/number()
 };
+
+declare
+    %test:assertError("err:FORG0006")
+function pf:multiple-positions() {
+    (3,4)[1,2]
+};
