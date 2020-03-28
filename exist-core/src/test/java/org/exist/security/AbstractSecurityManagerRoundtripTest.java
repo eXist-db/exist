@@ -1,11 +1,11 @@
 package org.exist.security;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.exist.EXistException;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xmldb.UserManagementService;
-import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
@@ -22,15 +22,13 @@ import org.xmldb.api.base.XMLDBException;
  */
 public abstract class AbstractSecurityManagerRoundtripTest {
 
-    protected abstract String getBaseUri();
+    protected abstract Collection getRoot() throws XMLDBException;
 
     protected abstract void restartServer() throws XMLDBException, IOException;
 
     @Test
     public void checkGroupMembership() throws XMLDBException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
-
-        Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
-        UserManagementService ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+        UserManagementService ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
 
         final String group1Name = "testGroup1";
         final String group2Name = "testGroup2";
@@ -53,8 +51,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
             restartServer();
             /**************************/
 
-            root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
-            ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+            ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
 
             user = ums.getAccount(userName);
             assertNotNull(user);
@@ -88,9 +85,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
 
     @Test
     public void checkPrimaryGroupRemainsDBA() throws XMLDBException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
-
-        Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
-        UserManagementService ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+        UserManagementService ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
 
         final String group1Name = "testGroup1";
         final String group2Name = "testGroup2";
@@ -114,8 +109,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
             restartServer();
             /**************************/
 
-            root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
-            ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+            ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
 
             user = ums.getAccount(userName);
             assertNotNull(user);
@@ -151,8 +145,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
     @Test
     public void checkPrimaryGroupStability() throws XMLDBException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
 
-        Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
-        UserManagementService ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+        UserManagementService ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
 
         final String group1Name = "testGroupA";
         final String group2Name = "testGroupB";
@@ -175,8 +168,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
             restartServer();
             /**************************/
 
-            root = DatabaseManager.getCollection(getBaseUri() + "/db", "admin", "");
-            ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+            ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
 
             user = ums.getAccount(userName);
             assertNotNull(user);
@@ -205,6 +197,51 @@ public abstract class AbstractSecurityManagerRoundtripTest {
             if (g2 != null) {
                 ums.removeGroup(g2);
             }
+        }
+    }
+
+    @Test
+    public void checkGroupManagerStability() throws XMLDBException, PermissionDeniedException, IOException {
+        UserManagementService ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
+
+        final String commonGroupName = "commonGroup";
+        Group commonGroup = new GroupAider(commonGroupName);
+
+        final String userName = "testUserA";
+        final Group userGroup = new GroupAider(userName);
+        final Account userAccount = new UserAider(userName, userGroup); //set users primary group as personal group
+
+        try {
+            // create a user with personal group
+            ums.addGroup(userGroup);
+            ums.addAccount(userAccount);
+
+            //add user1 as a manager of common group
+            ums.addGroup(commonGroup);
+            commonGroup.addManager(userAccount);
+            ums.updateGroup(commonGroup);
+
+            /*** RESTART THE SERVER ***/
+            restartServer();
+            /**************************/
+
+            ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
+
+            // get the common group
+            commonGroup = ums.getGroup(commonGroupName);
+            assertNotNull(commonGroup);
+
+            // assert that user1 is still a manager of the common group
+            final List<Account> commonGroupManagers = commonGroup.getManagers();
+            assertNotNull(commonGroupManagers);
+            assertEquals(1, commonGroupManagers.size());
+            assertEquals(commonGroupManagers.get(0).getName(), userName);
+
+        } finally {
+            //cleanup
+            try { ums.removeGroup(commonGroup); } catch(Exception e) {}
+            try { ums.removeAccount(userAccount); } catch(Exception e) {}
+            try { ums.removeGroup(userGroup); } catch(Exception e) {}
         }
     }
 }

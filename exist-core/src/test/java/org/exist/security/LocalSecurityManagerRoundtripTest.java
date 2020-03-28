@@ -22,6 +22,7 @@ package org.exist.security;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.ClassRule;
+import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
@@ -38,8 +39,8 @@ public class LocalSecurityManagerRoundtripTest extends AbstractSecurityManagerRo
     public static final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Override
-    protected String getBaseUri() {
-        return "xmldb:exist://";
+    protected Collection getRoot() {
+        return existXmldbEmbeddedServer.getRoot();
     }
 
     @Override

@@ -22,6 +22,9 @@ package org.exist.security;
 
 import org.exist.test.ExistWebServer;
 import org.junit.ClassRule;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * Security Manager round trip tests against the XML:DB Remote API
@@ -34,8 +37,9 @@ public class RemoteSecurityManagerRoundtripTest extends AbstractSecurityManagerR
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     @Override
-    protected String getBaseUri() {
-        return "xmldb:exist://localhost:" + Integer.toString(existWebServer.getPort()) + "/xmlrpc";
+    protected Collection getRoot() throws XMLDBException {
+        final String baseUri = "xmldb:exist://localhost:" + Integer.toString(existWebServer.getPort()) + "/xmlrpc";
+        return DatabaseManager.getCollection(baseUri + "/db", "admin", "");
     }
 
     @Override

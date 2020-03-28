@@ -106,7 +106,8 @@ public abstract class AbstractRealm implements Realm, Configurable {
             final AbstractRealm r = this;
             
             for(final Iterator<DocumentImpl> i = collectionGroups.iterator(broker); i.hasNext(); ) {
-                final Configuration conf = Configurator.parse(broker.getBrokerPool(), i.next());
+                final DocumentImpl doc = i.next();
+                final Configuration conf = Configurator.parse(broker.getBrokerPool(), doc);
                 final String name = conf.getProperty("name");
                 
                 groupsByName.writeE(principalDb -> {
