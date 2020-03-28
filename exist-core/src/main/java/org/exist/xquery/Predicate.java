@@ -39,6 +39,7 @@ import org.exist.xquery.value.ValueSequence;
 import java.util.Set;
 import java.util.TreeSet;
 
+import static org.exist.xquery.Predicate.ExecutionMode.*;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
 /**
@@ -48,14 +49,16 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
  */
 public class Predicate extends PathExpr {
 
-    public final static int UNKNOWN = -1;
-    public final static int NODE = 0;
-    public final static int BOOLEAN = 1;
-    public final static int POSITIONAL = 2;
+    public enum ExecutionMode {
+        UNKNOWN,
+        NODE,
+        BOOLEAN,
+        POSITIONAL;
+    }
 
     private CachedResult cached = null;
 
-    private int executionMode = UNKNOWN;
+    private ExecutionMode executionMode = UNKNOWN;
 
     private int outerContextId;
 
@@ -158,8 +161,8 @@ public class Predicate extends PathExpr {
                 executionMode = BOOLEAN;
             }
 
-            final Tuple2<Integer, Sequence> recomputed = recomputeExecutionMode(contextSequence, inner);
-            final int recomputedExecutionMode = recomputed._1;
+            final Tuple2<ExecutionMode, Sequence> recomputed = recomputeExecutionMode(contextSequence, inner);
+            final ExecutionMode recomputedExecutionMode = recomputed._1;
             Sequence innerSeq = recomputed._2;
 
             switch (recomputedExecutionMode) {
@@ -203,8 +206,8 @@ public class Predicate extends PathExpr {
         return result;
     }
 
-    private Tuple2<Integer, Sequence> recomputeExecutionMode(final Sequence contextSequence, final Expression inner) throws XPathException {
-        int recomputedExecutionMode = executionMode;
+    private Tuple2<ExecutionMode, Sequence> recomputeExecutionMode(final Sequence contextSequence, final Expression inner) throws XPathException {
+        ExecutionMode recomputedExecutionMode = executionMode;
         Sequence innerSeq = null;
 
         // Atomic context sequences :
@@ -579,7 +582,7 @@ public class Predicate extends PathExpr {
         }
     }
 
-    public int getExecutionMode() {
+    public ExecutionMode getExecutionMode() {
         return executionMode;
     }
 
