@@ -64,8 +64,8 @@ public class Predicate extends PathExpr {
 
     @Override
     public void addPath(final PathExpr path) {
-        if (path.getLength() == 1) {
-            add(path.getExpression(0));
+        if (path.getSubExpressionCount() == 1) {
+            add(path.getSubExpression(0));
         } else {
             super.addPath(path);
         }
@@ -74,8 +74,8 @@ public class Predicate extends PathExpr {
     @Override
     public int getDependencies() {
         final int deps;
-        if (getLength() == 1) {
-            deps = getExpression(0).getDependencies();
+        if (getSubExpressionCount() == 1) {
+            deps = getSubExpression(0).getDependencies();
         } else {
             deps = super.getDependencies();
         }
@@ -87,7 +87,7 @@ public class Predicate extends PathExpr {
         parent = contextInfo.getParent();
         AnalyzeContextInfo newContextInfo = createContext(contextInfo);
         super.analyze(newContextInfo);
-        final Expression inner = getExpression(0);
+        final Expression inner = getSubExpression(0);
         final int staticReturnType = newContextInfo.getStaticReturnType();
         final int innerType = staticReturnType != Type.ITEM ?
                 staticReturnType : inner.returnsType();
@@ -131,7 +131,7 @@ public class Predicate extends PathExpr {
     }
 
     public Sequence preprocess() throws XPathException {
-        final Expression inner = steps.size() == 1 ? getExpression(0) : this;
+        final Expression inner = steps.size() == 1 ? getSubExpression(0) : this;
         return inner.eval(null);
     }
 
@@ -660,8 +660,8 @@ public class Predicate extends PathExpr {
     @Override
     public void setContextDocSet(final DocumentSet contextSet) {
         super.setContextDocSet(contextSet);
-        if (getLength() > 0) {
-            getExpression(0).setContextDocSet(contextSet);
+        if (getSubExpressionCount() > 0) {
+            getSubExpression(0).setContextDocSet(contextSet);
         }
     }
 
