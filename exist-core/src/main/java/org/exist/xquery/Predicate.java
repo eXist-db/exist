@@ -20,6 +20,7 @@
  */
 package org.exist.xquery;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.dom.persistent.ContextItem;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
@@ -37,6 +38,8 @@ import org.exist.xquery.value.ValueSequence;
 
 import java.util.Set;
 import java.util.TreeSet;
+
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
 /**
  * Handles predicate expressions.
@@ -135,111 +138,6 @@ public class Predicate extends PathExpr {
         return inner.eval(null);
     }
 
-    public Boolean matchPredicate(final Sequence contextSequence,
-                                  final Item contextItem, final int mode) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES",
-                    Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null) {
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                        "CONTEXT SEQUENCE", contextSequence);
-            }
-        }
-        boolean result = false;
-        final Expression inner = steps.size() == 1 ? getExpression(0) : this;
-        if (inner == null) {
-            result = false;
-        } else {
-            int recomputedExecutionMode = executionMode;
-            Sequence innerSeq = null;
-            // Atomic context sequences :
-            if (Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
-                // We can't have a node set operation : reconsider depending of
-                // the inner sequence
-                if (executionMode == NODE && !(contextSequence instanceof VirtualNodeSet)) {
-                    // (1,2,2,4)[.]
-                    if (Type.subTypeOf(contextSequence.getItemType(), Type.NUMBER)) {
-                        recomputedExecutionMode = POSITIONAL;
-                    } else {
-                        recomputedExecutionMode = BOOLEAN;
-                    }
-                }
-                // If there is no dependency on the context item, try a positional promotion
-                if (executionMode == BOOLEAN && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM) &&
-                        // Hack : GeneralComparison lies on its dependencies
-                        // TODO : try to remove this since our dependency
-                        // computation should now be better
-                        !((inner instanceof GeneralComparison) &&
-                                ((GeneralComparison) inner).invalidNodeEvaluation)) {
-                    innerSeq = inner.eval(contextSequence);
-                    // Only if we have an actual *singleton* of numeric items
-                    if (innerSeq.hasOne()
-                            && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) {
-                        recomputedExecutionMode = POSITIONAL;
-                    }
-                }
-            } else if (executionMode == NODE && !contextSequence.isPersistentSet()) {
-                recomputedExecutionMode = BOOLEAN;
-            } else {
-                if (executionMode == BOOLEAN && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
-                    /*
-                     *
-                     * WARNING : this sequence will be evaluated with
-                     * preloadable nodesets !
-                     */
-                    innerSeq = inner.eval(contextSequence);
-                    // Try to promote a boolean evaluation to a nodeset one
-                    // We are now sure of the inner sequence return type
-                    if (Type.subTypeOf(innerSeq.getItemType(), Type.NODE)
-                            && innerSeq.isPersistentSet()) {
-                        recomputedExecutionMode = NODE;
-                        // Try to promote a boolean evaluation to a positional one
-                        // Only if we have an actual *singleton* of numeric items
-                    } else if (innerSeq.hasOne()
-                            && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) {
-                        recomputedExecutionMode = POSITIONAL;
-                    }
-                }
-            }
-            switch (recomputedExecutionMode) {
-                case NODE:
-                    if (context.getProfiler().isEnabled()) {
-                        context.getProfiler().message(this,
-                                Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "Node selection");
-                    }
-                    //TODO: result = selectByNodeSet(contextSequence);
-                    break;
-                case BOOLEAN:
-                    if (context.getProfiler().isEnabled()) {
-                        context.getProfiler().message(this,
-                                Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "Boolean evaluation");
-                    }
-                    //TODO: result = evalBoolean(contextSequence, inner);
-                    break;
-                case POSITIONAL:
-                    if (context.getProfiler().isEnabled()) {
-                        context.getProfiler().message(this,
-                                Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE",
-                                "Positional evaluation");
-                    }
-                    // In case it hasn't been evaluated above
-                    if (innerSeq == null) {
-                        innerSeq = inner.eval(contextSequence);
-                    }
-                    //TODO: result = selectByPosition(outerSequence, contextSequence, mode, innerSeq);
-                    break;
-                default:
-                    throw new IllegalArgumentException(
-                            "Unsupported execution mode: '" + recomputedExecutionMode + "'");
-            }
-        }
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().end(this, "", null);
-        }
-        return result;
-    }
-
     public Sequence evalPredicate(final Sequence outerSequence,
             final Sequence contextSequence, final int mode) throws XPathException {
         if (context.getProfiler().isEnabled()) {
@@ -252,67 +150,18 @@ public class Predicate extends PathExpr {
             }
         }
         Sequence result;
-        final Expression inner = steps.size() == 1 ? getExpression(0) : this;
+        final Expression inner = steps.size() == 1 ? getSubExpression(0) : this;
         if (inner == null) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
             if (executionMode == UNKNOWN) {
                 executionMode = BOOLEAN;
             }
-            int recomputedExecutionMode = executionMode;
-            Sequence innerSeq = null;
-            // Atomic context sequences :
-            if (Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
-                // We can't have a node set operation : reconsider depending of
-                // the inner sequence
-                if (executionMode == NODE && !(contextSequence instanceof VirtualNodeSet)) {
-                    // (1,2,2,4)[.]
-                    if (Type.subTypeOf(contextSequence.getItemType(), Type.NUMBER)) {
-                        recomputedExecutionMode = POSITIONAL;
-                    } else {
-                        recomputedExecutionMode = BOOLEAN;
-                    }
-                }
-                // If there is no dependency on the context item, try a
-                // positional promotion
-                if (executionMode == BOOLEAN &&
-                        !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM) &&
-                        // Hack : GeneralComparison lies on its dependencies
-                        // TODO : try to remove this since our dependency
-                        // computation should now be better
-                        !((inner instanceof GeneralComparison) &&
-                                ((GeneralComparison) inner).invalidNodeEvaluation)) {
-                    innerSeq = inner.eval(contextSequence);
-                    // Only if we have an actual *singleton* of numeric items
-                    if (innerSeq.hasOne()
-                            && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) {
-                        recomputedExecutionMode = POSITIONAL;
-                    }
-                }
-            } else if (executionMode == NODE && !contextSequence.isPersistentSet()) {
-                recomputedExecutionMode = BOOLEAN;
-            } else {
-                if (executionMode == BOOLEAN &&
-                        !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
-                    /*
-                     *
-                     * WARNING : this sequence will be evaluated with
-                     * preloadable nodesets !
-                     */
-                    innerSeq = inner.eval(contextSequence);
-                    // Try to promote a boolean evaluation to a nodeset one
-                    // We are now sure of the inner sequence return type
-                    if (Type.subTypeOf(innerSeq.getItemType(), Type.NODE)
-                            && innerSeq.isPersistentSet()) {
-                        recomputedExecutionMode = NODE;
-                        // Try to promote a boolean evaluation to a positional one
-                        // Only if we have an actual *singleton* of numeric items
-                    } else if (innerSeq.hasOne()
-                            && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) {
-                        recomputedExecutionMode = POSITIONAL;
-                    }
-                }
-            }
+
+            final Tuple2<Integer, Sequence> recomputed = recomputeExecutionMode(contextSequence, inner);
+            final int recomputedExecutionMode = recomputed._1;
+            Sequence innerSeq = recomputed._2;
+
             switch (recomputedExecutionMode) {
                 case NODE:
                     if (context.getProfiler().isEnabled()) {
@@ -352,6 +201,63 @@ public class Predicate extends PathExpr {
             context.getProfiler().end(this, "", result);
         }
         return result;
+    }
+
+    private Tuple2<Integer, Sequence> recomputeExecutionMode(final Sequence contextSequence, final Expression inner) throws XPathException {
+        int recomputedExecutionMode = executionMode;
+        Sequence innerSeq = null;
+
+        // Atomic context sequences :
+        if (Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
+            // We can't have a node set operation : reconsider depending of
+            // the inner sequence
+            if (executionMode == NODE && !(contextSequence instanceof VirtualNodeSet)) {
+                // (1,2,2,4)[.]
+                if (Type.subTypeOf(contextSequence.getItemType(), Type.NUMBER)) {
+                    recomputedExecutionMode = POSITIONAL;
+                } else {
+                    recomputedExecutionMode = BOOLEAN;
+                }
+            }
+            // If there is no dependency on the context item, try a positional promotion
+            if (executionMode == BOOLEAN && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM) &&
+                    // Hack : GeneralComparison lies on its dependencies
+                    // TODO : try to remove this since our dependency
+                    // computation should now be better
+                    !((inner instanceof GeneralComparison) &&
+                            ((GeneralComparison) inner).invalidNodeEvaluation)) {
+                innerSeq = inner.eval(contextSequence);
+                // Only if we have an actual *singleton* of numeric items
+                if (innerSeq.hasOne()
+                        && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) {
+                    recomputedExecutionMode = POSITIONAL;
+                }
+            }
+        } else if (executionMode == NODE && !contextSequence.isPersistentSet()) {
+            recomputedExecutionMode = BOOLEAN;
+        } else {
+            if (executionMode == BOOLEAN && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
+                /*
+                 *
+                 * WARNING : this sequence will be evaluated with
+                 * preloadable nodesets !
+                 */
+                innerSeq = inner.eval(contextSequence);
+                // Try to promote a boolean evaluation to a nodeset one
+                // We are now sure of the inner sequence return type
+                if (Type.subTypeOf(innerSeq.getItemType(), Type.NODE)
+                        && innerSeq.isPersistentSet()) {
+                    recomputedExecutionMode = NODE;
+                    // Try to promote a boolean evaluation to a positional one
+                    // Only if we have an actual *singleton* of numeric items
+                } else if (innerSeq.hasOne()
+                        && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) {
+                    recomputedExecutionMode = POSITIONAL;
+                }
+            }
+        }
+
+        return Tuple(recomputedExecutionMode, innerSeq);
     }
 
     /**
