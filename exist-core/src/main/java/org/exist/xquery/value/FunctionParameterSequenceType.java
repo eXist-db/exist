@@ -3,6 +3,8 @@
  */
 package org.exist.xquery.value;
 
+import org.exist.xquery.Cardinality;
+
 /**
  * This class is used to specify the name and description of an XQuery function parameter.
  *
@@ -20,12 +22,12 @@ public class FunctionParameterSequenceType extends FunctionReturnSequenceType {
      * @param description   A description of the parameter in the <strong>FunctionSignature</strong>.
      * @see org.exist.xquery.FunctionSignature @see Type @see org.exist.xquery.Cardinality
      */
-    public FunctionParameterSequenceType(String attributeName, int primaryType, int cardinality, String description) {
+    public FunctionParameterSequenceType(final String attributeName, final int primaryType, final Cardinality cardinality, final String description) {
         super(primaryType, cardinality, description);
         this.attributeName = attributeName;
     }
 
-    public FunctionParameterSequenceType(String attributeName) {
+    public FunctionParameterSequenceType(final String attributeName) {
         super();
         this.attributeName = attributeName;
     }

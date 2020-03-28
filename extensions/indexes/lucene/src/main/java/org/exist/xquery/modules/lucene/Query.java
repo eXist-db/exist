@@ -52,7 +52,7 @@ public class Query extends Function implements Optimizable {
             "Lucene's default query syntax or as an XML fragment. " +
             "See http://exist-db.org/lucene.html#N1029E for complete documentation.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, 
+                new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
                 		"The node set to search using a Lucene full text index which is defined on those nodes"),
                 new FunctionParameterSequenceType("query", Type.ITEM, Cardinality.ZERO_OR_ONE,
                 		"The query to search for, provided either as a string or text in Lucene's default query " +

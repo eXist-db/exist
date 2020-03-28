@@ -48,7 +48,7 @@ public class FunEnvironment extends BasicFunction {
             new QName("available-environment-variables", Function.BUILTIN_FUNCTION_NS),
             "Returns a list of environment variable names.",
             null,
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, 
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE,
             "Returns a sequence of strings, being the names of the environment variables. User must be DBA.")
         ),
         new FunctionSignature(

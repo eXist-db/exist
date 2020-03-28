@@ -52,14 +52,14 @@ public class UriFunctions extends BasicFunction {
             new QName("base-uri", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX),
             "This function returns the implementation defined base URI of the Resource Function.",
             FunctionSignature.NO_ARGS,
-            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ONE, "The base URI of the Resource Function.")
+            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "The base URI of the Resource Function.")
         ),
         
         new FunctionSignature(
             new QName("uri", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX),
             "This function is returns the complete URI that addresses the Resource Function. Typically this is the rest:base-uri() appended with the path from the Path Annotation (if present) of the Resource Function.",
             FunctionSignature.NO_ARGS,
-            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ONE, "The URI which addressed the Resource Function.")
+            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI which addressed the Resource Function.")
         )
     };
     

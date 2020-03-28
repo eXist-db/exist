@@ -69,7 +69,7 @@ public class DeleteFunction extends BasicFunction
 						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "The directory context handle from a jndi:get-dir-context() call" ), 
 						new FunctionParameterSequenceType( "dn", Type.STRING, Cardinality.EXACTLY_ONE, "The Distinguished Name" )
 					},
-					new SequenceType( Type.ITEM, Cardinality.EMPTY ) )
+					new SequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE ) )
 			};
 
 	public DeleteFunction( XQueryContext context, FunctionSignature signature ) 

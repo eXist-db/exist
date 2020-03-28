@@ -149,14 +149,14 @@ public class UserDefinedFunction extends Function implements Cloneable {
 					{var.setContextDocs(contextDocs[i]);}
 				context.declareVariableBinding(var);
 				
-				int actualCardinality;
-				if (currentArguments[j].isEmpty()) {actualCardinality = Cardinality.EMPTY;}
-				else if (currentArguments[j].hasMany()) {actualCardinality = Cardinality.MANY;}
-				else {actualCardinality = Cardinality.ONE;}
+				Cardinality actualCardinality;
+				if (currentArguments[j].isEmpty()) {actualCardinality = Cardinality.EMPTY_SEQUENCE;}
+				else if (currentArguments[j].hasMany()) {actualCardinality = Cardinality._MANY;}
+				else {actualCardinality = Cardinality.EXACTLY_ONE;}
 				
-				if (!Cardinality.checkCardinality(getSignature().getArgumentTypes()[j].getCardinality(), actualCardinality))
+				if (!getSignature().getArgumentTypes()[j].getCardinality().isSuperCardinalityOrEqualOf(actualCardinality))
 					{throw new XPathException(this, ErrorCodes.XPTY0004, "Invalid cardinality for parameter $" + varName +  
- 						". Expected " + Cardinality.getDescription(getSignature().getArgumentTypes()[j].getCardinality()) + 
+ 						". Expected " + getSignature().getArgumentTypes()[j].getCardinality().getHumanDescription() +
  						", got " + currentArguments[j].getItemCount());}
 			}
 			result = body.eval(contextSequence, contextItem);

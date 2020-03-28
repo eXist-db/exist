@@ -73,7 +73,7 @@ public class CreateFunction extends BasicFunction
 							+ " form <attributes><attribute name=\"\" value=\"\"/></attributes>. "
 							+ " You can also optionally specify ordered=\"true\" for an attribute." ) 
 					},
-					new SequenceType( Type.ITEM, Cardinality.EMPTY ) )
+					new SequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE ) )
 			};
 
 	public CreateFunction( XQueryContext context, FunctionSignature signature ) 

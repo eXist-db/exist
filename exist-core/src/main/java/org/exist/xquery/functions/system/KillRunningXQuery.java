@@ -59,14 +59,14 @@ public class KillRunningXQuery extends BasicFunction
 			new QName( "kill-running-xquery", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
 			"Kill a running XQuey (dba role only).",
 			new SequenceType[] { XQUERY_ID_PARAM },
-			new SequenceType( Type.ITEM, Cardinality.EMPTY )
+			new SequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE )
 		),
 		
 		new FunctionSignature(
 			new QName( "kill-running-xquery", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
 			"Kill a running XQuey (dba role only).",
 			new SequenceType[] { XQUERY_ID_PARAM, WAIT_TIME_PARAM },
-			new SequenceType( Type.ITEM, Cardinality.EMPTY )
+			new SequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE )
 		),
 	};
 		

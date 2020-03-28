@@ -319,7 +319,7 @@ public class FunctionDSL {
      *
      * @return The function parameter object
      */
-    public static FunctionParameterSequenceType param(final String name, final int type, final int cardinality,
+    public static FunctionParameterSequenceType param(final String name, final int type, final Cardinality cardinality,
             final String description) {
         return new FunctionParameterSequenceType(name, type, cardinality, description);
     }
@@ -419,10 +419,10 @@ public class FunctionDSL {
     /**
      * Creates a Function Return Type which describes no result.
      *
-     * @return a Function Return Type which has a cardinality of {@link Cardinality#EMPTY} and {@link Type#EMPTY}
+     * @return a Function Return Type which has a cardinality of {@link Cardinality#EMPTY_SEQUENCE} and {@link Type#EMPTY}
      */
     public static FunctionReturnSequenceType returnsNothing() {
-        return new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY, null);
+        return new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE, null);
     }
 
     /**
@@ -433,7 +433,7 @@ public class FunctionDSL {
      *
      * @return The function return type object
      */
-    public static FunctionReturnSequenceType returns(final int type, final int cardinality) {
+    public static FunctionReturnSequenceType returns(final int type, final Cardinality cardinality) {
         return returns(type, cardinality, null);
     }
 
@@ -446,7 +446,7 @@ public class FunctionDSL {
      *
      * @return The function return type object
      */
-    public static FunctionReturnSequenceType returns(final int type, final int cardinality, final String description) {
+    public static FunctionReturnSequenceType returns(final int type, final Cardinality cardinality, final String description) {
         return new FunctionReturnSequenceType(type, cardinality, description);
     }
 }

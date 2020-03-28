@@ -84,12 +84,12 @@ public class GetFragmentBetween extends BasicFunction {
                             "Example call of the function for getting the fragment between two TEI page break element nodes: " +
                             "  let $fragment := util:get-fragment-between(//pb[1], //pb[2], true(), true())",
                     new SequenceType[]{
-                            new FunctionParameterSequenceType("beginning-node", Type.NODE, Cardinality.ONE, "The first node/milestone element"),
+                            new FunctionParameterSequenceType("beginning-node", Type.NODE, Cardinality.EXACTLY_ONE, "The first node/milestone element"),
                             new FunctionParameterSequenceType("ending-node", Type.NODE, Cardinality.ZERO_OR_ONE, "The second node/milestone element"),
                             new FunctionParameterSequenceType("make-fragment", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "The flag make a fragment."),
                             new FunctionParameterSequenceType("display-root-namespace", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "Display the namespace of the root node of the fragment.")
                     },
-                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "the string containing the fragment between the two node/milestone elements."), true);
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the string containing the fragment between the two node/milestone elements."), true);
 
     public GetFragmentBetween(final XQueryContext context) {
         super(context, signature);

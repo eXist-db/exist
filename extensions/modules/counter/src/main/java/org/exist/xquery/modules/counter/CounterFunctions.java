@@ -40,7 +40,7 @@ public class CounterFunctions extends BasicFunction {
                 new FunctionParameterSequenceType("counter-name", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "Name of the counter.")
             },
-            new FunctionReturnSequenceType(Type.LONG, Cardinality.ZERO_OR_ONE, 
+            new FunctionReturnSequenceType(Type.LONG, Cardinality.ZERO_OR_ONE,
                                                         "the value of the newly created counter."));
 
     public final static FunctionSignature createCounterAndInit =
@@ -54,7 +54,7 @@ public class CounterFunctions extends BasicFunction {
                 new FunctionParameterSequenceType("init-value", Type.LONG, Cardinality.EXACTLY_ONE,
                         "The initial value of the counter.")
             },
-            new FunctionReturnSequenceType(Type.LONG, Cardinality.ZERO_OR_ONE, 
+            new FunctionReturnSequenceType(Type.LONG, Cardinality.ZERO_OR_ONE,
                                                         "the value of the newly created counter."));
 
     public final static FunctionSignature nextValue =
@@ -65,7 +65,7 @@ public class CounterFunctions extends BasicFunction {
                 new FunctionParameterSequenceType("counter-name", Type.ITEM, Cardinality.EXACTLY_ONE,
                         "Name of the counter.")
             },
-            new FunctionReturnSequenceType(Type.LONG, Cardinality.ZERO_OR_ONE, 
+            new FunctionReturnSequenceType(Type.LONG, Cardinality.ZERO_OR_ONE,
                                                         "the new value of the specified counter," +
                                                         " or -1 if the counter does not exist."));
 

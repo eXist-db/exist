@@ -131,13 +131,13 @@ public class TypeswitchExpression extends AbstractExpression {
     }
 
     private boolean checkType(SequenceType type, Sequence seq) throws XPathException {
-        final int requiredCardinality = type.getCardinality();
-        int actualCardinality;
-        if (seq.isEmpty()) {actualCardinality = Cardinality.EMPTY;}
-        else if (seq.hasMany()) {actualCardinality = Cardinality.MANY;}
-        else {actualCardinality = Cardinality.ONE;}
+        final Cardinality requiredCardinality = type.getCardinality();
+        Cardinality actualCardinality;
+        if (seq.isEmpty()) {actualCardinality = Cardinality.EMPTY_SEQUENCE;}
+        else if (seq.hasMany()) {actualCardinality = Cardinality._MANY;}
+        else {actualCardinality = Cardinality.EXACTLY_ONE;}
         
-        if (!Cardinality.checkCardinality(requiredCardinality, actualCardinality))
+        if (!requiredCardinality.isSuperCardinalityOrEqualOf(actualCardinality))
             {return false;}
         for(final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
             final Item next = i.nextItem();
@@ -155,8 +155,9 @@ public class TypeswitchExpression extends AbstractExpression {
     public int getDependencies() {
         return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
     }
-    
-    public int getCardinality() {
+
+    @Override
+    public Cardinality getCardinality() {
         return Cardinality.ZERO_OR_MORE;
     }
     

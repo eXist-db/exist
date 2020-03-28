@@ -28,10 +28,7 @@ import org.exist.collections.ManagedLocks;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.util.LockException;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
@@ -63,10 +60,8 @@ public abstract class LockFunction extends Function {
     }
     
     
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Function#getCardinality()
-     */
-    public int getCardinality() {
+    @Override
+    public Cardinality getCardinality() {
         return getArgument(1).getCardinality();
     }
     

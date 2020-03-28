@@ -48,7 +48,8 @@ public class TreatAsExpression extends AbstractExpression {
         return type.getPrimaryType();
     }
 
-    public int getCardinality() {
+    @Override
+    public Cardinality getCardinality() {
         return type.getCardinality();
     }
     

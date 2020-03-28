@@ -75,7 +75,7 @@ public class MailStoreFunctions extends BasicFunction
 			{
 				new FunctionParameterSequenceType( "mail-store-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mail store handle retrieved from mail:get-mail-store()" )
 			},
-			new SequenceType( Type.ITEM, Cardinality.EMPTY )
+			new SequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE )
 			)
 		};
 

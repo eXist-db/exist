@@ -51,7 +51,7 @@ public class XMLDBRemove extends XMLDBAbstractCollectionManipulator {
             XMLDBModule.COLLECTION_URI,
             new SequenceType[] {
                 new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI")},
-            new SequenceType(Type.ITEM, Cardinality.EMPTY)
+            new SequenceType(Type.ITEM, Cardinality.EMPTY_SEQUENCE)
 		),
 		new FunctionSignature(
 			new QName("remove", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
@@ -60,7 +60,7 @@ public class XMLDBRemove extends XMLDBAbstractCollectionManipulator {
 			new SequenceType[] {
                 new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
                 new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource")},
-            new SequenceType(Type.ITEM, Cardinality.EMPTY)
+            new SequenceType(Type.ITEM, Cardinality.EMPTY_SEQUENCE)
 		)
 	};
 	

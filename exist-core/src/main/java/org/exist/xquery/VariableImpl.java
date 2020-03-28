@@ -103,7 +103,7 @@ public class VariableImpl implements Variable {
 		if (type != null) {
 			return type.toString();
 		} else {
-			return Type.getTypeName(Type.ITEM) + Cardinality.toString(getCardinality());
+			return Type.getTypeName(Type.ITEM) + getCardinality().toXQueryCardinalityString();
 		}
 	}
     
@@ -112,16 +112,16 @@ public class VariableImpl implements Variable {
     	//Check the value's type if it is already assigned : happens with external variables    	
     	if (getValue() != null) {
             if (getSequenceType() != null) {
-                int actualCardinality;
-                if (getValue().isEmpty()) {actualCardinality = Cardinality.EMPTY;}
-                else if (getValue().hasMany()) {actualCardinality = Cardinality.MANY;}
-                else {actualCardinality = Cardinality.ONE;}                	
+                Cardinality actualCardinality;
+                if (getValue().isEmpty()) {actualCardinality = Cardinality.EMPTY_SEQUENCE;}
+                else if (getValue().hasMany()) {actualCardinality = Cardinality._MANY;}
+                else {actualCardinality = Cardinality.EXACTLY_ONE;}
             	//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
-        		if (!Cardinality.checkCardinality(getSequenceType().getCardinality(), actualCardinality))
+        		if (!getSequenceType().getCardinality().isSuperCardinalityOrEqualOf(actualCardinality))
     				{throw new XPathException("XPTY0004: Invalid cardinality for variable $" + getQName() +
     						". Expected " +
-    						Cardinality.getDescription(getSequenceType().getCardinality()) +
-    						", got " + Cardinality.getDescription(actualCardinality));}
+    						getSequenceType().getCardinality().getHumanDescription() +
+    						", got " + actualCardinality.getHumanDescription());}
         		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
         		if (!Type.subTypeOf(getSequenceType().getPrimaryType(), Type.NODE)) {
             		if (!getValue().isEmpty() && !Type.subTypeOf(getValue().getItemType(), getSequenceType().getPrimaryType()))
@@ -195,8 +195,9 @@ public class VariableImpl implements Variable {
 		else
 			{return Dependency.CONTEXT_SET + Dependency.LOCAL_VARS;}
 	}
-	
-	public int getCardinality() {
+
+	@Override
+	public Cardinality getCardinality() {
 		if (type != null) {
 			return type.getCardinality();
 		} else {

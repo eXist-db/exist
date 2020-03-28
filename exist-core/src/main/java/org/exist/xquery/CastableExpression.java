@@ -35,10 +35,10 @@ import org.exist.xquery.value.Type;
  */
 public class CastableExpression extends AbstractExpression {
 
-	private Expression expression;	
-	private int requiredCardinality;
+	private final Expression expression;
+	private final Cardinality requiredCardinality;
 	private final int requiredType;
-	
+
 	/**
      * Wrap a CastableExpression around an expression, expecting the given type and
 	 * cardinality.
@@ -48,7 +48,8 @@ public class CastableExpression extends AbstractExpression {
      * @param expr the expression to be wrapped
      * @param requiredType the {@link Type} expected
      */
-	public CastableExpression(XQueryContext context, Expression expr, int requiredType, int requiredCardinality) {
+	public CastableExpression(final XQueryContext context, final Expression expr, final int requiredType,
+			final Cardinality requiredCardinality) {
 		super(context);
 		this.expression = expr;
 		this.requiredType = requiredType;
@@ -62,10 +63,8 @@ public class CastableExpression extends AbstractExpression {
 		return Type.BOOLEAN;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#getCardinality()
-	 */
-	public int getCardinality() {
+	@Override
+	public Cardinality getCardinality() {
 		return Cardinality.EXACTLY_ONE;
 	}
 	
@@ -110,7 +109,7 @@ public class CastableExpression extends AbstractExpression {
 			final Sequence seq = Atomize.atomize(expression.eval(contextSequence, contextItem));
 			if(seq.isEmpty()) {
 				//If ? is specified after the target type, the result of the cast expression is an empty sequence.
-				if (Cardinality.checkCardinality(requiredCardinality, Cardinality.ZERO))
+				if (requiredCardinality.isSuperCardinalityOrEqualOf(Cardinality.EMPTY_SEQUENCE))
 	                {result = BooleanValue.TRUE;}
 				//If ? is not specified after the target type, a type error is raised [err:XPTY0004].
 				else
@@ -121,7 +120,7 @@ public class CastableExpression extends AbstractExpression {
 	    		try {
 	    			seq.itemAt(0).convertTo(requiredType);
 	    			//If ? is specified after the target type, the result of the cast expression is an empty sequence.
-	    			if (Cardinality.checkCardinality(requiredCardinality, seq.getCardinality()))
+	    			if (requiredCardinality.isSuperCardinalityOrEqualOf(seq.getCardinality()))
 	    				{result = BooleanValue.TRUE;}
 	    			//If ? is not specified after the target type, a type error is raised [err:XPTY0004].
 	    			else

@@ -66,11 +66,9 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
         return elseExpr;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.AbstractExpression#getCardinality()
-     */
-    public int getCardinality() {
-        return thenExpr.getCardinality() | elseExpr.getCardinality();
+    @Override
+    public Cardinality getCardinality() {
+        return Cardinality.superCardinalityOf(thenExpr.getCardinality(), elseExpr.getCardinality());
     }
 
     /* (non-Javadoc)

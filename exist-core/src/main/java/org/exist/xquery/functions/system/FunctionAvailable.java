@@ -55,8 +55,8 @@ public class FunctionAvailable extends BasicFunction {
             new QName("function-available", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
             "Returns whether a function is available.",
             new SequenceType[]{
-                new FunctionParameterSequenceType("function-name", Type.QNAME, Cardinality.ONE, "The fully qualified name of the function"),
-                new FunctionParameterSequenceType("arity", Type.INTEGER, Cardinality.ONE, "The arity of the function")
+                new FunctionParameterSequenceType("function-name", Type.QNAME, Cardinality.EXACTLY_ONE, "The fully qualified name of the function"),
+                new FunctionParameterSequenceType("arity", Type.INTEGER, Cardinality.EXACTLY_ONE, "The arity of the function")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the function exists, false() otherwise."));
 

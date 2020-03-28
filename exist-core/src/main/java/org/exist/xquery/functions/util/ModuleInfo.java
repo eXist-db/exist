@@ -94,14 +94,14 @@ public class ModuleInfo extends BasicFunction {
 			new QName("map-module", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Map the module to a source location. This function is only available to the DBA role.",
 			new SequenceType[] { NAMESPACE_URI_PARAMETER, LOCATION_URI_PARAMETER },
-			new FunctionReturnSequenceType( Type.ITEM, Cardinality.EMPTY, "Returns an empty sequence" ));
+			new FunctionReturnSequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE, "Returns an empty sequence" ));
 
 	public final static FunctionSignature unmapModuleSig =
 		new FunctionSignature(
 			new QName("unmap-module", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Remove relation between module namespace and source location. This function is only available to the DBA role.",
 			new SequenceType[] { NAMESPACE_URI_PARAMETER },
-			new FunctionReturnSequenceType( Type.ITEM, Cardinality.EMPTY, "Returns an empty sequence" ));
+			new FunctionReturnSequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE, "Returns an empty sequence" ));
 
 	public final static FunctionSignature moduleDescriptionSig =
 		new FunctionSignature(

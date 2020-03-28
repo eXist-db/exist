@@ -44,7 +44,7 @@ public class Create extends SessionFunction {
                     new QName("create", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
                     "Initialize an HTTP session if not already present",
                     null,
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY));
+                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE));
 
     public Create(final XQueryContext context) {
         super(context, signature);

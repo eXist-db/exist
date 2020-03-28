@@ -106,10 +106,8 @@ public class LiteralValue extends AbstractExpression {
 		return Dependency.NO_DEPENDENCY;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#getCardinality()
-	 */
-	public int getCardinality() {
+	@Override
+	public Cardinality getCardinality() {
 		return Cardinality.EXACTLY_ONE;
 	}
 

@@ -124,10 +124,8 @@ public class ExtensionExpression extends AbstractExpression {
         return innerExpression.getDependencies();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.AbstractExpression#getCardinality()
-     */
-    public int getCardinality() {
+    @Override
+    public Cardinality getCardinality() {
         return innerExpression.getCardinality();
     }
 

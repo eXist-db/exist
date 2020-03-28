@@ -78,7 +78,7 @@ public class MailFolderFunctions extends BasicFunction
 				new FunctionParameterSequenceType( "mail-folder-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mail folder handle retrieved from mail:get-mail-folder()" ),
 				new FunctionParameterSequenceType( "expunge", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "A boolean that specifies whether to expunge the folder on close." )
 			},
-			new SequenceType( Type.ITEM, Cardinality.EMPTY )
+			new SequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE )
 			)
 		};
 

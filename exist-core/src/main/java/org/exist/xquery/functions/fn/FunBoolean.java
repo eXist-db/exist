@@ -51,7 +51,7 @@ public class FunBoolean extends Function {
                 new FunctionParameterSequenceType("items", Type.ITEM,
                     Cardinality.ZERO_OR_MORE, "The items")
             },
-            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE,
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                 "The boolean value, ebv, of the items")
         );
 

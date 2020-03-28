@@ -63,7 +63,7 @@ public class ConcatExpr extends PathExpr {
 	}
 	
 	@Override
-	public int getCardinality() {
+	public Cardinality getCardinality() {
 		return Cardinality.EXACTLY_ONE;
 	}
 

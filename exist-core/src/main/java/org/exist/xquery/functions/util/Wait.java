@@ -46,7 +46,7 @@ public class Wait extends BasicFunction
                     new SequenceType[]{
                         new FunctionParameterSequenceType( "interval", Type.INTEGER, Cardinality.EXACTLY_ONE, "Number of milliseconds to wait." ),
                     },
-                   new FunctionReturnSequenceType( Type.ITEM, Cardinality.EMPTY, "Returns an empty sequence" )
+                   new FunctionReturnSequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE, "Returns an empty sequence" )
                 )
     };
 

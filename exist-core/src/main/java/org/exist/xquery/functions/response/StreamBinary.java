@@ -52,7 +52,7 @@ public class StreamBinary extends StrictResponseFunction {
             + "Note: the servlet output stream will be closed afterwards and mime-type settings in the prolog "
             + "will not be passed.",
             new SequenceType[]{BINARY_DATA_PARAM, CONTENT_TYPE_PARAM, FILENAME_PARAM},
-            new SequenceType(Type.EMPTY, Cardinality.EMPTY),
+            new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE),
             true);
 
     public StreamBinary(final XQueryContext context) {

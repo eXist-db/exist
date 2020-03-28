@@ -52,9 +52,9 @@ public class MetadataFunctions extends BasicFunction {
             new QName("get-metadata", ExiftoolModule.NAMESPACE_URI, ExiftoolModule.PREFIX),
             "extracts the metadata",
             new SequenceType[]{
-                new FunctionParameterSequenceType("binary", Type.ANY_URI, Cardinality.ONE, "The binary file from which to extract from")
+                new FunctionParameterSequenceType("binary", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The binary file from which to extract from")
             },
-            new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "Extracted metadata")
+            new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "Extracted metadata")
     );
 
     /*
@@ -62,10 +62,10 @@ public class MetadataFunctions extends BasicFunction {
         new QName("write-metadata", ExiftoolModule.NAMESPACE_URI, ExiftoolModule.PREFIX),
         "write the metadata into a binary document",
         new SequenceType[]{
-            new FunctionParameterSequenceType("doc",Type.DOCUMENT, Cardinality.ONE, " XML file containing file"),
-            new FunctionParameterSequenceType("binary", Type.BASE64_BINARY, Cardinality.ONE, "The binary data into where metadata is written")
+            new FunctionParameterSequenceType("doc",Type.DOCUMENT, Cardinality.EXACTLY_ONE, " XML file containing file"),
+            new FunctionParameterSequenceType("binary", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The binary data into where metadata is written")
         },
-        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "Extracted metadata")
+        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "Extracted metadata")
     );
     */
     

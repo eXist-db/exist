@@ -56,7 +56,7 @@ public class Init extends BasicFunction {
 			}, 
 			new FunctionReturnSequenceType(
 				Type.STRING, 
-				Cardinality.ZERO_OR_ONE, 
+				Cardinality.ZERO_OR_ONE,
 				"The debug session id"
 			)
 		)

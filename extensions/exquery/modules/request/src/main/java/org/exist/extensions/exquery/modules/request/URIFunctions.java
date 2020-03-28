@@ -55,28 +55,28 @@ public class URIFunctions extends AbstractRequestModuleFunction {
         qnScheme,
         "Gets the Scheme of the HTTP Request e.g. https.",
         null,
-        new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "The Scheme of the HTTP Request.")
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The Scheme of the HTTP Request.")
     );
     
     public final static FunctionSignature FNS_HOSTNAME = new FunctionSignature(
         qnHostname,
         "Gets the Hostname fragment of the Authority component of the URI of the HTTP Request.",
         null,
-        new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "The Hostname of the HTTP Request.")
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The Hostname of the HTTP Request.")
     );
     
     public final static FunctionSignature FNS_PORT = new FunctionSignature(
         qnPort,
         "Gets the Port fragment of the Authority component of the URI of the HTTP Request. If the port is not explicitly specified in the URI, then the default port for the HTTP Scheme is returned (i.e. 21 for FTP, 80 for HTTP and 443 for HTTPS).",
         null,
-        new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ONE, "The Port of the HTTP Request.")
+        new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "The Port of the HTTP Request.")
     );
     
     public final static FunctionSignature FNS_PATH = new FunctionSignature(
         qnPath,
         "Gets the Path component of the URI of the HTTP Request.",
         null,
-        new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "The Path of the URI of the HTTP Request.")
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The Path of the URI of the HTTP Request.")
     );
     
     public final static FunctionSignature FNS_QUERY = new FunctionSignature(

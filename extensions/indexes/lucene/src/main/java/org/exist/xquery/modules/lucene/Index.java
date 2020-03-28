@@ -54,20 +54,20 @@ public class Index extends BasicFunction {
 	            new QName("index", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
 	            "Index an arbitrary chunk of (non-XML) data with Lucene. Syntax is inspired by Solr.",
 	            new SequenceType[] {
-	                new FunctionParameterSequenceType("documentPath", Type.STRING, Cardinality.ONE,
+	                new FunctionParameterSequenceType("documentPath", Type.STRING, Cardinality.EXACTLY_ONE,
 	                "URI path of document in database."),
 	                new FunctionParameterSequenceType("solrExression", Type.NODE, Cardinality.EXACTLY_ONE,
 	                "XML syntax expected by Solr's add expression. Element should be called 'doc', e.g."
 	                + "<doc> <field name=\"field1\">data1</field> "
 	                + "<field name=\"field2\" boost=\"value\">data2</field> </doc> ")
 	            },
-	            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, "")
+	            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE, "")
 	        ),
             new FunctionSignature(
 	            new QName("index", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
 	            "Index an arbitrary chunk of (non-XML) data with Lucene. Syntax is inspired by Solr.",
 	            new SequenceType[]{
-	                new FunctionParameterSequenceType("documentPath", Type.STRING, Cardinality.ONE,
+	                new FunctionParameterSequenceType("documentPath", Type.STRING, Cardinality.EXACTLY_ONE,
 	                "URI path of document in database."),
 	                new FunctionParameterSequenceType("solrExression", Type.NODE, Cardinality.EXACTLY_ONE,
 	                "XML syntax expected by Solr's add expression. Element should be called 'doc', e.g."
@@ -78,7 +78,7 @@ public class Index extends BasicFunction {
 	                "new Lucene document. If false, the document remains open and is not flushed to disk. " +
 	                "Call the ft:close function to explicitely close and flush the current document.")
 	            },
-	            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, "")
+	            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE, "")
 	        ),
     
             new FunctionSignature(
@@ -86,7 +86,7 @@ public class Index extends BasicFunction {
 	            "Close the current Lucene document and flush it to disk. Subsequent calls to " +
 	            "ft:index will write to a new Lucene document.",
 	            null,
-	            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, ""))
+	            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE, ""))
     };
 
     /*

@@ -49,10 +49,10 @@ public class RemoveIndex extends BasicFunction {
             "removed. They are maintained automatically by the database. Please note that non-XML indexes " +
             "will also be removed automatically if the associated document is deleted.",
             new SequenceType[]{
-                new FunctionParameterSequenceType("documentPath", Type.STRING, Cardinality.ONE,
+                new FunctionParameterSequenceType("documentPath", Type.STRING, Cardinality.EXACTLY_ONE,
                 "URI path of document in database.")
             },
-            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.ZERO, ""));
+            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE, ""));
 	
 	public RemoveIndex(XQueryContext context) {
 		super(context, signature);

@@ -89,10 +89,8 @@ public class FunUnordered extends Function {
     }
 
     
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Function#getCardinality()
-     */
-    public int getCardinality() {
+    @Override
+    public Cardinality getCardinality() {
         return getArgument(0).getCardinality();
     }
     

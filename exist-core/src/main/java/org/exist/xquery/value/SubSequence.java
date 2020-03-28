@@ -147,23 +147,23 @@ public class SubSequence extends AbstractSequence {
     }
 
     @Override
-    public int getCardinality() {
+    public Cardinality getCardinality() {
         final long length = toExclusive - fromInclusive;
         if (length < 1 || sequence.isEmpty()) {
-           return Cardinality.EMPTY;
+           return Cardinality.EMPTY_SEQUENCE;
         }
 
         final long subseqAvailable = sequence.getItemCountLong() - (fromInclusive - 1);
         if (subseqAvailable < 1) {
-            return Cardinality.EMPTY;
+            return Cardinality.EMPTY_SEQUENCE;
         }
 
         if (subseqAvailable > 0 && length == 1) {
-            return Cardinality.ONE;
+            return Cardinality.EXACTLY_ONE;
         }
 
         if (subseqAvailable > 1 && length > 1) {
-            return Cardinality.MANY;
+            return Cardinality._MANY;
         }
 
         throw new IllegalStateException("Unknown Cardinality of: " + toString());

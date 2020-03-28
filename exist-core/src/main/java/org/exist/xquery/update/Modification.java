@@ -85,8 +85,9 @@ public abstract class Modification extends AbstractExpression
         this.triggers = new Int2ObjectOpenHashMap<>();
     }
 
-    public int getCardinality() {
-        return Cardinality.EMPTY;
+    @Override
+    public Cardinality getCardinality() {
+        return Cardinality.EMPTY_SEQUENCE;
     }
 
     /* (non-Javadoc)

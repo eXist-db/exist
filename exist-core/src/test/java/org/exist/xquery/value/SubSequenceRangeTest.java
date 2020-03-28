@@ -115,13 +115,13 @@ public class SubSequenceRangeTest {
 
     @Test
     public void getCardinality() {
-        final int expectedCardinality;
+        final Cardinality expectedCardinality;
         if (expectedSubsequenceLength == 0) {
-            expectedCardinality = Cardinality.EMPTY;
+            expectedCardinality = Cardinality.EMPTY_SEQUENCE;
         } else if (expectedSubsequenceLength == 1) {
-            expectedCardinality = Cardinality.ONE;
+            expectedCardinality = Cardinality.EXACTLY_ONE;
         } else {
-            expectedCardinality = Cardinality.MANY;
+            expectedCardinality = Cardinality._MANY;
         }
         assertEquals(expectedCardinality, getSubsequence().getCardinality());
     }

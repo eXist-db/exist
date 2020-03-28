@@ -83,7 +83,7 @@ public class InspectFunction extends BasicFunction {
         if (returnType != null) {
             attribs.clear();
             attribs.addAttribute("", "type", "type", "CDATA", Type.getTypeName(returnType.getPrimaryType()));
-            attribs.addAttribute("", "cardinality", "cardinality", "CDATA", Cardinality.getDescription(returnType.getCardinality()));
+            attribs.addAttribute("", "cardinality", "cardinality", "CDATA", returnType.getCardinality().getHumanDescription());
             builder.startElement(RETURN_QNAME, attribs);
             if (returnType instanceof FunctionReturnSequenceType) {
                 final FunctionReturnSequenceType type = (FunctionReturnSequenceType) returnType;
@@ -124,7 +124,7 @@ public class InspectFunction extends BasicFunction {
             for (final SequenceType type: arguments) {
                 attribs.clear();
                 attribs.addAttribute("", "type", "type", "CDATA", Type.getTypeName(type.getPrimaryType()));
-                attribs.addAttribute("", "cardinality", "cardinality", "CDATA", Cardinality.getDescription(type.getCardinality()));
+                attribs.addAttribute("", "cardinality", "cardinality", "CDATA", type.getCardinality().getHumanDescription());
                 if (type instanceof FunctionParameterSequenceType)
                     {attribs.addAttribute("", "var", "var", "CDATA", ((FunctionParameterSequenceType)type).getAttributeName());}
                 builder.startElement(ARGUMENT_QNAME, attribs);

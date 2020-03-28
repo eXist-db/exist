@@ -78,7 +78,7 @@ public class Directory extends BasicFunction {
                         Type.ITEM, Cardinality.EXACTLY_ONE, 
                         "The directory path or URI in the file system."),
             },
-            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, 
+            new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
                 "a node describing file and directory names and meta data."))
     };
 

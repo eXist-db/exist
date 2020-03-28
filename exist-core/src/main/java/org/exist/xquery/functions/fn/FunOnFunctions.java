@@ -30,7 +30,7 @@ public class FunOnFunctions extends BasicFunction {
             new SequenceType[] {
                 new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function item")
             },
-            new FunctionReturnSequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE, 
+            new FunctionReturnSequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE,
             		"The name of the function or the empty sequence if $function is an anonymous function.")),
 		new FunctionSignature(
             new QName("function-arity", Function.BUILTIN_FUNCTION_NS),

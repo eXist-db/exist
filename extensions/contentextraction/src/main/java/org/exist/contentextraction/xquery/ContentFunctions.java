@@ -66,26 +66,26 @@ public class ContentFunctions extends BasicFunction {
         new QName("get-metadata", ContentExtractionModule.NAMESPACE_URI, ContentExtractionModule.PREFIX),
         "extracts the metadata",
         new SequenceType[]{
-            new FunctionParameterSequenceType("binary", Type.BASE64_BINARY, Cardinality.ONE, "The binary data to extract from")
+            new FunctionParameterSequenceType("binary", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The binary data to extract from")
         },
-        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "Extracted metadata")
+        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "Extracted metadata")
     );
 
     public final static FunctionSignature getMetadataAndContent = new FunctionSignature(
         new QName("get-metadata-and-content", ContentExtractionModule.NAMESPACE_URI, ContentExtractionModule.PREFIX),
         "extracts the metadata and contents",
         new SequenceType[]{
-            new FunctionParameterSequenceType("binary", Type.BASE64_BINARY, Cardinality.ONE, "The binary data to extract from")
+            new FunctionParameterSequenceType("binary", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The binary data to extract from")
         },
-        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "Extracted content and metadata")
+        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "Extracted content and metadata")
     );
 
     public final static FunctionSignature streamContent = new FunctionSignature(
         new QName("stream-content", ContentExtractionModule.NAMESPACE_URI, ContentExtractionModule.PREFIX),
         "extracts the metadata",
         new SequenceType[]{
-            new FunctionParameterSequenceType("binary", Type.BASE64_BINARY, Cardinality.ONE, "The binary data to extract from"),
-            new FunctionParameterSequenceType("paths", Type.STRING, Cardinality.ZERO_OR_MORE, 
+            new FunctionParameterSequenceType("binary", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The binary data to extract from"),
+            new FunctionParameterSequenceType("paths", Type.STRING, Cardinality.ZERO_OR_MORE,
             		"A sequence of (simple) node paths which should be passed to the callback function"),
             new FunctionParameterSequenceType("callback", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, 
             		"The callback function. Expected signature: " +
@@ -100,7 +100,7 @@ public class ContentFunctions extends BasicFunction {
             new FunctionParameterSequenceType("userData", Type.ITEM, Cardinality.ZERO_OR_MORE,
             		"Additional data which will be passed to the callback function.")
         },
-        new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY, "Returns empty sequence")
+        new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE, "Returns empty sequence")
     );
     
     public ContentFunctions(XQueryContext context, FunctionSignature signature) {

@@ -626,7 +626,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     }
 
     @Override
-    public int getCardinality() {
+    public Cardinality getCardinality() {
         return Cardinality.EXACTLY_ONE;
     }
 

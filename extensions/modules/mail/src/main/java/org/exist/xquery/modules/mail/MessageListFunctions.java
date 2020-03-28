@@ -132,7 +132,7 @@ public class MessageListFunctions extends BasicFunction
 			{
 				new FunctionParameterSequenceType( "message-list-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The message list handle retrieved from mail:get-message-list() or mail:search-message-list()" )
 			},
-			new SequenceType( Type.ITEM, Cardinality.EMPTY )
+			new SequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE )
 			)
 	};
 	

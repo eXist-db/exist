@@ -41,7 +41,7 @@ public class QueryField extends Query implements Optimizable {
             new QName("query-field", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
             "Queries a Lucene field, which has to be explicitely created in the index configuration.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("field", Type.STRING, Cardinality.ZERO_OR_MORE, 
+                new FunctionParameterSequenceType("field", Type.STRING, Cardinality.ZERO_OR_MORE,
                 		"The lucene field name."),
                 new FunctionParameterSequenceType("query", Type.ITEM, Cardinality.EXACTLY_ONE, 
                 		"The query to search for, provided either as a string or text in Lucene's default query " +

@@ -40,7 +40,7 @@ public class PauseFunction extends BasicFunction {
             new QName("pause", TestUtilModule.NAMESPACE_URI),
             "Pause for the specified number of seconds.",
             new SequenceType[] { new FunctionParameterSequenceType("seconds", Type.INT, Cardinality.EXACTLY_ONE, "Seconds to pause.") },
-            new SequenceType(Type.ITEM, Cardinality.EMPTY)
+            new SequenceType(Type.ITEM, Cardinality.EMPTY_SEQUENCE)
         );
 
     public PauseFunction(XQueryContext context) {

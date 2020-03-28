@@ -63,7 +63,7 @@ public class Sync extends BasicFunction {
                 new FunctionParameterSequenceType("targetPath", Type.ITEM, 
                         Cardinality.EXACTLY_ONE, "The full path or URI to the directory"),
                 new FunctionParameterSequenceType("dateTime", Type.DATE_TIME, 
-                        Cardinality.ZERO_OR_ONE, 
+                        Cardinality.ZERO_OR_ONE,
                 		"Optional: only resources modified after the given date/time will be synchronized.")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise")

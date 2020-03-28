@@ -1741,19 +1741,19 @@ public class XQueryContext implements BinaryValueManager, Context {
         }
 
         if (var.getSequenceType() != null) {
-            int actualCardinality;
+            final Cardinality actualCardinality;
 
             if (val.isEmpty()) {
-                actualCardinality = Cardinality.EMPTY;
+                actualCardinality = Cardinality.EMPTY_SEQUENCE;
             } else if (val.hasMany()) {
-                actualCardinality = Cardinality.MANY;
+                actualCardinality = Cardinality._MANY;
             } else {
-                actualCardinality = Cardinality.ONE;
+                actualCardinality = Cardinality.EXACTLY_ONE;
             }
 
             //Type.EMPTY is *not* a subtype of other types ; checking cardinality first
-            if (!Cardinality.checkCardinality(var.getSequenceType().getCardinality(), actualCardinality)) {
-                throw new XPathException("XPTY0004: Invalid cardinality for variable $" + var.getQName() + ". Expected " + Cardinality.getDescription(var.getSequenceType().getCardinality()) + ", got " + Cardinality.getDescription(actualCardinality));
+            if (!var.getSequenceType().getCardinality().isSuperCardinalityOrEqualOf(actualCardinality)) {
+                throw new XPathException("XPTY0004: Invalid cardinality for variable $" + var.getQName() + ". Expected " + var.getSequenceType().getCardinality().getHumanDescription() + ", got " + actualCardinality.getHumanDescription());
             }
 
             //TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType

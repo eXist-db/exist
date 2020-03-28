@@ -101,7 +101,7 @@ public class Jaxv extends BasicFunction  {
                         instanceText),
                     new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
                         grammarText),
-                    new FunctionParameterSequenceType("language", Type.STRING, Cardinality.ONE,
+                    new FunctionParameterSequenceType("language", Type.STRING, Cardinality.EXACTLY_ONE,
                         languageText),
                     
                 },
@@ -131,7 +131,7 @@ public class Jaxv extends BasicFunction  {
                         instanceText),
                     new FunctionParameterSequenceType("grammars", Type.ITEM, Cardinality.ONE_OR_MORE,
                         grammarText),
-                    new FunctionParameterSequenceType("language", Type.STRING, Cardinality.ONE,
+                    new FunctionParameterSequenceType("language", Type.STRING, Cardinality.EXACTLY_ONE,
                         languageText),
                    },
                 new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,

@@ -242,7 +242,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                     throw new XPathException(this, ErrorCodes.XPTY0019,
                             "left operand of '/' must be a node. Got '" +
                                     Type.getTypeName(result.getItemType()) +
-                                    Cardinality.toString(result.getCardinality()) + "'");
+                                    result.getCardinality().getHumanDescription() + "'");
                 }
                 //contextDocs == null *is* significant
                 expr.setContextDocSet(contextDocs);
@@ -450,9 +450,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     }
 
     @Override
-    public int getCardinality() {
+    public Cardinality getCardinality() {
         if (steps.size() == 0) {
-            return Cardinality.ZERO;
+            return Cardinality.EMPTY_SEQUENCE;
         }
         return (steps.get(steps.size() - 1)).getCardinality();
     }

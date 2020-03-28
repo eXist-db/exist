@@ -82,7 +82,7 @@ public class RegistryFunctions extends BasicFunction {
             new QName(RESOURCE_FUNCTIONS.getLocalPart(), RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX),
             "Gets a list of all the registered resource functions.",
             FunctionSignature.NO_ARGS,
-            new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "The list of registered resource functions.")
+            new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "The list of registered resource functions.")
         )
     };
     

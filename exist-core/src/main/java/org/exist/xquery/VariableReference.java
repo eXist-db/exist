@@ -160,14 +160,12 @@ public class VariableReference extends AbstractExpression {
         return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.AbstractExpression#getCardinality()
-     */
-    public int getCardinality() {
+    @Override
+    public Cardinality getCardinality() {
         try {
             final Variable var = context.resolveVariable(qname);
             if (var != null && var.getValue() != null) {
-                final int card = var.getValue().getCardinality();
+                final Cardinality card = var.getValue().getCardinality();
                 return card;
             }
         } catch (final XPathException e) {

@@ -86,7 +86,7 @@ public abstract class AbstractExpression implements Expression {
      * The default cardinality is {@link Cardinality#EXACTLY_ONE}.
      */
     @Override
-    public int getCardinality() {
+    public Cardinality getCardinality() {
         return Cardinality.EXACTLY_ONE; // default cardinality
     }
 

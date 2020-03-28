@@ -108,7 +108,7 @@ public class Predicate extends PathExpr {
             // dependency with the context item.
         } else if (Type.subTypeOf(innerType, Type.NUMBER) &&
                 !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM) &&
-                Cardinality.checkCardinality(inner.getCardinality(), Cardinality.EXACTLY_ONE)) {
+                inner.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EXACTLY_ONE)) {
             executionMode = POSITIONAL;
         }
         // Case 3: all other cases, boolean evaluation (that can be "promoted" later)

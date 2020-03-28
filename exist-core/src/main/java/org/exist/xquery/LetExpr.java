@@ -111,17 +111,17 @@ public class LetExpr extends BindingExpression {
                 resultSequence = returnExpr.eval(contextSequence, null);
 
                 if (sequenceType != null) {
-                    int actualCardinality;
-                    if (var.getValue().isEmpty()) {actualCardinality = Cardinality.EMPTY;}
-                    else if (var.getValue().hasMany()) {actualCardinality = Cardinality.MANY;}
-                    else {actualCardinality = Cardinality.ONE;}
+                    Cardinality actualCardinality;
+                    if (var.getValue().isEmpty()) {actualCardinality = Cardinality.EMPTY_SEQUENCE;}
+                    else if (var.getValue().hasMany()) {actualCardinality = Cardinality._MANY;}
+                    else {actualCardinality = Cardinality.EXACTLY_ONE;}
                     //Type.EMPTY is *not* a subtype of other types ; checking cardinality first
-                    if (!Cardinality.checkCardinality(sequenceType.getCardinality(), actualCardinality))
+                    if (!sequenceType.getCardinality().isSuperCardinalityOrEqualOf(actualCardinality))
                         {throw new XPathException(this, ErrorCodes.XPTY0004,
                             "Invalid cardinality for variable $" + varName +
                             ". Expected " +
-                            Cardinality.getDescription(sequenceType.getCardinality()) +
-                            ", got " + Cardinality.getDescription(actualCardinality), in);}
+                            sequenceType.getCardinality().getHumanDescription() +
+                            ", got " + actualCardinality.getHumanDescription(), in);}
                     //TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
                     if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
                         if (!var.getValue().isEmpty() && !Type.subTypeOf(var.getValue()
