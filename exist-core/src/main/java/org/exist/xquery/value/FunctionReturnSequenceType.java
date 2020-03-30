@@ -26,6 +26,20 @@ public class FunctionReturnSequenceType extends SequenceType {
         this.description = description;
     }
 
+    /**
+     * @param primaryType The <strong>Type</strong> of the parameter.
+     * @param cardinality The <strong>Cardinality</strong> of the parameter.
+     * @param description A description of the parameter in the <strong>FunctionSignature</strong>.
+     * @see org.exist.xquery.FunctionSignature @see Type @see org.exist.xquery.Cardinality
+     *
+     * @deprecated Use {@link #FunctionReturnSequenceType(int, Cardinality, String)}
+     */
+    @Deprecated
+    public FunctionReturnSequenceType(final int primaryType, final int cardinality, final String description) {
+        super(primaryType, Cardinality.fromInt(cardinality));
+        this.description = description;
+    }
+
     public FunctionReturnSequenceType() {
         super();
     }

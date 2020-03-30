@@ -170,8 +170,13 @@ public class ExistRepository extends Observable implements BrokerPoolService {
                 Thread.currentThread().interrupt();
             }
 
-            throw new XPathException("Unable to instantiate module from EXPath" +
-                    "repository: " + clazz.getName(), e);
+            final String msg = "Unable to instantiate module from EXPath" +
+                    "repository: " + clazz.getName();
+
+            // need to log here, otherwise details are swallowed by XQueryTreeParser
+            LOG.error(e.getMessage(), e);
+
+            throw new XPathException(msg, e);
         }
     }
 

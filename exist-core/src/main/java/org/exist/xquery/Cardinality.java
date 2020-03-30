@@ -176,6 +176,26 @@ public enum Cardinality {
         }
     }
 
+    /**
+     * Get the Cardinality from an integer representation.
+     *
+     * @param intValue integer representation of cardinality
+     *
+     * @return the cardinality
+     *
+     * @deprecated You should not pass cardinality as integer values,
+     *     this is for backwards compatibility with eXist-db
+     */
+    @Deprecated
+    public static Cardinality fromInt(final int intValue) {
+        for (final Cardinality cardinality : Cardinality.values()) {
+            if (cardinality.val == intValue) {
+                return cardinality;
+            }
+        }
+        throw new IllegalArgumentException("No know cardinality for intValue: " + intValue);
+    }
+
     static class InternalValue {
         static final byte ZERO = 1;
         static final byte ONE = 2;

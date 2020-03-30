@@ -27,6 +27,21 @@ public class FunctionParameterSequenceType extends FunctionReturnSequenceType {
         this.attributeName = attributeName;
     }
 
+    /**
+     * @param attributeName The name of the parameter in the <strong>FunctionSignature</strong>.
+     * @param primaryType   The <strong>Type</strong> of the parameter.
+     * @param cardinality   The <strong>Cardinality</strong> of the parameter.
+     * @param description   A description of the parameter in the <strong>FunctionSignature</strong>.
+     * @see org.exist.xquery.FunctionSignature @see Type @see org.exist.xquery.Cardinality
+     *
+     * @deprecated Use {@link #FunctionParameterSequenceType(String, int, Cardinality, String)}
+     */
+    @Deprecated
+    public FunctionParameterSequenceType(final String attributeName, final int primaryType, final int cardinality, final String description) {
+        super(primaryType, Cardinality.fromInt(cardinality), description);
+        this.attributeName = attributeName;
+    }
+
     public FunctionParameterSequenceType(final String attributeName) {
         super();
         this.attributeName = attributeName;

@@ -57,6 +57,21 @@ public class SequenceType {
     }
 
     /**
+     * Construct a new SequenceType using the specified
+     * primary type and cardinality.
+     *
+     * @param primaryType one of the constants defined in {@link Type}
+     * @param cardinality the cardinality integer value
+     *                    
+     * @deprecated Use {@link #SequenceType(int, Cardinality)}
+     */
+    @Deprecated
+    public SequenceType(final int primaryType, final int cardinality) {
+        this.primaryType = primaryType;
+        this.cardinality = Cardinality.fromInt(cardinality);
+    }
+
+    /**
      * Returns the primary type as one of the
      * constants defined in {@link Type}.
      *
