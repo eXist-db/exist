@@ -88,6 +88,7 @@ public class Deployment {
     private static final QName POST_SETUP_ELEMENT = new QName("finish", REPO_NAMESPACE);
     private static final QName TARGET_COLL_ELEMENT = new QName("target", REPO_NAMESPACE);
     private static final QName PERMISSIONS_ELEMENT = new QName("permissions", REPO_NAMESPACE);
+    private static final QName SKIP_TRIGGERS_ELEMENT = new QName("skip-triggers", REPO_NAMESPACE);
     private static final QName CLEANUP_ELEMENT = new QName("cleanup", REPO_NAMESPACE);
     private static final QName DEPLOYED_ELEMENT = new QName("deployed", REPO_NAMESPACE);
     private static final QName DEPENDENCY_ELEMENT = new QName("dependency", PKG_NAMESPACE);
@@ -392,6 +393,13 @@ public class Deployment {
                     targetCollection = XmldbURI.SYSTEM.append("repo/" + pkgColl);
                 }
 
+                // skip trigger execution and remember previous state
+                final Optional<ElementImpl> skipTriggers = findElement(repoXML, SKIP_TRIGGERS_ELEMENT);
+                final boolean triggerState = broker.isTriggersEnabled();
+                if(skipTriggers.isPresent()) {
+                    broker.setTriggersEnabled(false);
+                }
+
                 // extract the permissions (if any)
                 final Optional<ElementImpl> permissions = findElement(repoXML, PERMISSIONS_ELEMENT);
                 final Optional<RequestedPerms> requestedPerms = permissions.flatMap(elem -> {
@@ -450,6 +458,11 @@ public class Deployment {
                 }
 
                 storeRepoXML(broker, transaction, repoXML, targetCollection, requestedPerms);
+
+                // restore trigger execution to previous state
+                if(skipTriggers.isPresent()) {
+                    broker.setTriggersEnabled(triggerState);
+                }
 
                 // TODO: it should be safe to clean up the file system after a package
                 // has been deployed. Might be enabled after 2.0
