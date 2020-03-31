@@ -90,6 +90,8 @@ public class CollectionConfiguration {
 
     private final BrokerPool pool;
 
+    private boolean skipTriggers = false;
+
     public CollectionConfiguration(final BrokerPool pool) {
         this.pool = pool;
     }
@@ -205,6 +207,14 @@ public class CollectionConfiguration {
 
     public IndexSpec getIndexConfiguration() {
         return indexSpec;
+    }
+
+    public boolean getSkipTriggers() {
+        return skipTriggers;
+    }
+
+    public void setSkipTriggers(boolean skipTriggers) {
+        this.skipTriggers = skipTriggers;
     }
 
     private void configureTrigger(final ClassLoader cl, final Element triggerElement, final XmldbURI collectionConfigurationURI, final boolean testOnly) throws CollectionConfigurationException {

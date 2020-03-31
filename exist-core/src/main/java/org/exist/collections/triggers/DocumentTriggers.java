@@ -53,7 +53,9 @@ public class DocumentTriggers implements DocumentTrigger, ContentHandler, Lexica
     private SAXTrigger last = null;
     
     private final List<DocumentTrigger> triggers;
-    
+
+    private boolean skipTriggers = false;
+
     public DocumentTriggers(DBBroker broker, Txn transaction) throws TriggerException {
         this(broker, transaction, null, null, null);
     }
@@ -67,6 +69,7 @@ public class DocumentTriggers implements DocumentTrigger, ContentHandler, Lexica
         List<TriggerProxy<? extends DocumentTrigger>> docTriggers = null;
         if (config != null) {
             docTriggers = config.documentTriggers();
+            skipTriggers = config.getSkipTriggers();
         }
         
         java.util.Collection<TriggerProxy<? extends DocumentTrigger>> masterTriggers = broker.getDatabase().getDocumentTriggers();
@@ -224,108 +227,132 @@ public class DocumentTriggers implements DocumentTrigger, ContentHandler, Lexica
 
     @Override
     public void beforeCreateDocument(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {
-        for (DocumentTrigger trigger : triggers) {
-            trigger.beforeCreateDocument(broker, txn, uri);
+        if (!skipTriggers) {
+            for (DocumentTrigger trigger : triggers) {
+                trigger.beforeCreateDocument(broker, txn, uri);
+            }
         }
     }
 
     @Override
     public void afterCreateDocument(DBBroker broker, Txn txn, DocumentImpl document) {
-        for (DocumentTrigger trigger : triggers) {
-            try {
-                trigger.afterCreateDocument(broker, txn, document);
-            } catch (Exception e) {
-                Trigger.LOG.error(e.getMessage(), e);
+        if (!skipTriggers) {
+            for (DocumentTrigger trigger : triggers) {
+                try {
+                    trigger.afterCreateDocument(broker, txn, document);
+                } catch (Exception e) {
+                    Trigger.LOG.error(e.getMessage(), e);
+                }
             }
         }
     }
 
     @Override
     public void beforeUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-        for (DocumentTrigger trigger : triggers) {
-            trigger.beforeUpdateDocument(broker, txn, document);
+        if (!skipTriggers) {
+            for (DocumentTrigger trigger : triggers) {
+                trigger.beforeUpdateDocument(broker, txn, document);
+            }
         }
     }
 
     @Override
     public void afterUpdateDocument(DBBroker broker, Txn txn, DocumentImpl document) {
-        for (DocumentTrigger trigger : triggers) {
-            try {
-                trigger.afterUpdateDocument(broker, txn, document);
-            } catch (Exception e) {
-                Trigger.LOG.error(e.getMessage(), e);
+        if (!skipTriggers) {
+            for (DocumentTrigger trigger : triggers) {
+                try {
+                    trigger.afterUpdateDocument(broker, txn, document);
+                } catch (Exception e) {
+                    Trigger.LOG.error(e.getMessage(), e);
+                }
             }
         }
     }
 
     @Override
     public void beforeUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-        for (DocumentTrigger trigger : triggers) {
-            trigger.beforeUpdateDocumentMetadata(broker, txn, document);
+        if (!skipTriggers) {
+            for (DocumentTrigger trigger : triggers) {
+                trigger.beforeUpdateDocumentMetadata(broker, txn, document);
+            }
         }
     }
 
     @Override
     public void afterUpdateDocumentMetadata(DBBroker broker, Txn txn, DocumentImpl document) {
-        for (DocumentTrigger trigger : triggers) {
-            try {
-                trigger.afterUpdateDocumentMetadata(broker, txn, document);
-            } catch (Exception e) {
-                Trigger.LOG.error(e.getMessage(), e);
+        if (!skipTriggers) {
+            for (DocumentTrigger trigger : triggers) {
+                try {
+                    trigger.afterUpdateDocumentMetadata(broker, txn, document);
+                } catch (Exception e) {
+                    Trigger.LOG.error(e.getMessage(), e);
+                }
             }
         }
     }
 
     @Override
     public void beforeCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-        for (DocumentTrigger trigger : triggers) {
-            trigger.beforeCopyDocument(broker, txn, document, newUri);
+        if (!skipTriggers) {
+            for (DocumentTrigger trigger : triggers) {
+                trigger.beforeCopyDocument(broker, txn, document, newUri);
+            }
         }
     }
 
     @Override
     public void afterCopyDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) {
-        for (DocumentTrigger trigger : triggers) {
-            try {
-                trigger.afterCopyDocument(broker, txn, document, oldUri);
-            } catch (Exception e) {
-                Trigger.LOG.error(e.getMessage(), e);
+        if (!skipTriggers) {
+            for (DocumentTrigger trigger : triggers) {
+                try {
+                    trigger.afterCopyDocument(broker, txn, document, oldUri);
+                } catch (Exception e) {
+                    Trigger.LOG.error(e.getMessage(), e);
+                }
             }
         }
     }
 
     @Override
     public void beforeMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI newUri) throws TriggerException {
-        for (DocumentTrigger trigger : triggers) {
-            trigger.beforeMoveDocument(broker, txn, document, newUri);
+        if (!skipTriggers) {
+            for (DocumentTrigger trigger : triggers) {
+                trigger.beforeMoveDocument(broker, txn, document, newUri);
+            }
         }
     }
 
     @Override
     public void afterMoveDocument(DBBroker broker, Txn txn, DocumentImpl document, XmldbURI oldUri) {
-        for (DocumentTrigger trigger : triggers) {
-            try {
-                trigger.afterMoveDocument(broker, txn, document, oldUri);
-            } catch (Exception e) {
-                Trigger.LOG.error(e.getMessage(), e);
+        if (!skipTriggers) {
+            for (DocumentTrigger trigger : triggers) {
+                try {
+                    trigger.afterMoveDocument(broker, txn, document, oldUri);
+                } catch (Exception e) {
+                    Trigger.LOG.error(e.getMessage(), e);
+                }
             }
         }
     }
 
     @Override
     public void beforeDeleteDocument(DBBroker broker, Txn txn, DocumentImpl document) throws TriggerException {
-        for (DocumentTrigger trigger : triggers) {
-            trigger.beforeDeleteDocument(broker, txn, document);
+        if (!skipTriggers) {
+            for (DocumentTrigger trigger : triggers) {
+                trigger.beforeDeleteDocument(broker, txn, document);
+            }
         }
     }
 
     @Override
     public void afterDeleteDocument(DBBroker broker, Txn txn, XmldbURI uri) {
-        for (DocumentTrigger trigger : triggers) {
-            try {
-                trigger.afterDeleteDocument(broker, txn, uri);
-            } catch (Exception e) {
-                Trigger.LOG.error(e.getMessage(), e);
+        if (!skipTriggers) {
+            for (DocumentTrigger trigger : triggers) {
+                try {
+                    trigger.afterDeleteDocument(broker, txn, uri);
+                } catch (Exception e) {
+                    Trigger.LOG.error(e.getMessage(), e);
+                }
             }
         }
     }
