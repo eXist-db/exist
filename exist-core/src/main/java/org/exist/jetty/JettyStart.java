@@ -177,7 +177,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 System.getProperty("java.home", "(unknown java.home)")
             );
 
-            logger.info("Maximum amount of memory for JVM: {} MiB", Runtime.getRuntime().maxMemory() / (1024 * 1024));
+            logger.info("Approximate maximum amount of memory for JVM: {}", FileUtils.humanSize(Runtime.getRuntime().maxMemory()));
             logger.info("Number of processors available to JVM: {}", Runtime.getRuntime().availableProcessors());
 
             logger.info("Running as user '{}'", System.getProperty("user.name", "(unknown user.name)"));
