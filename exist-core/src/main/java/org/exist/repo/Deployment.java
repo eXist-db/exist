@@ -352,6 +352,10 @@ public class Deployment {
         if (repoXML == null) {
             return Optional.empty();
         }
+
+        // remember current trigger state
+        final boolean triggerState = broker.isTriggersEnabled();
+
         try {
             // if there's a <setup> element, run the query it points to
             final Optional<ElementImpl> setup = findElement(repoXML, SETUP_ELEMENT);
@@ -393,9 +397,8 @@ public class Deployment {
                     targetCollection = XmldbURI.SYSTEM.append("repo/" + pkgColl);
                 }
 
-                // skip trigger execution and remember previous state
+                // skip trigger execution if demanded in repo.xml
                 final Optional<ElementImpl> skipTriggers = findElement(repoXML, SKIP_TRIGGERS_ELEMENT);
-                final boolean triggerState = broker.isTriggersEnabled();
                 if(skipTriggers.isPresent()) {
                     broker.setTriggersEnabled(false);
                 }
@@ -475,6 +478,8 @@ public class Deployment {
                 return Optional.ofNullable(targetCollection.getCollectionPath());
             }
         } catch (final XPathException e) {
+            // reset possibly altered trigger state
+            broker.setTriggersEnabled(triggerState);
             throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
         }
     }
