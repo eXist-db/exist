@@ -25,4 +25,9 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Maven Test
-        run: mvn -V -B clean verify      
+        run: mvn -V -B clean verify
+      - name: Maven Code Coverage
+        if: ${{ matrix.jdk == '8' && matrix.os == 'ubuntu-latest' }}
+        env:
+          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+        run: mvn -V -B jacoco:report coveralls:report
