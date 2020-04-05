@@ -110,7 +110,7 @@ public class FilteredExpression extends AbstractExpression {
             //to /descendant-or-self::node()/a[1], so we need to return the
             //1st a from any parent of a.
             // If the predicate is known to return a node set, no special treatment is required.
-            if (abbreviated && (pred.getExecutionMode() != Predicate.NODE ||
+            if (abbreviated && (pred.getExecutionMode() != Predicate.ExecutionMode.NODE ||
                     !seq.isPersistentSet())) {
                 result = new ValueSequence();
                 if (seq.isPersistentSet()) {

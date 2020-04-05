@@ -55,7 +55,7 @@ public class ZipFileFunctions extends BasicFunction {
                     new SequenceType[]{
                             ENTRY_PARAM
                     },
-                    new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY, "The empty sequence.")
+                    new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE, "The empty sequence.")
             ),*/
             //zip:update-entries($zip as element(zip:file), $output as xs:anyURI) as empty-sequence()
             new FunctionSignature(

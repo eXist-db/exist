@@ -63,7 +63,7 @@ public class AccountStatusFunction extends BasicFunction {
             new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The username of the account to enable or disable."),
             new FunctionParameterSequenceType("enabled", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true to enable the account, false to disable the account.")
         },
-        new SequenceType(Type.EMPTY, Cardinality.ZERO)
+        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
     );
     
     public AccountStatusFunction(final XQueryContext context, final FunctionSignature signature) {

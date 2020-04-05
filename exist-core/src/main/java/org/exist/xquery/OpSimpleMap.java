@@ -50,7 +50,7 @@ public class OpSimpleMap extends AbstractExpression {
     }
 
     @Override
-    public int getCardinality() {
+    public Cardinality getCardinality() {
         return Cardinality.ZERO_OR_MORE;
     }
 

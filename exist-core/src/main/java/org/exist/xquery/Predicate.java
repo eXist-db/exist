@@ -15,11 +15,12 @@
  *  You should have received a copy of the GNU Library General Public
  *  License along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
+ *
  *  $Id$
  */
 package org.exist.xquery;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.dom.persistent.ContextItem;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
@@ -35,72 +36,67 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import static org.exist.xquery.Predicate.ExecutionMode.*;
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
+
 /**
  * Handles predicate expressions.
- * 
- *@author Wolfgang Meier
+ *
+ * @author Wolfgang Meier
  */
 public class Predicate extends PathExpr {
 
-    public final static int UNKNOWN = -1;
-    public final static int NODE = 0;
-    public final static int BOOLEAN = 1;
-    public final static int POSITIONAL = 2;
+    public enum ExecutionMode {
+        UNKNOWN,
+        NODE,
+        BOOLEAN,
+        POSITIONAL;
+    }
 
     private CachedResult cached = null;
 
-    private int executionMode = UNKNOWN;
+    private ExecutionMode executionMode = UNKNOWN;
 
     private int outerContextId;
 
     private Expression parent;
 
-    public Predicate(XQueryContext context) {
+    public Predicate(final XQueryContext context) {
         super(context);
     }
 
     @Override
-    public void addPath(PathExpr path) {
-        if (path.getLength() == 1) {
-            add(path.getExpression(0));
+    public void addPath(final PathExpr path) {
+        if (path.getSubExpressionCount() == 1) {
+            add(path.getSubExpression(0));
         } else {
             super.addPath(path);
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.exist.xquery.PathExpr#getDependencies()
-     */
+    @Override
     public int getDependencies() {
-        int deps = 0;
-        if (getLength() == 1) {
-            deps = getExpression(0).getDependencies();
+        final int deps;
+        if (getSubExpressionCount() == 1) {
+            deps = getSubExpression(0).getDependencies();
         } else {
             deps = super.getDependencies();
         }
         return deps;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.exist.xquery.PathExpr#analyze(org.exist.xquery.AnalyzeContextInfo)
-     */
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    @Override
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         parent = contextInfo.getParent();
         AnalyzeContextInfo newContextInfo = createContext(contextInfo);
         super.analyze(newContextInfo);
-        final Expression inner = getExpression(0);
+        final Expression inner = getSubExpression(0);
         final int staticReturnType = newContextInfo.getStaticReturnType();
         final int innerType = staticReturnType != Type.ITEM ?
-            staticReturnType : inner.returnsType();
+                staticReturnType : inner.returnsType();
         // Case 1: predicate expression returns a node set.
         // Check the returned node set against the context set
         // and return all nodes from the context, for which the
@@ -108,15 +104,17 @@ public class Predicate extends PathExpr {
         if (Type.subTypeOf(innerType, Type.NODE)
                 && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
             executionMode = NODE;
-        // Case 2: predicate expression returns a unique number and has no
-        // dependency with the context item.
+            // Case 2: predicate expression returns a unique number and has no
+            // dependency with the context item.
         } else if (Type.subTypeOf(innerType, Type.NUMBER) &&
-            !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM) &&
-            Cardinality.checkCardinality(inner.getCardinality(), Cardinality.EXACTLY_ONE))
-            {executionMode = POSITIONAL;}
+                !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM) &&
+                    inner.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EXACTLY_ONE)) {
+            executionMode = POSITIONAL;
+        }
         // Case 3: all other cases, boolean evaluation (that can be "promoted" later)
-        else
-            {executionMode = BOOLEAN;}
+        else {
+            executionMode = BOOLEAN;
+        }
         if (executionMode == BOOLEAN) {
             // need to re-analyze:
             newContextInfo = createContext(contextInfo);
@@ -125,10 +123,10 @@ public class Predicate extends PathExpr {
         }
     }
 
-    private AnalyzeContextInfo createContext(AnalyzeContextInfo contextInfo) {
+    private AnalyzeContextInfo createContext(final AnalyzeContextInfo contextInfo) {
         final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
         // set flag to signal subexpression that we are in a predicate
-        newContextInfo.addFlag(IN_PREDICATE); 
+        newContextInfo.addFlag(IN_PREDICATE);
         newContextInfo.removeFlag(IN_WHERE_CLAUSE); // remove where clause flag
         newContextInfo.removeFlag(DOT_TEST);
         outerContextId = newContextInfo.getContextId();
@@ -139,225 +137,147 @@ public class Predicate extends PathExpr {
     }
 
     public Sequence preprocess() throws XPathException {
-        final Expression inner = steps.size() == 1 ? getExpression(0) : this;
+        final Expression inner = steps.size() == 1 ? getSubExpression(0) : this;
         return inner.eval(null);
     }
 
-    public Boolean matchPredicate(Sequence contextSequence,
-            Item contextItem, int mode) throws XPathException {
+    public Sequence evalPredicate(final Sequence outerSequence,
+            final Sequence contextSequence, final int mode) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES",
-                Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);}
-        }
-        boolean result = false;
-        final Expression inner = steps.size() == 1 ? getExpression(0) : this;
-        if (inner == null)
-            {result = false;}
-        else {
-            int recomputedExecutionMode = executionMode;
-            Sequence innerSeq = null;
-            // Atomic context sequences :
-            if (Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
-                // We can't have a node set operation : reconsider depending of
-                // the inner sequence
-                if (executionMode == NODE && !(contextSequence instanceof VirtualNodeSet)) {
-                    // (1,2,2,4)[.]
-                    if (Type.subTypeOf(contextSequence.getItemType(), Type.NUMBER)) {
-                        recomputedExecutionMode = POSITIONAL;
-                    } else {
-                        recomputedExecutionMode = BOOLEAN;
-                    }
-                }
-                // If there is no dependency on the context item, try a positional promotion
-                if (executionMode == BOOLEAN && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM) &&
-                        // Hack : GeneralComparison lies on its dependencies
-                        // TODO : try to remove this since our dependency
-                        // computation should now be better
-                        !((inner instanceof GeneralComparison) &&
-                        ((GeneralComparison) inner).invalidNodeEvaluation)) {
-                    innerSeq = inner.eval(contextSequence);
-                    // Only if we have an actual *singleton* of numeric items
-                    if (innerSeq.hasOne()
-                            && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) {
-                        recomputedExecutionMode = POSITIONAL;
-                    }
-                }
-            } else if (executionMode == NODE && !contextSequence.isPersistentSet()) {
-                recomputedExecutionMode = BOOLEAN;
-            } else {
-                if (executionMode == BOOLEAN && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
-                    /*
-                     * 
-                     * WARNING : this sequence will be evaluated with
-                     * preloadable nodesets !
-                     */
-                    innerSeq = inner.eval(contextSequence);
-                    // Try to promote a boolean evaluation to a nodeset one
-                    // We are now sure of the inner sequence return type
-                    if (Type.subTypeOf(innerSeq.getItemType(), Type.NODE)
-                            && innerSeq.isPersistentSet()) {
-                        recomputedExecutionMode = NODE;
-                    // Try to promote a boolean evaluation to a positional one
-                    // Only if we have an actual *singleton* of numeric items
-                    } else if (innerSeq.hasOne()
-                            && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) {
-                        recomputedExecutionMode = POSITIONAL;
-                    }
-                }
+                    Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT SEQUENCE", contextSequence);
             }
+        }
+        Sequence result;
+        final Expression inner = steps.size() == 1 ? getSubExpression(0) : this;
+        if (inner == null) {
+            result = Sequence.EMPTY_SEQUENCE;
+        } else {
+            if (executionMode == UNKNOWN) {
+                executionMode = BOOLEAN;
+            }
+
+            final Tuple2<ExecutionMode, Sequence> recomputed = recomputeExecutionMode(contextSequence, inner);
+            final ExecutionMode recomputedExecutionMode = recomputed._1;
+            Sequence innerSeq = recomputed._2;
+
             switch (recomputedExecutionMode) {
-            case NODE:
-                if (context.getProfiler().isEnabled())
-                    {context.getProfiler().message(this,
-                        Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "Node selection");}
-                    //TODO: result = selectByNodeSet(contextSequence);
-                break;
-            case BOOLEAN:
-                if (context.getProfiler().isEnabled())
-                    {context.getProfiler().message(this,
-                        Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "Boolean evaluation");}
-                //TODO: result = evalBoolean(contextSequence, inner);
-                break;
-            case POSITIONAL:
-                if (context.getProfiler().isEnabled())
-                    {context.getProfiler().message(this,
-                        Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE",
-                        "Positional evaluation");}
-                // In case it hasn't been evaluated above
-                if (innerSeq == null) {
-                    innerSeq = inner.eval(contextSequence);
-                }
-                //TODO: result = selectByPosition(outerSequence, contextSequence, mode, innerSeq);
-                break;
-            default:
-                throw new IllegalArgumentException(
-                    "Unsupported execution mode: '" + recomputedExecutionMode + "'");
+                case NODE:
+                    if (context.getProfiler().isEnabled()) {
+                        context.getProfiler().message(this,
+                                Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "Node selection");
+                    }
+                    result = selectByNodeSet(contextSequence);
+                    break;
+                case BOOLEAN:
+                    if (context.getProfiler().isEnabled()) {
+                        context.getProfiler().message(this,
+                                Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "Boolean evaluation");
+                    }
+                    result = evalBoolean(contextSequence, inner, mode);
+                    break;
+                case POSITIONAL:
+                    if (context.getProfiler().isEnabled()) {
+                        context.getProfiler().message(this,
+                                Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "Positional evaluation");
+                    }
+                    // In case it hasn't been evaluated above
+                    if (innerSeq == null) {
+                        // for a positional predicate, check if it depends on the context item
+                        // if not, do not pass the context sequence to avoid cardinality errors
+                        context.setContextSequencePosition(0, contextSequence);
+                        innerSeq = inner.eval(Dependency.dependsOn(inner.getDependencies(), Dependency.CONTEXT_ITEM)
+                                ? contextSequence : null);
+                    }
+                    if (innerSeq.getCardinality().isSubCardinalityOrEqualOf(Cardinality.EXACTLY_ONE)) {
+                        result = selectByPosition(outerSequence, contextSequence, mode, innerSeq);
+                    } else {
+                        throw new XPathException(this, ErrorCodes.FORG0006, "Effective boolean value is not defined for a sequence of two or more items starting with a " + Type.getTypeName(innerSeq.itemAt(0).getType()) + " value");
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            "Unsupported execution mode: '" + recomputedExecutionMode + "'");
             }
         }
-        if (context.getProfiler().isEnabled())
-            {context.getProfiler().end(this, "", null);}
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", result);
+        }
         return result;
     }
 
-    public Sequence evalPredicate(Sequence outerSequence,
-            Sequence contextSequence, int mode) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES",
-                Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);}
-        }
-        Sequence result;
-        final Expression inner = steps.size() == 1 ? getExpression(0) : this;
-        if (inner == null)
-            {result = Sequence.EMPTY_SEQUENCE;}
-        else {
-            if (executionMode == UNKNOWN)
-                {executionMode = BOOLEAN;}
-            int recomputedExecutionMode = executionMode;
-            Sequence innerSeq = null;
-            // Atomic context sequences :
-            if (Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
-                // We can't have a node set operation : reconsider depending of
-                // the inner sequence
-                if (executionMode == NODE && !(contextSequence instanceof VirtualNodeSet)) {
-                    // (1,2,2,4)[.]
-                    if (Type.subTypeOf(contextSequence.getItemType(), Type.NUMBER)) {
-                        recomputedExecutionMode = POSITIONAL;
-                    } else {
-                        recomputedExecutionMode = BOOLEAN;
-                    }
+    private Tuple2<ExecutionMode, Sequence> recomputeExecutionMode(final Sequence contextSequence, final Expression inner) throws XPathException {
+        ExecutionMode recomputedExecutionMode = executionMode;
+        Sequence innerSeq = null;
+
+        // Atomic context sequences :
+        if (Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
+            // We can't have a node set operation : reconsider depending of
+            // the inner sequence
+            if (executionMode == NODE && !(contextSequence instanceof VirtualNodeSet)) {
+                // (1,2,2,4)[.]
+                if (Type.subTypeOf(contextSequence.getItemType(), Type.NUMBER)) {
+                    recomputedExecutionMode = POSITIONAL;
+                } else {
+                    recomputedExecutionMode = BOOLEAN;
                 }
-                // If there is no dependency on the context item, try a
-                // positional promotion
-                if (executionMode == BOOLEAN &&
-                        !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM) &&
-                        // Hack : GeneralComparison lies on its dependencies
-                        // TODO : try to remove this since our dependency
-                        // computation should now be better
-                        !((inner instanceof GeneralComparison) &&
-                        ((GeneralComparison) inner).invalidNodeEvaluation)) {
-                    innerSeq = inner.eval(contextSequence);
-                    // Only if we have an actual *singleton* of numeric items
-                    if (innerSeq.hasOne()
+            }
+            // If there is no dependency on the context item, try a positional promotion
+            if (executionMode == BOOLEAN && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM) &&
+                    // Hack : GeneralComparison lies on its dependencies
+                    // TODO : try to remove this since our dependency
+                    // computation should now be better
+                    !((inner instanceof GeneralComparison) &&
+                            ((GeneralComparison) inner).invalidNodeEvaluation)) {
+                innerSeq = inner.eval(contextSequence);
+                // Only if we have an actual *singleton* of numeric items
+                if (innerSeq.hasOne()
                         && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) {
-                        recomputedExecutionMode = POSITIONAL;
-                    }
-                }
-            } else if (executionMode == NODE && !contextSequence.isPersistentSet()) {
-                recomputedExecutionMode = BOOLEAN;
-            } else {
-                if (executionMode == BOOLEAN && 
-                        !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
-                    /*
-                     * 
-                     * WARNING : this sequence will be evaluated with
-                     * preloadable nodesets !
-                     */
-                    innerSeq = inner.eval(contextSequence);
-                    // Try to promote a boolean evaluation to a nodeset one
-                    // We are now sure of the inner sequence return type
-                    if (Type.subTypeOf(innerSeq.getItemType(), Type.NODE)
-                            && innerSeq.isPersistentSet()) {
-                        recomputedExecutionMode = NODE;
-                        // Try to promote a boolean evaluation to a positional one
-                        // Only if we have an actual *singleton* of numeric items
-                    } else if (innerSeq.hasOne()
-                            && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) {
-                        recomputedExecutionMode = POSITIONAL;
-                    }
+                    recomputedExecutionMode = POSITIONAL;
                 }
             }
-            switch (recomputedExecutionMode) {
-            case NODE:
-                if (context.getProfiler().isEnabled())
-                    {context.getProfiler().message(this,
-                        Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "Node selection");}
-                result = selectByNodeSet(contextSequence);
-                break;
-            case BOOLEAN:
-                if (context.getProfiler().isEnabled())
-                    {context.getProfiler().message(this,
-                        Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "Boolean evaluation");}
-                result = evalBoolean(contextSequence, inner, mode);
-                break;
-            case POSITIONAL:
-                if (context.getProfiler().isEnabled())
-                    {context.getProfiler().message(this,
-                        Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "Positional evaluation");}
-                // In case it hasn't been evaluated above
-                if (innerSeq == null) {
-                    // for a positional predicate, check if it depends on the context item
-                    // if not, do not pass the context sequence to avoid cardinality errors
-                    context.setContextSequencePosition(0, contextSequence);
-                    innerSeq = inner.eval(Dependency.dependsOn(inner.getDependencies(), Dependency.CONTEXT_ITEM)
-                            ? contextSequence : null);
+        } else if (executionMode == NODE && !contextSequence.isPersistentSet()) {
+            recomputedExecutionMode = BOOLEAN;
+        } else {
+            if (executionMode == BOOLEAN && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
+                /*
+                 *
+                 * WARNING : this sequence will be evaluated with
+                 * preloadable nodesets !
+                 */
+                innerSeq = inner.eval(contextSequence);
+                // Try to promote a boolean evaluation to a nodeset one
+                // We are now sure of the inner sequence return type
+                if (Type.subTypeOf(innerSeq.getItemType(), Type.NODE)
+                        && innerSeq.isPersistentSet()) {
+                    recomputedExecutionMode = NODE;
+                    // Try to promote a boolean evaluation to a positional one
+                    // Only if we have an actual *singleton* of numeric items
+                } else if (innerSeq.hasOne()
+                        && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) {
+                    recomputedExecutionMode = POSITIONAL;
                 }
-                result = selectByPosition(outerSequence, contextSequence, mode, innerSeq);
-                break;
-            default:
-                throw new IllegalArgumentException(
-                    "Unsupported execution mode: '" + recomputedExecutionMode + "'");
             }
         }
-        if (context.getProfiler().isEnabled())
-            {context.getProfiler().end(this, "", result);}
-        return result;
+
+        return Tuple(recomputedExecutionMode, innerSeq);
     }
 
     /**
-     * @param contextSequence
-     * @param inner
+     * Evaluate the inner part of the predicate as a boolean.
+     *
+     * @param contextSequence the context sequence
+     * @param inner the inner expression
+     *
      * @return The result of the boolean evaluation of the predicate.
-     * @throws XPathException
+     *
+     * @throws XPathException if an error occurs
      */
-    private Sequence evalBoolean(Sequence contextSequence, Expression inner, int mode)
+    private Sequence evalBoolean(final Sequence contextSequence, final Expression inner, final int mode)
             throws XPathException {
         final Sequence result = new ValueSequence();
         int p;
@@ -370,8 +290,9 @@ public class Predicate extends PathExpr {
                 context.setContextSequencePosition(p - 1, contextSequence);
                 final Item item = i.nextItem();
                 final Sequence innerSeq = inner.eval(contextSequence, item);
-                if (innerSeq.effectiveBooleanValue())
-                    {result.add(item);}
+                if (innerSeq.effectiveBooleanValue()) {
+                    result.add(item);
+                }
             }
         } else {
             // 0-based
@@ -393,23 +314,25 @@ public class Predicate extends PathExpr {
                     final Item item = i.nextItem();
                     final Sequence innerSeq = inner.eval(contextSequence, item);
                     if (innerSeq.hasOne()) {
-	                    final NumericValue nv = (NumericValue) innerSeq.itemAt(0);
-	                    // Non integers return... nothing, not even an error !
-	                    if (!nv.hasFractionalPart() && !nv.isZero())
-	                        {positions.add(nv);}
-                    } 
+                        final NumericValue nv = (NumericValue) innerSeq.itemAt(0);
+                        // Non integers return... nothing, not even an error !
+                        if (!nv.hasFractionalPart() && !nv.isZero()) {
+                            positions.add(nv);
+                        }
+                    }
                     //XXX: else error or nothing?
                 }
                 for (final NumericValue pos : positions) {
                     final int position = (reverseAxis ? contextSequence.getItemCount() - pos.getInt() : pos.getInt() - 1);
                     // TODO : move this test above ?
-                    if (position <= contextSequence.getItemCount())
-                        {result.add(contextSequence.itemAt(position));}
+                    if (position <= contextSequence.getItemCount()) {
+                        result.add(contextSequence.itemAt(position));
+                    }
                 }
             } else {
                 final Set<NumericValue> positions = new TreeSet<>();
                 for (final SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
-                    context.setContextSequencePosition((reverseAxis ? contextSequence.getItemCount() - p - 1: p), contextSequence);
+                    context.setContextSequencePosition((reverseAxis ? contextSequence.getItemCount() - p - 1 : p), contextSequence);
                     final Item item = i.nextItem();
                     final Sequence innerSeq = inner.eval(contextSequence, item);
                     if (innerSeq.hasOne()
@@ -417,16 +340,19 @@ public class Predicate extends PathExpr {
                         // TODO : introduce a check in innerSeq.hasOne() ?
                         final NumericValue nv = (NumericValue) innerSeq;
                         // Non integers return... nothing, not even an error !
-                        if (!nv.hasFractionalPart() && !nv.isZero())
-                            {positions.add(nv);}
-                    } else if (innerSeq.effectiveBooleanValue())
-                        {result.add(item);}
+                        if (!nv.hasFractionalPart() && !nv.isZero()) {
+                            positions.add(nv);
+                        }
+                    } else if (innerSeq.effectiveBooleanValue()) {
+                        result.add(item);
+                    }
                 }
                 for (final NumericValue pos : positions) {
                     final int position = (reverseAxis ? contextSequence.getItemCount() - pos.getInt() : pos.getInt() - 1);
                     // TODO : move this test above ?
-                    if (position <= contextSequence.getItemCount())
-                        {result.add(contextSequence.itemAt(position));}
+                    if (position <= contextSequence.getItemCount()) {
+                        result.add(contextSequence.itemAt(position));
+                    }
                 }
             }
         }
@@ -434,11 +360,13 @@ public class Predicate extends PathExpr {
     }
 
     /**
-     * @param contextSequence
+     * @param contextSequence the context sequence
+     *
      * @return The result of the node set evaluation of the predicate.
-     * @throws XPathException
+     *
+     * @throws XPathException if an error occurs
      */
-    private Sequence selectByNodeSet(Sequence contextSequence) throws XPathException {
+    private Sequence selectByNodeSet(final Sequence contextSequence) throws XPathException {
         final NewArrayNodeSet result = new NewArrayNodeSet();
         final NodeSet contextSet = contextSequence.toNodeSet();
         final boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;
@@ -449,9 +377,10 @@ public class Predicate extends PathExpr {
          * also return the cached result.
          */
         if (cached != null && cached.isValid(contextSequence, null) && nodes.isCached()) {
-            if (context.getProfiler().isEnabled())
-                {context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                        "Using cached results", result);}
+            if (context.getProfiler().isEnabled()) {
+                context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+                        "Using cached results", result);
+            }
             return cached.getResult();
         }
         DocumentImpl lastDoc = null;
@@ -479,23 +408,25 @@ public class Predicate extends PathExpr {
                 contextItem = contextItem.getNextDirect();
             }
         }
-        if (contextSequence.isCacheable())
-            {cached = new CachedResult(contextSequence, null, result);}
+        if (contextSequence.isCacheable()) {
+            cached = new CachedResult(contextSequence, null, result);
+        }
         contextSet.setTrackMatches(true);
         return result;
     }
 
     /**
-     * @param outerSequence
-     * @param contextSequence
-     * @param mode
-     * @param innerSeq
+     * @param outerSequence the outer sequence
+     * @param contextSequence the context sequence
+     * @param mode the mode
+     * @param innerSeq the inner sequence
+     *
      * @return The result of the positional evaluation of the predicate.
-     * @throws XPathException
+     *
+     * @throws XPathException if an error occurs
      */
-    private Sequence selectByPosition(Sequence outerSequence,
-            Sequence contextSequence, int mode, Sequence innerSeq)
-            throws XPathException {
+    private Sequence selectByPosition(final Sequence outerSequence,
+        final Sequence contextSequence, final int mode, final Sequence innerSeq) throws XPathException {
         if (outerSequence != null && !outerSequence.isEmpty()
                 && Type.subTypeOf(contextSequence.getItemType(), Type.NODE)
                 && contextSequence.isPersistentSet()
@@ -503,120 +434,124 @@ public class Predicate extends PathExpr {
             final Sequence result = new NewArrayNodeSet();
             final NodeSet contextSet = contextSequence.toNodeSet();
             switch (mode) {
-            case Constants.CHILD_AXIS:
-            case Constants.ATTRIBUTE_AXIS:
-            case Constants.DESCENDANT_AXIS:
-            case Constants.DESCENDANT_SELF_AXIS:
-            case Constants.DESCENDANT_ATTRIBUTE_AXIS: {
-                final NodeSet outerNodeSet = outerSequence.toNodeSet();
-                // TODO: in some cases, especially with in-memory nodes,
-                // outerSequence.toNodeSet() will generate a document
-                // which will be different from the one(s) in contextSet
-                // ancestors will thus be empty :-(
-                // A special treatment of VirtualNodeSet does not seem to be
-                // required anymore
-                final Sequence ancestors = outerNodeSet.selectAncestors(contextSet,
-                        true, getExpressionId());
-                if (contextSet.getDocumentSet().intersection(
-                        outerNodeSet.getDocumentSet()).getDocumentCount() == 0)
-                        {LOG.info("contextSet and outerNodeSet don't share any document");}
-                final NewArrayNodeSet temp = new NewArrayNodeSet();
-                for (final SequenceIterator i = ancestors.iterate(); i.hasNext();) {
-                    NodeProxy p = (NodeProxy) i.nextItem();
-                    ContextItem contextNode = p.getContext();
-                    temp.reset();
-                    while (contextNode != null) {
-                        if (contextNode.getContextId() == getExpressionId())
-                            {temp.add(contextNode.getNode());}
-                        contextNode = contextNode.getNextDirect();
+                case Constants.CHILD_AXIS:
+                case Constants.ATTRIBUTE_AXIS:
+                case Constants.DESCENDANT_AXIS:
+                case Constants.DESCENDANT_SELF_AXIS:
+                case Constants.DESCENDANT_ATTRIBUTE_AXIS: {
+                    final NodeSet outerNodeSet = outerSequence.toNodeSet();
+                    // TODO: in some cases, especially with in-memory nodes,
+                    // outerSequence.toNodeSet() will generate a document
+                    // which will be different from the one(s) in contextSet
+                    // ancestors will thus be empty :-(
+                    // A special treatment of VirtualNodeSet does not seem to be
+                    // required anymore
+                    final Sequence ancestors = outerNodeSet.selectAncestors(contextSet,
+                            true, getExpressionId());
+                    if (contextSet.getDocumentSet().intersection(
+                            outerNodeSet.getDocumentSet()).getDocumentCount() == 0) {
+                        LOG.info("contextSet and outerNodeSet don't share any document");
                     }
-                    p.clearContext(getExpressionId());
-                    // TODO : understand why we sort here...
-                    temp.sortInDocumentOrder();
-                    for (final SequenceIterator j = innerSeq.iterate(); j.hasNext();) {
-                        final NumericValue v = (NumericValue) j.nextItem();
-                        // Non integers return... nothing, not even an error !
-                        if (!v.hasFractionalPart() && !v.isZero()) {
-                            // ... whereas we don't want a sorted array here
-                            // TODO : rename this method as getInDocumentOrder ? -pb
-                            p = temp.get(v.getInt() - 1);
-                            if (p != null) {
-                                result.add(p);
+                    final NewArrayNodeSet temp = new NewArrayNodeSet();
+                    for (final SequenceIterator i = ancestors.iterate(); i.hasNext(); ) {
+                        NodeProxy p = (NodeProxy) i.nextItem();
+                        ContextItem contextNode = p.getContext();
+                        temp.reset();
+                        while (contextNode != null) {
+                            if (contextNode.getContextId() == getExpressionId()) {
+                                temp.add(contextNode.getNode());
                             }
-                            // TODO : does null make sense here ? Well... sometimes ;-)
+                            contextNode = contextNode.getNextDirect();
                         }
-                    }
-                }
-                break;
-            }
-            default:
-                for (final SequenceIterator i = outerSequence.iterate(); i.hasNext();) {
-                    NodeProxy p = (NodeProxy) i.nextItem();
-                    Sequence temp;
-                    boolean reverseAxis = true;
-                    switch (mode) {
-                    case Constants.ANCESTOR_AXIS:
-                        temp = contextSet.selectAncestors(p, false, Expression.IGNORE_CONTEXT);
-                        break;
-                    case Constants.ANCESTOR_SELF_AXIS:
-                        temp = contextSet.selectAncestors(p, true, Expression.IGNORE_CONTEXT);
-                        break;
-                    case Constants.PARENT_AXIS:
-                        // TODO : understand why the contextSet is not involved
-                        // here
-                        // NodeProxy.getParent returns a *theoretical* parent
-                        // which is *not* guaranteed to be in the context set !
-                        temp = p.getParents(Expression.NO_CONTEXT_ID);
-                        break;
-                    case Constants.PRECEDING_AXIS:
-                        temp = contextSet.selectPreceding(p, Expression.IGNORE_CONTEXT);
-                        break;
-                    case Constants.PRECEDING_SIBLING_AXIS:
-                        temp = contextSet.selectPrecedingSiblings(p, Expression.IGNORE_CONTEXT);
-                        break;
-                    case Constants.FOLLOWING_SIBLING_AXIS:
-                        temp = contextSet.selectFollowingSiblings(p, Expression.IGNORE_CONTEXT);
-                        reverseAxis = false;
-                        break;
-                    case Constants.FOLLOWING_AXIS:
-                        temp = contextSet.selectFollowing(p, Expression.IGNORE_CONTEXT);
-                        reverseAxis = false;
-                        break;
-                    case Constants.SELF_AXIS:
-                        temp = p;
-                        reverseAxis = false;
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Tried to test unknown axis");
-                    }
-                    if (!temp.isEmpty()) {
-                        for (final SequenceIterator j = innerSeq.iterate(); j.hasNext();) {
+                        p.clearContext(getExpressionId());
+                        // TODO : understand why we sort here...
+                        temp.sortInDocumentOrder();
+                        for (final SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {
                             final NumericValue v = (NumericValue) j.nextItem();
                             // Non integers return... nothing, not even an error !
                             if (!v.hasFractionalPart() && !v.isZero()) {
-                                final int pos = (reverseAxis ?
-                                    temp.getItemCount() - v.getInt() : v.getInt() - 1);
-                                // Other positions are ignored
-                                if (pos >= 0 && pos < temp.getItemCount()) {
-                                    final NodeProxy t = (NodeProxy) temp.itemAt(pos);
-                                    // for the current context: filter out those
-                                    // context items not selected by the positional predicate
-                                    ContextItem ctx = t.getContext();
-                                    t.clearContext(Expression.IGNORE_CONTEXT);
-                                    while (ctx != null) {
-                                        if (ctx.getContextId() == outerContextId) {
-                                            if (ctx.getNode().getNodeId().equals(p.getNodeId()))
-                                                {t.addContextNode(outerContextId, ctx.getNode());}
-                                        } else
-                                            {t.addContextNode(ctx.getContextId(), ctx.getNode());}
-                                        ctx = ctx.getNextDirect();
+                                // ... whereas we don't want a sorted array here
+                                // TODO : rename this method as getInDocumentOrder ? -pb
+                                p = temp.get(v.getInt() - 1);
+                                if (p != null) {
+                                    result.add(p);
+                                }
+                                // TODO : does null make sense here ? Well... sometimes ;-)
+                            }
+                        }
+                    }
+                    break;
+                }
+                default:
+                    for (final SequenceIterator i = outerSequence.iterate(); i.hasNext(); ) {
+                        NodeProxy p = (NodeProxy) i.nextItem();
+                        Sequence temp;
+                        boolean reverseAxis = true;
+                        switch (mode) {
+                            case Constants.ANCESTOR_AXIS:
+                                temp = contextSet.selectAncestors(p, false, Expression.IGNORE_CONTEXT);
+                                break;
+                            case Constants.ANCESTOR_SELF_AXIS:
+                                temp = contextSet.selectAncestors(p, true, Expression.IGNORE_CONTEXT);
+                                break;
+                            case Constants.PARENT_AXIS:
+                                // TODO : understand why the contextSet is not involved
+                                // here
+                                // NodeProxy.getParent returns a *theoretical* parent
+                                // which is *not* guaranteed to be in the context set !
+                                temp = p.getParents(Expression.NO_CONTEXT_ID);
+                                break;
+                            case Constants.PRECEDING_AXIS:
+                                temp = contextSet.selectPreceding(p, Expression.IGNORE_CONTEXT);
+                                break;
+                            case Constants.PRECEDING_SIBLING_AXIS:
+                                temp = contextSet.selectPrecedingSiblings(p, Expression.IGNORE_CONTEXT);
+                                break;
+                            case Constants.FOLLOWING_SIBLING_AXIS:
+                                temp = contextSet.selectFollowingSiblings(p, Expression.IGNORE_CONTEXT);
+                                reverseAxis = false;
+                                break;
+                            case Constants.FOLLOWING_AXIS:
+                                temp = contextSet.selectFollowing(p, Expression.IGNORE_CONTEXT);
+                                reverseAxis = false;
+                                break;
+                            case Constants.SELF_AXIS:
+                                temp = p;
+                                reverseAxis = false;
+                                break;
+                            default:
+                                throw new IllegalArgumentException("Tried to test unknown axis");
+                        }
+                        if (!temp.isEmpty()) {
+                            for (final SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {
+                                final NumericValue v = (NumericValue) j.nextItem();
+                                // Non integers return... nothing, not even an error !
+                                if (!v.hasFractionalPart() && !v.isZero()) {
+                                    final int pos = (reverseAxis ?
+                                            temp.getItemCount() - v.getInt() : v.getInt() - 1);
+                                    // Other positions are ignored
+                                    if (pos >= 0 && pos < temp.getItemCount()) {
+                                        final NodeProxy t = (NodeProxy) temp.itemAt(pos);
+                                        // for the current context: filter out those
+                                        // context items not selected by the positional predicate
+                                        ContextItem ctx = t.getContext();
+                                        t.clearContext(Expression.IGNORE_CONTEXT);
+                                        while (ctx != null) {
+                                            if (ctx.getContextId() == outerContextId) {
+                                                if (ctx.getNode().getNodeId().equals(p.getNodeId())) {
+                                                    t.addContextNode(outerContextId, ctx.getNode());
+                                                }
+                                            } else {
+                                                t.addContextNode(ctx.getContextId(), ctx.getNode());
+                                            }
+                                            ctx = ctx.getNextDirect();
+                                        }
+                                        result.add(t);
                                     }
-                                    result.add(t);
                                 }
                             }
                         }
                     }
-                }
             }
             return result;
         } else {
@@ -626,12 +561,12 @@ public class Predicate extends PathExpr {
                     mode == Constants.PRECEDING_AXIS || mode == Constants.PRECEDING_SIBLING_AXIS);
             final Set<NumericValue> set = new TreeSet<>();
             final ValueSequence result = new ValueSequence();
-            for (final SequenceIterator i = innerSeq.iterate(); i.hasNext();) {
+            for (final SequenceIterator i = innerSeq.iterate(); i.hasNext(); ) {
                 final NumericValue v = (NumericValue) i.nextItem();
                 // Non integers return... nothing, not even an error !
                 if (!v.hasFractionalPart() && !v.isZero()) {
                     final int pos = (reverseAxis ? contextSequence.getItemCount()
-                        - v.getInt() : v.getInt() - 1);
+                            - v.getInt() : v.getInt() - 1);
                     // Other positions are ignored
                     if (pos >= 0 && pos < contextSequence.getItemCount() && !set.contains(v)) {
                         result.add(contextSequence.itemAt(pos));
@@ -643,41 +578,44 @@ public class Predicate extends PathExpr {
         }
     }
 
-    public void setContextDocSet(DocumentSet contextSet) {
+    @Override
+    public void setContextDocSet(final DocumentSet contextSet) {
         super.setContextDocSet(contextSet);
-        if (getLength() > 0)
-            {getExpression(0).setContextDocSet(contextSet);}
+        if (getSubExpressionCount() > 0) {
+            getSubExpression(0).setContextDocSet(contextSet);
+        }
     }
 
-    public int getExecutionMode() {
+    public ExecutionMode getExecutionMode() {
         return executionMode;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.exist.xquery.PathExpr#resetState()
-     */
-    public void resetState(boolean postOptimization) {
+    @Override
+    public void resetState(final boolean postOptimization) {
         super.resetState(postOptimization);
-        if (!postOptimization)
-            {cached = null;}
+        if (!postOptimization) {
+            cached = null;
+        }
     }
 
+    @Override
     public Expression getParent() {
         return parent;
     }
 
-    public void accept(ExpressionVisitor visitor) {
+    @Override
+    public void accept(final ExpressionVisitor visitor) {
         visitor.visitPredicate(this);
     }
 
-    public void dump(ExpressionDumper dumper) {
+    @Override
+    public void dump(final ExpressionDumper dumper) {
         dumper.display("[");
         super.dump(dumper);
         dumper.display("]");
     }
 
+    @Override
     public String toString() {
         return "[" + super.toString() + "]";
     }

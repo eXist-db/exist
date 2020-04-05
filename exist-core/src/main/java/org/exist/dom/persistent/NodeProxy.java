@@ -771,7 +771,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     }
 
     @Override
-    public int getCardinality() {
+    public Cardinality getCardinality() {
         return Cardinality.EXACTLY_ONE;
     }
 

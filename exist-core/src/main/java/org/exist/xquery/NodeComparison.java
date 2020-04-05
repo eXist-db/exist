@@ -43,7 +43,7 @@ public class NodeComparison extends BinaryOp {
     public NodeComparison(XQueryContext context, Expression left, Expression right, NodeComparisonOperator relation) {
         super(context);
         this.relation = relation;
-        add(new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, left, 
+        add(new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, left,
                 new Error(Error.NODE_COMP_TYPE_MISMATCH)));
         add(right);
         //add(new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, right,
@@ -58,10 +58,8 @@ public class NodeComparison extends BinaryOp {
         return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.AbstractExpression#getCardinality()
-     */
-    public int getCardinality() {
+    @Override
+    public Cardinality getCardinality() {
         return Cardinality.ZERO_OR_ONE;
     }
 

@@ -127,7 +127,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
     }
 
     @Override
-    public int getCardinality() {
+    public Cardinality getCardinality() {
         return Cardinality.EXACTLY_ONE;
     }
 

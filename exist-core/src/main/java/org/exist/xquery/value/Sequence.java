@@ -25,6 +25,7 @@ import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
+import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
@@ -173,7 +174,7 @@ public interface Sequence {
      *
      * @see org.exist.xquery.Cardinality
      */
-    int getCardinality();
+    Cardinality getCardinality();
 
     /**
      * Returns the item located at the specified position within

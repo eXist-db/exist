@@ -68,7 +68,7 @@ public class GetDirContextFunction extends BasicFunction
 					new QName( "get-dir-context", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
 					"Opens a JNDI Directory Context.",
 					new SequenceType[] {
-							new FunctionParameterSequenceType( "properties", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "The JNDI Directory Context environment properties to be set in the form <properties><property name=\"\" value=\"\"/></properties>." ) 
+							new FunctionParameterSequenceType( "properties", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "The JNDI Directory Context environment properties to be set in the form <properties><property name=\"\" value=\"\"/></properties>." )
 					},
 					new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "the directory context handle" ) )
 			};

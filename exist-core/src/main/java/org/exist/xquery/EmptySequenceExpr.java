@@ -29,8 +29,8 @@ public class EmptySequenceExpr extends AbstractExpression {
     }
 
     @Override
-    public int getCardinality() {
-        return Cardinality.ZERO;
+    public Cardinality getCardinality() {
+        return Cardinality.EMPTY_SEQUENCE;
     }
 
     @Override

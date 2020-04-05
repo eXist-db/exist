@@ -77,7 +77,8 @@ public class DebuggableExpression implements Expression, RewritableExpression {
         return expression.returnsType();
     }
 
-    public int getCardinality() {
+    @Override
+    public Cardinality getCardinality() {
         return expression.getCardinality();
     }
 

@@ -64,7 +64,7 @@ public class FunSort extends BasicFunction {
         new SequenceType[] {
             new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, ""),
             new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.ZERO_OR_ONE, ""),
-            new FunctionParameterSequenceType("key", Type.FUNCTION_REFERENCE, Cardinality.ONE, "")
+            new FunctionParameterSequenceType("key", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "")
         },
         new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the resulting sequence")
     )

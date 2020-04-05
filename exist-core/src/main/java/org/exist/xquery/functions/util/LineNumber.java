@@ -33,7 +33,7 @@ public class LineNumber extends BasicFunction {
             new QName("line-number", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Retrieves the line number of the expression",
             null,
-            new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ONE, "The line number of this expression")
+            new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "The line number of this expression")
     );
 
     public LineNumber(final XQueryContext context) {

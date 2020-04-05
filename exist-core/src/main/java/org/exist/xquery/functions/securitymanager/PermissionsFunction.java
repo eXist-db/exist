@@ -78,7 +78,7 @@ public class PermissionsFunction extends BasicFunction {
         new SequenceType[] {
             new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection to get permissions of.")
         },
-        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "The permissions of the resource or collection")
+        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "The permissions of the resource or collection")
     );
     
     public final static FunctionSignature FNS_ADD_USER_ACE = new FunctionSignature(
@@ -90,7 +90,7 @@ public class PermissionsFunction extends BasicFunction {
             new FunctionParameterSequenceType("allowed", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the ACE is allowing the permission mode, or false() if we are denying the permission mode"),
             new FunctionParameterSequenceType("mode", Type.STRING, Cardinality.EXACTLY_ONE, "The mode to set on the ACE e.g. 'rwx'"),
         },
-        new SequenceType(Type.EMPTY, Cardinality.ZERO)
+        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
     );
     
     public final static FunctionSignature FNS_ADD_GROUP_ACE = new FunctionSignature(
@@ -102,7 +102,7 @@ public class PermissionsFunction extends BasicFunction {
             new FunctionParameterSequenceType("allowed", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the ACE is allowing the permission mode, or false() if we are denying the permission mode"),
             new FunctionParameterSequenceType("mode", Type.STRING, Cardinality.EXACTLY_ONE, "The mode to set on the ACE e.g. 'rwx'"),
         },
-        new SequenceType(Type.EMPTY, Cardinality.ZERO)
+        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
     );
     
     public final static FunctionSignature FNS_INSERT_USER_ACE = new FunctionSignature(
@@ -115,7 +115,7 @@ public class PermissionsFunction extends BasicFunction {
             new FunctionParameterSequenceType("allowed", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the ACE is allowing the permission mode, or false() if we are denying the permission mode"),
             new FunctionParameterSequenceType("mode", Type.STRING, Cardinality.EXACTLY_ONE, "The mode to set on the ACE e.g. 'rwx'"),
         },
-        new SequenceType(Type.EMPTY, Cardinality.ZERO)
+        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
     );
     
     public final static FunctionSignature FNS_INSERT_GROUP_ACE = new FunctionSignature(
@@ -128,7 +128,7 @@ public class PermissionsFunction extends BasicFunction {
             new FunctionParameterSequenceType("allowed", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the ACE is allowing the permission mode, or false() if we are denying the permission mode"),
             new FunctionParameterSequenceType("mode", Type.STRING, Cardinality.EXACTLY_ONE, "The mode to set on the ACE e.g. 'rwx'"),
         },
-        new SequenceType(Type.EMPTY, Cardinality.ZERO)
+        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
     );
     
     public final static FunctionSignature FNS_MODIFY_ACE = new FunctionSignature(
@@ -140,7 +140,7 @@ public class PermissionsFunction extends BasicFunction {
             new FunctionParameterSequenceType("allowed", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if the ACE is allowing the permission mode, or false() if we are denying the permission mode"),
             new FunctionParameterSequenceType("mode", Type.STRING, Cardinality.EXACTLY_ONE, "The mode to set on the ACE e.g. 'rwx'"),
         },
-        new SequenceType(Type.EMPTY, Cardinality.ZERO)
+        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
     );
     
     public final static FunctionSignature FNS_REMOVE_ACE = new FunctionSignature(
@@ -150,7 +150,7 @@ public class PermissionsFunction extends BasicFunction {
             new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whose ACL you wish to remove the ACE from."),
             new FunctionParameterSequenceType("index", Type.INT, Cardinality.EXACTLY_ONE, "The index of the ACE in the ACL to remove, subsequent entries will be renumbered")
         },
-        new SequenceType(Type.EMPTY, Cardinality.ZERO)
+        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
     );
     
     public final static FunctionSignature FNS_CLEAR_ACL = new FunctionSignature(
@@ -159,7 +159,7 @@ public class PermissionsFunction extends BasicFunction {
         new SequenceType[] {
             new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whose ACL you wish to clear.")
         },
-        new SequenceType(Type.EMPTY, Cardinality.ZERO)
+        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
     );
     
     public final static FunctionSignature FNS_CHMOD = new FunctionSignature(
@@ -169,7 +169,7 @@ public class PermissionsFunction extends BasicFunction {
             new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whose mode you wish to set"),
             new FunctionParameterSequenceType("mode", Type.STRING, Cardinality.EXACTLY_ONE, "The mode to set on the resource or collection e.g. 'rwxrwxrwx'"),
         },
-        new SequenceType(Type.EMPTY, Cardinality.ZERO)
+        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
     );
     
     public final static FunctionSignature FNS_CHOWN = new FunctionSignature(
@@ -179,7 +179,7 @@ public class PermissionsFunction extends BasicFunction {
             new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whose owner you wish to set"),
             new FunctionParameterSequenceType("owner", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the user owner to set on the resource or collection e.g. 'guest'. You may also provide a group owner, by using the syntax 'user:group' if you wish."),
         },
-        new SequenceType(Type.EMPTY, Cardinality.ZERO)
+        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
     );
     
     public final static FunctionSignature FNS_CHGRP = new FunctionSignature(
@@ -189,7 +189,7 @@ public class PermissionsFunction extends BasicFunction {
             new FunctionParameterSequenceType("path", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The path to the resource or collection whose group owner you wish to set"),
             new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the user group owner to set on the resource or collection e.g. 'guest'"),
         },
-        new SequenceType(Type.EMPTY, Cardinality.ZERO)
+        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
     );
     
     public final static FunctionSignature FNS_HAS_ACCESS = new FunctionSignature(

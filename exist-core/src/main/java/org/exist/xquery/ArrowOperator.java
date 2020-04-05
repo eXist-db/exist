@@ -131,7 +131,7 @@ public class ArrowOperator extends AbstractExpression {
     }
 
     @Override
-    public int getCardinality() {
+    public Cardinality getCardinality() {
         return fcall == null ? super.getCardinality() : fcall.getCardinality();
     }
 

@@ -44,7 +44,7 @@ public class IdFunction extends BasicFunction {
         "and effective account details are returned, otherwise only the real " +
         "account details are returned.",
         null,
-        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "Example output when an XQuery is running setUid <id xmlns=\"http://exist-db.org/xquery/securitymanager\"><real><username>guest</username><groups><group>guest</group></groups></real><effective><username>admin</username><groups><group>dba</group></groups></effective></id>.")
+        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "Example output when an XQuery is running setUid <id xmlns=\"http://exist-db.org/xquery/securitymanager\"><real><username>guest</username><groups><group>guest</group></groups></real><effective><username>admin</username><groups><group>dba</group></groups></effective></id>.")
     );
 
     public IdFunction(final XQueryContext context, final FunctionSignature signature) {

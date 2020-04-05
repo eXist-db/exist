@@ -125,8 +125,9 @@ public class SwitchExpression extends AbstractExpression {
     public int getDependencies() {
         return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
     }
-    
-    public int getCardinality() {
+
+    @Override
+    public Cardinality getCardinality() {
         return Cardinality.ZERO_OR_MORE;
     }
     

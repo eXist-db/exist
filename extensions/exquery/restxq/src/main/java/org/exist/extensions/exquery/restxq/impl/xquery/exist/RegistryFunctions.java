@@ -72,7 +72,7 @@ public class RegistryFunctions extends BasicFunction {
         new SequenceType[]{
             PARAM_MODULE
         },
-        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "The list of newly registered resource functions.")
+        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "The list of newly registered resource functions.")
     );
         
     public final static FunctionSignature FNS_DEREGISTER_MODULE = new FunctionSignature(
@@ -81,7 +81,7 @@ public class RegistryFunctions extends BasicFunction {
         new SequenceType[]{
             PARAM_MODULE
         },
-        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "The list of deregistered resource functions.")
+        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "The list of deregistered resource functions.")
     );
         
     public final static FunctionSignature FNS_FIND_RESOURCE_FUNCTIONS = new FunctionSignature(
@@ -90,7 +90,7 @@ public class RegistryFunctions extends BasicFunction {
         new SequenceType[]{
             PARAM_MODULE
         },
-        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "The list of newly registered resource functions.")
+        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "The list of newly registered resource functions.")
     );
         
     public final static FunctionSignature FNS_REGISTER_RESOURCE_FUNCTION = new FunctionSignature(
@@ -100,7 +100,7 @@ public class RegistryFunctions extends BasicFunction {
             PARAM_MODULE,
             PARAM_RESOURCE_FUNCTION,
         },
-        new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true if the function was registered, false otherwise.")
+        new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the function was registered, false otherwise.")
     );
         
     public final static FunctionSignature FNS_DEREGISTER_RESOURCE_FUNCTION = new FunctionSignature(
@@ -110,7 +110,7 @@ public class RegistryFunctions extends BasicFunction {
             PARAM_MODULE,
             PARAM_RESOURCE_FUNCTION,
         },
-        new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, "true if the function was deregistered, false otherwise.")
+        new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the function was deregistered, false otherwise.")
     );
 
     public final static FunctionSignature FNS_INVALID_MODULES = new FunctionSignature(
@@ -124,14 +124,14 @@ public class RegistryFunctions extends BasicFunction {
         qnMissingDependencies,
         "Gets a list of all the missing dependencies for XQuery modules discovered by RESTXQ in the process of discovering resource functions.",
         FunctionSignature.NO_ARGS,
-        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "The list of missing dependencies.")
+        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "The list of missing dependencies.")
     );
 
     public final static FunctionSignature FNS_DEPENDENCIES = new FunctionSignature(
         qnDependencies,
         "Gets a list of all the dependencies of compiled XQuery modules discovered by RESTXQ in the process of discovering resource functions.",
         FunctionSignature.NO_ARGS,
-        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ONE, "The list of dependencies.")
+        new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "The list of dependencies.")
     );
 
     private final static QName MISSING_DEPENDENCIES = new QName("missing-dependencies", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);

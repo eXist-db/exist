@@ -67,8 +67,9 @@ public class InternalFunctionCall extends Function
 	{
 		return function.returnsType();
 	}
-	public int getCardinality()
-	{
+
+	@Override
+	public Cardinality getCardinality() {
 		return function.getCardinality();
 	}
 	

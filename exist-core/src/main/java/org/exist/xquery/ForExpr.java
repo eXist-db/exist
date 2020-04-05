@@ -172,12 +172,11 @@ public class ForExpr extends BindingExpression {
             //Type.EMPTY is *not* a subtype of other types ;
             //the tests below would fail without this prior cardinality check
             if (in.isEmpty() && sequenceType != null &&
-                    !Cardinality.checkCardinality(sequenceType.getCardinality(),
-                            Cardinality.EMPTY)) {
+                    !sequenceType.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EMPTY_SEQUENCE)) {
                 throw new XPathException(this, ErrorCodes.XPTY0004,
                         "Invalid cardinality for variable $" + varName +
-                                ". Expected " + Cardinality.getDescription(sequenceType.getCardinality()) +
-                                ", got " + Cardinality.getDescription(in.getCardinality()));
+                                ". Expected " + sequenceType.getCardinality().getHumanDescription() +
+                                ", got " + in.getCardinality().getHumanDescription());
             }
 
             // Loop through each variable binding
@@ -201,12 +200,11 @@ public class ForExpr extends BindingExpression {
             //Type.EMPTY is *not* a subtype of other types ; checking cardinality first
             //only a check on empty sequence is accurate here
             if (resultSequence.isEmpty() &&
-                    !Cardinality.checkCardinality(sequenceType.getCardinality(),
-                    Cardinality.EMPTY))
+                    !sequenceType.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EMPTY_SEQUENCE))
                 {throw new XPathException(this, ErrorCodes.XPTY0004,
                     "Invalid cardinality for variable $" + varName + ". Expected " +
-                    Cardinality.getDescription(sequenceType.getCardinality()) +
-                    ", got " + Cardinality.getDescription(Cardinality.EMPTY));}
+                    sequenceType.getCardinality().getHumanDescription() +
+                    ", got " + Cardinality.EMPTY_SEQUENCE.getHumanDescription());}
             //TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
             if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
                 if (!resultSequence.isEmpty() &&

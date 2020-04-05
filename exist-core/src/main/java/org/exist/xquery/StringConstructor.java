@@ -75,7 +75,7 @@ public class StringConstructor extends AbstractExpression {
     }
 
     @Override
-    public int getCardinality() {
+    public Cardinality getCardinality() {
         return Cardinality.EXACTLY_ONE;
     }
 

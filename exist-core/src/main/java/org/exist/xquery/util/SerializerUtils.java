@@ -55,10 +55,10 @@ public class SerializerUtils {
 
         final String parameterName;
         final int type;
-        final int cardinality;
+        final Cardinality cardinality;
         final Sequence defaultValue;
 
-        ParameterConvention(final String parameterName, final int type, final int cardinality, final Sequence defaultValue) {
+        ParameterConvention(final String parameterName, final int type, final Cardinality cardinality, final Sequence defaultValue) {
             this.parameterName = parameterName;
             this.type = type;
             this.cardinality = cardinality;
@@ -247,7 +247,7 @@ public class SerializerUtils {
      * @return true if the types are suitable, false otherwise
      */
     private static boolean checkTypes(final ParameterConvention parameterConvention, final Sequence sequence) throws XPathException {
-        if(Cardinality.checkCardinality(parameterConvention.cardinality, sequence.getCardinality())) {
+        if(parameterConvention.cardinality.isSuperCardinalityOrEqualOf(sequence.getCardinality())) {
             final SequenceIterator iterator = sequence.iterate();
             while(iterator.hasNext()) {
                 final Item item = iterator.nextItem();
@@ -281,7 +281,7 @@ public class SerializerUtils {
             properties.setProperty(parameterConvention.parameterName, ((DecimalValue) parameterValue.itemAt(0)).getStringValue());
         } else if(Type.QNAME == parameterConvention.type) {
             if(!parameterValue.isEmpty()) {
-                if (Cardinality.checkCardinality(Cardinality.MANY, parameterConvention.cardinality)) {
+                if (Cardinality._MANY.isSuperCardinalityOrEqualOf(parameterConvention.cardinality)) {
                     final SequenceIterator iterator = parameterValue.iterate();
                     while (iterator.hasNext()) {
                         final String existingValue = (String) properties.get(parameterConvention.parameterName);

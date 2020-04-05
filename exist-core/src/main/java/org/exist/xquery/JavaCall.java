@@ -106,10 +106,8 @@ public class JavaCall extends Function {
 		return qname;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#getCardinality()
-	 */
-	public int getCardinality() {
+	@Override
+	public Cardinality getCardinality() {
 		return Cardinality.ZERO_OR_MORE;
 	}
 	

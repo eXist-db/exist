@@ -65,7 +65,7 @@ public class FunHigherOrderFun extends BasicFunction {
                 new FunctionParameterSequenceType("zero", Type.ITEM, Cardinality.ZERO_OR_MORE, "initial value to start with"),
 	            new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the function to call")
 	        },
-	        new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, 
+	        new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE,
 	        		"result of the fold-left operation")
 		);
 
@@ -79,7 +79,7 @@ public class FunHigherOrderFun extends BasicFunction {
                 new FunctionParameterSequenceType("zero", Type.ITEM, Cardinality.ZERO_OR_MORE, "initial value to start with"),
 	            new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the function to call"),
 	        },
-	        new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, 
+	        new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE,
 	        		"result of the fold-right operation")
 		);
 

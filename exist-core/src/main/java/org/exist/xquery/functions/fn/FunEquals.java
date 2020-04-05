@@ -56,7 +56,7 @@ public class FunEquals extends CollatingFunction {
                 new FunctionParameterSequenceType("substring", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The substring")
             },
-            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE,
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                 "true() if $source-string equals $substring, false() otherwise")
         ),
         new FunctionSignature(
@@ -75,7 +75,7 @@ public class FunEquals extends CollatingFunction {
                 new FunctionParameterSequenceType("collation-uri", Type.STRING,
                     Cardinality.EXACTLY_ONE, "The collation URI")
             },
-            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE, 
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                 "true() if $source-string equals $substring, false() otherwise"))
     };
 

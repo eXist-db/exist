@@ -98,7 +98,7 @@ public class InspectModule extends BasicFunction {
                     final SequenceType type = var.getSequenceType();
                     if (type != null) {
                         attribs.addAttribute("", "type", "type", "CDATA", Type.getTypeName(type.getPrimaryType()));
-                        attribs.addAttribute("", "cardinality", "cardinality", "CDATA", Cardinality.getDescription(type.getCardinality()));
+                        attribs.addAttribute("", "cardinality", "cardinality", "CDATA", type.getCardinality().getHumanDescription());
                     }
                     builder.startElement(VARIABLE_QNAME, attribs);
                     builder.endElement();

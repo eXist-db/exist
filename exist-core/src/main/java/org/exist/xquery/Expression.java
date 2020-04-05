@@ -180,7 +180,7 @@ public interface Expression {
      *
      * @return the cardinality.
      */
-    public int getCardinality();
+    public Cardinality getCardinality();
 
     /**
      * Returns a set of bit-flags, indicating some of the parameters

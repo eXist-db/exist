@@ -62,12 +62,12 @@ public class InstanceOfExpression extends AbstractExpression {
         Sequence result = BooleanValue.TRUE;
 		final Sequence seq = expression.eval(contextSequence, contextItem);
         
-		final int requiredCardinality = type.getCardinality();
-		if (!seq.isEmpty() && requiredCardinality == Cardinality.EMPTY)
+		final Cardinality requiredCardinality = type.getCardinality();
+		if (!seq.isEmpty() && requiredCardinality == Cardinality.EMPTY_SEQUENCE)
             {result = BooleanValue.FALSE;}
-        else if (seq.isEmpty() && (requiredCardinality & Cardinality.ZERO) == 0)
+        else if (seq.isEmpty() && requiredCardinality.atLeastOne())
             {result = BooleanValue.FALSE;}
-		else if (seq.hasMany() && (requiredCardinality & Cardinality.MANY) == 0)
+		else if (seq.hasMany() && requiredCardinality.atMostOne())
             {result = BooleanValue.FALSE;}
         else {
     		for(final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
@@ -106,10 +106,8 @@ public class InstanceOfExpression extends AbstractExpression {
 		return Type.BOOLEAN;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#getCardinality()
-	 */
-	public int getCardinality() {
+	@Override
+	public Cardinality getCardinality() {
 		return Cardinality.EXACTLY_ONE;
 	}
 	

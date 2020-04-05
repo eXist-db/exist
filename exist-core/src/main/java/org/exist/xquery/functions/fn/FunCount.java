@@ -47,7 +47,7 @@ public class FunCount extends Function {
                             new FunctionParameterSequenceType("items", Type.ITEM,
                                     Cardinality.ZERO_OR_MORE, "The items")
                     },
-                    new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ONE,
+                    new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE,
                             "The number of items in the argument sequence")
             );
 

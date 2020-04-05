@@ -49,7 +49,7 @@ public class SetAttribute extends StrictRequestFunction {
 				new FunctionParameterSequenceType( "name", Type.STRING, Cardinality.EXACTLY_ONE, "The attribute name" ),
 				new FunctionParameterSequenceType( "value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The attribute value" )
 				},
-			new SequenceType( Type.ITEM, Cardinality.EMPTY )
+			new SequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE )
 		);
 	
 	public SetAttribute(final XQueryContext context)

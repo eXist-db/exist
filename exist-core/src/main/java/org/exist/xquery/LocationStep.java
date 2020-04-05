@@ -184,7 +184,7 @@ public class LocationStep extends Step {
         // If the predicate is known to return a node set, no special treatment
         // is required.
         if (abbreviatedStep
-                && (pred.getExecutionMode() != Predicate.NODE || !contextSequence
+                && (pred.getExecutionMode() != Predicate.ExecutionMode.NODE || !contextSequence
                 .isPersistentSet())) {
             result = new ValueSequence();
             ((ValueSequence) result).keepUnOrdered(unordered);

@@ -52,7 +52,7 @@ public class IndexType extends BasicFunction {
             new QName("index-type", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                 "Returns the range index type for a set of nodes or an empty sequence if no index is defined. ", 
                 new SequenceType[] {
-                    new FunctionParameterSequenceType("set-of-nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "The set of nodes") 
+                    new FunctionParameterSequenceType("set-of-nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "The set of nodes")
                     },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the range index type"));
 

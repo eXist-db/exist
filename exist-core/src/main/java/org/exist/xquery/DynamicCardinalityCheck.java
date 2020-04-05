@@ -36,11 +36,11 @@ import org.exist.xquery.value.Sequence;
 public class DynamicCardinalityCheck extends AbstractExpression {
 
     final private Expression expression;
-    final private int requiredCardinality;
+    final private Cardinality requiredCardinality;
     private Error error;
 
-    public DynamicCardinalityCheck(XQueryContext context, int requiredCardinality,
-            Expression expr, Error error) {
+    public DynamicCardinalityCheck(final XQueryContext context, final Cardinality requiredCardinality,
+            final Expression expr, final Error error) {
         super(context);
         this.requiredCardinality = requiredCardinality;
         this.expression = expr;
@@ -72,16 +72,16 @@ public class DynamicCardinalityCheck extends AbstractExpression {
                 "CONTEXT ITEM", contextItem.toSequence());}
         }
         final Sequence seq = expression.eval(contextSequence, contextItem);
-        int actualCardinality;
+        Cardinality actualCardinality;
         if (seq.isEmpty())
-            {actualCardinality = Cardinality.EMPTY;}
+            {actualCardinality = Cardinality.EMPTY_SEQUENCE;}
         else if (seq.hasMany())
-            {actualCardinality = Cardinality.MANY;}
+            {actualCardinality = Cardinality._MANY;}
         else
-            {actualCardinality = Cardinality.ONE;}
-        if (!Cardinality.checkCardinality(requiredCardinality, actualCardinality)) {
+            {actualCardinality = Cardinality.EXACTLY_ONE;}
+        if (!requiredCardinality.isSuperCardinalityOrEqualOf(actualCardinality)) {
             error.addArgs(ExpressionDumper.dump(expression),
-                Cardinality.getDescription(requiredCardinality),
+                requiredCardinality.getHumanDescription(),
                     seq.getItemCount());
             throw new XPathException(this, error.toString());
         }
@@ -97,7 +97,7 @@ public class DynamicCardinalityCheck extends AbstractExpression {
         if(dumper.verbosity() > 1) {
             dumper.display("dynamic-cardinality-check"); 
             dumper.display("("); 
-            dumper.display("\"" + Cardinality.getDescription(requiredCardinality) + "\"");
+            dumper.display("\"" + requiredCardinality.getHumanDescription() + "\"");
             dumper.display(", ");
         }
         expression.dump(dumper);

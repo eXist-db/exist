@@ -215,10 +215,8 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 		return Dependency.CONTEXT_SET;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#getCardinality()
-	 */
-	public int getCardinality() {
+	@Override
+	public Cardinality getCardinality() {
 		return expression.isPresent() ? expression.get().getCardinality() : Cardinality.ONE_OR_MORE;
 	}
 

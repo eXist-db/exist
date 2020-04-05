@@ -72,11 +72,11 @@ public class FunDeepEqual extends CollatingFunction {
             "If both $items-1 and $items-2 are the empty sequence, returns true(). ",
             new SequenceType[] {
                 new FunctionParameterSequenceType("items-1", Type.ITEM,
-                    Cardinality.ZERO_OR_MORE, "The first item sequence"), 
+                    Cardinality.ZERO_OR_MORE, "The first item sequence"),
                 new FunctionParameterSequenceType("items-2", Type.ITEM,
                     Cardinality.ZERO_OR_MORE, "The second item sequence")
             },
-            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE,
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                 "true() if the sequences are deep-equal, false() otherwise")
             ),
         new FunctionSignature(
@@ -88,13 +88,13 @@ public class FunDeepEqual extends CollatingFunction {
             THIRD_REL_COLLATION_ARG_EXAMPLE,
             new SequenceType[] {
                 new FunctionParameterSequenceType("items-1", Type.ITEM,
-                    Cardinality.ZERO_OR_MORE, "The first item sequence"), 
+                    Cardinality.ZERO_OR_MORE, "The first item sequence"),
                 new FunctionParameterSequenceType("items-2", Type.ITEM,
                     Cardinality.ZERO_OR_MORE, "The second item sequence"),
                 new FunctionParameterSequenceType("collation-uri", Type.STRING,
                     Cardinality.EXACTLY_ONE, "The collation URI")
             },
-            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE,
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                 "true() if the sequences are deep-equal, false() otherwise")
         )
     };

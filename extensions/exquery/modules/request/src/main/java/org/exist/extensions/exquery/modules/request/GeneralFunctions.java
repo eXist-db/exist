@@ -49,7 +49,7 @@ public class GeneralFunctions extends AbstractRequestModuleFunction {
         qnMethod,
         "Gets the HTTP Method of the Request e.g. GET.",
         null,
-        new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "The HTTP Method.")
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The HTTP Method.")
     );
     
     public GeneralFunctions(final XQueryContext context, final FunctionSignature signature) {

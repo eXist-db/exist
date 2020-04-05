@@ -57,7 +57,7 @@ public interface Variable {
 	
 	public int getDependencies(XQueryContext context);
 	
-	public int getCardinality();
+	public Cardinality getCardinality();
 	
 	public void setStackPosition(int position);
 	

@@ -48,7 +48,7 @@ public class GetResource extends BasicFunction {
 				new FunctionParameterSequenceType("pkgName", Type.STRING, Cardinality.EXACTLY_ONE, "package name"),
 				new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "resource path")
 			},
-			new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, 
+			new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE,
 					"<status result=\"ok\"/> if deployment was ok. Throws an error otherwise."));
 	
 	public GetResource(XQueryContext context) {

@@ -70,7 +70,7 @@ public class RenameFunction extends BasicFunction
 						new FunctionParameterSequenceType( "old-dn", Type.STRING, Cardinality.EXACTLY_ONE, "The Distinguished Name to rename" ),
 						new FunctionParameterSequenceType( "new-dn", Type.STRING, Cardinality.EXACTLY_ONE, "The new Distinguished Name" )
 					},
-					new SequenceType( Type.ITEM, Cardinality.EMPTY ) )
+					new SequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE ) )
 			};
 
 	public RenameFunction( XQueryContext context, FunctionSignature signature ) 

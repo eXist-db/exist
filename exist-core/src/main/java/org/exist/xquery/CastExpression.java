@@ -38,7 +38,7 @@ import java.util.List;
 public class CastExpression extends AbstractExpression {
     
     private Expression expression;
-	private int cardinality = Cardinality.EXACTLY_ONE;
+	private Cardinality cardinality;
 	private final int requiredType;
 
     /**
@@ -50,7 +50,7 @@ public class CastExpression extends AbstractExpression {
      * @param requiredType the {@link Type} expected
      * @param cardinality the {@link Cardinality} expected
 	 */
-	public CastExpression(XQueryContext context, Expression expr, int requiredType, int cardinality) {
+	public CastExpression(final XQueryContext context, final Expression expr, final int requiredType, final Cardinality cardinality) {
 		super(context);
 		this.requiredType = requiredType;
 		this.cardinality = cardinality;
@@ -96,7 +96,7 @@ public class CastExpression extends AbstractExpression {
         Sequence result;
 		final Sequence seq = Atomize.atomize(expression.eval(contextSequence, contextItem));
 		if (seq.isEmpty()) {
-			if ((cardinality & Cardinality.ZERO) == 0)
+			if (cardinality.atLeastOne())
 				{throw new XPathException(this, "Type error: empty sequence is not allowed here");}
 			else
                 {result = Sequence.EMPTY_SEQUENCE;}
@@ -163,10 +163,8 @@ public class CastExpression extends AbstractExpression {
         return expression.getDependencies() | Dependency.CONTEXT_ITEM;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#getCardinality()
-	 */
-	public int getCardinality() {
+	@Override
+	public Cardinality getCardinality() {
 		return Cardinality.ZERO_OR_ONE;
 	}
 	

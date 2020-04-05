@@ -38,7 +38,7 @@ import org.w3c.dom.Node;
 public class SequenceType {
 
     private int primaryType = Type.ITEM;
-    private int cardinality = Cardinality.EXACTLY_ONE;
+    private Cardinality cardinality = Cardinality.EXACTLY_ONE;
     private QName nodeName = null;
 
     public SequenceType() {
@@ -51,9 +51,24 @@ public class SequenceType {
      * @param primaryType one of the constants defined in {@link Type}
      * @param cardinality one of the constants defined in {@link Cardinality}
      */
-    public SequenceType(int primaryType, int cardinality) {
+    public SequenceType(final int primaryType, final Cardinality cardinality) {
         this.primaryType = primaryType;
         this.cardinality = cardinality;
+    }
+
+    /**
+     * Construct a new SequenceType using the specified
+     * primary type and cardinality.
+     *
+     * @param primaryType one of the constants defined in {@link Type}
+     * @param cardinality the cardinality integer value
+     *                    
+     * @deprecated Use {@link #SequenceType(int, Cardinality)}
+     */
+    @Deprecated
+    public SequenceType(final int primaryType, final int cardinality) {
+        this.primaryType = primaryType;
+        this.cardinality = Cardinality.fromInt(cardinality);
     }
 
     /**
@@ -76,11 +91,11 @@ public class SequenceType {
      *
      * @return expected cardinality, one of {@link Cardinality}
      */
-    public int getCardinality() {
+    public Cardinality getCardinality() {
         return cardinality;
     }
 
-    public void setCardinality(int cardinality) {
+    public void setCardinality(Cardinality cardinality) {
         this.cardinality = cardinality;
     }
 
@@ -205,20 +220,20 @@ public class SequenceType {
      * @throws XPathException if cardinality does not match
      */
     public void checkCardinality(Sequence seq) throws XPathException {
-        if (!seq.isEmpty() && cardinality == Cardinality.EMPTY) {
+        if (!seq.isEmpty() && cardinality == Cardinality.EMPTY_SEQUENCE) {
             throw new XPathException("Empty sequence expected; got " + seq.getItemCount());
         }
-        if (seq.isEmpty() && (cardinality & Cardinality.ZERO) == 0) {
+        if (seq.isEmpty() && cardinality.atLeastOne()) {
             throw new XPathException("Empty sequence is not allowed here");
-        } else if (seq.hasMany() && (cardinality & Cardinality.MANY) == 0) {
+        } else if (seq.hasMany() && cardinality.atMostOne()) {
             throw new XPathException("Sequence with more than one item is not allowed here");
         }
     }
 
     @Override
     public String toString() {
-        if (cardinality == Cardinality.EMPTY) {
-            return Cardinality.toString(cardinality);
+        if (cardinality == Cardinality.EMPTY_SEQUENCE) {
+            return cardinality.toXQueryCardinalityString();
         }
 
         final String str;
@@ -228,7 +243,7 @@ public class SequenceType {
             str = Type.getTypeName(primaryType);
         }
 
-        return str + Cardinality.toString(cardinality);
+        return str + cardinality.toXQueryCardinalityString();
     }
 
 }

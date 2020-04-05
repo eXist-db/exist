@@ -981,7 +981,7 @@ throws XPathException
 			"empty"
 			{
 				type.setPrimaryType(Type.EMPTY);
-				type.setCardinality(Cardinality.EMPTY);
+				type.setCardinality(Cardinality.EMPTY_SEQUENCE);
 			}
 		)
 		|
@@ -989,7 +989,7 @@ throws XPathException
 			"empty-sequence"
 			{
 				type.setPrimaryType(Type.EMPTY);
-				type.setCardinality(Cardinality.EMPTY);
+				type.setCardinality(Cardinality.EMPTY_SEQUENCE);
 			}
 		)
 		|
@@ -3360,7 +3360,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		castAST:"cast"
 		{
 			PathExpr expr= new PathExpr(context);
-			int cardinality= Cardinality.EXACTLY_ONE;
+			Cardinality cardinality= Cardinality.EXACTLY_ONE;
 		}
 		step=expr [expr]
 		t:ATOMIC_TYPE
@@ -3386,7 +3386,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		castableAST:"castable"
 		{
 			PathExpr expr= new PathExpr(context);
-			int cardinality= Cardinality.EXACTLY_ONE;
+			Cardinality cardinality= Cardinality.EXACTLY_ONE;
 		}
 		step=expr [expr]
 		t2:ATOMIC_TYPE

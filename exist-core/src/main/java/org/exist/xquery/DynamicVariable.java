@@ -95,7 +95,7 @@ public class DynamicVariable implements Variable {
     }
 
     @Override
-    public int getCardinality() {
+    public Cardinality getCardinality() {
         return getValue().getCardinality();
     }
 

@@ -103,7 +103,7 @@ public abstract class Function extends PathExpr {
     }
 
     @Override
-    public int getCardinality() {
+    public Cardinality getCardinality() {
         if (mySignature.getReturnType() == null) {
             throw new IllegalArgumentException("Return type for function " +
                     mySignature.getName() + " is not defined");
@@ -255,11 +255,10 @@ public abstract class Function extends PathExpr {
                 expr instanceof VariableReference ||
                         type.getCardinality() == Cardinality.ZERO_OR_MORE;
         if (!cardinalityMatches) {
-            cardinalityMatches =
-                    (expr.getCardinality() | type.getCardinality()) == type.getCardinality();
+            cardinalityMatches = expr.getCardinality().isSubCardinalityOrEqualOf(type.getCardinality());
             if (!cardinalityMatches) {
-                if (expr.getCardinality() == Cardinality.ZERO
-                        && (type.getCardinality() & Cardinality.ZERO) == 0) {
+                if (expr.getCardinality() == Cardinality.EMPTY_SEQUENCE
+                        && type.getCardinality().atLeastOne()) {
                     throw new XPathException(this,
                             ErrorCodes.XPTY0004,
                             Messages.getMessage(Error.FUNC_EMPTY_SEQ_DISALLOWED,
@@ -328,7 +327,7 @@ public abstract class Function extends PathExpr {
         if (returnType != Type.ITEM && !Type.subTypeOf(returnType, type.getPrimaryType())) {
             if (!(Type.subTypeOf(type.getPrimaryType(), returnType) ||
                     //Because () is seen as a node
-                    (Cardinality.checkCardinality(type.getCardinality(), Cardinality.ZERO) && returnType == Type.NODE))) {
+                    (type.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EMPTY_SEQUENCE) && returnType == Type.NODE))) {
                 LOG.debug(ExpressionDumper.dump(expr));
                 throw new XPathException(this, Messages.getMessage(Error.FUNC_PARAM_TYPE_STATIC,
                         String.valueOf(argPosition), mySignature, type.toString(), Type.getTypeName(returnType)));

@@ -54,15 +54,15 @@ public abstract class AbstractSequence implements Sequence {
     protected boolean hasOne = false;
 
     @Override
-    public int getCardinality() {
+    public Cardinality getCardinality() {
         if (isEmpty()) {
-            return Cardinality.EMPTY;
+            return Cardinality.EMPTY_SEQUENCE;
         }
         if (hasOne()) {
             return Cardinality.EXACTLY_ONE;
         }
         if (hasMany()) {
-            return Cardinality.MANY;
+            return Cardinality._MANY;
         }
         throw new IllegalArgumentException("Illegal argument");
     }

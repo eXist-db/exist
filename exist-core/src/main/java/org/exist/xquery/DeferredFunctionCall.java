@@ -95,14 +95,15 @@ public abstract class DeferredFunctionCall implements Sequence {
         return sequence.effectiveBooleanValue();
     }
 
-    public int getCardinality() {
+    @Override
+    public Cardinality getCardinality() {
         try {
             realize();
             return sequence.getCardinality();
         } catch (XPathException e) {
             caughtException = e;
             LOG.error("Exception in deferred function: " + e.getMessage());
-            return 0;
+            return Cardinality.EMPTY_SEQUENCE;
         }
     }
 

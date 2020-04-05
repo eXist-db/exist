@@ -53,28 +53,28 @@ public class ConnectionFunctions extends AbstractRequestModuleFunction {
         qnAddress,
         "Gets the IP address of the server that received the HTTP Request",
         null,
-        new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "The IP address of the server.")
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The IP address of the server.")
     );
     
     public final static FunctionSignature FNS_REMOTE_HOSTNAME = new FunctionSignature(
         qnRemoteHostname,
         "Gets the fully qualified hostname of the client or the last proxy that sent the HTTP Request. If the name of the remote host cannot be established, this method behaves as request:remote-address(), and returns the IP address.",
         null,
-        new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE, "The Hostname of the client that issues the HTTP Request.")
+        new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The Hostname of the client that issues the HTTP Request.")
     );
     
     public final static FunctionSignature FNS_REMOTE_ADDRESS = new FunctionSignature(
         qnRemoteAddress,
         "Gets the IP address of the client or the last proxy that sent the HTTP Request.",
         null,
-        new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ONE, "The IP address of the client.")
+        new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "The IP address of the client.")
     );
     
     public final static FunctionSignature FNS_REMOTE_PORT = new FunctionSignature(
         qnRemotePort,
         "Gets the TCP port number of the client socket or the last proxy that sent the HTTP Request..",
         null,
-        new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ONE, "The TCP port number of the client.")
+        new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "The TCP port number of the client.")
     );
     
     public ConnectionFunctions(final XQueryContext context, final FunctionSignature signature) {

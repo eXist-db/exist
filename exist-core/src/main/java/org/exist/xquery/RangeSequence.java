@@ -152,15 +152,15 @@ public class RangeSequence extends AbstractSequence {
     }
 
     @Override
-    public int getCardinality() {
+    public Cardinality getCardinality() {
         final long itemCount = getItemCountLong();
         if (itemCount <= 0) {
-            return Cardinality.EMPTY;
+            return Cardinality.EMPTY_SEQUENCE;
         }
         if (itemCount == 1) {
             return Cardinality.EXACTLY_ONE;
         }
-        return Cardinality.MANY;
+        return Cardinality._MANY;
     }
 
     @Override

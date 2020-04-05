@@ -78,8 +78,7 @@ public class GroupByClause extends AbstractFLWORClause {
                     .atomize();
             if (!data.initialized) {
                 final LocalVariable groupingVar = new LocalVariable(spec.getKeyVarName());
-                groupingVar.setSequenceType(new SequenceType(Type.ATOMIC, groupingValue.isEmpty() ? Cardinality
-                        .EMPTY : Cardinality.EXACTLY_ONE));
+                groupingVar.setSequenceType(new SequenceType(Type.ATOMIC, groupingValue.isEmpty() ? Cardinality.EMPTY_SEQUENCE : Cardinality.EXACTLY_ONE));
                 groupingVar.setStaticType(groupingValue.getType());
                 data.groupingVars.add(groupingVar);
             }

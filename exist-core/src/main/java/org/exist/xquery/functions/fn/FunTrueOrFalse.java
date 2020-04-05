@@ -64,10 +64,8 @@ public class FunTrueOrFalse extends BasicFunction {
         return Dependency.NO_DEPENDENCY;
     }
     
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Function#getCardinality()
-     */
-    public int getCardinality() {
+    @Override
+    public Cardinality getCardinality() {
         return Cardinality.EXACTLY_ONE;
     }
     

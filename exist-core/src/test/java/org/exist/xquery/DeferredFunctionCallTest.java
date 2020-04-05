@@ -43,7 +43,7 @@ public class DeferredFunctionCallTest {
         Item mockContextItem = EasyMock.createMock(Item.class);
         Sequence[] mockSeq = { Sequence.EMPTY_SEQUENCE };
         int nextExpressionId = 1234;
-        SequenceType[] mockArgumentTypes = { new SequenceType(Type.NODE, Cardinality.ZERO) };
+        SequenceType[] mockArgumentTypes = { new SequenceType(Type.NODE, Cardinality.EMPTY_SEQUENCE) };
         
         //mock for functionDef
         FunctionSignature mockFunctionSignature = EasyMock.createMock(FunctionSignature.class);

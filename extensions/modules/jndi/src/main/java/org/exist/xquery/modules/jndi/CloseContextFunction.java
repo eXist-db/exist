@@ -61,7 +61,7 @@ public class CloseContextFunction extends BasicFunction
 					new SequenceType[] {
 						new FunctionParameterSequenceType( "directory-context", Type.INTEGER, Cardinality.EXACTLY_ONE, "The directory context handle from a jndi:get-dir-context() call" )
 					},
-					new SequenceType( Type.ITEM, Cardinality.EMPTY ) )
+					new SequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE ) )
 			};
 
 	public CloseContextFunction( XQueryContext context, FunctionSignature signature ) 

@@ -195,7 +195,8 @@ public abstract class Step extends AbstractExpression {
             {return Type.NODE;}
     }
 
-    public int getCardinality() {
+    @Override
+    public Cardinality getCardinality() {
         return Cardinality.ZERO_OR_MORE;
    }
 
