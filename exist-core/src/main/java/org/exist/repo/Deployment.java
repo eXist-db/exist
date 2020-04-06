@@ -478,9 +478,10 @@ public class Deployment {
                 return Optional.ofNullable(targetCollection.getCollectionPath());
             }
         } catch (final XPathException e) {
+            throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
+	} finally {
             // reset possibly altered trigger state
             broker.setTriggersEnabled(triggerState);
-            throw new PackageException("Error found while processing repo.xml: " + e.getMessage(), e);
         }
     }
 
