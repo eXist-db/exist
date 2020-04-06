@@ -36,7 +36,7 @@
     <inceptionYear>2001</inceptionYear>
 
     <organization>
-        <name>The eXist-db Project</name>
+        <name>The eXist-db Open Source project</name>
         <url>http://www.exist-db.org</url>
     </organization>
 
@@ -50,8 +50,8 @@
 
     <developers>
         <developer>
-            <name>The eXist-db Project</name>
-            <organization>The eXist-db Project</organization>
+            <name>The eXist-db Authors</name>
+            <organization>The eXist-db Open Source project</organization>
             <url>https://www.exist-db.org</url>
             <email>info@exist-db.org</email>
         </developer>
