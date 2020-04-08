@@ -624,21 +624,21 @@ public class FnFormatNumbers extends BasicFunction {
         // Rule 11 - Fractional part groupings
         @Nullable final int[] fractionalPartGroupingPositions = subPicture.getFractionalPartGroupingPositions();
         if (fractionalPartGroupingPositions != null) {
-            final int[] relGroupingOffsets = new int[fractionalPartGroupingPositions.length];
+            int[] relGroupingOffsets = new int[0];
             for (int i = 0; i < fractionalPartGroupingPositions.length; i++) {
                 final int fractionalPartGroupingPosition = fractionalPartGroupingPositions[i];
                 final int groupingIdx = idxDecimalSeparator + 1 + fractionalPartGroupingPosition;
-                relGroupingOffsets[i] = groupingIdx;
-            }
-            formatted.insert(relGroupingOffsets, decimalFormat.groupingSeparator);
-
-            /*
-            if (groupingIdx <= formatted.length()) {
-                    formatted = formatted.substring(0, groupingIdx) + decimalFormat.groupingSeparator + formatted.substring(groupingIdx);
+                if (groupingIdx <= formatted.length()) {
+                    relGroupingOffsets = Arrays.copyOf(relGroupingOffsets, relGroupingOffsets.length + 1);
+                    relGroupingOffsets[i] = groupingIdx;
                 } else {
                     break;
                 }
-             */
+            }
+
+            if (relGroupingOffsets.length > 0) {
+                formatted.insert(relGroupingOffsets, decimalFormat.groupingSeparator);
+            }
 
             fractLen =  idxDecimalSeparator > -1 ?  formatted.length() - (idxDecimalSeparator + 1) : 0;
         }
