@@ -462,11 +462,6 @@ public class Deployment {
 
                 storeRepoXML(broker, transaction, repoXML, targetCollection, requestedPerms);
 
-                // restore trigger execution to previous state
-                if(skipTriggers.isPresent()) {
-                    broker.setTriggersEnabled(triggerState);
-                }
-
                 // TODO: it should be safe to clean up the file system after a package
                 // has been deployed. Might be enabled after 2.0
                 //cleanup(pkgName, repo);
