@@ -20,16 +20,19 @@
  */
 package org.exist.xquery.value;
 
+import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
 import javax.annotation.Nullable;
+import java.math.BigInteger;
 import java.util.Iterator;
 
 /**
@@ -335,4 +338,16 @@ public interface Sequence {
      * @param contextSequence the context sequence
      */
     void destroy(XQueryContext context, Sequence contextSequence);
+
+    static Sequence of(final XmldbURI... uris) throws XPathException {
+        return ValueSequence.of(FunctionE.<XmldbURI, Item, XPathException>lift(thing -> new StringValue(thing.toString())), uris);
+    }
+
+    static Sequence of(final int... ints) throws XPathException {
+        return ValueSequence.of(thing -> new IntegerValue(thing.toString(), Type.INT), ints);
+    }
+
+    static Sequence of(final BigInteger... bigIntegers) throws XPathException {
+        return ValueSequence.of(thing -> new IntegerValue(thing.toString(), Type.INTEGER), bigIntegers);
+    }
 }
