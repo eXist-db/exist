@@ -221,7 +221,6 @@ class DocumentView extends JFrame {
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         item.addActionListener(e -> {
-            System.out.println("SAVE");
             save();
         });
         fileMenu.add(item);
