@@ -595,17 +595,18 @@ public class FnFormatNumbers extends BasicFunction {
                 // regular grouping
                 int m = intLength / g;
                 if (intLength % g == 0) {
-                    m--; // prevents a group separator being inseted at index 0
+                    m--; // prevents a group separator being inserted at index 0
                 }
-                final int[] relGroupingOffsets = new int[m];
-                for (; m > 0; m--) {
-                    final int groupingIdx = idxDecimalSeparator - (m * g);
-                    relGroupingOffsets[m - 1] = groupingIdx;
+                if (m > -1) {
+                    final int[] relGroupingOffsets = new int[m];
+                    for (; m > 0; m--) {
+                        final int groupingIdx = idxDecimalSeparator - (m * g);
+                        relGroupingOffsets[m - 1] = groupingIdx;
+                    }
+                    formatted.insert(relGroupingOffsets, decimalFormat.groupingSeparator);
+
+                    idxDecimalSeparator = formatted.indexOf(decimalFormat.decimalSeparator);
                 }
-                formatted.insert(relGroupingOffsets, decimalFormat.groupingSeparator);
-
-                idxDecimalSeparator = formatted.indexOf(decimalFormat.decimalSeparator);
-
             } else {
                 // non-regular grouping
                 final int[] relGroupingOffsets = new int[integerPartGroupingPositions.length];
