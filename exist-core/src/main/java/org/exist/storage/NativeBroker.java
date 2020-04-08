@@ -140,6 +140,8 @@ public class NativeBroker extends DBBroker {
     /** check available memory after storing DEFAULT_NODES_BEFORE_MEMORY_CHECK nodes */
     public static final int DEFAULT_NODES_BEFORE_MEMORY_CHECK = 500;
 
+    public static final int FIRST_COLLECTION_ID = 1;
+
     public static final int OFFSET_COLLECTION_ID = 0;
 
     public final static String INIT_COLLECTION_CONFIG = "collection.xconf.init";
@@ -1842,7 +1844,7 @@ public class NativeBroker extends DBBroker {
                 nextCollectionId = ByteConversion.byteToInt(data.getData(), OFFSET_COLLECTION_ID);
                 ++nextCollectionId;
             } else {
-                nextCollectionId = 1;
+                nextCollectionId = FIRST_COLLECTION_ID;
             }
             final byte[] d = new byte[Collection.LENGTH_COLLECTION_ID];
             ByteConversion.intToByte(nextCollectionId, d, OFFSET_COLLECTION_ID);
@@ -2057,28 +2059,22 @@ public class NativeBroker extends DBBroker {
     public DocumentImpl getResourceById(final int collectionId, final byte resourceType, final int documentId) throws PermissionDeniedException {
         XmldbURI uri;
         try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeReadLock(collectionsDb.getLockName())) {
-            //final VariableByteOutputStream os = new VariableByteOutputStream(8);
-            //doc.write(os);
-            //Value key = new CollectionStore.DocumentKey(doc.getCollection().getId(), doc.getResourceType(), doc.getDocId());
-            //collectionsDb.put(transaction, key, os.data(), true);
-
-            //Value collectionKey = new CollectionStore.CollectionKey
-            //collectionsDb.get(Value.EMPTY_VALUE)
 
             //get the collection uri
             String collectionUri = null;
-            if(collectionId == 0) {
+            if (collectionId == FIRST_COLLECTION_ID) {
                 collectionUri = "/db";
             } else {
                 for(final Value collectionDbKey : collectionsDb.getKeys()) {
-                    if(collectionDbKey.data()[0] == CollectionStore.KEY_TYPE_COLLECTION) {
+                    final byte[] data = collectionDbKey.data();
+                    if (data[0] == CollectionStore.KEY_TYPE_COLLECTION) {
                         //Value collectionDbValue = collectionsDb.get(collectionDbKey);
 
                         final VariableByteInput vbi = collectionsDb.getAsStream(collectionDbKey);
                         final int id = vbi.readInt();
                         //check if the collection id matches (first 4 bytes)
-                        if(collectionId == id) {
-                            collectionUri = new String(Arrays.copyOfRange(collectionDbKey.data(), 1, collectionDbKey.data().length));
+                        if (collectionId == id) {
+                            collectionUri = new String(Arrays.copyOfRange(data, 1, data.length));
                             break;
                         }
                     }
