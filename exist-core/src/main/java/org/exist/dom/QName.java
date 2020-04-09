@@ -246,7 +246,9 @@ public class QName implements Comparable<QName> {
 
     @Override
     public int hashCode() {
-        return namespaceURI.hashCode() ^ localPart.hashCode();
+        int result = namespaceURI.hashCode();
+        result = 31 * result + localPart.hashCode();
+        return result;
     }
 
     public javax.xml.namespace.QName toJavaQName() {

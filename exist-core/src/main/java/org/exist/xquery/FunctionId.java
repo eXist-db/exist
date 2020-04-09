@@ -53,6 +53,31 @@ public class FunctionId implements Comparable<FunctionId> {
     }
 
     @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        final FunctionId that = (FunctionId) o;
+
+        if (argCount != that.argCount) {
+            return false;
+        }
+
+        return qname.equals(that.qname);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = qname.hashCode();
+        result = 31 * result + argCount;
+        return result;
+    }
+
+    @Override
     public String toString() {
         return qname.getStringValue() + "#" + argCount;
     }
