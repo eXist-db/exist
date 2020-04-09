@@ -115,6 +115,7 @@ public class Type {
         defineSubType(ANY_TYPE, ANY_SIMPLE_TYPE);
         defineSubType(ANY_TYPE, UNTYPED);
         defineSubType(ANY_SIMPLE_TYPE, ATOMIC);
+        defineSubType(ANY_SIMPLE_TYPE, NUMBER);
         defineSubType(NODE, ELEMENT);
         defineSubType(NODE, ATTRIBUTE);
         defineSubType(NODE, TEXT);
@@ -131,7 +132,6 @@ public class Type {
         defineSubType(ATOMIC, BOOLEAN);
         defineSubType(ATOMIC, QNAME);
         defineSubType(ATOMIC, ANY_URI);
-        defineSubType(ATOMIC, NUMBER);
         defineSubType(ATOMIC, UNTYPED_ATOMIC);
         defineSubType(ATOMIC, JAVA_OBJECT);
         defineSubType(ATOMIC, DATE_TIME);
