@@ -27,6 +27,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 import java.io.*;
@@ -193,7 +194,7 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
                     result = new StringValue(getStringValue());
                     break;
                 default:
-                    throw new XPathException("cannot convert " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
+                    throw new XPathException(ErrorCodes.FORG0001, "cannot convert " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
             }
         }
         return result;

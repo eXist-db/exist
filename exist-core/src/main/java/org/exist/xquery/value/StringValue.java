@@ -459,7 +459,7 @@ public class StringValue extends AtomicValue {
                 } else if ("1".equals(trimmed) || "true".equals(trimmed)) {
                     return BooleanValue.TRUE;
                 } else {
-                    throw new XPathException(
+                    throw new XPathException(ErrorCodes.FORG0001,
                             "cannot convert string '" + value + "' to boolean");
                 }
             case Type.FLOAT:

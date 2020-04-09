@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.value;
 
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 import javax.xml.datatype.DatatypeConstants;
@@ -134,7 +135,7 @@ public class DateTimeValue extends AbstractDateTimeValue {
             case Type.UNTYPED_ATOMIC:
                 return new UntypedAtomicValue(getStringValue());
             default:
-                throw new XPathException(
+                throw new XPathException(ErrorCodes.FORG0001,
                         "Type error: cannot cast xs:dateTime to "
                                 + Type.getTypeName(requiredType));
         }
