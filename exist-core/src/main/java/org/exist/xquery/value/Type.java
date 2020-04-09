@@ -21,9 +21,7 @@
  */
 package org.exist.xquery.value;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -105,9 +103,10 @@ public class Type {
     public final static int MAP = 102;
     public final static int ARRAY = 103;
     private final static Logger LOG = LogManager.getLogger(Type.class);
+
     private final static int[] superTypes = new int[512];
-    private final static Int2ObjectMap<String[]> typeNames = new Int2ObjectOpenHashMap<>(100);
-    private final static Object2IntMap<String> typeCodes = new Object2IntOpenHashMap<>(100);
+    private final static Int2ObjectOpenHashMap<String[]> typeNames = new Int2ObjectOpenHashMap<>(100);
+    private final static Object2IntOpenHashMap<String> typeCodes = new Object2IntOpenHashMap<>(100);
     static {
         typeCodes.defaultReturnValue(-1);
     }
@@ -272,6 +271,10 @@ public class Type {
         defineBuiltInType(ID, "xs:ID");
         defineBuiltInType(IDREF, "xs:IDREF");
         defineBuiltInType(ENTITY, "xs:ENTITY");
+
+        // reduce any unused space
+        typeNames.trim();
+        typeCodes.trim();
     }
 
     /**
