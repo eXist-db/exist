@@ -100,7 +100,7 @@ function testSort:dublicate_items() {
 
 declare
     %test:assertEquals("Donatello", "Leonardo", "Michelangelo", "Raphael")
-function testSort:items_xml() {
+function testSort:items_xml-1() {
     <turtles>
         <name>Leonardo</name>
         <name>Raphael</name>
@@ -112,7 +112,7 @@ function testSort:items_xml() {
 
 declare
     %test:assertEquals("<e>a</e>","b","c","d","<f>e</f>")
-function testSort:items_xml() {
+function testSort:items_xml-2() {
     sort(("b", "d", <e>a</e>, "c", <f>e</f>))
 };
 
@@ -124,7 +124,7 @@ function testSort:item_map() {
 
 declare
     %test:assertEquals("1","6","7","5","3","2","4")
-function testSort:item_map() {
+function testSort:item_elements() {
     let $employees := (
         <emp id='1'><name><last>Cawcutt</last></name></emp>,
         <emp id='2'><name><first>Hans</first><last>Gro&#xeb;r</last></name></emp>,

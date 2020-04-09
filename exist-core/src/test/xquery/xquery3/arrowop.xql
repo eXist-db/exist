@@ -237,14 +237,14 @@ function ao:fold-left-with-contextitem () {
 
 declare
     %test:assertEquals('dcba')
-function ao:fold-right-with-contextitem () {
+function ao:fold-right-with-contextitem-1 () {
     (<a/>,<b/>,<c/>,<d/>)
         => fold-right('', function ($a, $r) { $r || xs:string(node-name($a)) })
 };
 
 declare
     %test:assertEquals('dcba')
-function ao:fold-right-with-contextitem () {
+function ao:fold-right-with-contextitem-2 () {
     ('a','b','c','d')
         => fold-right('', function ($a, $r) { $r || $a })
 };
