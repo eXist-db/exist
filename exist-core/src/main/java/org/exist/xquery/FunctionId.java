@@ -54,6 +54,6 @@ public class FunctionId implements Comparable<FunctionId> {
 
     @Override
     public String toString() {
-        return qname.getStringValue() + "/" + argCount;
+        return qname.getStringValue() + "#" + argCount;
     }
 }
