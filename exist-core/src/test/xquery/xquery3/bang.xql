@@ -147,3 +147,9 @@ declare
 function bang:implicit-context() {
     count(//* ! local-name(.))
 };
+
+declare
+    %test:assertError("XPTY0004")
+function bang:invalid-type-left() {
+    1234 ! string-length(.)
+};
