@@ -443,11 +443,9 @@ public interface Context {
      * @param argCount the function arity
      *
      * @return the resolved function, or null
-     *
-     * @throws XPathException if an error occurs whilst resolving the function
      */
     @Nullable
-    UserDefinedFunction resolveFunction(QName name, int argCount) throws XPathException;
+    UserDefinedFunction resolveFunction(QName name, int argCount);
 
     Iterator<FunctionSignature> getSignaturesForFunction(QName name);
 
