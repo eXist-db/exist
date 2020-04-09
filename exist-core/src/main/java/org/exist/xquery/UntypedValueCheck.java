@@ -102,7 +102,7 @@ public class UntypedValueCheck extends AbstractExpression {
 	}
 
     private Item convert(Item item) throws XPathException {
-        if (atomize || item.getType() == Type.UNTYPED_ATOMIC || Type.subTypeOf(requiredType, Type.NUMBER) && Type.subTypeOf(item.getType(), Type.NUMBER)) {
+        if (atomize || item.getType() == Type.UNTYPED_ATOMIC || Type.subTypeOfUnion(requiredType, Type.NUMBER) && Type.subTypeOfUnion(item.getType(), Type.NUMBER)) {
             try {
                 if (Type.subTypeOf(item.getType(), requiredType)) {
                     return item;

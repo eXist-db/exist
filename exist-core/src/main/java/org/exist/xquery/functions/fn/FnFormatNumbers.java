@@ -97,7 +97,7 @@ public class FnFormatNumbers extends BasicFunction {
         final NumericValue number;
         if (args[0].isEmpty()) {
             number = new DoubleValue(Double.NaN);
-        } else if (context.isBackwardsCompatible() && !Type.subTypeOf(args[0].getItemType(), Type.NUMBER)) {
+        } else if (context.isBackwardsCompatible() && !Type.subTypeOfUnion(args[0].getItemType(), Type.NUMBER)) {
             number = new DoubleValue(Double.NaN);
         } else {
             number = (NumericValue) args[0].itemAt(0);

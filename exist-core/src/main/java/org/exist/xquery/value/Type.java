@@ -21,7 +21,10 @@
  */
 package org.exist.xquery.value;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,6 +38,7 @@ import java.util.HashSet;
  * Defines all built-in types and their relations.
  *
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class Type {
 
@@ -110,6 +114,7 @@ public class Type {
     static {
         typeCodes.defaultReturnValue(-1);
     }
+    private final static Int2ObjectMap<IntArraySet> unionTypes = new Int2ObjectArrayMap<>(1);
 
     static {
         defineSubType(ANY_TYPE, ANY_SIMPLE_TYPE);
@@ -277,6 +282,10 @@ public class Type {
         typeCodes.trim();
     }
 
+    static {
+        defineUnionType(NUMBER, new int[]{ INTEGER, DECIMAL, FLOAT, DOUBLE });
+    }
+
     /**
      * Define built-in type.
      *
@@ -298,6 +307,16 @@ public class Type {
      */
     private static void defineSubType(final int supertype, final int subtype) {
         superTypes[subtype] = supertype;
+    }
+
+    /**
+     * Define a union type.
+     *
+     * @param unionType the union type
+     * @param memberTypes the members of the union type
+     */
+    private static void defineUnionType(final int unionType, final int... memberTypes) {
+        unionTypes.put(unionType, new IntArraySet(memberTypes));
     }
 
     /**
@@ -457,5 +476,54 @@ public class Type {
             }
         }
         return ITEM;
+    }
+
+    /**
+     * Determines if a union type has an other type as a member.
+     *
+     * @param unionType the union type
+     * @param other the type to test for union membership
+     *
+     * @return true if the type is a member, false otherwise.
+     */
+    public static boolean hasMember(final int unionType, final int other) {
+        final IntArraySet members = unionTypes.get(unionType);
+        if (members == null) {
+            return false;
+        }
+        return members.contains(other);
+    }
+
+    /**
+     * Check if the given type is a subtype of a member of the specified union type.
+     *
+     * @param subtype the type constant of the subtype
+     * @param unionType the union type
+     *
+     * @return true if subtype is a sub type of a member of the union type
+     */
+    public static boolean subTypeOfUnion(final int subtype, final int unionType) {
+        final IntArraySet members = unionTypes.get(unionType);
+        if (members == null) {
+            return false;
+        }
+
+        // inherited behaviour from {@link #subTypeOf(int, int)}
+        // where type is considered a subtype of itself.
+        if (subtype == unionType) {
+            return true;
+        }
+
+        // quick optimisation for: subtype = member
+        if (members.contains(subtype)) {
+            return true;
+        }
+
+        for (final int member : members) {
+            if (subTypeOf(subtype, member)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

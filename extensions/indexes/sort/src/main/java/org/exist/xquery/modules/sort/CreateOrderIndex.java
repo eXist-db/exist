@@ -175,8 +175,8 @@ public class CreateOrderIndex extends BasicFunction {
             int cmp = 0;
             final AtomicValue a = this.value;
             final AtomicValue b = other.getValue();
-            final boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOf(a.getType(), Type.NUMBER) && ((NumericValue) a).isNaN()));
-            final boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOf(b.getType(), Type.NUMBER) && ((NumericValue) b).isNaN()));
+            final boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOfUnion(a.getType(), Type.NUMBER) && ((NumericValue) a).isNaN()));
+            final boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOfUnion(b.getType(), Type.NUMBER) && ((NumericValue) b).isNaN()));
             if (aIsEmpty) {
                 if (bIsEmpty)
                     // both values are empty

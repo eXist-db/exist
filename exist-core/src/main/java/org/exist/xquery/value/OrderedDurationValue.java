@@ -205,7 +205,7 @@ abstract class OrderedDurationValue extends DurationValue {
      * @throws XPathException if the value is not of a numeric type
      */
     protected BigDecimal numberToBigDecimal(ComputableValue x, String exceptionMessagePrefix) throws XPathException {
-        if (!Type.subTypeOf(x.getType(), Type.NUMBER)) {
+        if (!Type.subTypeOfUnion(x.getType(), Type.NUMBER)) {
             throw new XPathException(exceptionMessagePrefix + Type.getTypeName(x.getType()));
         }
         if (((NumericValue) x).isInfinite() || ((NumericValue) x).isNaN()) {

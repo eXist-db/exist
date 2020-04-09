@@ -180,9 +180,9 @@ public class FunMax extends CollatingFunction {
                     	{value = value.convertTo(Type.DOUBLE);}                	
 
                     //Numeric tests
-	                if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
+	                if (Type.subTypeOfUnion(value.getType(), Type.NUMBER)) {
 	                	//Don't mix comparisons
-	                	if (!Type.subTypeOf(max.getType(), Type.NUMBER))
+	                	if (!Type.subTypeOfUnion(max.getType(), Type.NUMBER))
 	                		{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(max.getType()) +
 	                				" and " + Type.getTypeName(value.getType()), max);}
 	                	if (((NumericValue) value).isNaN()) {

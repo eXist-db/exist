@@ -1004,7 +1004,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     i. If T is a numeric type or is derived from a numeric type,
                     then V is cast to xs:double.
                  */
-                if (Type.subTypeOf(otherType, Type.NUMBER)) {
+                if (Type.subTypeOfUnion(otherType, Type.NUMBER)) {
                     return value.convertTo(Type.DOUBLE);
                 }
 

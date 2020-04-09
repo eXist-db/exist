@@ -636,7 +636,7 @@ public class StringValue extends AtomicValue {
 
     @Override
     public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-        if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
+        if (Type.subTypeOfUnion(other.getType(), Type.NUMBER)) {
             //No possible comparisons
             if (((NumericValue) other).isNaN()) {
                 return Constants.INFERIOR;

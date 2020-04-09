@@ -293,7 +293,7 @@ public class DoubleValue extends NumericValue {
 
     @Override
     public ComputableValue div(final ComputableValue other) throws XPathException {
-        if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
+        if (Type.subTypeOfUnion(other.getType(), Type.NUMBER)) {
             //Positive or negative zero divided by positive or negative zero returns NaN.
             if (this.isZero() && ((NumericValue) other).isZero()) {
                 return NaN;

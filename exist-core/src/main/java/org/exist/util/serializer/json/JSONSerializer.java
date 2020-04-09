@@ -75,7 +75,7 @@ public class JSONSerializer {
         } else if (item.getType() == Type.MAP) {
             serializeMap((MapType) item, generator);
         } else if (Type.subTypeOf(item.getType(), Type.ATOMIC)) {
-            if (Type.subTypeOf(item.getType(), Type.NUMBER)) {
+            if (Type.subTypeOfUnion(item.getType(), Type.NUMBER)) {
                 generator.writeNumber(item.getStringValue());
             } else {
                 switch (item.getType()) {

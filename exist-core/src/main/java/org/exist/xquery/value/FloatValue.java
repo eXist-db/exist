@@ -290,7 +290,7 @@ public class FloatValue extends NumericValue {
      * @see org.exist.xquery.value.NumericValue#div(org.exist.xquery.value.NumericValue)
      */
     public ComputableValue div(ComputableValue other) throws XPathException {
-        if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
+        if (Type.subTypeOfUnion(other.getType(), Type.NUMBER)) {
             //Positive or negative zero divided by positive or negative zero returns NaN.
             if (this.isZero() && ((NumericValue) other).isZero()) {
                 return NaN;

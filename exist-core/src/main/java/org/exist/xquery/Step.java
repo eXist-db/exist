@@ -119,7 +119,7 @@ public abstract class Step extends AbstractExpression {
             final Expression predExpr = predicate.getFirst();
             // only apply optimization if the static return type is a single number
             // and there are no dependencies on the context item
-            if (Type.subTypeOf(predExpr.returnsType(), Type.NUMBER) &&
+            if (Type.subTypeOfUnion(predExpr.returnsType(), Type.NUMBER) &&
                     !Dependency.dependsOn(predExpr, Dependency.CONTEXT_POSITION)) {
                 return true;
             }

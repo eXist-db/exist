@@ -112,7 +112,7 @@ public class FunSum extends Function {
 
             	value = check(value, sum);
     			
-        		if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
+        		if (Type.subTypeOfUnion(value.getType(), Type.NUMBER)) {
     				if (((NumericValue)value).isInfinite())
     					{gotInfinity = true;}    					
     				if (((NumericValue)value).isNaN()) {
@@ -128,7 +128,7 @@ public class FunSum extends Function {
         }
         
 		if (!gotInfinity) {
-			if (Type.subTypeOf(result.getItemType(), Type.NUMBER) && ((NumericValue)result).isInfinite()) {
+			if (Type.subTypeOfUnion(result.getItemType(), Type.NUMBER) && ((NumericValue)result).isInfinite()) {
 				//Throw an overflow eception here since we get an infinity 
 				//whereas is hasn't been provided by the sequence
 			}

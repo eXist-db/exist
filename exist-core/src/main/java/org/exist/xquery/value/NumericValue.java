@@ -47,7 +47,8 @@ public abstract class NumericValue extends ComputableValue {
             //Never equal, or inequal...
             return false;
         }
-        if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
+
+        if (Type.subTypeOfUnion(other.getType(), Type.NUMBER)) {
             if (isNaN()) {
                 //NaN does not equal itself.
                 if (((NumericValue) other).isNaN()) {
@@ -80,7 +81,7 @@ public abstract class NumericValue extends ComputableValue {
 
     @Override
     public int compareTo(final Collator collator, final AtomicValue other) throws XPathException {
-        if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
+        if (Type.subTypeOfUnion(other.getType(), Type.NUMBER)) {
             if (isNaN()) {
                 //NaN does not equal itself.
                 if (((NumericValue) other).isNaN()) {

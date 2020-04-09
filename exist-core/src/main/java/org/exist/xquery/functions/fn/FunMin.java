@@ -178,9 +178,9 @@ public class FunMin extends CollatingFunction {
                     if (value.getType() == Type.ATOMIC) 
                     	{value = value.convertTo(Type.DOUBLE);}
                 	//Numeric tests
-	                if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
+	                if (Type.subTypeOfUnion(value.getType(), Type.NUMBER)) {
 	                	//Don't mix comparisons
-	                	if (!Type.subTypeOf(min.getType(), Type.NUMBER))
+	                	if (!Type.subTypeOfUnion(min.getType(), Type.NUMBER))
 	                		{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(min.getType()) +
 	                				" and " + Type.getTypeName(value.getType()), min);}
 	                	if (((NumericValue) value).isNaN()) {
