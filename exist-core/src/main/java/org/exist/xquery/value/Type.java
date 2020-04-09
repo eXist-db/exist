@@ -150,9 +150,9 @@ public class Type {
         defineSubType(DURATION, YEAR_MONTH_DURATION);
         defineSubType(DURATION, DAY_TIME_DURATION);
 
-        defineSubType(NUMBER, DECIMAL);
-        defineSubType(NUMBER, FLOAT);
-        defineSubType(NUMBER, DOUBLE);
+        defineSubType(ATOMIC, DECIMAL);
+        defineSubType(ATOMIC, FLOAT);
+        defineSubType(ATOMIC, DOUBLE);
 
         defineSubType(DECIMAL, INTEGER);
 
