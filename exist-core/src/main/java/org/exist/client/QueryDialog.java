@@ -23,6 +23,7 @@ package org.exist.client;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.event.ItemEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
@@ -92,9 +93,9 @@ public class QueryDialog extends JFrame {
     private RTextScrollPane resultDisplayScrollPane;
     private RSyntaxTextArea exprDisplay;
     private RTextScrollPane exprDisplayScrollPane;
-    private JComboBox collections = null;
+    private JComboBox<String> collections = null;
     private SpinnerNumberModel count;
-    private DefaultComboBoxModel history = new DefaultComboBoxModel();
+    private DefaultComboBoxModel<String> history = new DefaultComboBoxModel<>();
     private JTextField statusMessage;
     private JTextField queryPositionDisplay;
     private JProgressBar progress;
@@ -306,13 +307,16 @@ public class QueryDialog extends JFrame {
         final Box historyBox = Box.createHorizontalBox();
         JLabel label = new JLabel(Messages.getString("QueryDialog.historylabel"));
         historyBox.add(label);
-        final JComboBox historyList = new JComboBox(history);
+        final JComboBox<String> historyList = new JComboBox<>(history);
         for (final String query : client.queryHistory) {
             addQuery(query);
         }
-        historyList.addActionListener(e -> {
-            final String item = (String) client.queryHistory.get(historyList.getSelectedIndex());
-            query.setText(item);
+        historyList.setSelectedIndex(-1);  // by default - we are not using anything from the history!
+        historyList.addItemListener(itemEvent -> {
+            if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
+                Object obj = itemEvent.getItem();
+                query.setText(obj.toString());
+            }
         });
         historyBox.add(historyList);
         inputVBox.add(historyBox, BorderLayout.NORTH);
@@ -337,10 +341,16 @@ public class QueryDialog extends JFrame {
             ClientFrame.showErrorMessage(
                     Messages.getString("QueryDialog.collectionretrievalerrormessage") + ".", e);
         }
-        collections = new JComboBox(new java.util.Vector(data));
+        collections = new JComboBox<>(new java.util.Vector<>(data));
+        collections.setSelectedIndex(0);
         collections.addActionListener(e -> {
             final int p = collections.getSelectedIndex();
-            final String context = data.get(p);
+            final String context;
+            if (p == -1) {
+                context = "/db";
+            } else {
+                context =  data.get(p);
+            }
             try {
                 collection = client.getCollection(context);
             } catch (final XMLDBException e1) {
