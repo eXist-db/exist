@@ -13,6 +13,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
+import javax.annotation.Nullable;
+
 public class FunHigherOrderFun extends BasicFunction {
 
 	public final static FunctionSignature FN_FOR_EACH =
@@ -102,13 +104,14 @@ public class FunHigherOrderFun extends BasicFunction {
 	}
 
     @Override
-    protected void checkArguments() throws XPathException {
+	protected void checkArgument(final Expression arg, @Nullable final SequenceType argType,
+			final AnalyzeContextInfo argContextInfo, final int argPosition) throws XPathException {
         // hack: order of parameters for filter and other functions has changed
         // in final XQ3 spec. This would cause some core apps (dashboard) to stop
         // working. We thus switch parameters dynamically until all users can be expected to
         // have updated to 2.2.
         if (!isCalledAs("filter")) {
-            super.checkArguments();
+            super.checkArgument(arg, argType, argContextInfo, argPosition);
         }
     }
 

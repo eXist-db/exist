@@ -149,7 +149,35 @@ function bang:implicit-context() {
 };
 
 declare
+    %test:assertEquals(4)
+function bang:right-string-length-context-item() {
+    1234 ! string-length()
+};
+
+(:~
+ : See: https://www.biglist.com/lists/lists.mulberrytech.com/xsl-list/archives/201906/msg00021.html
+ : See: https://github.com/eXist-db/exist/issues/2798
+ :)
+declare
     %test:assertError("XPTY0004")
-function bang:invalid-type-left() {
+function bang:right-string-length() {
     1234 ! string-length(.)
+};
+
+declare
+    %test:assertEquals(1)
+function bang:attribute-left-number-context-item-right() {
+    <emp id='1'/>/@id ! number()
+};
+
+declare
+    %test:assertEquals(1)
+function bang:attribute-left-number-right() {
+    <emp id='1'/>/@id ! number(.)
+};
+
+declare
+    %test:assertEquals(1)
+function bang:element-left-number-attribute-right() {
+    <emp id='1'/> ! number(@id)
 };

@@ -24,6 +24,7 @@ package org.exist.xquery;
 import java.lang.reflect.Constructor;
 import java.util.List;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.dom.QName;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.Error;
@@ -33,6 +34,10 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import javax.annotation.Nullable;
+
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
 /**
  * Abstract base class for all built-in and user-defined functions.
@@ -218,147 +223,191 @@ public abstract class Function extends PathExpr {
     }
 
     /**
-     * Check the fuction arguments.
+     * Check the function arguments.
+     *
+     * @param argument the argument
+     * @param argType the type of the argument if known, or null
+     * @param argContextInfo the context info from analyzing the argument
+     * @param argPosition the position of the argument
      *
      * @throws XPathException if an error occurs when checking the arguments.
      */
-    protected void checkArguments() throws XPathException {
-        if (!argumentsChecked) {
-            final SequenceType[] argumentTypes = mySignature.getArgumentTypes();
-            SequenceType argType = null;
-            for (int i = 0; i < getArgumentCount(); i++) {
-                if (argumentTypes != null && i < argumentTypes.length) {
-                    argType = argumentTypes[i];
-                }
-                final Expression next = checkArgument(getArgument(i), argType, i + 1);
-                steps.set(i, next);
-            }
-        }
-        argumentsChecked = true;
+    protected void checkArgument(final Expression argument, @Nullable final SequenceType argType,
+            final AnalyzeContextInfo argContextInfo, final int argPosition) throws XPathException {
+        final Expression next = checkArgumentType(argument, argType, argContextInfo, argPosition);
+        steps.set(argPosition - 1, next);
     }
 
     /**
      * Statically check an argument against the sequence type specified in
      * the signature.
      *
-     * @param expr the expression
-     * @param type the type of the argument
+     * @param argument the argument
+     * @param argType the type of the argument if known, or null
+     * @param argContextInfo the context info from analyzing the argument
      * @param argPosition the position of the argument
+     *
      * @return The passed expression
+     *
      * @throws XPathException if an error occurs whilst checking the argument
      */
-    protected Expression checkArgument(Expression expr, final SequenceType type, final int argPosition)
-            throws XPathException {
-        if (type == null || expr instanceof Placeholder) {
-            return expr;
+    private Expression checkArgumentType(Expression argument, @Nullable final SequenceType argType,
+            final AnalyzeContextInfo argContextInfo, final int argPosition) throws XPathException {
+        if (argType == null || argument instanceof Placeholder) {
+            return argument;
         }
+
         // check cardinality if expected cardinality is not zero or more
-        boolean cardinalityMatches =
-                expr instanceof VariableReference ||
-                        type.getCardinality() == Cardinality.ZERO_OR_MORE;
-        if (!cardinalityMatches) {
-            cardinalityMatches = expr.getCardinality().isSubCardinalityOrEqualOf(type.getCardinality());
-            if (!cardinalityMatches) {
-                if (expr.getCardinality() == Cardinality.EMPTY_SEQUENCE
-                        && type.getCardinality().atLeastOne()) {
-                    throw new XPathException(this,
-                            ErrorCodes.XPTY0004,
-                            Messages.getMessage(Error.FUNC_EMPTY_SEQ_DISALLOWED,
-                                    argPosition, ExpressionDumper.dump(expr)));
-                }
-            }
-        }
-        expr = new DynamicCardinalityCheck(context, type.getCardinality(), expr,
+        final boolean cardinalityMatches = checkArgumentTypeCardinality(argument, argType, argPosition);
+
+        argument = new DynamicCardinalityCheck(context, argType.getCardinality(), argument,
                 new Error(Error.FUNC_PARAM_CARDINALITY, argPosition, mySignature));
         // check return type if both types are not Type.ITEM
-        int returnType = expr.returnsType();
+        int returnType = argument.returnsType();
         if (returnType == Type.ANY_TYPE || returnType == Type.EMPTY) {
             returnType = Type.ITEM;
         }
-        boolean typeMatches = type.getPrimaryType() == Type.ITEM;
-        typeMatches = Type.subTypeOf(returnType, type.getPrimaryType());
+        final boolean typeMatches = Type.subTypeOf(returnType, argType.getPrimaryType());
         if (typeMatches && cardinalityMatches) {
-            if (type.getNodeName() != null) {
-                expr = new DynamicNameCheck(context,
-                        new NameTest(type.getPrimaryType(), type.getNodeName()), expr);
+            if (argType.getNodeName() != null) {
+                argument = new DynamicNameCheck(context,
+                        new NameTest(argType.getPrimaryType(), argType.getNodeName()), argument);
             }
-            return expr;
+            return argument;
         }
+
         //Loose argument check : we may move this, or a part hereof, to UntypedValueCheck
         if (context.isBackwardsCompatible()) {
-            if (Type.subTypeOf(type.getPrimaryType(), Type.STRING)) {
-                if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
-                    expr = new Atomize(context, expr);
-                    returnType = Type.ATOMIC;
-                }
-                expr = new AtomicToString(context, expr);
-                returnType = Type.STRING;
-            } else if (type.getPrimaryType() == Type.NUMBER
-                    || Type.subTypeOf(type.getPrimaryType(), Type.DOUBLE)) {
-                if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
-                    expr = new Atomize(context, expr);
-                    returnType = Type.ATOMIC;
-                }
-                expr = new UntypedValueCheck(context, type.getPrimaryType(), expr,
-                        new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
-                returnType = type.getPrimaryType();
-            }
-            //If the required type is an atomic type, convert the argument to an atomic 
-            if (Type.subTypeOf(type.getPrimaryType(), Type.ATOMIC)) {
-                if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
-                    expr = new Atomize(context, expr);
-                }
-                if (type.getPrimaryType() != Type.ATOMIC) {
-                    expr = new UntypedValueCheck(context, type.getPrimaryType(),
-                            expr, new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
-                }
-                returnType = expr.returnsType();
-            }
-            //Strict argument check : we may move this, or a part hereof, to UntypedValueCheck
+            final Tuple2<Expression, Integer> looseCheckResult = looseCheckArgumentType(argument, argType, argContextInfo, argPosition, returnType);
+            argument = looseCheckResult._1;
+            returnType = looseCheckResult._2;
+
+        //Strict argument check : we may move this, or a part hereof, to UntypedValueCheck
         } else {
-            //If the required type is an atomic type, convert the argument to an atomic 
-            if (Type.subTypeOf(type.getPrimaryType(), Type.ATOMIC)) {
-                if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
-                    expr = new Atomize(context, expr);
-                }
-                expr = new UntypedValueCheck(context, type.getPrimaryType(),
-                        expr, new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
-                returnType = expr.returnsType();
-            }
+            final Tuple2<Expression, Integer> strictCheckResult = strictCheckArgumentType(argument, argType, argContextInfo, argPosition, returnType);
+            argument = strictCheckResult._1;
+            returnType = strictCheckResult._2;
         }
-        if (returnType != Type.ITEM && !Type.subTypeOf(returnType, type.getPrimaryType())) {
-            if (!(Type.subTypeOf(type.getPrimaryType(), returnType) ||
+
+        if (returnType != Type.ITEM && !Type.subTypeOf(returnType, argType.getPrimaryType())) {
+            if (!(Type.subTypeOf(argType.getPrimaryType(), returnType) ||
                     //Because () is seen as a node
-                    (type.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EMPTY_SEQUENCE) && returnType == Type.NODE))) {
-                LOG.debug(ExpressionDumper.dump(expr));
+                    (argType.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EMPTY_SEQUENCE) && returnType == Type.NODE))) {
+                LOG.debug(ExpressionDumper.dump(argument));
                 throw new XPathException(this, Messages.getMessage(Error.FUNC_PARAM_TYPE_STATIC,
-                        String.valueOf(argPosition), mySignature, type.toString(), Type.getTypeName(returnType)));
+                        String.valueOf(argPosition), mySignature, argType.toString(), Type.getTypeName(returnType)));
             }
         }
+
         if (!typeMatches && !context.isBackwardsCompatible()) {
-            if (type.getNodeName() != null) {
-                expr = new DynamicNameCheck(context,
-                        new NameTest(type.getPrimaryType(), type.getNodeName()), expr);
+            if (argType.getNodeName() != null) {
+                argument = new DynamicNameCheck(context,
+                        new NameTest(argType.getPrimaryType(), argType.getNodeName()), argument);
             } else {
-                expr = new DynamicTypeCheck(context, type.getPrimaryType(), expr);
+                argument = new DynamicTypeCheck(context, argType.getPrimaryType(), argument);
             }
         }
-        return expr;
+        return argument;
+    }
+
+    protected boolean checkArgumentTypeCardinality(final Expression argument, @Nullable final SequenceType argType,
+            final int argPosition) throws XPathException {
+        boolean cardinalityMatches = argument instanceof VariableReference
+                || argType.getCardinality() == Cardinality.ZERO_OR_MORE;
+
+        if (!cardinalityMatches) {
+            cardinalityMatches = argument.getCardinality().isSubCardinalityOrEqualOf(argType.getCardinality());
+            if (!cardinalityMatches) {
+                if (argument.getCardinality() == Cardinality.EMPTY_SEQUENCE
+                        && argType.getCardinality().atLeastOne()) {
+                    throw new XPathException(this,
+                            ErrorCodes.XPTY0004,
+                            Messages.getMessage(Error.FUNC_EMPTY_SEQ_DISALLOWED,
+                                    argPosition, ExpressionDumper.dump(argument)));
+                }
+            }
+        }
+
+        return cardinalityMatches;
+    }
+
+    protected Tuple2<Expression, Integer> looseCheckArgumentType(Expression argument,
+            @Nullable final SequenceType argType, final AnalyzeContextInfo argContextInfo, final int argPosition,
+            int returnType) {
+        if (Type.subTypeOf(argType.getPrimaryType(), Type.STRING)) {
+            if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
+                argument = new Atomize(context, argument);
+            }
+            argument = new AtomicToString(context, argument);
+            returnType = Type.STRING;
+        } else if (argType.getPrimaryType() == Type.NUMBER
+                || Type.subTypeOf(argType.getPrimaryType(), Type.DOUBLE)) {
+            if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
+                argument = new Atomize(context, argument);
+            }
+            argument = new UntypedValueCheck(context, argType.getPrimaryType(), argument,
+                    new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
+            returnType = argType.getPrimaryType();
+        }
+        //If the required type is an atomic type, convert the argument to an atomic
+        if (Type.subTypeOf(argType.getPrimaryType(), Type.ATOMIC)) {
+            if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
+                argument = new Atomize(context, argument);
+            }
+            if (argType.getPrimaryType() != Type.ATOMIC) {
+                argument = new UntypedValueCheck(context, argType.getPrimaryType(),
+                        argument, new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
+            }
+            returnType = argument.returnsType();
+        }
+
+        return Tuple(argument, returnType);
+    }
+
+    protected Tuple2<Expression, Integer> strictCheckArgumentType(Expression argument,
+            @Nullable final SequenceType argType, final AnalyzeContextInfo argContextInfo, final int argPosition,
+            int returnType) {
+
+        // if the required type is an atomic type, convert the argument to an atomic
+        if (Type.subTypeOf(argType.getPrimaryType(), Type.ATOMIC)) {
+
+            if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
+                // Atomization!
+                argument = new Atomize(context, argument);
+            }
+            argument = new UntypedValueCheck(context, argType.getPrimaryType(),
+                    argument, new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
+            returnType = argument.returnsType();
+        }
+
+        return Tuple(argument, returnType);
     }
 
     @Override
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
-        // statically check the argument list
-        checkArguments();
-        // call analyze for each argument
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
         unordered = (contextInfo.getFlags() & UNORDERED) > 0;
         contextId = contextInfo.getContextId();
         contextInfo.setParent(this);
+
+        final SequenceType[] argumentTypes = mySignature.getArgumentTypes();
         for (int i = 0; i < getArgumentCount(); i++) {
+            final Expression arg = getArgument(i);
+
+            // call analyze for each argument
             final AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
-            getArgument(i).analyze(argContextInfo);
+            arg.analyze(argContextInfo);
+
+            if (!argumentsChecked) {
+                // statically check the argument
+                SequenceType argType = null;
+                if (argumentTypes != null && i < argumentTypes.length) {
+                    argType = argumentTypes[i];
+                }
+                checkArgument(arg, argType, argContextInfo, i + 1);
+            }
         }
+        argumentsChecked = true;
     }
 
     public Sequence[] getArguments(Sequence contextSequence, final Item contextItem)

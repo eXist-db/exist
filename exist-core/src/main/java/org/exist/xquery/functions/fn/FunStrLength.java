@@ -21,15 +21,9 @@
  */
 package org.exist.xquery.functions.fn;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.dom.QName;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.ErrorCodes;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
@@ -37,6 +31,10 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import javax.annotation.Nullable;
+
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
 /**
  * Built-in function fn:string-length($srcval as xs:string?) as xs:integer?
@@ -65,6 +63,22 @@ public class FunStrLength extends Function {
 
     public FunStrLength(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
+    }
+
+    @Override
+    protected Tuple2<Expression, Integer> strictCheckArgumentType(Expression argument,
+            @Nullable final SequenceType argType, final AnalyzeContextInfo argContextInfo, final int argPosition,
+            int returnType) {
+        if (getArgumentCount() == 1 && (argContextInfo.getFlags() & LocationStep.DOT_TEST) == LocationStep.DOT_TEST) {
+            /*
+                fn:string-length has different behaviour with regards the context item...
+                See https://www.biglist.com/lists/lists.mulberrytech.com/xsl-list/archives/201906/msg00021.html
+                See https://github.com/eXist-db/exist/issues/2798
+             */
+            return Tuple(argument, returnType);
+        } else {
+            return super.strictCheckArgumentType(argument, argType, argContextInfo, argPosition, returnType);
+        }
     }
 
     @Override
