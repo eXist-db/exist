@@ -21,11 +21,8 @@
  */
 package org.exist.xquery.value;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -118,6 +115,10 @@ public class Type {
         typeCodes.defaultReturnValue(NO_SUCH_VALUE);
     }
     private final static Int2ObjectMap<IntArraySet> unionTypes = new Int2ObjectArrayMap<>(1);
+    private final static Int2IntOpenHashMap primitiveTypes = new Int2IntOpenHashMap(44, Hash.FAST_LOAD_FACTOR);
+    static {
+        primitiveTypes.defaultReturnValue(NO_SUCH_VALUE);
+    }
 
     static {
         defineSubType(ANY_TYPE, ANY_SIMPLE_TYPE);
@@ -289,6 +290,61 @@ public class Type {
         defineUnionType(NUMBER, new int[]{ INTEGER, DECIMAL, FLOAT, DOUBLE });
     }
 
+    // https://www.w3.org/TR/xmlschema-2/#built-in-primitive-datatypes
+    static {
+        definePrimitiveType(STRING, new int[] {
+                NORMALIZED_STRING,
+                TOKEN,
+                LANGUAGE,
+                NMTOKEN,
+                NAME,
+                NCNAME,
+                ID,
+                IDREF,
+                ENTITY
+        });
+        definePrimitiveType(BOOLEAN);
+        definePrimitiveType(DECIMAL, new int[] {
+                INTEGER,
+                NON_POSITIVE_INTEGER,
+                NEGATIVE_INTEGER,
+                LONG,
+                INT,
+                SHORT,
+                BYTE,
+                NON_NEGATIVE_INTEGER,
+                UNSIGNED_LONG,
+                UNSIGNED_INT,
+                UNSIGNED_SHORT,
+                UNSIGNED_BYTE,
+                POSITIVE_INTEGER
+        });
+        definePrimitiveType(FLOAT);
+        definePrimitiveType(DOUBLE);
+        definePrimitiveType(DURATION, new int[] {
+                YEAR_MONTH_DURATION,
+                DAY_TIME_DURATION
+        });
+        definePrimitiveType(DATE_TIME, new int[] {
+                //DATE_TIME_STAMP
+        });
+        definePrimitiveType(TIME);
+        definePrimitiveType(DATE);
+        definePrimitiveType(GYEARMONTH);
+        definePrimitiveType(GYEAR);
+        definePrimitiveType(GMONTHDAY);
+        definePrimitiveType(GDAY);
+        definePrimitiveType(GMONTH);
+        definePrimitiveType(HEX_BINARY);
+        definePrimitiveType(BASE64_BINARY);
+        definePrimitiveType(ANY_URI);
+        definePrimitiveType(QNAME);
+        definePrimitiveType(NOTATION);
+
+        // reduce any unused space
+        primitiveTypes.trim();
+    }
+
     /**
      * Define built-in type.
      *
@@ -320,6 +376,21 @@ public class Type {
      */
     private static void defineUnionType(final int unionType, final int... memberTypes) {
         unionTypes.put(unionType, new IntArraySet(memberTypes));
+    }
+
+    /**
+     * Define a primitive type.
+     *
+     * @param primitiveType the primitive type
+     * @param subTypes the subtypes of the primitive type
+     */
+    private static void definePrimitiveType(final int primitiveType, final int... subTypes) {
+        for (final int subType : subTypes) {
+            primitiveTypes.put(subType, primitiveType);
+        }
+
+        // primitive type of a primitive type is itself!
+        primitiveTypes.put(primitiveType, primitiveType);
     }
 
     /**
@@ -528,5 +599,23 @@ public class Type {
             }
         }
         return false;
+    }
+
+    /**
+     * Gets the primitive type for a typed atomic type.
+     *
+     * @param type the type to retrieve the primitive type of
+     *
+     * @return the primitive type
+     *
+     * @throws IllegalArgumentException if {@code type} has no defined primitive type
+     */
+    public static int primitiveTypeOf(final int type) throws IllegalArgumentException {
+        final int primitiveType = primitiveTypes.get(type);
+        if (primitiveType == NO_SUCH_VALUE) {
+            final String typeName = getTypeName(type);
+            throw new IllegalArgumentException("Primitive type is not defined for: " + (typeName != null ? typeName : type));
+        }
+        return primitiveType;
     }
 }
