@@ -108,11 +108,13 @@ public class Type {
     public final static int ARRAY = 103;
     private final static Logger LOG = LogManager.getLogger(Type.class);
 
+    private static int NO_SUCH_VALUE = -99;
+
     private final static int[] superTypes = new int[512];
     private final static Int2ObjectOpenHashMap<String[]> typeNames = new Int2ObjectOpenHashMap<>(100);
     private final static Object2IntOpenHashMap<String> typeCodes = new Object2IntOpenHashMap<>(100);
     static {
-        typeCodes.defaultReturnValue(-1);
+        typeCodes.defaultReturnValue(NO_SUCH_VALUE);
     }
     private final static Int2ObjectMap<IntArraySet> unionTypes = new Int2ObjectArrayMap<>(1);
 
@@ -356,7 +358,7 @@ public class Type {
         //if (name.equals("node"))
         //	return NODE;
         final int code = typeCodes.getInt(name);
-        if (code == -1) {
+        if (code == NO_SUCH_VALUE) {
             throw new XPathException("Type: " + name + " is not defined");
         }
         return code;
