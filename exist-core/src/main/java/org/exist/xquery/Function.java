@@ -317,14 +317,13 @@ public abstract class Function extends PathExpr {
 
         if (!cardinalityMatches) {
             cardinalityMatches = argument.getCardinality().isSubCardinalityOrEqualOf(argType.getCardinality());
-            if (!cardinalityMatches) {
-                if (argument.getCardinality() == Cardinality.EMPTY_SEQUENCE
-                        && argType.getCardinality().atLeastOne()) {
-                    throw new XPathException(this,
-                            ErrorCodes.XPTY0004,
-                            Messages.getMessage(Error.FUNC_EMPTY_SEQ_DISALLOWED,
-                                    argPosition, ExpressionDumper.dump(argument)));
-                }
+        }
+
+        if (!cardinalityMatches) {
+            if (argument.getCardinality() == Cardinality.EMPTY_SEQUENCE && argType.getCardinality().atLeastOne()) {
+                throw new XPathException(this,  ErrorCodes.XPTY0004,
+                        Messages.getMessage(Error.FUNC_EMPTY_SEQ_DISALLOWED,
+                                argPosition, ExpressionDumper.dump(argument)));
             }
         }
 
