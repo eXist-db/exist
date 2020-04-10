@@ -85,4 +85,4 @@ deploy:
         popd
 
 notifications:
-  slack: exist-db:IXzUdqA0n11cnxaDz43ZQgdX
+  slack: exist-db:$SLACK_TOKEN
