@@ -37,29 +37,32 @@ after_failure:
    - curl -v -u $CHUNK_USER:$CHUNK_PW -sT surefire-reports.tar.bz2 chunk.io
 
 deploy:
+
+  # Build and publish Docker Image for Docker tag `release` from latest Git tag for JDK 8
   - provider: script
     skip_cleanup: true
     on:
       jdk: openjdk8
       tag: true
       condition: $BUILD_DOCKER = true
-  #  before_script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  # see https://github.com/travis-ci/dpl/issues/673
-    script: >-
-      cd exist-docker &&
-      mvn -DskipTests -Ddocker.tag=release -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push &&
-      cd ..
+    script:
+      - |
+        pushd exist-docker
+        mvn -DskipTests -Ddocker.tag=release -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
+        popd
 
+  # Build and publish Docker Image for Docker tag `latest` from updates to Git `develop` branch with JDK8
   - provider: script
     skip_cleanup: true
     on:
       jdk: openjdk8
       branch: develop
       condition: $BUILD_DOCKER = true
-    script: >-
-      cd exist-docker &&
-      mvn -DskipTests -Ddocker.tag=latest -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push &&
-      cd ..
+    script:
+      - |
+        pushd exist-docker
+        mvn -DskipTests -Ddocker.tag=latest -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
+        popd
 
 notifications:
   slack: exist-db:IXzUdqA0n11cnxaDz43ZQgdX
