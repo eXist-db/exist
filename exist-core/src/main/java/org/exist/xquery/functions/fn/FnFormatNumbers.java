@@ -595,17 +595,18 @@ public class FnFormatNumbers extends BasicFunction {
                 // regular grouping
                 int m = intLength / g;
                 if (intLength % g == 0) {
-                    m--; // prevents a group separator being inseted at index 0
+                    m--; // prevents a group separator being inserted at index 0
                 }
-                final int[] relGroupingOffsets = new int[m];
-                for (; m > 0; m--) {
-                    final int groupingIdx = idxDecimalSeparator - (m * g);
-                    relGroupingOffsets[m - 1] = groupingIdx;
+                if (m > -1) {
+                    final int[] relGroupingOffsets = new int[m];
+                    for (; m > 0; m--) {
+                        final int groupingIdx = idxDecimalSeparator - (m * g);
+                        relGroupingOffsets[m - 1] = groupingIdx;
+                    }
+                    formatted.insert(relGroupingOffsets, decimalFormat.groupingSeparator);
+
+                    idxDecimalSeparator = formatted.indexOf(decimalFormat.decimalSeparator);
                 }
-                formatted.insert(relGroupingOffsets, decimalFormat.groupingSeparator);
-
-                idxDecimalSeparator = formatted.indexOf(decimalFormat.decimalSeparator);
-
             } else {
                 // non-regular grouping
                 final int[] relGroupingOffsets = new int[integerPartGroupingPositions.length];
@@ -624,21 +625,21 @@ public class FnFormatNumbers extends BasicFunction {
         // Rule 11 - Fractional part groupings
         @Nullable final int[] fractionalPartGroupingPositions = subPicture.getFractionalPartGroupingPositions();
         if (fractionalPartGroupingPositions != null) {
-            final int[] relGroupingOffsets = new int[fractionalPartGroupingPositions.length];
+            int[] relGroupingOffsets = new int[0];
             for (int i = 0; i < fractionalPartGroupingPositions.length; i++) {
                 final int fractionalPartGroupingPosition = fractionalPartGroupingPositions[i];
                 final int groupingIdx = idxDecimalSeparator + 1 + fractionalPartGroupingPosition;
-                relGroupingOffsets[i] = groupingIdx;
-            }
-            formatted.insert(relGroupingOffsets, decimalFormat.groupingSeparator);
-
-            /*
-            if (groupingIdx <= formatted.length()) {
-                    formatted = formatted.substring(0, groupingIdx) + decimalFormat.groupingSeparator + formatted.substring(groupingIdx);
+                if (groupingIdx <= formatted.length()) {
+                    relGroupingOffsets = Arrays.copyOf(relGroupingOffsets, relGroupingOffsets.length + 1);
+                    relGroupingOffsets[i] = groupingIdx;
                 } else {
                     break;
                 }
-             */
+            }
+
+            if (relGroupingOffsets.length > 0) {
+                formatted.insert(relGroupingOffsets, decimalFormat.groupingSeparator);
+            }
 
             fractLen =  idxDecimalSeparator > -1 ?  formatted.length() - (idxDecimalSeparator + 1) : 0;
         }

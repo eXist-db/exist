@@ -246,6 +246,14 @@ function fd:simple-number-2($number, $picture) {
 };
 
 declare
+    %test:args(12345.6)
+    %test:args("#.###,##")
+    %test:assertEquals("12345.6")
+function fd:simple-number-3($number as numeric, $picture) {
+    format-number($number, $picture)
+};
+
+declare
     %test:args(14)
     %test:args("00%")
     %test:assertEquals("1400%")
