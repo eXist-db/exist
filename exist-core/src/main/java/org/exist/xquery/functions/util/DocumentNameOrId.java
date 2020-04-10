@@ -1,215 +1,206 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.exist.xquery.functions.util;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
-import java.net.URISyntaxException;
-import java.util.Objects;
+import java.util.function.Function;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.evolvedbinary.j8fu.tuple.Tuple3;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64BinaryDocument;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import javax.annotation.Nullable;
+
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
+import static org.exist.xquery.FunctionDSL.param;
+import static org.exist.xquery.FunctionDSL.returnsOpt;
+import static org.exist.xquery.functions.util.UtilModule.functionSignature;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
- *
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class DocumentNameOrId extends BasicFunction {
-	
-	protected static final Logger logger = LogManager.getLogger(DocumentNameOrId.class);
 
-        private final static QName QN_DOCUMENT_NAME = new QName("document-name", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
-        private final static QName QN_DOCUMENT_ID = new QName("document-id", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
-        private final static QName QN_ABSOLUTE_RESOURCE_ID = new QName("absolute-resource-id", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
-        private final static QName QN_GET_RESOURCE_BY_ABSOLUTE_ID = new QName("get-resource-by-absolute-id", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
-        
-        private final static SequenceType[] PARAMS = new SequenceType[] {
-                new FunctionParameterSequenceType("node-or-path", Type.ITEM, Cardinality.EXACTLY_ONE, "The node or a string path pointing to a resource in the database.")
-        };
-        
-	public final static FunctionSignature docNameSignature = new FunctionSignature(
-            QN_DOCUMENT_NAME,
+    private static final FunctionParameterSequenceType PRAM_NODE_OR_PATH = param(
+            "node-or-path",
+            Type.ITEM,
+            "The node or a string path pointing to a resource in the database.");
+
+
+    private static final String FSN_DOCUMENT_NAME = "document-name";
+    public final static FunctionSignature FS_DOCUMENT_NAME = functionSignature(
+            FSN_DOCUMENT_NAME,
             "Returns the name of a document (excluding the collection path). The argument can either be " +
-            "a node or a string path pointing to a resource in the database. If the resource does not exist or the node " +
-            "does not belong to a stored document, the empty sequence is returned.",
-            PARAMS,
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the name of the document")
-        );
-	
-	public final static FunctionSignature docIdSignature = new FunctionSignature(
-            QN_DOCUMENT_ID,
-            "Returns the internal integer id of a document. The argument can either be " +
-            "a node or a string path pointing to a resource in the database. If the resource does not exist or the node " +
-            "does not belong to a stored document, the empty sequence is returned.",
-            PARAMS,
-            new FunctionReturnSequenceType(Type.INT, Cardinality.ZERO_OR_ONE, "the ID of the document")
-        );
-        
-        public final static FunctionSignature absoluteResourceIdSignature = new FunctionSignature(
-            QN_ABSOLUTE_RESOURCE_ID,
-            "Returns the absolute internal id of a resource as a 65 bit number. The first 32 bits are the collection id, the next 32 bits are the document id, the last bit is the document type. The argument can either be " +
-            "a node or a string path pointing to a resource in the database. If the resource does not exist or the node " +
-            "does not belong to a stored document, the empty sequence is returned.",
-            PARAMS,
-            new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the absolute ID of the resource")
-        );
-        
-        
-        public final static FunctionSignature resourceByAbsoluteIdSignature = new FunctionSignature(
-            QN_GET_RESOURCE_BY_ABSOLUTE_ID,
-            "Returns the resource indicated by its absolute internal id. The first 32 bits are the collection id, the next 32 bits are the document id, the last bit is the document type. If the resource does not exist, the empty sequence is returned.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("absolute-id", Type.INTEGER, Cardinality.EXACTLY_ONE, "The absolute id of a resource in the database.")
-            },
-            new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "The resource from the database. A document() if its an XML resource, or an xs:base64binary otherwise")
-        );
-	
-	public DocumentNameOrId(XQueryContext context, FunctionSignature signature) {
-            super(context, signature);
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-	 */
-    @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        Sequence result = Sequence.EMPTY_SEQUENCE;
-        try {
-        
-            if(Type.subTypeOf(args[0].getItemType(), Type.NODE)) {
-                final NodeValue node = (NodeValue) args[0].itemAt(0);
-                if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                    final NodeProxy proxy = (NodeProxy) node;
-                    final DocumentImpl doc = proxy.getOwnerDocument();
-                    if(doc != null) {
-                        try (final ManagedDocumentLock docLock = context.getBroker().getBrokerPool().getLockManager().acquireDocumentReadLock(doc.getURI())){
-                            return documentNameOrId(doc);
-                        }
-                    } else {
-                        return resourceById(args);
-                    }
-                }
-            } else if(Type.subTypeOf(args[0].getItemType(), Type.STRING)) {
-                final String path = args[0].getStringValue();
-                try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK)) {
-                    if(lockedDoc != null) {
-                        return documentNameOrId(lockedDoc.getDocument());
-                    } else {
-                        return resourceById(args);
-                    }
-                }
-            }
+                    "a node or a string path pointing to a resource in the database. If the resource does not exist or the node " +
+                    "does not belong to a stored document, the empty sequence is returned.",
+            returnsOpt(Type.STRING, "the name of the document"),
+            PRAM_NODE_OR_PATH
+    );
 
+    private static final String FSN_DOCUMENT_ID = "document-id";
+    public final static FunctionSignature FS_DOCUMENT_ID = functionSignature(
+            FSN_DOCUMENT_ID,
+            "Returns the internal integer id of a document. The argument can either be " +
+                    "a node or a string path pointing to a resource in the database. If the resource does not exist or the node " +
+                    "does not belong to a stored document, the empty sequence is returned.",
+            returnsOpt(Type.INT, "the ID of the document"),
+            PRAM_NODE_OR_PATH
+    );
+
+    private static final String FSN_ABSOLUTE_RESOURCE_ID = "absolute-resource-id";
+    public final static FunctionSignature FS_ABSOLUTE_RESOURCE_ID = functionSignature(
+            FSN_ABSOLUTE_RESOURCE_ID,
+            "Returns the absolute internal id of a resource as a 65 bit number. The first 32 bits are the collection id, the next 32 bits are the document id, the last bit is the document type. The argument can either be " +
+                    "a node or a string path pointing to a resource in the database. If the resource does not exist or the node " +
+                    "does not belong to a stored document, the empty sequence is returned.",
+            returnsOpt(Type.INTEGER, "the absolute ID of the resource"),
+            PRAM_NODE_OR_PATH
+    );
+
+
+    private static final String FSN_GET_RESOURCE_BY_ABSOLUTE_ID = "get-resource-by-absolute-id";
+    public final static FunctionSignature FS_GET_RESOURCE_BY_ABSOLUTE_ID = functionSignature(
+            FSN_GET_RESOURCE_BY_ABSOLUTE_ID,
+            "Returns the resource indicated by its absolute internal id. The first 32 bits are the collection id, the next 32 bits are the document id, the last bit is the document type. If the resource does not exist, the empty sequence is returned.",
+            returnsOpt(Type.ITEM, "The resource from the database. A document() if its an XML resource, or an xs:base64binary otherwise"),
+            param("absolute-id", Type.INTEGER, "The absolute id of a resource in the database.")
+    );
+
+    public DocumentNameOrId(final XQueryContext context, final FunctionSignature signature) {
+        super(context, signature);
+    }
+
+    @Override
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+        final Item arg = args[0].itemAt(0);
+        try {
+            switch (getSignature().getName().getLocalPart()) {
+
+                case FSN_DOCUMENT_NAME:
+                    if (arg.getType() == Type.STRING || arg.getType() == Type.ANY_URI) {
+                        return Sequence.of(getFromDocument(XmldbURI.create(arg.getStringValue()), DocumentImpl::getFileURI));
+                    } else if (arg instanceof NodeProxy) {
+                        return Sequence.of(getFromDocument(((NodeProxy) arg).getOwnerDocument().getURI(), DocumentImpl::getFileURI));
+                    } else {
+                        return Sequence.EMPTY_SEQUENCE;
+                    }
+
+                case FSN_DOCUMENT_ID:
+                    if (arg.getType() == Type.STRING || arg.getType() == Type.ANY_URI) {
+                        return Sequence.of(getFromDocument(XmldbURI.create(arg.getStringValue()), DocumentImpl::getDocId));
+                    } else if (arg instanceof NodeProxy) {
+                        return Sequence.of(getFromDocument(((NodeProxy) arg).getOwnerDocument().getURI(), DocumentImpl::getDocId));
+                    } else {
+                        return Sequence.EMPTY_SEQUENCE;
+                    }
+
+                case FSN_ABSOLUTE_RESOURCE_ID:
+                    if (arg.getType() == Type.STRING || arg.getType() == Type.ANY_URI) {
+                        return Sequence.of(getFromDocument(XmldbURI.create(arg.getStringValue()), DocumentNameOrId::getAbsoluteResourceId));
+                    } else if (arg instanceof NodeProxy) {
+                        return Sequence.of(getFromDocument(((NodeProxy) arg).getOwnerDocument().getURI(), DocumentNameOrId::getAbsoluteResourceId));
+                    } else {
+                        return Sequence.EMPTY_SEQUENCE;
+                    }
+
+                case FSN_GET_RESOURCE_BY_ABSOLUTE_ID:
+                    return getResourceByAbsoluteId((IntegerValue)arg);
+
+                default:
+                    throw new XPathException(this, "No function: " + getName() + "#" + getSignature().getArgumentCount());
+
+            }
+        } catch (final PermissionDeniedException e) {
+            throw new XPathException(this, arg.getStringValue() + ": permission denied to read resource");
         } catch (final LockException le) {
             throw new XPathException(this, "Unable to lock resource", le);
         } catch (final IOException ioe) {
             throw new XPathException(this, "Unable to read binary resource", ioe);
-        } catch (final URISyntaxException e) {
-            throw new XPathException(this, "Invalid resource uri: " + args[0].getStringValue(), e);
-        } catch (final PermissionDeniedException e) {
-            throw new XPathException(this, args[0].getStringValue() + ": permission denied to read resource");
         }
-        
-        return result;
     }
 
-    private Sequence documentNameOrId(final DocumentImpl doc) throws XPathException {
-        Objects.nonNull(doc);
-
-        final Sequence result;
-        final QName fnName = getSignature().getName();
-        if(fnName.equals(QN_DOCUMENT_NAME)) {
-            result = new StringValue(doc.getFileURI().toString());
-        } else if(fnName.equals(QN_DOCUMENT_ID)) {
-            result = new IntegerValue(doc.getDocId(), Type.INT);
-        } else if(fnName.equals(QN_ABSOLUTE_RESOURCE_ID)) {
-            BigInteger absoluteId = BigInteger.valueOf(doc.getCollection().getId());
-            absoluteId = absoluteId.shiftLeft(32);
-            absoluteId = absoluteId.or(BigInteger.valueOf(doc.getDocId()));
-            absoluteId = absoluteId.shiftLeft(1);
-            absoluteId = absoluteId.or(BigInteger.valueOf(doc.getResourceType() & 1));
-            result = new IntegerValue(absoluteId, Type.INTEGER);
-        } else {
-            result = Sequence.EMPTY_SEQUENCE;
+    private @Nullable <T> T getFromDocument(final XmldbURI docUri, final Function<DocumentImpl, T> docFn) throws PermissionDeniedException {
+        try (final LockedDocument lockedDoc = context.getBroker().getXMLResource(docUri, LockMode.READ_LOCK)) {
+            if (lockedDoc == null) {
+                return null;
+            } else {
+                return docFn.apply(lockedDoc.getDocument());
+            }
         }
-
-        return result;
     }
 
-    private Sequence resourceById(final Sequence args[]) throws IOException, PermissionDeniedException, XPathException, LockException {
-        final QName fnName = getSignature().getName();
-        if (fnName.equals(QN_GET_RESOURCE_BY_ABSOLUTE_ID)) {
-            final IntegerValue absoluteIdParam = (IntegerValue) args[0].itemAt(0);
-            BigInteger absoluteId = absoluteIdParam.toJavaObject(BigInteger.class);
+    private static BigInteger getAbsoluteResourceId(final DocumentImpl doc) {
+        return encodeAbsoluteResourceId(doc.getCollection().getId(), doc.getDocId(), doc.getResourceType());
+    }
 
-            final byte resourceType = absoluteId.testBit(0) ? DocumentImpl.BINARY_FILE : DocumentImpl.XML_FILE;
-            absoluteId = absoluteId.shiftRight(1);
-            final int documentId = absoluteId.and(BigInteger.valueOf(0xFFFFFFFF)).intValue();
-            absoluteId = absoluteId.shiftRight(32);
-            final int collectionId = absoluteId.and(BigInteger.valueOf(0xFFFFFFFF)).intValue();
+    private Sequence getResourceByAbsoluteId(final IntegerValue ivAbsoluteId)
+            throws XPathException, PermissionDeniedException, LockException, IOException {
+        final BigInteger absoluteId = ivAbsoluteId.toJavaObject(BigInteger.class);
+        final Tuple3<Integer, Integer, Byte> decoded = decodeAbsoluteResourceId(absoluteId);
 
-            final DocumentImpl doc = context.getBroker().getResourceById(collectionId, resourceType, documentId);
-            if(doc != null) {
-                try(final ManagedDocumentLock docLock = context.getBroker().getBrokerPool().getLockManager().acquireDocumentReadLock(doc.getURI())) {
-                    if (doc instanceof BinaryDocument) {
-                        final BinaryDocument bin = (BinaryDocument) doc;
-                        final InputStream is = context.getBroker().getBinaryResource(bin);
-                        final Base64BinaryDocument b64doc = Base64BinaryDocument.getInstance(context, is);
-                        return b64doc;
-                    } else {
-                        return new NodeProxy(doc);
-                    }
+        final DocumentImpl doc = context.getBroker().getResourceById(decoded._1, decoded._3, decoded._2);
+        if (doc != null) {
+            try (final ManagedDocumentLock docLock = context.getBroker().getBrokerPool().getLockManager().acquireDocumentReadLock(doc.getURI())) {
+                if (doc instanceof BinaryDocument) {
+                    final BinaryDocument bin = (BinaryDocument) doc;
+                    final InputStream is = context.getBroker().getBinaryResource(bin);
+                    return Base64BinaryDocument.getInstance(context, is);
+                } else {
+                    return new NodeProxy(doc);
                 }
             }
-
-            return Sequence.EMPTY_SEQUENCE;
-        } else {
-            return Sequence.EMPTY_SEQUENCE;
         }
+
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private static BigInteger encodeAbsoluteResourceId(final int collectionId, final int documentId, final byte resourceType) {
+        BigInteger absoluteId = BigInteger.valueOf(collectionId);
+        absoluteId = absoluteId.shiftLeft(32);
+        absoluteId = absoluteId.or(BigInteger.valueOf(documentId));
+        absoluteId = absoluteId.shiftLeft(1);
+        absoluteId = absoluteId.or(BigInteger.valueOf(resourceType & 1));
+        return absoluteId;
+    }
+
+    private static Tuple3<Integer, Integer, Byte> decodeAbsoluteResourceId(BigInteger absoluteId) {
+        final byte resourceType = absoluteId.testBit(0) ? DocumentImpl.BINARY_FILE : DocumentImpl.XML_FILE;
+        absoluteId = absoluteId.shiftRight(1);
+        final int documentId = absoluteId.and(BigInteger.valueOf(0xFFFFFFFF)).intValue();
+        absoluteId = absoluteId.shiftRight(32);
+        final int collectionId = absoluteId.and(BigInteger.valueOf(0xFFFFFFFF)).intValue();
+        return Tuple(collectionId, documentId, resourceType);
     }
 }

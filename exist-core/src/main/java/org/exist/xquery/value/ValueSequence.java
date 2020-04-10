@@ -20,6 +20,7 @@
  */
 package org.exist.xquery.value;
 
+import com.evolvedbinary.j8fu.function.FunctionE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
@@ -98,6 +99,14 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         for (final Item item : items) {
             add(item);
         }
+    }
+
+    public static <T> ValueSequence of(final FunctionE<T, Item, XPathException> mapper, final T... things) throws XPathException {
+        final ValueSequence valueSequence = new ValueSequence(things.length);
+        for (final T thing : things) {
+            valueSequence.add(mapper.apply(thing));
+        }
+        return valueSequence;
     }
 
     public void keepUnOrdered(final boolean flag) {
