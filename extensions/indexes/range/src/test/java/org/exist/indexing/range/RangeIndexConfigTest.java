@@ -21,6 +21,7 @@ package org.exist.indexing.range;
 
 import org.apache.logging.log4j.Logger;
 import org.easymock.Capture;
+import org.exist.util.JDKCompatibility;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -104,7 +105,7 @@ public class RangeIndexConfigTest {
         loggerField.setAccessible(true);
 
         // remove final modifier
-        final Field modifiersField = Field.class.getDeclaredField("modifiers");
+        final Field modifiersField = JDKCompatibility.getModifiersField();
         modifiersField.setAccessible(true);
         modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
 
