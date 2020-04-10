@@ -28,7 +28,9 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.function.IntSupplier;
 
 public class DoubleValue extends NumericValue {
     // m × 2^e, where m is an integer whose absolute value is less than 2^53,
@@ -39,7 +41,7 @@ public class DoubleValue extends NumericValue {
     public static final DoubleValue NEGATIVE_INFINITY = new DoubleValue(Double.NEGATIVE_INFINITY);
     public static final DoubleValue NaN = new DoubleValue(Double.NaN);
 
-    private final double value;
+    final double value;
 
     public DoubleValue(final double value) {
         this.value = value;
@@ -122,6 +124,23 @@ public class DoubleValue extends NumericValue {
     @Override
     public boolean isPositive() {
         return (Double.compare(value, 0.0) > Constants.EQUAL);
+    }
+
+    @Override
+    protected @Nullable IntSupplier createComparisonWith(final NumericValue other) {
+        final IntSupplier comparison;
+        if (other instanceof IntegerValue) {
+            comparison = () -> BigDecimal.valueOf(value).compareTo(new BigDecimal(((IntegerValue)other).value));
+        } else if (other instanceof DecimalValue) {
+            comparison = () -> BigDecimal.valueOf(value).compareTo(((DecimalValue)other).value);
+        } else if (other instanceof DoubleValue) {
+            comparison = () -> Double.compare(value, ((DoubleValue)other).value);
+        } else if (other instanceof FloatValue) {
+            comparison = () -> Double.compare(value, ((FloatValue)other).value);
+        } else {
+            return null;
+        }
+        return comparison;
     }
 
     @Override

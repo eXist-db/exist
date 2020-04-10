@@ -28,7 +28,9 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.function.IntSupplier;
 
 /**
  * @author wolf
@@ -42,7 +44,7 @@ public class FloatValue extends NumericValue {
     public final static FloatValue NEGATIVE_INFINITY = new FloatValue(Float.NEGATIVE_INFINITY);
     public final static FloatValue ZERO = new FloatValue(0.0E0f);
 
-    protected float value;
+    final float value;
 
     public FloatValue(float value) {
         this.value = value;
@@ -126,6 +128,23 @@ public class FloatValue extends NumericValue {
 
     public boolean isPositive() {
         return (Float.compare(value, 0f) > Constants.EQUAL);
+    }
+
+    @Override
+    protected @Nullable IntSupplier createComparisonWith(final NumericValue other) {
+        final IntSupplier comparison;
+        if (other instanceof IntegerValue) {
+            comparison = () -> BigDecimal.valueOf(value).compareTo(new BigDecimal(((IntegerValue)other).value));
+        } else if (other instanceof DecimalValue) {
+            comparison = () -> BigDecimal.valueOf(value).compareTo(((DecimalValue)other).value);
+        } else if (other instanceof DoubleValue) {
+            comparison = () -> BigDecimal.valueOf(value).compareTo(BigDecimal.valueOf(((DoubleValue)other).value));
+        } else if (other instanceof FloatValue) {
+            comparison = () -> Float.compare(value, ((FloatValue)other).value);
+        } else {
+            return null;
+        }
+        return comparison;
     }
 
     public boolean hasFractionalPart() {
