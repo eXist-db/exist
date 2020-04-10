@@ -2,9 +2,6 @@ language: java
 
 dist: xenial
 
-services:
-  - docker
-
 # NOTE: To speed up multiple builds - Docker container is only built on JDK8, dependency checks also only happen on JDK8
 env:
   - BUILD_DOCKER=false
@@ -16,6 +13,8 @@ matrix:
       env:
         - BUILD_DOCKER=true
         - MAVEN_OPTS=""
+      services:
+        - docker
     - jdk: openjdk9
     - jdk: openjdk10
     - jdk: openjdk11
