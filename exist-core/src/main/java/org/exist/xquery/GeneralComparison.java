@@ -57,6 +57,7 @@ import java.util.List;
  *
  * @author  wolf
  * @author  andrzej@chaeron.com
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class GeneralComparison extends BinaryOp implements Optimizable, IndexUseReporter
 {
@@ -984,7 +985,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         }
     }
 
-    private AtomicValue convertForCompareAtomic(final AtomicValue value, final int thisType, final int otherType)
+    private AtomicValue convertForGeneralComparison(final AtomicValue value, final int thisType, final int otherType)
             throws XPathException {
         if (thisType == Type.UNTYPED_ATOMIC) {
 
@@ -1040,6 +1041,48 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         return value;
     }
 
+    private AtomicValue convertForValueComparison(final AtomicValue value, final int thisType, final int otherType)
+            throws XPathException {
+        /*
+            if the two operands are instances of different primitive types then:
+         */
+        if (Type.primitiveTypeOf(thisType) != Type.primitiveTypeOf(otherType)) {
+
+            /*
+                a. If each operand is an instance of one of the types xs:string or xs:anyURI,
+                   then both operands are cast to type xs:string.
+             */
+            if ((Type.subTypeOf(thisType, Type.STRING) || thisType == Type.ANY_URI)
+                    && (Type.subTypeOf(otherType, Type.STRING) || otherType ==Type.ANY_URI)) {
+                return value.convertTo(Type.STRING);
+            }
+
+            /*
+                b. If each operand is an instance of one of the types xs:decimal or xs:float,
+                then both operands are cast to type xs:float.
+             */
+            if ((Type.subTypeOf(thisType, Type.DECIMAL) || thisType == Type.FLOAT)
+                    && (Type.subTypeOf(otherType, Type.DECIMAL) || otherType == Type.FLOAT)) {
+                return value.convertTo(Type.FLOAT);
+            }
+
+            /*
+             *  c. If each operand is an instance of one of the types xs:decimal, xs:float, or xs:double,
+             *     then both operands are cast to type xs:double.
+             */
+            if ((Type.subTypeOf(thisType, Type.DECIMAL) || thisType == Type.FLOAT || thisType == Type.DOUBLE)
+                    && (Type.subTypeOf(otherType, Type.DECIMAL) || otherType == Type.FLOAT || otherType == Type.DOUBLE)) {
+                return value.convertTo(Type.DOUBLE);
+            }
+
+            /*
+             *  d. Otherwise, a type error is raised [err:XPTY0004].
+             */
+            throw new XPathException(ErrorCodes.XPTY0004, "Incompatible primitive types");
+        }
+
+        return value;
+    }
 
     /**
      * Cast the atomic operands into a comparable type and compare them.
@@ -1053,16 +1096,16 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
      * @throws XPathException if an error occurs during the comparison
      */
     private boolean compareAtomic(final Collator collator, AtomicValue lv, AtomicValue rv) throws XPathException {
-        // get types locally as convertForCompareAtomic will change the types of the AtomicValue itself
-        final int ltype = lv.getType();
-        final int rtype = rv.getType();
+        // get types locally as convertForCompareAtomic may change the types of the AtomicValue itself
+        int ltype = lv.getType();
+        int rtype = rv.getType();
 
-        lv = convertForCompareAtomic(lv, ltype, rtype);
-        rv = convertForCompareAtomic(rv, rtype, ltype);
+        lv = convertForGeneralComparison(lv, ltype, rtype);
+        rv = convertForGeneralComparison(rv, rtype, ltype);
 
         // if truncation is set, we always do a string comparison
         if (truncation != StringTruncationOperator.NONE) {
-            lv = lv.convertTo( Type.STRING );
+            lv = lv.convertTo(Type.STRING);
         }
 
         switch (truncation) {
@@ -1074,11 +1117,24 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
             case BOTH:
                 return lv.contains(collator, rv);
-
-            default:
-                // If right value is () always return false
-                return rv.isEmpty() ? false : lv.compareTo(collator, relation, rv);
         }
+
+        /*
+         * If an atomized operand is an empty sequence, the result of the value comparison is an empty sequence
+         * and the implementation need not evaluate the other operand or apply the operator.
+         */
+        if (lv.isEmpty() || rv.isEmpty()) {
+            return false;
+        }
+
+        // get types locally as convertForValueComparison may change the types of the AtomicValue itself
+        ltype = lv.getType();
+        rtype = rv.getType();
+
+        lv = convertForValueComparison(lv, ltype, rtype);
+        rv = convertForValueComparison(rv, rtype, ltype);
+
+        return lv.compareTo(collator, relation, rv);
     }
 
 
