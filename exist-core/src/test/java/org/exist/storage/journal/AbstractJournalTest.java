@@ -53,6 +53,8 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -1404,7 +1406,7 @@ public abstract class AbstractJournalTest<T> {
         //set Journal#journalMinSize = 0, so that switch files will always happen
         final Field fldMinReplace = Journal.class.getDeclaredField("journalSizeMin");
         fldMinReplace.setAccessible(true);
-        final Field modifiersField = Field.class.getDeclaredField( "modifiers" );
+        final Field modifiersField = JDKCompatibility.getModifiersField();
         modifiersField.setAccessible( true );
         modifiersField.setInt( fldMinReplace, fldMinReplace.getModifiers() & ~Modifier.FINAL );
         final Field fldJournal = JournalManager.class.getDeclaredField("journal");
