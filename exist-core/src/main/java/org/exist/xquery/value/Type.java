@@ -460,24 +460,34 @@ public class Type {
      *
      * @param subtype the type constant of the subtype
      * @param supertype type constant of the super type
+     *
      * @return true if subtype is a sub type of supertype
+     *
      * @throws IllegalArgumentException When the type is invalid
      */
-    public static boolean subTypeOf(int subtype, int supertype) {
+    public static boolean subTypeOf(int subtype, final int supertype) {
         if (subtype == supertype) {
             return true;
         }
-        //Note that it will return true even if subtype == EMPTY
-        if (supertype == ITEM || supertype == ANY_TYPE)
-        //maybe return subtype != EMPTY ?
-        {
+
+        if (supertype == ITEM || supertype == ANY_TYPE) {
+            // Note: this will return true even if subtype == EMPTY, maybe return subtype != EMPTY ?
             return true;
         }
-        //Note that EMPTY is *not* a sub-type of anything else than itself
-        //EmptySequence has to take care of this when it checks its type
+
+        // Note that EMPTY is *not* a sub-type of anything else than itself
+        // EmptySequence has to take care of this when it checks its type
         if (subtype == ITEM || subtype == EMPTY || subtype == ANY_TYPE || subtype == NODE) {
             return false;
         }
+
+        if (unionTypes.containsKey(supertype)) {
+            return subTypeOfUnion(subtype, supertype);
+        }
+        if (unionTypes.containsKey(subtype)) {
+            return unionMembersHaveSuperType(subtype, supertype);
+        }
+
         subtype = superTypes[subtype];
         if (subtype == 0) {
             throw new IllegalArgumentException(
@@ -599,6 +609,27 @@ public class Type {
             }
         }
         return false;
+    }
+
+    public static boolean unionMembersHaveSuperType(final int unionType, final int supertype) {
+        final IntArraySet members = unionTypes.get(unionType);
+        if (members == null || members.size() == 0) {
+            return false;
+        }
+
+        // inherited behaviour from {@link #subTypeOf(int, int)}
+        // where type is considered a subtype of itself.
+        if (supertype == unionType) {
+            return true;
+        }
+
+        for (final int member : members) {
+            if (!subTypeOf(member, supertype)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
