@@ -60,12 +60,12 @@ after_failure:
 
 deploy:
 
-  # Build and publish Docker Image for Docker tag `release` from latest Git tag for JDK 8
+  # Build and publish Docker Image for Docker tag `release` from updates to Git `master` branch with JDK8
   - provider: script
     skip_cleanup: true
     on:
       jdk: openjdk8
-      tag: true
+      branch: master
     script:
       - |
         pushd exist-docker
