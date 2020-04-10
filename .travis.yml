@@ -5,12 +5,17 @@ dist: xenial
 services:
   - docker
 
+# NOTE: To speed up multiple builds - Docker container is only built on JDK8, dependency checks also only happen on JDK8
 env:
-  - BUILD_DOCKER=true
+  - BUILD_DOCKER=false
+  - MAVEN_OPTS="-Ddependency-check.skip=true"
 
 matrix:
   include:
     - jdk: openjdk8
+      env:
+        - BUILD_DOCKER=true
+        - MAVEN_OPTS=""
     - jdk: openjdk9
     - jdk: openjdk10
     - jdk: openjdk11
@@ -21,8 +26,6 @@ matrix:
       osx_image: xcode9.3
       env:
         - JAVA_HOME=$(/usr/libexec/java_home)
-        - BUILD_DOCKER=false
-        - MAVEN_OPTS="-Ddependency-check.skip=true"
 
 cache:
   directories:
@@ -44,7 +47,6 @@ deploy:
     on:
       jdk: openjdk8
       tag: true
-      condition: $BUILD_DOCKER = true
     script:
       - |
         pushd exist-docker
@@ -57,7 +59,6 @@ deploy:
     on:
       jdk: openjdk8
       branch: develop
-      condition: $BUILD_DOCKER = true
     script:
       - |
         pushd exist-docker
