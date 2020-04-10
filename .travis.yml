@@ -1,6 +1,6 @@
 language: java
 
-dist: xenial
+dist: bionic
 
 # NOTE: To speed up multiple builds - Docker container is only built on JDK8, dependency checks also only happen on JDK8
 
