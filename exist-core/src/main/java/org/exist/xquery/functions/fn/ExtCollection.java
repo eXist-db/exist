@@ -25,14 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.DefaultDocumentSet;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.NewArrayNodeSet;
-import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.*;
 import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
@@ -215,22 +208,26 @@ public class ExtCollection extends Function {
     }
 
     private Sequence toSequence(final DocumentSet docs) throws XPathException {
-        final NodeSet result = new NewArrayNodeSet();
+        final Sequence result = new ValueSequence();
         final LockManager lockManager = context.getBroker().getBrokerPool().getLockManager();
         for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
             final DocumentImpl doc = i.next();
 
-            ManagedDocumentLock dlock = null;
-            try {
-                if (!context.inProtectedMode()) {
-                    dlock = lockManager.acquireDocumentReadLock(doc.getURI());
-                }
-                result.add(new NodeProxy(doc));
-            } catch (final LockException e) {
-                throw new XPathException(this, ErrorCodes.FODC0002, e);
-            } finally {
-                if (dlock != null) {
-                    dlock.close();
+            // filter out binary documents, fn:collection should only return XML documents
+            if (doc.getResourceType() == DocumentImpl.XML_FILE) {
+
+                ManagedDocumentLock dlock = null;
+                try {
+                    if (!context.inProtectedMode()) {
+                        dlock = lockManager.acquireDocumentReadLock(doc.getURI());
+                    }
+                    result.add(new NodeProxy(doc));
+                } catch (final LockException e) {
+                    throw new XPathException(this, ErrorCodes.FODC0002, e);
+                } finally {
+                    if (dlock != null) {
+                        dlock.close();
+                    }
                 }
             }
         }
