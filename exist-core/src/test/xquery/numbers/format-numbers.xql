@@ -209,7 +209,7 @@ declare
     %test:pending("It is not clear why this should be invalid according to the XQ3.1 spec")
     %test:args("12345.6")
     %test:assertError("FODF1310")
-function fd:invalid-picture($number as numeric) {
+function fd:invalid-picture($number as xs:numeric) {
     format-number($number, "#.###,00")
 };
 
