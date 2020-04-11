@@ -499,11 +499,11 @@ return
     </test>
     <test output="text">
         <task>fn:filter function (wrong argument order: deprecated)</task>
-        <code>fn:filter(function($a) {$a mod 2 = 0}, 1 to 10)</code>
-        <expected>2 4 6 8 10</expected>
+        <code>fn:filter(function($a) {$a mod 2 = 0}, (1 to 10))</code>
+        <error>XPTY0004</error>
     </test>
     <test output="text">
-        <task>fn:filter function (correct argument order)</task>
+        <task>fn:filter function</task>
         <code>fn:filter(1 to 10, function($a) {$a mod 2 = 0})</code>
         <expected>2 4 6 8 10</expected>
     </test>
