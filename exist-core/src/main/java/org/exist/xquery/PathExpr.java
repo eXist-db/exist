@@ -241,7 +241,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                         && !(expr instanceof EnclosedExpr)) {
                     throw new XPathException(this, ErrorCodes.XPTY0019,
                             "left operand of '/' must be a node. Got '" +
-                                    Type.getTypeName(result.getItemType()) +
+                                    Type.getTypeName(result.getItemType()) + " " +
                                     result.getCardinality().getHumanDescription() + "'");
                 }
                 //contextDocs == null *is* significant

@@ -65,21 +65,32 @@ public class FunSubSequence extends Function {
 
     @Override
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
-        // statically check the argument list
-        checkArguments();
-        // call analyze for each argument
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
         unordered = (contextInfo.getFlags() & UNORDERED) > 0;
         contextId = contextInfo.getContextId();
         contextInfo.setParent(this);
 
+        final SequenceType[] argumentTypes = mySignature.getArgumentTypes();
         for (int i = 0; i < getArgumentCount(); i++) {
+            final Expression arg = getArgument(i);
+
+            // call analyze for each argument
             final AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
-            getArgument(i).analyze(argContextInfo);
+            arg.analyze(argContextInfo);
             if (i == 0) {
                 contextInfo.setStaticReturnType(argContextInfo.getStaticReturnType());
             }
+
+            if (!argumentsChecked) {
+                // statically check the argument
+                SequenceType argType = null;
+                if (argumentTypes != null && i < argumentTypes.length) {
+                    argType = argumentTypes[i];
+                }
+                checkArgument(arg, argType, argContextInfo, i + 1);
+            }
         }
+        argumentsChecked = true;
     }
 
     @Override
