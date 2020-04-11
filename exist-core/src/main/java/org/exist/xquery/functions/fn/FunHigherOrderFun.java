@@ -104,18 +104,6 @@ public class FunHigherOrderFun extends BasicFunction {
 	}
 
     @Override
-	protected void checkArgument(final Expression arg, @Nullable final SequenceType argType,
-			final AnalyzeContextInfo argContextInfo, final int argPosition) throws XPathException {
-        // hack: order of parameters for filter and other functions has changed
-        // in final XQ3 spec. This would cause some core apps (dashboard) to stop
-        // working. We thus switch parameters dynamically until all users can be expected to
-        // have updated to 2.2.
-        if (!isCalledAs("filter")) {
-            super.checkArgument(arg, argType, argContextInfo, argPosition);
-        }
-    }
-
-    @Override
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		cachedContextInfo = new AnalyzeContextInfo(contextInfo);
         super.analyze(cachedContextInfo);
@@ -135,20 +123,9 @@ public class FunHigherOrderFun extends BasicFunction {
 				}
 			}
         } else if (isCalledAs("filter")) {
-            final FunctionReference refParam;
-            final Sequence seq;
-            // Hack: switch parameters for backwards compatibility
-            if (Type.subTypeOf(args[1].getItemType(), Type.FUNCTION_REFERENCE)) {
-                refParam = (FunctionReference) args[1].itemAt(0);
-                seq = args[0];
-            } else {
-                refParam = (FunctionReference) args[0].itemAt(0);
-                seq = args[1];
-            }
-
-            try (final FunctionReference ref = refParam) {
+			try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
 				ref.analyze(cachedContextInfo);
-				for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+				for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
 					final Item item = i.nextItem();
 					final Sequence r = ref.evalFunction(null, null, new Sequence[]{item.toSequence()});
 					if (r.effectiveBooleanValue()) {
