@@ -192,7 +192,7 @@ function upt:unparsed-text-available-fragment-identifier() {
 
 declare 
     %test:assertFalse
-function upt:fragment-identifier-encoding() {
+function upt:unparsed-text-available-fragment-identifier-encoding() {
     unparsed-text-available("http://www.example.org/#fragment", "UTF-8")
 };
 

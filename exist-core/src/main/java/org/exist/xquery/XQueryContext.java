@@ -49,6 +49,8 @@ import com.evolvedbinary.j8fu.function.TriFunctionE;
 import com.evolvedbinary.j8fu.function.QuadFunctionE;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import com.ibm.icu.text.Collator;
+import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectRBTreeMap;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
@@ -165,10 +167,10 @@ public class XQueryContext implements BinaryValueManager, Context {
     private Deque<Map<String, String>> namespaceStack = new ArrayDeque<>();
 
     // Known user defined functions in the local module
-    private TreeMap<FunctionId, UserDefinedFunction> declaredFunctions = new TreeMap<>();
+    private Map<FunctionId, UserDefinedFunction> declaredFunctions = new Object2ObjectAVLTreeMap<>();
 
     // Globally declared variables
-    protected Map<QName, Variable> globalVariables = new TreeMap<>();
+    protected Map<QName, Variable> globalVariables = new Object2ObjectRBTreeMap<>();
 
     // The last element in the linked list of local in-scope variables
     private LocalVariable lastVar = null;
@@ -581,8 +583,8 @@ public class XQueryContext implements BinaryValueManager, Context {
         ctx.inheritNamespaces = this.inheritNamespaces;
         ctx.orderEmptyGreatest = this.orderEmptyGreatest;
 
-        ctx.declaredFunctions = new TreeMap<>(this.declaredFunctions);
-        ctx.globalVariables = new TreeMap<>(this.globalVariables);
+        ctx.declaredFunctions = new Object2ObjectAVLTreeMap<>(this.declaredFunctions);
+        ctx.globalVariables = new Object2ObjectRBTreeMap<>(this.globalVariables);
         ctx.attributes = new HashMap<>(this.attributes);
 
         // make imported modules available in the new context
@@ -1659,24 +1661,24 @@ public class XQueryContext implements BinaryValueManager, Context {
             throw new XPathException(function, ErrorCodes.XQST0060, "Every declared function name must have a non-null namespace URI, but function '" + name + "' does not meet this requirement.");
         }
 
-        declaredFunctions.put(function.getSignature().getFunctionId(), function);
-//      if (declaredFunctions.get(function.getSignature().getFunctionId()) == null)
-//              declaredFunctions.put(function.getSignature().getFunctionId(), function);
-//      else
-//          throw new XPathException("XQST0034: function " + function.getName() + " is already defined with the same arity");
+        final FunctionId functionKey = function.getSignature().getFunctionId();
+        if (declaredFunctions.containsKey(functionKey)) {
+            throw new XPathException(ErrorCodes.XQST0034, "Function " + function.getName() + "#" + function.getArgumentCount() + " is already defined.");
+        } else {
+            declaredFunctions.put(functionKey, function);
+        }
     }
 
     @Override
     @Nullable
-    public UserDefinedFunction resolveFunction(final QName name, final int argCount) throws XPathException {
+    public UserDefinedFunction resolveFunction(final QName name, final int argCount) {
         final FunctionId id = new FunctionId(name, argCount);
         return declaredFunctions.get(id);
     }
 
     @Override
     public Iterator<FunctionSignature> getSignaturesForFunction(final QName name) {
-        final ArrayList<FunctionSignature> signatures = new ArrayList<>(2);
-
+        final List<FunctionSignature> signatures = new ArrayList<>(2);
         for (final UserDefinedFunction func : declaredFunctions.values()) {
             if (func.getName().equals(name)) {
                 signatures.add(func.getSignature());
@@ -1837,12 +1839,12 @@ public class XQueryContext implements BinaryValueManager, Context {
                 return true;
             }
         }
-        return globalVariables.get(qname) != null;
+        return globalVariables.containsKey(qname);
     }
 
     @Override
     public Map<QName, Variable> getVariables() {
-        final Map<QName, Variable> variables = new HashMap<>(globalVariables);
+        final Map<QName, Variable> variables = new Object2ObjectRBTreeMap<>(globalVariables);
         LocalVariable end = contextStack.peek();
         for (LocalVariable var = lastVar; var != null; var = var.before) {
             if (var == end) {
@@ -1892,7 +1894,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public Map<QName, Variable> getGlobalVariables() {
-        return new HashMap<>(globalVariables);
+        return new Object2ObjectRBTreeMap<>(globalVariables);
     }
 
     /**

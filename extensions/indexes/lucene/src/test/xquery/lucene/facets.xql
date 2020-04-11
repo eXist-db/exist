@@ -469,20 +469,20 @@ function facet:hierarchical-facets-query-subjects($paths as xs:string+) {
 
 declare
     %test:arg("paths", "2017")
-    %test:assertEquals('{"03":2}')
+    %test:assertEquals("03=2")
     %test:arg("paths", "2019")
-    %test:assertEquals('{"03":1,"04":1}')
-function facet:hierarchical-facets-retrieve($paths as xs:string*) {
+    %test:assertEqualsPermutation("03=1", "04=1")
+function facet:hierarchical-facets-retrieve-1($paths as xs:string*) {
     let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
     let $facets := ft:facets($result, "date", (), $paths)
     return
-        serialize($facets, map { "method": "json" })
+        facet:map-to-string($facets)
 };
 
 declare
     %test:arg("paths", "science")
     %test:assertEqualsPermutation("math=1", "engineering=1")
-function facet:hierarchical-facets-retrieve($paths as xs:string*) {
+function facet:hierarchical-facets-query-and-sort-by-dateretrieve-2($paths as xs:string*) {
     let $result := collection("/db/lucenetest")//letter[ft:query(., ())]
     let $facets := ft:facets($result, "subject", (), $paths)
     return
@@ -516,16 +516,15 @@ function facet:hierarchical-subject() {
 };
 
 declare
-    %test:assertEquals('{"history":1}','{"engineering":1}')
+    %test:assertEqualsPermutation("history=1", "engineering=1")
 function facet:hierarchical-multivalue-subject() {
     let $result := collection("/db/lucenetest")//letter[ft:query(., 'from:susi')]
     let $facets := ft:facets($result, "subject", 10) (: Returns facet counts for "science" and "humanities" :)
     for $topic in map:keys($facets)
     order by $topic
     return
-        serialize(
-            ft:facets($result, "subject", 10, $topic), (: Get facet counts for sub-categories :)
-            map { "method": "json" }
+        facet:map-to-string(
+            ft:facets($result, "subject", 10, $topic) (: Get facet counts for sub-categories :)
         )
 };
 
@@ -563,14 +562,14 @@ declare
     %test:assertEquals("Basia Kowalska", "Basia Müller", "Babsi Müller")
 function facet:query-and-sort-by-date() {
     for $letter in collection("/db/lucenetest")//letter[ft:query(., "from:heinz", map { "fields": "date" })]
-    order by ft:field($letter, $field, "xs:date")
+    order by ft:field($letter, "date", "xs:date")
     return
         $letter/to/text()
 };
 
 declare
     %test:assertEquals("Hans", "Rudi")
-function facet:query-and-sort-by-date() {
+function facet:query-and-sort-by-time() {
     for $letter in collection("/db/lucenetest")//letter[ft:query(., "place:berlin", map { "fields": "time" })]
     order by ft:field($letter, "time", "xs:time")
     return

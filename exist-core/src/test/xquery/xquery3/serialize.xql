@@ -513,18 +513,6 @@ function ser:adaptive-array-with-NaN-map-params() {
 };
 
 declare
-    %test:assertEquals('[xs:float("NaN")]')
-function ser:adaptive-array-with-NaN() {
-    ser:adaptive([ xs:float("NaN") ])
-};
-
-declare
-    %test:assertEquals('[xs:float("NaN")]')
-function ser:adaptive-array-with-NaN-map-params() {
-    ser:adaptive-map-params([ xs:float("NaN") ])
-};
-
-declare
     %test:assertEquals('1-2-3-4-5')
 function ser:adaptive-seq-with-item-separator() {
     ser:adaptive(1 to 5, "-")

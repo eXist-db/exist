@@ -82,7 +82,7 @@ function pt:filtered-last() {
 
 declare 
     %test:assertEquals("<test/>")
-function pt:filtered-last() {
+function pt:filtered-last-preceding-sibling() {
     let $test := pt:doc()//test[@n]/preceding-sibling::*
     return
         $test[last()]

@@ -374,20 +374,6 @@ function ct:optimize-lt() {
 collection($ct:COLLECTION)//tei:term[@n < "b"][. = "eins"]
 };
 
-
-declare
-%test:assertEquals("eins")
-function ct:index-lt() {
-range:index-keys-for-field("termsBeforeB", function($k, $n) { $k }, 10)
-};
-
-declare
-%test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
-function ct:optimize-lt() {
-collection($ct:COLLECTION)//tei:term[@n < "b"][. = "eins"]
-};
-
 declare
 %test:stats
 %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
