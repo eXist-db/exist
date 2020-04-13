@@ -1,54 +1,50 @@
 language: java
 
-dist: xenial
+dist: bionic
 
-services:
-  - docker
-
-env:
-  - BUILD_DOCKER=true
+# NOTE: To speed up multiple builds - Docker container is only built on JDK8, dependency checks also only happen on JDK8
 
 matrix:
   include:
+
     - jdk: openjdk8
+      env:
+        - BUILD_DOCKER=true
+        - MAVEN_OPTS="-Ddependency-check.skip=false"
+      services:
+        - docker
+
     - jdk: openjdk9
+      env:
+        - BUILD_DOCKER=false
+        - MAVEN_OPTS="-Ddependency-check.skip=true"
+
     - jdk: openjdk10
+      env:
+        - BUILD_DOCKER=false
+        - MAVEN_OPTS="-Ddependency-check.skip=true"
+
     - jdk: openjdk11
+      env:
+        - BUILD_DOCKER=false
+        - MAVEN_OPTS="-Ddependency-check.skip=true"
+
     - jdk: openjdk12
+      env:
+        - BUILD_DOCKER=false
+        - MAVEN_OPTS="-Ddependency-check.skip=true"
+
     - jdk: openjdk13
+      env:
+        - BUILD_DOCKER=false
+        - MAVEN_OPTS="-Ddependency-check.skip=true"
 
     - os: osx
       osx_image: xcode9.3
       env:
-         - JAVA_HOME=$(/usr/libexec/java_home)
-         - BUILD_DOCKER=false
-         - MAVEN_OPTS="-Ddependency-check.skip=true"
-
-deploy:
-  - provider: script
-    skip_cleanup: true
-    on:
-      jdk: openjdk8
-      tag: true
-      condition: $BUILD_DOCKER = true
-  #  before_script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  # see https://github.com/travis-ci/dpl/issues/673
-    script: >-
-      cd exist-docker &&
-      mvn -DskipTests -Ddocker.tag=release -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push &&
-      cd ..
-
-  - provider: script
-    skip_cleanup: true
-    on:
-      jdk: openjdk8
-      branch: develop
-      condition: $BUILD_DOCKER = true
-    script: >-
-      cd exist-docker &&
-      mvn -DskipTests -Ddocker.tag=latest -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push &&
-      cd ..
-
+        - JAVA_HOME=$(/usr/libexec/java_home)
+        - BUILD_DOCKER=false
+        - MAVEN_OPTS="-Ddependency-check.skip=true"
 
 cache:
   directories:
@@ -62,5 +58,31 @@ after_failure:
    - tar -cjf surefire-reports.tar.bz2 exist-core/target/surefire-reports exist-core/target/test-logs-*
    - curl -v -u $CHUNK_USER:$CHUNK_PW -sT surefire-reports.tar.bz2 chunk.io
 
+deploy:
+
+  # Build and publish Docker Image for Docker tag `release` from updates to Git `master` branch with JDK8
+  - provider: script
+    skip_cleanup: true
+    on:
+      jdk: openjdk8
+      branch: master
+    script:
+      - |
+        pushd exist-docker
+        mvn -DskipTests -Ddocker.tag=release -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
+        popd
+
+  # Build and publish Docker Image for Docker tag `latest` from updates to Git `develop` branch with JDK8
+  - provider: script
+    skip_cleanup: true
+    on:
+      jdk: openjdk8
+      branch: develop
+    script:
+      - |
+        pushd exist-docker
+        mvn -DskipTests -Ddocker.tag=latest -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
+        popd
+
 notifications:
-  slack: exist-db:IXzUdqA0n11cnxaDz43ZQgdX
+  slack: exist-db:$SLACK_TOKEN
