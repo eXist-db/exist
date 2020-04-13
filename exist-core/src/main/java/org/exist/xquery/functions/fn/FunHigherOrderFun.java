@@ -120,14 +120,19 @@ public class FunHigherOrderFun extends BasicFunction {
 		cachedContextInfo = new AnalyzeContextInfo(contextInfo);
         super.analyze(cachedContextInfo);
 	}
-	
+
 	@Override
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
+	public Sequence eval(final Sequence[] args, final Sequence contextSequence)
 			throws XPathException {
         Sequence result = new ValueSequence();
+
         if (isCalledAs("for-each")) {
             try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
 				ref.analyze(cachedContextInfo);
+				if (funcRefHasDifferentArity(ref, 1)) {
+					throw new XPathException(this, ErrorCodes.XPTY0004,
+							"The supplied function (" + ref.getStringValue() + ") has " + ref.getSignature().getArgumentCount() + " arguments - expected 1");
+				}
 				for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
 					final Item item = i.nextItem();
 					final Sequence r = ref.evalFunction(null, null, new Sequence[]{item.toSequence()});
@@ -148,9 +153,18 @@ public class FunHigherOrderFun extends BasicFunction {
 
             try (final FunctionReference ref = refParam) {
 				ref.analyze(cachedContextInfo);
+				if (funcRefHasDifferentArity(ref, 1)) {
+					throw new XPathException(this, ErrorCodes.XPTY0004,
+							"The supplied function (" + ref.getStringValue() + ") has " + ref.getSignature().getArgumentCount() + " arguments - expected 1");
+				}
+
 				for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
 					final Item item = i.nextItem();
 					final Sequence r = ref.evalFunction(null, null, new Sequence[]{item.toSequence()});
+
+					// call to effectiveBooleanValue is not spec compliant
+					// spec: https://www.w3.org/TR/xpath-functions/#func-filter
+					// two pending tests in exist-core/src/test/xquery/xquery3/fnHigherOrderFunctions.xql
 					if (r.effectiveBooleanValue()) {
 						result.add(item);
 					}
@@ -159,6 +173,10 @@ public class FunHigherOrderFun extends BasicFunction {
         } else if (isCalledAs("fold-left")) {
             try (final FunctionReference ref = (FunctionReference) args[2].itemAt(0)) {
 				ref.analyze(cachedContextInfo);
+				if (funcRefHasDifferentArity(ref, 2)) {
+					throw new XPathException(this, ErrorCodes.XPTY0004,
+							"The supplied function (" + ref.getStringValue() + ") has " + ref.getSignature().getArgumentCount() + " arguments - expected 2");
+				}
 				final Sequence seq = args[0];
 				final Sequence zero = args[1];
 				result = foldLeft(ref, zero, seq.iterate());
@@ -166,6 +184,10 @@ public class FunHigherOrderFun extends BasicFunction {
         } else if (isCalledAs("fold-right")) {
             try (final FunctionReference ref = (FunctionReference) args[2].itemAt(0)) {
 				ref.analyze(cachedContextInfo);
+				if (funcRefHasDifferentArity(ref, 2)) {
+					throw new XPathException(this, ErrorCodes.XPTY0004,
+							"The supplied function (" + ref.getStringValue() + ") has " + ref.getSignature().getArgumentCount() + " arguments - expected 2");
+				}
 				final Sequence zero = args[1];
 				final Sequence seq = args[0];
 				if (seq instanceof ValueSequence) {
@@ -179,6 +201,10 @@ public class FunHigherOrderFun extends BasicFunction {
         } else if (isCalledAs("for-each-pair")) {
             try (final FunctionReference ref = (FunctionReference) args[2].itemAt(0)) {
 				ref.analyze(cachedContextInfo);
+				if (funcRefHasDifferentArity(ref, 2)) {
+					throw new XPathException(this, ErrorCodes.XPTY0004,
+							"The supplied function (" + ref.getStringValue() + ") has " + ref.getSignature().getArgumentCount() + " arguments - expected 2");
+				}
 				final SequenceIterator i1 = args[0].iterate();
 				final SequenceIterator i2 = args[1].iterate();
 				while (i1.hasNext() && i2.hasNext()) {
@@ -191,7 +217,7 @@ public class FunHigherOrderFun extends BasicFunction {
 			try (final FunctionReference ref = (FunctionReference) args[0].itemAt(0)) {
 				ref.analyze(cachedContextInfo);
 				final ArrayType array = (ArrayType) args[1].itemAt(0);
-				if (!ref.getSignature().isOverloaded() && ref.getSignature().getArgumentCount() != array.getSize()) {
+				if (funcRefHasDifferentArity(ref, array.getSize())) {
 					throw new XPathException(this, ErrorCodes.FOAP0001, "Number of arguments supplied to fn:apply does not match function signature. Expected: " +
 							ref.getSignature().getArgumentCount() + ", got: " + array.getSize());
 				}
@@ -235,5 +261,9 @@ public class FunHigherOrderFun extends BasicFunction {
 		final Sequence head = seq.itemAt(0).toSequence();
 		final Sequence tailResult = foldRight(ref, zero, seq.tail());
 		return ref.evalFunction(null, null, new Sequence[] { head, tailResult });
+	}
+
+	private boolean funcRefHasDifferentArity(final FunctionReference ref, final int n) {
+		return (!ref.getSignature().isOverloaded() && ref.getSignature().getArgumentCount() != n);
 	}
 }
