@@ -30,7 +30,7 @@ import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.XPathException;
 
-import java.util.HashSet;
+import javax.annotation.Nullable;
 
 /**
  * Defines all built-in types and their relations.
@@ -121,87 +121,120 @@ public class Type {
     }
 
     static {
+        // ANY types
         defineSubType(ANY_TYPE, ANY_SIMPLE_TYPE);
         defineSubType(ANY_TYPE, UNTYPED);
+
+        // ANY_SIMPLE types
         defineSubType(ANY_SIMPLE_TYPE, ATOMIC);
         defineSubType(ANY_SIMPLE_TYPE, NUMBER);
-        defineSubType(NODE, ELEMENT);
-        defineSubType(NODE, ATTRIBUTE);
-        defineSubType(NODE, TEXT);
-        defineSubType(NODE, PROCESSING_INSTRUCTION);
-        defineSubType(NODE, COMMENT);
-        defineSubType(NODE, DOCUMENT);
-        defineSubType(NODE, NAMESPACE);
-        defineSubType(NODE, CDATA_SECTION);
 
-        //THIS type system is broken - some of the below should be sub-types of ANY_SIMPLE_TYPE
-        //and some should not!
+        // ITEM sub-types
         defineSubType(ITEM, ATOMIC);
-        defineSubType(ATOMIC, STRING);
-        defineSubType(ATOMIC, BOOLEAN);
-        defineSubType(ATOMIC, QNAME);
+        defineSubType(ITEM, FUNCTION_REFERENCE);
+        //defineSubType(ITEM, NODE);                // TODO(AR) this appears in the XDM 3.1, but uncommenting this breaks a lot of stuff in eXist-db
+
+        // ATOMIC sub-types
         defineSubType(ATOMIC, ANY_URI);
-        defineSubType(ATOMIC, UNTYPED_ATOMIC);
-        defineSubType(ATOMIC, JAVA_OBJECT);
-        defineSubType(ATOMIC, DATE_TIME);
-        defineSubType(ATOMIC, DATE);
-        defineSubType(ATOMIC, TIME);
-        defineSubType(ATOMIC, DURATION);
-        defineSubType(ATOMIC, GYEAR);
-        defineSubType(ATOMIC, GMONTH);
-        defineSubType(ATOMIC, GDAY);
-        defineSubType(ATOMIC, GYEARMONTH);
-        defineSubType(ATOMIC, GMONTHDAY);
         defineSubType(ATOMIC, BASE64_BINARY);
-        defineSubType(ATOMIC, HEX_BINARY);
-        defineSubType(ATOMIC, NOTATION);
-
-        defineSubType(DURATION, YEAR_MONTH_DURATION);
-        defineSubType(DURATION, DAY_TIME_DURATION);
-
+        defineSubType(ATOMIC, BOOLEAN);
+        defineSubType(ATOMIC, DATE);
+        defineSubType(ATOMIC, DATE_TIME);
         defineSubType(ATOMIC, DECIMAL);
-        defineSubType(ATOMIC, FLOAT);
         defineSubType(ATOMIC, DOUBLE);
+        defineSubType(ATOMIC, DURATION);
+        defineSubType(ATOMIC, FLOAT);
+        defineSubType(ATOMIC, GDAY);
+        defineSubType(ATOMIC, GMONTH);
+        defineSubType(ATOMIC, GMONTHDAY);
+        defineSubType(ATOMIC, GYEAR);
+        defineSubType(ATOMIC, GYEARMONTH);
+        defineSubType(ATOMIC, HEX_BINARY);
+        defineSubType(ATOMIC, JAVA_OBJECT);
+        defineSubType(ATOMIC, NOTATION);
+        defineSubType(ATOMIC, QNAME);
+        defineSubType(ATOMIC, STRING);
+        defineSubType(ATOMIC, TIME);
+        defineSubType(ATOMIC, UNTYPED_ATOMIC);
 
+        // DATE_TIME sub-types
+        //defineSubType(DATE_TIME, DATE_TIME_STAMP);
+
+        // DURATION sub-types
+        defineSubType(DURATION, DAY_TIME_DURATION);
+        defineSubType(DURATION, YEAR_MONTH_DURATION);
+
+        // DECIMAL sub-types
         defineSubType(DECIMAL, INTEGER);
 
-        defineSubType(INTEGER, NON_POSITIVE_INTEGER);
-        defineSubType(NON_POSITIVE_INTEGER, NEGATIVE_INTEGER);
-
+        // INTEGER sub-types
         defineSubType(INTEGER, LONG);
+        defineSubType(INTEGER, NON_NEGATIVE_INTEGER);
+        defineSubType(INTEGER, NON_POSITIVE_INTEGER);
+
+        // LONG sub-types
         defineSubType(LONG, INT);
+
+        // INT sub-types
         defineSubType(INT, SHORT);
+
+        // SHORT sub-types
         defineSubType(SHORT, BYTE);
 
-        defineSubType(INTEGER, NON_NEGATIVE_INTEGER);
+        // NON_NEGATIVE_INTEGER sub-types
         defineSubType(NON_NEGATIVE_INTEGER, POSITIVE_INTEGER);
-
         defineSubType(NON_NEGATIVE_INTEGER, UNSIGNED_LONG);
+
+        // UNSIGNED_LONG sub-types
         defineSubType(UNSIGNED_LONG, UNSIGNED_INT);
+
+        // UNSIGNED_INT sub-types
         defineSubType(UNSIGNED_INT, UNSIGNED_SHORT);
+
+        // UNSIGNED_SHORT sub-types
         defineSubType(UNSIGNED_SHORT, UNSIGNED_BYTE);
 
+        // NON_POSITIVE_INTEGER sub-types
+        defineSubType(NON_POSITIVE_INTEGER, NEGATIVE_INTEGER);
+
+        // STRING sub-types
         defineSubType(STRING, NORMALIZED_STRING);
+
+        // NORMALIZED_STRING sub-types
         defineSubType(NORMALIZED_STRING, TOKEN);
+
+        // TOKEN sub-types
         defineSubType(TOKEN, LANGUAGE);
-        defineSubType(TOKEN, NMTOKEN);
         defineSubType(TOKEN, NAME);
+        defineSubType(TOKEN, NMTOKEN);
+
+        // NAME sub-types
         defineSubType(NAME, NCNAME);
+
+        // NCNAME sub-types
+        defineSubType(NCNAME, ENTITY);
         defineSubType(NCNAME, ID);
         defineSubType(NCNAME, IDREF);
-        defineSubType(NCNAME, ENTITY);
 
-        defineSubType(ITEM, FUNCTION_REFERENCE);
+        // FUNCTION_REFERENCE sub-types
         defineSubType(FUNCTION_REFERENCE, MAP);
         defineSubType(FUNCTION_REFERENCE, ARRAY);
+
+        // NODE types
+        defineSubType(NODE, ATTRIBUTE);
+        defineSubType(NODE, CDATA_SECTION);  // TODO(AR) this doesn't appear in the XDM 3.1
+        defineSubType(NODE, COMMENT);
+        defineSubType(NODE, DOCUMENT);
+        defineSubType(NODE, ELEMENT);
+        defineSubType(NODE, NAMESPACE);
+        defineSubType(NODE, PROCESSING_INSTRUCTION);
+        defineSubType(NODE, TEXT);
     }
 
     static {
-        //TODO : use NODETYPES above ?
-        //TODO use parentheses after the nodes name  ?
         defineBuiltInType(NODE, "node()");
         defineBuiltInType(ITEM, "item()");
-        defineBuiltInType(EMPTY, "empty-sequence()","empty()"); // keep empty() for backward compatibility
+        defineBuiltInType(EMPTY, "empty-sequence()", "empty()");                                // keep `empty()` for backward compatibility
 
         defineBuiltInType(ELEMENT, "element()");
         defineBuiltInType(DOCUMENT, "document-node()");
@@ -214,19 +247,17 @@ public class Type {
 
         defineBuiltInType(JAVA_OBJECT, "object");
         defineBuiltInType(FUNCTION_REFERENCE, "function(*)", "function");
-        defineBuiltInType(MAP, "map(*)", "map"); // keep map for backward compatibility
+        defineBuiltInType(MAP, "map(*)", "map");                                                // keep `map` for backward compatibility
         defineBuiltInType(ARRAY, "array(*)","array");
-        defineBuiltInType(NUMBER, "xs:numeric", "numeric"); // keep numeric for backward compatibility
+        defineBuiltInType(NUMBER, "xs:numeric", "numeric");                                     // keep `numeric` for backward compatibility
 
         defineBuiltInType(ANY_TYPE, "xs:anyType");
         defineBuiltInType(ANY_SIMPLE_TYPE, "xs:anySimpleType");
         defineBuiltInType(UNTYPED, "xs:untyped");
 
-        //Duplicate definition : new one first
-        defineBuiltInType(ATOMIC, "xs:anyAtomicType", "xdt:anyAtomicType");
+        defineBuiltInType(ATOMIC, "xs:anyAtomicType", "xdt:anyAtomicType");                     // keep `xdt:anyAtomicType` for backward compatibility
 
-        //Duplicate definition : new one first
-        defineBuiltInType(UNTYPED_ATOMIC, "xs:untypedAtomic", "xdt:untypedAtomic");
+        defineBuiltInType(UNTYPED_ATOMIC, "xs:untypedAtomic", "xdt:untypedAtomic");             // keep `xdt:untypedAtomic` for backward compatibility
 
         defineBuiltInType(BOOLEAN, "xs:boolean");
         defineBuiltInType(DECIMAL, "xs:decimal");
@@ -266,10 +297,8 @@ public class Type {
         defineBuiltInType(GYEARMONTH, "xs:gYearMonth");
         defineBuiltInType(GMONTHDAY, "xs:gMonthDay");
 
-        //Duplicate definition : new one first
-        defineBuiltInType(YEAR_MONTH_DURATION, "xs:yearMonthDuration", "xdt:yearMonthDuration");
-        //Duplicate definition : new one first
-        defineBuiltInType(DAY_TIME_DURATION, "xs:dayTimeDuration", "xdt:dayTimeDuration");
+        defineBuiltInType(YEAR_MONTH_DURATION, "xs:yearMonthDuration", "xdt:yearMonthDuration");    // keep `xdt:yearMonthDuration` for backward compatibility
+        defineBuiltInType(DAY_TIME_DURATION, "xs:dayTimeDuration", "xdt:dayTimeDuration");          // keep `xdt:dayTimeDuration` for backward compatibility
 
         defineBuiltInType(NORMALIZED_STRING, "xs:normalizedString");
         defineBuiltInType(TOKEN, "xs:token");
@@ -399,8 +428,12 @@ public class Type {
      * @param type the type constant
      * @return name of the type
      */
-    public static String getTypeName(int type) {
-        return typeNames.get(type)[0];
+    public static @Nullable String getTypeName(final int type) {
+        final String[] names = typeNames.get(type);
+        if (names != null) {
+            return names[0];
+        }
+        return null;
     }
 
     /**
@@ -409,7 +442,7 @@ public class Type {
      * @param type the type constant
      * @return one or more alias names
      */
-    public static String[] getTypeAliases(int type) {
+    public static @Nullable String[] getTypeAliases(final int type) {
         final String names[] = typeNames.get(type);
         if (names != null && names.length > 1) {
             final String aliases[] = new String[names.length - 1];
@@ -426,9 +459,7 @@ public class Type {
      * @return type constant
      * @throws XPathException in case of dynamic error
      */
-    public static int getType(String name) throws XPathException {
-        //if (name.equals("node"))
-        //	return NODE;
+    public static int getType(final String name) throws XPathException {
         final int code = typeCodes.getInt(name);
         if (code == NO_SUCH_VALUE) {
             throw new XPathException("Type: " + name + " is not defined");
@@ -443,7 +474,7 @@ public class Type {
      * @return type constant
      * @throws XPathException in case of dynamic error
      */
-    public static int getType(QName qname) throws XPathException {
+    public static int getType(final QName qname) throws XPathException {
         final String uri = qname.getNamespaceURI();
         switch (uri) {
             case Namespaces.SCHEMA_NS:
@@ -526,7 +557,7 @@ public class Type {
      * @param type2 type constant for the second type
      * @return common super type or {@link Type#ITEM} if none
      */
-    public static int getCommonSuperType(int type1, int type2) {
+    public static int getCommonSuperType(final int type1, final int type2) {
         //Super shortcut
         if (type1 == type2) {
             return type1;
@@ -542,7 +573,7 @@ public class Type {
         //TODO : optimize by swapping the arguments based on their numeric values ?
         //Processing lower value first *should* reduce the size of the Set
         //Collect type1's super-types
-        final HashSet<Integer> t1 = new HashSet<>();
+        final IntSet t1 = new IntOpenHashSet(Hash.DEFAULT_INITIAL_SIZE, Hash.VERY_FAST_LOAD_FACTOR);
         //Don't introduce a shortcut (starting at getSuperType(type1) here
         //type2 might be a super-type of type1
         int t;
