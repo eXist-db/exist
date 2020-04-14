@@ -1,6 +1,6 @@
 xquery version "3.1";
 
-module namespace rt="combined-range-function-signature-test";
+module namespace rt="http://exist-db.org/xquery/range/combined-range-function-signature/test";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 

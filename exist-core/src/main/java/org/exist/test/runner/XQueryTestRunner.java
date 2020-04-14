@@ -41,6 +41,7 @@ import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -142,9 +143,43 @@ public class XQueryTestRunner extends AbstractTestRunner {
     }
 
     private String getSuiteName() {
-         return info.getNamespace();
-//        final String filename = path.getFileName().toString();
-//        return filename.substring(0, filename.indexOf('.') - 1);
+         return namespaceToPackageName(info.getNamespace());
+    }
+
+    private String namespaceToPackageName(final String namespace) {
+        try {
+            final URI uri = new URI(namespace);
+            final StringBuilder packageName = new StringBuilder();
+            hostNameToPackageName(uri.getHost(), packageName);
+            pathToPackageName(uri.getPath(), packageName);
+            packageName.insert(0, "xqts.");  // add "xqts." prefix
+            return packageName.toString();
+        } catch (final URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void hostNameToPackageName(String host, final StringBuilder buffer) {
+        while (host != null && !host.isEmpty()) {
+            if (buffer.length() > 0) {
+                buffer.append('.');
+            }
+
+            final int idx = host.lastIndexOf('.');
+            if (idx > -1) {
+                buffer.append(host.substring(idx + 1));
+                host = host.substring(0, idx);
+            } else {
+                buffer.append(host);
+                host = null;
+            }
+        }
+    }
+
+    private void pathToPackageName(String path, final StringBuilder buffer) {
+        path = path.replace('.', '_');
+        path = path.replace('/', '.');
+        buffer.append(path);
     }
 
     @Override
