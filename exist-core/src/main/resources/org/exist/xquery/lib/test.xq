@@ -139,7 +139,8 @@ declare function t:run-test($test as element(test), $count as xs:integer,
       return if (count($ops2[matches(., 'highlight-matches')]))
         then string-join($ops2, ' ')
         else string-join(($ops2, $highlight-option), ' ')
-    let $_notify-start := if(not(empty($test-started-function))) then $test-started-function($test/task) else ()
+    let $test-name := ($test/@id[. ne ""], $test/task)[1]
+    let $_notify-start := if(not(empty($test-started-function))) then $test-started-function($test-name) else ()
     let $queryOutput :=
         try {
             map {
@@ -230,9 +231,9 @@ declare function t:run-test($test as element(test), $count as xs:integer,
                 if (not($OK)) then
                     let $_notify :=
                         if(not(empty($expanded("error")))) then
-                            if(not(empty($test-error-function))) then $test-error-function($test/task, $expanded("error")) else ()
+                            if(not(empty($test-error-function))) then $test-error-function($test-name, $expanded("error")) else ()
                         else
-                            if(not(empty($test-failure-function))) then $test-failure-function($test/task, map { "value": $test/expected/node(), "xpath": $test/xpath/node(), "error": $test/error/node() }, $expanded) else ()
+                            if(not(empty($test-failure-function))) then $test-failure-function($test-name, map { "value": $test/expected/node(), "xpath": $test/xpath/node(), "error": $test/error/node() }, $expanded) else ()
                     return
                         ($test/task, $test/expected, $test/xpath, <result>{$expanded("result"), if(not(empty($expanded("error")))) then $expanded("error")("description") else ()}</result>)
                 else
@@ -240,7 +241,7 @@ declare function t:run-test($test as element(test), $count as xs:integer,
             }
             </test>
             ,
-            let $_notify-finished := if(not(empty($test-finished-function))) then $test-finished-function($test/task) else ()
+            let $_notify-finished := if(not(empty($test-finished-function))) then $test-finished-function($test-name) else ()
             return ()
         )
 };
@@ -300,7 +301,8 @@ declare function t:run-testSet($set as element(TestSet), $id as xs:string?,
                 if($test[empty(@ignore) or @ignore = "no"])then
                     $test
                 else
-                    let $_notify-ignored := if(not(empty($test-ignored-function))) then $test-ignored-function($test/task) else ()
+                    let $test-name := ($test/@id[. ne ""], $test/task)[1]
+                    let $_notify-ignored := if(not(empty($test-ignored-function))) then $test-ignored-function($test-name) else ()
                     return ()
     let $result := util:expand(
            <TestSet>
