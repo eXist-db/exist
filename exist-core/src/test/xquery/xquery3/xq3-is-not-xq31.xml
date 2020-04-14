@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TestSet>
-    <testName>xquery3 arrow operator</testName>
+    <testName>no 3.1 features in xquery 3.0</testName>
     <description>
-        <p>Arrow operator in XQuery 3</p>
+        <p>Ensure that setting xquery version to 3.0
+            does not allow xquery3.1 features</p>
         <author>Joe Wicentowski</author>
         <author>Dmitriy Shabanov</author>
     </description>
-    <test output="text" id="arrow-op-from-31">
-        <task></task>
+    <test output="text" id="no-arrow-op-from-31">
+        <task>no arrow operator</task>
         <code><![CDATA[
 xquery version "3.0";
 
