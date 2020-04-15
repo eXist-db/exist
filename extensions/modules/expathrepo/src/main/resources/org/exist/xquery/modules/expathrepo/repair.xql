@@ -85,7 +85,7 @@ declare %private function repair:repair-callback($collection as xs:anyURI, $incl
 };
 
 declare function repair:is-installed($name as xs:string) as xs:boolean {
-    exists(filter(function($pkg) { $pkg = $name }, repo:list()))
+    exists(filter(repo:list(), function($pkg) { $pkg = $name }))
 };
 
 (:~ Scan a collection tree recursively starting at $root. Call $func once for each collection found :)
@@ -97,9 +97,9 @@ declare %private function repair:scan-collections($root as xs:anyURI, $func as f
 };
 
 declare %private function repair:find-resources-to-zip($collection as xs:anyURI) {
-    filter(function($name) {
+    filter(xmldb:get-child-resources($collection), function($name) {
         $name = ("expath-pkg.xml", "repo.xml", "exist.xml") or starts-with($name, "icon")
-    }, xmldb:get-child-resources($collection))
+    })
 };
 
 declare %private function repair:resources-to-zip($expathConf as element(expath:package), $collection as xs:anyURI) {
