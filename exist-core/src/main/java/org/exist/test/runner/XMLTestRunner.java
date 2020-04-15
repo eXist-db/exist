@@ -34,9 +34,7 @@ import org.exist.xquery.value.*;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -78,41 +76,42 @@ public class XMLTestRunner extends AbstractTestRunner {
         } catch (final ParserConfigurationException | IOException | SAXException e) {
             throw new InitializationError(e);
         }
-        this.info = extractTestInfo(doc);
+        this.info = extractTestInfo(path, doc);
     }
 
-    private static XMLTestInfo extractTestInfo(final Document doc) throws InitializationError {
-        String testName = null;
+    private static XMLTestInfo extractTestInfo(final Path path, final Document doc) throws InitializationError {
+        String testSetName = null;
         String description = null;
-        final List<String> childNames = new ArrayList<>();
+        final List<String> testNames = new ArrayList<>();
 
         final Node docElement = doc.getFirstChild();
         if(docElement == null) {
-            throw new InitializationError("Invalid XML test document");
+            throw new InitializationError("Invalid XML test document: " + path);
         }
 
         final NodeList children = docElement.getChildNodes();
-        for(int i = 0; i < children.getLength(); i++) {
+        for (int i = 0; i < children.getLength(); i++) {
             final Node child = children.item(i);
-            if(child.getNodeType() == Node.ELEMENT_NODE && child.getNamespaceURI() == null) {
+            if (child.getNodeType() == Node.ELEMENT_NODE && child.getNamespaceURI() == null) {
                 switch (child.getLocalName()) {
                     case "testName":
-                        testName = child.getTextContent().trim();
+                        testSetName = child.getTextContent().trim();
                         break;
                     case "description":
                         description = child.getTextContent().trim();
                         break;
                     case "test":
-                        final NodeList testChildren = child.getChildNodes();
-                        for (int j = 0; j < testChildren.getLength(); j++) {
-                            final Node testChild = testChildren.item(j);
-                            if (testChild.getNodeType() == Node.ELEMENT_NODE && testChild.getNamespaceURI() == null) {
-                                if (testChild.getLocalName().equals("task")) {
-                                    childNames.add(testChild.getTextContent().trim());
-                                }
-                            }
+                        // prefer @id over <task> for the test name
+                        String testName = getIdValue(child);
+                        if (testName == null) {
+                            testName = getTaskText(child);
                         }
+                        if (testName == null) {
+                            throw new InitializationError("Could not find @id or <task> within <test> of XML <TestSet> document:" + path.toAbsolutePath().toString());
+                        }
+                        testNames.add(testName);
                         break;
+
                     default:
                         // ignored
                         break;
@@ -120,15 +119,45 @@ public class XMLTestRunner extends AbstractTestRunner {
             }
         }
 
-        if(testName == null) {
-            throw new InitializationError("Could not find <testName> in XML test document");
+        if (testSetName == null) {
+            throw new InitializationError("Could not find <testName> in XML <TestSet> document: " + path.toAbsolutePath().toString());
         }
 
-        return new XMLTestInfo(testName, description, childNames);
+        return new XMLTestInfo(testSetName, description, testNames);
+    }
+
+    private static @Nullable String getIdValue(final Node test) {
+        String id = ((Element)test).getAttribute("id");
+        if (id != null) {
+            id = id.trim();
+            if (!id.isEmpty()) {
+                return id;
+            }
+        }
+        return null;
+    }
+
+    private static @Nullable String getTaskText(final Node test) {
+        final NodeList testChildren = test.getChildNodes();
+        for (int j = 0; j < testChildren.getLength(); j++) {
+            final Node testChild = testChildren.item(j);
+            if (testChild.getNodeType() == Node.ELEMENT_NODE && testChild.getNamespaceURI() == null && testChild.getLocalName().equals("task")) {
+                String textContent = testChild.getTextContent();
+                if (textContent != null) {
+                    textContent = textContent.trim();
+                    if (!textContent.isEmpty()) {
+                        return textContent;
+                    }
+                }
+                return null;
+            }
+        }
+        return null;
     }
 
     private String getSuiteName() {
-        return info.getName();
+        final String suiteName = "xmlts." + info.getName();  // add "xmlts." prefix
+        return suiteName;
     }
 
     @Override
