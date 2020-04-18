@@ -37,7 +37,7 @@ public class HexBinaryValueType extends BinaryValueType<HexOutputStream> {
     private final static Pattern hexPattern = Pattern.compile("[A-Fa-f0-9]*");
 
     public HexBinaryValueType() {
-        super(Type.HEX_BINARY, HexOutputStream.class);
+        super(Type.HEX_BINARY, HexOutputStream::new);
     }
 
     private Matcher getMatcher(final String toMatch) {

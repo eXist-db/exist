@@ -39,7 +39,7 @@ public class Base64BinaryValueType extends BinaryValueType<Base64OutputStream> {
     private final static Pattern base64Pattern = Pattern.compile("^((?>(?>\\s*[A-Za-z0-9+/]){4})*(?>(?>\\s*[A-Za-z0-9+/]){1}(?>\\s*[AQgw]){1}\\s*=\\s*=|(?>\\s*[A-Za-z0-9+/]){3}\\s*=)?)$");
 
     public Base64BinaryValueType() {
-        super(Type.BASE64_BINARY, Base64OutputStream.class);
+        super(Type.BASE64_BINARY, Base64OutputStream::new);
     }
 
     private Matcher getMatcher(final String toMatch) {
