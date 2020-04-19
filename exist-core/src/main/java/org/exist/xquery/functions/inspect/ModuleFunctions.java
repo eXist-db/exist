@@ -72,6 +72,7 @@ public class ModuleFunctions extends BasicFunction {
         if (getArgumentCount() == 1) {
             final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), context.getProfiler());
             tempContext.setModuleLoadPath(context.getModuleLoadPath());
+            tempContext.prepareForExecution();
 
             final String uri = ((AnyURIValue)args[0]).getStringValue();
 
