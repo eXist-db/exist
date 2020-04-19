@@ -320,7 +320,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * Should empty order greatest or least?
      */
-    private boolean orderEmptyGreatest = true;
+    private boolean orderEmptyGreatest = false;
 
     /**
      * XQuery 3.0 - declare context item :=
