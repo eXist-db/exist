@@ -2,7 +2,8 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dcterms="http://purl.org/dc/terms/"
     xmlns="http://exist-db.org/collection-config/1.0"
-    targetNamespace="http://exist-db.org/collection-config/1.0" elementFormDefault="qualified">
+    targetNamespace="http://exist-db.org/collection-config/1.0" elementFormDefault="qualified"
+    xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1">
 
     <xs:annotation>
         <xs:documentation>Schema for eXist-db Collection Configuration files /db/system/config/db/**/collection.xconf</xs:documentation>
@@ -16,78 +17,39 @@
     <xs:element name="collection" type="collectionType"/>
 
     <xs:complexType name="collectionType">
-        <xs:choice>
-            <xs:annotation>
-                <xs:documentation>Following structure ensures that at least one of index, triggers or validation is present and that each may only appear once</xs:documentation>
-            </xs:annotation>
-            <xs:sequence>
-                <xs:element ref="index"/>
-                <xs:element ref="triggers" minOccurs="0"/>
-                <xs:element ref="validation" minOccurs="0"/>
-            </xs:sequence>
-            <xs:sequence>
-                <xs:element ref="triggers"/>
-                <xs:element ref="validation" minOccurs="0"/>
-            </xs:sequence>
-            <xs:sequence>
-                <xs:element ref="validation"/>
-            </xs:sequence>
-        </xs:choice>
+        <xs:annotation>
+            <xs:documentation>At least one `index`, `triggers`, or `validation` element must be present, and each may only appear once.</xs:documentation>
+        </xs:annotation>
+        <xs:all>
+            <xs:element ref="index" minOccurs="0"/>
+            <xs:element ref="triggers" minOccurs="0"/>
+            <xs:element ref="validation" minOccurs="0"/>
+        </xs:all>
+        <xs:assert test="count(*) ge 1"/>
     </xs:complexType>
     <xs:element name="index" type="indexType"/>
-    <xs:complexType name="rangeType">
-        <xs:sequence>
-            <xs:element name="range"/>
-        </xs:sequence>
-    </xs:complexType>
     <xs:complexType name="indexType">
         <xs:annotation>
             <xs:documentation>Index Configuration</xs:documentation>
         </xs:annotation>
-        <xs:choice>
-            <xs:sequence>
-                <xs:element ref="lucene" minOccurs="0"/>
-                <xs:element ref="range" minOccurs="0"/>
-                <xs:element name="create" type="rangeIndexType" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="gml" minOccurs="0"/>
-            </xs:sequence>
-            <xs:sequence>
-                <xs:element ref="lucene"/>
-                <xs:element ref="range" minOccurs="0"/>
-                <xs:element name="create" type="rangeIndexType" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="gml" minOccurs="0"/>
-            </xs:sequence>
-            <xs:sequence>
-                <xs:element ref="range"/>
-                <xs:element name="create" type="rangeIndexType" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="gml" minOccurs="0"/>
-            </xs:sequence>
-            <xs:sequence>
-                <xs:element name="create" type="rangeIndexType" maxOccurs="unbounded"/>
-                <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="gml" minOccurs="0"/>
-            </xs:sequence>
-            <xs:sequence>
-                <xs:element ref="ngram" maxOccurs="unbounded"/>
-                <xs:element ref="gml" minOccurs="0"/>
-            </xs:sequence>
-            <xs:sequence>
-                <xs:element ref="gml"/>
-            </xs:sequence>
-        </xs:choice>
+        <xs:all>
+            <xs:element ref="lucene" minOccurs="0"/>
+            <xs:element ref="range" minOccurs="0"/>
+            <xs:element name="create" type="oldRangeIndexType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="gml" minOccurs="0"/>
+        </xs:all>
 
     </xs:complexType>
 
-    <xs:complexType name="rangeIndexType">
+    <xs:complexType name="oldRangeIndexType">
         <xs:annotation>
             <xs:documentation>Either @qname or @path must be specified. Not both!</xs:documentation>
         </xs:annotation>
         <xs:attributeGroup ref="pathOpt"/>
         <xs:attributeGroup ref="qnameOpt"/>
         <xs:attributeGroup ref="typeReq"/>
+        <xs:assert test="(@qname and not(@path)) or (@path and not(@qname))"/>
     </xs:complexType>
 
     <xs:element name="range" type="newRangeIndexType"/>
@@ -101,24 +63,382 @@
     <xs:element name="create" type="rangeIndexCreateType"/>
     
     <xs:complexType name="rangeIndexCreateType">
-        <xs:group ref="fieldDefinitions" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:group ref="fieldDefinitions"/>
         <xs:attributeGroup ref="qnameOpt"/>
         <xs:attributeGroup ref="typeOpt"/>
         <xs:attributeGroup ref="nestedOpt"/>
         <xs:attributeGroup ref="whitespaceOpt"/>
         <xs:attributeGroup ref="caseOpt"/>
-        <xs:attribute name="collation" use="optional" type="xs:string"/>
+        <xs:attributeGroup ref="collationOpt"/>
     </xs:complexType>
     
     <xs:group name="fieldDefinitions">
-        <xs:sequence>
+        <xs:all>
             <xs:element name="condition" type="newRangeIndexConditionType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="field" type="newRangeIndexFieldType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
+        </xs:all>
     </xs:group>
     
     <xs:complexType name="newRangeIndexConditionType">
+        <xs:attributeGroup ref="attributeReq"/>
+        <xs:attributeGroup ref="operatorOpt"/>
+        <xs:attributeGroup ref="valueReq"/>
+        <xs:attributeGroup ref="caseOpt"/>
+        <xs:attributeGroup ref="numericOpt"/>
+    </xs:complexType>
+    
+    <xs:complexType name="newRangeIndexFieldType">
+        <xs:attributeGroup ref="nameReq"/>
+        <xs:attributeGroup ref="matchOpt"/>
+        <xs:attributeGroup ref="caseOpt"/>
+        <xs:attributeGroup ref="nestedOpt"/>
+        <xs:attributeGroup ref="whitespaceOpt"/>
+        <xs:attributeGroup ref="typeReq"/>
+    </xs:complexType>
+    
+    <xs:element name="lucene" type="luceneType"/>
+
+    <xs:complexType name="luceneType">
+        <xs:all>
+            <xs:element ref="analyzer" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="module" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="text" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:group ref="textInstruction"/>
+        </xs:all>
+        <xs:attributeGroup ref="diacriticsOpt"/>
+    </xs:complexType>
+
+    <xs:element name="analyzer" type="analyzerType"/>
+
+    <xs:complexType name="analyzerType">
+        <xs:sequence minOccurs="0">
+            <xs:element ref="param" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attributeGroup ref="idOpt"/>
+        <xs:attributeGroup ref="classReq"/>
+    </xs:complexType>
+
+    <xs:element name="param" type="paramType"/>
+
+    <xs:complexType name="paramType">
+        <xs:sequence minOccurs="0">
+            <xs:element name="value" maxOccurs="unbounded" type="xs:string"/>
+        </xs:sequence>
+        <xs:attributeGroup ref="nameReq"/>
+        <xs:attribute name="type" type="xs:string" use="optional" default="java.lang.String"/>
+        <xs:attributeGroup ref="valueOpt"/>
+    </xs:complexType>
+    
+    <xs:element name="module" type="moduleType"/>
+    
+    <xs:complexType name="moduleType">
+        <xs:attributeGroup ref="uriReq"/>
+        <xs:attributeGroup ref="prefixReq"/>
+        <xs:attributeGroup ref="atReq"/>
+    </xs:complexType>
+
+    <xs:group name="textInstruction">
+        <xs:all>
+            <xs:element name="facet" minOccurs="0" maxOccurs="unbounded" type="facetAttrType"/>
+            <xs:element name="field" minOccurs="0" maxOccurs="unbounded" type="fieldAttrType"/>
+            <xs:element name="ignore" minOccurs="0" maxOccurs="unbounded" type="singleQnameAttrType"/>
+            <xs:element name="inline" minOccurs="0" maxOccurs="unbounded" type="singleQnameAttrType"/>
+            <xs:element name="match-attribute" minOccurs="0" maxOccurs="unbounded" type="matchAttrBoostType"/>
+            <xs:element name="match-sibling-attribute" minOccurs="0" maxOccurs="unbounded" type="matchAttrBoostType"/>
+            <xs:element name="has-attribute" minOccurs="0" maxOccurs="unbounded" type="hasAttrBoostType"/>
+            <xs:element name="has-sibling-attribute" minOccurs="0" maxOccurs="unbounded" type="hasAttrBoostType"/>
+        </xs:all>
+    </xs:group>
+
+    <xs:element name="text" type="textType"/>
+
+    <xs:complexType name="textType">
+        <xs:annotation>
+            <xs:documentation>Either @qname or @match must be specified. Not both!</xs:documentation>
+        </xs:annotation>
+        <xs:group ref="textInstruction"/>
+        <xs:attributeGroup ref="qnameOpt"/>
+        <xs:attributeGroup ref="matchOpt"/>
+        <xs:attributeGroup ref="analyzerOpt"/>
+        <xs:attributeGroup ref="boostOpt"/>
+        <xs:attributeGroup ref="fieldOpt"/>
+        <xs:attributeGroup ref="indexOpt"/>
+        <xs:assert test="(@qname and not(@match)) or (@match and not(@qname))"/>
+    </xs:complexType>
+
+    <xs:complexType name="facetAttrType">
+        <xs:attributeGroup ref="dimensionReq"/>
+        <xs:attributeGroup ref="expressionReq"/>
+        <xs:attributeGroup ref="hierarchicalOpt"/>
+    </xs:complexType>
+    
+    <xs:complexType name="fieldAttrType">
+        <xs:attributeGroup ref="nameReq"/>
+        <xs:attributeGroup ref="ifOpt"/>
+        <xs:attributeGroup ref="expressionOpt"/>
+        <xs:attributeGroup ref="typeOpt"/>
+        <xs:attributeGroup ref="analyzerOpt"/>
+        <xs:attributeGroup ref="storeOpt"/>
+    </xs:complexType>
+
+    <xs:complexType name="matchAttrBoostType">
+        <xs:attributeGroup ref="qnameReq"/>
+        <xs:attributeGroup ref="valueReq"/>
+        <xs:attributeGroup ref="boostReq"/>
+    </xs:complexType>
+
+    <xs:complexType name="hasAttrBoostType">
+        <xs:attributeGroup ref="qnameReq"/>
+        <xs:attributeGroup ref="boostReq"/>
+    </xs:complexType>
+
+    <xs:complexType name="singleQnameAttrType">
+        <xs:attributeGroup ref="qnameReq"/>
+    </xs:complexType>
+
+    <xs:element name="ngram" type="singleQnameAttrType"/>
+
+    <xs:element name="gml" type="gmlIndexType"/>
+
+    <xs:complexType name="gmlIndexType">
+        <xs:attributeGroup ref="flushAfterReq"/>
+    </xs:complexType>
+
+    <xs:element name="triggers" type="triggersType"/>
+
+    <xs:complexType name="triggersType">
+        <xs:annotation>
+            <xs:documentation>Trigger Configuration</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element ref="trigger" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="trigger" type="triggerType"/>
+
+    <xs:complexType name="triggerType">
+        <xs:sequence minOccurs="0">
+            <xs:element ref="parameter" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attributeGroup ref="eventOpt">
+            <xs:annotation>
+                <xs:documentation>This is deprecated, triggers should now code functions for each event</xs:documentation>
+            </xs:annotation>
+        </xs:attributeGroup>
+        <xs:attributeGroup ref="classReq"/>
+    </xs:complexType>
+
+    <xs:element name="parameter" type="parameterType"/>
+
+    <xs:complexType name="parameterType">
+        <xs:attributeGroup ref="nameReq"/>
+        <xs:attributeGroup ref="valueReq"/>
+    </xs:complexType>
+
+    <xs:element name="validation" type="validationType"/>
+
+    <xs:complexType name="validationType">
+        <xs:annotation>
+            <xs:documentation>Per collection validation-switch configuration</xs:documentation>
+        </xs:annotation>
+        <xs:attributeGroup ref="modeReq"/>
+    </xs:complexType>
+
+    <!--
+        We are hiding attributes in attributeGroup to manage their namespaces as 
+        described here: http://docstore.mik.ua/orelly/xml/schema/ch10_04.htm.
+        A side benefit of this is centralized definitions attributes that may be 
+        used by different elements.
+        Please keep the entries arranged in alphabetical order for easy lookup.
+        Note that there are -Opt and -Req pairs of many attributes. 
+        Ideally we could have just one definition of each attribute, but this 
+        is not possible because of form restrictions in XML Schema, so 
+        @use=required|optional has to be hardcoded in the xs:attributeGroup
+        definition.
+    -->
+
+    <xs:attributeGroup name="analyzerOpt">
+        <xs:attribute name="analyzer" type="xs:IDREF" use="optional" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="atReq">
+        <xs:attribute name="at" type="xs:anyURI" use="required" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="attributeReq">
         <xs:attribute name="attribute" type="xs:NCName" use="required"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="boostOpt">
+        <xs:attribute name="boost" type="xs:double" use="optional" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="boostReq">
+        <xs:attribute name="boost" type="xs:double" use="required" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="caseOpt">
+        <xs:attribute name="case" use="optional">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="yes">
+                        <xs:annotation>
+                            <xs:documentation>Case sensitive</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="no">
+                        <xs:annotation>
+                            <xs:documentation>Case insensitive</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="classReq">
+        <xs:attribute name="class" type="xs:string" use="required" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="collationOpt">
+        <xs:attribute name="collation" use="optional" type="xs:string"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="diacriticsOpt">
+        <xs:attribute name="diacritics" use="optional" default="yes">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="yes">
+                        <xs:annotation>
+                            <xs:documentation>Preserve diacritics</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="no">
+                        <xs:annotation>
+                            <xs:documentation>Strip diacritics</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="flushAfterReq">
+        <xs:attribute name="flushAfter" use="required" type="xs:positiveInteger"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="idOpt">
+        <xs:attribute name="id" use="optional" type="xs:ID"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="matchOpt">
+        <xs:attribute name="match" type="xs:string" use="optional" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="modeReq">
+        <xs:attribute name="mode" use="required" form="unqualified">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="auto"/>
+                    <xs:enumeration value="no"/>
+                    <xs:enumeration value="yes"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="nameReq">
+        <xs:attribute name="name" type="xs:NCName" use="required" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="nestedOpt">
+        <xs:attribute name="nested" use="optional">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="yes">
+                        <xs:annotation>
+                            <xs:documentation>Include descendant elements in index</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="no">
+                        <xs:annotation>
+                            <xs:documentation>Do not include descendant elements in index</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="dimensionReq">
+        <xs:attribute name="dimension" type="xs:string" use="required" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="expressionOpt">
+        <xs:attribute name="expression" type="xs:string" use="optional" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="expressionReq">
+        <xs:attribute name="expression" type="xs:string" use="required" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="eventOpt">
+        <xs:attribute name="event" use="optional" form="unqualified">
+            <xs:simpleType>
+                <xs:restriction base="xs:NCName">
+                    <xs:enumeration value="create"/>
+                    <xs:enumeration value="update"/>
+                    <xs:enumeration value="copy"/>
+                    <xs:enumeration value="move"/>
+                    <xs:enumeration value="delete"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="fieldOpt">
+        <xs:attribute name="field" type="xs:string" use="optional" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="hierarchicalOpt">
+        <xs:attribute name="hierarchical" use="optional">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="yes">
+                        <xs:annotation>
+                            <xs:documentation>Is hierarchical</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="no">
+                        <xs:annotation>
+                            <xs:documentation>Is not hierarchical</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>    
+    </xs:attributeGroup>
+    <xs:attributeGroup name="ifOpt">
+        <xs:attribute name="if" type="xs:string" use="optional" form="unqualified"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="indexOpt">
+        <xs:attribute name="index" use="optional">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="yes">
+                        <xs:annotation>
+                            <xs:documentation>Index the node</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="no">
+                        <xs:annotation>
+                            <xs:documentation>Do not index the node</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>    
+    </xs:attributeGroup>
+    <xs:attributeGroup name="numericOpt">
+        <xs:attribute name="numeric" use="optional" default="no">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="yes">
+                        <xs:annotation>
+                            <xs:documentation>Use numeric comparison for equality and ordinal comparisons</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="no">
+                        <xs:annotation>
+                            <xs:documentation>Use string comparison</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="operatorOpt">
         <xs:attribute name="operator" use="optional" default="eq">
             <xs:simpleType>
                 <xs:restriction base="xs:token">
@@ -175,333 +495,6 @@
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
-        <xs:attribute name="value" type="xs:string" use="required"/>
-        <xs:attributeGroup ref="caseOpt"/>
-        <xs:attribute name="numeric" use="optional" default="no">
-            <xs:simpleType>
-                <xs:restriction base="xs:token">
-                    <xs:enumeration value="yes">
-                        <xs:annotation>
-                            <xs:documentation>Use numeric comparison for equality and ordinal comparisons</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="no">
-                        <xs:annotation>
-                            <xs:documentation>Use string comparison</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                </xs:restriction>
-            </xs:simpleType>
-        </xs:attribute>
-    </xs:complexType>
-    
-    <xs:complexType name="newRangeIndexFieldType">
-        <xs:attributeGroup ref="nameReq"/>
-        <xs:attributeGroup ref="matchOpt"/>
-        <xs:attributeGroup ref="caseOpt"/>
-        <xs:attributeGroup ref="nestedOpt"/>
-        <xs:attributeGroup ref="whitespaceOpt"/>
-        <xs:attributeGroup ref="typeReq"/>
-    </xs:complexType>
-    
-    <xs:element name="lucene" type="luceneType"/>
-
-    <xs:complexType name="luceneType">
-        <xs:sequence>
-            <xs:element ref="analyzer" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element ref="module" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element ref="text" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:group ref="textInstruction" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
-        <xs:attribute name="diacritics" use="optional" default="yes">
-            <xs:simpleType>
-                <xs:restriction base="xs:string">
-                    <xs:enumeration value="yes">
-                        <xs:annotation>
-                            <xs:documentation>Preserve diacritics</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="no">
-                        <xs:annotation>
-                            <xs:documentation>Strip diacritics</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                </xs:restriction>
-            </xs:simpleType>
-        </xs:attribute>
-    </xs:complexType>
-
-    <xs:element name="analyzer" type="analyzerType"/>
-
-    <xs:complexType name="analyzerType">
-        <xs:sequence minOccurs="0">
-            <xs:element ref="param" minOccurs="1" maxOccurs="unbounded"/>
-        </xs:sequence>
-        <xs:attribute name="id" use="optional" type="xs:ID"/>
-        <xs:attributeGroup ref="class"/>
-    </xs:complexType>
-
-    <xs:element name="param" type="paramType"/>
-
-    <xs:complexType name="paramType">
-        <xs:sequence minOccurs="0">
-            <xs:element name="value" minOccurs="1" maxOccurs="unbounded" type="xs:string"/>
-        </xs:sequence>
-        <xs:attributeGroup ref="nameReq"/>
-        <xs:attribute name="type" type="xs:string" use="optional" default="java.lang.String"/>
-        <xs:attributeGroup ref="valueOpt"/>
-    </xs:complexType>
-    
-    <xs:element name="module" type="moduleType"/>
-    
-    <xs:complexType name="moduleType">
-        <xs:attributeGroup ref="uriReq"/>
-        <xs:attributeGroup ref="prefixReq"/>
-        <xs:attributeGroup ref="atReq"/>
-    </xs:complexType>
-
-    <xs:group name="textInstruction">
-        <xs:sequence>
-            <xs:element name="inline" minOccurs="0" maxOccurs="unbounded" type="singleQnameAttrType"/>
-            <xs:element name="ignore" minOccurs="0" maxOccurs="unbounded" type="singleQnameAttrType"/>
-            <xs:element name="match-attribute" minOccurs="0" maxOccurs="unbounded" type="matchAttrBoostType"/>
-            <xs:element name="facet" minOccurs="0" maxOccurs="unbounded" type="facetAttrType"/>
-            <xs:element name="field" minOccurs="0" maxOccurs="unbounded" type="fieldAttrType"/>
-            <xs:element name="has-attribute" minOccurs="0" maxOccurs="unbounded" type="hasAttrBoostType"/>
-            <xs:element name="match-sibling-attribute" minOccurs="0" maxOccurs="unbounded" type="matchAttrBoostType"/>
-            <xs:element name="has-sibling-attribute" minOccurs="0" maxOccurs="unbounded" type="hasAttrBoostType"/>
-        </xs:sequence>
-    </xs:group>
-
-    <xs:element name="text" type="textType"/>
-
-    <xs:complexType name="textType">
-        <xs:annotation>
-            <xs:documentation>Either @qname or @match must be specified. Not both!</xs:documentation>
-        </xs:annotation>
-        <xs:sequence minOccurs="0">
-            <xs:group ref="textInstruction"/>
-        </xs:sequence>
-        <xs:attributeGroup ref="qnameOpt"/>
-        <xs:attributeGroup ref="matchOpt"/>
-        <xs:attribute name="analyzer" use="optional" type="xs:IDREF"/>
-        <xs:attributeGroup ref="boostOpt"/>
-        <xs:attribute name="field" use="optional" type="xs:string"/>
-        <xs:attributeGroup ref="indexOpt"/>
-    </xs:complexType>
-
-    <xs:complexType name="facetAttrType">
-        <xs:attributeGroup ref="dimensionReq"/>
-        <xs:attributeGroup ref="expressionReq"/>
-        <xs:attributeGroup ref="hierarchicalOpt"/>
-    </xs:complexType>
-    
-    <xs:complexType name="fieldAttrType">
-        <xs:attributeGroup ref="nameReq"/>
-        <xs:attributeGroup ref="ifOpt"/>
-        <xs:attributeGroup ref="expressionOpt"/>
-        <xs:attributeGroup ref="typeOpt"/>
-        <xs:attributeGroup ref="analyzerOpt"/>
-        <xs:attributeGroup ref="storeOpt"/>
-    </xs:complexType>
-
-    <xs:complexType name="matchAttrBoostType">
-        <xs:annotation>
-            <xs:documentation>text element children match-attr or match-sibling-attr</xs:documentation>
-        </xs:annotation>
-        <xs:attributeGroup ref="qnameReq"/>
-        <xs:attributeGroup ref="valueReq"/>
-        <xs:attributeGroup ref="boostReq"/>
-    </xs:complexType>
-
-    <xs:complexType name="hasAttrBoostType">
-        <xs:annotation>
-            <xs:documentation>text element children has-attr or has-sibling-attr</xs:documentation>
-        </xs:annotation>
-        <xs:attributeGroup ref="qnameReq"/>
-        <xs:attributeGroup ref="boostReq"/>
-    </xs:complexType>
-
-    <xs:complexType name="singleQnameAttrType">
-        <xs:attributeGroup ref="qnameReq"/>
-    </xs:complexType>
-
-    <xs:element name="ngram" type="singleQnameAttrType"/>
-
-    <xs:element name="gml" type="gmlIndexType"/>
-
-    <xs:complexType name="gmlIndexType">
-        <xs:attribute name="flushAfter" use="required" type="xs:positiveInteger"/>
-    </xs:complexType>
-
-    <xs:element name="triggers" type="triggersType"/>
-
-    <xs:complexType name="triggersType">
-        <xs:annotation>
-            <xs:documentation>Trigger Configuration</xs:documentation>
-        </xs:annotation>
-        <xs:sequence>
-            <xs:element ref="trigger" minOccurs="1" maxOccurs="unbounded"/>
-        </xs:sequence>
-    </xs:complexType>
-
-    <xs:element name="trigger" type="triggerType"/>
-
-    <xs:complexType name="triggerType">
-        <xs:sequence minOccurs="0">
-            <xs:element ref="parameter" maxOccurs="unbounded"/>
-        </xs:sequence>
-        <xs:attribute name="event" use="optional" type="eventType">
-            <xs:annotation>
-                <xs:documentation>This is deprecated, triggers should now code functions for each event</xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attributeGroup ref="class"/>
-    </xs:complexType>
-
-    <xs:simpleType name="eventType">
-        <xs:restriction base="xs:NCName">
-            <xs:enumeration value="create"/>
-            <xs:enumeration value="update"/>
-            <xs:enumeration value="copy"/>
-            <xs:enumeration value="move"/>
-            <xs:enumeration value="delete"/>
-        </xs:restriction>
-    </xs:simpleType>
-
-    <xs:element name="parameter" type="parameterType"/>
-
-    <xs:complexType name="parameterType">
-        <xs:attributeGroup ref="nameReq"/>
-        <xs:attributeGroup ref="valueReq"/>
-    </xs:complexType>
-
-    <xs:element name="validation" type="validationType"/>
-
-    <xs:complexType name="validationType">
-        <xs:annotation>
-            <xs:documentation>Per collection validation-switch configuration</xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="mode" use="required" type="modeType"/>
-    </xs:complexType>
-
-    <xs:simpleType name="modeType">
-        <xs:restriction base="xs:token">
-            <xs:enumeration value="auto"/>
-            <xs:enumeration value="no"/>
-            <xs:enumeration value="yes"/>
-        </xs:restriction>
-    </xs:simpleType>
-
-    <!-- we are hiding attributes in attributeGroup to manage their
-        namespaces as described here: http://docstore.mik.ua/orelly/xml/schema/ch10_04.htm -->
-    <xs:attributeGroup name="class">
-        <xs:attribute name="class" type="xs:string" use="required" form="unqualified"/>
-    </xs:attributeGroup>
-
-    <!-- ideally we would have just one of each attribute - but due to the form restrictions in XML Schema
-    we need both -->
-    <xs:attributeGroup name="analyzerOpt">
-        <xs:attribute name="analyzer" type="xs:string" use="optional" form="unqualified"/>
-    </xs:attributeGroup>
-    <xs:attributeGroup name="atReq">
-        <xs:attribute name="at" type="xs:anyURI" use="required" form="unqualified"/>
-    </xs:attributeGroup>
-    <xs:attributeGroup name="boostOpt">
-        <xs:attribute name="boost" type="xs:double" use="optional" form="unqualified"/>
-    </xs:attributeGroup>
-    <xs:attributeGroup name="boostReq">
-        <xs:attribute name="boost" type="xs:double" use="required" form="unqualified"/>
-    </xs:attributeGroup>
-    <xs:attributeGroup name="caseOpt">
-        <xs:attribute name="case" use="optional">
-            <xs:simpleType>
-                <xs:restriction base="xs:token">
-                    <xs:enumeration value="yes">
-                        <xs:annotation>
-                            <xs:documentation>Case sensitive</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="no">
-                        <xs:annotation>
-                            <xs:documentation>Case insensitive</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                </xs:restriction>
-            </xs:simpleType>
-        </xs:attribute>
-    </xs:attributeGroup>
-    <xs:attributeGroup name="matchOpt">
-        <xs:attribute name="match" type="xs:string" use="optional" form="unqualified"/>
-    </xs:attributeGroup>
-    <xs:attributeGroup name="nameReq">
-        <xs:attribute name="name" type="xs:NCName" use="required" form="unqualified"/>
-    </xs:attributeGroup>
-    <xs:attributeGroup name="nestedOpt">
-        <xs:attribute name="nested" use="optional">
-            <xs:simpleType>
-                <xs:restriction base="xs:token">
-                    <xs:enumeration value="yes">
-                        <xs:annotation>
-                            <xs:documentation>Include descendant elements in index</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="no">
-                        <xs:annotation>
-                            <xs:documentation>Do not include descendant elements in index</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                </xs:restriction>
-            </xs:simpleType>
-        </xs:attribute>
-    </xs:attributeGroup>
-    <xs:attributeGroup name="dimensionReq">
-        <xs:attribute name="dimension" type="xs:string" use="optional" form="unqualified"/>
-    </xs:attributeGroup>
-    <xs:attributeGroup name="expressionOpt">
-        <xs:attribute name="expression" type="xs:string" use="optional" form="unqualified"/>
-    </xs:attributeGroup>
-    <xs:attributeGroup name="expressionReq">
-        <xs:attribute name="expression" type="xs:string" use="required" form="unqualified"/>
-    </xs:attributeGroup>
-    <xs:attributeGroup name="hierarchicalOpt">
-        <xs:attribute name="hierarchical" use="optional">
-            <xs:simpleType>
-                <xs:restriction base="xs:token">
-                    <xs:enumeration value="yes">
-                        <xs:annotation>
-                            <xs:documentation>Is hierarchical</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="no">
-                        <xs:annotation>
-                            <xs:documentation>Is not hierarchical</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                </xs:restriction>
-            </xs:simpleType>
-        </xs:attribute>    
-    </xs:attributeGroup>
-    <xs:attributeGroup name="ifOpt">
-        <xs:attribute name="if" type="xs:string" use="optional" form="unqualified"/>
-    </xs:attributeGroup>
-    <xs:attributeGroup name="indexOpt">
-        <xs:attribute name="index" use="optional">
-            <xs:simpleType>
-                <xs:restriction base="xs:token">
-                    <xs:enumeration value="yes">
-                        <xs:annotation>
-                            <xs:documentation>Index the node</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                    <xs:enumeration value="no">
-                        <xs:annotation>
-                            <xs:documentation>Do not index the node</xs:documentation>
-                        </xs:annotation>
-                    </xs:enumeration>
-                </xs:restriction>
-            </xs:simpleType>
-        </xs:attribute>    
     </xs:attributeGroup>
     <xs:attributeGroup name="pathOpt">
         <xs:attribute name="path" type="xs:string" use="optional" form="unqualified"/>
