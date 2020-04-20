@@ -1,4 +1,15 @@
+# builds
+target/
+.settings/
+.factorypath
+.classpath
+.project
+
+# IDE specific files
 .idea/*
 !/.idea/runConfigurations
 *.iml
-target/
+.vscode
+
+# OS specific files
+.DS_Store
