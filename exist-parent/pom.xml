@@ -9,18 +9,18 @@
 
     <name>eXist-db Parent</name>
     <description>eXist-db NoSQL Database</description>
-    <url>http://www.exist-db.org/</url>
+    <url>https://www.exist-db.org/</url>
     <inceptionYear>2001</inceptionYear>
 
     <organization>
         <name>The eXist-db Project</name>
-        <url>http://www.exist-db.org</url>
+        <url>https://www.exist-db.org</url>
     </organization>
 
     <licenses>
         <license>
             <name>GNU Lesser General Public License, version 2.1</name>
-            <url>http://opensource.org/licenses/LGPL-2.1</url>
+            <url>https://opensource.org/licenses/LGPL-2.1</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -29,7 +29,7 @@
         <developer>
             <name>The eXist-db Project</name>
             <organization>The eXist-db Project</organization>
-            <url>http://www.exist-db.org</url>
+            <url>https://www.exist-db.org</url>
             <email>info@exist-db.org</email>
         </developer>
     </developers>
@@ -833,7 +833,7 @@
         <repository>
             <id>exist-db-snapshots</id>
             <name>Evolved Binary - eXist-db Snapshots</name>
-            <url>http://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
+            <url>https://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
             <releases>
                 <enabled>false</enabled>
             </releases>
@@ -844,7 +844,7 @@
         <repository>
             <id>exist-db</id>
             <name>Evolved Binary - eXist-db Releases</name>
-            <url>http://repo.evolvedbinary.com/repository/exist-db/</url>
+            <url>https://repo.evolvedbinary.com/repository/exist-db/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -857,12 +857,12 @@
     <pluginRepositories>
         <pluginRepository>
             <id>clojars.org</id>
-            <url>http://clojars.org/repo</url>
+            <url>https://clojars.org/repo</url>
         </pluginRepository>
         <pluginRepository>
             <id>exist-db</id>
             <name>Evolved Binary - eXist-db Releases</name>
-            <url>http://repo.evolvedbinary.com/repository/exist-db/</url>
+            <url>https://repo.evolvedbinary.com/repository/exist-db/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -873,7 +873,7 @@
         <pluginRepository>
             <id>exist-db-snapshots</id>
             <name>Evolved Binary - eXist-db Snapshots</name>
-            <url>http://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
+            <url>https://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
             <releases>
                 <enabled>false</enabled>
             </releases>
@@ -887,7 +887,7 @@
         <snapshotRepository>
             <id>exist-db-snapshots</id>
             <name>Evolved Binary - eXist-db Snapshots</name>
-            <url>http://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
+            <url>https://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
         </snapshotRepository>
         <repository>
             <id>sonatype-nexus-staging</id>
