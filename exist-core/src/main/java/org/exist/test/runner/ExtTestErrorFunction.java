@@ -138,7 +138,7 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
         }
 
         if (i + 1 < seqJavaStackTrace.getItemCount()) {
-            traceElements = Arrays.copyOf(traceElements, i);
+            traceElements = Arrays.copyOf(traceElements, i - 2);
         }
 
         return traceElements;

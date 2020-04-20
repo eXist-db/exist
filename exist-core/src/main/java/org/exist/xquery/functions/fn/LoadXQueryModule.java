@@ -145,6 +145,7 @@ public class LoadXQueryModule extends BasicFunction {
         final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), context.getProfiler());
         tempContext.setModuleLoadPath(context.getModuleLoadPath());
         setExternalVars(externalVars, tempContext::declareGlobalVariable);
+        tempContext.prepareForExecution();
 
         Module loadedModule = null;
         try {
