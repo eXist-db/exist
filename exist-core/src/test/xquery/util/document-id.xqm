@@ -38,3 +38,14 @@ function docid:by-id() {
     return
     	util:get-resource-by-absolute-id($id)
 };
+
+declare
+    %test:args("1")
+    %test:assertEquals('<doc>/db</doc>')
+    %test:args("1.1")
+    %test:assertEquals('/db')
+    %test:args("1.15")
+    %test:assertEmpty
+function docid:node-by-id($id as xs:string) {
+    util:node-by-id(doc("/db/docid.xml"), $id)
+};
