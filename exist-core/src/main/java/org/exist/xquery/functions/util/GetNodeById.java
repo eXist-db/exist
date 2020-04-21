@@ -55,14 +55,13 @@ public class GetNodeById extends BasicFunction {
 			"Retrieves a node by its internal node-id. The document is specified via the first " +
 			"argument. It may either be a document node or another node from the same document " +
 			"from which the target node will be retrieved by its id. The second argument is " +
-			"the internal node-id, specified as a string. Please note: the function does " +
-			"not check if the passed id does really point to an existing node. It just returns " +
-			"a pointer, which may thus be invalid.",
+			"the internal node-id, specified as a string. If a node with the matching node-id is found, it is returned. " +
+			"Otherwise returns the empty sequence.",
 			new SequenceType[] {
 				new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "The document whose node is to be retrieved by its id"),
 				new FunctionParameterSequenceType("node-id", Type.STRING, Cardinality.EXACTLY_ONE, "The internal node id")
 			},
-			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the node"));
+			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_ONE, "the node or an empty sequence if a matching node does not exist"));
 
 	public GetNodeById(XQueryContext context) {
 		super(context, signature);
@@ -81,7 +80,11 @@ public class GetNodeById extends BasicFunction {
             return ((NodeImpl) docNode).getOwnerDocument().getNodeById(nodeId);
         } else {
             final DocumentImpl doc = ((NodeProxy)docNode).getOwnerDocument();
-            return new NodeProxy(doc, nodeId);
+            final NodeProxy proxy = new NodeProxy(doc, nodeId);
+            if (proxy.getNode() == null) {
+            	return Sequence.EMPTY_SEQUENCE;
+			}
+            return proxy;
         }
 	}
 }
