@@ -22,7 +22,7 @@
     </scm>
 
     <properties>
-        <tika.version>1.24</tika.version>
+        <tika.version>1.24.1</tika.version>
     </properties>
 
     <dependencies>
