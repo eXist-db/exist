@@ -960,16 +960,11 @@
                         <goals>
                             <goal>single</goal>
                         </goals>
-                        <configuration>
-                            <attach>false</attach>
-                            <tarLongFileMode>gnu</tarLongFileMode>
-                            <descriptors>
-                                <descriptor>src/assembly/dist-assembly-unix.xml</descriptor>
-                                <descriptor>src/assembly/dist-assembly-win.xml</descriptor>
-                            </descriptors>
-                        </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <skipAssembly>true</skipAssembly>  <!-- Overridden by profile build-dist-archives -->
+                </configuration>
             </plugin>
 
             <plugin>
@@ -1060,6 +1055,30 @@
 
 
     <profiles>
+        <profile>
+            <id>build-dist-archives</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <skipAssembly>false</skipAssembly>  <!-- Override setting in default profile build/plugins for this module -->
+                            <attach>false</attach>
+                            <tarLongFileMode>gnu</tarLongFileMode>
+                            <descriptors>
+                                <descriptor>src/assembly/dist-assembly-unix.xml</descriptor>
+                                <descriptor>src/assembly/dist-assembly-win.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <profile>
             <id>codesign-mac-app</id>
             <activation>
