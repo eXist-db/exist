@@ -53,6 +53,8 @@ deploy:
       branch: master
     script:
       - |
+        unset -f pushd
+        unset -f popd
         pushd exist-docker
         mvn -DskipTests -Ddocker.tag=release -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
         popd
@@ -65,6 +67,8 @@ deploy:
       branch: develop
     script:
       - |
+        unset -f pushd
+        unset -f popd
         pushd exist-docker
         mvn -DskipTests -Ddocker.tag=latest -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
         popd
