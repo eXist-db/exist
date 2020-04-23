@@ -130,7 +130,6 @@ function hofs:declared-function-test () {
 
 (: https://github.com/eXist-db/exist/issues/3382 :)
 declare
-    %test:pending
     %test:assertError("XPTY0004")
 function hofs:function-has-wrong-return-type () {
     filter((0 to 1), function ($a) { $a })
@@ -138,7 +137,6 @@ function hofs:function-has-wrong-return-type () {
 
 (: https://github.com/eXist-db/exist/issues/3382 :)
 declare
-    %test:pending
     %test:assertError("XPTY0004")
 function hofs:return-mixed-types () {
     filter((true(), false(), 1, ""), function ($a) { $a })
