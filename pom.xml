@@ -26,8 +26,6 @@
         <module>exist-parent</module>
         <module>exist-ant</module>
         <module>exist-core</module>
-        <module>exist-core-jcstress</module>
-        <module>exist-core-jmh</module>
         <module>exist-distribution</module>
         <module>exist-jetty-config</module>
         <module>exist-samples</module>
@@ -59,6 +57,27 @@
                 <module>exist-docker</module>
             </modules>
         </profile>
+
+        <profile>
+            <id>concurrency-stress-tests</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>exist-core-jcstress</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>micro-benchmarks</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>exist-core-jmh</module>
+            </modules>
+        </profile>
+
     </profiles>
 
 </project>
