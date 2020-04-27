@@ -47,31 +47,27 @@ deploy:
 
   # Build and publish Docker Image for Docker tag `release` from updates to Git `master` branch with JDK8
   - provider: script
-    skip_cleanup: true
+    cleanup: false
     on:
       jdk: openjdk8
       branch: master
-    script:
-      - |
-        unset -f pushd
-        unset -f popd
-        pushd exist-docker
-        mvn -DskipTests -Ddocker.tag=release -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
-        popd
+    script: >-
+      cd exist-docker &&
+      mvn -DskipTests -Ddocker.tag=release -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push &&
+      cd ..
+
 
   # Build and publish Docker Image for Docker tag `latest` from updates to Git `develop` branch with JDK8
   - provider: script
-    skip_cleanup: true
+    cleanup: false
     on:
       jdk: openjdk8
       branch: develop
-    script:
-      - |
-        unset -f pushd
-        unset -f popd
-        pushd exist-docker
-        mvn -DskipTests -Ddocker.tag=latest -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
-        popd
+    script: >-
+      cd exist-docker &&
+      mvn -DskipTests -Ddocker.tag=latest -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push &&
+      cd ..
+
 
 notifications:
   slack: exist-db:$SLACK_TOKEN
