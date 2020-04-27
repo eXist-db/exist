@@ -46,8 +46,9 @@ after_failure:
 deploy:
 
   # Build and publish Docker Image for Docker tag `release` from updates to Git `master` branch with JDK8
+  # This step is skipped on develop branch
   - provider: script
-    cleanup: false
+    skip_cleanup: true
     on:
       jdk: openjdk8
       branch: master
@@ -58,8 +59,9 @@ deploy:
 
 
   # Build and publish Docker Image for Docker tag `latest` from updates to Git `develop` branch with JDK8
+  # This step is skipped on master branch
   - provider: script
-    cleanup: false
+    skip_cleanup: true
     on:
       jdk: openjdk8
       branch: develop
