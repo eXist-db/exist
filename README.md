@@ -44,7 +44,7 @@ The notes of past community calls are located [here](https://drive.google.com/dr
 -   **Source code:** [https://github.com/eXist-db/exist](https://github.com/eXist-db/exist)
 -   **Git clone URL:** `git://github.com/eXist-db/exist.git`
 -   **Mailing list:** [https://lists.sourceforge.net/lists/listinfo/exist-open](https://lists.sourceforge.net/lists/listinfo/exist-open)
--   **Slack:** [https://exist-db.slack.com](https://exist-db.slack.com)
+-   **Slack:** [https://exist-db.slack.com](https://join.slack.com/t/exist-db/shared_invite/enQtNjQ4MzUyNTE4MDY3LWNkYjZjMmZkNWQ5MDBjODQ3OTljNjMyODkwNmY1MzQwNjUwZjMzZTY1MGJkMjY5NDFhOWZjMDZiMDdhMzY4NGY)
 
 New developers may find the notes in [BUILD.md](https://github.com/eXist-db/exist/blob/develop/BUILD.md) and [CONTRIBUTING.md](https://github.com/eXist-db/exist/blob/develop/CONTRIBUTING.md) helpful to start using and sharing your work with the eXist community.
 
