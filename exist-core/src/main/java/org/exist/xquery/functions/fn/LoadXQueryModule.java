@@ -216,7 +216,7 @@ public class LoadXQueryModule extends BasicFunction {
             }
         }
 
-        final IMap<AtomicValue, Sequence> result = Map.from(Arrays.asList(
+        final IMap<AtomicValue, Sequence> result = Map.from(io.lacuna.bifurcan.List.of(
                 new Maps.Entry<>(RESULT_FUNCTIONS, new MapType(context, functions.mapValues((k, v) -> (Sequence)new MapType(context, v.forked(), Type.INTEGER)).forked(), Type.QNAME)),
                 new Maps.Entry<>(RESULT_VARIABLES, new MapType(context, variables.forked(), Type.QNAME))
         ));

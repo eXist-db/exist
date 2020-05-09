@@ -10,7 +10,7 @@ import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
-import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 
 /**
  * Full implementation of the XDM map() type based on an
@@ -20,7 +20,7 @@ import java.util.function.ToIntFunction;
  */
 public class MapType extends AbstractMapType {
 
-    private static final ToIntFunction<AtomicValue> KEY_HASH_FN = AtomicValue::hashCode;
+    private static final ToLongFunction<AtomicValue> KEY_HASH_FN = AtomicValue::hashCode;
 
     // TODO(AR) future potential optimisation... could the class member `map` remain `linear` ?
     private IMap<AtomicValue, Sequence> map;
