@@ -191,21 +191,21 @@ public class LoadXQueryModule extends BasicFunction {
 
         final ValueSequence functionSeq = new ValueSequence();
         addFunctionRefsFromModule(this, tempContext, functionSeq, module);
-        final IMap<AtomicValue, IMap<AtomicValue, Sequence>> functions = newLinearMap();
+        final IMap<AtomicValue, IMap<AtomicValue, Sequence>> functions = newLinearMap(null);
         for (final SequenceIterator i = functionSeq.iterate(); i.hasNext(); ) {
             final FunctionReference ref = (FunctionReference) i.nextItem();
             final FunctionSignature signature = ref.getSignature();
             final QNameValue qn = new QNameValue(context, signature.getName());
             IMap<AtomicValue, Sequence> entry = functions.get(qn, null);
             if (entry == null) {
-                entry = newLinearMap();
+                entry = newLinearMap(null);
                 functions.put(qn, entry);
             }
 
             entry.put(new IntegerValue(signature.getArgumentCount()), ref);
         }
 
-        final IMap<AtomicValue, Sequence> variables = newLinearMap();
+        final IMap<AtomicValue, Sequence> variables = newLinearMap(null);
         for (final Iterator<QName> i = module.getGlobalVariables(); i.hasNext(); ) {
             final QName name = i.next();
             try {

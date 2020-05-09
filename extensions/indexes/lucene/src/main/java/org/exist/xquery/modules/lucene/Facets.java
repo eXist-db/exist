@@ -137,7 +137,7 @@ public class Facets extends BasicFunction {
         }
 
         // Iterate the found queries/matches and collect facets for each
-        final IMap<AtomicValue, Sequence> map = newLinearMap();
+        final IMap<AtomicValue, Sequence> map = newLinearMap(null);
         for (LuceneMatch match : luceneQueries.values()) {
             try {
                 addFacetsToMap(map, dimension, count, paths, match);

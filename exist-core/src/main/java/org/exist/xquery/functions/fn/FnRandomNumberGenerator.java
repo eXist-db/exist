@@ -68,11 +68,11 @@ public class FnRandomNumberGenerator extends BasicFunction {
         return buildResult(context, random);
     }
 
-    private static MapType buildResult(final XQueryContext context, XORShiftRandom random) throws XPathException {
+    private static MapType buildResult(final XQueryContext context, XORShiftRandom random) {
         // NOTE: we must create a copy so that `Random#nextDouble` does not interfere with multiple `next()` calls on the same random number generator
         random = random.copy();
 
-        final IMap<AtomicValue, Sequence> result = newLinearMap();
+        final IMap<AtomicValue, Sequence> result = newLinearMap(null);
         result.put(new StringValue("number"), new DoubleValue(random.nextDouble()));
         result.put(new StringValue("next"), nextFunction(context, random));
         result.put(new StringValue("permute"), permuteFunction(context, random));

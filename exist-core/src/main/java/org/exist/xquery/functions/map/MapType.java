@@ -38,6 +38,23 @@ public class MapType extends AbstractMapType {
         return new Map<>(KEY_HASH_FN, (k1, k2) -> keysEqual(collator, k1, k2));
     }
 
+    /**
+     * Construct a new Bifurcan mutable-map for use with AtomicValue keys.
+     * 
+     * This function is predominantly for pre-building a Map of key/values
+     * for passing to {@link #MapType(XQueryContext, IMap, Integer)}.
+     * 
+     * @param collator The collator if a collation is in effect for comparing keys.
+     * 
+     * @return A mutable-map on which {@link IMap#forked()} can be called to produce an immutable map. 
+     */
+    public static <V> IMap<AtomicValue, V> newLinearMap(@Nullable final Collator collator) {
+        // TODO(AR) see second bug in bifurcan - https://github.com/lacuna/bifurcan/issues/28
+//        return new LinearMap<>(KEY_HASH_FN, (k1, k2) -> keysEqual(collator, k1, k2));
+
+        return new Map<AtomicValue, V>(KEY_HASH_FN, (k1, k2) -> keysEqual(collator, k1, k2)).linear();
+    }
+
     public MapType(final XQueryContext context) {
         this(context,null);
     }
@@ -261,15 +278,5 @@ public class MapType extends AbstractMapType {
     @Override
     public int getKeyType() {
         return keyType;
-    }
-
-    public static <K, V> IMap<K, V> newLinearMap() {
-        // TODO(AR) see bug in bifurcan - https://github.com/lacuna/bifurcan/issues/23
-        //return new LinearMap<K, V>();
-        return new Map<K, V>().linear();
-    }
-
-    public static IMap<AtomicValue, Sequence> newLinearMap(@Nullable final Collator collator) {
-        return newMap(collator).linear();
     }
 }
