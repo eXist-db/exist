@@ -459,7 +459,7 @@ public class StringValue extends AtomicValue {
                 } else if ("1".equals(trimmed) || "true".equals(trimmed)) {
                     return BooleanValue.TRUE;
                 } else {
-                    throw new XPathException(
+                    throw new XPathException(ErrorCodes.FORG0001,
                             "cannot convert string '" + value + "' to boolean");
                 }
             case Type.FLOAT:
@@ -636,7 +636,7 @@ public class StringValue extends AtomicValue {
 
     @Override
     public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-        if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
+        if (Type.subTypeOfUnion(other.getType(), Type.NUMBER)) {
             //No possible comparisons
             if (((NumericValue) other).isNaN()) {
                 return Constants.INFERIOR;

@@ -22,11 +22,14 @@
 package org.exist.xquery.value;
 
 import com.ibm.icu.text.Collator;
+import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.function.IntSupplier;
 
 /**
  * Definition: integer is derived from decimal by fixing the value of fractionDigits to be 0.
@@ -66,7 +69,7 @@ public class IntegerValue extends NumericValue {
 
     private static final BigInteger LARGEST_UNSIGNED_BYTE = new BigInteger("255");
 
-    private final BigInteger value;
+    final BigInteger value;
     private final int type;
 
     public IntegerValue(final long value) {
@@ -218,6 +221,23 @@ public class IntegerValue extends NumericValue {
     @Override
     public boolean isPositive() {
         return value.signum() > 0;
+    }
+
+    @Override
+    protected @Nullable IntSupplier createComparisonWith(final NumericValue other) {
+        final IntSupplier comparison;
+        if (other instanceof IntegerValue) {
+            comparison = () -> value.compareTo(((IntegerValue)other).value);
+        } else if (other instanceof DecimalValue) {
+            comparison = () -> new BigDecimal(value).compareTo(((DecimalValue)other).value);
+        } else if (other instanceof DoubleValue) {
+            comparison = () -> new BigDecimal(value).compareTo(BigDecimal.valueOf(((DoubleValue)other).value));
+        } else if (other instanceof FloatValue) {
+            comparison = () -> new BigDecimal(value).compareTo(BigDecimal.valueOf(((FloatValue)other).value));
+        } else {
+            return null;
+        }
+        return comparison;
     }
 
     @Override

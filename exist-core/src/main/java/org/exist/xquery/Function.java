@@ -339,8 +339,7 @@ public abstract class Function extends PathExpr {
             }
             argument = new AtomicToString(context, argument);
             returnType = Type.STRING;
-        } else if (argType.getPrimaryType() == Type.NUMBER
-                || Type.subTypeOf(argType.getPrimaryType(), Type.DOUBLE)) {
+        } else if (Type.subTypeOfUnion(argType.getPrimaryType(), Type.NUMBER)) {
             if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
                 argument = new Atomize(context, argument);
             }

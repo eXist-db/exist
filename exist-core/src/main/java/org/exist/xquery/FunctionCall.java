@@ -91,7 +91,7 @@ public class FunctionCall extends Function {
                 expression = new Atomize(context, expression);
         }
         
-        if(Type.subTypeOf(returnType.getPrimaryType(), Type.NUMBER)) {
+        if(Type.subTypeOfUnion(returnType.getPrimaryType(), Type.NUMBER)) {
                 expression = new UntypedValueCheck(context, returnType.getPrimaryType(), expression, new Error(Error.FUNC_RETURN_TYPE));
         } else if(returnType.getPrimaryType() != Type.ITEM) {
                 expression = new DynamicTypeCheck(context, returnType.getPrimaryType(), expression);
@@ -410,7 +410,7 @@ public class FunctionCall extends Function {
                 expression = new Atomize(context, expression);
             }
 
-            if(Type.subTypeOf(returnType.getPrimaryType(), Type.NUMBER)) {
+            if(Type.subTypeOfUnion(returnType.getPrimaryType(), Type.NUMBER)) {
                 expression = new UntypedValueCheck(context, returnType.getPrimaryType(), expression, new Error(Error.FUNC_RETURN_TYPE));
             } else if(returnType.getPrimaryType() != Type.ITEM) {
                 expression = new DynamicTypeCheck(context, returnType.getPrimaryType(), expression);

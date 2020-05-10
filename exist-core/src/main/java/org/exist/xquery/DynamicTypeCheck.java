@@ -99,7 +99,7 @@ public class DynamicTypeCheck extends AbstractExpression {
             	item = item.convertTo(Type.STRING);
             //Then, if numeric, try to refine the type
             //xs:decimal(3) treat as xs:integer
-            } else if (Type.subTypeOf(requiredType, Type.NUMBER) && Type.subTypeOf(type, requiredType)) {
+            } else if (Type.subTypeOfUnion(requiredType, Type.NUMBER) && Type.subTypeOf(type, requiredType)) {
                 try {
                     item = item.convertTo(requiredType);
                 //No way

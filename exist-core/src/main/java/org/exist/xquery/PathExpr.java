@@ -257,7 +257,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                                 Dependency.dependsOn(exprDeps, Dependency.CONTEXT_POSITION)) &&
                                 //A positional predicate will be evaluated one time
                                 //TODO : reconsider since that may be expensive (type evaluation)
-                                !(this instanceof Predicate && Type.subTypeOf(this.returnsType(), Type.NUMBER)) &&
+                                !(this instanceof Predicate && Type.subTypeOfUnion(this.returnsType(), Type.NUMBER)) &&
                                 currentContext != null && !currentContext.isEmpty())) {
                     Sequence exprResult = new ValueSequence(Type.subTypeOf(expr.returnsType(), Type.NODE));
                     ((ValueSequence) exprResult).keepUnOrdered(unordered);

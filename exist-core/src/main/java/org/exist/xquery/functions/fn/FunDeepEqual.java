@@ -187,8 +187,8 @@ public class FunDeepEqual extends CollatingFunction {
                 try {
                     final AtomicValue av = (AtomicValue) a;
                     final AtomicValue bv = (AtomicValue) b;
-                    if (Type.subTypeOf(av.getType(), Type.NUMBER) &&
-                        Type.subTypeOf(bv.getType(), Type.NUMBER)) {
+                    if (Type.subTypeOfUnion(av.getType(), Type.NUMBER) &&
+                        Type.subTypeOfUnion(bv.getType(), Type.NUMBER)) {
                         //or if both values are NaN
                         if (((NumericValue) a).isNaN() && ((NumericValue) b).isNaN())
                             {return true;}

@@ -55,7 +55,7 @@ public class OpNumeric extends BinaryOp {
         this.operator = operator;
         int ltype = left.returnsType();
         int rtype = right.returnsType();
-        if (Type.subTypeOf(ltype, Type.NUMBER) && Type.subTypeOf(rtype, Type.NUMBER)) {
+        if (Type.subTypeOfUnion(ltype, Type.NUMBER) && Type.subTypeOfUnion(rtype, Type.NUMBER)) {
             if (ltype > rtype) {
                 right = new UntypedValueCheck(context, ltype, right);
             } else if (rtype > ltype) {
@@ -69,8 +69,8 @@ public class OpNumeric extends BinaryOp {
                 returnType = Math.max(ltype, rtype);
             }
         } else {
-            if (Type.subTypeOf(ltype, Type.NUMBER)) {ltype = Type.NUMBER;}
-            if (Type.subTypeOf(rtype, Type.NUMBER)) {rtype = Type.NUMBER;}
+            if (Type.subTypeOfUnion(ltype, Type.NUMBER)) {ltype = Type.NUMBER;}
+            if (Type.subTypeOfUnion(rtype, Type.NUMBER)) {rtype = Type.NUMBER;}
             final OpEntry entry = OP_TYPES.get(new OpEntry(operator, ltype, rtype));
             if (entry != null) {
                 returnType = entry.typeResult;
@@ -141,10 +141,10 @@ public class OpNumeric extends BinaryOp {
                         operator.symbol);}
                 //TODO : move to implementations
                 if (operator == ArithmeticOperator.DIVISION_INTEGER) {
-                    if (!Type.subTypeOf(lvalue.getType(), Type.NUMBER))
+                    if (!Type.subTypeOfUnion(lvalue.getType(), Type.NUMBER))
                         {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
                             Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " + operator.symbol);}
-                    if (!Type.subTypeOf(rvalue.getType(), Type.NUMBER))
+                    if (!Type.subTypeOfUnion(rvalue.getType(), Type.NUMBER))
                         {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
                             Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " + operator.symbol);}
                     //If the divisor is (positive or negative) zero, then an error is raised [err:FOAR0001]
@@ -189,10 +189,10 @@ public class OpNumeric extends BinaryOp {
             case MULTIPLICATION: return left.mult(right);
             case DIVISION: return left.div(right);
             case MODULUS: {
-                if (!Type.subTypeOf(left.getType(), Type.NUMBER))
+                if (!Type.subTypeOfUnion(left.getType(), Type.NUMBER))
                     {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
                         Type.getTypeName(left.getType()) + "(" + left + ")' is not numeric");}
-                if (!Type.subTypeOf(right.getType(), Type.NUMBER))
+                if (!Type.subTypeOfUnion(right.getType(), Type.NUMBER))
                     {throw new XPathException(this, ErrorCodes.XPTY0004, "'" +
                         Type.getTypeName(right.getType()) + "(" + right + ")' is not numeric");}
                 return ((NumericValue) left).mod((NumericValue) right);

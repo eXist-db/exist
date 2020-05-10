@@ -28,10 +28,12 @@ import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.function.IntSupplier;
 import java.util.regex.Pattern;
 
 /**
@@ -52,7 +54,7 @@ public class DecimalValue extends NumericValue {
     //Copied from Saxon 8.8
     private static boolean stripTrailingZerosMethodUnavailable = false;
     private static Method stripTrailingZerosMethod = null;
-    BigDecimal value;
+    final BigDecimal value;
 
     public DecimalValue(BigDecimal decimal) {
         this.value = stripTrailingZeros(decimal);
@@ -271,6 +273,23 @@ public class DecimalValue extends NumericValue {
         return value.signum() > 0;
     }
 
+    @Override
+    protected @Nullable IntSupplier createComparisonWith(final NumericValue other) {
+        final IntSupplier comparison;
+        if (other instanceof IntegerValue) {
+            comparison = () -> value.compareTo(new BigDecimal(((IntegerValue)other).value));
+        } else if (other instanceof DecimalValue) {
+            comparison = () -> value.compareTo(((DecimalValue)other).value);
+        } else if (other instanceof DoubleValue) {
+            comparison = () -> value.compareTo(BigDecimal.valueOf(((DoubleValue)other).value));
+        } else if (other instanceof FloatValue) {
+            comparison = () -> value.compareTo(BigDecimal.valueOf(((FloatValue)other).value));
+        } else {
+            return null;
+        }
+        return comparison;
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.value.NumericValue#negate()
      */
@@ -457,44 +476,6 @@ public class DecimalValue extends NumericValue {
             return new DecimalValue(
                     value.min(((DecimalValue) other.convertTo(Type.DECIMAL)).value));
         }
-    }
-
-    @Override
-    public boolean compareTo(Collator collator, Comparison operator, AtomicValue other)
-            throws XPathException {
-        if (other.isEmpty()) {
-            //Never equal, or inequal...
-            return false;
-        }
-        if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
-            if (isNaN()) {
-                //NaN does not equal itself.
-                if (((NumericValue) other).isNaN()) {
-                    return operator == Comparison.NEQ;
-                }
-            }
-            if (Type.subTypeOf(other.getType(), Type.DECIMAL)) {
-                final DecimalValue otherValue = (DecimalValue) other.convertTo(Type.DECIMAL);
-                switch (operator) {
-                    case EQ:
-                        return compareTo(otherValue) == Constants.EQUAL;
-                    case NEQ:
-                        return compareTo(otherValue) != Constants.EQUAL;
-                    case GT:
-                        return compareTo(otherValue) == Constants.SUPERIOR;
-                    case GTEQ:
-                        return compareTo(otherValue) != Constants.INFERIOR;
-                    case LT:
-                        return compareTo(otherValue) == Constants.INFERIOR;
-                    case LTEQ:
-                        return compareTo(otherValue) != Constants.SUPERIOR;
-                    default:
-                        throw new XPathException("Type error: cannot apply operator to numeric value");
-                }
-            }
-        }
-        //Default to the standard numeric comparison
-        return super.compareTo(collator, operator, other);
     }
 
     public int compareTo(Object o) {

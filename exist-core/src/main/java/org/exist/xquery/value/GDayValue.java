@@ -23,6 +23,7 @@ package org.exist.xquery.value;
 
 import com.ibm.icu.text.Collator;
 import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 import javax.xml.datatype.DatatypeConstants;
@@ -73,7 +74,7 @@ public class GDayValue extends AbstractDateTimeValue {
             case Type.UNTYPED_ATOMIC:
                 return new UntypedAtomicValue(getStringValue());
             default:
-                throw new XPathException(
+                throw new XPathException(ErrorCodes.FORG0001,
                         "Type error: cannot cast xs:time to "
                                 + Type.getTypeName(requiredType));
         }

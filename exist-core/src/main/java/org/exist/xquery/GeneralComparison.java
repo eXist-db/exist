@@ -1,23 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- *  Copyright (C) 2000-03, Wolfgang M. Meier (meier@ifs. tu- darmstadt. de)
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- *
- * $Id$
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xquery;
 
@@ -57,6 +57,7 @@ import java.util.List;
  *
  * @author  wolf
  * @author  andrzej@chaeron.com
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class GeneralComparison extends BinaryOp implements Optimizable, IndexUseReporter
 {
@@ -528,6 +529,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         final Collator collator = getCollator( contextSequence );
         Sequence       result   = BooleanValue.FALSE;
 
+
         if( ls.isEmpty() && rs.isEmpty() ) {
             result = BooleanValue.valueOf( compareAtomic( collator, AtomicValue.EMPTY_VALUE, AtomicValue.EMPTY_VALUE ) );
         } else if( ls.isEmpty() && !rs.isEmpty() ) {
@@ -983,122 +985,156 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         }
     }
 
+    private AtomicValue convertForGeneralComparison(final AtomicValue value, final int thisType, final int otherType)
+            throws XPathException {
+        if (thisType == Type.UNTYPED_ATOMIC) {
+
+            try {
+
+                /*
+                    If both atomic values are instances of xs:untypedAtomic,
+                    then the values are cast to the type xs:string.
+                 */
+                if (otherType == Type.UNTYPED_ATOMIC) {
+                    return value.convertTo(Type.STRING);
+                }
+
+                // it is cast to a type depending on the other value's dynamic type T
+
+                /*
+                    i. If T is a numeric type or is derived from a numeric type,
+                    then V is cast to xs:double.
+                 */
+                if (Type.subTypeOfUnion(otherType, Type.NUMBER)) {
+                    return value.convertTo(Type.DOUBLE);
+                }
+
+                /*
+                    ii. If T is xs:dayTimeDuration or is derived from xs:dayTimeDuration,
+                        then V is cast to xs:dayTimeDuration.
+                 */
+                if (Type.subTypeOf(otherType, Type.DAY_TIME_DURATION)) {
+                    return value.convertTo(Type.DAY_TIME_DURATION);
+                }
+
+                /*
+                    iii. If T is xs:yearMonthDuration or is derived from xs:yearMonthDuration,
+                         then V is cast to xs:yearMonthDuration.
+                 */
+                if (Type.subTypeOf(otherType, Type.YEAR_MONTH_DURATION)) {
+                    return value.convertTo(Type.YEAR_MONTH_DURATION);
+                }
+
+                /*
+                    iv. In all other cases, V is cast to the primitive base type of T.
+                 */
+                return value.convertTo(otherType);
+
+            } catch (XPathException e) {
+                if (e.getErrorCode() != ErrorCodes.FORG0001) {
+                    e = new XPathException(ErrorCodes.FORG0001, e.getMessage(), e);
+                }
+                throw e;
+            }
+        }
+
+        return value;
+    }
+
+    private AtomicValue convertForValueComparison(final AtomicValue value, final int thisType, final int otherType)
+            throws XPathException {
+        /*
+            if the two operands are instances of different primitive types then:
+         */
+        if (Type.primitiveTypeOf(thisType) != Type.primitiveTypeOf(otherType)) {
+
+            /*
+                a. If each operand is an instance of one of the types xs:string or xs:anyURI,
+                   then both operands are cast to type xs:string.
+             */
+            if ((Type.subTypeOf(thisType, Type.STRING) || thisType == Type.ANY_URI)
+                    && (Type.subTypeOf(otherType, Type.STRING) || otherType ==Type.ANY_URI)) {
+                return value.convertTo(Type.STRING);
+            }
+
+            /*
+                b. If each operand is an instance of one of the types xs:decimal or xs:float,
+                then both operands are cast to type xs:float.
+             */
+            if ((Type.subTypeOf(thisType, Type.DECIMAL) || thisType == Type.FLOAT)
+                    && (Type.subTypeOf(otherType, Type.DECIMAL) || otherType == Type.FLOAT)) {
+                return value.convertTo(Type.FLOAT);
+            }
+
+            /*
+             *  c. If each operand is an instance of one of the types xs:decimal, xs:float, or xs:double,
+             *     then both operands are cast to type xs:double.
+             */
+            if ((Type.subTypeOf(thisType, Type.DECIMAL) || thisType == Type.FLOAT || thisType == Type.DOUBLE)
+                    && (Type.subTypeOf(otherType, Type.DECIMAL) || otherType == Type.FLOAT || otherType == Type.DOUBLE)) {
+                return value.convertTo(Type.DOUBLE);
+            }
+
+            /*
+             *  d. Otherwise, a type error is raised [err:XPTY0004].
+             */
+            throw new XPathException(ErrorCodes.XPTY0004, "Incompatible primitive types");
+        }
+
+        return value;
+    }
 
     /**
      * Cast the atomic operands into a comparable type and compare them.
      *
-     * @param   collator  DOCUMENT ME!
-     * @param   lv        DOCUMENT ME!
-     * @param   rv        DOCUMENT ME!
+     * @param collator the collator to use for comparisons
+     * @param lv left-hand-side value of comparison
+     * @param rv right-hand-side value of comparison
      *
-     * @return  DOCUMENT ME!
+     * @return true if the comparison holds, false otherwise
      *
-     * @throws  XPathException  DOCUMENT ME!
+     * @throws XPathException if an error occurs during the comparison
      */
-    private boolean compareAtomic( Collator collator, AtomicValue lv, AtomicValue rv ) throws XPathException
-    {
-        try {
-            final int ltype = lv.getType();
-            final int rtype = rv.getType();
+    private boolean compareAtomic(final Collator collator, AtomicValue lv, AtomicValue rv) throws XPathException {
+        // get types locally as convertForCompareAtomic may change the types of the AtomicValue itself
+        int ltype = lv.getType();
+        int rtype = rv.getType();
 
-            if( ltype == Type.UNTYPED_ATOMIC ) {
+        lv = convertForGeneralComparison(lv, ltype, rtype);
+        rv = convertForGeneralComparison(rv, rtype, ltype);
 
-                //If one of the atomic values is an instance of xdt:untypedAtomic
-                //and the other is an instance of a numeric type,
-                //then the xdt:untypedAtomic value is cast to the type xs:double.
-                if( Type.subTypeOf( rtype, Type.NUMBER ) ) {
-
-                    //if(isEmptyString(lv))
-                    //    return false;
-                    lv = lv.convertTo( Type.DOUBLE );
-
-                    //If one of the atomic values is an instance of xdt:untypedAtomic
-                    //and the other is an instance of xdt:untypedAtomic or xs:string,
-                    //then the xdt:untypedAtomic value (or values) is (are) cast to the type xs:string.
-                } else if( ( rtype == Type.UNTYPED_ATOMIC ) || ( rtype == Type.STRING ) ) {
-                    lv = lv.convertTo( Type.STRING );
-                    //if (rtype == Type.UNTYPED_ATOMIC)
-                    //rv = rv.convertTo(Type.STRING);
-                    //If one of the atomic values is an instance of xdt:untypedAtomic
-                    //and the other is not an instance of xs:string, xdt:untypedAtomic, or any numeric type,
-                    //then the xdt:untypedAtomic value is cast to the dynamic type of the other value.
-                } else {
-                    lv = lv.convertTo( rtype );
-                }
-            }
-
-            if( rtype == Type.UNTYPED_ATOMIC ) {
-
-                //If one of the atomic values is an instance of xdt:untypedAtomic
-                //and the other is an instance of a numeric type,
-                //then the xdt:untypedAtomic value is cast to the type xs:double.
-                if( Type.subTypeOf( ltype, Type.NUMBER ) ) {
-
-                    //if(isEmptyString(lv))
-                    //    return false;
-                    rv = rv.convertTo( Type.DOUBLE );
-
-                    //If one of the atomic values is an instance of xdt:untypedAtomic
-                    //and the other is an instance of xdt:untypedAtomic or xs:string,
-                    //then the xdt:untypedAtomic value (or values) is (are) cast to the type xs:string.
-                } else if( ( ltype == Type.UNTYPED_ATOMIC ) || ( ltype == Type.STRING ) ) {
-                    rv = rv.convertTo( Type.STRING );
-                    //if (ltype == Type.UNTYPED_ATOMIC)
-                    //  lv = lv.convertTo(Type.STRING);
-                    //If one of the atomic values is an instance of xdt:untypedAtomic
-                    //and the other is not an instance of xs:string, xdt:untypedAtomic, or any numeric type,
-                    //then the xdt:untypedAtomic value is cast to the dynamic type of the other value.
-                } else {
-                    rv = rv.convertTo( ltype );
-                }
-            }
-
-            /*
-            if (backwardsCompatible) {
-                if (!"".equals(lv.getStringValue()) && !"".equals(rv.getStringValue())) {
-                    // in XPath 1.0 compatible mode, if one of the operands is a number, cast
-                    // both operands to xs:double
-                    if (Type.subTypeOf(ltype, Type.NUMBER)
-                        || Type.subTypeOf(rtype, Type.NUMBER)) {
-                            lv = lv.convertTo(Type.DOUBLE);
-                            rv = rv.convertTo(Type.DOUBLE);
-                    }
-                }
-            }
-            */
-            // if truncation is set, we always do a string comparison
-            if( truncation != StringTruncationOperator.NONE ) {
-
-                //TODO : log this ?
-                lv = lv.convertTo( Type.STRING );
-            }
-
-//              System.out.println(
-//                  lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
-            switch( truncation ) {
-
-                case RIGHT: {
-                    return( lv.startsWith( collator, rv ) );
-                }
-
-                case LEFT: {
-                    return( lv.endsWith( collator, rv ) );
-                }
-
-                case BOTH: {
-                    return( lv.contains( collator, rv ) );
-                }
-
-                default: {
-                    // If right value is () always return false
-                    return( rv.isEmpty() ? false : lv.compareTo( collator, relation, rv ) );
-                }
-            }
+        // if truncation is set, we always do a string comparison
+        if (truncation != StringTruncationOperator.NONE) {
+            lv = lv.convertTo(Type.STRING);
         }
-        catch( final XPathException e ) {
-            e.setLocation( e.getLine(), e.getColumn() );
-            throw( e );
+
+        switch (truncation) {
+            case RIGHT:
+                return lv.startsWith(collator, rv);
+
+            case LEFT:
+                return lv.endsWith(collator, rv);
+
+            case BOTH:
+                return lv.contains(collator, rv);
         }
+
+        /*
+         * If an atomized operand is an empty sequence, the result of the value comparison is an empty sequence
+         * and the implementation need not evaluate the other operand or apply the operator.
+         */
+        if (lv.isEmpty() || rv.isEmpty()) {
+            return false;
+        }
+
+        // get types locally as convertForValueComparison may change the types of the AtomicValue itself
+        ltype = lv.getType();
+        rtype = rv.getType();
+
+        lv = convertForValueComparison(lv, ltype, rtype);
+        rv = convertForValueComparison(rv, rtype, ltype);
+
+        return lv.compareTo(collator, relation, rv);
     }
 
 

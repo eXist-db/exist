@@ -156,7 +156,7 @@ public class FunSort extends BasicFunction {
           int res = Constants.EQUAL;
           if (FunDeepEqual.deepEquals(item1, item2, collator)) {
             continue;
-          } if (Type.subTypeOf(item1.getType(), Type.NUMBER) && ((NumericValue)item1).isNaN()) {
+          } if (Type.subTypeOfUnion(item1.getType(), Type.NUMBER) && ((NumericValue)item1).isNaN()) {
             res = Constants.INFERIOR;
 
           } else if (Type.subTypeOf(item1.getType(), Type.STRING) && Type.subTypeOf(item2.getType(), Type.STRING)) {

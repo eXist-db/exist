@@ -24,6 +24,7 @@ package org.exist.xquery.value;
 
 import com.ibm.icu.text.Collator;
 import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 /**
@@ -65,7 +66,7 @@ public class JavaObjectValue extends AtomicValue {
         if (requiredType == Type.JAVA_OBJECT) {
             return this;
         }
-        throw new XPathException(
+        throw new XPathException(ErrorCodes.FORG0001,
                 "cannot convert Java object to " + Type.getTypeName(requiredType));
     }
 

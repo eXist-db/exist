@@ -1,29 +1,28 @@
 /*
- * eXist Open Source Native XML Database
- * Copyright (C) 2001-2009 The eXist Project
- * http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *  
- * This program is distributed in the hope that it will be useful,
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
- *  $Id$
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xquery.value;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,12 +30,13 @@ import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.XPathException;
 
-import java.util.HashSet;
+import javax.annotation.Nullable;
 
 /**
  * Defines all built-in types and their relations.
  *
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class Type {
 
@@ -105,95 +105,136 @@ public class Type {
     public final static int MAP = 102;
     public final static int ARRAY = 103;
     private final static Logger LOG = LogManager.getLogger(Type.class);
+
+    private static int NO_SUCH_VALUE = -99;
+
     private final static int[] superTypes = new int[512];
-    private final static Int2ObjectMap<String[]> typeNames = new Int2ObjectOpenHashMap<>(100);
-    private final static Object2IntMap<String> typeCodes = new Object2IntOpenHashMap<>(100);
+    private final static Int2ObjectOpenHashMap<String[]> typeNames = new Int2ObjectOpenHashMap<>(64, Hash.FAST_LOAD_FACTOR);
+    private final static Object2IntOpenHashMap<String> typeCodes = new Object2IntOpenHashMap<>(100, Hash.FAST_LOAD_FACTOR);
     static {
-        typeCodes.defaultReturnValue(-1);
+        typeCodes.defaultReturnValue(NO_SUCH_VALUE);
+    }
+    private final static Int2ObjectMap<IntArraySet> unionTypes = new Int2ObjectArrayMap<>(1);
+    private final static Int2IntOpenHashMap primitiveTypes = new Int2IntOpenHashMap(44, Hash.FAST_LOAD_FACTOR);
+    static {
+        primitiveTypes.defaultReturnValue(NO_SUCH_VALUE);
     }
 
     static {
+        // ANY types
         defineSubType(ANY_TYPE, ANY_SIMPLE_TYPE);
         defineSubType(ANY_TYPE, UNTYPED);
+
+        // ANY_SIMPLE types
         defineSubType(ANY_SIMPLE_TYPE, ATOMIC);
-        defineSubType(NODE, ELEMENT);
-        defineSubType(NODE, ATTRIBUTE);
-        defineSubType(NODE, TEXT);
-        defineSubType(NODE, PROCESSING_INSTRUCTION);
-        defineSubType(NODE, COMMENT);
-        defineSubType(NODE, DOCUMENT);
-        defineSubType(NODE, NAMESPACE);
-        defineSubType(NODE, CDATA_SECTION);
+        defineSubType(ANY_SIMPLE_TYPE, NUMBER);
 
-        //THIS type system is broken - some of the below should be sub-types of ANY_SIMPLE_TYPE
-        //and some should not!
+        // ITEM sub-types
         defineSubType(ITEM, ATOMIC);
-        defineSubType(ATOMIC, STRING);
-        defineSubType(ATOMIC, BOOLEAN);
-        defineSubType(ATOMIC, QNAME);
+        defineSubType(ITEM, FUNCTION_REFERENCE);
+        //defineSubType(ITEM, NODE);                // TODO(AR) this appears in the XDM 3.1, but uncommenting this breaks a lot of stuff in eXist-db
+
+        // ATOMIC sub-types
         defineSubType(ATOMIC, ANY_URI);
-        defineSubType(ATOMIC, NUMBER);
-        defineSubType(ATOMIC, UNTYPED_ATOMIC);
-        defineSubType(ATOMIC, JAVA_OBJECT);
-        defineSubType(ATOMIC, DATE_TIME);
-        defineSubType(ATOMIC, DATE);
-        defineSubType(ATOMIC, TIME);
-        defineSubType(ATOMIC, DURATION);
-        defineSubType(ATOMIC, GYEAR);
-        defineSubType(ATOMIC, GMONTH);
-        defineSubType(ATOMIC, GDAY);
-        defineSubType(ATOMIC, GYEARMONTH);
-        defineSubType(ATOMIC, GMONTHDAY);
         defineSubType(ATOMIC, BASE64_BINARY);
+        defineSubType(ATOMIC, BOOLEAN);
+        defineSubType(ATOMIC, DATE);
+        defineSubType(ATOMIC, DATE_TIME);
+        defineSubType(ATOMIC, DECIMAL);
+        defineSubType(ATOMIC, DOUBLE);
+        defineSubType(ATOMIC, DURATION);
+        defineSubType(ATOMIC, FLOAT);
+        defineSubType(ATOMIC, GDAY);
+        defineSubType(ATOMIC, GMONTH);
+        defineSubType(ATOMIC, GMONTHDAY);
+        defineSubType(ATOMIC, GYEAR);
+        defineSubType(ATOMIC, GYEARMONTH);
         defineSubType(ATOMIC, HEX_BINARY);
+        defineSubType(ATOMIC, JAVA_OBJECT);
         defineSubType(ATOMIC, NOTATION);
+        defineSubType(ATOMIC, QNAME);
+        defineSubType(ATOMIC, STRING);
+        defineSubType(ATOMIC, TIME);
+        defineSubType(ATOMIC, UNTYPED_ATOMIC);
 
-        defineSubType(DURATION, YEAR_MONTH_DURATION);
+        // DATE_TIME sub-types
+        //defineSubType(DATE_TIME, DATE_TIME_STAMP);
+
+        // DURATION sub-types
         defineSubType(DURATION, DAY_TIME_DURATION);
+        defineSubType(DURATION, YEAR_MONTH_DURATION);
 
-        defineSubType(NUMBER, DECIMAL);
-        defineSubType(NUMBER, FLOAT);
-        defineSubType(NUMBER, DOUBLE);
-
+        // DECIMAL sub-types
         defineSubType(DECIMAL, INTEGER);
 
-        defineSubType(INTEGER, NON_POSITIVE_INTEGER);
-        defineSubType(NON_POSITIVE_INTEGER, NEGATIVE_INTEGER);
-
+        // INTEGER sub-types
         defineSubType(INTEGER, LONG);
+        defineSubType(INTEGER, NON_NEGATIVE_INTEGER);
+        defineSubType(INTEGER, NON_POSITIVE_INTEGER);
+
+        // LONG sub-types
         defineSubType(LONG, INT);
+
+        // INT sub-types
         defineSubType(INT, SHORT);
+
+        // SHORT sub-types
         defineSubType(SHORT, BYTE);
 
-        defineSubType(INTEGER, NON_NEGATIVE_INTEGER);
+        // NON_NEGATIVE_INTEGER sub-types
         defineSubType(NON_NEGATIVE_INTEGER, POSITIVE_INTEGER);
-
         defineSubType(NON_NEGATIVE_INTEGER, UNSIGNED_LONG);
+
+        // UNSIGNED_LONG sub-types
         defineSubType(UNSIGNED_LONG, UNSIGNED_INT);
+
+        // UNSIGNED_INT sub-types
         defineSubType(UNSIGNED_INT, UNSIGNED_SHORT);
+
+        // UNSIGNED_SHORT sub-types
         defineSubType(UNSIGNED_SHORT, UNSIGNED_BYTE);
 
+        // NON_POSITIVE_INTEGER sub-types
+        defineSubType(NON_POSITIVE_INTEGER, NEGATIVE_INTEGER);
+
+        // STRING sub-types
         defineSubType(STRING, NORMALIZED_STRING);
+
+        // NORMALIZED_STRING sub-types
         defineSubType(NORMALIZED_STRING, TOKEN);
+
+        // TOKEN sub-types
         defineSubType(TOKEN, LANGUAGE);
-        defineSubType(TOKEN, NMTOKEN);
         defineSubType(TOKEN, NAME);
+        defineSubType(TOKEN, NMTOKEN);
+
+        // NAME sub-types
         defineSubType(NAME, NCNAME);
+
+        // NCNAME sub-types
+        defineSubType(NCNAME, ENTITY);
         defineSubType(NCNAME, ID);
         defineSubType(NCNAME, IDREF);
-        defineSubType(NCNAME, ENTITY);
 
-        defineSubType(ITEM, FUNCTION_REFERENCE);
+        // FUNCTION_REFERENCE sub-types
         defineSubType(FUNCTION_REFERENCE, MAP);
         defineSubType(FUNCTION_REFERENCE, ARRAY);
+
+        // NODE types
+        defineSubType(NODE, ATTRIBUTE);
+        defineSubType(NODE, CDATA_SECTION);  // TODO(AR) this doesn't appear in the XDM 3.1
+        defineSubType(NODE, COMMENT);
+        defineSubType(NODE, DOCUMENT);
+        defineSubType(NODE, ELEMENT);
+        defineSubType(NODE, NAMESPACE);
+        defineSubType(NODE, PROCESSING_INSTRUCTION);
+        defineSubType(NODE, TEXT);
     }
 
     static {
-        //TODO : use NODETYPES above ?
-        //TODO use parentheses after the nodes name  ?
         defineBuiltInType(NODE, "node()");
         defineBuiltInType(ITEM, "item()");
-        defineBuiltInType(EMPTY, "empty-sequence()","empty()"); // keep empty() for backward compatibility
+        defineBuiltInType(EMPTY, "empty-sequence()", "empty()");                                // keep `empty()` for backward compatibility
 
         defineBuiltInType(ELEMENT, "element()");
         defineBuiltInType(DOCUMENT, "document-node()");
@@ -206,19 +247,17 @@ public class Type {
 
         defineBuiltInType(JAVA_OBJECT, "object");
         defineBuiltInType(FUNCTION_REFERENCE, "function(*)", "function");
-        defineBuiltInType(MAP, "map(*)", "map"); // keep map for backward compatibility
+        defineBuiltInType(MAP, "map(*)", "map");                                                // keep `map` for backward compatibility
         defineBuiltInType(ARRAY, "array(*)","array");
-        defineBuiltInType(NUMBER, "xs:numeric", "numeric"); // keep numeric for backward compatibility
+        defineBuiltInType(NUMBER, "xs:numeric", "numeric");                                     // keep `numeric` for backward compatibility
 
         defineBuiltInType(ANY_TYPE, "xs:anyType");
         defineBuiltInType(ANY_SIMPLE_TYPE, "xs:anySimpleType");
         defineBuiltInType(UNTYPED, "xs:untyped");
 
-        //Duplicate definition : new one first
-        defineBuiltInType(ATOMIC, "xs:anyAtomicType", "xdt:anyAtomicType");
+        defineBuiltInType(ATOMIC, "xs:anyAtomicType", "xdt:anyAtomicType");                     // keep `xdt:anyAtomicType` for backward compatibility
 
-        //Duplicate definition : new one first
-        defineBuiltInType(UNTYPED_ATOMIC, "xs:untypedAtomic", "xdt:untypedAtomic");
+        defineBuiltInType(UNTYPED_ATOMIC, "xs:untypedAtomic", "xdt:untypedAtomic");             // keep `xdt:untypedAtomic` for backward compatibility
 
         defineBuiltInType(BOOLEAN, "xs:boolean");
         defineBuiltInType(DECIMAL, "xs:decimal");
@@ -258,10 +297,8 @@ public class Type {
         defineBuiltInType(GYEARMONTH, "xs:gYearMonth");
         defineBuiltInType(GMONTHDAY, "xs:gMonthDay");
 
-        //Duplicate definition : new one first
-        defineBuiltInType(YEAR_MONTH_DURATION, "xs:yearMonthDuration", "xdt:yearMonthDuration");
-        //Duplicate definition : new one first
-        defineBuiltInType(DAY_TIME_DURATION, "xs:dayTimeDuration", "xdt:dayTimeDuration");
+        defineBuiltInType(YEAR_MONTH_DURATION, "xs:yearMonthDuration", "xdt:yearMonthDuration");    // keep `xdt:yearMonthDuration` for backward compatibility
+        defineBuiltInType(DAY_TIME_DURATION, "xs:dayTimeDuration", "xdt:dayTimeDuration");          // keep `xdt:dayTimeDuration` for backward compatibility
 
         defineBuiltInType(NORMALIZED_STRING, "xs:normalizedString");
         defineBuiltInType(TOKEN, "xs:token");
@@ -272,17 +309,117 @@ public class Type {
         defineBuiltInType(ID, "xs:ID");
         defineBuiltInType(IDREF, "xs:IDREF");
         defineBuiltInType(ENTITY, "xs:ENTITY");
+
+        // reduce any unused space
+        typeNames.trim();
+        typeCodes.trim();
+    }
+
+    static {
+        defineUnionType(NUMBER, new int[]{ INTEGER, DECIMAL, FLOAT, DOUBLE });
+    }
+
+    // https://www.w3.org/TR/xmlschema-2/#built-in-primitive-datatypes
+    static {
+        definePrimitiveType(STRING, new int[] {
+                NORMALIZED_STRING,
+                TOKEN,
+                LANGUAGE,
+                NMTOKEN,
+                NAME,
+                NCNAME,
+                ID,
+                IDREF,
+                ENTITY
+        });
+        definePrimitiveType(BOOLEAN);
+        definePrimitiveType(DECIMAL, new int[] {
+                INTEGER,
+                NON_POSITIVE_INTEGER,
+                NEGATIVE_INTEGER,
+                LONG,
+                INT,
+                SHORT,
+                BYTE,
+                NON_NEGATIVE_INTEGER,
+                UNSIGNED_LONG,
+                UNSIGNED_INT,
+                UNSIGNED_SHORT,
+                UNSIGNED_BYTE,
+                POSITIVE_INTEGER
+        });
+        definePrimitiveType(FLOAT);
+        definePrimitiveType(DOUBLE);
+        definePrimitiveType(DURATION, new int[] {
+                YEAR_MONTH_DURATION,
+                DAY_TIME_DURATION
+        });
+        definePrimitiveType(DATE_TIME, new int[] {
+                //DATE_TIME_STAMP
+        });
+        definePrimitiveType(TIME);
+        definePrimitiveType(DATE);
+        definePrimitiveType(GYEARMONTH);
+        definePrimitiveType(GYEAR);
+        definePrimitiveType(GMONTHDAY);
+        definePrimitiveType(GDAY);
+        definePrimitiveType(GMONTH);
+        definePrimitiveType(HEX_BINARY);
+        definePrimitiveType(BASE64_BINARY);
+        definePrimitiveType(ANY_URI);
+        definePrimitiveType(QNAME);
+        definePrimitiveType(NOTATION);
+
+        // reduce any unused space
+        primitiveTypes.trim();
     }
 
     /**
+     * Define built-in type.
+     *
      * @param type the type constant
      * @param name The first name is the default name, any other names are aliases.
      */
-    public static void defineBuiltInType(int type, String... name) {
+    private static void defineBuiltInType(final int type, final String... name) {
         typeNames.put(type, name);
         for (final String n : name) {
             typeCodes.put(n, type);
         }
+    }
+
+    /**
+     * Define supertype/subtype relation.
+     *
+     * @param supertype type constant of the super type
+     * @param subtype the subtype
+     */
+    private static void defineSubType(final int supertype, final int subtype) {
+        superTypes[subtype] = supertype;
+    }
+
+    /**
+     * Define a union type.
+     *
+     * @param unionType the union type
+     * @param memberTypes the members of the union type
+     */
+    private static void defineUnionType(final int unionType, final int... memberTypes) {
+        unionTypes.put(unionType, new IntArraySet(memberTypes));
+    }
+
+    /**
+     * Define a primitive type.
+     *
+     * @param primitiveType the primitive type
+     * @param subTypes the subtypes of the primitive type
+     */
+    private static void definePrimitiveType(final int primitiveType, final int... subTypes) {
+        for (final int subType : subTypes) {
+            primitiveTypes.put(subType, primitiveType);
+        }
+
+        // primitive type of a primitive type is itself!
+        primitiveTypes.put(primitiveType, primitiveType);
     }
 
     /**
@@ -291,8 +428,12 @@ public class Type {
      * @param type the type constant
      * @return name of the type
      */
-    public static String getTypeName(int type) {
-        return typeNames.get(type)[0];
+    public static @Nullable String getTypeName(final int type) {
+        final String[] names = typeNames.get(type);
+        if (names != null) {
+            return names[0];
+        }
+        return null;
     }
 
     /**
@@ -301,7 +442,7 @@ public class Type {
      * @param type the type constant
      * @return one or more alias names
      */
-    public static String[] getTypeAliases(int type) {
+    public static @Nullable String[] getTypeAliases(final int type) {
         final String names[] = typeNames.get(type);
         if (names != null && names.length > 1) {
             final String aliases[] = new String[names.length - 1];
@@ -318,11 +459,9 @@ public class Type {
      * @return type constant
      * @throws XPathException in case of dynamic error
      */
-    public static int getType(String name) throws XPathException {
-        //if (name.equals("node"))
-        //	return NODE;
+    public static int getType(final String name) throws XPathException {
         final int code = typeCodes.getInt(name);
-        if (code == -1) {
+        if (code == NO_SUCH_VALUE) {
             throw new XPathException("Type: " + name + " is not defined");
         }
         return code;
@@ -335,7 +474,7 @@ public class Type {
      * @return type constant
      * @throws XPathException in case of dynamic error
      */
-    public static int getType(QName qname) throws XPathException {
+    public static int getType(final QName qname) throws XPathException {
         final String uri = qname.getNamespaceURI();
         switch (uri) {
             case Namespaces.SCHEMA_NS:
@@ -348,38 +487,38 @@ public class Type {
     }
 
     /**
-     * Define supertype/subtype relation.
-     *
-     * @param supertype type constant of the super type
-     * @param subtype the subtype
-     */
-    public static void defineSubType(int supertype, int subtype) {
-        superTypes[subtype] = supertype;
-    }
-
-    /**
      * Check if the given type code is a subtype of the specified supertype.
      *
      * @param subtype the type constant of the subtype
      * @param supertype type constant of the super type
+     *
      * @return true if subtype is a sub type of supertype
+     *
      * @throws IllegalArgumentException When the type is invalid
      */
-    public static boolean subTypeOf(int subtype, int supertype) {
+    public static boolean subTypeOf(int subtype, final int supertype) {
         if (subtype == supertype) {
             return true;
         }
-        //Note that it will return true even if subtype == EMPTY
-        if (supertype == ITEM || supertype == ANY_TYPE)
-        //maybe return subtype != EMPTY ?
-        {
+
+        if (supertype == ITEM || supertype == ANY_TYPE) {
+            // Note: this will return true even if subtype == EMPTY, maybe return subtype != EMPTY ?
             return true;
         }
-        //Note that EMPTY is *not* a sub-type of anything else than itself
-        //EmptySequence has to take care of this when it checks its type
+
+        // Note that EMPTY is *not* a sub-type of anything else than itself
+        // EmptySequence has to take care of this when it checks its type
         if (subtype == ITEM || subtype == EMPTY || subtype == ANY_TYPE || subtype == NODE) {
             return false;
         }
+
+        if (unionTypes.containsKey(supertype)) {
+            return subTypeOfUnion(subtype, supertype);
+        }
+        if (unionTypes.containsKey(subtype)) {
+            return unionMembersHaveSuperType(subtype, supertype);
+        }
+
         subtype = superTypes[subtype];
         if (subtype == 0) {
             throw new IllegalArgumentException(
@@ -418,7 +557,7 @@ public class Type {
      * @param type2 type constant for the second type
      * @return common super type or {@link Type#ITEM} if none
      */
-    public static int getCommonSuperType(int type1, int type2) {
+    public static int getCommonSuperType(final int type1, final int type2) {
         //Super shortcut
         if (type1 == type2) {
             return type1;
@@ -434,7 +573,7 @@ public class Type {
         //TODO : optimize by swapping the arguments based on their numeric values ?
         //Processing lower value first *should* reduce the size of the Set
         //Collect type1's super-types
-        final HashSet<Integer> t1 = new HashSet<>();
+        final IntSet t1 = new IntOpenHashSet(Hash.DEFAULT_INITIAL_SIZE, Hash.VERY_FAST_LOAD_FACTOR);
         //Don't introduce a shortcut (starting at getSuperType(type1) here
         //type2 might be a super-type of type1
         int t;
@@ -452,5 +591,93 @@ public class Type {
             }
         }
         return ITEM;
+    }
+
+    /**
+     * Determines if a union type has an other type as a member.
+     *
+     * @param unionType the union type
+     * @param other the type to test for union membership
+     *
+     * @return true if the type is a member, false otherwise.
+     */
+    public static boolean hasMember(final int unionType, final int other) {
+        final IntArraySet members = unionTypes.get(unionType);
+        if (members == null) {
+            return false;
+        }
+        return members.contains(other);
+    }
+
+    /**
+     * Check if the given type is a subtype of a member of the specified union type.
+     *
+     * @param subtype the type constant of the subtype
+     * @param unionType the union type
+     *
+     * @return true if subtype is a sub type of a member of the union type
+     */
+    public static boolean subTypeOfUnion(final int subtype, final int unionType) {
+        final IntArraySet members = unionTypes.get(unionType);
+        if (members == null) {
+            return false;
+        }
+
+        // inherited behaviour from {@link #subTypeOf(int, int)}
+        // where type is considered a subtype of itself.
+        if (subtype == unionType) {
+            return true;
+        }
+
+        // quick optimisation for: subtype = member
+        if (members.contains(subtype)) {
+            return true;
+        }
+
+        for (final int member : members) {
+            if (subTypeOf(subtype, member)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean unionMembersHaveSuperType(final int unionType, final int supertype) {
+        final IntArraySet members = unionTypes.get(unionType);
+        if (members == null || members.size() == 0) {
+            return false;
+        }
+
+        // inherited behaviour from {@link #subTypeOf(int, int)}
+        // where type is considered a subtype of itself.
+        if (supertype == unionType) {
+            return true;
+        }
+
+        for (final int member : members) {
+            if (!subTypeOf(member, supertype)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Gets the primitive type for a typed atomic type.
+     *
+     * @param type the type to retrieve the primitive type of
+     *
+     * @return the primitive type
+     *
+     * @throws IllegalArgumentException if {@code type} has no defined primitive type
+     */
+    public static int primitiveTypeOf(final int type) throws IllegalArgumentException {
+        final int primitiveType = primitiveTypes.get(type);
+        if (primitiveType == NO_SUCH_VALUE) {
+            final String typeName = getTypeName(type);
+            throw new IllegalArgumentException("Primitive type is not defined for: " + (typeName != null ? typeName : type));
+        }
+        return primitiveType;
     }
 }
