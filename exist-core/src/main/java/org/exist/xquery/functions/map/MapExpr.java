@@ -47,7 +47,7 @@ public class MapExpr extends AbstractExpression {
         if (contextItem != null) {
             contextSequence = contextItem.toSequence();
         }
-        final IMap<AtomicValue, Sequence> map = newLinearMap();
+        final IMap<AtomicValue, Sequence> map = newLinearMap(null);
 
         boolean firstType = true;
         int prevType = AbstractMapType.UNKNOWN_KEY_TYPE;

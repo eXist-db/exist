@@ -10,7 +10,7 @@ import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
-import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 
 /**
  * Full implementation of the XDM map() type based on an
@@ -20,7 +20,7 @@ import java.util.function.ToIntFunction;
  */
 public class MapType extends AbstractMapType {
 
-    private static final ToIntFunction<AtomicValue> KEY_HASH_FN = AtomicValue::hashCode;
+    private static final ToLongFunction<AtomicValue> KEY_HASH_FN = AtomicValue::hashCode;
 
     // TODO(AR) future potential optimisation... could the class member `map` remain `linear` ?
     private IMap<AtomicValue, Sequence> map;
@@ -36,6 +36,23 @@ public class MapType extends AbstractMapType {
 
     private static IMap<AtomicValue, Sequence> newMap(@Nullable final Collator collator) {
         return new Map<>(KEY_HASH_FN, (k1, k2) -> keysEqual(collator, k1, k2));
+    }
+
+    /**
+     * Construct a new Bifurcan mutable-map for use with AtomicValue keys.
+     * 
+     * This function is predominantly for pre-building a Map of key/values
+     * for passing to {@link #MapType(XQueryContext, IMap, Integer)}.
+     * 
+     * @param collator The collator if a collation is in effect for comparing keys.
+     * 
+     * @return A mutable-map on which {@link IMap#forked()} can be called to produce an immutable map. 
+     */
+    public static <V> IMap<AtomicValue, V> newLinearMap(@Nullable final Collator collator) {
+        // TODO(AR) see second bug in bifurcan - https://github.com/lacuna/bifurcan/issues/28
+//        return new LinearMap<>(KEY_HASH_FN, (k1, k2) -> keysEqual(collator, k1, k2));
+
+        return new Map<AtomicValue, V>(KEY_HASH_FN, (k1, k2) -> keysEqual(collator, k1, k2)).linear();
     }
 
     public MapType(final XQueryContext context) {
@@ -261,15 +278,5 @@ public class MapType extends AbstractMapType {
     @Override
     public int getKeyType() {
         return keyType;
-    }
-
-    public static <K, V> IMap<K, V> newLinearMap() {
-        // TODO(AR) see bug in bifurcan - https://github.com/lacuna/bifurcan/issues/23
-        //return new LinearMap<K, V>();
-        return new Map<K, V>().linear();
-    }
-
-    public static IMap<AtomicValue, Sequence> newLinearMap(@Nullable final Collator collator) {
-        return newMap(collator).linear();
     }
 }
