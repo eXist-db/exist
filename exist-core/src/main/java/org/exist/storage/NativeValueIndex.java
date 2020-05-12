@@ -122,7 +122,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     private final static Logger LOG = LogManager.getLogger(NativeValueIndex.class);
 
     public static final String FILE_NAME = "values.dbx";
-    public static final short FILE_FORMAT_VERSION_ID = 14;
+    public static final short FILE_FORMAT_VERSION_ID = 15;
     public static final String FILE_KEY_IN_CONFIG = "db-connection.values";
 
     private static final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
