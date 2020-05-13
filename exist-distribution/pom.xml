@@ -963,7 +963,13 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <skipAssembly>true</skipAssembly>  <!-- Overridden by profile build-dist-archives -->
+                    <skipAssembly>false</skipAssembly>  <!-- Can be overridden by profile skip-build-dist-archives -->
+                    <attach>false</attach>
+                    <tarLongFileMode>gnu</tarLongFileMode>
+                    <descriptors>
+                        <descriptor>src/assembly/dist-assembly-unix.xml</descriptor>
+                        <descriptor>src/assembly/dist-assembly-win.xml</descriptor>
+                    </descriptors>
                 </configuration>
             </plugin>
 
@@ -1056,23 +1062,14 @@
 
     <profiles>
         <profile>
-            <id>build-dist-archives</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
+            <id>skip-build-dist-archives</id>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-assembly-plugin</artifactId>
                         <configuration>
-                            <skipAssembly>false</skipAssembly>  <!-- Override setting in default profile build/plugins for this module -->
-                            <attach>false</attach>
-                            <tarLongFileMode>gnu</tarLongFileMode>
-                            <descriptors>
-                                <descriptor>src/assembly/dist-assembly-unix.xml</descriptor>
-                                <descriptor>src/assembly/dist-assembly-win.xml</descriptor>
-                            </descriptors>
+                            <skipAssembly>true</skipAssembly>  <!-- Override setting in default profile build/plugins for this module -->
                         </configuration>
                     </plugin>
                 </plugins>
