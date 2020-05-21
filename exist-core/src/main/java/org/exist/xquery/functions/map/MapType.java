@@ -4,6 +4,7 @@ import com.evolvedbinary.j8fu.tuple.Tuple2;
 import com.ibm.icu.text.Collator;
 import io.lacuna.bifurcan.IEntry;
 import io.lacuna.bifurcan.IMap;
+import io.lacuna.bifurcan.LinearMap;
 import io.lacuna.bifurcan.Map;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -49,10 +50,7 @@ public class MapType extends AbstractMapType {
      * @return A mutable-map on which {@link IMap#forked()} can be called to produce an immutable map. 
      */
     public static <V> IMap<AtomicValue, V> newLinearMap(@Nullable final Collator collator) {
-        // TODO(AR) see second bug in bifurcan - https://github.com/lacuna/bifurcan/issues/28
-//        return new LinearMap<>(KEY_HASH_FN, (k1, k2) -> keysEqual(collator, k1, k2));
-
-        return new Map<AtomicValue, V>(KEY_HASH_FN, (k1, k2) -> keysEqual(collator, k1, k2)).linear();
+        return new LinearMap<>(KEY_HASH_FN, (k1, k2) -> keysEqual(collator, k1, k2));
     }
 
     public MapType(final XQueryContext context) {
