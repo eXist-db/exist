@@ -35,3 +35,18 @@ declare
 function insp:module-functions-library-module() {
     count(inspect:inspect-module(xs:anyURI("xmldb:exist:///db/inspect-test/mod1.xqm")))
 };
+
+(: When there is an issue, the issue is printed as part of the error messages:)
+declare
+    %test:assertEquals("END")
+function insp:check_if_prefix_is_present() {
+    (
+        for $namespace-uri in util:registered-modules()
+        let $functions := try { util:registered-functions($namespace-uri) } catch * { <error>{$err:code} raised when getting registered functions for module {$namespace-uri}</error> }
+        for $fie in $functions
+        return
+            if( contains($fie,":") or contains($namespace-uri, "w3.org") )
+            then   () else $fie || " in " || $namespace-uri
+    ,"END")
+};
+
