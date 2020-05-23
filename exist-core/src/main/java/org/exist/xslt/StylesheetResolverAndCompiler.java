@@ -152,7 +152,7 @@ public class StylesheetResolverAndCompiler implements Stylesheet {
     serializer.setSAXHandlers(handler, null);
     serializer.toSAX(stylesheet);
 
-    handler.endDocument();
+    //handler.endDocument();
 
     final Templates t = handler.getTemplates();
 
