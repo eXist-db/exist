@@ -22,18 +22,18 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.xquery.*;
 import org.exist.xquery.Module;
+import org.exist.xquery.*;
 import org.exist.xquery.functions.fn.FunOnFunctions;
 import org.exist.xquery.functions.inspect.ModuleFunctions;
 import org.exist.xquery.value.*;
+
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Returns a sequence containing the QNames of all built-in functions
@@ -93,20 +93,35 @@ public class BuiltinFunctions extends BasicFunction {
 		final ValueSequence resultSeq = new ValueSequence();
 		if(getArgumentCount() == 1) {
 			final String uri = args[0].getStringValue();
-			final Module module = context.getModule(uri);
-			if(module == null)
-				{throw new XPathException(this, "No module found matching namespace URI: " + uri);}
+
+			// Get 'internal' modules
+			Module module = context.getModule(uri);
+
+			// If not found, try to load Java module
+			if (module == null && context.getRepository().isPresent()) {
+					module = context.getRepository().get().resolveJavaModule(uri, context);
+			}
+
+			// There is no module afterall
+			if (module == null) {
+				throw new XPathException(this, "No module found matching namespace URI: " + uri);
+			}
+
 			if (isCalledAs("declared-variables")) {
 				addVariablesFromModule(resultSeq, module);
-            } else if (isCalledAs("list-functions")) {
-                addFunctionRefsFromModule(resultSeq, module);
+
+			} else if (isCalledAs("list-functions")) {
+				addFunctionRefsFromModule(resultSeq, module);
+
 			} else {
+				// registered-functions
 				addFunctionsFromModule(resultSeq, module);
 			}
 		} else {
             if (isCalledAs("list-functions")) {
                 addFunctionRefsFromContext(resultSeq);
             } else {
+				// registered-functions
                 for(final Iterator<Module> i = context.getModules(); i.hasNext(); ) {
                     final Module module = i.next();
                     addFunctionsFromModule(resultSeq, module);
@@ -117,6 +132,8 @@ public class BuiltinFunctions extends BasicFunction {
                     final FunctionSignature sig = func.getSignature();
                     resultSeq.add(new QNameValue(context, sig.getName()));
                 }
+
+
             }
 		}
 		return resultSeq;
