@@ -21,6 +21,7 @@
  */
 package org.exist.webdav;
 
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -287,7 +288,7 @@ public class ExistCollection extends ExistResource {
                 LOG.debug(String.format("Creating dummy XML file for null resource lock '%s'", newNameUri));
             }
 
-            is = new FastByteArrayInputStream("<null_resource/>".getBytes(UTF_8));
+            is = new UnsynchronizedByteArrayInputStream("<null_resource/>".getBytes(UTF_8));
         }
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();

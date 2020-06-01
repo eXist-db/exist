@@ -29,7 +29,7 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -137,7 +137,7 @@ public class ZipFileFunctions extends BasicFunction {
             binariesTable.put(paths[i], binaries[i]);
         }
 
-        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();)
+        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();)
         {
             zis = zipFileSource.getStream();
             ZipOutputStream zos = new ZipOutputStream(baos); // zos is the output - the result
@@ -176,7 +176,7 @@ public class ZipFileFunctions extends BasicFunction {
             zos.close();
             zis.close();
 
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toFastByteInputStream());
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream());
 
         } catch (IOException e) {
             logger.error(e.getMessage(), e);

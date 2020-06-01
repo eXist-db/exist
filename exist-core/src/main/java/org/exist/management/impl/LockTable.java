@@ -29,7 +29,7 @@ import org.exist.storage.lock.Lock.LockType;
 import org.exist.storage.lock.LockTable.LockCountTraces;
 import org.exist.storage.lock.LockTable.LockModeOwner;
 import org.exist.storage.lock.LockTableUtils;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -125,7 +125,7 @@ public class LockTable implements LockTableMXBean {
 
     @Override
     public void xmlDumpToLog() {
-        try (final FastByteArrayOutputStream bos = new FastByteArrayOutputStream();
+        try (final UnsynchronizedByteArrayOutputStream bos = new UnsynchronizedByteArrayOutputStream();
                 final Writer writer = new OutputStreamWriter(bos)) {
             LockTableUtils.stateToXml(pool.getLockManager().getLockTable(), false, writer);
             LOCK_LOG.info(new String(bos.toByteArray(), UTF_8));
@@ -136,7 +136,7 @@ public class LockTable implements LockTableMXBean {
 
     @Override
     public void xmlFullDumpToLog() {
-        try (final FastByteArrayOutputStream bos = new FastByteArrayOutputStream();
+        try (final UnsynchronizedByteArrayOutputStream bos = new UnsynchronizedByteArrayOutputStream();
              final Writer writer = new OutputStreamWriter(bos)) {
             LockTableUtils.stateToXml(pool.getLockManager().getLockTable(), true, writer);
             LOCK_LOG.info(new String(bos.toByteArray(), UTF_8));

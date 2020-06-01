@@ -37,7 +37,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.SystemProperties;
 import org.exist.util.FileUtils;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 
 /**
  * Class for writing JNLP file, jar files and image files.
@@ -280,7 +280,7 @@ public class JnlpWriter {
             }
 
             // Copy data
-            try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+            try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
                 baos.write(imageInputStream);
 
                 // Setup HTTP headers

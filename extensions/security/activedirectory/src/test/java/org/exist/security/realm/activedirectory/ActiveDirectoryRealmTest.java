@@ -30,7 +30,7 @@ import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Subject;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -59,7 +59,7 @@ public class ActiveDirectoryRealmTest {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		InputStream is = new FastByteArrayInputStream(config.getBytes(StandardCharsets.UTF_8));
+		InputStream is = new UnsynchronizedByteArrayInputStream(config.getBytes(StandardCharsets.UTF_8));
 		
 		Configuration config = Configurator.parse(is);
 

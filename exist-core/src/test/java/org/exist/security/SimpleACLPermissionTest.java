@@ -34,7 +34,7 @@ import org.exist.security.internal.SecurityManagerImpl;
 import java.util.Random;
 import org.easymock.EasyMock;
 import org.exist.util.ByteArray;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -709,7 +709,7 @@ public class SimpleACLPermissionTest {
         SimpleACLPermission permission2 = new SimpleACLPermission(mockSecurityManager);
         
         //read the acl in
-        permission2.read(new VariableByteInputStream(new FastByteArrayInputStream(data)));
+        permission2.read(new VariableByteInputStream(new UnsynchronizedByteArrayInputStream(data)));
         
         assertEquals(2, permission2.getACECount());
         

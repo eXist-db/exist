@@ -27,7 +27,7 @@ import java.io.InputStream;
 
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.junit.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -48,7 +48,7 @@ public class ConfigurableTest {
 	
 	@Test
 	public void simple() throws Exception {
-		InputStream is = new FastByteArrayInputStream(config1.getBytes(UTF_8));
+		InputStream is = new UnsynchronizedByteArrayInputStream(config1.getBytes(UTF_8));
         
         Configuration config = Configurator.parse(is);
         

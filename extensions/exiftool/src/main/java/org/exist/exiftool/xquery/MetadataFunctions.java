@@ -28,10 +28,10 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
@@ -42,7 +42,6 @@ import org.exist.storage.blob.BlobStore;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
-import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -158,7 +157,7 @@ public class MetadataFunctions extends BasicFunction {
         try {
             final Process p = Runtime.getRuntime().exec(module.getPerlPath() + " " + module.getExiftoolPath() + " -X -struct " + binaryFile.toAbsolutePath().toString());
             try(final InputStream stdIn = p.getInputStream();
-                    final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+                    final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
 
                 //buffer stdin
                 baos.write(stdIn);
@@ -166,7 +165,7 @@ public class MetadataFunctions extends BasicFunction {
                 //make sure process is complete
                 p.waitFor();
 
-                return ModuleUtils.inputSourceToXML(context, new InputSource(baos.toFastByteInputStream()));
+                return ModuleUtils.inputSourceToXML(context, new InputSource(baos.toInputStream()));
             }
         } catch (final IOException ex) {
             throw new XPathException(this, "Could not execute the Exiftool " + ex.getMessage(), ex);
@@ -183,7 +182,7 @@ public class MetadataFunctions extends BasicFunction {
             final Process p = Runtime.getRuntime().exec(module.getExiftoolPath()+" -fast -X -");
 
             try(final InputStream stdIn = p.getInputStream();
-                    final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+                    final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
 
                 try(final OutputStream stdOut = p.getOutputStream()) {
                     final Source src = SourceFactory.getSource(context.getBroker(), null, uri.toString(), false);
@@ -207,7 +206,7 @@ public class MetadataFunctions extends BasicFunction {
                 //make sure process is complete
                 p.waitFor();
 
-                return ModuleUtils.inputSourceToXML(context, new InputSource(baos.toFastByteInputStream()));
+                return ModuleUtils.inputSourceToXML(context, new InputSource(baos.toInputStream()));
             }
 
         } catch (final IOException ex) {

@@ -29,6 +29,8 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.Test;
 
 /**
@@ -218,7 +220,7 @@ public class ByteBufferInputStreamTest {
 
         final ByteBuffer buf = ByteBuffer.wrap(testData);
         try(final InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf))) {
-            final FastByteArrayOutputStream baos = new FastByteArrayOutputStream(testData.length);
+            final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream(testData.length);
             byte readBuf[] = new byte[56];
             int read = -1;
 
@@ -242,7 +244,7 @@ public class ByteBufferInputStreamTest {
         final ByteBuffer buf = ByteBuffer.wrap(testData);
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
 
-        try (FastByteArrayOutputStream baos = new FastByteArrayOutputStream(testData.length)) {
+        try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream(testData.length)) {
             byte readBuf[] = new byte[56];
             int read = -1;
 

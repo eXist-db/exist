@@ -29,7 +29,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.xmldb.XmldbURI;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -63,7 +63,7 @@ public class BinaryDocumentTest {
 
             // add a binary document to the collection
             final byte[] binaryData1 = "binary-file1".getBytes(UTF_8);
-            try (final InputStream is = new FastByteArrayInputStream(binaryData1)) {
+            try (final InputStream is = new UnsynchronizedByteArrayInputStream(binaryData1)) {
                 thingCollection.addBinaryResource(transaction, broker, XmldbURI.create("file1.bin"), is, "application/octet-stream", binaryData1.length);
             }
 
@@ -73,7 +73,7 @@ public class BinaryDocumentTest {
             // try and store a binary doc with the same name as the thing collection (should succeed)
             final Collection testCollection = broker.getCollection(testCollectionUri);
             final byte[] binaryData2 = "binary-file2".getBytes(UTF_8);
-            try (final InputStream is = new FastByteArrayInputStream(binaryData2)) {
+            try (final InputStream is = new UnsynchronizedByteArrayInputStream(binaryData2)) {
                 testCollection.addBinaryResource(transaction, broker, XmldbURI.create("thing"), is, "application/octet-stream", binaryData2.length);
             }
         }
@@ -96,7 +96,7 @@ public class BinaryDocumentTest {
             final Collection testCollection = broker.getCollection(testCollectionUri);
 
             final byte[] binaryData = "binary-file".getBytes(UTF_8);
-            try (final InputStream is = new FastByteArrayInputStream(binaryData)) {
+            try (final InputStream is = new UnsynchronizedByteArrayInputStream(binaryData)) {
 
                 try {
                     testCollection.addBinaryResource(transaction, broker, thingUri.lastSegment(), is, "application/octet-stream", binaryData.length);

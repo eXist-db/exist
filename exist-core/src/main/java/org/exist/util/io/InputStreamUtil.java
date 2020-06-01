@@ -22,6 +22,8 @@
 
 package org.exist.util.io;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -73,7 +75,7 @@ public class InputStreamUtil {
      * @throws IOException if an I/O error occurs.
      */
     public static byte[] readAll(final InputStream is) throws IOException {
-        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             os.write(is);
             return os.toByteArray();
         }
@@ -90,7 +92,7 @@ public class InputStreamUtil {
      * @throws IOException if an I/O error occurs.
      */
     public static String readString(final InputStream is, final Charset charset) throws IOException {
-        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             os.write(is);
             return new String(os.toByteArray(), charset);
         }

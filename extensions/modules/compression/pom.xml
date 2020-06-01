@@ -64,6 +64,11 @@
         </dependency>
 
         <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>net.sf.xmldb-org</groupId>
             <artifactId>xmldb-api</artifactId>
         </dependency>

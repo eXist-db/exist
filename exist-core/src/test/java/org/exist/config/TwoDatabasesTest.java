@@ -40,7 +40,7 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
 
@@ -148,7 +148,7 @@ public class TwoDatabasesTest {
         try(final Collection top = broker.openCollection(XmldbURI.create("xmldb:exist:///db"), LockMode.READ_LOCK)) {
             binDoc = (BinaryDocument) top.getDocument(broker, XmldbURI.create("bin"));
             assertTrue(binDoc != null);
-            try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream((int)binDoc.getContentLength())) {
+            try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream((int)binDoc.getContentLength())) {
                 broker.readBinaryResource(binDoc, os);
                 String comp = os.size() > 0 ? new String(os.toByteArray()) : "";
                 return comp.equals(bin + suffix);

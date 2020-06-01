@@ -35,7 +35,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -79,7 +79,7 @@ public class URLRewritingTest {
         final Tuple2<Integer, String> retrieveResponseStatusCodeAndBody = withHttpExecutor(executor -> {
             final HttpResponse response = executor.execute(retrieveRequest).returnResponse();
             final String responseBody;
-            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream((int)response.getEntity().getContentLength())) {
+            try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream((int)response.getEntity().getContentLength())) {
                 response.getEntity().writeTo(baos);
                 responseBody = baos.toString(UTF_8);
             }

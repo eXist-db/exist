@@ -49,7 +49,7 @@ import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
@@ -1972,7 +1972,7 @@ public class BFile extends BTree {
             byte[] temp;
             int len;
 
-            try(final FastByteArrayOutputStream os = new FastByteArrayOutputStream(page.getPageHeader().getDataLength())) {
+            try(final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream(page.getPageHeader().getDataLength())) {
                 do {
                     temp = page.getData();
                     next = page.getPageHeader().getNextInChain();

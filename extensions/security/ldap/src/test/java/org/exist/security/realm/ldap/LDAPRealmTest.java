@@ -29,7 +29,7 @@ import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Account;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -58,7 +58,7 @@ public class LDAPRealmTest {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		try (final InputStream is = new FastByteArrayInputStream(config.getBytes(UTF_8))) {
+		try (final InputStream is = new UnsynchronizedByteArrayInputStream(config.getBytes(UTF_8))) {
 			Configuration config = Configurator.parse(is);
 			realm = new LDAPRealm(null, config);
 		}

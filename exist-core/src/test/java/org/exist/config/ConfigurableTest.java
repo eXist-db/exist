@@ -31,7 +31,7 @@ import javax.xml.parsers.SAXParserFactory;
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.util.ExistSAXParserFactory;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xml.sax.InputSource;
@@ -79,7 +79,7 @@ public class ConfigurableTest {
 	
 	@Test
 	public void simple() throws Exception {
-		InputStream is = new FastByteArrayInputStream(config1.getBytes(UTF_8));
+		InputStream is = new UnsynchronizedByteArrayInputStream(config1.getBytes(UTF_8));
         
         Configuration config = Configurator.parse(is);
         
@@ -103,7 +103,7 @@ public class ConfigurableTest {
 
 	@Test
 	public void subelement() throws Exception {
-		InputStream is = new FastByteArrayInputStream(config2.getBytes(UTF_8));
+		InputStream is = new UnsynchronizedByteArrayInputStream(config2.getBytes(UTF_8));
 		
         // initialize xml parser
         // we use eXist's in-memory DOM implementation to work
@@ -128,7 +128,7 @@ public class ConfigurableTest {
 	
 	@Test
 	public void notSimple() throws Exception {
-		InputStream is = new FastByteArrayInputStream(config3.getBytes(UTF_8));
+		InputStream is = new UnsynchronizedByteArrayInputStream(config3.getBytes(UTF_8));
         
         Configuration config = Configurator.parse(is);
         

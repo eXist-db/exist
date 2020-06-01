@@ -28,7 +28,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.exist.dom.QName;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XQueryContext;
@@ -107,7 +107,7 @@ public class ZipFunction extends AbstractCompressFunction {
     }
 
     @Override
-    protected OutputStream stream(final FastByteArrayOutputStream baos, final Charset encoding)
+    protected OutputStream stream(final UnsynchronizedByteArrayOutputStream baos, final Charset encoding)
     {
         return new ZipOutputStream(baos, encoding);
     }

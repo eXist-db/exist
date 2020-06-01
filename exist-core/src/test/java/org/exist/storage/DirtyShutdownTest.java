@@ -21,13 +21,13 @@
  */
 package org.exist.storage;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
-import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.test.TestConstants;
 import org.exist.collections.Collection;
@@ -41,15 +41,10 @@ import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.concurrent.*;
 
@@ -97,7 +92,7 @@ public class DirtyShutdownTest {
             }
 
             final String data;
-            try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream();
+            try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream();
                  final InputStream is = SAMPLES.getMacbethSample()) {
                 os.write(is);
                 data = new String(os.toByteArray(), UTF_8);

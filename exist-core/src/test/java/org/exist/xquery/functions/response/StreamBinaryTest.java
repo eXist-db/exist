@@ -33,7 +33,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.fluent.Request;
 import org.exist.http.RESTTest;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.Test;
 
 /**
@@ -55,7 +55,7 @@ public class StreamBinaryTest extends RESTTest {
 		final HttpResponse response = get.execute().returnResponse();
 		assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
-		try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+		try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
 			response.getEntity().writeTo(os);
 
 			assertArrayEquals(testValue.getBytes(), os.toByteArray());

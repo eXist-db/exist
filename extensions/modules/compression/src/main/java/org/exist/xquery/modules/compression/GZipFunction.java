@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 
 import org.exist.dom.QName;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -76,14 +76,14 @@ public class GZipFunction extends BasicFunction
         BinaryValue bin = (BinaryValue) args[0].itemAt(0);
 
         // gzip the data
-        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();
+        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
                 final GZIPOutputStream gzos = new GZIPOutputStream(baos)) {
             bin.streamBinaryTo(gzos);
             
             gzos.flush();
             gzos.finish();
             
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toFastByteInputStream());
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream());
         } catch (final IOException ioe) {
             throw new XPathException(this, ioe.getMessage(), ioe);
         }

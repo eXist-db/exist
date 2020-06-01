@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.memtree.*;
 import org.exist.util.XMLReaderPool;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -452,7 +452,7 @@ public class ExecuteFunction extends BasicFunction {
             builder.endElement();
 
             builder.startElement(new QName("stack-trace", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
-            try (final FastByteArrayOutputStream bufStackTrace = new FastByteArrayOutputStream();
+            try (final UnsynchronizedByteArrayOutputStream bufStackTrace = new UnsynchronizedByteArrayOutputStream();
                  final PrintStream ps = new PrintStream(bufStackTrace)) {
                 sqle.printStackTrace(ps);
                 builder.characters(bufStackTrace.toString(UTF_8));

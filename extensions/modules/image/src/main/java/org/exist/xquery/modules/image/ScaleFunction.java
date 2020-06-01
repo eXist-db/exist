@@ -30,7 +30,7 @@ import java.io.InputStream;
 import javax.imageio.ImageIO;
 
 import org.exist.dom.QName;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -137,11 +137,11 @@ public class ScaleFunction extends BasicFunction
 			bImage = ImageModule.createThumb(image, maxHeight, maxWidth);
 		
 			//get the new scaled image
-			try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+			try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
 				ImageIO.write(bImage, formatName, os);
 
 				//return the new scaled image data
-				return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), os.toFastByteInputStream());
+				return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), os.toInputStream());
 			}
 		}
 		catch(Exception e)

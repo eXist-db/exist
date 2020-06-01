@@ -25,7 +25,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.UserManagementService;
 import java.io.IOException;
 import org.exist.http.RESTTest;
@@ -132,7 +132,7 @@ public class GetDataTest extends RESTTest {
 
             assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
-            try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+            try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
                 response.getEntity().writeTo(os);
 
                 byte actualResponse[] = os.toByteArray();

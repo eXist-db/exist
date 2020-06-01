@@ -73,7 +73,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
@@ -1347,7 +1347,7 @@ public class RpcConnection implements RpcAPI {
                     }
                 }
 
-            try (final InputStream is = new FastByteArrayInputStream(xml)) {
+            try (final InputStream is = new UnsynchronizedByteArrayInputStream(xml)) {
 
                     final InputSource source = new InputSource(is);
 

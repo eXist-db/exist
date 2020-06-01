@@ -36,7 +36,7 @@ import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
@@ -147,7 +147,7 @@ public class BinaryDoc extends BasicFunction {
                     final BinaryDocument bin = (BinaryDocument) doc;
                     final MessageDigest messageDigest = context.getBroker().getBinaryResourceContentDigest(transaction, bin, digestType);
 
-                    final InputStream is = new FastByteArrayInputStream(messageDigest.getValue());
+                    final InputStream is = new UnsynchronizedByteArrayInputStream(messageDigest.getValue());
                     final Sequence result = BinaryValueFromInputStream.getInstance(context, new HexBinaryValueType(), is);
 
                     transaction.commit();

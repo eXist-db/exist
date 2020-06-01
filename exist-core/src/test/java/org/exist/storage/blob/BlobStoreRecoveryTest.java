@@ -39,8 +39,8 @@ import org.exist.util.crypto.digest.DigestInputStream;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.util.crypto.digest.StreamableDigest;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.AfterClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -403,7 +403,7 @@ public class BlobStoreRecoveryTest {
     }
 
     private void addCommit(final TransactionManager transactionManager, final BlobStore blobStore, final byte[] blob) throws IOException, TransactionException {
-        try (final InputStream is = new FastByteArrayInputStream(blob)) {
+        try (final InputStream is = new UnsynchronizedByteArrayInputStream(blob)) {
             try (final Txn transaction = transactionManager.beginTransaction()) {
                 blobStore.add(transaction, is);
 
@@ -413,7 +413,7 @@ public class BlobStoreRecoveryTest {
     }
 
     private void addNoCommit(final TransactionManager transactionManager, final BlobStore blobStore, final byte[] blob) throws IOException, TransactionException {
-        try (final InputStream is = new FastByteArrayInputStream(blob)) {
+        try (final InputStream is = new UnsynchronizedByteArrayInputStream(blob)) {
             final Txn transaction = transactionManager.beginTransaction();
             blobStore.add(transaction, is);
             // NOTE must not use ARM to close the transaction, otherwise it will auto-abort!
@@ -537,7 +537,7 @@ public class BlobStoreRecoveryTest {
     private Tuple2<byte[], MessageDigest> readAll(InputStream is) throws IOException {
         final StreamableDigest streamableDigest = DIGEST_TYPE.newStreamableDigest();
         is = new DigestInputStream(is, streamableDigest);
-        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             os.write(is);
             return Tuple(os.toByteArray(), streamableDigest.copyMessageDigest());
         }

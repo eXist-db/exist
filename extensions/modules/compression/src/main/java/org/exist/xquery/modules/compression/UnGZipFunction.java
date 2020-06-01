@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 
 import org.exist.dom.QName;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -77,9 +77,9 @@ public class UnGZipFunction extends BasicFunction
         //TODO(AR) just pass the GZIPInputStream straight into BinaryValueFromInputStream.getInstance
         // ungzip the data
         try(final GZIPInputStream gzis = new GZIPInputStream(bin.getInputStream());
-                final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+                final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             baos.write(gzis);
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toFastByteInputStream());
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream());
         } catch(final IOException ioe) {
             throw new XPathException(this, ioe.getMessage(), ioe);
         }

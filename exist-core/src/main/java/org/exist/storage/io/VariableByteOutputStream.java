@@ -26,7 +26,7 @@ import java.io.OutputStream;
 
 import org.exist.util.ByteArray;
 import org.exist.util.FixedByteArray;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -59,7 +59,7 @@ public class VariableByteOutputStream extends OutputStream {
     /**
      * The choice of the backing buffer is quite tricky, we have two easy options:
      *
-     * 1. org.exist.util.io.FastByteArrayOutputStream which is based on Apache Commons IO org.apache.commons.io.ByteArrayOutputStream
+     * 1. org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream
      *    This allocates multiple underlying buffers in sequence, which means that appends to the buffer always allocate
      *    a new buffer, and so there is no GC overhead for appending. However, for serialization #toArray() involves
      *    allocating a new array and copying data from those multiple buffers into the new array, this requires 2x
@@ -67,23 +67,24 @@ public class VariableByteOutputStream extends OutputStream {
      *    NOTE: Previously this classes {@link VariableByteOutputStream#toByteArray()} made a copy anyway, and so
      *    previously required 2x memory.
      *
-     * 2. it.unimi.dsi.fastutil.io.FastByteArrayOutputStream which allocates a single underlying buffer, appends that
+     * 2. it.unimi.dsi.fastutil.io.UnsynchronizedByteArrayOutputStream
+     *    This allocates a single underlying buffer, appends that
      *    would overflow the underlying buffer cause a new buffer to be allocated, data copied, and the old buffer left
      *    to GC. This means that appends which require resizing the buffer can be expensive. However, #toArray() is not
      *    needed as access to the underlying array is permitted, so this is very cheap for serializing.
      *
      * Likely there are different scenarios where each is more appropriate.
      */
-    private final FastByteArrayOutputStream buf;
+    private final UnsynchronizedByteArrayOutputStream buf;
     
     public VariableByteOutputStream() {
         super();
-         buf = new FastByteArrayOutputStream(512);
+         buf = new UnsynchronizedByteArrayOutputStream(512);
     }
 
     public VariableByteOutputStream(final int bytes) {
         super();
-        buf = new FastByteArrayOutputStream(bytes);
+        buf = new UnsynchronizedByteArrayOutputStream(bytes);
     }
 
     public void clear() {

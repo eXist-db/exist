@@ -33,7 +33,7 @@ import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.LocalXMLResource;
@@ -90,7 +90,7 @@ public class XPathUtil {
         } else if (obj instanceof Long) {
             return new IntegerValue(((Long) obj), Type.LONG);
         } else if (obj instanceof byte[]) {
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new FastByteArrayInputStream((byte[]) obj));
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream((byte[]) obj));
 
         } else if (obj instanceof ResourceSet) {
             final Sequence seq = new AVLTreeNodeSet();

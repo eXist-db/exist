@@ -27,8 +27,8 @@ import java.io.UnsupportedEncodingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -111,7 +111,7 @@ public class BinaryToString extends BasicFunction {
     }
 
     protected StringValue binaryToString(BinaryValue binary, String encoding) throws XPathException {
-        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             binary.streamBinaryTo(os);
             return new StringValue(os.toString(encoding));
         } catch(final IOException ioe) {
@@ -121,7 +121,7 @@ public class BinaryToString extends BasicFunction {
 
     protected BinaryValue stringToBinary(String str, String encoding) throws XPathException {
         try {
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new FastByteArrayInputStream(str.getBytes(encoding)));
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(str.getBytes(encoding)));
         } catch(final UnsupportedEncodingException e) {
             throw new XPathException(this, "Unsupported encoding: " + encoding);
         }

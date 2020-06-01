@@ -31,8 +31,8 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
@@ -60,7 +60,7 @@ public class EmbeddedBinariesTest extends AbstractBinariesTest<Sequence, Item, I
 
             try(final ManagedCollectionLock collectionLock = brokerPool.getLockManager().acquireCollectionWriteLock(filePath.removeLastSegment())) {
                 final Collection collection = broker.getOrCreateCollection(transaction, filePath.removeLastSegment());
-                try(final InputStream is = new FastByteArrayInputStream(content)) {
+                try(final InputStream is = new UnsynchronizedByteArrayInputStream(content)) {
 
                     collection.addBinaryResource(transaction, broker, filePath.lastSegment(), is, "application/octet-stream", content.length);
 
@@ -148,13 +148,13 @@ public class EmbeddedBinariesTest extends AbstractBinariesTest<Sequence, Item, I
     protected byte[] getBytes(final Item item) throws IOException {
         if (item instanceof Base64BinaryDocument) {
             final Base64BinaryDocument doc = (Base64BinaryDocument) item;
-            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+            try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
                 doc.streamBinaryTo(baos);
                 return baos.toByteArray();
             }
         } else {
             final BinaryValueFromFile file = (BinaryValueFromFile) item;
-            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+            try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
                 file.streamBinaryTo(baos);
                 return baos.toByteArray();
             }

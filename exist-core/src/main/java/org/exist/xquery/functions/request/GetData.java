@@ -35,7 +35,7 @@ import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.io.CachingFilterInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration;
@@ -207,7 +207,7 @@ public class GetData extends StrictRequestFunction {
     }
 
     private Sequence parseAsString(InputStream is, String encoding) throws IOException {
-        try (final FastByteArrayOutputStream bos = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream bos = new UnsynchronizedByteArrayOutputStream()) {
             bos.write(is);
             return new StringValue(bos.toString(encoding));
         }

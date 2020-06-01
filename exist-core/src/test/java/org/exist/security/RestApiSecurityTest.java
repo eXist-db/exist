@@ -32,7 +32,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.exist.test.ExistWebServer;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.ClassRule;
 
 /**
@@ -196,7 +196,7 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
     }
     
     private String getResponseBody(final HttpEntity entity) throws IOException {
-        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream(256)) {
+        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream(256)) {
             entity.writeTo(baos);
             return new String(baos.toByteArray());
         }

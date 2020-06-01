@@ -31,8 +31,8 @@ import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.value.BinaryValue;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.InputSource;
@@ -140,7 +140,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
             } else if(res instanceof byte[]) {
                 return res;
             } else if(res instanceof BinaryValue) {
-                try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+                try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
                     ((BinaryValue) res).streamBinaryTo(baos);
                     return baos.toByteArray();
                 } catch (final IOException e) {
@@ -204,7 +204,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
         } else if(inputSource != null) {
             is = inputSource.getByteStream();
         } else if(rawData != null) {
-            is = new FastByteArrayInputStream(rawData);
+            is = new UnsynchronizedByteArrayInputStream(rawData);
         } else if(binaryValue != null) {
             is = binaryValue.getInputStream();
         } else {
@@ -278,7 +278,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
     }
 
     private byte[] readFile(final InputStream is) throws XMLDBException {
-        try(final FastByteArrayOutputStream bos = new FastByteArrayOutputStream()) {
+        try(final UnsynchronizedByteArrayOutputStream bos = new UnsynchronizedByteArrayOutputStream()) {
             bos.write(is);
             return bos.toByteArray();
         } catch (final IOException e) {

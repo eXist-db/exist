@@ -46,7 +46,7 @@ import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.io.CachingFilterInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.xquery.XPathException;
@@ -293,7 +293,7 @@ class RestXqServiceImpl extends AbstractRestXqService {
 
     private static StringValue parseAsString(final InputStream is, final String encoding) throws IOException {
         final String s;
-        try (final FastByteArrayOutputStream bos = new FastByteArrayOutputStream(4096)) {
+        try (final UnsynchronizedByteArrayOutputStream bos = new UnsynchronizedByteArrayOutputStream(4096)) {
             bos.write(is);
             s = new String(bos.toByteArray(), encoding);
         }

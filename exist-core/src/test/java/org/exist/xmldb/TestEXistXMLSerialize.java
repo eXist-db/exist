@@ -23,7 +23,7 @@ package org.exist.xmldb;
 
 import org.exist.security.Account;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.ClassRule;
 import org.xmldb.api.modules.CollectionManagementService;
 import java.io.IOException;
@@ -125,7 +125,7 @@ public class TestEXistXMLSerialize {
 
         //Attempting serialization
         DOMSource source = new DOMSource(node);
-        try (final FastByteArrayOutputStream out = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream()) {
             StreamResult result = new StreamResult(out);
 
             Transformer xformer = TransformerFactory.newInstance().newTransformer();
@@ -149,7 +149,7 @@ public class TestEXistXMLSerialize {
         format.setLineWidth(0);
         format.setIndent(5);
         format.setPreserveSpace(true);
-        try (final FastByteArrayOutputStream out = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream()) {
             XMLSerializer serializer = new XMLSerializer(out, format);
 
             if (node instanceof Document) {

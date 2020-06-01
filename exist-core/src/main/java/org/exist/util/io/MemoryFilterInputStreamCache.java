@@ -26,6 +26,8 @@
  */
 package org.exist.util.io;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -40,7 +42,7 @@ import java.io.InputStream;
  */
 public class MemoryFilterInputStreamCache extends AbstractFilterInputStreamCache {
 
-    private FastByteArrayOutputStream cache = new FastByteArrayOutputStream();
+    private UnsynchronizedByteArrayOutputStream cache = new UnsynchronizedByteArrayOutputStream();
 
     public MemoryFilterInputStreamCache(InputStream src) {
         super(src);

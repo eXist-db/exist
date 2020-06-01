@@ -41,7 +41,7 @@ import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.storage.serializers.Serializer;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.ValidationReportItem;
 import org.exist.validation.internal.node.NodeInputStream;
@@ -167,7 +167,7 @@ public class Shared {
             final BinaryValue binary = (BinaryValue) item;
             
             final byte[] data = binary.toJavaObject(byte[].class);
-            final InputStream is = new FastByteArrayInputStream(data);
+            final InputStream is = new UnsynchronizedByteArrayInputStream(data);
             streamSource.setInputStream(is);
 
             //TODO consider using BinaryValue.getInputStream()

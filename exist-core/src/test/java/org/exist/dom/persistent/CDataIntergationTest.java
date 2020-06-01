@@ -33,8 +33,8 @@ import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
 import org.junit.ClassRule;
@@ -94,7 +94,7 @@ public class CDataIntergationTest {
                 Request
                         .Get(docUri)
                 ).returnResponse();
-        try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             retrieveResponse.getEntity().writeTo(baos);
             assertEquals(cdata_xml, baos.toString(UTF_8));
         }
