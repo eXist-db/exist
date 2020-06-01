@@ -793,7 +793,7 @@ public class CachingFilterInputStreamTest_NonMarkableByteArrayInputStream {
     public void constructed_from_CachingFilterInputStream_consumed() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
         final byte[] testData = generateRandomData(_12KB);
-        final InputStream is = new NonMarkableByteArrayInputStream(testData);
+        final InputStream is = new MarkShieldInputStream(new UnsynchronizedByteArrayInputStream(testData));
 
         //first CachingFilterInputStream
         final CachingFilterInputStream cfis1 = new CachingFilterInputStream(getNewCache(is));
@@ -810,7 +810,7 @@ public class CachingFilterInputStreamTest_NonMarkableByteArrayInputStream {
     public void constructed_from_CachingFilterInputStream_partiallyConsumed() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
 
         final byte[] testData = generateRandomData(_12KB);
-        final InputStream is = new NonMarkableByteArrayInputStream(testData);
+        final InputStream is = new MarkShieldInputStream(new UnsynchronizedByteArrayInputStream(testData));
 
         //first CachingFilterInputStream
         final CachingFilterInputStream cfis1 = new CachingFilterInputStream(getNewCache(is));
@@ -834,7 +834,7 @@ public class CachingFilterInputStreamTest_NonMarkableByteArrayInputStream {
     @Test
     public void interleavedSourceReads() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         final byte[] testData = generateRandomData(_64KB);
-        final InputStream is = new NonMarkableByteArrayInputStream(testData);
+        final InputStream is = new MarkShieldInputStream(new UnsynchronizedByteArrayInputStream(testData));
 
         final FilterInputStreamCache cache1 = getNewCache(is);
 
@@ -855,7 +855,7 @@ public class CachingFilterInputStreamTest_NonMarkableByteArrayInputStream {
     @Test
     public void sharedCacheWritesInOrder() throws IOException, InstantiationException, IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         final byte[] testData = generateRandomData(_64KB);
-        final InputStream is = new NonMarkableByteArrayInputStream(testData);
+        final InputStream is = new MarkShieldInputStream(new UnsynchronizedByteArrayInputStream(testData));
 
         //first CachingFilterInputStream
         final CachingFilterInputStream cfis1 = new CachingFilterInputStream(getNewCache(is));
