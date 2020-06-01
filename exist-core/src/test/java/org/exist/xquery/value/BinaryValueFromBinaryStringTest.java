@@ -24,7 +24,7 @@ package org.exist.xquery.value;
 import org.apache.commons.codec.binary.Hex;
 import java.io.InputStream;
 import org.apache.commons.codec.binary.Base64;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.XPathException;
 import java.io.IOException;
 import org.junit.Test;
@@ -47,7 +47,7 @@ public class BinaryValueFromBinaryStringTest {
 
 
         try (final InputStream is = binaryValue.getInputStream();
-             final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+             final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             baos.write(is);
             assertArrayEquals(testData.getBytes(), baos.toByteArray());
         }

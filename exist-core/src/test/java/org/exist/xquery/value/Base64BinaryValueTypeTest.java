@@ -31,7 +31,7 @@ import java.util.Optional;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.exist.util.ConfigurationHelper;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.XPathException;
 import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
@@ -80,7 +80,7 @@ public class Base64BinaryValueTypeTest {
 
         final String base64data;
         try(final InputStream is = new Base64InputStream(Files.newInputStream(binaryFile), true, -1, null);
-                final FastByteArrayOutputStream baos  = new FastByteArrayOutputStream()) {
+                final UnsynchronizedByteArrayOutputStream baos  = new UnsynchronizedByteArrayOutputStream()) {
             baos.write(is);
             base64data = baos.toString(UTF_8);
         }

@@ -34,8 +34,8 @@ import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -120,7 +120,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
                 encoding = StandardCharsets.UTF_8;
             }
 
-            try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();
+            try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
                     OutputStream os = stream(baos, encoding)) {
 
                 // iterate through the argument sequence
@@ -141,7 +141,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
                     ((DeflaterOutputStream)os).finish();
                 }
 
-                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new FastByteArrayInputStream(baos.toByteArray()));
+                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(baos.toByteArray()));
             }
 		} catch (final UnsupportedCharsetException | IOException e) {
 			throw new XPathException(this, e.getMessage(), e);
@@ -405,7 +405,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
 		} else if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
 			// binary file
             try (final InputStream is = context.getBroker().getBinaryResource((BinaryDocument)doc);
-                 final FastByteArrayOutputStream baos = new FastByteArrayOutputStream(doc.getContentLength() == -1 ? 1024 : (int)doc.getContentLength())) {
+                 final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream(doc.getContentLength() == -1 ? 1024 : (int)doc.getContentLength())) {
                 baos.write(is);
                 value = baos.toByteArray();
             }
@@ -462,7 +462,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
 		}
 	}
 	
-	protected abstract OutputStream stream(FastByteArrayOutputStream baos, Charset encoding);
+	protected abstract OutputStream stream(UnsynchronizedByteArrayOutputStream baos, Charset encoding);
 	
 	protected abstract Object newEntry(String name);
 	

@@ -23,7 +23,7 @@ package org.exist.dom.persistent;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.xquery.Constants;
 import org.w3c.dom.DocumentFragment;
@@ -202,7 +202,7 @@ public final class XMLUtil {
 
                 {
 
-                    final FastByteArrayOutputStream out = new FastByteArrayOutputStream(150);
+                    final UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream(150);
 
                     out.write('<');
                     out.write(declString, 0, 4);
@@ -254,7 +254,7 @@ public final class XMLUtil {
     @Deprecated
     public static String readFile(final InputSource inSrc) throws IOException {
         // read the file into a string
-        try(final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+        try(final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             try(final InputStream is = inSrc.getByteStream()) {
                 os.write(is);
             }

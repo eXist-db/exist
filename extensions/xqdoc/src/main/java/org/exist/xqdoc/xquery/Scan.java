@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
@@ -34,7 +35,6 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.source.*;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.LockException;
-import org.exist.util.io.FastByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xqdoc.XQDocHelper;
 import org.exist.xquery.*;
@@ -89,7 +89,7 @@ public class Scan extends BasicFunction {
 
     //TODO ideally should be replaced by changing BinarySource to a streaming approach
     private byte[] binaryValueToByteArray(BinaryValue binaryValue) throws IOException {
-        try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             binaryValue.streamBinaryTo(baos);
             return baos.toByteArray();
         }

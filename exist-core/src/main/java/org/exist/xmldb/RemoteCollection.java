@@ -35,7 +35,7 @@ import org.exist.util.FileUtils;
 import org.exist.util.Leasable;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.xml.sax.InputSource;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.*;
@@ -573,7 +573,7 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                     }
                 } else if (content instanceof String) {
                     // TODO(AR) we really should not allow String to be used here, as we loose the encoding info and default to UTF-8!
-                    is = new FastByteArrayInputStream(((String) content).getBytes(UTF_8));
+                    is = new UnsynchronizedByteArrayInputStream(((String) content).getBytes(UTF_8));
                 } else {
                     LOG.error("Unable to get content from {}", content);
                 }

@@ -35,7 +35,7 @@ import javax.xml.transform.sax.SAXResult;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -223,7 +223,7 @@ public class DOMTest {
 			String s = (String) resource.getContent();
 			byte[] bytes;
 			bytes = s.getBytes(UTF_8);
-			try(final FastByteArrayInputStream bais = new FastByteArrayInputStream(bytes)) {
+			try(final UnsynchronizedByteArrayInputStream bais = new UnsynchronizedByteArrayInputStream(bytes)) {
 				DocumentBuilder db =
 						DocumentBuilderFactory.newInstance().newDocumentBuilder();
 				n = db.parse(bais);

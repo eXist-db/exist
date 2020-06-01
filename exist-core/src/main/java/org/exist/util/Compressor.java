@@ -27,8 +27,8 @@ import java.io.OutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 
 public class Compressor {
 
@@ -68,7 +68,7 @@ public class Compressor {
      * @throws IOException if an error occurs
      */
     public static byte[] compress(final byte[] buf, final int len) throws IOException {
-        try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream(len);
+        try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream(len);
                 final GZIPOutputStream gzos = new GZIPOutputStream(baos)) {
             gzos.write(buf, 0, len);
             gzos.finish();
@@ -86,7 +86,7 @@ public class Compressor {
      * @throws IOException if an error occurs
      */
     public static byte[] uncompress(final byte[] buf) throws IOException {
-        try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             uncompress(buf, baos);
             return baos.toByteArray();
         }
@@ -104,7 +104,7 @@ public class Compressor {
      */
     public static int uncompress(final byte[] buf, final OutputStream os) throws IOException {
         int written = 0;
-        try (final FastByteArrayInputStream bais = new FastByteArrayInputStream(buf);
+        try (final UnsynchronizedByteArrayInputStream bais = new UnsynchronizedByteArrayInputStream(buf);
              final InputStream gzis = new GZIPInputStream(bais)) {
             final byte[] tmp = new byte[4096];
             int read;

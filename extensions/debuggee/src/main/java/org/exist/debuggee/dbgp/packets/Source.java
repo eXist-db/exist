@@ -32,7 +32,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.Base64Encoder;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 
 import java.net.URL;
@@ -127,7 +127,7 @@ public class Source extends Command {
         		URLConnection conn = url.openConnection();
         		is = conn.getInputStream();
         	}
-    		FastByteArrayOutputStream baos = new FastByteArrayOutputStream();
+    		UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
     		byte[] buf = new byte[256];
     		int c;
     		while ((c = is.read(buf)) > -1) {
@@ -176,7 +176,7 @@ public class Source extends Command {
     				Base64Encoder enc = new Base64Encoder();
     				enc.translate(source);
 
-					FastByteArrayOutputStream baos = new FastByteArrayOutputStream(head.length() + ((source.length / 100) * 33) + tail.length());
+					UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream(head.length() + ((source.length / 100) * 33) + tail.length());
     				baos.write(head.getBytes());
     				baos.write(new String(enc.getCharArray()).getBytes());
     				baos.write(tail.getBytes());

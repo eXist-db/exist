@@ -28,7 +28,7 @@ import org.exist.dom.QName;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndex;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndexWorker;
 import org.exist.indexing.spatial.SpatialIndexException;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
@@ -342,7 +342,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                             result = new StringValue(wktWriter.write(geometry));
                         } else if (isCalledAs("getEPSG4326WKB")) {
                             byte data[] = wkbWriter.write(geometry);
-                            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new FastByteArrayInputStream(data));
+                            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(data));
                         } else if (isCalledAs("getEPSG4326MinX")) {
                             result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
                         } else if (isCalledAs("getEPSG4326MaxX")) {
@@ -362,7 +362,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                         result = new StringValue(wktWriter.write(geometry));
                     } else if (isCalledAs("getWKB")) {
                         byte data[] = wkbWriter.write(geometry);
-                        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new FastByteArrayInputStream(data));
+                        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(data));
                     } else if (isCalledAs("getMinX")) {
                         result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
                     } else if (isCalledAs("getMaxX")) {

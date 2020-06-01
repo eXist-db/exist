@@ -38,8 +38,8 @@ import org.exist.util.FileUtils;
 import org.exist.util.Leasable;
 import org.exist.util.io.ByteArrayContent;
 import org.exist.util.io.ContentFile;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.util.io.VirtualTempPath;
 import org.xml.sax.InputSource;
@@ -369,9 +369,9 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     protected static InputStream getAnyStream(final Object obj)
             throws XMLDBException {
         if (obj instanceof String) {
-            return new FastByteArrayInputStream(((String) obj).getBytes(UTF_8));
+            return new UnsynchronizedByteArrayInputStream(((String) obj).getBytes(UTF_8));
         } else if (obj instanceof byte[]) {
-            return new FastByteArrayInputStream((byte[]) obj);
+            return new UnsynchronizedByteArrayInputStream((byte[]) obj);
         } else {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "don't know how to handle value of type " + obj.getClass().getName());
         }
@@ -533,7 +533,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
 
     private byte[] readFile(final InputStream is)
             throws XMLDBException {
-        try (final FastByteArrayOutputStream bos = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream bos = new UnsynchronizedByteArrayOutputStream()) {
             bos.write(is);
             return bos.toByteArray();
         } catch (final IOException e) {

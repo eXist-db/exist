@@ -26,7 +26,7 @@ import com.googlecode.junittoolbox.ParallelRunner;
 import org.apache.xerces.dom.AttrNSImpl;
 import org.exist.Namespaces;
 import org.exist.util.ExistSAXParserFactory;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.w3c.dom.*;
@@ -52,7 +52,7 @@ public class DocumentImplTest {
     @Test
     public void checkNamespaces_xerces() throws IOException, ParserConfigurationException, SAXException {
         final Document doc;
-        try(final InputStream is = new FastByteArrayInputStream(DOC.getBytes(UTF_8))) {
+        try(final InputStream is = new UnsynchronizedByteArrayInputStream(DOC.getBytes(UTF_8))) {
             doc = parseXerces(is);
         }
 
@@ -85,7 +85,7 @@ public class DocumentImplTest {
     @Test
     public void checkNamespaces_saxon() throws IOException, ParserConfigurationException, SAXException, IllegalAccessException, InstantiationException, ClassNotFoundException {
         final Document doc;
-        try(final InputStream is = new FastByteArrayInputStream(DOC.getBytes(UTF_8))) {
+        try(final InputStream is = new UnsynchronizedByteArrayInputStream(DOC.getBytes(UTF_8))) {
             doc = parseSaxon(is);
         }
 
@@ -123,7 +123,7 @@ public class DocumentImplTest {
     @Test
     public void checkNamespaces_exist() throws IOException, SAXException, ParserConfigurationException {
         final DocumentImpl doc;
-        try(final InputStream is = new FastByteArrayInputStream(DOC.getBytes(UTF_8))) {
+        try(final InputStream is = new UnsynchronizedByteArrayInputStream(DOC.getBytes(UTF_8))) {
             doc = parseExist(is);
         }
 

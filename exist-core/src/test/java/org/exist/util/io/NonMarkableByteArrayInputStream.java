@@ -27,6 +27,7 @@
 package org.exist.util.io;
 
 import net.jcip.annotations.NotThreadSafe;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,10 +41,10 @@ import java.io.InputStream;
 @NotThreadSafe
 public class NonMarkableByteArrayInputStream extends InputStream {
 
-    final FastByteArrayInputStream is;
+    final UnsynchronizedByteArrayInputStream is;
     
     public NonMarkableByteArrayInputStream(final byte buf[]) {
-        is = new FastByteArrayInputStream(buf);
+        is = new UnsynchronizedByteArrayInputStream(buf);
     }
     
     @Override

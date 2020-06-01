@@ -36,7 +36,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.exist.http.RESTTest;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.UserManagementService;
 import org.junit.AfterClass;
@@ -433,7 +433,7 @@ public class GetParameterTest extends RESTTest {
         final HttpResponse response = request.execute().returnResponse();
         assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
-        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             response.getEntity().writeTo(os);
             assertEquals(expected, new String(os.toByteArray(), UTF_8));
         }

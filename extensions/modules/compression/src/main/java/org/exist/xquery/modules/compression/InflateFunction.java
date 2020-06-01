@@ -26,7 +26,7 @@ import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
 import org.exist.dom.QName;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -92,14 +92,14 @@ public class InflateFunction extends BasicFunction
 
         // uncompress the data
         try(final InflaterInputStream iis = new InflaterInputStream(bin.getInputStream(), infl);
-                final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+                final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             int read = -1;
             final byte[] b = new byte[4096];
             while ((read = iis.read(b)) != -1) {
                 baos.write(b, 0, read);
             }
 
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toFastByteInputStream());
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream());
         } catch(final IOException ioe) {
             throw new XPathException(this, ioe.getMessage(), ioe);
         }

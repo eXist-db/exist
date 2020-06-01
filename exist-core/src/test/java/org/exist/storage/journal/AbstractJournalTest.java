@@ -44,7 +44,7 @@ import org.exist.storage.txn.*;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.*;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Ignore;
@@ -1886,7 +1886,7 @@ public abstract class AbstractJournalTest<T> {
             }
 
             try {
-                final VariableByteInputStream vis = new VariableByteInputStream(new FastByteArrayInputStream(o.getValue()));
+                final VariableByteInputStream vis = new VariableByteInputStream(new UnsynchronizedByteArrayInputStream(o.getValue()));
                 final int thatDocId = vis.readInt();
                 final String thatDocName = vis.readUTF();
 
@@ -1947,7 +1947,7 @@ public abstract class AbstractJournalTest<T> {
             }
 
             try {
-                final VariableByteInputStream vis = new VariableByteInputStream(new FastByteArrayInputStream(o.getOldData(), o.getOffset(), o.getLen()));
+                final VariableByteInputStream vis = new VariableByteInputStream(new UnsynchronizedByteArrayInputStream(o.getOldData(), o.getOffset(), o.getLen()));
                 final int thatDocId = vis.readInt();
                 final String thatDocName = vis.readUTF();
 

@@ -26,8 +26,8 @@ import org.exist.util.crypto.digest.DigestInputStream;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.util.crypto.digest.StreamableDigest;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -410,7 +410,7 @@ public class BlobStoreImplTest {
 
     private BlobId addAndVerify(final BlobStore blobStore, final Tuple2<byte[], MessageDigest> blob) throws IOException {
         final Tuple2<BlobId, Long> actualBlob;
-        try (final InputStream is = new FastByteArrayInputStream(blob._1)) {
+        try (final InputStream is = new UnsynchronizedByteArrayInputStream(blob._1)) {
             actualBlob = blobStore.add(null, is);
         }
         assertNotNull(actualBlob);
@@ -438,7 +438,7 @@ public class BlobStoreImplTest {
     private Tuple2<byte[], MessageDigest> readAll(InputStream is) throws IOException {
         final StreamableDigest streamableDigest = DIGEST_TYPE.newStreamableDigest();
         is = new DigestInputStream(is, streamableDigest);
-        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             os.write(is);
             return Tuple(os.toByteArray(), streamableDigest.copyMessageDigest());
         }

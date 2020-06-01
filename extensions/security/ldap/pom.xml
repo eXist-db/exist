@@ -63,6 +63,11 @@
         </dependency>
 
         <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.evolvedbinary.j8fu</groupId>
             <artifactId>j8fu</artifactId>
         </dependency>

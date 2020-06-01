@@ -66,8 +66,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
@@ -2144,7 +2144,7 @@ public class NativeBroker extends DBBroker {
     @Override
     public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final byte[] data)
             throws IOException {
-        try(final InputStream is = new FastByteArrayInputStream(data)) {
+        try(final InputStream is = new UnsynchronizedByteArrayInputStream(data)) {
                 storeBinaryResource(transaction, blob, is);
         }
     }
@@ -2258,8 +2258,8 @@ public class NativeBroker extends DBBroker {
         final BlobStore blobStore = pool.getBlobStore();
         try (final InputStream is = blobStore.get(transaction, blob.getBlobId())) {
             if (is != null) {
-                if (os instanceof FastByteArrayOutputStream) {
-                    ((FastByteArrayOutputStream)os).write(is);
+                if (os instanceof UnsynchronizedByteArrayOutputStream) {
+                    ((UnsynchronizedByteArrayOutputStream)os).write(is);
                 } else {
                     copy(is, os);
                 }

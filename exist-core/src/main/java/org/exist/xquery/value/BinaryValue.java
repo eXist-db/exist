@@ -25,7 +25,7 @@ import com.ibm.icu.text.Collator;
 import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
@@ -137,7 +137,7 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
         }
 
         if (target == byte[].class) {
-            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+            try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
                 streamBinaryTo(baos);
                 return (T) baos.toByteArray();
             } catch (final IOException ioe) {
@@ -219,7 +219,7 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
     //TODO ideally this should be moved out into serialization where we can stream the output from the buf/channel by calling streamTo()
     @Override
     public String getStringValue() throws XPathException {
-        final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();
+        final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
         try {
             streamTo(baos);
         } catch (final IOException ex) {

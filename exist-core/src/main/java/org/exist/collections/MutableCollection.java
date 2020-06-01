@@ -57,7 +57,7 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.XMLReaderObjectFactory.VALIDATION_SETTING;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
@@ -1619,7 +1619,7 @@ public class MutableCollection implements Collection {
 
     @Override
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final byte[] data, final String mimeType, final Date created, final Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException,IOException {
-        return addBinaryResource(transaction, broker, name, new FastByteArrayInputStream(data), mimeType, data.length, created, modified);
+        return addBinaryResource(transaction, broker, name, new UnsynchronizedByteArrayInputStream(data), mimeType, data.length, created, modified);
     }
 
     @Override

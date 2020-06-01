@@ -29,7 +29,7 @@ import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -73,7 +73,7 @@ public class URLRewritingTest {
         ).returnResponse();
         assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
         final String responseBody;
-        try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream((int)response.getEntity().getContentLength())) {
+        try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream((int)response.getEntity().getContentLength())) {
             response.getEntity().writeTo(baos);
             responseBody = baos.toString(UTF_8);
         }

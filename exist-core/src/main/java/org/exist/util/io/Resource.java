@@ -33,6 +33,7 @@ import java.util.*;
 
 import javax.xml.transform.OutputKeys;
 
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.exist.EXistException;
@@ -633,7 +634,7 @@ public class Resource extends File {
 
                 } else {
                     // store as binary resource
-                    try (final InputStream is = new FastByteArrayInputStream(new byte[0])) {
+                    try (final InputStream is = new UnsynchronizedByteArrayInputStream(new byte[0])) {
                         final int docId = broker.getNextResourceId(transaction);
                         final BinaryDocument blob = new BinaryDocument(db, collection, docId, fileName);
                         collection.addBinaryResource(transaction, broker, blob, is,

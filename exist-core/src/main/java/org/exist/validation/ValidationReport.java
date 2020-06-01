@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -218,7 +218,7 @@ public class ValidationReport implements ErrorHandler {
             return null;
         }
 
-        final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();
+        final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
         final PrintStream ps = new PrintStream(baos);
         throwed.printStackTrace(ps);
         return baos.toString(UTF_8);

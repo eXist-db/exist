@@ -32,7 +32,7 @@ import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -82,7 +82,7 @@ public class PackageTriggerTest {
 
             try (final ManagedCollectionLock collectionLock = brokerPool.getLockManager().acquireCollectionWriteLock(xarUri.removeLastSegment())) {
                 final Collection collection = broker.getOrCreateCollection(transaction, xarUri.removeLastSegment());
-                try (final InputStream is = new FastByteArrayInputStream(content)) {
+                try (final InputStream is = new UnsynchronizedByteArrayInputStream(content)) {
 
                     collection.addBinaryResource(transaction, broker, xarUri.lastSegment(), is, "application/expath+xar", content.length);
                     broker.saveCollection(transaction, collection);

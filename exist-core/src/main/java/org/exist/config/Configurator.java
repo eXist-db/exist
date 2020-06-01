@@ -72,7 +72,7 @@ import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import com.evolvedbinary.j8fu.function.ConsumerE;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.FullXmldbURI;
 import org.exist.xmldb.XmldbURI;
@@ -1182,7 +1182,7 @@ public class Configurator {
             if (broker.isReadOnly()) {
                 //database in read-only mode & there no configuration file, 
                 //create in memory document & configuration 
-                try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream();
+                try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream();
                         final Writer writer = new OutputStreamWriter(os)) {
                     final SAXSerializer serializer = new SAXSerializer(writer, null);
                     serializer.startDocument();
@@ -1191,7 +1191,7 @@ public class Configurator {
                     if (os.size() == 0) {
                         return null;
                     }
-                    return parse(os.toFastByteInputStream());
+                    return parse(os.toInputStream());
                     
                 } catch (final IOException | SAXException e) {
                     throw new ConfigurationException(e.getMessage(), e);

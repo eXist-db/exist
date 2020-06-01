@@ -24,7 +24,7 @@ package org.exist.xquery.value;
 import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.XPathException;
 
 import java.io.*;
@@ -57,7 +57,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
         //TODO temporary approach, consider implementing a TranscodingBinaryValueFromBinaryString(BinaryValueFromBinaryString) class
         //that only does the transncoding lazily
 
-        final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();
+        final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
         FilterOutputStream fos = null;
         try {
 
@@ -119,13 +119,13 @@ public class BinaryValueFromBinaryString extends BinaryValue {
     @Override
     public InputStream getInputStream() {
         //TODO consider a more efficient approach for writting large strings
-        final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();
+        final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
         try {
             streamBinaryTo(baos);
         } catch (final IOException ioe) {
             LOG.error("Unable to get read only buffer: {}", ioe.getMessage(), ioe);
         }
-        return baos.toFastByteInputStream();
+        return baos.toInputStream();
     }
 
     @Override

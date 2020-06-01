@@ -36,7 +36,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.LockException;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.xmldb.XmldbURI;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -118,7 +118,7 @@ public class CollectionStoreTest {
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
             try (final Collection col = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI)) {
                 final byte[] bin = TEST_BIN_DOC.getBytes(UTF_8);
-                try (final InputStream is = new FastByteArrayInputStream(bin)) {
+                try (final InputStream is = new UnsynchronizedByteArrayInputStream(bin)) {
                     final int docId = broker.getNextResourceId(transaction);
                     final BinaryDocument binDoc = col.addBinaryResource(transaction, broker, new BinaryDocument(broker.getBrokerPool(), col, docId, TEST_BIN_DOC_URI), is, "text/plain", bin.length, null, null, preserveOnCopy);
                     assertNotNull(binDoc);

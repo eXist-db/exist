@@ -32,7 +32,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.XMLReaderObjectFactory;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 
@@ -73,7 +73,7 @@ public class DatabaseInsertResources_WithValidation_Test {
                 "<!DOCTYPE PLAY PUBLIC \"-//PLAY//EN\" \"" + getPlayDtdUrl() + "\">" );
 
         TestTools.insertDocumentToURL(
-                new FastByteArrayInputStream(hamletWithValid.getBytes(UTF_8)),
+                new UnsynchronizedByteArrayInputStream(hamletWithValid.getBytes(UTF_8)),
                 "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION + "/hamlet_valid.xml"
         );
     }
@@ -109,7 +109,7 @@ public class DatabaseInsertResources_WithValidation_Test {
 
         try {
             TestTools.insertDocumentToURL(
-                    new FastByteArrayInputStream(hamletWithInvalid.getBytes(UTF_8)),
+                    new UnsynchronizedByteArrayInputStream(hamletWithInvalid.getBytes(UTF_8)),
                 "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_TMP_COLLECTION + "/hamlet_invalid.xml"
                 
             );

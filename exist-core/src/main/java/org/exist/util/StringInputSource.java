@@ -23,7 +23,7 @@
 package org.exist.util;
 
 import com.evolvedbinary.j8fu.Either;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.xml.sax.InputSource;
 
 import java.io.*;
@@ -83,7 +83,7 @@ public class StringInputSource extends InputSource {
     @Override
     public InputStream getByteStream() {
         if (source.isLeft()) {
-            return new FastByteArrayInputStream(source.left().get());
+            return new UnsynchronizedByteArrayInputStream(source.left().get());
         } else {
             return null;
         }

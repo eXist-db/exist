@@ -33,7 +33,7 @@ import org.exist.security.Subject;
 import org.exist.security.internal.aider.UnixStylePermissionAider;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -147,10 +147,10 @@ public class DBSource extends AbstractSource {
 
         //final byte [] data = new byte[(int)binaryLength];
         try(final InputStream raw = broker.getBinaryResource(doc);
-        final FastByteArrayOutputStream buf = new FastByteArrayOutputStream((int)binaryLength)) {
+        final UnsynchronizedByteArrayOutputStream buf = new UnsynchronizedByteArrayOutputStream((int)binaryLength)) {
             buf.write(raw);
             //raw.close();
-            try (final InputStream is = buf.toFastByteInputStream()) {
+            try (final InputStream is = buf.toInputStream()) {
                 checkEncoding(is);
                 return buf.toString(encoding);
             }

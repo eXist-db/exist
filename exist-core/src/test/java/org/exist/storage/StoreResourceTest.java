@@ -38,8 +38,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.LockException;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.hamcrest.Matcher;
 import org.junit.*;
@@ -140,7 +140,7 @@ public class StoreResourceTest {
              final Txn transaction = pool.getTransactionManager().beginTransaction();
              final Collection col = broker.openCollection(uri.removeLastSegment(), Lock.LockMode.WRITE_LOCK)) {
 
-            try (final FastByteArrayInputStream is = new FastByteArrayInputStream(data)) {
+            try (final UnsynchronizedByteArrayInputStream is = new UnsynchronizedByteArrayInputStream(data)) {
                 col.addBinaryResource(transaction, broker, uri.lastSegment(), is, "application/octet-stream", data.length);
             }
 
@@ -151,7 +151,7 @@ public class StoreResourceTest {
         try (final DBBroker broker = pool.get(Optional.of(execAsUser));
              final LockedDocument lockedDoc = broker.getXMLResource(uri, Lock.LockMode.READ_LOCK);
              final InputStream is = broker.getBinaryResource((BinaryDocument)lockedDoc.getDocument());
-             final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+             final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
 
             os.write(is);
 

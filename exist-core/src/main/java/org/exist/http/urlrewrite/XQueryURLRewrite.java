@@ -35,8 +35,8 @@ import org.exist.source.DBSource;
 import org.exist.source.SourceFactory;
 import org.exist.source.FileSource;
 import org.exist.util.LockException;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
@@ -1407,7 +1407,7 @@ public class XQueryURLRewrite extends HttpServlet {
     }
 
     private static class CachingServletOutputStream extends ServletOutputStream {
-        private FastByteArrayOutputStream ostream = new FastByteArrayOutputStream(512);
+        private UnsynchronizedByteArrayOutputStream ostream = new UnsynchronizedByteArrayOutputStream(512);
 
         protected byte[] getData() {
             return ostream.toByteArray();
@@ -1440,13 +1440,13 @@ public class XQueryURLRewrite extends HttpServlet {
     }
 
     private static class CachingServletInputStream extends ServletInputStream {
-        private final FastByteArrayInputStream istream;
+        private final UnsynchronizedByteArrayInputStream istream;
 
         public CachingServletInputStream(final byte[] data) {
             if (data == null) {
-                istream = new FastByteArrayInputStream(new byte[0]);
+                istream = new UnsynchronizedByteArrayInputStream(new byte[0]);
             } else {
-                istream = new FastByteArrayInputStream(data);
+                istream = new UnsynchronizedByteArrayInputStream(data);
             }
         }
 

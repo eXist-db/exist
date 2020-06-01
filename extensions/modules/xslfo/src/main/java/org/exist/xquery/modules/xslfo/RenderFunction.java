@@ -30,7 +30,7 @@ import org.apache.logging.log4j.LogManager;
 
 import org.exist.dom.QName;
 import org.exist.util.ParametersExtractor;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -126,7 +126,7 @@ public class RenderFunction extends BasicFunction {
         }
 
         ProcessorAdapter adapter = null;
-        try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             adapter = ((XSLFOModule)getParentModule()).getProcessorAdapter();
 
             NodeValue configFile = args.length == 4 ? (NodeValue)args[3].itemAt(0) : null;

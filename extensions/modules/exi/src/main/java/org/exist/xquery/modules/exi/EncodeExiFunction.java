@@ -26,7 +26,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import org.exist.dom.QName;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.serializer.EXISerializer;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -87,7 +87,7 @@ public class EncodeExiFunction extends BasicFunction {
 		if(args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
-		try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+		try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
 			EXISerializer exiSerializer;
 			if(args.length > 1) {
 				if(!args[1].isEmpty()) {
@@ -108,7 +108,7 @@ public class EncodeExiFunction extends BasicFunction {
 			exiSerializer.startDocument();
 	        inputNode.toSAX(context.getBroker(), exiSerializer, new Properties());
 	        exiSerializer.endDocument();
-	        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toFastByteInputStream());
+	        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream());
 		}
 		catch(IOException ioex) {
 			// TODO - test!

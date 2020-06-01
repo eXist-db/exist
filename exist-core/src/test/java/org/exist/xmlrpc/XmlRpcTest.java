@@ -31,8 +31,8 @@ import org.exist.test.ExistWebServer;
 import org.exist.test.TestConstants;
 import org.exist.util.Compressor;
 import org.exist.util.MimeType;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 
 import static org.exist.xmldb.RemoteCollection.MAX_UPLOAD_CHUNK;
@@ -165,7 +165,7 @@ public class XmlRpcTest {
         params.add(options);
         Map table = (Map) xmlrpc.execute("getDocumentData", params);
 
-        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             int offset = (int) table.get("offset");
             data = (byte[]) table.get("data");
             os.write(data);
@@ -240,7 +240,7 @@ public class XmlRpcTest {
         params.add(parameters);
         Map table = (Map) xmlrpc.execute("getDocumentData", params);
 
-        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             int offset = (int) table.get("offset");
             byte[] data = (byte[]) table.get("data");
             os.write(data);
@@ -282,7 +282,7 @@ public class XmlRpcTest {
         params.add(parameters);
         Map table = (Map) xmlrpc.execute("getDocumentData", params);
 
-        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             long offset = (int) table.get("offset");
             byte[] data = (byte[]) table.get("data");
             os.write(data);
@@ -309,7 +309,7 @@ public class XmlRpcTest {
 
         // 1) upload
         String uploadedFileName = null;
-        try (final InputStream is = new FastByteArrayInputStream(binary)) {
+        try (final InputStream is = new UnsynchronizedByteArrayInputStream(binary)) {
             final byte[] chunk = new byte[MAX_UPLOAD_CHUNK];
             int len;
             while ((len = is.read(chunk)) > -1) {
@@ -341,7 +341,7 @@ public class XmlRpcTest {
         params.add(resURI);
         params.add(Collections.emptyMap());
         Map table = (Map) xmlrpc.execute("getDocumentData", params);
-        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             long offset = (int) table.get("offset");
             byte[] data = (byte[]) table.get("data");
             os.write(data);

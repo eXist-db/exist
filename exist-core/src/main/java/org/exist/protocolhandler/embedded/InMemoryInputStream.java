@@ -39,7 +39,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -58,7 +58,7 @@ public class InMemoryInputStream {
       throw new IOException(e);
     }
 
-    try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream();
+    try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream();
          final DBBroker broker = db.getBroker()) {
       final XmldbURI path = XmldbURI.create(xmldbURL.getPath());
 
@@ -94,7 +94,7 @@ public class InMemoryInputStream {
             broker.readBinaryResource((BinaryDocument) document, os);
           }
 
-          return os.toFastByteInputStream();
+          return os.toInputStream();
         }
       }
     } catch (final IOException ex) {

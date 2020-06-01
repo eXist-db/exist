@@ -72,7 +72,7 @@ import org.exist.storage.journal.Lsn;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Node;
@@ -1978,7 +1978,7 @@ public class DOMFile extends BTree implements Lockable {
                 //TODO : throw exception ? -pb
             }
             // we collect the string values in binary format and append them to a ByteArrayOutputStream
-            try(final FastByteArrayOutputStream os = new FastByteArrayOutputStream(32)) {
+            try(final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream(32)) {
                 // now traverse the tree
                 getNodeValue(broker.getBrokerPool(), (DocumentImpl) node.getOwnerDocument(),
                         os, recordPos, true, addWhitespace);
@@ -2014,7 +2014,7 @@ public class DOMFile extends BTree implements Lockable {
      * @param addWhitespace true if whitespace should be added to the node value
      */
     private void getNodeValue(final BrokerPool pool, final DocumentImpl doc,
-                              final FastByteArrayOutputStream os,
+                              final UnsynchronizedByteArrayOutputStream os,
                               final RecordPos rec, final boolean isTopNode,
                               final boolean addWhitespace) {
         if(LOG.isDebugEnabled() && !lockManager.isBtreeLocked(getLockName())) {
@@ -3465,7 +3465,7 @@ public class DOMFile extends BTree implements Lockable {
         }
 
         public byte[] read() {
-            try(final FastByteArrayOutputStream os = new FastByteArrayOutputStream(32)) {
+            try(final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream(32)) {
                 streamTo(os);
                 return os.toByteArray();
             } catch(final IOException ioe) {

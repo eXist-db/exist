@@ -21,7 +21,7 @@
  */
 package org.exist.xmldb;
 
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.xquery.util.URIUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -154,7 +154,7 @@ public class RemoteCollectionTest extends RemoteDBTest {
         ((EXistResource) resource).setMimeType("application/xml-dtd");
 
         final byte[] bin = new byte[0];
-        try (final InputStream is = new FastByteArrayInputStream(bin)) {
+        try (final InputStream is = new UnsynchronizedByteArrayInputStream(bin)) {
             final InputSource inputSource = new InputSource();
             inputSource.setByteStream(is);
             inputSource.setSystemId("empty.dtd");
@@ -188,7 +188,7 @@ public class RemoteCollectionTest extends RemoteDBTest {
             sb.append("<element>").append(sometxt).append("</element>");
         }
         sb.append("</xml>");
-        Files.copy(new FastByteArrayInputStream(sb.toString().getBytes()), path, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(new UnsynchronizedByteArrayInputStream(sb.toString().getBytes()), path, StandardCopyOption.REPLACE_EXISTING);
         resource.setContent(path);
         collection.storeResource(resource);
     }

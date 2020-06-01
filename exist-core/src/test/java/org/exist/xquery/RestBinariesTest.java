@@ -33,7 +33,7 @@ import org.apache.http.entity.ContentType;
 import org.exist.http.jaxb.Query;
 import org.exist.http.jaxb.Result;
 import org.exist.test.ExistWebServer;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -86,7 +86,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         final HttpResponse response = postXquery(query);
 
         final HttpEntity entity = response.getEntity();
-        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             entity.writeTo(baos);
 
             assertArrayEquals(BIN1_CONTENT, Base64.decodeBase64(baos.toByteArray()));
@@ -108,7 +108,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         final HttpResponse response = postXquery(query);
 
         final HttpEntity entity = response.getEntity();
-        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             entity.writeTo(baos);
 
             assertArrayEquals(BIN1_CONTENT, baos.toByteArray());
@@ -162,7 +162,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         final Marshaller marshaller = jaxbContext.createMarshaller();
 
         final HttpResponse response;
-        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             marshaller.marshal(query, baos);
             response = executor.execute(Request.Post(getRestUrl() + "/db/")
                     .bodyByteArray(baos.toByteArray(), ContentType.APPLICATION_XML)
