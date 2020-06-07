@@ -117,6 +117,7 @@ You will require a system with:
 * Docker
 * GnuPG
 * A GPG key (for signing release artifacts)
+* A Java KeyStore with key (for signing IzPack Installer)
 * A valid Apple Developer Certificate (for signing Mac DMG)
 
 1. You will need login credentials for the eXist-db organisation on:
@@ -156,17 +157,22 @@ You will require a system with:
     </settings>
     ```
 
-2. You will need your GPG key credentials for signing the release artifacts in the `<activeProfiles`> section on your machine in your local `~/.m2/settings.xml` file, e.g.:
+2. You will need your GPG Key and Java KeyStore credentials for signing the release artifacts in the `<activeProfiles`> section on your machine in your local `~/.m2/settings.xml` file, e.g.:
     ```xml
     <profiles>
    
        <profile>
-           <id>existdb-release-key</id>
+           <id>existdb-release-signing</id>
            <properties>
                <existdb.release.key>ABC1234</existdb.release.key>
                <existdb.release.public-keyfile>${user.home}/.gnupg/pubring.gpg</existdb.release.public-keyfile>
                <existdb.release.private-keyfile>${user.home}/.gnupg/secring.gpg</existdb.release.private-keyfile>
                <existdb.release.key.passphrase>your-password</existdb.release.key.passphrase>
+   
+               <existdb.release.keystore>${user.home}/your.store</existdb.release.keystore>
+               <existdb.release.keystore.pass>your-keystore-password</existdb.release.keystore.pass>
+               <existdb.release.keystore.key.alias>your-alias</existdb.release.keystore.key.alias>
+               <existdb.release.keystore.key.pass>your-key-password</existdb.release.keystore.key.pass>
            </properties>
        </profile>
    
@@ -175,7 +181,7 @@ You will require a system with:
 
     <activeProfiles>
    
-           <activeProfile>existdb-release-key</activeProfile>
+           <activeProfile>existdb-release-signing</activeProfile>
    
     </activeProfiles>
     ```
@@ -186,7 +192,7 @@ You will require a system with:
 
 5.  Prepare the release, if you wish you can do a dry-run first by specifiying `-DdryRun=true`:
     ```
-    $ mvn -Ddocker=true -Dmac-signing=true -Darguments="-Ddocker=true -Dmac-signing=true" release:prepare
+    $ mvn -Ddocker=true -Dmac-signing=true -Dizpack-signing=true -Darguments="-Ddocker=true -Dmac-signing=true -Dizpack-signing=true" release:prepare
     ```
     
     Maven will start the release process and prompt you for any information that it requires, for example:
@@ -206,7 +212,7 @@ You will require a system with:
 6.  Once the prepare process completes you can perform the release. This will upload Maven Artifacts to Maven
 Central (staging), Docker images to Docker Hub, and eXist-db distributions and installer to BinTray:
     ```
-    $ mvn -Ddocker=true -Dmac-signing=true -Darguments="-Ddocker=true -Dmac-signing=true" release:perform
+    $ mvn -Ddocker=true -Dmac-signing=true -Djarsigner.skip=false -Darguments="-Ddocker=true -Dmac-signing=true -Djarsigner.skip=false" release:perform
     ```
 
 7.  Update the stable branch (`master`) of eXist-db to reflect the latest release:
