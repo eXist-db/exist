@@ -104,6 +104,11 @@ public class MapExpr extends AbstractExpression {
     }
 
     @Override
+    public String toString() {
+        return ExpressionDumper.dump(this);
+    }
+
+    @Override
     public void resetState(final boolean postOptimization) {
         super.resetState(postOptimization);
         mappings.forEach(m -> m.resetState(postOptimization));
