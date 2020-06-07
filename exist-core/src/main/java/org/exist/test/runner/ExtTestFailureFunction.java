@@ -103,17 +103,17 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
     }
 
     private String actualToString(final MapType actual) throws XPathException, SAXException, IOException {
-        final Sequence seqActualResult = actual.get(new StringValue("result"));
-        if(!seqActualResult.isEmpty()) {
-            return seqToString(seqActualResult);
-        }
-
         final Sequence seqActualError = actual.get(new StringValue("error"));
-        if(!seqActualError.isEmpty()) {
+        if (!seqActualError.isEmpty()) {
             return errorMapToString(seqActualError);
         }
 
-        throw new IllegalStateException("Could not extract actual value");
+        final Sequence seqActualResult = actual.get(new StringValue("result"));
+        if (!seqActualResult.isEmpty()) {
+            return seqToString(seqActualResult);
+        } else {
+            return "";  // empty-sequence()
+        }
     }
 
     private String seqToString(final Sequence seq) throws IOException, XPathException, SAXException {
