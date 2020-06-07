@@ -651,8 +651,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         if (qname == null) {
             findAll(watchDog, comparison, docs, contextSet, axis, null, value, result);
         } else {
-            final List<QName> qnames = new LinkedList<>();
-            qnames.add(qname);
+            final List<QName> qnames = Collections.singletonList(qname);
             findAll(watchDog, comparison, docs, contextSet, axis, qnames, value, result);
             if (mixedIndex) {
                 findAll(watchDog, comparison, docs, contextSet, axis, null, value, result);
@@ -749,8 +748,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         if (qname == null) {
             matchAll(watchDog, docs, contextSet, axis, expr, null, type, flags, caseSensitiveQuery, result, collator, truncation);
         } else {
-            final List<QName> qnames = new LinkedList<>();
-            qnames.add(qname);
+            final List<QName> qnames = Collections.singletonList(qname);
             matchAll(watchDog, docs, contextSet, axis, expr, qnames, type, flags, caseSensitiveQuery, result, collator, truncation);
         }
         return result;
