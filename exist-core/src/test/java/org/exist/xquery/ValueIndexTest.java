@@ -56,7 +56,7 @@ public class ValueIndexTest {
     protected static final String ITEMS_FILENAME = "items.xml";
     protected URL ITEMS_FILE = getClass().getResource(ITEMS_FILENAME);
 
-    private String CONFIG =
+    private String CONFIG_PATH =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 
     	"	<index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" +
     	"		<create path=\"//item/itemno\" type=\"xs:integer\"/>" +
@@ -129,7 +129,7 @@ public class ValueIndexTest {
 
     @Test
     public void strings() throws XMLDBException, URISyntaxException {
-        configureCollection(CONFIG);
+        configureCollection(CONFIG_PATH);
         XPathQueryService service = storeXMLFileAndGetQueryService(ITEMS_FILENAME, ITEMS_FILE);
         queryResource(service, ITEMS_FILENAME, "//item[@id = 'i2']", 1);
         queryResource(service, ITEMS_FILENAME, "//item[name = 'Racing Bicycle']", 1);
@@ -156,7 +156,7 @@ public class ValueIndexTest {
 
     @Test
     public void strFunctions() throws XMLDBException {
-        configureCollection(CONFIG);
+        configureCollection(CONFIG_PATH);
         XMLResource resource = (XMLResource) testCollection.createResource("mondial-test.xml", "XMLResource");
         resource.setContent(CITY);
         testCollection.storeResource(resource);
@@ -196,7 +196,7 @@ public class ValueIndexTest {
      */
     @Test
 	public void pathIndexStringMatchingFunctions() throws XMLDBException {
-        configureCollection( CONFIG );
+        configureCollection(CONFIG_PATH);
         XMLResource resource = (XMLResource)testCollection.createResource( "mondial-test.xml", "XMLResource" );
         resource.setContent( CITY );
         testCollection.storeResource( resource );
@@ -210,7 +210,7 @@ public class ValueIndexTest {
 
     @Test
 	public void pathIndexStringMatchingFunctions2() throws XMLDBException {
-        configureCollection( CONFIG );
+        configureCollection(CONFIG_PATH);
         XMLResource resource = (XMLResource)testCollection.createResource( "mondial-test.xml", "XMLResource" );
         resource.setContent( CITY );
         testCollection.storeResource( resource );
@@ -305,7 +305,7 @@ public class ValueIndexTest {
 
     @Test
     public void indexScan() throws XMLDBException, URISyntaxException {
-        configureCollection(CONFIG);
+        configureCollection(CONFIG_PATH);
         String queryBody =
             "declare namespace f=\'http://exist-db.org/xquery/test\';\n" +
             "declare namespace mods='http://www.loc.gov/mods/v3';\n" +
@@ -338,7 +338,7 @@ public class ValueIndexTest {
 
     @Test
     public void updates() throws Exception {
-        configureCollection(CONFIG);
+        configureCollection(CONFIG_PATH);
         storeXMLFileAndGetQueryService(ITEMS_FILENAME, ITEMS_FILE);
         for (int i = 100; i <= 150; i++) {
             String append =
