@@ -151,4 +151,39 @@
 
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>codesign-izpack-jar</id>
+            <activation>
+                <property>
+                    <name>izpack-signing</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jarsigner-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-izpack-jar</id>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <keystore>${existdb.release.keystore}</keystore>
+                                    <storepass>${existdb.release.keystore.pass}</storepass>
+                                    <alias>${existdb.release.keystore.key.alias}</alias>
+                                    <keypass>${existdb.release.keystore.key.pass}</keypass>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

@@ -117,6 +117,7 @@ You will require a system with:
 * Docker
 * GnuPG
 * A GPG key (for signing release artifacts)
+* A Java KeyStore with key (for signing IzPack Installer)
 * A valid Apple Developer Certificate (for signing Mac DMG)
 
 1. You will need login credentials for the eXist-db organisation on:
@@ -125,7 +126,7 @@ You will require a system with:
     3. DockerHub - https://cloud.docker.com/orgs/existdb/
     
     Your credentials for these should be stored securely in the `<servers`> section on your machine in your local `~/.m2/settings.xml` file, e.g.:
-    ```
+    ```xml
     <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
@@ -156,14 +157,42 @@ You will require a system with:
     </settings>
     ```
 
+2. You will need your GPG Key and Java KeyStore credentials for signing the release artifacts in the `<activeProfiles`> section on your machine in your local `~/.m2/settings.xml` file, e.g.:
+    ```xml
+    <profiles>
+   
+       <profile>
+           <id>existdb-release-signing</id>
+           <properties>
+               <existdb.release.key>ABC1234</existdb.release.key>
+               <existdb.release.public-keyfile>${user.home}/.gnupg/pubring.gpg</existdb.release.public-keyfile>
+               <existdb.release.private-keyfile>${user.home}/.gnupg/secring.gpg</existdb.release.private-keyfile>
+               <existdb.release.key.passphrase>your-password</existdb.release.key.passphrase>
+   
+               <existdb.release.keystore>${user.home}/your.store</existdb.release.keystore>
+               <existdb.release.keystore.pass>your-keystore-password</existdb.release.keystore.pass>
+               <existdb.release.keystore.key.alias>your-alias</existdb.release.keystore.key.alias>
+               <existdb.release.keystore.key.pass>your-key-password</existdb.release.keystore.key.pass>
+           </properties>
+       </profile>
+   
+    </profiles>
 
-2.  Merge any outstanding PRs that have been reviewed and accepted for the milestone eXist-5.0.0.
 
-3.  Make sure that you have the HEAD of `origin/develop` (or `upstream` if you are on a fork).
-
-4.  Prepare the release, if you wish you can do a dry-run first by specifiying `-DdryRun=true`:
+    <activeProfiles>
+   
+           <activeProfile>existdb-release-signing</activeProfile>
+   
+    </activeProfiles>
     ```
-    $ mvn -Ddocker=true -Dmac-signing=true -Darguments="-Ddocker=true -Dmac-signing=true" release:prepare
+
+3.  Merge any outstanding PRs that have been reviewed and accepted for the milestone eXist-5.0.0.
+
+4.  Make sure that you have the HEAD of `origin/develop` (or `upstream` if you are on a fork).
+
+5.  Prepare the release, if you wish you can do a dry-run first by specifiying `-DdryRun=true`:
+    ```
+    $ mvn -Ddocker=true -Dmac-signing=true -Dizpack-signing=true -Darguments="-Ddocker=true -Dmac-signing=true -Dizpack-signing=true" release:prepare
     ```
     
     Maven will start the release process and prompt you for any information that it requires, for example:
@@ -180,13 +209,13 @@ You will require a system with:
     What is the new development version for "eXist-db"? (org.exist-db:exist) 5.1.0-SNAPSHOT: :
     ```
 
-5.  Once the prepare process completes you can perform the release. This will upload Maven Artifacts to Maven
+6.  Once the prepare process completes you can perform the release. This will upload Maven Artifacts to Maven
 Central (staging), Docker images to Docker Hub, and eXist-db distributions and installer to BinTray:
     ```
-    $ mvn -Ddocker=true -Dmac-signing=true -Darguments="-Ddocker=true -Dmac-signing=true" release:perform
+    $ mvn -Ddocker=true -Dmac-signing=true -Djarsigner.skip=false -Darguments="-Ddocker=true -Dmac-signing=true -Djarsigner.skip=false" release:perform
     ```
 
-6.  Update the stable branch (`master`) of eXist-db to reflect the latest release:
+7.  Update the stable branch (`master`) of eXist-db to reflect the latest release:
     ```
     $ git push origin eXist-5.0.0:master
     ```
