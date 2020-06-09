@@ -478,7 +478,7 @@
                 <plugin>
                     <groupId>com.mycila</groupId>
                     <artifactId>license-maven-plugin</artifactId>
-                    <version>3.0</version>
+                    <version>3.1-SNAPSHOT</version>
                 </plugin>
                 <plugin>
                     <groupId>org.owasp</groupId>
@@ -744,7 +744,11 @@
                 <artifactId>license-maven-plugin</artifactId>
                 <inherited>true</inherited>
                 <configuration>
-                    <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                    <licenseSets>
+                        <licenseSet>
+                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                        </licenseSet>
+                    </licenseSets>
                     <headerDefinitions>
                         <headerDefinition>${project.parent.relativePath}/xquery-license-style.xml</headerDefinition>
                     </headerDefinitions>
