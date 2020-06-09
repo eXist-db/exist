@@ -1,14 +1,25 @@
 /*
- * eXist-db Open Source Native XML Database
- * Copyright (C) 2001 The eXist-db Authors
+ * Copyright (C) 2014, Evolved Binary Ltd
  *
- * info@exist-db.org
- * http://www.exist-db.org
+ * This file was originally ported from FusionDB to eXist-db by
+ * Evolved Binary, for the benefit of the eXist-db Open Source community.
+ * Only the ported code as it appears in this file, at the time that
+ * it was contributed to eXist-db, was re-licensed under The GNU
+ * Lesser General Public License v2.1 only for use in eXist-db.
+ *
+ * This license grant applies only to a snapshot of the code as it
+ * appeared when ported, it does not offer or infer any rights to either
+ * updates of this source code or access to the original source code.
+ *
+ * The GNU Lesser General Public License v2.1 only license follows.
+ *
+ * ---------------------------------------------------------------------
+ *
+ * Copyright (C) 2014, Evolved Binary Ltd
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * License as published by the Free Software Foundation; version 2.1.
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -41,7 +52,7 @@ import static org.junit.Assert.*;
 /**
  * Tests to ensure the correct behaviour of the LockManager
  *
- * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @RunWith(Parameterized.class)
 public class LockManagerTest {

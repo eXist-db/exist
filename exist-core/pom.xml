@@ -602,56 +602,119 @@
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration>
-                    <excludes>
-                        <exclude>**/README.md</exclude>
-                        <exclude>**/README</exclude>
-                        <exclude>uk-towns.txt</exclude>
-                        <exclude>src/main/resources/org/exist/client/*.tmpl</exclude>
-                        <exclude>src/test/resources/uk-towns.txt</exclude>
-                        <exclude>src/test/resources/**/*.xar</exclude>
-                        <exclude>src/test/resources/**/*.bin</exclude>
-                        <exclude>src/test/resources/org/exist/validation/entities/**</exclude>
+                    <licenseSets>
 
-                        <!--
-                            Already under LGPL 2.1, but with a different Copyright
-                        -->
-                        <exclude>src/main/java/org/exist/util/UTF8.java</exclude>
+                        <licenseSet>
+                            <!--
+                                eXist-db's License
+                            -->
+                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <excludes>
+                                <exclude>ARC-BSD-3-license.template.txt</exclude>
+                                <exclude>BX-BSD-3-license.template.txt</exclude>
+                                <exclude>DBXML-10-license.template.txt</exclude>
+                                <exclude>FDB-backport-BSD-3-license.template.txt</exclude>
+                                <exclude>FDB-backport-LGPL-21-ONLY-license.template.txt</exclude>
+                                <exclude>**/README</exclude>
+                                <exclude>src/main/resources/org/exist/client/*.tmpl</exclude>
+                                <exclude>src/test/resources/uk-towns.txt</exclude>
+                                <exclude>src/test/resources/**/*.xar</exclude>
+                                <exclude>src/test/resources/**/*.bin</exclude>
+                                <exclude>src/test/resources/org/exist/validation/entities/**</exclude>
 
-                        <!--
-                            Derivative work licensed under dbXML 1.0 and LGPL 2.1
-                        -->
-                        <exclude>src/main/java/org/exist/storage/btree/BTree.java</exclude>
-                        <exclude>src/main/java/org/exist/storage/btree/BTreeCallback.java</exclude>
-                        <exclude>src/main/java/org/exist/storage/btree/BTreeException.java</exclude>
-                        <exclude>src/main/java/org/exist/storage/btree/DBException.java</exclude>
-                        <exclude>src/main/java/org/exist/storage/btree/IndexQuery.java</exclude>
-                        <exclude>src/main/java/org/exist/storage/btree/Paged.java</exclude>
-                        <exclude>src/main/java/org/exist/storage/btree/Value.java</exclude>
+                                <!--
+                                    Already under LGPL 2.1, but with a different Copyright
+                                -->
+                                <exclude>src/main/java/org/exist/util/UTF8.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/blob/**</exclude>
+                                <exclude>src/test/java/org/exist/storage/blob/**</exclude>
+                                <exclude>src/main/java/org/exist/storage/journal/JournalManager.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/AbstractRecoverTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/RecoverBinaryTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/RecoverXmlTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/journal/AbstractJournalTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/journal/JournalBinaryTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/journal/JournalXmlTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/journal/LsnTest.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/BrokerPoolService.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/BrokerPoolServiceException.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/BrokerPoolServicesManager.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/BrokerPoolServicesManagerException.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/FluentBrokerAPI.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/XQueryPool.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/EnsureContainerLocked.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/EnsureContainerUnlocked.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/EnsureLocked.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/EnsureLockingAspect.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/EnsureUnlocked.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/FileLockService.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockEventJsonListener.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockEventLogListener.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockEventXmlListener.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockManager.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockTable.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockTableUtils.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/ManagedCollectionLock.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/ManagedDocumentLock.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/ManagedLock.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/lock/CollectionLocksTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/lock/DocumentLocksTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/lock/LockManagerTest.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/txn/TransactionManager.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/txn/ConcurrentTransactionsTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/txn/CountingTxnListener.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/txn/ReusableTxnTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/txn/TxnTest.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/Cardinality.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/functions/map/MapType.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/value/SubSequence.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/value/SubSequenceRangeTest.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/value/SubSequenceTest.java</exclude>
 
-                    </excludes>
-                    <encoding>${project.build.sourceEncoding}</encoding>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>check-headers</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
+                                <!--
+                                    Derivative work licensed under dbXML 1.0 and LGPL 2.1
+                                -->
+                                <exclude>src/main/java/org/exist/storage/btree/BTree.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/btree/BTreeCallback.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/btree/BTreeException.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/btree/DBException.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/btree/IndexQuery.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/btree/Paged.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/btree/Value.java</exclude>
 
-                    <!-- TODO(AR) the below execution doesn't appear to do anything we need to investigate this! -->
-                    <execution>
-                        <!--
-                            Derivative work licensed under dbXML 1.0 and LGPL 2.1
-                        -->
-                        <id>check-dbxml-headers</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <configuration>
-                            <excludes/>
+                                <!--
+                                   Licensed under BSD 3
+                                -->
+                                <exclude>src/main/java/org/exist/util/CodePointString.java</exclude>
+                                <exclude>src/test/java/org/exist/util/CodePointStringTest.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/ByteBufferAccessor.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/ByteBufferInputStream.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/CachingFilterInputStream.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/FileFilterInputStreamCache.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/FilterInputStreamCache.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/FilterInputStreamCacheFactory.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/MemoryFilterInputStreamCache.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/MemoryMappedFileFilterInputStreamCache.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/TemporaryFileManager.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/HexOutputStream.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/MarkShieldInputStream.java</exclude>
+                                <exclude>src/test/java/org/exist/util/io/CachingFilterInputStreamTest_NonMarkableByteArrayInputStream.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java</exclude>
+                            </excludes>
+                        </licenseSet>
+
+                        <licenseSet>
+                            <!--
+                                Derivative work licensed under dbXML 1.0 and LGPL 2.1
+                            -->
+                            <multi>
+                                <preamble><![CDATA[NOTE: This file is in part based on code from The dbXML Group.
+The original license statement is also included below.]]></preamble>
+                                <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                                <header>DBXML-10-license.template.txt</header>
+                            </multi>
                             <includes>
                                 <include>src/main/java/org/exist/storage/btree/BTree.java</include>
                                 <include>src/main/java/org/exist/storage/btree/BTreeCallback.java</include>
@@ -661,10 +724,122 @@
                                 <include>src/main/java/org/exist/storage/btree/Paged.java</include>
                                 <include>src/main/java/org/exist/storage/btree/Value.java</include>
                             </includes>
-                            <encoding>${project.build.sourceEncoding}</encoding>
-                        </configuration>
-                    </execution>
-                </executions>
+                        </licenseSet>
+
+                        <licenseSet>
+                            <!--
+                                ARC BSD-3 licensed code
+                            -->
+                            <header>ARC-BSD-3-license.template.txt</header>
+                            <includes>
+
+                                <!-- TODO(AR) Consider upstreaming to Apache Commons IO project -->
+                                <include>src/main/java/org/exist/util/io/ByteBufferAccessor.java</include>
+                                <include>src/main/java/org/exist/util/io/ByteBufferInputStream.java</include>
+                                <include>src/main/java/org/exist/util/io/CachingFilterInputStream.java</include>
+                                <include>src/main/java/org/exist/util/io/FileFilterInputStreamCache.java</include>
+                                <include>src/main/java/org/exist/util/io/FilterInputStreamCache.java</include>
+                                <include>src/main/java/org/exist/util/io/FilterInputStreamCacheFactory.java</include>
+                                <include>src/main/java/org/exist/util/io/MemoryFilterInputStreamCache.java</include>
+                                <include>src/main/java/org/exist/util/io/MemoryMappedFileFilterInputStreamCache.java</include>
+                                <include>src/main/java/org/exist/util/io/TemporaryFileManager.java</include>
+                                <include>src/test/java/org/exist/util/io/CachingFilterInputStreamTest_NonMarkableByteArrayInputStream.java</include>
+
+                                <!-- TODO(AR) Switch to Apache Commons codec project - https://github.com/apache/commons-codec/pull/46 -->
+                                <include>src/main/java/org/exist/util/io/HexOutputStream.java</include>
+
+                                <!-- TODO(AR) Switch to Apache Commons IO project - https://github.com/apache/commons-io/pull/119 -->
+                                <include>src/main/java/org/exist/util/io/MarkShieldInputStream.java</include>
+
+                            </includes>
+                        </licenseSet>
+
+                        <licenseSet>
+                            <!--
+                                FDB backport to LGPL 2.1-only licensed code
+                            -->
+                            <header>FDB-backport-LGPL-21-ONLY-license.template.txt</header>
+                            <includes>
+                                <include>src/main/java/org/exist/storage/blob/**</include>
+                                <include>src/test/java/org/exist/storage/blob/**</include>
+                                <include>src/main/java/org/exist/storage/journal/JournalManager.java</include>
+                                <include>src/test/java/org/exist/storage/AbstractRecoverTest.java</include>
+                                <include>src/test/java/org/exist/storage/RecoverBinaryTest.java</include>
+                                <include>src/test/java/org/exist/storage/RecoverXmlTest.java</include>
+                                <include>src/test/java/org/exist/storage/journal/AbstractJournalTest.java</include>
+                                <include>src/test/java/org/exist/storage/journal/JournalBinaryTest.java</include>
+                                <include>src/test/java/org/exist/storage/journal/JournalXmlTest.java</include>
+                                <include>src/test/java/org/exist/storage/journal/LsnTest.java</include>
+                                <include>src/main/java/org/exist/storage/BrokerPoolService.java</include>
+                                <include>src/main/java/org/exist/storage/BrokerPoolServiceException.java</include>
+                                <include>src/main/java/org/exist/storage/BrokerPoolServicesManager.java</include>
+                                <include>src/main/java/org/exist/storage/BrokerPoolServicesManagerException.java</include>
+                                <include>src/main/java/org/exist/storage/FluentBrokerAPI.java</include>
+                                <include>src/main/java/org/exist/storage/XQueryPool.java</include>
+                                <include>src/main/java/org/exist/storage/lock/EnsureContainerLocked.java</include>
+                                <include>src/main/java/org/exist/storage/lock/EnsureContainerUnlocked.java</include>
+                                <include>src/main/java/org/exist/storage/lock/EnsureLocked.java</include>
+                                <include>src/main/java/org/exist/storage/lock/EnsureLockingAspect.java</include>
+                                <include>src/main/java/org/exist/storage/lock/EnsureUnlocked.java</include>
+                                <include>src/main/java/org/exist/storage/lock/FileLockService.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockEventJsonListener.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockEventLogListener.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockEventXmlListener.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockManager.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockTable.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockTableUtils.java</include>
+                                <include>src/main/java/org/exist/storage/lock/ManagedCollectionLock.java</include>
+                                <include>src/main/java/org/exist/storage/lock/ManagedDocumentLock.java</include>
+                                <include>src/main/java/org/exist/storage/lock/ManagedLock.java</include>
+                                <include>src/test/java/org/exist/storage/lock/CollectionLocksTest.java</include>
+                                <include>src/test/java/org/exist/storage/lock/DocumentLocksTest.java</include>
+                                <include>src/test/java/org/exist/storage/lock/LockManagerTest.java</include>
+                                <include>src/main/java/org/exist/storage/txn/TransactionManager.java</include>
+                                <include>src/test/java/org/exist/storage/txn/ConcurrentTransactionsTest.java</include>
+                                <include>src/test/java/org/exist/storage/txn/CountingTxnListener.java</include>
+                                <include>src/test/java/org/exist/storage/txn/ReusableTxnTest.java</include>
+                                <include>src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java</include>
+                                <include>src/test/java/org/exist/storage/txn/TxnTest.java</include>
+                                <include>src/main/java/org/exist/xquery/Cardinality.java</include>
+                                <include>src/main/java/org/exist/xquery/functions/map/MapType.java</include>
+                                <include>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</include>
+                                <include>src/main/java/org/exist/xquery/value/SubSequence.java</include>
+                                <include>src/test/java/org/exist/xquery/value/SubSequenceRangeTest.java</include>
+                                <include>src/test/java/org/exist/xquery/value/SubSequenceTest.java</include>
+                            </includes>
+
+                        </licenseSet>
+
+                        <licenseSet>
+                            <!--
+                                FDB backport to BSD-3 licensed code
+                            -->
+                            <header>FDB-backport-BSD-3-license.template.txt</header>
+                            <includes>
+                                <include>src/main/java/org/exist/util/CodePointString.java</include>
+                                <include>src/test/java/org/exist/util/CodePointStringTest.java</include>
+                            </includes>
+
+                        </licenseSet>
+
+                        <licenseSet>
+                            <!--
+                                FDB backport to BSD-3 licensed code with code from BaseX
+                            -->
+                            <multi>
+                                <preamble><![CDATA[NOTE: Where indicated, this file is in part based on code from
+The BaseX Team. The original license statement is also included below.]]></preamble>
+                                <header>FDB-backport-BSD-3-license.template.txt</header>
+                                <header>BX-BSD-3-license.template.txt</header>
+                            </multi>
+                            <includes>
+                                <include>src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java</include>
+                            </includes>
+
+                        </licenseSet>
+
+                    </licenseSets>
+                </configuration>
             </plugin>
 
             <plugin>
