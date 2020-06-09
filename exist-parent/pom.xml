@@ -764,7 +764,7 @@
                         <xsl>XML_STYLE</xsl>
                         <xslt>XML_STYLE</xslt>
                     </mapping>
-                    <failIfMissing>false</failIfMissing> <!-- TODO(AR) should be true eventually -->
+                    <failIfMissing>true</failIfMissing>
                     <strictCheck>true</strictCheck>
                     <properties>
                         <copyright.year>${project.inceptionYear}</copyright.year>
