@@ -1,4 +1,7 @@
 /*
+ * NOTE: This file is in part based on code from The dbXML Group.
+ * The original license statement is also included below.
+ *
  * eXist-db Open Source Native XML Database
  * Copyright (C) 2001 The eXist-db Authors
  *
@@ -19,11 +22,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ * ---------------------------------------------------------------------
  *
- * NOTE: This file is in part based on code from the dbXML Group. The original license
- * statement is included below:
- *  
- * ----------------------------------------------------------------------------
  * dbXML License, Version 1.0
  *
  * Copyright (c) 1999-2001 The dbXML Group, L.L.C.
