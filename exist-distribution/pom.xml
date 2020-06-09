@@ -324,20 +324,27 @@
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration>
-                    <excludes>
-                        <exclude>LGPL-21-license.txt</exclude>
-                        <exclude>src/appbundler/**</exclude>
-                        <exclude>src/dmg/**</exclude>
-                        <exclude>src/main/config/**</exclude>  <!-- config files shipped with eXist-db don't need copyright headers -->
-                        <exclude>src/main/xslt/configure_9_3.dtd</exclude>
-                        <exclude>src/main/xslt/web-app_3_1.xsd</exclude>
-                        <exclude>src/main/xslt/javaee_web_services_client_1_4.xsd</exclude>
-                        <exclude>src/main/xslt/jsp_2_3.xsd</exclude>
-                        <exclude>src/main/xslt/xml.xsd</exclude>
-                        <exclude>src/main/xslt/web-common_3_1.xsd</exclude>
-                        <exclude>src/main/xslt/javaee_7.xsd</exclude>
-                    </excludes>
-                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <licenseSets>
+                        <licenseSet>
+                            <!--
+                                eXist-db's License
+                            -->
+                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <excludes>
+                                <exclude>LGPL-21-license.txt</exclude>
+                                <exclude>src/appbundler/**</exclude>
+                                <exclude>src/dmg/**</exclude>
+                                <exclude>src/main/config/**</exclude>  <!-- config files shipped with eXist-db don't need copyright headers -->
+                                <exclude>src/main/xslt/configure_9_3.dtd</exclude>
+                                <exclude>src/main/xslt/web-app_3_1.xsd</exclude>
+                                <exclude>src/main/xslt/javaee_web_services_client_1_4.xsd</exclude>
+                                <exclude>src/main/xslt/jsp_2_3.xsd</exclude>
+                                <exclude>src/main/xslt/xml.xsd</exclude>
+                                <exclude>src/main/xslt/web-common_3_1.xsd</exclude>
+                                <exclude>src/main/xslt/javaee_7.xsd</exclude>
+                            </excludes>
+                        </licenseSet>
+                    </licenseSets>
                 </configuration>
             </plugin>
 
