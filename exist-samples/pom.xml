@@ -58,12 +58,25 @@
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration>
-                    <includes>
-                        <include>**/*.java</include>
-                        <include>**/*.sh</include>
-                        <include>**/*.pl</include>
-                        <include>**/*.py</include>
-                    </includes>
+                    <licenseSets>
+                        <licenseSet>
+                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <excludes>
+                                <exclude>src/main/resources/org/exist/samples/biblio.rdf</exclude>
+                                <exclude>src/main/resources/org/exist/samples/shakespeare/hamlet.xml</exclude>
+                                <exclude>src/main/resources/org/exist/samples/shakespeare/macbeth.xml</exclude>
+                                <exclude>src/main/resources/org/exist/samples/shakespeare/play.dtd</exclude>
+                                <exclude>src/main/resources/org/exist/samples/shakespeare/r_and_j.xml</exclude>
+                                <exclude>src/main/resources/org/exist/samples/shakespeare/shakes.css</exclude>
+                                <exclude>src/main/resources/org/exist/samples/shakespeare/shakes.xsl</exclude>
+                                <exclude>src/main/resources/org/exist/samples/validation/dtd/**</exclude>
+                                <exclude>src/main/resources/org/exist/samples/validation/personal/**</exclude>
+                                <exclude>src/main/resources/org/exist/samples/xinclude/scripts/syntax/**</exclude>
+                                <exclude>src/main/resources/org/exist/samples/xinclude/styles/**</exclude>
+                                <exclude>src/main/resources/org/exist/samples/validation/tournament/**</exclude>
+                            </excludes>
+                        </licenseSet>
+                    </licenseSets>
                 </configuration>
             </plugin>
         </plugins>
