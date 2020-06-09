@@ -68,32 +68,16 @@
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration>
-                    <header>com/mycila/maven/plugin/license/templates/BSD-3.txt</header>
-                    <headerDefinitions>
-                        <headerDefinition>${project.parent.relativePath}/xquery-license-style.xml</headerDefinition>
-                    </headerDefinitions>
-                    <mapping>
-                        <java>SLASHSTAR_STYLE</java>
-                        <xq>XQUERY_STYLE</xq>
-                        <xql>XQUERY_STYLE</xql>
-                        <xqm>XQUERY_STYLE</xqm>
-                    </mapping>
-                    <failIfMissing>true</failIfMissing>
-                    <strictCheck>true</strictCheck>
-                    <properties>
-                        <owner>Adam Retter</owner>
-                    </properties>
-                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <licenseSets>
+                        <licenseSet>
+                            <header>com/mycila/maven/plugin/license/templates/BSD-3.txt</header>
+                            <properties>
+                                <owner>Adam Retter</owner>
+                                <project.inceptionYear>2001</project.inceptionYear>
+                            </properties>
+                        </licenseSet>
+                    </licenseSets>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>check-headers</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
