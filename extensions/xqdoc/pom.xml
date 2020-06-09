@@ -114,10 +114,17 @@
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration>
-                    <excludes>
-                        <exclude>xqdoc-1.0.xsd</exclude>
-                    </excludes>
-                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <licenseSets>
+                        <licenseSet>
+                            <!--
+                                eXist-db's License
+                            -->
+                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <excludes>
+                                <exclude>xqdoc-1.0.xsd</exclude>
+                            </excludes>
+                        </licenseSet>
+                    </licenseSets>
                 </configuration>
             </plugin>
         </plugins>
