@@ -51,48 +51,46 @@
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration>
-                    <excludes>
+                    <licenseSets>
+                        <licenseSet>
+                            <!--
+                                eXist-db's License
+                            -->
+                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
 
-                        <!--
-                            Derivative work licensed under Apache 2.0 and LGPL 2.1
-                        -->
-                        <exclude>src/main/java/org/exist/start/Classpath.java</exclude>
-                        <exclude>src/main/java/org/exist/start/Main.java</exclude>
-                        <exclude>src/main/java/org/exist/start/Version.java</exclude>
-
-                    </excludes>
-                    <encoding>${project.build.sourceEncoding}</encoding>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>check-headers</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-
-                    <!-- TODO(AR) the below execution doesn't appear to do anything we need to investigate this! -->
-                    <execution>
-                        <!--
-                            Derivative work licensed under Apache 2.0 and LGPL 2.1
-                        -->
-                        <id>check-dbxml-headers</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <configuration>
-                            <excludes/>
-                            <includes>
+                            <!--
+                                Derivative work licensed under Apache 2.0 and LGPL 2.1
+                            -->
+                            <excludes>
+                                <exclude>Mortbay-APACHE-2-license.template.txt</exclude>
                                 <exclude>src/main/java/org/exist/start/Classpath.java</exclude>
                                 <exclude>src/main/java/org/exist/start/Main.java</exclude>
                                 <exclude>src/main/java/org/exist/start/Version.java</exclude>
+                            </excludes>
+
+                        </licenseSet>
+
+                        <licenseSet>
+                            <!--
+                                Derivative work licensed under Apache 2.0 and LGPL 2.1
+                            -->
+                            <multi>
+                                <preamble><![CDATA[NOTE: This file is in part based on code from Mort Bay Consulting.
+The original license statement is also included below.]]></preamble>
+                                <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                                <header>Mortbay-APACHE-2-license.template.txt</header>
+                            </multi>
+                            <excludes/>
+                            <includes>
+                                <include>src/main/java/org/exist/start/Classpath.java</include>
+                                <include>src/main/java/org/exist/start/Main.java</include>
+                                <include>src/main/java/org/exist/start/Version.java</include>
                             </includes>
-                            <encoding>${project.build.sourceEncoding}</encoding>
-                        </configuration>
-                    </execution>
-                </executions>
+                        </licenseSet>
+
+                    </licenseSets>
+
+                </configuration>
             </plugin>
         </plugins>
     </build>
