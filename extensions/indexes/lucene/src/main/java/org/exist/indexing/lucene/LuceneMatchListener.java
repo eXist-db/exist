@@ -315,14 +315,14 @@ public class LuceneMatchListener extends AbstractMatchListener {
         }
     }
 
-    private NodePath getPath(final NodeProxy proxy) {
+    public static NodePath getPath(final NodeProxy proxy) {
         final NodePath2 path = new NodePath2();
         final IStoredNode<?> node = (IStoredNode<?>) proxy.getNode();
         walkAncestor(node, path);
         return path;
     }
 
-    private void walkAncestor(final IStoredNode node, final NodePath2 path) {
+    private static void walkAncestor(final IStoredNode node, final NodePath2 path) {
         if (node == null) {
             return;
         }
