@@ -187,7 +187,8 @@ public class Field extends BasicFunction {
                                         if (token.equals(phraseTerms[t].text())) {
                                             offset = stream.getAttribute(OffsetAttribute.class);
                                             endOffset = offset.endOffset();
-                                            if (++t == phraseTerms.length) {
+                                            t++;
+                                            if (t == phraseTerms.length) {
                                                 break;
                                             }
                                         } else {

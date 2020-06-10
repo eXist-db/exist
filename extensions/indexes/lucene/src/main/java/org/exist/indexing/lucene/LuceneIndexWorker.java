@@ -574,12 +574,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @throws IOException in case of Lucene IO error
      */
     public Map<Object, Query> getTerms(final Query query) throws IOException {
-        final Map<Object, Query> termMap = new TreeMap<>();
-        index.withReader(reader -> {
+        return index.withReader(reader -> {
+            final Map<Object, Query> termMap = new TreeMap<>();
             LuceneUtil.extractTerms(query, termMap, reader, false);
             return termMap;
         });
-        return termMap;
     }
 
     public NodeSet queryField(XQueryContext context, int contextId, DocumentSet docs, NodeSet contextSet,
