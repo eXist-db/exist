@@ -87,7 +87,7 @@ public class XMLTestRunner extends AbstractTestRunner {
         String description = null;
         final List<String> testNames = new ArrayList<>();
 
-        final Node docElement = doc.getDocumentElement();
+        final Element docElement = doc.getDocumentElement();
         if(docElement == null) {
             throw new InitializationError("Invalid XML test document: " + path.toAbsolutePath());
         }
