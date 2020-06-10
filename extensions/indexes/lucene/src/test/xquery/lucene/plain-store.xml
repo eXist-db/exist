@@ -36,15 +36,21 @@
         <store collection="/db/morebinary" name="index2.txt" type="text/plain">BBBBBB</store>
         <store collection="/db/morebinary" name="index3.txt" type="text/plain">CCCCCC</store>
         <create-collection parent="/db/morebinary" name="shakespeare"/>
-        <store-files collection="/db/morebinary/shakespeare" classpath="exist-samples/target/classes" pattern="org/exist/samples/shakespeare/*.xml"/>
+        <store collection="/db/morebinary/shakespeare" name="hamlet.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/hamlet.xml"/>
+        <store collection="/db/morebinary/shakespeare" name="macbeth.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/macbeth.xml"/>
+        <store collection="/db/morebinary/shakespeare" name="r_and_j.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/r_and_j.xml"/>
 
         <create-collection parent="/db" name="morebinary2"/>
         <create-collection parent="/db/morebinary2" name="shakespeare"/>
-        <store-files collection="/db/morebinary2/shakespeare" classpath="exist-samples/target/classes" pattern="org/exist/samples/shakespeare/*.xml"/>
+        <store collection="/db/morebinary2/shakespeare" name="hamlet.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/hamlet.xml"/>
+        <store collection="/db/morebinary2/shakespeare" name="macbeth.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/macbeth.xml"/>
+        <store collection="/db/morebinary2/shakespeare" name="r_and_j.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/r_and_j.xml"/>
 
         <create-collection parent="/db" name="morebinary3"/>
         <create-collection parent="/db/morebinary3" name="shakespeare"/>
-        <store-files collection="/db/morebinary3/shakespeare" classpath="exist-samples/target/classes" pattern="org/exist/samples/shakespeare/*.xml"/>
+        <store collection="/db/morebinary3/shakespeare" name="hamlet.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/hamlet.xml"/>
+        <store collection="/db/morebinary3/shakespeare" name="macbeth.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/macbeth.xml"/>
+        <store collection="/db/morebinary3/shakespeare" name="r_and_j.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/r_and_j.xml"/>
     </setup>
 
     <tearDown>

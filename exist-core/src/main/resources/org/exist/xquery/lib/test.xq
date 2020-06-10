@@ -54,7 +54,14 @@ declare function t:setup-action($action) {
 declare function t:store($action as element(store)) {
     let $type := if ($action/@type) then $action/@type/string() else "application/xml"
     let $data :=
-		if ($action/*) then
+        if ($action/@src) then
+            let $src := fn:doc($action/@src)
+            return
+                if (not(empty($src))) then
+                    $src
+                else
+                    fn:error(xs:QName("ERROR"), ("Could not find @src '" || $action/@src || "' for store in test.xq"))
+		else if ($action/*) then
 			$action/*[1]
 		else
 			$action/string()
@@ -81,7 +88,7 @@ declare function t:store-files($action as element(store-files)) {
                 then
                     xmldb:store-files-from-pattern($action/@collection, $matches[1], $action/@pattern, $type)
                 else
-                    util:log("ERROR", ("Could not match classpath with '" || $action/@classpath || "' in test.xq"))
+                    fn:error(xs:QName("ERROR"), ("Could not match @classpath '" || $action/@classpath || "' with classpath-entries '" || $classpath-entries || "' in test.xq"))
         else
             xmldb:store-files-from-pattern($action/@collection, $action/@dir, $action/@pattern, $type)
 };
