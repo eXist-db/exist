@@ -63,6 +63,8 @@ public class Main {
     private static final String CREATE_DATABASE_PROP = "create-database";
     private static final String BACKUP_DIR_PROP = "backup-dir";
 
+    public static final String SSL_ENABLE = "ssl-enable";
+
     private static final String DEFAULT_USER = "admin";
     private static final String DEFAULT_PASSWORD = "";
     private static final String DEFAULT_URI = "xmldb:exist://";
@@ -151,7 +153,13 @@ public class Main {
 
         final boolean guiMode = getBool(arguments, guiArg);
         final boolean quiet = getBool(arguments, quietArg);
-        Optional.ofNullable(arguments.get(optionArg)).ifPresent(options -> options.forEach(properties::setProperty));
+        Optional.ofNullable(arguments.get(optionArg)).ifPresent(options -> {
+            options.forEach(properties::setProperty);
+
+            if(options.containsKey(SSL_ENABLE)){
+                properties.setProperty(SSL_ENABLE, options.get(SSL_ENABLE));
+            }
+        });
 
         properties.setProperty(USER_PROP, arguments.get(userArg));
         final String optionPass = arguments.get(passwordArg);
@@ -174,7 +182,8 @@ public class Main {
             final Class<?> cl = Class.forName(properties.getProperty(DRIVER_PROP, DEFAULT_DRIVER));
             database = (Database) cl.newInstance();
             database.setProperty(CREATE_DATABASE_PROP, "true");
-
+            database.setProperty(SSL_ENABLE, properties.getProperty(SSL_ENABLE));
+            
             if (properties.containsKey(CONFIGURATION_PROP)) {
                 database.setProperty(CONFIGURATION_PROP, properties.getProperty(CONFIGURATION_PROP));
             }
