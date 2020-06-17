@@ -92,8 +92,9 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
      */
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         context.expressionStart(this);
-        final Sequence testSeq = testExpr.eval(contextSequence, contextItem);
+
         try {
+            final Sequence testSeq = testExpr.eval(contextSequence, contextItem);
             if (testSeq.effectiveBooleanValue()) {
                 return thenExpr.eval(contextSequence, contextItem);
             } else {
