@@ -39,7 +39,7 @@ The notes of past community calls are located [here](https://drive.google.com/dr
 -   **Homepage:** [http://exist-db.org](http://exist-db.org)
 -   **Binaries:** [http://exist-db.org/exist/apps/homepage/index.html#download](http://exist-db.org/exist/apps/homepage/index.html#download)
 -   **Documentation:** [http://exist-db.org/exist/apps/doc](http://exist-db.org/exist/apps/doc)
--   **Book:** [http://shop.oreilly.com/product/0636920026525.do](http://www.jdoqocy.com/click-7654993-11290546?sid=&url=http%3A%2F%2Fshop.oreilly.com%2Fproduct%2F0636920026525.do%3Fcmp%3Daf-webplatform-books-videos-product_cj_auwidget636_0636920026525_%25zp)
+-   **Book:** [https://www.oreilly.com/library/view/exist/9781449337094/](https://www.oreilly.com/library/view/exist/9781449337094/)
 -   **Packages:** [http://exist-db.org/exist/apps/public-repo](http://exist-db.org/exist/apps/public-repo)
 -   **Source code:** [https://github.com/eXist-db/exist](https://github.com/eXist-db/exist)
 -   **Git clone URL:** `git://github.com/eXist-db/exist.git`
