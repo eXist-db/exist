@@ -87,7 +87,7 @@ public class Main {
             .build();
 
 
-    /* user/pass arguments */
+    /* database connection arguments */
     private static final Argument<String> userArg = stringArgument("-u", "--user")
             .description("set user.")
             .defaultValue(DEFAULT_USER)
@@ -98,7 +98,10 @@ public class Main {
     private static final Argument<String> dbaPasswordArg = stringArgument("-P", "--dba-password")
             .description("if the backup specifies a different password for the admin user, use this option to specify the new password. Otherwise you will get a permission denied")
             .build();
-
+    private static final Argument<Boolean> useSslArg = optionArgument("-S", "--use-ssl")
+            .description("Use SSL by default for remote connections")
+            .defaultValue(false)
+            .build();
 
     /* backup arguments */
     private static final Argument<String> backupCollectionArg = stringArgument("-b", "--backup")
@@ -155,16 +158,16 @@ public class Main {
         final boolean quiet = getBool(arguments, quietArg);
         Optional.ofNullable(arguments.get(optionArg)).ifPresent(options -> {
             options.forEach(properties::setProperty);
-
-            if(options.containsKey(SSL_ENABLE)){
-                properties.setProperty(SSL_ENABLE, options.get(SSL_ENABLE));
-            }
         });
 
         properties.setProperty(USER_PROP, arguments.get(userArg));
         final String optionPass = arguments.get(passwordArg);
         properties.setProperty(PASSWORD_PROP, optionPass);
         final Optional<String> optionDbaPass = getOpt(arguments, dbaPasswordArg);
+        final boolean useSsl = getBool(arguments, useSslArg);
+        if (useSsl) {
+            properties.setProperty(SSL_ENABLE, "TRUE");
+        }
 
         final Optional<String> backupCollection = getOpt(arguments, backupCollectionArg);
         getOpt(arguments, backupOutputDirArg).ifPresent(backupOutputDir -> properties.setProperty(BACKUP_DIR_PROP, backupOutputDir.getAbsolutePath()));
@@ -182,7 +185,7 @@ public class Main {
             final Class<?> cl = Class.forName(properties.getProperty(DRIVER_PROP, DEFAULT_DRIVER));
             database = (Database) cl.newInstance();
             database.setProperty(CREATE_DATABASE_PROP, "true");
-            database.setProperty(SSL_ENABLE, properties.getProperty(SSL_ENABLE));
+            database.setProperty(SSL_ENABLE, properties.getProperty(SSL_ENABLE, "FALSE"));
             
             if (properties.containsKey(CONFIGURATION_PROP)) {
                 database.setProperty(CONFIGURATION_PROP, properties.getProperty(CONFIGURATION_PROP));
@@ -448,7 +451,7 @@ public class Main {
     public static void main(final String[] args) {
         try {
             final ParsedArguments arguments = CommandLineParser
-                    .withArguments(userArg, passwordArg, dbaPasswordArg)
+                    .withArguments(userArg, passwordArg, dbaPasswordArg, useSslArg)
                     .andArguments(backupCollectionArg, backupOutputDirArg, backupDeduplicateBlobs)
                     .andArguments(restoreArg, rebuildExpathRepoArg, overwriteAppsArg)
                     .andArguments(helpArg, guiArg, quietArg, optionArg)
