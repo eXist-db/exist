@@ -64,7 +64,7 @@ public abstract class NumberFormatter {
     public String getAmPm(int hour) {
         final DateFormatSymbols symbols = DateFormatSymbols.getInstance(locale);
         final String[] amPm = symbols.getAmPmStrings();
-        if (hour > 12) {
+        if (hour >= 12) {
             return amPm[1];
         }
         return amPm[0];
