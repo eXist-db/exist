@@ -90,6 +90,8 @@ function fd:format-square-brackets($date as xs:date) {
 declare
     %test:args("2012-06-26T23:14:22.566+02:00")
     %test:assertEquals("11:14 pm on Tuesday, June 26th, 2012")
+    %test:args("2020-06-21T12:34:56.566-04:00")
+    %test:assertEquals("12:34 pm on Sunday, June 21st, 2020")
 function fd:format-dateTime($date as xs:dateTime) {
     format-dateTime($date, "[h00]:[m00] [P] on [FNn], [MNn] [D1o], [Y]", "en", (), ())
 };
@@ -510,6 +512,8 @@ declare
     %test:assertEquals("05:45 pm")
     %test:args("09:45:50")
     %test:assertEquals("09:45 am")
+    %test:args("12:45:50")
+    %test:assertEquals("12:45 pm")
 function fd:time-am-pm($time as xs:time) {
     format-time($time, "[h00]:[m00] [P]")
 };
