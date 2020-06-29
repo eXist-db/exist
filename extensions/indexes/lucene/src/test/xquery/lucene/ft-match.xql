@@ -71,11 +71,12 @@ function ftt:cleanup() {
  : * 3rd returns only the 4 number matches in date and p (incorrect)
  :)
 declare
-    %test:assertEquals(2, 2, 0)
+    %test:assertEquals(2, 2, 0, 0)
 function ftt:field-highlight() {
     count(util:expand(collection($ftt:COLLECTION)//div[ft:query(., 'Nixon')])//exist:match),
     count(util:expand(collection($ftt:COLLECTION)//div[ft:query(., 'Nixon AND pub-year:[1970 TO 1980]')])//exist:match),
-    count(util:expand(collection($ftt:COLLECTION)//div[ft:query(., 'pub-year:[1971 TO 1971]')])//exist:match)
+    count(util:expand(collection($ftt:COLLECTION)//div[ft:query(., 'pub-year:[1970 TO 1980]')])//exist:match),
+    count(util:expand(collection($ftt:COLLECTION)//div[ft:query(., 'pub-year:[1970 TO 1973]')])//exist:match)
 };
 
 (:~
