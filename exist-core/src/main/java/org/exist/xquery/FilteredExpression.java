@@ -144,10 +144,21 @@ public class FilteredExpression extends AbstractExpression {
     }
 
     private Sequence processPredicate(Sequence contextSequence, Sequence seq) throws XPathException {
-        for (final Predicate pred : predicates) {
-            seq = pred.evalPredicate(contextSequence, seq, Constants.DESCENDANT_SELF_AXIS);
-            //subsequent predicates operate on the result of the previous one
-            contextSequence = null;
+
+        int line=-1;
+        int column=-1;
+        try { // Keep try-catch out of loop
+            for (final Predicate pred : predicates) {
+                line = pred.getLine();
+                column = pred.getColumn();
+                seq = pred.evalPredicate(contextSequence, seq, Constants.DESCENDANT_SELF_AXIS);
+                //subsequent predicates operate on the result of the previous one
+                contextSequence = null;
+            }
+        } catch (XPathException ex){
+            // Add location to exception
+            ex.setLocation(line,column);
+            throw ex;
         }
         return seq;
     }
