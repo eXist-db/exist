@@ -277,7 +277,15 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                     }
                     result = exprResult;
                 } else {
-                    result = expr.eval(currentContext);
+                    try {
+                        result = expr.eval(currentContext);
+                    } catch (XPathException ex){
+                        // enrich exception when information is available
+                        if(getLine()!=-1 || getColumn()!=-1 ) {
+                            ex.setLocation(getLine(), getColumn());
+                        }
+                        throw ex;
+                    }
                 }
                 //TOUNDERSTAND : why did I have to write this test :-) ? -pb
                 //it looks like an empty sequence could be considered as a sub-type of Type.NODE
