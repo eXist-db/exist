@@ -19,22 +19,18 @@
  */
 package org.exist.xquery;
 
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.xmldb.api.base.CompiledExpression;
+
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * PathExpr is just a sequence of XQuery/XPath expressions, which will be called
@@ -281,8 +277,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                         result = expr.eval(currentContext);
                     } catch (XPathException ex){
                         // enrich exception when information is available
-                        if(getLine()!=-1 || getColumn()!=-1 ) {
-                            ex.setLocation(getLine(), getColumn());
+                        if (ex.getLine() < 1 || ex.getColumn() < 1) {
+                            ex.setLocation(expr.getLine(), expr.getColumn());
                         }
                         throw ex;
                     }
