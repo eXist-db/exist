@@ -196,3 +196,122 @@ function et:compile-query-func-decl() {
     return
         util:compile-query($query, "xmldb:exist://")
 };
+
+(: https://github.com/eXist-db/exist/issues/3450 :)
+declare
+    %test:assertEquals(208)
+function et:issue3450a() {
+    try {
+    (:
+    empty
+    :)
+        if (map { "foo": "bar" } eq 1) then "yay" else "boo"
+    } catch * {
+        $err:line-number
+    }
+};
+
+
+(: https://github.com/eXist-db/exist/issues/3450 :)
+declare
+    %test:assertEquals(220)
+function et:issue3450b() {
+    try {
+        if ("a" eq 1) then "yay" else "boo"
+    } catch * {
+        $err:line-number
+    }
+};
+
+(: https://github.com/eXist-db/exist/issues/3462 :)
+declare
+    %test:assertEquals(233)
+function et:issue3462a() {
+    try {
+        map {
+            "foo": ["bar", "baz"]
+        }[?foo eq "bar"]
+    } catch * {
+        $err:line-number
+    }
+};
+
+declare
+    %test:assertEquals(248)
+function et:issue3462b() {
+    try {
+            map {
+                "foo":
+                    map {
+                        "bar": "baz"
+                    }
+            }[?foo eq "bar"]
+    } catch * {
+        $err:line-number
+    }
+};
+
+(: https://github.com/eXist-db/exist/issues/3473 :)
+declare
+    %test:assertEquals(259)
+function et:issue3473a() {
+    try {
+        1 eq "2"
+    } catch * {
+        $err:line-number
+    }
+};
+
+(: https://github.com/eXist-db/exist/issues/3473 :)
+declare
+    %test:assertEquals(270)
+function et:issue3473b() {
+    try {
+        1 = "2"
+    } catch * {
+        $err:line-number
+    }
+};
+
+(: https://github.com/eXist-db/exist/issues/3473 :)
+declare
+    %test:assertEquals(301)
+function et:issue3473c() {
+    try {
+        let $colors :=
+                 map {
+                     "blue": "#2d7ff9",
+                     "cyan": "#18bfff",
+                     "gray": "#666",
+                     "grayDark": "666",
+                     "green": "#20c933",
+                     "greenDark": "20c933",
+                     "orange": "#ff6f2c",
+                     "pink": "#ff08c2",
+                     "pinkDark": "ff08c2",
+                     "purple": "#8b46ff",
+                     "red": "#f82b60",
+                     "redDarker": "f82b60",
+                     "teal": "#20d9d2",
+                     "yellow": "#fcb400",
+                     "yellowDark": "fcb400"
+                 }
+
+             return
+                error()
+    } catch * {
+        $err:line-number
+    }
+};
+
+(: https://github.com/eXist-db/exist/issues/3474 :)
+declare
+    %test:pending("to be addressed in another PR")
+    %test:assertEquals(312)
+function et:issue3474() {
+    try {
+        element foo { map { "x": "y" } }
+    } catch * {
+        $err:line-number
+    }
+};
