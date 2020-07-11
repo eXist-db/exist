@@ -62,6 +62,7 @@ public class DataBackupTest {
         assertNotNull(zipFile.getEntry("structure.dbx"));
         assertNotNull(zipFile.getEntry("symbols.dbx"));
         assertNotNull(zipFile.getEntry("values.dbx"));
+        assertNotNull(zipFile.getEntry("blob.dbx"));
     }
 
     private class TestableDataBackup extends DataBackup {
