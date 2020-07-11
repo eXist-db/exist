@@ -26,7 +26,6 @@ import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
@@ -58,35 +57,35 @@ import java.util.Optional;
 
 public class RangeIndexUpdateTest {
 
-    private static String COLLECTION_CONFIG =
-        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-    	"	<index>" +
-    	"		<create qname=\"item\" type=\"xs:string\"/>" +
-        "		<create path=\"//item/@attr\" type=\"xs:string\"/>" +
-        "        <create path=\"/section/para\" type=\"xs:string\"/>" +
-        "	</index>" +
-    	"</collection>";
+    private static final String COLLECTION_CONFIG =
+            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+            "	<index>" +
+            "		<create qname=\"item\" type=\"xs:string\"/>" +
+            "		<create path=\"//item/@attr\" type=\"xs:string\"/>" +
+            "       <create path=\"/section/para\" type=\"xs:string\"/>" +
+            "	</index>" +
+            "</collection>";
 
-    private static String XML =
+    private static final String XML =
             "<test>" +
             "   <item id='1' attr='attribute'><description>Chair</description></item>" +
             "   <item id='2'><description>Table</description><price>892.25</price></item>" +
             "   <item id='3'><description>Cabinet</description><price>1525.00</price></item>" +
             "</test>";
 
-    private static String XML2 =
+    private static final String XML2 =
             "<section>" +
             "   <para>01234</para>" +
             "   <para>56789</para>" +
             "</section>";
 
-    private static String XUPDATE_START =
-        "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">";
+    private static final String XUPDATE_START =
+            "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">";
 
-    private static String XUPDATE_END =
-        "</xu:modifications>";
+    private static final String XUPDATE_END =
+            "</xu:modifications>";
 
-    private final static QName ITEM_QNAME = new QName("item", "", "");
+    private static final QName ITEM_QNAME = new QName("item", "", "");
 
     private static MutableDocumentSet docs;
 
@@ -117,8 +116,9 @@ public class RangeIndexUpdateTest {
                     XUPDATE_END;
             Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
             assertNotNull(modifications);
-            modifications[0].process(transaction);
+            long mods = modifications[0].process(transaction);
             proc.reset();
+            assertEquals(1, mods);
 
             checkIndex(broker, docs, ITEM_QNAME, new StringValue("Chair"), 0);
             checkIndex(broker, docs, ITEM_QNAME, new StringValue("Wardrobe"), 1);
@@ -131,8 +131,9 @@ public class RangeIndexUpdateTest {
                     XUPDATE_END;
             modifications = proc.parse(new InputSource(new StringReader(xupdate)));
             assertNotNull(modifications);
-            modifications[0].process(transaction);
+            mods = modifications[0].process(transaction);
             proc.reset();
+            assertEquals(1, mods);
 
             checkIndex(broker, docs, ITEM_QNAME, new StringValue("Wardrobe"), 0);
             checkIndex(broker, docs, ITEM_QNAME, new StringValue("Wheelchair"), 1);
@@ -145,21 +146,24 @@ public class RangeIndexUpdateTest {
                     XUPDATE_END;
             modifications = proc.parse(new InputSource(new StringReader(xupdate)));
             assertNotNull(modifications);
-            modifications[0].process(transaction);
+            mods = modifications[0].process(transaction);
             proc.reset();
+            assertEquals(1, mods);
+
             checkIndex(broker, docs, null, new StringValue("abc"), 1);
 
             transact.commit(transaction);
         }
     }
 
-    private void checkIndex(DBBroker broker, DocumentSet docs, QName qname, StringValue term, int count) {
+    private void checkIndex(final DBBroker broker, final DocumentSet docs, final QName qname, final StringValue term,
+            final int expectedCount) {
 
         final ValueOccurrences[] occurrences;
         if (qname == null) {
             occurrences = broker.getValueIndex().scanIndexKeys(docs, null, term);
         } else {
-            occurrences = broker.getValueIndex().scanIndexKeys(docs, null, new QName[]{qname}, term);
+            occurrences = broker.getValueIndex().scanIndexKeys(docs, null, new QName[] { qname }, term);
         }
 
         int found = 0;
@@ -168,21 +172,20 @@ public class RangeIndexUpdateTest {
                 found++;
             }
         }
-        assertEquals(count, found);
+        assertEquals(expectedCount, found);
     }
 
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeClass
-    public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
+    public static void startDB() throws EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-	            final Txn transaction = transact.beginTransaction()) {
+	            final Txn transaction = transact.beginTransaction();
+                final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI)) {
 
-            final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-            assertNotNull(root);
             broker.saveCollection(transaction, root);
 
             final CollectionConfigurationManager mgr = pool.getConfigurationManager();
@@ -193,38 +196,14 @@ public class RangeIndexUpdateTest {
             IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), XML);
             assertNotNull(info);
             root.store(transaction, broker, info, XML);
-
             docs.add(info.getDocument());
 
             info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_string2.xml"), XML2);
             assertNotNull(info);
             root.store(transaction, broker, info, XML2);
-
             docs.add(info.getDocument());
 
             transact.commit(transaction);
-        }
-    }
-
-    @AfterClass
-    public static void cleanup() throws EXistException, PermissionDeniedException, IOException, TriggerException {
-        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        final TransactionManager transact = pool.getTransactionManager();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Txn transaction = transact.beginTransaction()) {
-
-            final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-            assertNotNull(root);
-//            broker.removeCollection(transaction, root);
-
-            final Collection config = broker.getOrCreateCollection(transaction,
-                XmldbURI.create(XmldbURI.CONFIG_COLLECTION + "/db"));
-            assertNotNull(config);
-//            broker.removeCollection(transaction, config);
-
-            transact.commit(transaction);
-        } finally {
-            docs = null;
         }
     }
 }
