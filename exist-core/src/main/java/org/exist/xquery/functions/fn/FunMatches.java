@@ -34,10 +34,8 @@ import org.exist.xquery.*;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
@@ -46,6 +44,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
 import static org.exist.xquery.regex.RegexUtil.*;
 
 /**
@@ -57,58 +57,49 @@ import static org.exist.xquery.regex.RegexUtil.*;
  */
 public class FunMatches extends Function implements Optimizable, IndexUseReporter {
 
-    protected static final String FUNCTION_DESCRIPTION_1_PARAM =
-            "The function returns true if $input matches the regular expression " +
-                    "supplied as $pattern, if present; otherwise, it returns false.\n\n";
-    protected static final String FUNCTION_DESCRIPTION_2_PARAM =
-            "The function returns true if $input matches the regular expression " +
-                    "supplied as $pattern as influenced by the value of $flags, if present; " +
-                    "otherwise, it returns false.\n\n" +
-                    "The effect of calling this version of the function with the $flags argument set to a zero-length string is the same as using the other two argument version. " +
-                    "Flags are defined in 7.6.1.1 Flags.\n\n";
+    private static final FunctionParameterSequenceType FS_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
+    private static final FunctionParameterSequenceType FS_PARAM_PATTERN = param("pattern", Type.STRING, "The pattern");
+    private static final FunctionParameterSequenceType FS_PARAM_FLAGS = param("flags", Type.STRING, "The flags");
 
-    protected static final String FUNCTION_DESCRIPTION_COMMON =
+    private static final String FS_MATCHES_NAME = "matches";
+    private static final String FS_DESCRIPTION =
+            "The function returns true if $input matches the regular expression " +
+            "supplied as $pattern as influenced by the value of $flags, if present; " +
+            "otherwise, it returns false.\n\n" +
+            "The effect of calling this version of the function with the $flags argument set to a" +
+            "zero-length string is the same as using the other two argument version. " +
+            "Flags are defined in 7.6.1.1 Flags.\n\n" +
             "If $input is the empty sequence, it is interpreted as the zero-length string.\n\n" +
-                    "Unless the metacharacters ^ and $ are used as anchors, the string is considered " +
-                    "to match the pattern if any substring matches the pattern. But if anchors are used, " +
-                    "the anchors must match the start/end of the string (in string mode), or the " +
-                    "start/end of a line (in multiline mode).\n\n" +
-                    "Note:\n\n" +
-                    "This is different from the behavior of patterns in [XML Schema Part 2: Datatypes " +
-                    "Second Edition], where regular expressions are implicitly anchored.\n\n" +
-                    "Please note that - in contrast - with the " +
-                    "specification - this method allows zero or more items for the string argument.\n\n" +
-                    "An error is raised [err:FORX0002] if the value of $pattern is invalid " +
-                    "according to the rules described in section 7.6.1 Regular Expression Syntax.\n\n";
-    protected static final String FUNCTION_DESCRIPTION_2_PARAM_2 =
+            "Unless the metacharacters ^ and $ are used as anchors, the string is considered " +
+            "to match the pattern if any substring matches the pattern. But if anchors are used, " +
+            "the anchors must match the start/end of the string (in string mode), or the " +
+            "start/end of a line (in multiline mode).\n\n" +
+            "Note:\n\n" +
+            "This is different from the behavior of patterns in [XML Schema Part 2: Datatypes " +
+            "Second Edition], where regular expressions are implicitly anchored.\n\n" +
+            "Please note that - in contrast - with the " +
+            "specification - this method allows zero or more items for the string argument.\n\n" +
+            "An error is raised [err:FORX0002] if the value of $pattern is invalid " +
+            "according to the rules described in section 7.6.1 Regular Expression Syntax.\n\n" +
             "An error is raised [err:FORX0001] if the value of $flags is invalid " +
-                    "according to the rules described in section 7.6.1 Regular Expression Syntax.";
+            "according to the rules described in section 7.6.1 Regular Expression Syntax.";
 
-    protected static final String FUNCTION_DESCRIPTION_REGEX =
-            "If $input is the empty sequence, it is interpreted as the zero-length string.\n\n" +
-                    "Note:\n\n" +
-                    "The text:matches-regex() variants of the fn:matches() functions are identical except that they avoid the translation of the specified regular expression from XPath2 to Java syntax. " +
-                    "That is, the regular expression is evaluated as is, and must be valid according to Java regular expression syntax, rather than the more restrictive XPath2 syntax.";
-
-    protected static final FunctionParameterSequenceType INPUT_ARG = new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string");
-    protected static final FunctionParameterSequenceType PATTERN_ARG = new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The pattern");
-    protected static final FunctionParameterSequenceType FLAGS_ARG = new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, "The flags");
-
-    public final static FunctionSignature signatures[] = {
-            new FunctionSignature(
-                    new QName("matches", Function.BUILTIN_FUNCTION_NS),
-                    FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_COMMON,
-                    new SequenceType[]{INPUT_ARG, PATTERN_ARG},
-                    new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the pattern is a match, false otherwise")
-            ),
-            new FunctionSignature(
-                    new QName("matches", Function.BUILTIN_FUNCTION_NS),
-                    FUNCTION_DESCRIPTION_2_PARAM + FUNCTION_DESCRIPTION_COMMON +
-                            FUNCTION_DESCRIPTION_2_PARAM_2,
-                    new SequenceType[]{INPUT_ARG, PATTERN_ARG, FLAGS_ARG},
-                    new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the pattern is a match, false otherwise")
+    public final static FunctionSignature[] signatures = functionSignatures(
+            FS_MATCHES_NAME,
+            FS_DESCRIPTION,
+            returns(Type.BOOLEAN, "true if the pattern is a match, false otherwise"),
+            arities(
+                    arity(
+                            FS_PARAM_INPUT,
+                            FS_PARAM_PATTERN
+                    ),
+                    arity(
+                            FS_PARAM_INPUT,
+                            FS_PARAM_PATTERN,
+                            FS_PARAM_FLAGS
+                    )
             )
-    };
+    );
 
     protected Matcher matcher = null;
     protected Pattern pat = null;
@@ -119,14 +110,14 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
     private QName contextQName = null;
     private int axis = Constants.UNKNOWN_AXIS;
     private NodeSet preselectResult = null;
-    private GeneralComparison.IndexFlags idxflags = new GeneralComparison.IndexFlags();
+    private final GeneralComparison.IndexFlags idxflags = new GeneralComparison.IndexFlags();
 
-    public FunMatches(XQueryContext context, FunctionSignature signature) {
+    public FunMatches(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
-    public void setArguments(List<Expression> arguments) throws XPathException {
+    public void setArguments(final List<Expression> arguments) throws XPathException {
         steps.clear();
         final Expression path = arguments.get(0);
         steps.add(path);
@@ -180,27 +171,31 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         }
     }
 
-    public boolean canOptimize(Sequence contextSequence) {
+    @Override
+    public boolean canOptimize(final Sequence contextSequence) {
         if (contextQName == null) {
             return false;
         }
         return Type.subTypeOf(Optimize.getQNameIndexType(context, contextSequence, contextQName), Type.STRING);
     }
 
+    @Override
     public boolean optimizeOnSelf() {
         return false;
     }
 
+    @Override
     public boolean optimizeOnChild() {
         return false;
     }
 
+    @Override
     public int getOptimizeAxis() {
         return axis;
     }
 
     @Override
-    public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
+    public NodeSet preSelect(final Sequence contextSequence, final boolean useContext) throws XPathException {
         final long start = System.currentTimeMillis();
         // the expression can be called multiple times, so we need to clear the previous preselectResult
         preselectResult = null;
@@ -221,18 +216,14 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         final boolean caseSensitive = !hasCaseInsensitive(flags);
 
         final String pattern;
-        if (isCalledAs("matches-regex")) {
+        final boolean literal = hasLiteral(flags);
+        if (literal) {
+            // no need to change anything
             pattern = getArgument(1).eval(contextSequence).getStringValue();
         } else {
-            final boolean literal = hasLiteral(flags);
-            if (literal) {
-                // no need to change anything
-                pattern = getArgument(1).eval(contextSequence).getStringValue();
-            } else {
-                final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
-                final boolean caseBlind = !caseSensitive;
-                pattern = translateRegexp(this, getArgument(1).eval(contextSequence).getStringValue(), ignoreWhitespace, caseBlind);
-            }
+            final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
+            final boolean caseBlind = !caseSensitive;
+            pattern = translateRegexp(this, getArgument(1).eval(contextSequence).getStringValue(), ignoreWhitespace, caseBlind);
         }
 
         try {
@@ -269,9 +260,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Function#returnsType()
-     */
+    @Override
     public int returnsType() {
         if (inPredicate && (getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
             /* If one argument is a node set we directly
@@ -284,11 +273,13 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         return Type.BOOLEAN;
     }
 
+    @Override
     public boolean hasUsedIndex() {
         return hasUsedIndex;
     }
 
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    @Override
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
         newContextInfo.setParent(this);
         //  call analyze for each argument
@@ -299,7 +290,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
     }
 
     @Override
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
         final long start = System.currentTimeMillis();
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
@@ -322,7 +313,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
             contextSequence = contextItem.toSequence();
         }
 
-        Sequence result;
+        final Sequence result;
         if (contextStep == null || preselectResult == null) {
             final Sequence input = getArgument(0).eval(contextSequence, contextItem);
 
@@ -366,13 +357,13 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
     }
 
     /**
-     * @param contextSequence
-     * @param contextItem
-     * @param input
+     * @param contextSequence the context sequence
+     * @param contextItem the context item
+     * @param input the value of the $input arg
      * @return The resulting sequence
-     * @throws XPathException
+     * @throws XPathException if an error occurs
      */
-    private Sequence evalWithIndex(Sequence contextSequence, Item contextItem, Sequence input) throws XPathException {
+    private Sequence evalWithIndex(final Sequence contextSequence, final Item contextItem, final Sequence input) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -450,7 +441,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
                     hasUsedIndex = true;
                     //TODO : check index' case compatibility with flags' one ? -pb 
                     if (context.isProfilingEnabled()) {
-                        context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using vlaue index '" + index.toString() + "'", "Regex: " + pattern);
+                        context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using value index '" + index.toString() + "'", "Regex: " + pattern);
                     }
                     if (LOG.isTraceEnabled()) {
                         LOG.trace("Using range index for fn:matches expression: " + pattern);
@@ -476,12 +467,11 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 
     }
 
-    private Sequence evalFallback(NodeSet nodes, String pattern, int flags, int indexType) throws XPathException {
-        Sequence result;
+    private Sequence evalFallback(final NodeSet nodes, final String pattern, final int flags, final int indexType) throws XPathException {
         if (LOG.isTraceEnabled()) {
             LOG.trace("fn:matches: can't use existing range index of type " + Type.getTypeName(indexType) + ". Need a string index.");
         }
-        result = new ExtArrayNodeSet();
+        final Sequence result = new ExtArrayNodeSet();
         for (final NodeProxy node : nodes) {
             if (match(node.getStringValue(), pattern, flags)) {
                 result.add(node);
@@ -491,14 +481,14 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
     }
 
     /**
-     * @param contextSequence
-     * @param contextItem
-     * @param stringArg
+     * @param contextSequence the context sequence
+     * @param contextItem the context item
+     * @param input the value of the $input arg
      * @return The resulting sequence
-     * @throws XPathException
+     * @throws XPathException if an error occurs
      */
-    private Sequence evalGeneric(Sequence contextSequence, Item contextItem, Sequence stringArg) throws XPathException {
-        final String string = stringArg.getStringValue();
+    private Sequence evalGeneric(final Sequence contextSequence, final Item contextItem, final Sequence input) throws XPathException {
+        final String string = input.getStringValue();
 
         final int flags;
         if (getSignature().getArgumentCount() == 3) {
@@ -526,13 +516,13 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
     }
 
     /**
-     * @param string
-     * @param pattern
-     * @param flags
+     * @param string the value
+     * @param pattern the pattern
+     * @param flags the flags
      * @return Whether or not the string matches the given pattern with the given flags
-     * @throws XPathException
+     * @throws XPathException if an error occurs
      */
-    private boolean match(String string, String pattern, int flags) throws XPathException {
+    private boolean match(final String string, final String pattern, final int flags) throws XPathException {
         try {
             if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
                 pat = PatternFactory.getInstance().getPattern(pattern, flags);
