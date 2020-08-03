@@ -2570,6 +2570,7 @@ options {
 	|
 	BRACED_URI_LITERAL { $setType(BRACED_URI_LITERAL); }
 	|
+	{ !inAttributeContent && !inElementContent && !inStringConstructor }?
 	( '|' '|' ) =>
 	CONCAT { $setType(CONCAT); }
 	|
