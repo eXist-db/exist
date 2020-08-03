@@ -135,6 +135,7 @@ function concat:variables-in-attribute-value() {
  : They cause a parsing error and therefore must
  : stay like this, until the underlying issue has
  : been fixed
+ : https://github.com/eXist-db/exist/issues/291
  :)
 (:
 declare
