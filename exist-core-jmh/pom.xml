@@ -15,7 +15,7 @@
     <description>JMH Benchmarks for exist-core</description>
 
     <properties>
-        <jmh.version>1.23</jmh.version>
+        <jmh.version>1.24</jmh.version>
         <uberjar.name>benchmarks</uberjar.name>
     </properties>
 
