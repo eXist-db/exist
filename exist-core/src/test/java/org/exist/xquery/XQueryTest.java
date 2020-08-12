@@ -2551,6 +2551,35 @@ public class XQueryTest {
         assertEquals("/db/test/baseuri.xml", result.getResource(0).getContent().toString());
     }
 
+    /**
+     * @see <a href="https://github.com/eXist-db/exist/issues/3497">[BUG] ()/fn:base-uri() incorrectly raises XPDY0002</a>
+     */
+    @Test
+    public void resolveBaseURIErrorCases() throws XMLDBException {
+        final XPathQueryService service = (XPathQueryService) existEmbeddedServer.getRoot().getService("XPathQueryService", "1.0");
+
+        String query = "()/fn:base-uri()";
+        ResourceSet result = service.query(query);
+        assertEquals(0, result.getSize());
+
+        query = "()/base-uri(.)";
+        result = service.query(query);
+        assertEquals(0, result.getSize());
+
+        query = "base-uri(.)";
+        try {
+            result = service.query(query);
+            assertEquals(0, result.getSize());
+
+            fail("Should have raised error: XPDY0002");
+
+        } catch (final XMLDBException e) {
+            assertEquals(org.xmldb.api.base.ErrorCodes.VENDOR_ERROR, e.errorCode);
+            final Throwable cause = e.getCause();
+            assertEquals(XPathException.class, cause.getClass());
+            assertEquals(ErrorCodes.XPDY0002, ((XPathException) cause).getErrorCode());
+        }
+    }
 
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=2429093

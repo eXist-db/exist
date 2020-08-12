@@ -115,9 +115,12 @@ public class FunBaseURI extends BasicFunction {
             }
         } else {
             if (args.length == 0) {
-                if (contextSequence == null || contextSequence.isEmpty()) {
+                if (contextSequence == null) {
                     throw new XPathException(this, ErrorCodes.XPDY0002,
-                        "Context sequence is empty and no argument specified");
+                        "The context item is absent");
+                }
+                if (contextSequence.isEmpty()) {
+                    return Sequence.EMPTY_SEQUENCE;
                 }
                 final Item item = contextSequence.itemAt(0);
                 if (!Type.subTypeOf(item.getType(), Type.NODE)) {
