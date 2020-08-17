@@ -561,6 +561,9 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                             // stop the server
                             server.stop();
                             server.join();
+
+                            // make sure to stop the timer thread!
+                            timer.cancel();
                         } catch (final Exception e) {
                             e.printStackTrace();
                         }
