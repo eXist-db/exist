@@ -42,7 +42,7 @@ import static org.xmlunit.matchers.HasXPathMatcher.hasXPath;
 public class JmxRemoteTest {
 
     @ClassRule
-    public static final ExistWebServer existWebServer = new ExistWebServer(true, true, true, true, false);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true, false);
 
     private static String getServerUri() {
         return "http://localhost:" + existWebServer.getPort() + "/exist/status";
