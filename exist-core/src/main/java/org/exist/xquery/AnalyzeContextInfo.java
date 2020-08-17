@@ -114,16 +114,27 @@ public class AnalyzeContextInfo {
      * 
      * @param flags processing flags to be passed to child expression
      */
-    public void setFlags(int flags) {
+    public void setFlags(final int flags) {
         this.flags = flags;
     }
 
-    public void addFlag(int flag) {
+    public void addFlag(final int flag) {
         flags |= flag;
     }
 
-    public void removeFlag(int flag) {
+    public void removeFlag(final int flag) {
         flags &= ~flag;
+    }
+
+    /**
+     * Determines if a flag is set.
+     *
+     * @param flag the flag to test for
+     *
+     * @return true if the flag is set, false otherwise.
+     */
+    public boolean hasFlag(final int flag) {
+        return (flags & flag) == flag;
     }
 
     /**
