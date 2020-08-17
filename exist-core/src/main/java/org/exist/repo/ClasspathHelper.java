@@ -22,10 +22,12 @@ package org.exist.repo;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -121,7 +123,35 @@ public class ClasspathHelper implements BrokerPoolService {
             }
         }
         if (requiresExistVersion == null) {
-            return true;
+
+            // does the package contain XQuery Module(s) implemented in Java?
+            final ExistPkgInfo existPkgInfo = (ExistPkgInfo) pkg.getInfo("exist");
+            if (existPkgInfo == null) {
+                // no Java modules
+                return true;
+            }
+
+            final Set<URI> javaModules = existPkgInfo.getJavaModules();
+            if (javaModules == null || javaModules.isEmpty()) {
+                // no Java modules
+                return true;
+            }
+
+            /*
+                There are eXist-db Java modules in the package,
+                but the package does not declare which version
+                of eXist-db (the processor) that it depends upon,
+                therefore we assume it is incompatible.
+
+                NOTE - In older versions of eXist-db, if the package
+                did not declare a dependency on a specific processor
+                version, we would check whether the version of
+                eXist-db was between 1.4.0 and 2.2.1
+                (inclusive). As we are now past eXist-db version
+                5.2.0, that would always return false!
+             */
+            return false;
+
         } else {
             return requiresExistVersion.getDependencyVersion().isCompatible(procVersion);
         }
