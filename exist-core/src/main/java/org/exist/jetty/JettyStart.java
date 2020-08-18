@@ -456,7 +456,15 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                         new BrokerPoolAndJettyShutdownHook(_server);
                 final Thread shutdownHookThread = newGlobalThread("BrokerPoolsAndJetty.ShutdownHook", brokerPoolAndJettyShutdownHook);
                 this.shutdownHookThread = Optional.of(shutdownHookThread);
-                Runtime.getRuntime().addShutdownHook(shutdownHookThread);
+
+                try {
+                    Runtime.getRuntime().addShutdownHook(shutdownHookThread);
+                    logger.debug("BrokerPoolsAndJetty.ShutdownHook hook registered");
+                } catch (final IllegalArgumentException | IllegalStateException e) {
+                    // Hook already registered, or Shutdown in progress
+                    logger.error("Unable to add BrokerPoolsAndJetty.ShutdownHook hook: " + e.getMessage(), e);
+                    throw e;
+                }
 
                 server = Optional.of(_server);
             }
@@ -523,7 +531,15 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     }
 
     public synchronized void shutdown() {
-        shutdownHookThread.ifPresent(Runtime.getRuntime()::removeShutdownHook);
+        shutdownHookThread.ifPresent(thread -> {
+            try {
+                Runtime.getRuntime().removeShutdownHook(thread);
+                logger.debug("BrokerPoolsAndJetty.ShutdownHook hook unregistered");
+            } catch (final IllegalStateException e) {
+                // Shutdown in progress
+                logger.warn("Unable to remove BrokerPoolsAndJetty.ShutdownHook hook: " + e.getMessage());
+            }
+        });
         
         BrokerPool.stopAll(false);
         

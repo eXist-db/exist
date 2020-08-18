@@ -68,9 +68,10 @@ abstract class BrokerPools {
                 LOG.info("Executing shutdown thread");
                 BrokerPools.stopAll(true);
             }));
-            LOG.debug("Shutdown hook registered");
-        } catch(final IllegalArgumentException e) {
-            LOG.warn("Shutdown hook already registered");
+            LOG.debug("BrokerPools.ShutdownHook hook registered");
+        } catch (final IllegalArgumentException e) {
+            // hook already registered
+            LOG.warn("Unable to add BrokerPools.ShutdownHook hook: " + e.getMessage());
         }
     }
 
