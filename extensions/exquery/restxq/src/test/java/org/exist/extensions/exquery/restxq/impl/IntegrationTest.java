@@ -42,6 +42,7 @@ import java.io.Reader;
 
 import static org.junit.Assert.assertEquals;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertNotNull;
 
 public class IntegrationTest {
 
@@ -113,7 +114,7 @@ public class IntegrationTest {
                 .Get(getRestUri() + "/db/?_query=rest:resource-functions()")
         ).returnResponse();
         assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-        System.out.println(asString(response.getEntity().getContent()));
+        assertNotNull(response.getEntity().getContent());
     }
 
     @Ignore("TODO(AR) need to figure out how to access the RESTXQ API from {@link ExistWebServer}")
