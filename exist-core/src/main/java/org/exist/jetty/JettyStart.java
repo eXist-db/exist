@@ -114,7 +114,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                     return jettyPath;
                 });
 
-        System.setProperty("org.eclipse.jetty.util.log.class?", "org.eclipse.jetty.util.log.Slf4jLog");
+        System.setProperty("org.eclipse.jetty.util.log.class", "org.eclipse.jetty.util.log.Slf4jLog");
 
         final Path jettyConfig;
         if (standalone) {
