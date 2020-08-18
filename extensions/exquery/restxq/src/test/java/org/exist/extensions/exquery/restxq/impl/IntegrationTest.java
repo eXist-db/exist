@@ -20,6 +20,7 @@
 
 package org.exist.extensions.exquery.restxq.impl;
 
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.fluent.Executor;
@@ -74,7 +75,7 @@ public class IntegrationTest {
     private static Executor executor = null;
 
     @ClassRule
-    public static ExistWebServer existWebServer = new ExistWebServer(false, false, true, false);
+    public static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private static String getServerUri() {
         return "http://localhost:" + existWebServer.getPort();
@@ -92,7 +93,7 @@ public class IntegrationTest {
     public static void storeResourceFunctions() throws IOException {
         executor = Executor.newInstance()
                 .auth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
-                .authPreemptive("localhost");
+                .authPreemptive(new HttpHost("localhost", existWebServer.getPort()));
 
         HttpResponse response = null;
 
