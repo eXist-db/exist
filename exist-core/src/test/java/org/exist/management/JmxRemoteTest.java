@@ -19,11 +19,17 @@
  */
 package org.exist.management;
 
+import com.evolvedbinary.j8fu.function.FunctionE;
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.exist.test.ExistWebServer;
 import org.junit.ClassRule;
@@ -33,6 +39,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.exist.management.client.JMXtoXML.JMX_NAMESPACE;
 import static org.exist.management.client.JMXtoXML.JMX_PREFIX;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,7 +49,7 @@ import static org.xmlunit.matchers.HasXPathMatcher.hasXPath;
 public class JmxRemoteTest {
 
     @ClassRule
-    public static final ExistWebServer existWebServer = new ExistWebServer(true, true, true, true, false);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true, false);
 
     private static String getServerUri() {
         return "http://localhost:" + existWebServer.getPort() + "/exist/status";
@@ -51,7 +58,8 @@ public class JmxRemoteTest {
     @Test
     public void checkContent() throws IOException {
         // Get content
-        final String jmxXml = Request.Get(getServerUri()).execute().returnContent().asString();
+        final Request request = Request.Get(getServerUri());
+        final String jmxXml = withHttpExecutor(executor -> executor.execute(request).returnContent().asString());
 
         // Prepare XPath validation
         final Map<String, String> prefix2Uri = new HashMap<>();
@@ -80,11 +88,30 @@ public class JmxRemoteTest {
 
     @Test
     public void checkBasicRequest() throws IOException {
-        final HttpResponse response = Request.Get(getServerUri())
-                .addHeader(new BasicHeader("Accept", ContentType.APPLICATION_XML.toString()))
-                .execute().returnResponse();
+        final Request request = Request.Get(getServerUri())
+                .addHeader(new BasicHeader("Accept", ContentType.APPLICATION_XML.toString()));
 
-        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-        assertEquals("application/xml", response.getEntity().getContentType().getValue());
+         final Tuple2<Integer, String> codeAndMediaType = withHttpExecutor(executor -> {
+            final HttpResponse response = executor.execute(request).returnResponse();
+            return Tuple(response.getStatusLine().getStatusCode(), response.getEntity().getContentType().getValue());
+        });
+
+        assertEquals(Tuple(HttpStatus.SC_OK, "application/xml"), codeAndMediaType);
+    }
+
+    private static <T> T withHttpClient(final FunctionE<HttpClient, T, IOException> fn) throws IOException {
+        try (final CloseableHttpClient client = HttpClientBuilder
+                .create()
+                .disableAutomaticRetries()
+                .build()) {
+            return fn.apply(client);
+        }
+    }
+
+    private static <T> T withHttpExecutor(final FunctionE<Executor, T, IOException> fn) throws IOException {
+        return withHttpClient(client -> {
+            final Executor executor = Executor.newInstance(client);
+            return fn.apply(executor);
+        });
     }
 }

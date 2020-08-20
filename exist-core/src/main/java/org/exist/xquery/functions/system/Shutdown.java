@@ -97,8 +97,8 @@ public class Shutdown extends BasicFunction
 			if(delay > 0)
 			{
 				logger.info("Shutdown in " + delay + " milliseconds.");
-				final TimerTask task = new DelayedShutdownTask(pool);
 				final Timer timer = new Timer("eXist-db shutdown schedule", true);
+				final TimerTask task = new DelayedShutdownTask(timer, pool);
 				timer.schedule(task, delay);
 			}
 			else
@@ -117,20 +117,25 @@ public class Shutdown extends BasicFunction
 		return Sequence.EMPTY_SEQUENCE;
 	}
 	
-	private static class DelayedShutdownTask extends TimerTask
-	{
-		private BrokerPool pool = null;
+	private static class DelayedShutdownTask extends TimerTask {
+		private Timer timer;
+		private BrokerPool pool;
 		
-		public DelayedShutdownTask(BrokerPool pool)
-		{
-			super();
+		public DelayedShutdownTask(final Timer timer, final BrokerPool pool) {
+			this.timer = timer;
 			this.pool = pool;
 		}
-		
-		public void run()
-		{
+
+		@Override
+		public void run() {
 			logger.info("Shutting down now.");
 			pool.shutdown();
+
+			// make sure to stop the timer thread!
+			timer.cancel();
+
+			timer = null;
+			pool = null;
 		}
 	}
 }

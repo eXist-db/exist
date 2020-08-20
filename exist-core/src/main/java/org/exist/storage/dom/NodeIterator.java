@@ -118,7 +118,9 @@ public final class NodeIterator implements INodeIterator {
                             SanityCheck.TRACE("bad link to next " + page.page.getPageInfo() +
                                 "; previous: " + pageHeader.getPreviousDataPage() +
                                 "; offset = " + offset + "; lastTupleID = " + lastTupleID);
-                            System.out.println(db.debugPageContents(page));
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug(db.debugPageContents(page));
+                            }
                             //TODO : throw exception here ? -pb
                             return null;
                         }
@@ -142,7 +144,9 @@ public final class NodeIterator implements INodeIterator {
                     offset += DOMFile.LENGTH_DATA_LENGTH;
                     if (vlen < 0) {
                         LOG.error("Got negative length" + vlen + " at offset " + offset + "!!!");
-                        LOG.debug(db.debugPageContents(page));
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug(db.debugPageContents(page));
+                        }
                         //TODO : throw an exception right now ?
                     }
                     if(ItemId.isRelocated(lastTupleID)) {
@@ -172,8 +176,9 @@ public final class NodeIterator implements INodeIterator {
                         } catch(final Exception e) {
                             LOG.error("Error while deserializing node: " + e.getMessage(), e);
                             LOG.error("Reading from offset: " + offset + "; len = " + vlen);
-                            LOG.debug(db.debugPageContents(page));
-                            System.out.println(db.debugPageContents(page));
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug(db.debugPageContents(page));
+                            }
                             throw new RuntimeException(e);
                         }
                     }
@@ -184,7 +189,9 @@ public final class NodeIterator implements INodeIterator {
                             "; prev = " + page.getPageHeader().getPreviousDataPage() +
                             "; offset = " + (offset - vlen) +
                             "; len = " + page.getPageHeader().getDataLength());
-                        System.out.println(db.debugPageContents(page));
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug(db.debugPageContents(page));
+                        }
                         //TODO : throw an exception here ? -pb
                         return null;
                     }

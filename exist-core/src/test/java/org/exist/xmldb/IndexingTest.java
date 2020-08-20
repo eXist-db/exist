@@ -269,7 +269,9 @@ public class IndexingTest {
             SAXHandler saxHandler = new SAXHandler();
             SAXResult result = new SAXResult(saxHandler);
             t.transform(source, result);
-            System.out.println(saxHandler.getWriter());
+            try (final PrintWriter writer = saxHandler.getWriter()) {
+                // no-op
+            }
         } catch (Exception e) {
             fail(e.getMessage());
         }
