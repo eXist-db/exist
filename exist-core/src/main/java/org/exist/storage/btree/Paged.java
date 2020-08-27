@@ -175,6 +175,8 @@ public abstract class Paged implements AutoCloseable {
     /**
      * Completely close down the instance and
      * all underlying resources and caches.
+     *
+     * @throws DBException if an error occurs whilst closing and removing the file
      */
     public final void closeAndRemove() throws DBException {
         close();

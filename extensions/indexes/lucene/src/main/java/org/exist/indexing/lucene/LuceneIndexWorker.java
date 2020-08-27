@@ -690,6 +690,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     /**
      * SOLR
      *
+     * @param context the xquery context
      * @param toBeMatchedURIs the URIs to match
      * @param queryText the query
      * @param fieldsToGet the fields to get
@@ -1074,6 +1075,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @param config the lucene config
      * @param field the analyzer field
      * @param qname the analyzer qname
+     * @param opts the query options
      *
      * @return the analyzer or null
      */

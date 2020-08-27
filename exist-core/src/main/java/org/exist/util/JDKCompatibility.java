@@ -36,6 +36,9 @@ public class JDKCompatibility {
      * Compatible with JDK 8 through 13.
      *
      * @return the modifiers field
+     *
+     * @throws NoSuchFieldException if the modifiers field does not exist
+     * @throws IllegalAccessException if access is not permitted
      */
     public static Field getModifiersField() throws NoSuchFieldException, IllegalAccessException {
         Field modifiersField = null;

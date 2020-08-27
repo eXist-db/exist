@@ -93,11 +93,6 @@ public class DirectoryList extends BasicFunction {
                 )
             };
 
-    /**
-     * DirectoryList Constructor
-     *
-     * @param context	The Context of the calling XQuery
-     */
     public DirectoryList(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }

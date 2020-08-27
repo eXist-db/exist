@@ -44,7 +44,8 @@ public class MapType extends AbstractMapType {
      * 
      * This function is predominantly for pre-building a Map of key/values
      * for passing to {@link #MapType(XQueryContext, IMap, Integer)}.
-     * 
+     *
+     * @param <V> the value type of the linear map
      * @param collator The collator if a collation is in effect for comparing keys.
      * 
      * @return A mutable-map on which {@link IMap#forked()} can be called to produce an immutable map. 

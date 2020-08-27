@@ -202,8 +202,12 @@ public class LuceneConfig {
         return analyzers.getAnalyzerById(config.getAnalyzerId());
     }
 
-    /** Gets the Analyzer (defined in this LuceneConfig) with the specified id.
-     *  Returns null if no match was found.
+    /**
+     * Gets the Analyzer (defined in this LuceneConfig) with the specified id.
+     *
+     * @param analyzerId the id of the analyzer
+     *
+     * @return the analyzer, or null if no match was found.
      */
     public Analyzer getAnalyzerById(String analyzerId) {
         return analyzers.getAnalyzerById(analyzerId);

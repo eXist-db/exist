@@ -98,6 +98,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
      * Resolve a Java Module.
      *
      * @param namespace the namespace of the module
+     * @param ctxt the xquery context
      * @return the Java module, or null
      *
      * @throws XPathException with:
