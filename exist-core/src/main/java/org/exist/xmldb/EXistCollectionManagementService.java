@@ -114,6 +114,8 @@ public interface EXistCollectionManagementService extends CollectionManagementSe
      * @param collectionName name of the collection to move/rename
      * @param destination the destination collection, or null if just renaming
      * @param newName the new name, or null if just moving
+     *
+     * @throws XMLDBException if an error occurs when moving the collection.
      */
     void move(XmldbURI collectionName, @Nullable XmldbURI destination, @Nullable XmldbURI newName) throws XMLDBException;
 

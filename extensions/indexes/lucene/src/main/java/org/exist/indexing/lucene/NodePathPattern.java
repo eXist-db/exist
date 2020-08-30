@@ -20,9 +20,6 @@
 
 package org.exist.indexing.lucene;
 
-//import org.apache.logging.log4j.LogManager;
-//import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.storage.NodePath;
 import org.exist.storage.NodePath2;
@@ -41,7 +38,7 @@ import java.util.Objects;
  * Most notably this mis-design was employed in LuceneConfig and LuceneIndexConfig.
  *
  * This is required in order to implement the feature requested/discussed here:
- * @see <a href="https://sourceforge.net/p/exist/mailman/message/36392026/">[Exist-open] Are more elaborate xpath expressions allowed in Lucene's index config &lt;text match='...'/&gt;</a>
+ * see <a href="https://sourceforge.net/p/exist/mailman/message/36392026/">[Exist-open] Are more elaborate xpath expressions allowed in Lucene's index config...</a>
  *
  * After class NodePath2 was introduced and replaced NodePath in all cases related to Lucene index
  * element walking and matching, now all that is left in order to have the desired feature implemented

@@ -106,10 +106,12 @@ public enum Cardinality {
     /**
      * Given two cardinalities, return a cardinality that is capable of
      * representing both,
-     * i.e.: {@code a.isSubCardinalityOrEqualOf(max(a, b)) && b.isSubCardinalityOrEqualOf(max(a, b)) && b.max(a, b))
+     * i.e.: {@code a.isSubCardinalityOrEqualOf(max(a, b)) && b.isSubCardinalityOrEqualOf(max(a, b)) && b.max(a, b))}
      *
      * @param a the first cardinality
      * @param b the second cardinality
+     *
+     * @return the super cardinality
      */
     public static Cardinality superCardinalityOf(final Cardinality a, final Cardinality b) {
         final byte max = (byte)(a.val | b.val);

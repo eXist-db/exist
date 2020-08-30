@@ -119,6 +119,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
      * Processes a compressed archive
      *
      * @param compressedData the compressed data to extract
+     * @param encoding the encoding
      * @return Sequence of results
      *
      * @throws XPathException if a query error occurs
