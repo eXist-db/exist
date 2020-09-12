@@ -27,6 +27,7 @@
 package org.exist.util.io;
 
 import com.googlecode.junittoolbox.ParallelParameterized;
+import org.apache.commons.io.input.MarkShieldInputStream;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.runners.Parameterized.Parameters;
