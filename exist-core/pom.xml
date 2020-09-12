@@ -698,7 +698,6 @@
                                 <exclude>src/main/java/org/exist/util/io/MemoryFilterInputStreamCache.java</exclude>
                                 <exclude>src/main/java/org/exist/util/io/MemoryMappedFileFilterInputStreamCache.java</exclude>
                                 <exclude>src/main/java/org/exist/util/io/TemporaryFileManager.java</exclude>
-                                <exclude>src/main/java/org/exist/util/io/HexOutputStream.java</exclude>
                                 <exclude>src/main/java/org/exist/util/io/MarkShieldInputStream.java</exclude>
                                 <exclude>src/test/java/org/exist/util/io/CachingFilterInputStreamTest_NonMarkableByteArrayInputStream.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java</exclude>
@@ -744,9 +743,6 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/main/java/org/exist/util/io/MemoryMappedFileFilterInputStreamCache.java</include>
                                 <include>src/main/java/org/exist/util/io/TemporaryFileManager.java</include>
                                 <include>src/test/java/org/exist/util/io/CachingFilterInputStreamTest_NonMarkableByteArrayInputStream.java</include>
-
-                                <!-- TODO(AR) Switch to Apache Commons codec project - https://github.com/apache/commons-codec/pull/46 -->
-                                <include>src/main/java/org/exist/util/io/HexOutputStream.java</include>
 
                                 <!-- TODO(AR) Switch to Apache Commons IO project - https://github.com/apache/commons-io/pull/119 -->
                                 <include>src/main/java/org/exist/util/io/MarkShieldInputStream.java</include>
