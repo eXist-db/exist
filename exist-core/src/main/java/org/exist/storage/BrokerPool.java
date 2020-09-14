@@ -23,6 +23,7 @@ package org.exist.storage;
 
 import com.evolvedbinary.j8fu.fsm.AtomicFSM;
 import com.evolvedbinary.j8fu.fsm.FSM;
+import com.evolvedbinary.j8fu.lazy.AtomicLazyVal;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
@@ -86,6 +87,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -376,6 +378,13 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     private Optional<ExistRepository> expathRepo = Optional.empty();
 
     private StartupTriggersManager startupTriggersManager;
+
+    /**
+     * Configuration for Saxon.
+     *
+     * One instance per-database, lazily initialised.
+     */
+    private AtomicLazyVal<net.sf.saxon.Configuration> saxonConfig = new AtomicLazyVal<>(net.sf.saxon.Configuration::newConfiguration);
 
     /**
      * Creates and configures the database instance.
@@ -1919,6 +1928,10 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
     public PluginsManager getPluginsManager() {
         return pluginManager;
+    }
+
+    public net.sf.saxon.Configuration getSaxonConfiguration() {
+        return saxonConfig.get();
     }
 
     /**

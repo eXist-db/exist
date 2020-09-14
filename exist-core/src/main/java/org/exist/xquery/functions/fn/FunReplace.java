@@ -176,9 +176,7 @@ public class FunReplace extends FunMatches {
 			final Sequence replaceSeq = getArgument(2).eval(contextSequence, contextItem);
 			final String replace = replaceSeq.getStringValue();
 
-
-			//TODO(AR) should be one Configuration instance per database
-			final Configuration config = Configuration.newConfiguration();
+			final Configuration config = context.getBroker().getBrokerPool().getSaxonConfiguration();
 
 			final List<String> warnings = new ArrayList<>(1);
 

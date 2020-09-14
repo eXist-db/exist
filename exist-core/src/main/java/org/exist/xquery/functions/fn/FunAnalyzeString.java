@@ -124,9 +124,7 @@ public class FunAnalyzeString extends BasicFunction {
     }
 
     private void analyzeString(final MemTreeBuilder builder, final String input, String pattern, final String flags) throws XPathException {
-
-        //TODO(AR) should be one Configuration instance per database
-        final Configuration config = Configuration.newConfiguration();
+        final Configuration config = context.getBroker().getBrokerPool().getSaxonConfiguration();
 
         final List<String> warnings = new ArrayList<>(1);
 
