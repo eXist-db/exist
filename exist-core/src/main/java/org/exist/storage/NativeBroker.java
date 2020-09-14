@@ -1,21 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
- *  http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.storage;
 
@@ -64,8 +66,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
@@ -1812,7 +1814,7 @@ public class NativeBroker extends DBBroker {
 
         try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
             final Value name = new CollectionStore.CollectionKey(collection.getURI().toString());
-            try(final VariableByteOutputStream os = new VariableByteOutputStream(8)) {
+            try(final VariableByteOutputStream os = new VariableByteOutputStream(256)) {
                 collection.serialize(os);
                 final long address = collectionsDb.put(transaction, name, os.data(), true);
                 if (address == BFile.UNKNOWN_ADDRESS) {
@@ -2112,7 +2114,7 @@ public class NativeBroker extends DBBroker {
      */
     @Override
     public void storeXMLResource(final Txn transaction, final DocumentImpl doc) {
-        try(final VariableByteOutputStream os = new VariableByteOutputStream(8);
+        try(final VariableByteOutputStream os = new VariableByteOutputStream(256);
                 final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
             doc.write(os);
             final Value key = new CollectionStore.DocumentKey(doc.getCollection().getId(), doc.getResourceType(), doc.getDocId());
@@ -2142,7 +2144,7 @@ public class NativeBroker extends DBBroker {
     @Override
     public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final byte[] data)
             throws IOException {
-        try(final InputStream is = new FastByteArrayInputStream(data)) {
+        try(final InputStream is = new UnsynchronizedByteArrayInputStream(data)) {
                 storeBinaryResource(transaction, blob, is);
         }
     }
@@ -2256,8 +2258,8 @@ public class NativeBroker extends DBBroker {
         final BlobStore blobStore = pool.getBlobStore();
         try (final InputStream is = blobStore.get(transaction, blob.getBlobId())) {
             if (is != null) {
-                if (os instanceof FastByteArrayOutputStream) {
-                    ((FastByteArrayOutputStream)os).write(is);
+                if (os instanceof UnsynchronizedByteArrayOutputStream) {
+                    ((UnsynchronizedByteArrayOutputStream)os).write(is);
                 } else {
                     copy(is, os);
                 }

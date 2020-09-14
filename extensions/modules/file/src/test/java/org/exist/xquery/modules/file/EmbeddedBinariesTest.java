@@ -1,23 +1,24 @@
 /*
- * eXist Open Source Native XML Database
- * Copyright (C) 2001-2017 The eXist Project
- * http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- * This program is distributed in the hope that it will be useful,
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
 package org.exist.xquery.modules.file;
 
 import org.exist.collections.Collection;
@@ -30,8 +31,8 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
@@ -59,7 +60,7 @@ public class EmbeddedBinariesTest extends AbstractBinariesTest<Sequence, Item, I
 
             try(final ManagedCollectionLock collectionLock = brokerPool.getLockManager().acquireCollectionWriteLock(filePath.removeLastSegment())) {
                 final Collection collection = broker.getOrCreateCollection(transaction, filePath.removeLastSegment());
-                try(final InputStream is = new FastByteArrayInputStream(content)) {
+                try(final InputStream is = new UnsynchronizedByteArrayInputStream(content)) {
 
                     collection.addBinaryResource(transaction, broker, filePath.lastSegment(), is, "application/octet-stream", content.length);
 
@@ -147,13 +148,13 @@ public class EmbeddedBinariesTest extends AbstractBinariesTest<Sequence, Item, I
     protected byte[] getBytes(final Item item) throws IOException {
         if (item instanceof Base64BinaryDocument) {
             final Base64BinaryDocument doc = (Base64BinaryDocument) item;
-            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+            try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
                 doc.streamBinaryTo(baos);
                 return baos.toByteArray();
             }
         } else {
             final BinaryValueFromFile file = (BinaryValueFromFile) item;
-            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+            try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
                 file.streamBinaryTo(baos);
                 return baos.toByteArray();
             }

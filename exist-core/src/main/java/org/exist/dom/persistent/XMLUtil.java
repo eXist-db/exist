@@ -1,28 +1,29 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2014,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  $Id:
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.dom.persistent;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.xquery.Constants;
 import org.w3c.dom.DocumentFragment;
@@ -201,7 +202,7 @@ public final class XMLUtil {
 
                 {
 
-                    final FastByteArrayOutputStream out = new FastByteArrayOutputStream(150);
+                    final UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream(150);
 
                     out.write('<');
                     out.write(declString, 0, 4);
@@ -253,7 +254,7 @@ public final class XMLUtil {
     @Deprecated
     public static String readFile(final InputSource inSrc) throws IOException {
         // read the file into a string
-        try(final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+        try(final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             try(final InputStream is = inSrc.getByteStream()) {
                 os.write(is);
             }

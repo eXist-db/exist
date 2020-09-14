@@ -1,10 +1,31 @@
+/*
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
+ *
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 package org.exist.security;
 
+import org.apache.commons.codec.binary.Base64;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.Base64Encoder;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -99,9 +120,7 @@ public class XqueryApiTest extends AbstractApiSecurityTest {
         final int resIdx = resourceUri.lastIndexOf('/');
         final String collectionUri = resourceUri.substring(0, resIdx);
         final String resourceName = resourceUri.substring(resIdx + 1);
-        final Base64Encoder base64Encoder = new Base64Encoder();
-        base64Encoder.translate(content);
-        final String base64Content = new String(base64Encoder.getCharArray());
+        final String base64Content = Base64.encodeBase64String(content);
         executeQuery(uid, pwd, "xmldb:store-as-binary('" + collectionUri + "', '" + resourceName + "', xs:base64Binary('" + base64Content + "'))");
     }
 

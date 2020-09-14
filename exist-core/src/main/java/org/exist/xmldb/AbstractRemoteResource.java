@@ -1,21 +1,23 @@
 /*
- * eXist Open Source Native XML Database
- * Copyright (C) 2001-2019 The eXist Project
- * http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- * This program is distributed in the hope that it will be useful,
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xmldb;
 
@@ -36,8 +38,8 @@ import org.exist.util.FileUtils;
 import org.exist.util.Leasable;
 import org.exist.util.io.ByteArrayContent;
 import org.exist.util.io.ContentFile;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.util.io.VirtualTempPath;
 import org.xml.sax.InputSource;
@@ -367,9 +369,9 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     protected static InputStream getAnyStream(final Object obj)
             throws XMLDBException {
         if (obj instanceof String) {
-            return new FastByteArrayInputStream(((String) obj).getBytes(UTF_8));
+            return new UnsynchronizedByteArrayInputStream(((String) obj).getBytes(UTF_8));
         } else if (obj instanceof byte[]) {
-            return new FastByteArrayInputStream((byte[]) obj);
+            return new UnsynchronizedByteArrayInputStream((byte[]) obj);
         } else {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "don't know how to handle value of type " + obj.getClass().getName());
         }
@@ -531,7 +533,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
 
     private byte[] readFile(final InputStream is)
             throws XMLDBException {
-        try (final FastByteArrayOutputStream bos = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream bos = new UnsynchronizedByteArrayOutputStream()) {
             bos.write(is);
             return bos.toByteArray();
         } catch (final IOException e) {

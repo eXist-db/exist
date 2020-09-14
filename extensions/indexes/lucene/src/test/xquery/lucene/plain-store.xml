@@ -1,4 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    eXist-db Open Source Native XML Database
+    Copyright (C) 2001 The eXist-db Authors
+
+    info@exist-db.org
+    http://www.exist-db.org
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+-->
 <TestSet>
     <testName>nonXML data indexing tests</testName>
     
@@ -13,15 +36,21 @@
         <store collection="/db/morebinary" name="index2.txt" type="text/plain">BBBBBB</store>
         <store collection="/db/morebinary" name="index3.txt" type="text/plain">CCCCCC</store>
         <create-collection parent="/db/morebinary" name="shakespeare"/>
-        <store-files collection="/db/morebinary/shakespeare" classpath="exist-samples/target/classes" pattern="org/exist/samples/shakespeare/*.xml"/>
+        <store collection="/db/morebinary/shakespeare" name="hamlet.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/hamlet.xml"/>
+        <store collection="/db/morebinary/shakespeare" name="macbeth.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/macbeth.xml"/>
+        <store collection="/db/morebinary/shakespeare" name="r_and_j.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/r_and_j.xml"/>
 
         <create-collection parent="/db" name="morebinary2"/>
         <create-collection parent="/db/morebinary2" name="shakespeare"/>
-        <store-files collection="/db/morebinary2/shakespeare" classpath="exist-samples/target/classes" pattern="org/exist/samples/shakespeare/*.xml"/>
+        <store collection="/db/morebinary2/shakespeare" name="hamlet.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/hamlet.xml"/>
+        <store collection="/db/morebinary2/shakespeare" name="macbeth.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/macbeth.xml"/>
+        <store collection="/db/morebinary2/shakespeare" name="r_and_j.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/r_and_j.xml"/>
 
         <create-collection parent="/db" name="morebinary3"/>
         <create-collection parent="/db/morebinary3" name="shakespeare"/>
-        <store-files collection="/db/morebinary3/shakespeare" classpath="exist-samples/target/classes" pattern="org/exist/samples/shakespeare/*.xml"/>
+        <store collection="/db/morebinary3/shakespeare" name="hamlet.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/hamlet.xml"/>
+        <store collection="/db/morebinary3/shakespeare" name="macbeth.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/macbeth.xml"/>
+        <store collection="/db/morebinary3/shakespeare" name="r_and_j.xml" type="application/xml" src="resource:org/exist/samples/shakespeare/r_and_j.xml"/>
     </setup>
 
     <tearDown>

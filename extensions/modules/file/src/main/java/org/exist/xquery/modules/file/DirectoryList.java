@@ -1,38 +1,38 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2010 The eXist Project
- *  http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  $Id$
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xquery.modules.file;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
-import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.tools.ant.DirectoryScanner;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.util.DirectoryScanner;
 import org.exist.util.FileUtils;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -44,7 +44,6 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
@@ -84,7 +83,7 @@ public class DirectoryList extends BasicFunction {
                             new FunctionParameterSequenceType("path", Type.ITEM,
                                     Cardinality.EXACTLY_ONE, "The base directory path or URI in the file system where the files are located."),
                             new FunctionParameterSequenceType("pattern", Type.STRING,
-                                    Cardinality.EXACTLY_ONE, "The file name pattern")
+                                    Cardinality.ZERO_OR_MORE, "The file name pattern")
                         },
                         new FunctionReturnSequenceType(Type.NODE,
                                 Cardinality.ZERO_OR_ONE, "a node fragment that shows all matching "
@@ -121,48 +120,52 @@ public class DirectoryList extends BasicFunction {
         builder.startElement(new QName("list", NAMESPACE_URI, PREFIX), null);
         builder.addAttribute(new QName("directory", null, null), baseDir.toString());
         try {
-            for (final SequenceIterator i = patterns.iterate(); i.hasNext(); ) {
-                final String pattern = i.nextItem().getStringValue();
-                final List<Path> scannedFiles = DirectoryScanner.scanDir(baseDir, pattern);
+            final int patternsLen = patterns.getItemCount();
+            final String includes[] = new String[patternsLen];
+            for (int i = 0; i < patternsLen; i++) {
+                includes[i] = patterns.itemAt(0).getStringValue();
+            }
+
+            final DirectoryScanner directoryScanner = new DirectoryScanner();
+            directoryScanner.setIncludes(includes);
+            directoryScanner.setBasedir(baseDir.toFile());
+            directoryScanner.setCaseSensitive(true);
+
+            for (final String includedFile : directoryScanner.getIncludedFiles()) {
+                final Path file = baseDir.resolve(includedFile);
 
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Found: " + scannedFiles.size());
+                    logger.debug("Found: " + file.toAbsolutePath());
                 }
 
-                for (final Path file : scannedFiles) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Found: " + file.toAbsolutePath());
-                    }
+                String relPath = file.toString().substring(baseDir.toString().length() + 1);
 
-                    String relPath = file.toString().substring(baseDir.toString().length() + 1);
+                int lastSeparatorPosition = relPath.lastIndexOf(java.io.File.separatorChar);
 
-                    int lastSeparatorPosition = relPath.lastIndexOf(java.io.File.separatorChar);
-
-                    String relDir = null;
-                    if (lastSeparatorPosition >= 0) {
-                        relDir = relPath.substring(0, lastSeparatorPosition);
-                        relDir = relDir.replace(java.io.File.separatorChar, '/');
-                    }
-
-                    builder.startElement(new QName("file", NAMESPACE_URI, PREFIX), null);
-
-                    builder.addAttribute(new QName("name", null, null), FileUtils.fileName(file));
-
-                    Long sizeLong = FileUtils.sizeQuietly(file);
-                    String sizeString = Long.toString(sizeLong);
-                    String humanSize = getHumanSize(sizeLong, sizeString);
-
-                    builder.addAttribute(new QName("size", null, null), sizeString);
-                    builder.addAttribute(new QName("human-size", null, null), humanSize);
-                    builder.addAttribute(new QName("modified", null, null), new DateTimeValue(new Date(Files.getLastModifiedTime(file).toMillis())).getStringValue());
-
-                    if (relDir != null && relDir.length() > 0) {
-                        builder.addAttribute(new QName("subdir", null, null), relDir);
-                    }
-
-                    builder.endElement();
-
+                String relDir = null;
+                if (lastSeparatorPosition >= 0) {
+                    relDir = relPath.substring(0, lastSeparatorPosition);
+                    relDir = relDir.replace(java.io.File.separatorChar, '/');
                 }
+
+                builder.startElement(new QName("file", NAMESPACE_URI, PREFIX), null);
+
+                builder.addAttribute(new QName("name", null, null), FileUtils.fileName(file));
+
+                Long sizeLong = FileUtils.sizeQuietly(file);
+                String sizeString = Long.toString(sizeLong);
+                String humanSize = getHumanSize(sizeLong, sizeString);
+
+                builder.addAttribute(new QName("size", null, null), sizeString);
+                builder.addAttribute(new QName("human-size", null, null), humanSize);
+                builder.addAttribute(new QName("modified", null, null), new DateTimeValue(new Date(Files.getLastModifiedTime(file).toMillis())).getStringValue());
+
+                if (relDir != null && relDir.length() > 0) {
+                    builder.addAttribute(new QName("subdir", null, null), relDir);
+                }
+
+                builder.endElement();
+
             }
 
             builder.endElement();

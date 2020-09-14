@@ -1,23 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
- *  http://exist-db.org
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
+ *
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xquery.value;
 
@@ -25,7 +25,7 @@ import com.ibm.icu.text.Collator;
 import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
@@ -137,7 +137,7 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
         }
 
         if (target == byte[].class) {
-            try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+            try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
                 streamBinaryTo(baos);
                 return (T) baos.toByteArray();
             } catch (final IOException ioe) {
@@ -219,7 +219,7 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
     //TODO ideally this should be moved out into serialization where we can stream the output from the buf/channel by calling streamTo()
     @Override
     public String getStringValue() throws XPathException {
-        final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();
+        final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
         try {
             streamTo(baos);
         } catch (final IOException ex) {

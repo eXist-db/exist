@@ -1,23 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2012 The eXist Project
- *  http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  $Id$
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.client.security;
 
@@ -40,7 +40,7 @@ public class FindGroupForm extends javax.swing.JFrame implements DialogWithRespo
     private final UserManagementService userManagementService;
     private final List<DialogCompleteWithResponse<String>> dialogCompleteWithResponseCallbacks = new ArrayList<>();
     private final Set<String> allGroupNames;
-    private DefaultComboBoxModel groupNameModel;
+    private DefaultComboBoxModel<String> groupNameModel;
 
     public FindGroupForm(final UserManagementService userManagementService) throws XMLDBException {
         this.userManagementService = userManagementService;
@@ -66,7 +66,7 @@ public class FindGroupForm extends javax.swing.JFrame implements DialogWithRespo
         jSeparator1 = new javax.swing.JSeparator();
         btnOk = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
-        cmbGroupName = new javax.swing.JComboBox();
+        cmbGroupName = new javax.swing.JComboBox<>();
         AutoCompletion.enable(cmbGroupName);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -153,7 +153,7 @@ public class FindGroupForm extends javax.swing.JFrame implements DialogWithRespo
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnOk;
-    private javax.swing.JComboBox cmbGroupName;
+    private javax.swing.JComboBox<String> cmbGroupName;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel lblGroupName;
     // End of variables declaration//GEN-END:variables
@@ -163,9 +163,9 @@ public class FindGroupForm extends javax.swing.JFrame implements DialogWithRespo
         return allGroupNames.contains(groupName);
     }
     
-    private ComboBoxModel getGroupNameModel() {
+    private ComboBoxModel<String> getGroupNameModel() {
         if(groupNameModel == null) {
-            groupNameModel = new DefaultComboBoxModel();
+            groupNameModel = new DefaultComboBoxModel<>();
             groupNameModel.addElement("");
             for(final String groupName : allGroupNames) {
                groupNameModel.addElement(groupName);

@@ -1,3 +1,24 @@
+/*
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
+ *
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 package org.expath.exist;
 
 import org.apache.logging.log4j.LogManager;
@@ -8,7 +29,7 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -116,7 +137,7 @@ public class ZipFileFunctions extends BasicFunction {
             binariesTable.put(paths[i], binaries[i]);
         }
 
-        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();)
+        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();)
         {
             zis = zipFileSource.getStream();
             ZipOutputStream zos = new ZipOutputStream(baos); // zos is the output - the result
@@ -155,7 +176,7 @@ public class ZipFileFunctions extends BasicFunction {
             zos.close();
             zis.close();
 
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toFastByteInputStream());
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream());
 
         } catch (IOException e) {
             logger.error(e.getMessage(), e);

@@ -1,3 +1,24 @@
+/*
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
+ *
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 package org.exist.security;
 
 import com.googlecode.junittoolbox.ParallelRunner;
@@ -13,7 +34,7 @@ import org.exist.security.internal.SecurityManagerImpl;
 import java.util.Random;
 import org.easymock.EasyMock;
 import org.exist.util.ByteArray;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -682,16 +703,13 @@ public class SimpleACLPermissionTest {
         assertEquals(mode2, permission.getACEMode(1));
         
         //get the written acl data
-        ByteArray buf = os.data();
-        byte data[] = new byte[buf.size()];
-        buf.copyTo(data, 0);
-        
+        final byte data[] = os.toByteArray();
         
         //create a new permission instance
         SimpleACLPermission permission2 = new SimpleACLPermission(mockSecurityManager);
         
         //read the acl in
-        permission2.read(new VariableByteInputStream(new FastByteArrayInputStream(data)));
+        permission2.read(new VariableByteInputStream(new UnsynchronizedByteArrayInputStream(data)));
         
         assertEquals(2, permission2.getACECount());
         

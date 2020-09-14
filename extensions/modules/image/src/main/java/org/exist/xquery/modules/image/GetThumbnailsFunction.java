@@ -1,23 +1,23 @@
 /*
- *  eXist Image Module Extension GetThumbnailsFunction
- *  Copyright (C) 2006-09 Adam Retter <adam.retter@devon.gov.uk>
- *  www.adamretter.co.uk
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
+ *
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xquery.modules.image;
 
@@ -50,7 +50,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -236,7 +236,7 @@ public class GetThumbnailsFunction extends BasicFunction {
             @SuppressWarnings("unused")
             byte[] imgData = null;
             Image image = null;
-            FastByteArrayOutputStream os = null;
+            UnsynchronizedByteArrayOutputStream os = null;
 
             try {
                 Iterator<DocumentImpl> i = allPictures.iterator(dbbroker);
@@ -269,7 +269,7 @@ public class GetThumbnailsFunction extends BasicFunction {
                                 }
 
                                 if (isSaveToDataBase) {
-                                    os = new FastByteArrayOutputStream();
+                                    os = new UnsynchronizedByteArrayOutputStream();
                                     try {
                                         ImageIO.write(bImage, "jpg", os);
                                     } catch (Exception e) {

@@ -1,21 +1,23 @@
 /*
- * eXist Open Source Native XML Database
- * Copyright (C) 2001-2017 The eXist Project
- * http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- * This program is distributed in the hope that it will be useful,
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.exist.xquery;
@@ -31,7 +33,7 @@ import org.apache.http.entity.ContentType;
 import org.exist.http.jaxb.Query;
 import org.exist.http.jaxb.Result;
 import org.exist.test.ExistWebServer;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -84,7 +86,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         final HttpResponse response = postXquery(query);
 
         final HttpEntity entity = response.getEntity();
-        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             entity.writeTo(baos);
 
             assertArrayEquals(BIN1_CONTENT, Base64.decodeBase64(baos.toByteArray()));
@@ -106,7 +108,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         final HttpResponse response = postXquery(query);
 
         final HttpEntity entity = response.getEntity();
-        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             entity.writeTo(baos);
 
             assertArrayEquals(BIN1_CONTENT, baos.toByteArray());
@@ -160,7 +162,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         final Marshaller marshaller = jaxbContext.createMarshaller();
 
         final HttpResponse response;
-        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             marshaller.marshal(query, baos);
             response = executor.execute(Request.Post(getRestUrl() + "/db/")
                     .bodyByteArray(baos.toByteArray(), ContentType.APPLICATION_XML)

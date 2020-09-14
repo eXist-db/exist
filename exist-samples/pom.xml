@@ -1,3 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    eXist-db Open Source Native XML Database
+    Copyright (C) 2001 The eXist-db Authors
+
+    info@exist-db.org
+    http://www.exist-db.org
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -33,31 +57,27 @@
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <inherited>true</inherited>
                 <configuration>
-                    <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
-                    <failIfMissing>true</failIfMissing>
-                    <aggregate>true</aggregate>
-                    <strictCheck>true</strictCheck>
-                    <properties>
-                        <organisation>${project.organization.name}</organisation>
-                        <email>${contact.email}</email>
-                        <url>${project.organization.url}</url>
-                    </properties>
-                    <includes>
-                        <include>${project.build.sourceDirectory}/**.java</include>
-                    </includes>
-                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <licenseSets>
+                        <licenseSet>
+                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <excludes>
+                                <exclude>src/main/resources/org/exist/samples/biblio.rdf</exclude>
+                                <exclude>src/main/resources/org/exist/samples/shakespeare/hamlet.xml</exclude>
+                                <exclude>src/main/resources/org/exist/samples/shakespeare/macbeth.xml</exclude>
+                                <exclude>src/main/resources/org/exist/samples/shakespeare/play.dtd</exclude>
+                                <exclude>src/main/resources/org/exist/samples/shakespeare/r_and_j.xml</exclude>
+                                <exclude>src/main/resources/org/exist/samples/shakespeare/shakes.css</exclude>
+                                <exclude>src/main/resources/org/exist/samples/shakespeare/shakes.xsl</exclude>
+                                <exclude>src/main/resources/org/exist/samples/validation/dtd/**</exclude>
+                                <exclude>src/main/resources/org/exist/samples/validation/personal/**</exclude>
+                                <exclude>src/main/resources/org/exist/samples/xinclude/scripts/syntax/**</exclude>
+                                <exclude>src/main/resources/org/exist/samples/xinclude/styles/**</exclude>
+                                <exclude>src/main/resources/org/exist/samples/validation/tournament/**</exclude>
+                            </excludes>
+                        </licenseSet>
+                    </licenseSets>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>check-headers</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

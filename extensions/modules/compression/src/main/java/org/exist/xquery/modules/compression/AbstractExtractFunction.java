@@ -1,23 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2015 The eXist Project
- *  http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * $Id$
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xquery.modules.compression;
 
@@ -32,8 +32,8 @@ import java.nio.file.Paths;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xquery.BasicFunction;
@@ -190,12 +190,12 @@ public abstract class AbstractExtractFunction extends BasicFunction
 
                     //copy the input data
                     final byte[] entryData;
-                    try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+                    try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
                         baos.write(is);
                         entryData = baos.toByteArray();
                     }
 
-                    try (final InputStream bis = new FastByteArrayInputStream(entryData)) {
+                    try (final InputStream bis = new UnsynchronizedByteArrayInputStream(entryData)) {
                         NodeValue content = ModuleUtils.streamToXML(context, bis);
                         resource = target.createResource(name, "XMLResource");
                         ContentHandler handler = ((XMLResource) resource).setContentAsSAX();
@@ -220,17 +220,17 @@ public abstract class AbstractExtractFunction extends BasicFunction
 
                 //copy the input data
                 final byte[] entryData;
-                try (final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+                try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
                     baos.write(is);
                     entryData = baos.toByteArray();
                 }
 
                 //try and parse as xml, fall back to binary
-                try (final InputStream bis = new FastByteArrayInputStream(entryData)) {
+                try (final InputStream bis = new UnsynchronizedByteArrayInputStream(entryData)) {
                     uncompressedData = ModuleUtils.streamToXML(context, bis);
                 } catch (SAXException saxe) {
                     if (entryData.length > 0) {
-                        try (final InputStream bis = new FastByteArrayInputStream(entryData)) {
+                        try (final InputStream bis = new UnsynchronizedByteArrayInputStream(entryData)) {
                             uncompressedData = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), bis);
                         }
                     }

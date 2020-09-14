@@ -1,23 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-09 The eXist Project
- *  http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * $Id$
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xquery.modules.compression;
 
@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 
 import org.exist.dom.QName;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -76,14 +76,14 @@ public class GZipFunction extends BasicFunction
         BinaryValue bin = (BinaryValue) args[0].itemAt(0);
 
         // gzip the data
-        try(final FastByteArrayOutputStream baos = new FastByteArrayOutputStream();
+        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
                 final GZIPOutputStream gzos = new GZIPOutputStream(baos)) {
             bin.streamBinaryTo(gzos);
             
             gzos.flush();
             gzos.finish();
             
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toFastByteInputStream());
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream());
         } catch (final IOException ioe) {
             throw new XPathException(this, ioe.getMessage(), ioe);
         }

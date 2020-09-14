@@ -1,21 +1,23 @@
 /*
- * eXist Open Source Native XML Database
- * Copyright (C) 2001-2017 The eXist Project
- * http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *  
- * This program is distributed in the hope that it will be useful,
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.http;
 
@@ -32,11 +34,11 @@ import java.net.URLEncoder;
 import javax.xml.parsers.ParserConfigurationException;
 
 import com.googlecode.junittoolbox.ParallelRunner;
+import org.apache.commons.codec.binary.Base64;
 import org.eclipse.jetty.http.HttpStatus;
 import org.exist.Namespaces;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.test.ExistWebServer;
-import org.exist.util.Base64Encoder;
 import org.exist.util.ExistSAXParserFactory;
 import org.exist.xmldb.XmldbURI;
 import org.junit.runner.RunWith;
@@ -225,13 +227,8 @@ public class RESTServiceTest {
 
     @BeforeClass
     public static void createCredentials() {
-        final Base64Encoder enc = new Base64Encoder();
-        enc.translate("admin:".getBytes());
-        credentials = new String(enc.getCharArray());
-
-        enc.reset();
-        enc.translate("johndoe:this pw should fail".getBytes());
-        badCredentials = new String(enc.getCharArray());
+        credentials = Base64.encodeBase64String("admin:".getBytes(UTF_8));
+        badCredentials = Base64.encodeBase64String("johndoe:this pw should fail".getBytes(UTF_8));
     }
 
     @Test

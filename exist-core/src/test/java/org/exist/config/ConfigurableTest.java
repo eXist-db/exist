@@ -1,23 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2009-2010 The eXist Project
- *  http://exist-db.org
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
+ *
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.config;
 
@@ -31,7 +31,7 @@ import javax.xml.parsers.SAXParserFactory;
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.util.ExistSAXParserFactory;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xml.sax.InputSource;
@@ -79,7 +79,7 @@ public class ConfigurableTest {
 	
 	@Test
 	public void simple() throws Exception {
-		InputStream is = new FastByteArrayInputStream(config1.getBytes(UTF_8));
+		InputStream is = new UnsynchronizedByteArrayInputStream(config1.getBytes(UTF_8));
         
         Configuration config = Configurator.parse(is);
         
@@ -103,7 +103,7 @@ public class ConfigurableTest {
 
 	@Test
 	public void subelement() throws Exception {
-		InputStream is = new FastByteArrayInputStream(config2.getBytes(UTF_8));
+		InputStream is = new UnsynchronizedByteArrayInputStream(config2.getBytes(UTF_8));
 		
         // initialize xml parser
         // we use eXist's in-memory DOM implementation to work
@@ -128,7 +128,7 @@ public class ConfigurableTest {
 	
 	@Test
 	public void notSimple() throws Exception {
-		InputStream is = new FastByteArrayInputStream(config3.getBytes(UTF_8));
+		InputStream is = new UnsynchronizedByteArrayInputStream(config3.getBytes(UTF_8));
         
         Configuration config = Configurator.parse(is);
         

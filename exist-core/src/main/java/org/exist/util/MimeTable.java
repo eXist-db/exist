@@ -1,23 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
- *  http://exist-db.org
- *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id$
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
+ *
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.util;
 
@@ -303,7 +303,7 @@ public class MimeTable {
         private static final String MIME_TYPES = "mime-types";
         
         private MimeType mime = null;
-        private FastStringBuffer charBuf = new FastStringBuffer(64);
+        private final StringBuilder charBuf = new StringBuilder(64);
         
         /* (non-Javadoc)
          * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
@@ -374,12 +374,12 @@ public class MimeTable {
                 mime = null;
             } else if (DESCRIPTION.equals(qName)) {
                 if (mime != null) {
-                    final String description = charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+                    final String description = charBuf.toString().trim();
                     mime.setDescription(description);
                 }
             } else if (EXTENSIONS.equals(qName)) {
                 if (mime != null) {
-                    final String extList = charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
+                    final String extList = charBuf.toString().trim();
                     final StringTokenizer tok = new StringTokenizer(extList, ", ");
                     String preferred = null;
                     while (tok.hasMoreTokens()) {

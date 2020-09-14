@@ -1,21 +1,23 @@
 /*
- * eXist Open Source Native XML Database
- * Copyright (C) 2001-2017 The eXist Project
- * http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- * This program is distributed in the hope that it will be useful,
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.client;
 
@@ -41,6 +43,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 
+import org.apache.tools.ant.DirectoryScanner;
 import org.exist.SystemProperties;
 import org.exist.dom.persistent.XMLUtil;
 import org.exist.security.ACLPermission;
@@ -1406,7 +1409,15 @@ public class InteractiveClient {
                     files.add(file);
                 }
             } else {
-                files = DirectoryScanner.scanDir(file.toString());
+                final DirectoryScanner directoryScanner = new DirectoryScanner();
+                directoryScanner.setIncludes(new String[] { file.toString() });
+                //TODO(AR) do we need to call scanner.setBasedir()?
+                directoryScanner.setCaseSensitive(true);
+                directoryScanner.scan();
+                for (final String includedFile : directoryScanner.getIncludedFiles()) {
+//                    files.add(baseDir.resolve(includedFile));
+                    files.add(Paths.get(includedFile));
+                }
             }
 
             final long start0 = System.currentTimeMillis();
@@ -1538,7 +1549,18 @@ public class InteractiveClient {
                 files.add(file);
             }
         } else {
-            files = DirectoryScanner.scanDir(fileName);
+            final DirectoryScanner directoryScanner = new DirectoryScanner();
+            directoryScanner.setIncludes(new String[] { fileName });
+            //TODO(AR) do we need to call scanner.setBasedir()?
+            directoryScanner.setCaseSensitive(true);
+            directoryScanner.scan();
+
+            final String[] includedFiles = directoryScanner.getIncludedFiles();
+            files = new ArrayList<>(includedFiles.length);
+            for (final String includedFile : includedFiles) {
+//                files.add(baseDir.resolve(includedFile));
+                files.add(Paths.get(includedFile));
+            }
         }
 
         final long start0 = System.currentTimeMillis();

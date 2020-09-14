@@ -1,23 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2012 The eXist Project
- *  http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  $Id$
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.client.security;
 
@@ -41,7 +41,7 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
     private final UserManagementService userManagementService;
     private final List<DialogCompleteWithResponse<String>> dialogCompleteWithResponseCallbacks = new ArrayList<>();
     private final Set<String> allUsernames;
-    private DefaultComboBoxModel usernameModel;
+    private DefaultComboBoxModel<String> usernameModel;
 
     public FindUserForm(final UserManagementService userManagementService) throws XMLDBException {
         this.userManagementService = userManagementService;
@@ -67,7 +67,7 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
         jSeparator1 = new javax.swing.JSeparator();
         btnOk = new javax.swing.JButton();
         btnCancel = new javax.swing.JButton();
-        cmbUsername = new javax.swing.JComboBox();
+        cmbUsername = new javax.swing.JComboBox<>();
         AutoCompletion.enable(cmbUsername);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -154,7 +154,7 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnOk;
-    private javax.swing.JComboBox cmbUsername;
+    private javax.swing.JComboBox<String> cmbUsername;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel lblUsername;
     // End of variables declaration//GEN-END:variables
@@ -164,9 +164,9 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
         return allUsernames.contains(username);
     }
     
-    private ComboBoxModel getUsernameModel() {
+    private ComboBoxModel<String> getUsernameModel() {
         if(usernameModel == null) {
-            usernameModel = new DefaultComboBoxModel();
+            usernameModel = new DefaultComboBoxModel<String>();
             usernameModel.addElement("");
             for(final String username : allUsernames) {
                usernameModel.addElement(username);

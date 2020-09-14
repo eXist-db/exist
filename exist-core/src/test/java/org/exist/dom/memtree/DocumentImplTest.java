@@ -1,21 +1,23 @@
 /*
- * eXist Open Source Native XML Database
- * Copyright (C) 2001-2017 The eXist Project
- * http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- * This program is distributed in the hope that it will be useful,
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.exist.dom.memtree;
@@ -24,7 +26,7 @@ import com.googlecode.junittoolbox.ParallelRunner;
 import org.apache.xerces.dom.AttrNSImpl;
 import org.exist.Namespaces;
 import org.exist.util.ExistSAXParserFactory;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.w3c.dom.*;
@@ -50,7 +52,7 @@ public class DocumentImplTest {
     @Test
     public void checkNamespaces_xerces() throws IOException, ParserConfigurationException, SAXException {
         final Document doc;
-        try(final InputStream is = new FastByteArrayInputStream(DOC.getBytes(UTF_8))) {
+        try(final InputStream is = new UnsynchronizedByteArrayInputStream(DOC.getBytes(UTF_8))) {
             doc = parseXerces(is);
         }
 
@@ -83,7 +85,7 @@ public class DocumentImplTest {
     @Test
     public void checkNamespaces_saxon() throws IOException, ParserConfigurationException, SAXException, IllegalAccessException, InstantiationException, ClassNotFoundException {
         final Document doc;
-        try(final InputStream is = new FastByteArrayInputStream(DOC.getBytes(UTF_8))) {
+        try(final InputStream is = new UnsynchronizedByteArrayInputStream(DOC.getBytes(UTF_8))) {
             doc = parseSaxon(is);
         }
 
@@ -121,7 +123,7 @@ public class DocumentImplTest {
     @Test
     public void checkNamespaces_exist() throws IOException, SAXException, ParserConfigurationException {
         final DocumentImpl doc;
-        try(final InputStream is = new FastByteArrayInputStream(DOC.getBytes(UTF_8))) {
+        try(final InputStream is = new UnsynchronizedByteArrayInputStream(DOC.getBytes(UTF_8))) {
             doc = parseExist(is);
         }
 

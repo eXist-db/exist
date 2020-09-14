@@ -1,23 +1,24 @@
 /*
- *  eXist SQL Module Extension ExecuteFunction
- *  Copyright (C) 2006-2019 Adam Retter <adam@exist-db.org>
- *  www.adamretter.co.uk
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- * This program is distributed in the hope that it will be useful,
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
 package org.exist.xquery.modules.sql;
 
 import org.apache.logging.log4j.LogManager;
@@ -25,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.memtree.*;
 import org.exist.util.XMLReaderPool;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -451,7 +452,7 @@ public class ExecuteFunction extends BasicFunction {
             builder.endElement();
 
             builder.startElement(new QName("stack-trace", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
-            try (final FastByteArrayOutputStream bufStackTrace = new FastByteArrayOutputStream();
+            try (final UnsynchronizedByteArrayOutputStream bufStackTrace = new UnsynchronizedByteArrayOutputStream();
                  final PrintStream ps = new PrintStream(bufStackTrace)) {
                 sqle.printStackTrace(ps);
                 builder.characters(bufStackTrace.toString(UTF_8));

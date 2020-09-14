@@ -1,3 +1,24 @@
+/*
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
+ *
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 package org.exist.util.io;
 
 import java.io.IOException;
@@ -8,6 +29,8 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.Test;
 
 /**
@@ -197,7 +220,7 @@ public class ByteBufferInputStreamTest {
 
         final ByteBuffer buf = ByteBuffer.wrap(testData);
         try(final InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf))) {
-            final FastByteArrayOutputStream baos = new FastByteArrayOutputStream(testData.length);
+            final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream(testData.length);
             byte readBuf[] = new byte[56];
             int read = -1;
 
@@ -221,7 +244,7 @@ public class ByteBufferInputStreamTest {
         final ByteBuffer buf = ByteBuffer.wrap(testData);
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
 
-        try (FastByteArrayOutputStream baos = new FastByteArrayOutputStream(testData.length)) {
+        try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream(testData.length)) {
             byte readBuf[] = new byte[56];
             int read = -1;
 

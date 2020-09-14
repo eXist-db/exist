@@ -1,3 +1,24 @@
+(:
+ : eXist-db Open Source Native XML Database
+ : Copyright (C) 2001 The eXist-db Authors
+ :
+ : info@exist-db.org
+ : http://www.exist-db.org
+ :
+ : This library is free software; you can redistribute it and/or
+ : modify it under the terms of the GNU Lesser General Public
+ : License as published by the Free Software Foundation; either
+ : version 2.1 of the License, or (at your option) any later version.
+ :
+ : This library is distributed in the hope that it will be useful,
+ : but WITHOUT ANY WARRANTY; without even the implied warranty of
+ : MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ : Lesser General Public License for more details.
+ :
+ : You should have received a copy of the GNU Lesser General Public
+ : License along with this library; if not, write to the Free Software
+ : Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ :)
 xquery version "3.1";
 
 module namespace t = "http://exist-db.org/xquery/testing";
@@ -33,7 +54,14 @@ declare function t:setup-action($action) {
 declare function t:store($action as element(store)) {
     let $type := if ($action/@type) then $action/@type/string() else "application/xml"
     let $data :=
-		if ($action/*) then
+        if ($action/@src) then
+            let $src := fn:doc($action/@src)
+            return
+                if (not(empty($src))) then
+                    $src
+                else
+                    fn:error(xs:QName("ERROR"), ("Could not find @src '" || $action/@src || "' for store in test.xq"))
+		else if ($action/*) then
 			$action/*[1]
 		else
 			$action/string()
@@ -60,7 +88,7 @@ declare function t:store-files($action as element(store-files)) {
                 then
                     xmldb:store-files-from-pattern($action/@collection, $matches[1], $action/@pattern, $type)
                 else
-                    util:log("ERROR", ("Could not match classpath with '" || $action/@classpath || "' in test.xq"))
+                    fn:error(xs:QName("ERROR"), ("Could not match @classpath '" || $action/@classpath || "' with classpath-entries '" || $classpath-entries || "' in test.xq"))
         else
             xmldb:store-files-from-pattern($action/@collection, $action/@dir, $action/@pattern, $type)
 };

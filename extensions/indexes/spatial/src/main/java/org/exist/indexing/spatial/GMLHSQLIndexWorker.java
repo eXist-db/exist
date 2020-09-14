@@ -1,25 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2007 The eXist Project
- *  http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- * 
- *  $Id$
- *  
- *  @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.indexing.spatial;
 
@@ -49,11 +47,14 @@ import org.exist.xquery.value.ValueSequence;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
-import org.exist.util.io.FastByteArrayInputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64BinaryValueType;
 import org.exist.xquery.value.BinaryValueFromInputStream;
 
+/**
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
+ */
 public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 
     private static final Logger LOG = LogManager.getLogger(GMLHSQLIndexWorker.class);
@@ -550,7 +551,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             } else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
                 result = new StringValue(rs.getString(1));
             } else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
-                result = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new FastByteArrayInputStream(rs.getBytes(1)));
+                result = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(rs.getBytes(1)));
             } else 
                 throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");		
             if (rs.next()) {
@@ -636,7 +637,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                         } else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
                             result.add(new StringValue(rs.getString(1)));
                         } else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
-                            result.add(BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new FastByteArrayInputStream(rs.getBytes(1))));
+                            result.add(BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(rs.getBytes(1))));
                         } else 
                             throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
                     }

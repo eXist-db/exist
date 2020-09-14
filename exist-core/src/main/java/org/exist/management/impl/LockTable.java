@@ -1,21 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2017 The eXist Project
- *  http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.management.impl;
 
@@ -27,7 +29,7 @@ import org.exist.storage.lock.Lock.LockType;
 import org.exist.storage.lock.LockTable.LockCountTraces;
 import org.exist.storage.lock.LockTable.LockModeOwner;
 import org.exist.storage.lock.LockTableUtils;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -123,7 +125,7 @@ public class LockTable implements LockTableMXBean {
 
     @Override
     public void xmlDumpToLog() {
-        try (final FastByteArrayOutputStream bos = new FastByteArrayOutputStream();
+        try (final UnsynchronizedByteArrayOutputStream bos = new UnsynchronizedByteArrayOutputStream();
                 final Writer writer = new OutputStreamWriter(bos)) {
             LockTableUtils.stateToXml(pool.getLockManager().getLockTable(), false, writer);
             LOCK_LOG.info(new String(bos.toByteArray(), UTF_8));
@@ -134,7 +136,7 @@ public class LockTable implements LockTableMXBean {
 
     @Override
     public void xmlFullDumpToLog() {
-        try (final FastByteArrayOutputStream bos = new FastByteArrayOutputStream();
+        try (final UnsynchronizedByteArrayOutputStream bos = new UnsynchronizedByteArrayOutputStream();
              final Writer writer = new OutputStreamWriter(bos)) {
             LockTableUtils.stateToXml(pool.getLockManager().getLockTable(), true, writer);
             LOCK_LOG.info(new String(bos.toByteArray(), UTF_8));

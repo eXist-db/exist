@@ -1,24 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-08 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  $Id$
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.http.urlrewrite;
 
@@ -36,8 +35,8 @@ import org.exist.source.DBSource;
 import org.exist.source.SourceFactory;
 import org.exist.source.FileSource;
 import org.exist.util.LockException;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
@@ -1408,7 +1407,7 @@ public class XQueryURLRewrite extends HttpServlet {
     }
 
     private static class CachingServletOutputStream extends ServletOutputStream {
-        private FastByteArrayOutputStream ostream = new FastByteArrayOutputStream(512);
+        private UnsynchronizedByteArrayOutputStream ostream = new UnsynchronizedByteArrayOutputStream(512);
 
         protected byte[] getData() {
             return ostream.toByteArray();
@@ -1441,13 +1440,13 @@ public class XQueryURLRewrite extends HttpServlet {
     }
 
     private static class CachingServletInputStream extends ServletInputStream {
-        private final FastByteArrayInputStream istream;
+        private final UnsynchronizedByteArrayInputStream istream;
 
         public CachingServletInputStream(final byte[] data) {
             if (data == null) {
-                istream = new FastByteArrayInputStream(new byte[0]);
+                istream = new UnsynchronizedByteArrayInputStream(new byte[0]);
             } else {
-                istream = new FastByteArrayInputStream(data);
+                istream = new UnsynchronizedByteArrayInputStream(data);
             }
         }
 

@@ -1,26 +1,27 @@
 /*
- * eXist Open Source Native XML Database
- * Copyright (C) 2001-2014 The eXist Project
- * http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *  
- * This program is distributed in the hope that it will be useful,
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
- *  $Id$
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.dom.persistent;
 
+import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.exist.collections.Collection;
@@ -29,7 +30,6 @@ import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedDocumentLock;
-import org.exist.util.ArrayUtils;
 import org.exist.util.FastQSort;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
@@ -123,7 +123,9 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
         if(lastPart != null && doc.getDocId() == lastDoc) {
             return lastPart;
         }
-        int idx = ArrayUtils.binarySearch(documentIds, doc.getDocId(), partCount);
+
+
+        int idx = IntArrays.binarySearch(documentIds, 0, partCount, doc.getDocId());
         Part part = null;
         if(idx >= 0) {
             part = parts[idx];
@@ -384,7 +386,7 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
 
     @Override
     public DocumentImpl getDoc(final int docId) {
-        final int idx = ArrayUtils.binarySearch(documentIds, docId, partCount);
+        final int idx = IntArrays.binarySearch(documentIds, 0, partCount, docId);
         if(idx > -1) {
             return parts[idx].getOwnerDocument();
         }
@@ -441,7 +443,7 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
 
     @Override
     public boolean contains(final int docId) {
-        return ArrayUtils.binarySearch(documentIds, docId, partCount) > -1;
+        return IntArrays.binarySearch(documentIds, 0, partCount, docId) > -1;
     }
 
     @Override
@@ -990,7 +992,7 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
 
         @Override
         public final void setPosition(final NodeProxy proxy) {
-            partPos = ArrayUtils.binarySearch(documentIds, proxy.getOwnerDocument().getDocId(), partCount);
+            partPos = IntArrays.binarySearch(documentIds, 0, partCount, proxy.getOwnerDocument().getDocId());
             if(partPos >= 0) {
                 currentPart = parts[partPos];
                 int low = 0;

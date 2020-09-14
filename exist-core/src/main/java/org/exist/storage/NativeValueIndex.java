@@ -1,21 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2016 The eXist Project
- *  http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.storage;
 
@@ -367,6 +369,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
     private <T> void flush(final PendingChanges<T> pending, final FunctionE<T, Value, EXistException> dbKeyFn) {
+        final VariableByteOutputStream nodeIdOs = new VariableByteOutputStream();
+
         for (final Map.Entry<T, List<NodeId>> entry : pending.changes.entrySet()) {
             final T key = entry.getKey();
 
@@ -379,26 +383,29 @@ public class NativeValueIndex implements ContentLoadingObserver {
             os.writeInt(this.doc.getDocId());
             os.writeInt(gidsCount);
 
-            //Mark position
-            final int nodeIDsLength = os.position();
-
-            //Dummy value : actual one will be written below
-            os.writeFixedInt(0);
-
             //Compute the GID list
-            NodeId previous = null;
-
-            for (final NodeId nodeId : gids) {
-                try {
-                    previous = nodeId.write(previous, os);
-                } catch (final IOException e) {
-                    LOG.warn("IO error while writing range index: " + e.getMessage(), e);
-                    //TODO : throw exception?
+            try {
+                NodeId previous = null;
+                for (final NodeId nodeId : gids) {
+                    previous = nodeId.write(previous, nodeIdOs);
                 }
+
+                final byte[] nodeIdsData = nodeIdOs.toByteArray();
+
+                // clear the buf for the next iteration
+                nodeIdOs.clear();
+
+                // Write length of node IDs (bytes)
+                os.writeFixedInt(nodeIdsData.length);
+
+                // write the node IDs
+                os.write(nodeIdsData);
+
+            } catch (final IOException e) {
+                LOG.warn("IO error while writing range index: " + e.getMessage(), e);
+                //TODO : throw exception?
             }
 
-            //Write (variable) length of node IDs
-            os.writeFixedInt(nodeIDsLength, os.position() - nodeIDsLength - LENGTH_NODE_IDS);
             try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeWriteLock(dbValues.getLockName())) {
                 final Value v = dbKeyFn.apply(key);
 
@@ -436,6 +443,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
     private <T> void remove(final PendingChanges<T> pending, final FunctionE<T, Value, EXistException> dbKeyFn) {
+        final VariableByteOutputStream nodeIdOs = new VariableByteOutputStream();
         for (final Map.Entry<T, List<NodeId>> entry : pending.changes.entrySet()) {
             final T key = entry.getKey();
             final List<NodeId> storedGIDList = entry.getValue();
@@ -495,24 +503,27 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         os.writeInt(this.doc.getDocId());
                         os.writeInt(gidsCount);
 
-                        //Mark position
-                        final int nodeIDsLength = os.position();
-
-                        //Dummy value : actual one will be written below
-                        os.writeFixedInt(0);
-                        NodeId previous = null;
-
-                        for (final NodeId nodeId : newGIDList) {
-                            try {
-                                previous = nodeId.write(previous, os);
-                            } catch (final IOException e) {
-                                LOG.warn("IO error while writing range index: " + e.getMessage(), e);
-                                //TODO : throw exception ?
+                        //Compute the new GID list
+                        try {
+                            NodeId previous = null;
+                            for (final NodeId nodeId : newGIDList) {
+                                previous = nodeId.write(previous, nodeIdOs);
                             }
-                        }
 
-                        //Write (variable) length of node IDs
-                        os.writeFixedInt(nodeIDsLength, os.position() - nodeIDsLength - LENGTH_NODE_IDS);
+                            final byte[] nodeIdsData = nodeIdOs.toByteArray();
+
+                            // clear the buf for the next iteration
+                            nodeIdOs.clear();
+
+                            // Write length of node IDs (bytes)
+                            os.writeFixedInt(nodeIdsData.length);
+
+                            // write the node IDs
+                            os.write(nodeIdsData);
+                        } catch (final IOException e) {
+                            LOG.warn("IO error while writing range index: " + e.getMessage(), e);
+                            //TODO : throw exception?
+                        }
                     }
 
 //                        if(os.data().size() == 0)
@@ -834,7 +845,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     break;
 
                 default:
-                    matcher = new RegexMatcher(expr, type, flags);
+                    matcher = new RegexMatcher(expr, flags);
             }
         } else {
             matcher = new CollatorMatcher(expr, truncation, collator);

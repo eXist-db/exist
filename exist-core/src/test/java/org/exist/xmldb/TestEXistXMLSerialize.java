@@ -1,29 +1,29 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-2011 The eXist-db Project
- *  http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software Foundation
- *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  $Id$
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xmldb;
 
 import org.exist.security.Account;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.ClassRule;
 import org.xmldb.api.modules.CollectionManagementService;
 import java.io.IOException;
@@ -125,7 +125,7 @@ public class TestEXistXMLSerialize {
 
         //Attempting serialization
         DOMSource source = new DOMSource(node);
-        try (final FastByteArrayOutputStream out = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream()) {
             StreamResult result = new StreamResult(out);
 
             Transformer xformer = TransformerFactory.newInstance().newTransformer();
@@ -149,7 +149,7 @@ public class TestEXistXMLSerialize {
         format.setLineWidth(0);
         format.setIndent(5);
         format.setPreserveSpace(true);
-        try (final FastByteArrayOutputStream out = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream()) {
             XMLSerializer serializer = new XMLSerializer(out, format);
 
             if (node instanceof Document) {

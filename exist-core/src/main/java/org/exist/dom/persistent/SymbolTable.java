@@ -1,23 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2010-2014 The eXist Project
- *  http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * info@exist-db.org
+ * http://www.exist-db.org
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
- *  $Id$
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.dom.persistent;
 
@@ -112,7 +112,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      * the underlying symbols.dbx file
      */
     private Path file;
-    private final VariableByteOutputStream outBuffer = new VariableByteOutputStream(512);
+    private final VariableByteOutputStream outBuffer = new VariableByteOutputStream(256);
     private OutputStream os = null;
 
     @Override
@@ -360,7 +360,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      * @throws EXistException in response to eXist-db error
      */
     private void saveSymbols() throws EXistException {
-        try(final VariableByteOutputStream os = new VariableByteOutputStream(256);
+        try(final VariableByteOutputStream os = new VariableByteOutputStream(8192);
                 final OutputStream fos =  Files.newOutputStream(getFile())) {
             writeAll(os);
             fos.write(os.toByteArray());

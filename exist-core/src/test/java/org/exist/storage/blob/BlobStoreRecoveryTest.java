@@ -1,19 +1,34 @@
 /*
- * Copyright (C) 2018 Adam Retter
+ * Copyright (C) 2014, Evolved Binary Ltd
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ * This file was originally ported from FusionDB to eXist-db by
+ * Evolved Binary, for the benefit of the eXist-db Open Source community.
+ * Only the ported code as it appears in this file, at the time that
+ * it was contributed to eXist-db, was re-licensed under The GNU
+ * Lesser General Public License v2.1 only for use in eXist-db.
  *
- * This program is distributed in the hope that it will be useful,
+ * This license grant applies only to a snapshot of the code as it
+ * appeared when ported, it does not offer or infer any rights to either
+ * updates of this source code or access to the original source code.
+ *
+ * The GNU Lesser General Public License v2.1 only license follows.
+ *
+ * ---------------------------------------------------------------------
+ *
+ * Copyright (C) 2014, Evolved Binary Ltd
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; version 2.1.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.storage.blob;
 
@@ -39,8 +54,8 @@ import org.exist.util.crypto.digest.DigestInputStream;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.util.crypto.digest.StreamableDigest;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.AfterClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -403,7 +418,7 @@ public class BlobStoreRecoveryTest {
     }
 
     private void addCommit(final TransactionManager transactionManager, final BlobStore blobStore, final byte[] blob) throws IOException, TransactionException {
-        try (final InputStream is = new FastByteArrayInputStream(blob)) {
+        try (final InputStream is = new UnsynchronizedByteArrayInputStream(blob)) {
             try (final Txn transaction = transactionManager.beginTransaction()) {
                 blobStore.add(transaction, is);
 
@@ -413,7 +428,7 @@ public class BlobStoreRecoveryTest {
     }
 
     private void addNoCommit(final TransactionManager transactionManager, final BlobStore blobStore, final byte[] blob) throws IOException, TransactionException {
-        try (final InputStream is = new FastByteArrayInputStream(blob)) {
+        try (final InputStream is = new UnsynchronizedByteArrayInputStream(blob)) {
             final Txn transaction = transactionManager.beginTransaction();
             blobStore.add(transaction, is);
             // NOTE must not use ARM to close the transaction, otherwise it will auto-abort!
@@ -537,7 +552,7 @@ public class BlobStoreRecoveryTest {
     private Tuple2<byte[], MessageDigest> readAll(InputStream is) throws IOException {
         final StreamableDigest streamableDigest = DIGEST_TYPE.newStreamableDigest();
         is = new DigestInputStream(is, streamableDigest);
-        try (final FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             os.write(is);
             return Tuple(os.toByteArray(), streamableDigest.copyMessageDigest());
         }

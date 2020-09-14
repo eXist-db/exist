@@ -1,22 +1,23 @@
 /*
- * eXist Open Source Native XML Database
- * Copyright (C) 2001-2014 The eXist-db Project
- * http://exist-db.org
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *  
- * This program is distributed in the hope that it will be useful,
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *  
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.dom.persistent;
 
@@ -40,8 +41,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
-import org.exist.util.io.FastByteArrayInputStream;
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.pool.NodePool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
@@ -227,7 +228,7 @@ public class ElementImpl extends NamedNode implements Element {
             final byte[] prefixData;
             // serialize namespace prefixes declared in this element
             if(declaresNamespacePrefixes()) {
-                try(final FastByteArrayOutputStream bout = new FastByteArrayOutputStream(64);
+                try(final UnsynchronizedByteArrayOutputStream bout = new UnsynchronizedByteArrayOutputStream(64);
                     final DataOutputStream out = new DataOutputStream(bout)) {
                     out.writeShort(namespaceMappings.size());
                     for (final Map.Entry<String, String> namespaceMapping : namespaceMappings.entrySet()) {
@@ -356,7 +357,7 @@ public class ElementImpl extends NamedNode implements Element {
         if(end > pos) {
             final byte[] pfxData = new byte[end - pos];
             System.arraycopy(data, pos, pfxData, 0, end - pos);
-            final InputStream bin = new FastByteArrayInputStream(pfxData);
+            final InputStream bin = new UnsynchronizedByteArrayInputStream(pfxData);
             final DataInputStream in = new DataInputStream(bin);
             try {
                 final short prefixCount = in.readShort();
@@ -427,7 +428,7 @@ public class ElementImpl extends NamedNode implements Element {
         if(end > offset) {
             final byte[] pfxData = new byte[end - offset];
             System.arraycopy(data, offset, pfxData, 0, end - offset);
-            final InputStream bin = new FastByteArrayInputStream(pfxData);
+            final InputStream bin = new UnsynchronizedByteArrayInputStream(pfxData);
             final DataInputStream in = new DataInputStream(bin);
             try {
                 final short prefixCount = in.readShort();

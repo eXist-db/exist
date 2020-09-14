@@ -1,4 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    eXist-db Open Source Native XML Database
+    Copyright (C) 2001 The eXist-db Authors
+
+    info@exist-db.org
+    http://www.exist-db.org
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -13,8 +36,8 @@
     <inceptionYear>2001</inceptionYear>
 
     <organization>
-        <name>The eXist-db Project</name>
-        <url>https://www.exist-db.org</url>
+        <name>The eXist-db Open Source project</name>
+        <url>http://www.exist-db.org</url>
     </organization>
 
     <licenses>
@@ -27,8 +50,8 @@
 
     <developers>
         <developer>
-            <name>The eXist-db Project</name>
-            <organization>The eXist-db Project</organization>
+            <name>The eXist-db Authors</name>
+            <organization>The eXist-db Open Source project</organization>
             <url>https://www.exist-db.org</url>
             <email>info@exist-db.org</email>
         </developer>
@@ -72,6 +95,8 @@
         <project.build.source>1.8</project.build.source>
         <project.build.target>1.8</project.build.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <project.copyright.name>The eXist-db Authors</project.copyright.name>
 
         <contact.email>info@exist-db.org</contact.email>
 
@@ -453,12 +478,11 @@
                 <plugin>
                     <groupId>com.mycila</groupId>
                     <artifactId>license-maven-plugin</artifactId>
-                    <version>3.0</version>
+                    <version>4.0.rc1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
-                    <!-- TODO(AR) version 5.0.0-M3 seems to be unreliable, see: https://github.com/jeremylong/DependencyCheck/issues/1918 -->
                     <version>6.0.1</version>
                     <configuration>
                         <archiveAnalyzerEnabled>false</archiveAnalyzerEnabled>
@@ -476,6 +500,9 @@
                         <rubygemsAnalyzerEnabled>false</rubygemsAnalyzerEnabled>
                         <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
                         <swiftPackageManagerAnalyzerEnabled>false</swiftPackageManagerAnalyzerEnabled>
+
+                        <!-- clashes with Ant 1.10.7, see https://github.com/jeremylong/DependencyCheck/issues/1914 -->
+                        <skipSystemScope>true</skipSystemScope>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -717,20 +744,40 @@
                 <artifactId>license-maven-plugin</artifactId>
                 <inherited>true</inherited>
                 <configuration>
-                    <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
-                    <failIfMissing>false</failIfMissing> <!-- TODO(AR) should be true eventually -->
-                    <aggregate>true</aggregate>
+                    <licenseSets>
+                        <licenseSet>
+                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                        </licenseSet>
+                    </licenseSets>
+                    <headerDefinitions>
+                        <headerDefinition>${project.parent.relativePath}/xquery-license-style.xml</headerDefinition>
+                    </headerDefinitions>
+                    <mapping>
+                        <form>XML_STYLE</form>
+                        <g>SLASHSTAR_STYLE</g>
+                        <java>SLASHSTAR_STYLE</java>
+                        <xconf>XML_STYLE</xconf>
+                        <xconf.init>XML_STYLE</xconf.init>
+                        <xq>XQUERY_STYLE</xq>
+                        <xql>XQUERY_STYLE</xql>
+                        <xqm>XQUERY_STYLE</xqm>
+                        <xsl>XML_STYLE</xsl>
+                        <xslt>XML_STYLE</xslt>
+                    </mapping>
+                    <failIfMissing>true</failIfMissing>
                     <strictCheck>true</strictCheck>
                     <properties>
-                        <organisation>${project.organization.name}</organisation>
+                        <copyright.year>${project.inceptionYear}</copyright.year>
+                        <copyright.name>${project.copyright.name}</copyright.name>
                         <email>${contact.email}</email>
                         <url>${project.organization.url}</url>
                     </properties>
                     <excludes>
-                        <exclude>**/pom.xml</exclude>
+                        <exclude>LGPL-21-license.template.txt</exclude>
                         <exclude>**/README.md</exclude>
+                        <exclude>**/README</exclude>
                         <exclude>**/LICENSE</exclude>
-                        <exclude>**/project-suppression.xml</exclude>
+                        <exclude>**/*.xar</exclude>
                     </excludes>
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
