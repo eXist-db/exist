@@ -71,9 +71,6 @@
                                 eXist-db's License
                             -->
                             <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
-                            <excludes>
-                                <exclude>betterform/**</exclude>
-                            </excludes>
                         </licenseSet>
                     </licenseSets>
                 </configuration>
