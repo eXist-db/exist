@@ -314,8 +314,9 @@ public class QueryDialog extends JFrame {
         historyList.setSelectedIndex(-1);  // by default - we are not using anything from the history!
         historyList.addItemListener(itemEvent -> {
             if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
-                Object obj = itemEvent.getItem();
-                query.setText(obj.toString());
+                final JComboBox<String> list = (JComboBox<String>) itemEvent.getSource();
+                final int idx = list.getSelectedIndex();
+                query.setText(client.queryHistory.get(idx));
             }
         });
         historyBox.add(historyList);
