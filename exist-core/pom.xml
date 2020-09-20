@@ -626,6 +626,7 @@
                                     Already under LGPL 2.1, but with a different Copyright
                                 -->
                                 <exclude>src/main/java/org/exist/util/UTF8.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/MoveCollectionTest.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/blob/**</exclude>
                                 <exclude>src/test/java/org/exist/storage/blob/**</exclude>
                                 <exclude>src/main/java/org/exist/storage/journal/JournalManager.java</exclude>
@@ -751,6 +752,7 @@ The original license statement is also included below.]]></preamble>
                             -->
                             <header>FDB-backport-LGPL-21-ONLY-license.template.txt</header>
                             <includes>
+                                <include>src/test/java/org/exist/storage/MoveCollectionTest.java</include>
                                 <include>src/main/java/org/exist/storage/blob/**</include>
                                 <include>src/test/java/org/exist/storage/blob/**</include>
                                 <include>src/main/java/org/exist/storage/journal/JournalManager.java</include>
