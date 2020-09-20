@@ -335,16 +335,6 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
             throws PermissionDeniedException, LockException, IOException;
 
     /**
-     * Update the specified child Collection
-     *
-     * @param broker The database broker
-     * @param child  The child Collection to update
-     * @throws PermissionDeniedException if user has not sufficient rights
-     * @throws LockException if broker is locked
-     */
-    void update(DBBroker broker, @EnsureLocked(mode=WRITE_LOCK) Collection child) throws PermissionDeniedException, LockException;
-
-    /**
      * Add a document to the collection
      *
      * @param transaction The database transaction

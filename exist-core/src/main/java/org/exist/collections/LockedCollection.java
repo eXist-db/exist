@@ -234,11 +234,6 @@ public class LockedCollection implements Collection {
     }
 
     @Override
-    public void update(final DBBroker broker, final Collection child) throws PermissionDeniedException, LockException {
-        collection.update(broker, child);
-    }
-
-    @Override
     public void addDocument(final Txn transaction, final DBBroker broker, final DocumentImpl doc) throws PermissionDeniedException, LockException {
         collection.addDocument(transaction, broker, doc);
     }

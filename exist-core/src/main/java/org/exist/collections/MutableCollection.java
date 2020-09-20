@@ -320,15 +320,6 @@ public class MutableCollection implements Collection {
     }
 
     @Override
-    public void update(final DBBroker broker, final Collection child) throws PermissionDeniedException, LockException {
-        final XmldbURI childName = child.getURI().lastSegment();
-        try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionWriteLock(path)) {
-            subCollections.remove(childName);
-            subCollections.add(childName);
-        }
-    }
-
-    @Override
     public void addDocument(final Txn transaction, final DBBroker broker, final DocumentImpl doc)
             throws PermissionDeniedException, LockException {
         addDocument(transaction, broker, doc, null);
