@@ -1528,7 +1528,11 @@ public class NativeBroker extends DBBroker {
         if (sourceCollectionParent != null) {
             final XmldbURI sourceCollectionName = sourceCollectionUri.lastSegment();
             sourceCollectionParent.removeCollection(this, sourceCollectionName);
-            saveCollection(transaction, sourceCollectionParent);
+
+            // if this is a rename, the save will happen after we "add the destination to the target" below...
+            if (!sourceCollectionParent.getURI().equals(targetCollection)) {
+                saveCollection(transaction, sourceCollectionParent);
+            }
         }
 
         // remove source from cache
@@ -1547,9 +1551,7 @@ public class NativeBroker extends DBBroker {
 
         // add destination to target
         targetCollection.addCollection(this, sourceCollection);
-        if (sourceCollectionParent != targetCollection) {
-            saveCollection(transaction, targetCollection);
-        }
+        saveCollection(transaction, targetCollection);
 
         if(fireTrigger) {
             trigger.afterMoveCollection(this, transaction, sourceCollection, sourceCollectionUri);
