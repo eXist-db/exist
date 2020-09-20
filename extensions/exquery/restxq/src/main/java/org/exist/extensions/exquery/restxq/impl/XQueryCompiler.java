@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.net.URI;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentMetadata;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.DBSource;
@@ -67,8 +66,7 @@ class XQueryCompiler {
         
         try {
             if(document instanceof BinaryDocument) {
-                final DocumentMetadata metadata = document.getMetadata();
-                if(metadata.getMimeType().equals(XQUERY_MIME_TYPE)){
+                if(document.getMimeType().equals(XQUERY_MIME_TYPE)){
             
                     //compile the query
                     final XQueryContext context = new XQueryContext(broker.getBrokerPool());
@@ -79,7 +77,7 @@ class XQueryCompiler {
                     
                     return broker.getBrokerPool().getXQueryService().compile(broker, context, source);
                 } else {
-                    throw new RestXqServiceCompilationException("Invalid mimetype '" +  metadata.getMimeType() + "' for XQuery: "  + document.getURI().toString());
+                    throw new RestXqServiceCompilationException("Invalid mimetype '" +  document.getMimeType() + "' for XQuery: "  + document.getURI().toString());
                 }
             } else {
                 throw new RestXqServiceCompilationException("Invalid document location for XQuery: " + document.getURI().toString());

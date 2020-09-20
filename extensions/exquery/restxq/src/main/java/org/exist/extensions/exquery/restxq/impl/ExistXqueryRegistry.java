@@ -122,7 +122,7 @@ public class ExistXqueryRegistry {
     }
 
     public boolean isXquery(final DocumentImpl document) {
-         return document instanceof BinaryDocument && document.getMetadata().getMimeType().equals(XQueryCompiler.XQUERY_MIME_TYPE);
+         return document instanceof BinaryDocument && document.getMimeType().equals(XQueryCompiler.XQUERY_MIME_TYPE);
     }
     
     public void registerServices(final DBBroker broker, final List<RestXqService> services) {

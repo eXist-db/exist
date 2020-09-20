@@ -98,8 +98,7 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger 
         final XmldbURI path = rootPath.append(doc.getURI());
         try {
             //construct the destination document name
-            String dtValue = new DateTimeValue(new Date(doc.getMetadata()
-                .getLastModified())).getStringValue();
+            String dtValue = new DateTimeValue(new Date(doc.getLastModified())).getStringValue();
             dtValue = dtValue.replaceAll(":", "-"); // multiple ':' are not allowed in URI so use '-'
             dtValue = dtValue.replaceAll("\\.", "-"); // as we are using '-' instead of ':' do the same for '.'
             final XmldbURI name = XmldbURI.create(dtValue);

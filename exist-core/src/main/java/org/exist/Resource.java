@@ -46,12 +46,4 @@ public interface Resource {
      * resource
      */
     Permission getPermissions();
-
-    /**
-     * Get the metadata associated
-     * with the resource
-     *
-     * @return The metadata associated with the resource
-     */
-    ResourceMetadata getMetadata();
 }

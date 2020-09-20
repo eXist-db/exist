@@ -63,7 +63,7 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
 
     @Override
     public String getMimeType() throws XMLDBException {
-        return getMimeType(() -> read((document, broker, transaction) -> document.getMetadata().getMimeType()));
+        return getMimeType(() -> read((document, broker, transaction) -> document.getMimeType()));
     }
 
     /**
@@ -72,7 +72,7 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
      * that are already working within a transaction
      */
     String getMimeType(final DBBroker broker, final Txn transaction) throws XMLDBException {
-        return getMimeType(() -> this.<String>read(broker, transaction).apply((document, broker1, transaction1) -> document.getMetadata().getMimeType()));
+        return getMimeType(() -> this.<String>read(broker, transaction).apply((document, broker1, transaction1) -> document.getMimeType()));
     }
 
     private String getMimeType(final SupplierE<String, XMLDBException> mimeTypeRead) throws XMLDBException {
@@ -98,12 +98,12 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
 
     @Override
     public Date getCreationTime() throws XMLDBException {
-        return read((document, broker, transaction) -> new Date(document.getMetadata().getCreated()));
+        return read((document, broker, transaction) -> new Date(document.getCreated()));
     }
 
     @Override
     public Date getLastModificationTime() throws XMLDBException {
-        return read((document, broker, transaction) -> new Date(document.getMetadata().getLastModified()));
+        return read((document, broker, transaction) -> new Date(document.getLastModified()));
     }
 
     @Override
@@ -117,7 +117,7 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
                 throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + docId + " not found");
             }
 
-            document.getMetadata().setLastModified(lastModificationTime.getTime());
+            document.setLastModified(lastModificationTime.getTime());
             return null;
         });
     }

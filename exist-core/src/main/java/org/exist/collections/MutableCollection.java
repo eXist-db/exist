@@ -112,7 +112,6 @@ public class MutableCollection implements Collection {
     private long created;
     private volatile boolean isTempCollection;
     private final Permission permissions;
-    private final CollectionMetadata collectionMetadata;
 
     /**
      * Constructs a Collection Object (not yet persisted)
@@ -161,7 +160,6 @@ public class MutableCollection implements Collection {
         this.permissions = permissions != null ? permissions : PermissionFactory.getDefaultCollectionPermission(broker.getBrokerPool().getSecurityManager());
         this.created = created > 0 ? created : System.currentTimeMillis();
         this.lockManager = broker.getBrokerPool().getLockManager();
-        this.collectionMetadata = new CollectionMetadata(this);
         this.subCollections = subCollections != null ? subCollections : new LinkedHashSet<>();
         this.documents = documents != null ? documents : new LinkedHashMap<>();
     }
@@ -811,11 +809,6 @@ public class MutableCollection implements Collection {
     @Override
     public Permission getPermissionsNoLock() {
         return permissions;
-    }
-
-    @Override
-    public CollectionMetadata getMetadata() {
-        return collectionMetadata;
     }
 
     @Override
@@ -1540,16 +1533,12 @@ public class MutableCollection implements Collection {
      * @param document The current/new document
      */
     private void manageDocumentInformation(final DocumentImpl oldDoc, final DocumentImpl document) {
-        final DocumentMetadata metadata;
         if (oldDoc != null) {
-            metadata = oldDoc.getMetadata();
-            metadata.setCreated(oldDoc.getMetadata().getCreated());
+            document.setCreated(oldDoc.getCreated());
             document.setPermissions(oldDoc.getPermissions());
         } else {
-            metadata = new DocumentMetadata();
-            metadata.setCreated(System.currentTimeMillis());
+            document.setCreated(System.currentTimeMillis());
         }
-        document.setMetadata(metadata);
     }
 
      /**
@@ -1558,9 +1547,7 @@ public class MutableCollection implements Collection {
       * @param document The document whose modification time should be updated
       */
     private void updateModificationTime(final DocumentImpl document) {
-        final DocumentMetadata metadata = document.getMetadata();
-        metadata.setLastModified(System.currentTimeMillis());
-        document.setMetadata(metadata);
+        document.setLastModified(System.currentTimeMillis());
     }
     
     /**
@@ -1706,16 +1693,12 @@ public class MutableCollection implements Collection {
             if (!broker.preserveOnCopy(preserve)) {
                 blob.copyOf(broker, blob, oldDoc);
             }
-            if (blob.getMetadata() == null) {
-                blob.setMetadata(new DocumentMetadata());
-            }
-            final DocumentMetadata metadata = blob.getMetadata();
-            metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
+            blob.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
             if (created != null) {
-                metadata.setCreated(created.getTime());
+                blob.setCreated(created.getTime());
             }
             if (modified != null) {
-                metadata.setLastModified(modified.getTime());
+                blob.setLastModified(modified.getTime());
             }
             blob.setContentLength(size);
 
@@ -1784,12 +1767,12 @@ public class MutableCollection implements Collection {
     }
 
     @Override
-    public void setCreationTime(final long ms) {
+    public void setCreated(final long ms) {
         created = ms;
     }
 
     @Override
-    public long getCreationTime() {
+    public long getCreated() {
         return created;
     }
 

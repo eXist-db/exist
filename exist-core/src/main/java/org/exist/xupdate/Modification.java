@@ -307,7 +307,7 @@ public abstract class Modification {
 	        {fragmentationLimit = (Integer) property;}
 	    for(final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
 	        final DocumentImpl next = i.next();
-	        if(next.getMetadata().getSplitCount() > fragmentationLimit)
+	        if(next.getSplitCount() > fragmentationLimit)
 	            {broker.defragXMLResource(transaction, next);}
 	        broker.checkXMLResourceConsistency(next);
 	    }

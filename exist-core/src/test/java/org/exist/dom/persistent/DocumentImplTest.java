@@ -48,85 +48,6 @@ import org.junit.runner.RunWith;
 public class DocumentImplTest {
 
     @Test
-    public void copyOf_calls_getMetadata() throws PermissionDeniedException {
-
-        BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
-        Database mockDatabase = EasyMock.createMock(Database.class);
-        DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
-        Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
-        Group mockCurrentSubjectGroup= EasyMock.createMock(Group.class);
-        SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
-
-        //test values
-        final DocumentMetadata otherMetadata = new DocumentMetadata();
-
-        //expectations
-        expect(mockBrokerPool.getSecurityManager()).andReturn(mockSecurityManager).times(2);
-        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
-        expect(mockDatabase.getActiveBroker()).andReturn(mockBroker).times(2);
-        expect(mockBroker.getCurrentSubject()).andReturn(mockCurrentSubject).times(2);
-        expect(mockCurrentSubject.getUserMask()).andReturn(Permission.DEFAULT_UMASK).times(2);
-        expect(mockCurrentSubject.getId()).andReturn(RealmImpl.SYSTEM_ACCOUNT_ID).times(2);
-        expect(mockCurrentSubject.getDefaultGroup()).andReturn(mockCurrentSubjectGroup).times(2);
-        expect(mockCurrentSubjectGroup.getId()).andReturn(RealmImpl.DBA_GROUP_ID).times(2);
-
-        replay(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
-
-        //test setup
-        TestableDocumentImpl doc = new TestableDocumentImpl(mockBrokerPool, 888);
-        DocumentImpl other = new DocumentImpl(mockBrokerPool, 999);
-        other.setMetadata(otherMetadata);
-
-        //actions
-        doc.copyOf(mockBroker, other, (DocumentImpl)null);
-
-        verify(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
-
-        //assertions
-        assertEquals(1, doc.getMetadata_invCount());
-    }
-
-    @Test
-    public void copyOf_calls_metadata_copyOf() throws PermissionDeniedException {
-        BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
-        Database mockDatabase = EasyMock.createMock(Database.class);
-        DBBroker mockBroker = EasyMock.createMock(DBBroker.class);
-        Subject mockCurrentSubject = EasyMock.createMock(Subject.class);
-        Group mockCurrentSubjectGroup= EasyMock.createMock(Group.class);
-        SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
-
-        //test values
-        final TestableDocumentMetadata docMetadata = new TestableDocumentMetadata();
-        final DocumentMetadata otherMetadata = new DocumentMetadata();
-
-        //expectations
-        expect(mockBrokerPool.getSecurityManager()).andReturn(mockSecurityManager).times(2);
-        expect(mockSecurityManager.getDatabase()).andReturn(mockDatabase).times(2);
-        expect(mockDatabase.getActiveBroker()).andReturn(mockBroker).times(2);
-        expect(mockBroker.getCurrentSubject()).andReturn(mockCurrentSubject).times(2);
-        expect(mockCurrentSubject.getUserMask()).andReturn(Permission.DEFAULT_UMASK).times(2);
-        expect(mockCurrentSubject.getId()).andReturn(RealmImpl.SYSTEM_ACCOUNT_ID).times(2);
-        expect(mockCurrentSubject.getDefaultGroup()).andReturn(mockCurrentSubjectGroup).times(2);
-        expect(mockCurrentSubjectGroup.getId()).andReturn(RealmImpl.DBA_GROUP_ID).times(2);
-
-        replay(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
-
-        //test setup
-        DocumentImpl doc = new DocumentImpl(mockBrokerPool, 888);
-        doc.setMetadata(docMetadata);
-        DocumentImpl other = new DocumentImpl(mockBrokerPool, 999);
-        other.setMetadata(otherMetadata);
-
-        //actions
-        doc.copyOf(mockBroker, other, (DocumentImpl)null);
-
-        verify(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
-
-        //assertions
-        assertEquals(1, docMetadata.getCopyOf_invCount());
-    }
-
-    @Test
     public void copyOf_updates_metadata_created_and_lastModified() throws PermissionDeniedException {
         BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
         Database mockDatabase = EasyMock.createMock(Database.class);
@@ -136,8 +57,6 @@ public class DocumentImplTest {
         SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
 
         //test values
-        final DocumentMetadata docMetadata = new TestableDocumentMetadata();
-        final DocumentMetadata otherMetadata = new DocumentMetadata();
         final long otherCreated = System.currentTimeMillis() - 2000;
         final long otherLastModified = System.currentTimeMillis() - 1000;
 
@@ -155,9 +74,7 @@ public class DocumentImplTest {
 
         //test setup
         DocumentImpl doc = new DocumentImpl(mockBrokerPool, 888);
-        doc.setMetadata(docMetadata);
         DocumentImpl other = new DocumentImpl(mockBrokerPool, 999);
-        other.setMetadata(otherMetadata);
 
         //actions
         doc.copyOf(mockBroker, other, (DocumentImpl)null);
@@ -165,8 +82,8 @@ public class DocumentImplTest {
         verify(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
         //assertions
-        assertThat(otherCreated, new LessThan(docMetadata.getCreated()));
-        assertThat(otherLastModified, new LessThan(docMetadata.getLastModified()));
+        assertThat(otherCreated, new LessThan(doc.getCreated()));
+        assertThat(otherLastModified, new LessThan(doc.getLastModified()));
     }
 
     @Test
@@ -257,40 +174,6 @@ public class DocumentImplTest {
         assertFalse(doc.isSameNode(text));
 
         verify(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
-    }
-
-    public class TestableDocumentImpl extends DocumentImpl {
-
-        private int getMetadata_invCount = 0;
-        private DocumentMetadata meta = new DocumentMetadata();
-
-        public TestableDocumentImpl(BrokerPool pool, int docId) {
-            super(pool, docId);
-        }
-
-        public int getMetadata_invCount() {
-            return getMetadata_invCount;
-        }
-
-        @Override
-        public DocumentMetadata getMetadata() {
-            getMetadata_invCount++;
-            return meta;
-        }
-    }
-
-    public class TestableDocumentMetadata extends DocumentMetadata {
-
-        private int copyOf_invCount = 0;
-
-        public int getCopyOf_invCount() {
-            return copyOf_invCount;
-        }
-
-        @Override
-        public void copyOf(DocumentMetadata other) {
-            copyOf_invCount++;
-        }
     }
 
     public class LessThan extends BaseMatcher<Long> {

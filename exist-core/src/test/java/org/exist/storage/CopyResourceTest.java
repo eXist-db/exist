@@ -446,7 +446,7 @@ public class CopyResourceTest {
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final LockedDocument lockedDoc = broker.getXMLResource(TEST_COLLECTION_URI.append(docName), LockMode.READ_LOCK)) {
 
-            return lockedDoc.getDocument().getMetadata().getCreated();
+            return lockedDoc.getDocument().getCreated();
         }
     }
 
@@ -455,7 +455,7 @@ public class CopyResourceTest {
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final LockedDocument lockedDoc = broker.getXMLResource(TEST_COLLECTION_URI.append(docName), LockMode.READ_LOCK)) {
 
-            return lockedDoc.getDocument().getMetadata().getLastModified();
+            return lockedDoc.getDocument().getLastModified();
         }
     }
 
@@ -470,8 +470,8 @@ public class CopyResourceTest {
             assertEquals("Group value was not expected", expectedGroup, permission.getGroup().getName());
             assertEquals("Mode value was not expected", expectedMode, permission.getMode());
 
-            assertThat("Created value is not correct", doc.getMetadata().getCreated(), expectedCreated);
-            assertThat("LastModified value is not correct", doc.getMetadata().getLastModified(), expectedLastModified);
+            assertThat("Created value is not correct", doc.getCreated(), expectedCreated);
+            assertThat("LastModified value is not correct", doc.getLastModified(), expectedLastModified);
         }
     }
 

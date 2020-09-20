@@ -1313,7 +1313,7 @@ public class Configurator {
                 txn.acquireCollectionLock(() -> pool.getLockManager().acquireCollectionWriteLock(collection.getURI()));
                 final IndexInfo info = collection.validateXMLResource(txn, broker, uri, data);
                 final DocumentImpl doc = info.getDocument();
-                doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
+                doc.setMimeType(MimeType.XML_TYPE.getName());
                 PermissionFactory.chmod(broker, doc.getPermissions(), Optional.of(Permission.DEFAULT_SYSTEM_RESOURCE_PERM), Optional.empty());
                 fullURI = getFullURI(pool, doc.getURI());
                 saving.add(fullURI);

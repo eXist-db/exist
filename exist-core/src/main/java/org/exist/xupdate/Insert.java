@@ -107,7 +107,7 @@ public class Insert extends Modification {
                         parent.insertAfter(transaction, children, node);
                         break;
                 }
-                doc.getMetadata().setLastModified(System.currentTimeMillis());
+                doc.setLastModified(System.currentTimeMillis());
                 modifiedDocuments.add(doc);
                 broker.storeXMLResource(transaction, doc);
                 notifier.notifyUpdate(doc, UpdateListener.UPDATE);

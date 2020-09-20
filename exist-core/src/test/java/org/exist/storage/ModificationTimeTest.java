@@ -72,14 +72,14 @@ public class ModificationTimeTest {
             BinaryDocument binaryDoc = storeBinary(broker, transaction, filename, data, mimeType);
             assertNotNull(binaryDoc);
 
-            final long modificationTimeBefore = binaryDoc.getMetadata().getLastModified();
+            final long modificationTimeBefore = binaryDoc.getLastModified();
 
             Thread.sleep(1);
 
             binaryDoc = storeBinary(broker, transaction, filename, data, mimeType);
             assertNotNull(binaryDoc);
 
-            final long modificationTimeAfter = binaryDoc.getMetadata().getLastModified();
+            final long modificationTimeAfter = binaryDoc.getLastModified();
             //check the mimetype has been preserved across database restarts
             assertNotEquals(modificationTimeBefore, modificationTimeAfter);
 
@@ -167,7 +167,7 @@ public class ModificationTimeTest {
         final long modificationTimeBefore;
         try (final LockedDocument lockedDocument = broker.getXMLResource(TEST_COLLECTION_URI.append(name), Lock.LockMode.READ_LOCK)) {
             assertNotNull(lockedDocument);
-            return lockedDocument.getDocument().getMetadata().getLastModified();
+            return lockedDocument.getDocument().getLastModified();
         }
     }
 }

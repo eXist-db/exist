@@ -55,7 +55,7 @@ public class DBSource extends AbstractSource {
         this.broker = broker;
         this.doc = doc;
         this.key = doc.getURI();
-        this.lastModified = doc.getMetadata().getLastModified();
+        this.lastModified = doc.getLastModified();
         this.checkEncoding = checkXQEncoding;
     }
 
@@ -91,7 +91,7 @@ public class DBSource extends AbstractSource {
         try(final LockedDocument lockedDoc = broker.getXMLResource(key, LockMode.READ_LOCK);) {
             if(lockedDoc == null) {
                 result = Validity.INVALID;
-            } else if(lockedDoc.getDocument().getMetadata().getLastModified() > lastModified) {
+            } else if(lockedDoc.getDocument().getLastModified() > lastModified) {
                 result = Validity.INVALID;
             } else {
                 result = Validity.VALID;

@@ -495,7 +495,7 @@ public class Eval extends BasicFunction {
                         throw new XPathException(this, "source for module " + location + " not found in database");
                     }
                     if (sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
-                            !"application/xquery".equals(sourceDoc.getMetadata().getMimeType())) {
+                            !"application/xquery".equals(sourceDoc.getMimeType())) {
                         throw new XPathException(this, "source for module " + location + " is not an XQuery or " +
                         "declares a wrong mime-type");
                     }

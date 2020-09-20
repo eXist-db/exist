@@ -145,7 +145,7 @@ public class XMLDBSetMimeType extends BasicFunction {
 
             } else {
                 // set new mime-type
-                doc.getMetadata().setMimeType(newMimeType.getName());
+                doc.setMimeType(newMimeType.getName());
                 
                 // store meta data into database
                 broker.storeMetadata(txn, doc);
@@ -184,7 +184,7 @@ public class XMLDBSetMimeType extends BasicFunction {
             if (doc == null) {
                 throw new XPathException("Resource '" + pathUri + "' does not exist.");
             } else {
-                final String mimetype = ((DocumentImpl) doc).getMetadata().getMimeType();
+                final String mimetype = doc.getMimeType();
                 returnValue = MimeTable.getInstance().getContentType(mimetype);
             }
 

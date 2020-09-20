@@ -112,11 +112,6 @@ public class LockedCollection implements Collection {
     }
 
     @Override
-    public CollectionMetadata getMetadata() {
-        return collection.getMetadata();
-    }
-
-    @Override
     public Permission getPermissions() {
         return collection.getPermissions();
     }
@@ -132,14 +127,13 @@ public class LockedCollection implements Collection {
     }
 
     @Override
-    @Deprecated
-    public long getCreationTime() {
-        return collection.getCreationTime();
+    public long getCreated() {
+        return collection.getCreated();
     }
 
     @Override
-    public void setCreationTime(final long timestamp) {
-        collection.setCreationTime(timestamp);
+    public void setCreated(final long timestamp) {
+        collection.setCreated(timestamp);
     }
 
     @Override

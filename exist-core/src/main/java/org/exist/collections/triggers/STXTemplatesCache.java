@@ -87,7 +87,7 @@ public class STXTemplatesCache {
         try(final ManagedDocumentLock documentLock = broker.getBrokerPool().getLockManager().acquireDocumentReadLock(stylesheet.getURI())) {
 
             final XmldbURI stylesheetUri = stylesheet.getURI();
-            final long lastModified = stylesheet.getMetadata().getLastModified();
+            final long lastModified = stylesheet.getLastModified();
 
             CachedTemplate cachedTemplate = cache.getIfPresent(stylesheetUri);
             if (cachedTemplate != null && lastModified > cachedTemplate.getLastUpdated()) {

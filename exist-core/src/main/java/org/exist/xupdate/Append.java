@@ -85,7 +85,7 @@ public class Append extends Modification {
 					throw new PermissionDeniedException("User '" + broker.getCurrentSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
 				}
 				node.appendChildren(transaction, children, child);
-				doc.getMetadata().setLastModified(System.currentTimeMillis());
+				doc.setLastModified(System.currentTimeMillis());
 				modifiedDocuments.add(doc);
 				broker.storeXMLResource(transaction, doc);
 				notifier.notifyUpdate(doc, UpdateListener.UPDATE);

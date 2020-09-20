@@ -55,7 +55,7 @@ public class StoreBinaryTest {
         //store the xquery document
         BinaryDocument binaryDoc = storeBinary(xqueryFilename, xquery, xqueryMimeType);
         assertNotNull(binaryDoc);
-        assertEquals(xqueryMimeType, binaryDoc.getMetadata().getMimeType());
+        assertEquals(xqueryMimeType, binaryDoc.getMimeType());
 
         //make a note of the binary documents uri
         final XmldbURI binaryDocUri = binaryDoc.getFileURI();
@@ -68,7 +68,7 @@ public class StoreBinaryTest {
         assertNotNull(binaryDoc);
 
         //check the mimetype has been preserved across database restarts
-        assertEquals(xqueryMimeType, binaryDoc.getMetadata().getMimeType());
+        assertEquals(xqueryMimeType, binaryDoc.getMimeType());
     }
 
     @ClassRule

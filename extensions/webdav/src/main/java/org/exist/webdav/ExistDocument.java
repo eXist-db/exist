@@ -108,9 +108,9 @@ public class ExistDocument extends ExistResource {
                 }
 
                 // Get meta data
-                creationTime = document.getMetadata().getCreated();
-                lastModified = document.getMetadata().getLastModified();
-                mimeType = document.getMetadata().getMimeType();
+                creationTime = document.getCreated();
+                lastModified = document.getLastModified();
+                mimeType = document.getMimeType();
 
                 // Retrieve perssions
                 permissions = document.getPermissions();
@@ -320,7 +320,7 @@ public class ExistDocument extends ExistResource {
             }
 
             // Retrieve Locktoken from document metadata
-            org.exist.dom.persistent.LockToken token = document.getMetadata().getLockToken();
+            org.exist.dom.persistent.LockToken token = document.getLockToken();
             if (token == null) {
 
                 if (LOG.isDebugEnabled()) {
@@ -412,7 +412,7 @@ public class ExistDocument extends ExistResource {
             inputToken.setTimeOut(LockToken.LOCK_TIMEOUT_INFINITE);
 
             // Update document
-            document.getMetadata().setLockToken(inputToken);
+            document.setLockToken(inputToken);
             document.setUserLock(subject);
 
             // Make token persistant
@@ -483,7 +483,7 @@ public class ExistDocument extends ExistResource {
 
             // Update document
             document.setUserLock(null);
-            document.getMetadata().setLockToken(null);
+            document.setLockToken(null);
 
             // Make it persistant
             broker.storeMetadata(txn, document);
@@ -640,7 +640,7 @@ public class ExistDocument extends ExistResource {
                 throw new PermissionDeniedException(userLock.getName());
             }
 
-            LockToken lockToken = document.getMetadata().getLockToken();
+            LockToken lockToken = document.getLockToken();
 
             if (!token.equals(lockToken.getOpaqueLockToken())) {
                 if (LOG.isDebugEnabled()) {

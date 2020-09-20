@@ -324,7 +324,7 @@ public class XIncludeFilter implements Receiver {
 
             /* Check if the document is a stored XQuery */
             if (doc != null && doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                xqueryDoc = "application/xquery".equals(doc.getMetadata().getMimeType());
+                xqueryDoc = "application/xquery".equals(doc.getMimeType());
             }
         }
         // The document could not be found: check if it points to an external resource

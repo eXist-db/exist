@@ -166,7 +166,7 @@ public class Sync extends BasicFunction {
 			}
 			for (final Iterator<DocumentImpl> i = collection.iterator(context.getBroker()); i.hasNext(); ) {
 				DocumentImpl doc = i.next();
-				if (startDate == null || doc.getMetadata().getLastModified() > startDate.getTime()) {
+				if (startDate == null || doc.getLastModified() > startDate.getTime()) {
 					if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
 						saveBinary(targetDir, (BinaryDocument) doc, output);
 					} else {
@@ -197,7 +197,7 @@ public class Sync extends BasicFunction {
 		Path targetFile = targetDir.resolve(doc.getFileURI().toASCIIString());
 		final SAXSerializer sax = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
 		try {
-			if (Files.exists(targetFile) && Files.getLastModifiedTime(targetFile).compareTo(FileTime.fromMillis(doc.getMetadata().getLastModified())) >= 0) {
+			if (Files.exists(targetFile) && Files.getLastModifiedTime(targetFile).compareTo(FileTime.fromMillis(doc.getLastModified())) >= 0) {
 				return;
 			}
     	    boolean isRepoXML = Files.exists(targetFile) && FileUtils.fileName(targetFile).equals("repo.xml");
@@ -207,7 +207,7 @@ public class Sync extends BasicFunction {
 			output.addAttribute(new QName("name", XMLConstants.NULL_NS_URI), doc.getFileURI().toString());
 			output.addAttribute(new QName("collection", XMLConstants.NULL_NS_URI), doc.getCollection().getURI().toString());
 			output.addAttribute(new QName("type", XMLConstants.NULL_NS_URI), "xml");
-			output.addAttribute(new QName("modified", XMLConstants.NULL_NS_URI), new DateTimeValue(new Date(doc.getMetadata().getLastModified())).getStringValue());
+			output.addAttribute(new QName("modified", XMLConstants.NULL_NS_URI), new DateTimeValue(new Date(doc.getLastModified())).getStringValue());
             output.endElement();
 
             if (isRepoXML) {
@@ -275,7 +275,7 @@ public class Sync extends BasicFunction {
 	private void saveBinary(final Path targetDir, final BinaryDocument binary, final MemTreeBuilder output) {
 		final Path targetFile = targetDir.resolve(binary.getFileURI().toASCIIString());
 		try {
-			if (Files.exists(targetFile) && Files.getLastModifiedTime(targetFile).compareTo(FileTime.fromMillis(binary.getMetadata().getLastModified())) >= 0) {
+			if (Files.exists(targetFile) && Files.getLastModifiedTime(targetFile).compareTo(FileTime.fromMillis(binary.getLastModified())) >= 0) {
 				return;
 			}
 
@@ -284,7 +284,7 @@ public class Sync extends BasicFunction {
 			output.addAttribute(new QName("name"), binary.getFileURI().toString());
 			output.addAttribute(new QName("collection"), binary.getCollection().getURI().toString());
 			output.addAttribute(new QName("type"), "binary");
-			output.addAttribute(new QName("modified"), new DateTimeValue(new Date(binary.getMetadata().getLastModified())).getStringValue());
+			output.addAttribute(new QName("modified"), new DateTimeValue(new Date(binary.getLastModified())).getStringValue());
             output.endElement();
 
 			try(final InputStream is = context.getBroker().getBinaryResource(binary)) {

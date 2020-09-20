@@ -48,7 +48,7 @@ import java.util.Optional;
 
 public class PackageTriggerTest {
 
-    static final String xarFile = "triggertest-1.0.0.xar";
+    static final String xarFile = "triggertest-1.1.0.xar";
     static final XmldbURI triggerTestCollection = XmldbURI.create("/db");
     static final XmldbURI xarUri = triggerTestCollection.append(xarFile);
 

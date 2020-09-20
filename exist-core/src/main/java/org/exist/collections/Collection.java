@@ -104,13 +104,6 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
     void setPath(XmldbURI path, boolean updateChildren);
 
     /**
-     * Get the metadata of the Collection
-     *
-     * @return The Collection metadata
-     */
-    CollectionMetadata getMetadata();
-
-    /**
      * Get the Collection permissions
      *
      * @return The permissions of this Collection
@@ -138,18 +131,15 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * Gets the creation timestamp of this Collection
      *
      * @return timestamp the creation timestamp in milliseconds
-     *
-     * @deprecated Use {@link #getMetadata()} {@link CollectionMetadata#getCreated()}
      */
-    @Deprecated
-    long getCreationTime();
+    long getCreated();
 
     /**
      * Sets the creation timestamp of this Collection
      *
      * @param timestamp the creation timestamp in milliseconds
      */
-    @EnsureContainerLocked(mode=WRITE_LOCK) void setCreationTime(long timestamp);
+    @EnsureContainerLocked(mode=WRITE_LOCK) void setCreated(long timestamp);
 
     /**
      * Get the Collection Configuration of this Collection
@@ -1072,14 +1062,14 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
 
         public void read(final Collection collection) {
             setPermissions(collection.getPermissionsNoLock());
-            setCreated(collection.getCreationTime());
+            setCreated(collection.getCreated());
         }
     }
 
     class DocumentEntry extends CollectionEntry {
         public DocumentEntry(final DocumentImpl document) {
             super(document.getURI(), document.getPermissions());
-            setCreated(document.getMetadata().getCreated());
+            setCreated(document.getCreated());
         }
 
         @Override

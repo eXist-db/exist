@@ -85,7 +85,7 @@ public class FindLastModified extends BasicFunction {
 
         for (final NodeProxy proxy : nodes) {
             final DocumentImpl doc = proxy.getOwnerDocument();
-            final long modified = doc.getMetadata().getLastModified();
+            final long modified = doc.getLastModified();
 
             boolean matches;
             if (this.isCalledAs("find-last-modified-since")) {

@@ -398,7 +398,7 @@ public class SystemExport {
             attr.addAttribute(Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf(currVersion));
             Backup.writeUnixStylePermissionAttributes(attr, perm);
             try {
-                attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", new DateTimeValue(new Date(current.getCreationTime())).getStringValue());
+                attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", new DateTimeValue(new Date(current.getCreated())).getStringValue());
             } catch (final XPathException e) {
                 e.printStackTrace();
             }
@@ -485,7 +485,7 @@ public class SystemExport {
         if ((monitor != null) && !monitor.proceed()) {
             throw (new TerminatedException("system export terminated by db"));
         }
-        final boolean needsBackup = (prevBackup == null) || (date.getTime() < doc.getMetadata().getLastModified());
+        final boolean needsBackup = (prevBackup == null) || (date.getTime() < doc.getLastModified());
 
         if (needsBackup) {
             // Note: do not auto-close the output stream or the zip will be closed!
@@ -535,26 +535,10 @@ public class SystemExport {
         // be careful when accessing document metadata: it is stored in a
         // different place than the
         // main document info and could thus be damaged
-        DocumentMetadata metadata = null;
 
         try {
-            metadata = doc.getMetadata();
-        } catch (final Exception e) {
-            // LOG.warn(e.getMessage(), e);
-        }
-
-        try {
-            final String created;
-            final String modified;
-
-            // metadata could be damaged
-            if (metadata != null) {
-                created = new DateTimeValue(new Date(metadata.getCreated())).getStringValue();
-                modified = new DateTimeValue(new Date(metadata.getLastModified())).getStringValue();
-            } else {
-                created = new DateTimeValue().getStringValue();
-                modified = created;
-            }
+            final String created = new DateTimeValue(new Date(doc.getCreated())).getStringValue();
+            final String modified = new DateTimeValue(new Date(doc.getLastModified())).getStringValue();
             attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", created);
             attr.addAttribute(Namespaces.EXIST_NS, "modified", "modified", "CDATA", modified);
         } catch (final XPathException e) {
@@ -564,8 +548,8 @@ public class SystemExport {
         attr.addAttribute(Namespaces.EXIST_NS, "filename", "filename", "CDATA", Backup.encode(URIUtils.urlDecodeUtf8(doc.getFileURI())));
         String mimeType = "application/xml";
 
-        if ((metadata != null) && (metadata.getMimeType() != null)) {
-            mimeType = Backup.encode(metadata.getMimeType());
+        if (doc.getMimeType() != null) {
+            mimeType = Backup.encode(doc.getMimeType());
         }
         attr.addAttribute(Namespaces.EXIST_NS, "mimetype", "mimetype", "CDATA", mimeType);
 

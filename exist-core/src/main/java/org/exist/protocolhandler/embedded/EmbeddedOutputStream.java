@@ -150,7 +150,7 @@ public class EmbeddedOutputStream extends OutputStream {
                         final InputSource inputsource = new FileInputSource(tempFile);
                         final IndexInfo info = collection.validateXMLResource(txn, broker, documentUri, inputsource);
                         final DocumentImpl doc = info.getDocument();
-                        doc.getMetadata().setMimeType(contentType);
+                        doc.setMimeType(contentType);
                         collection.store(txn, broker, info, inputsource);
 
                     } else {

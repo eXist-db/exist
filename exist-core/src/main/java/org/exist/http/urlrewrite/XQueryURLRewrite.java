@@ -749,7 +749,7 @@ public class XQueryURLRewrite extends HttpServlet {
             }
 
             if (controllerDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
-                    !"application/xquery".equals(controllerDoc.getMetadata().getMimeType())) {
+                    !"application/xquery".equals(controllerDoc.getMimeType())) {
                 LOG.warn("XQuery resource: " + query + " is not an XQuery or declares a wrong mime-type");
                 return null;
             }
@@ -881,7 +881,7 @@ public class XQueryURLRewrite extends HttpServlet {
 
                     final DocumentImpl sourceDoc = lockedSourceDoc.getDocument();
                     if (sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
-                            !"application/xquery".equals(sourceDoc.getMetadata().getMimeType())) {
+                            !"application/xquery".equals(sourceDoc.getMimeType())) {
                         throw new ServletException("XQuery resource: " + query + " is not an XQuery or " +
                                 "declares a wrong mime-type");
                     }

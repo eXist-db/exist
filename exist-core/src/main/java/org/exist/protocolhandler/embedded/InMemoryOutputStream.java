@@ -134,7 +134,7 @@ public class InMemoryOutputStream extends OutputStream {
             final InputSource inputsource = new InputSource(is);
             final IndexInfo info = collection.validateXMLResource(txn, broker, documentUri, inputsource);
             final DocumentImpl doc = info.getDocument();
-            doc.getMetadata().setMimeType(contentType);
+            doc.setMimeType(contentType);
             collection.store(txn, broker, info, inputsource);
           } else {
             collection.addBinaryResource(txn, broker, documentUri, is, contentType, length);

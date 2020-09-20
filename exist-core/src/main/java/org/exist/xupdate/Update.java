@@ -115,7 +115,7 @@ public class Update extends Modification {
                     default:
                         throw new EXistException("unsupported node-type");
                 }
-                doc.getMetadata().setLastModified(System.currentTimeMillis());
+                doc.setLastModified(System.currentTimeMillis());
                 modifiedDocuments.add(doc);
                 broker.storeXMLResource(transaction, doc);
                 notifier.notifyUpdate(doc, UpdateListener.UPDATE);
