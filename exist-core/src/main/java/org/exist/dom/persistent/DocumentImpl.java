@@ -129,6 +129,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     private Permission permissions = null;
 
+    private DocumentMetadata metadata = null;
+
     /**
      * The mimeType of the document
      */
@@ -392,6 +394,15 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         this.userLock = userLock;
     }
 
+    /**
+     * @deprecated Will be removed when org.exist.dom.persistent.DocumentMetadata is removed
+     * @return the internal user lock number
+     */
+    @Deprecated
+    int getUserLockInternal() {
+        return userLock;
+    }
+
     public LockToken getLockToken() {
         return lockToken;
     }
@@ -455,6 +466,35 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     @EnsureContainerLocked(mode=WRITE_LOCK)
     public void setPermissions(final Permission perm) {
         permissions = perm;
+    }
+
+    /**
+     * The method <code>setMetadata</code>
+     *
+     * @param meta a <code>DocumentMetadata</code> value
+     * @deprecated This function is considered a security problem
+     * and should be removed, move code to copyOf or Constructor
+     */
+    @Deprecated
+    @EnsureContainerLocked(mode=WRITE_LOCK)
+    public void setMetadata(final DocumentMetadata meta) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Get the metadata of the Document
+     *
+     * @return The Document metadata
+     *
+     * @deprecated Will be removed in eXist-db 6.0.0. Instead use the direct methods on this class.
+     */
+    @Deprecated
+    @EnsureContainerLocked(mode=READ_LOCK)
+    public DocumentMetadata getMetadata() {
+        if (metadata == null) {
+            metadata = new DocumentMetadata(this);
+        }
+        return metadata;
     }
 
     /************************************************
@@ -695,27 +735,31 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             }
 
             // document attributes
-            ostream.writeLong(created);
-            ostream.writeLong(lastModified);
-            ostream.writeInt(pool.getSymbols().getMimeTypeId(mimeType));
-            ostream.writeInt(pageCount);
-            ostream.writeInt(userLock);
-            if (docType != null) {
-                ostream.writeByte(HAS_DOCTYPE);
-                ((DocumentTypeImpl) docType).write(ostream);
-            } else {
-                ostream.writeByte(NO_DOCTYPE);
-            }
-            if (lockToken != null) {
-                ostream.writeByte(HAS_LOCKTOKEN);
-                lockToken.write(ostream);
-            } else {
-                ostream.writeByte(NO_LOCKTOKEN);
-            }
+            writeDocumentAttributes(pool.getSymbols(), ostream);
 
         } catch(final IOException e) {
             LOG.warn("io error while writing document data", e);
             //TODO : raise exception ?
+        }
+    }
+
+    void writeDocumentAttributes(final SymbolTable symbolTable, final VariableByteOutputStream ostream) throws IOException {
+        ostream.writeLong(created);
+        ostream.writeLong(lastModified);
+        ostream.writeInt(symbolTable.getMimeTypeId(mimeType));
+        ostream.writeInt(pageCount);
+        ostream.writeInt(userLock);
+        if (docType != null) {
+            ostream.writeByte(HAS_DOCTYPE);
+            ((DocumentTypeImpl) docType).write(ostream);
+        } else {
+            ostream.writeByte(NO_DOCTYPE);
+        }
+        if (lockToken != null) {
+            ostream.writeByte(HAS_LOCKTOKEN);
+            lockToken.write(ostream);
+        } else {
+            ostream.writeByte(NO_LOCKTOKEN);
         }
     }
 

@@ -104,6 +104,16 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
     void setPath(XmldbURI path, boolean updateChildren);
 
     /**
+     * Get the metadata of the Collection
+     *
+     * @return The Collection metadata
+     *
+     * @deprecated Will be removed in eXist-db 6.0.0. Instead use the direct methods on this class.
+     */
+    @Deprecated
+    CollectionMetadata getMetadata();
+
+    /**
      * Get the Collection permissions
      *
      * @return The permissions of this Collection

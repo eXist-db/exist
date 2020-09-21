@@ -111,6 +111,12 @@ public class LockedCollection implements Collection {
         collection.setPath(path, updateChildren);
     }
 
+    @Deprecated
+    @Override
+    public CollectionMetadata getMetadata() {
+        return collection.getMetadata();
+    }
+
     @Override
     public Permission getPermissions() {
         return collection.getPermissions();

@@ -112,6 +112,7 @@ public class MutableCollection implements Collection {
     private long created;
     private volatile boolean isTempCollection;
     private final Permission permissions;
+    @Deprecated private CollectionMetadata collectionMetadata = null;
 
     /**
      * Constructs a Collection Object (not yet persisted)
@@ -800,6 +801,15 @@ public class MutableCollection implements Collection {
     @Override
     public Permission getPermissionsNoLock() {
         return permissions;
+    }
+
+    @Deprecated
+    @Override
+    public CollectionMetadata getMetadata() {
+        if (collectionMetadata == null) {
+            collectionMetadata = new CollectionMetadata(this);
+        }
+        return collectionMetadata;
     }
 
     @Override
