@@ -26,8 +26,8 @@
  */
 package org.exist.extensions.exquery.restxq.impl.adapters;
 
-import org.apache.commons.collections.BidiMap;
-import org.apache.commons.collections.bidimap.DualHashBidiMap;
+import org.apache.commons.collections4.BidiMap;
+import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.exist.xquery.value.Type;
 
 /**
