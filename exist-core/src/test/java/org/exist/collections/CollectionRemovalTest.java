@@ -21,9 +21,10 @@
  */
 package org.exist.collections;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
+import org.exist.TestUtils;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Permission;
@@ -42,6 +43,7 @@ import org.exist.xmldb.EXistXPathQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
 
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.junit.Assert.*;
 
 import org.xml.sax.SAXException;
@@ -52,6 +54,8 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -170,66 +174,53 @@ public class CollectionRemovalTest {
     }
 
     @Before
-	public void initDB() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, LockException, ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    public void initDB() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
-			Collection root = broker.getOrCreateCollection(transaction,
-					TestConstants.TEST_COLLECTION_URI);
-            assertNotNull(root);
-            Permission perms = root.getPermissions();
-            // collection is world-writable
-            perms.setMode(0744);
-			broker.saveCollection(transaction, root);
+            final int worldReadable = 0744;
+            final int worldForbidden = 0700;
 
-            Collection test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
-            assertNotNull(test);
-            perms = test.getPermissions();
-            // collection is world-writable
-            perms.setMode(0744);
-			broker.saveCollection(transaction, test);
+            /*
+             * Creates 3 collections: /db/test, /db/test/test2, /db/test/test2/test3 and /db/test/test2/test4,
+             * and stores one document into each.
+             * Collection /db/test/test2/test3 is only readable by the owner (i.e. admin user).
+             */
+            final List<Tuple2<XmldbURI, Integer>> collectionUriAndModes = Arrays.asList(
+                    Tuple(TestConstants.TEST_COLLECTION_URI2,                    worldReadable),
+                    Tuple(TestConstants.TEST_COLLECTION_URI3,                    worldForbidden),
+                    Tuple(TestConstants.TEST_COLLECTION_URI2.append("test4"),    worldReadable)
 
-			IndexInfo info = test.validateXMLResource(transaction, broker,
-					XmldbURI.create("document.xml"), DATA);
-			assertNotNull(info);
-			test.store(transaction, broker, info, DATA);
+            );
 
-            Collection childCol1 = broker.getOrCreateCollection(transaction,
-                    TestConstants.TEST_COLLECTION_URI2.append("test4"));
-            assertNotNull(childCol1);
-            perms = childCol1.getPermissions();
-            // collection only accessible to user
-            perms.setMode(0744);
-            broker.saveCollection(transaction, childCol1);
+            // creat collections
+            for (final Tuple2<XmldbURI, Integer> collectionUriAndMode : collectionUriAndModes) {
+                final XmldbURI collectionUri = collectionUriAndMode._1;
+                final int mode = collectionUriAndMode._2;
 
-            info = childCol1.validateXMLResource(transaction, broker,
-					XmldbURI.create("document.xml"), DATA);
-			assertNotNull(info);
-			childCol1.store(transaction, broker, info, DATA);
+                // create collection
+                final Collection collection = broker.getOrCreateCollection(transaction, collectionUri);
+                assertNotNull(collection);
+                final Permission perms = collection.getPermissions();
+                perms.setMode(mode);
+                broker.saveCollection(transaction, collection);
 
-            Collection childCol = broker.getOrCreateCollection(transaction,
-                    TestConstants.TEST_COLLECTION_URI3);
-            assertNotNull(childCol);
-            perms = childCol.getPermissions();
-            // collection only accessible to user
-            perms.setMode(0700);
-            broker.saveCollection(transaction, childCol);
-
-            info = childCol.validateXMLResource(transaction, broker,
-					XmldbURI.create("document.xml"), DATA);
-			assertNotNull(info);
-			childCol.store(transaction, broker, info, DATA);
+                // store document
+                final IndexInfo info = collection.validateXMLResource(transaction, broker, XmldbURI.create("document.xml"), DATA);
+                assertNotNull(info);
+                collection.store(transaction, broker, info, DATA);
+            }
 
             transact.commit(transaction);
-		}
-	}
+        }
+    }
 
     @After
     public void clearDB() throws XMLDBException {
         final org.xmldb.api.base.Collection root =
-                DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI.toString(), "admin", "");
+                DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
         service.removeCollection(".");
     }
