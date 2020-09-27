@@ -98,12 +98,12 @@ public class StylesheetResolverAndCompiler implements Stylesheet {
           throw new IOException("XSL stylesheet not found: "+docPath);
         }
         final DocumentImpl doc = lockedDocument.getDocument();
-        if (templates == null || doc.getMetadata().getLastModified() > lastModified) {
+        if (templates == null || doc.getLastModified() > lastModified) {
           if (LOG.isDebugEnabled()) {
             LOG.debug("compiling stylesheet " + doc.getURI());
           }
           templates = compileTemplates(broker, doc, errorListener);
-          lastModified = doc.getMetadata().getLastModified();
+          lastModified = doc.getLastModified();
         }
       }
 

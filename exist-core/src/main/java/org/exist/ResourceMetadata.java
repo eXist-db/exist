@@ -26,7 +26,10 @@ package org.exist;
  *
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  * @author Adam Retter
+ *
+ * @deprecated Will be removed in eXist-db 6.0.0
  */
+@Deprecated
 public interface ResourceMetadata {
 
     /**
@@ -34,6 +37,9 @@ public interface ResourceMetadata {
      *
      * @return the difference, measured in milliseconds, between the time when
      * the resource was created and midnight, January 1, 1970 UTC.
+     *
+     * @deprecated Will be removed in eXist-db 6.0.0
      */
+    @Deprecated
     long getCreated();
 }

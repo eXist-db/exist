@@ -499,12 +499,12 @@ public class RESTServer {
                     // method for specifying the serializer, or split
                     // the code into two methods. - deliriumsky
 
-                    if (xquery_mime_type.equals(resource.getMetadata().getMimeType())) {
+                    if (xquery_mime_type.equals(resource.getMimeType())) {
                         // Show the source of the XQuery
                         writeResourceAs(resource, broker, transaction, stylesheet, encoding,
                                 MimeType.TEXT_TYPE.getName(), outputProperties,
                                 request, response);
-                    } else if (xproc_mime_type.equals(resource.getMetadata().getMimeType())) {
+                    } else if (xproc_mime_type.equals(resource.getMimeType())) {
                         // Show the source of the XProc
                         writeResourceAs(resource, broker, transaction, stylesheet, encoding,
                                 MimeType.XML_TYPE.getName(), outputProperties,
@@ -525,11 +525,11 @@ public class RESTServer {
                 }
             } else {
                 try {
-                    if (xquery_mime_type.equals(resource.getMetadata().getMimeType())) {
+                    if (xquery_mime_type.equals(resource.getMimeType())) {
                         // Execute the XQuery
                         executeXQuery(broker, transaction, resource, request, response,
                                 outputProperties, servletPath.toString(), pathInfo);
-                    } else if (xproc_mime_type.equals(resource.getMetadata().getMimeType())) {
+                    } else if (xproc_mime_type.equals(resource.getMimeType())) {
                         // Execute the XProc
                         executeXProc(broker, transaction, resource, request, response,
                                 outputProperties, servletPath.toString(), pathInfo);
@@ -580,15 +580,14 @@ public class RESTServer {
                     throw new PermissionDeniedException(
                             "Permission to read resource " + path + " denied");
                 }
-                final DocumentMetadata metadata = resource.getMetadata();
-                response.setContentType(metadata.getMimeType());
+                response.setContentType(resource.getMimeType());
                 // As HttpServletResponse.setContentLength is limited to integers,
                 // (see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4187336)
                 // next sentence:
                 //	response.setContentLength(resource.getContentLength());
                 // must be set so
                 response.addHeader("Content-Length", Long.toString(resource.getContentLength()));
-                setCreatedAndLastModifiedHeaders(response, metadata.getCreated(), metadata.getLastModified());
+                setCreatedAndLastModifiedHeaders(response, resource.getCreated(), resource.getLastModified());
             } else {
                 try(final Collection col = broker.openCollection(pathUri, LockMode.READ_LOCK)) {
                     //no resource or collection
@@ -603,7 +602,7 @@ public class RESTServer {
                                 "Permission to read resource " + path + " denied");
                     }
                     response.setContentType(MimeType.XML_TYPE.getName() + "; charset=" + encoding);
-                    setCreatedAndLastModifiedHeaders(response, col.getCreationTime(), col.getCreationTime());
+                    setCreatedAndLastModifiedHeaders(response, col.getCreated(), col.getCreated());
                 }
             }
         }
@@ -666,9 +665,9 @@ public class RESTServer {
                 resource = lockedDocument == null ? null : lockedDocument.getDocument();
                 if (null != resource
                         && (resource.getResourceType() == DocumentImpl.BINARY_FILE
-                        && xquery_mime_type.equals(resource.getMetadata().getMimeType())
+                        && xquery_mime_type.equals(resource.getMimeType())
                         || resource.getResourceType() == DocumentImpl.XML_FILE
-                        && xproc_mime_type.equals(resource.getMetadata().getMimeType()))) {
+                        && xproc_mime_type.equals(resource.getMimeType()))) {
                     break; // found a binary file with mime-type xquery or XML file with mime-type xproc
 
                 } else if (null != resource) {
@@ -686,14 +685,14 @@ public class RESTServer {
             // either xquery binary file or xproc xml file
             if (resource != null) {
                 if (resource.getResourceType() == DocumentImpl.BINARY_FILE
-                        && xquery_mime_type.equals(resource.getMetadata().getMimeType())
+                        && xquery_mime_type.equals(resource.getMimeType())
                         || resource.getResourceType() == DocumentImpl.XML_FILE
-                        && xproc_mime_type.equals(resource.getMetadata().getMimeType())) {
+                        && xproc_mime_type.equals(resource.getMimeType())) {
 
                     // found an XQuery resource, fixup request values
                     final String pathInfo = pathUri.trimFromBeginning(servletPath).toString();
                     try {
-                        if (xquery_mime_type.equals(resource.getMetadata().getMimeType())) {
+                        if (xquery_mime_type.equals(resource.getMimeType())) {
                             // Execute the XQuery
                             executeXQuery(broker, transaction, resource, request, response,
                                     outputProperties, servletPath.toString(), pathInfo);
@@ -1096,7 +1095,7 @@ public class RESTServer {
                 if (mime.isXMLType()) {
                     cfis.mark(Integer.MAX_VALUE);
                     final IndexInfo info = collection.validateXMLResource(transaction, broker, docUri, new InputSource(cfis));
-                    info.getDocument().getMetadata().setMimeType(contentType);
+                    info.getDocument().setMimeType(contentType);
                     cfis.reset();
                     collection.store(transaction, broker, info, new InputSource(cfis));
                     response.setStatus(HttpServletResponse.SC_CREATED);
@@ -1197,7 +1196,7 @@ public class RESTServer {
                 resource = lockedDocument == null ? null : lockedDocument.getDocument();
                 if (null != resource
                         && (resource.getResourceType() == DocumentImpl.BINARY_FILE
-                        && xqueryType.equals(resource.getMetadata().getMimeType()))) {
+                        && xqueryType.equals(resource.getMimeType()))) {
                     break; // found a binary file with mime-type xquery or XML file with mime-type xproc
                 } else if (null != resource) {
                     // not an xquery or xproc resource. This means we have a path
@@ -1681,9 +1680,8 @@ public class RESTServer {
         }
 
         //get the document metadata
-        final DocumentMetadata metadata = resource.getMetadata();
-        final long lastModified = metadata.getLastModified();
-        setCreatedAndLastModifiedHeaders(response, metadata.getCreated(), lastModified);
+        final long lastModified = resource.getLastModified();
+        setCreatedAndLastModifiedHeaders(response, resource.getCreated(), lastModified);
 
 
         /**
@@ -1724,7 +1722,7 @@ public class RESTServer {
             // binary resource
 
             if (asMimeType == null) { // wasn't a mime-type specified?
-                asMimeType = resource.getMetadata().getMimeType();
+                asMimeType = resource.getMimeType();
             }
 
             if (asMimeType.startsWith("text/")) {
@@ -1782,7 +1780,7 @@ public class RESTServer {
 
                         response.setContentType(asMimeType + "; charset=" + encoding);
                     } else {
-                        asMimeType = resource.getMetadata().getMimeType();
+                        asMimeType = resource.getMimeType();
                         response.setContentType(asMimeType + "; charset=" + encoding);
                     }
                 }
@@ -1943,7 +1941,7 @@ public class RESTServer {
 
         response.setContentType(MimeType.XML_TYPE.getName() + "; charset=" + encoding);
 
-        setCreatedAndLastModifiedHeaders(response, collection.getCreationTime(), collection.getCreationTime());
+        setCreatedAndLastModifiedHeaders(response, collection.getCreated(), collection.getCreated());
 
         final OutputStreamWriter writer =
                 new OutputStreamWriter(response.getOutputStream(), encoding);
@@ -1966,13 +1964,13 @@ public class RESTServer {
             // add an attribute for the creation date as an xs:dateTime
             try {
                 final DateTimeValue dtCreated =
-                        new DateTimeValue(new Date(collection.getCreationTime()));
+                        new DateTimeValue(new Date(collection.getCreated()));
                 attrs.addAttribute("", "created", "created", "CDATA",
                         dtCreated.getStringValue());
             } catch (final XPathException e) {
                 // fallback to long value
                 attrs.addAttribute("", "created", "created", "CDATA",
-                        String.valueOf(collection.getCreationTime()));
+                        String.valueOf(collection.getCreated()));
             }
 
             addPermissionAttributes(attrs, collection.getPermissionsNoLock());
@@ -1992,12 +1990,12 @@ public class RESTServer {
                     // add an attribute for the creation date as an xs:dateTime
                     try {
                         final DateTimeValue dtCreated =
-                                new DateTimeValue(new Date(childCollection.getCreationTime()));
+                                new DateTimeValue(new Date(childCollection.getCreated()));
                         attrs.addAttribute("", "created", "created", "CDATA", dtCreated.getStringValue());
                     } catch (final XPathException e) {
                         // fallback to long value
                         attrs.addAttribute("", "created", "created", "CDATA",
-                                String.valueOf(childCollection.getCreationTime()));
+                                String.valueOf(childCollection.getCreated()));
                     }
 
                     addPermissionAttributes(attrs, childCollection.getPermissionsNoLock());
@@ -2010,33 +2008,32 @@ public class RESTServer {
                 final DocumentImpl doc = i.next();
                 if (doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
                     final XmldbURI resource = doc.getFileURI();
-                    final DocumentMetadata metadata = doc.getMetadata();
                     attrs.clear();
                     attrs.addAttribute("", "name", "name", "CDATA", resource.toString());
 
                     // add an attribute for the creation date as an xs:dateTime
                     try {
                         final DateTimeValue dtCreated =
-                                new DateTimeValue(new Date(metadata.getCreated()));
+                                new DateTimeValue(new Date(doc.getCreated()));
                         attrs.addAttribute("", "created", "created", "CDATA",
                                 dtCreated.getStringValue());
                     } catch (final XPathException e) {
                         // fallback to long value
                         attrs.addAttribute("", "created", "created", "CDATA",
-                                String.valueOf(metadata.getCreated()));
+                                String.valueOf(doc.getCreated()));
                     }
 
                     // add an attribute for the last modified date as an
                     // xs:dateTime
                     try {
                         final DateTimeValue dtLastModified = new DateTimeValue(
-                                new Date(metadata.getLastModified()));
+                                new Date(doc.getLastModified()));
                         attrs.addAttribute("", "last-modified",
                                 "last-modified", "CDATA", dtLastModified.getStringValue());
                     } catch (final XPathException e) {
                         // fallback to long value
                         attrs.addAttribute("", "last-modified",
-                                "last-modified", "CDATA", String.valueOf(metadata.getLastModified()));
+                                "last-modified", "CDATA", String.valueOf(doc.getLastModified()));
                     }
 
                     addPermissionAttributes(attrs, doc.getPermissions());
@@ -2223,8 +2220,8 @@ public class RESTServer {
 
     private boolean isExecutableType(final DocumentImpl resource) {
         if (resource != null
-                && (MimeType.XQUERY_TYPE.getName().equals(resource.getMetadata().getMimeType()) // a xquery
-                || MimeType.XPROC_TYPE.getName().equals(resource.getMetadata().getMimeType()))//a xproc
+                && (MimeType.XQUERY_TYPE.getName().equals(resource.getMimeType()) // a xquery
+                || MimeType.XPROC_TYPE.getName().equals(resource.getMimeType()))//a xproc
                 ) {
             return true;
         } else {

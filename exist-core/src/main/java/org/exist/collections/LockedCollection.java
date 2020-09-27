@@ -111,6 +111,7 @@ public class LockedCollection implements Collection {
         collection.setPath(path, updateChildren);
     }
 
+    @Deprecated
     @Override
     public CollectionMetadata getMetadata() {
         return collection.getMetadata();
@@ -132,14 +133,13 @@ public class LockedCollection implements Collection {
     }
 
     @Override
-    @Deprecated
-    public long getCreationTime() {
-        return collection.getCreationTime();
+    public long getCreated() {
+        return collection.getCreated();
     }
 
     @Override
-    public void setCreationTime(final long timestamp) {
-        collection.setCreationTime(timestamp);
+    public void setCreated(final long timestamp) {
+        collection.setCreated(timestamp);
     }
 
     @Override
@@ -237,11 +237,6 @@ public class LockedCollection implements Collection {
     @Override
     public CollectionEntry getResourceEntry(final DBBroker broker, final String name) throws PermissionDeniedException, LockException, IOException {
         return collection.getResourceEntry(broker, name);
-    }
-
-    @Override
-    public void update(final DBBroker broker, final Collection child) throws PermissionDeniedException, LockException {
-        collection.update(broker, child);
     }
 
     @Override

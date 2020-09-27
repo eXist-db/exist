@@ -44,6 +44,7 @@ import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.EnsureContainerLocked;
 import org.exist.storage.lock.EnsureLocked;
 import org.exist.storage.txn.Txn;
+import org.exist.util.MimeType;
 import org.exist.util.XMLString;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
@@ -92,7 +93,13 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     //public static final byte DOCUMENT_NODE_SIGNATURE = 0x0F;
 
-    private final BrokerPool pool;
+    public static final byte NO_DOCTYPE = 0;
+    public static final byte HAS_DOCTYPE = 1;
+
+    public static final byte NO_LOCKTOKEN = 0;
+    public static final byte HAS_LOCKTOKEN = 2;
+
+    protected final BrokerPool pool;
 
     /**
      * number of child nodes
@@ -125,6 +132,45 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     private DocumentMetadata metadata = null;
 
     /**
+     * The mimeType of the document
+     */
+    protected String mimeType = MimeType.XML_TYPE.getName();
+
+    /**
+     * The creation time of this document
+     */
+    protected long created = 0;
+
+    /**
+     * Time of the last modification
+     */
+    protected long lastModified = 0;
+
+    /**
+     * The number of data pages occupied by this document
+     */
+    protected int pageCount = 0;
+
+    /**
+     * Contains the user id if a user lock is held on this resource
+     */
+    protected int userLock = 0;
+
+    /**
+     * The document's doctype declaration - if specified.
+     */
+    protected DocumentType docType = null;
+
+    /**
+     * Associated lock token - if available
+     */
+    protected LockToken lockToken = null;
+
+    protected transient int splitCount = 0;
+
+    private boolean isReferenced = false;
+
+    /**
      * Creates a new <code>DocumentImpl</code> instance.
      *
      * Package private - for testing!
@@ -132,7 +178,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      * @param pool a <code>BrokerPool</code> instance representing the db
      */
     DocumentImpl(final BrokerPool pool, final int docId) {
-        this(pool, null, docId, null, PermissionFactory.getDefaultResourcePermission(pool.getSecurityManager()), 0, null, null);
+        this(pool, null, docId, null);
     }
 
     /**
@@ -146,7 +192,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     public DocumentImpl(final BrokerPool pool, @Nullable final Collection collection, final int docId, @Nullable
             final XmldbURI fileURI) {
         this(pool, collection, docId, fileURI,
-                PermissionFactory.getDefaultResourcePermission(pool.getSecurityManager()), 0, null, null);
+                PermissionFactory.getDefaultResourcePermission(pool.getSecurityManager()), 0, null,
+                System.currentTimeMillis(), null, null, null);
     }
 
     /**
@@ -156,7 +203,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      * @param prevDoc The previous Document object that we are overwriting
      */
     public DocumentImpl(final int docId, final DocumentImpl prevDoc) {
-        this(prevDoc.pool, prevDoc.collection, docId, prevDoc.fileURI, prevDoc.permissions.copy(), 0, null, null);
+        this(prevDoc.pool, prevDoc.collection, docId, prevDoc.fileURI, prevDoc.permissions.copy(), 0, null,
+                System.currentTimeMillis(), null, null, null);
     }
 
     /**
@@ -169,12 +217,16 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      * @param permissions the permissions of the document
      * @param children the number of children that the document has
      * @param childAddress the addresses of the child nodes
-     * @param metadata the document metadata
+     * @param created the created time of the document
+     * @param lastModified the last modified time of the document, or null to use the {@code created} time
+     * @param mimeType the media type of the document, or null for application/xml
+     * @param docType the document type, or null
      */
     public DocumentImpl(final BrokerPool pool, @Nullable final Collection collection,
             final int docId, final XmldbURI fileURI, final Permission permissions,
             final int children, @Nullable final long[] childAddress,
-            final DocumentMetadata metadata) {
+            final long created, @Nullable final Long lastModified, @Nullable final String mimeType,
+            @Nullable final DocumentType docType) {
         this.pool = pool;
 
         // NOTE: We must not keep a reference to a LockedCollection in the Document object!
@@ -185,7 +237,10 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         this.permissions = permissions;
         this.children = children;
         this.childAddress = childAddress;
-        this.metadata = metadata;
+        this.created = created;
+        this.lastModified = lastModified == null ? created : lastModified;
+        this.mimeType = mimeType == null ?  MimeType.XML_TYPE.getName() : mimeType;
+        this.docType = docType;
 
         //inherit the group to the resource if current collection is setGid
         if(collection != null && collection.getPermissions().isSetGid()) {
@@ -281,6 +336,114 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         return uri;
     }
 
+    public long getCreated() {
+        return created;
+    }
+
+    public void setCreated(final long created) {
+        this.created = created;
+        if (lastModified == 0) {
+            this.lastModified = created;
+        }
+    }
+
+    public long getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(final long lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(final String mimeType) {
+        this.mimeType = mimeType;
+    }
+
+    /**
+     * Get the number of pages occupied by this document.
+     *
+     * @return the number of pages currently occupied by this document.
+     */
+    public int getPageCount() {
+        return pageCount;
+    }
+
+    /**
+     * Set the number of pages currently occupied by this document.
+     *
+     * @param pageCount number of pages currently occupied by this document
+     *
+     */
+    public void setPageCount(final int pageCount) {
+        this.pageCount = pageCount;
+    }
+
+    public void incPageCount() {
+        ++pageCount;
+    }
+
+    public void decPageCount() {
+        --pageCount;
+    }
+
+    public void setUserLock(final int userLock) {
+        this.userLock = userLock;
+    }
+
+    /**
+     * @deprecated Will be removed when org.exist.dom.persistent.DocumentMetadata is removed
+     * @return the internal user lock number
+     */
+    @Deprecated
+    int getUserLockInternal() {
+        return userLock;
+    }
+
+    public LockToken getLockToken() {
+        return lockToken;
+    }
+
+    public void setLockToken(final LockToken token) {
+        lockToken = token;
+    }
+
+    public DocumentType getDocType() {
+        return docType;
+    }
+
+    public void setDocType(final DocumentType docType) {
+        this.docType = docType;
+    }
+
+    /**
+     * Increase the page split count of this document. The number
+     * of pages that have been split during inserts serves as an
+     * indicator for the fragmentation
+     */
+    public void incSplitCount() {
+        splitCount++;
+    }
+
+    public int getSplitCount() {
+        return splitCount;
+    }
+
+    public void setSplitCount(final int count) {
+        splitCount = count;
+    }
+
+    public boolean isReferenced() {
+        return isReferenced;
+    }
+
+    public void setReferenced(final boolean referenced) {
+        isReferenced = referenced;
+    }
+
     @EnsureContainerLocked(mode=READ_LOCK)
     public boolean isCollectionConfig() {
         return fileURI.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI);
@@ -315,12 +478,22 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     @Deprecated
     @EnsureContainerLocked(mode=WRITE_LOCK)
     public void setMetadata(final DocumentMetadata meta) {
-        this.metadata = meta;
+        throw new UnsupportedOperationException();
     }
 
-    @Override
+    /**
+     * Get the metadata of the Document
+     *
+     * @return The Document metadata
+     *
+     * @deprecated Will be removed in eXist-db 6.0.0. Instead use the direct methods on this class.
+     */
+    @Deprecated
     @EnsureContainerLocked(mode=READ_LOCK)
     public DocumentMetadata getMetadata() {
+        if (metadata == null) {
+            metadata = new DocumentMetadata(this);
+        }
         return metadata;
     }
 
@@ -341,7 +514,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      * @throws PermissionDeniedException in case user has not sufficient privileges
      */
     public void copyOf(final DBBroker broker, final DocumentImpl other, @EnsureLocked(mode=READ_LOCK) @Nullable final DocumentImpl prev) throws PermissionDeniedException {
-        copyOf(broker, other, prev == null ? null : new Tuple2<>(prev.getPermissions(), prev.getMetadata().getCreated()));
+        copyOf(broker, other, prev == null ? null : new Tuple2<>(prev.getPermissions(), prev.getCreated()));
     }
 
     /**
@@ -368,16 +541,13 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @EnsureContainerLocked(mode=WRITE_LOCK)
     private void copyOf(final DBBroker broker, @EnsureLocked(mode=READ_LOCK) final DocumentImpl other, @Nullable final Tuple2<Permission, Long> prev) throws PermissionDeniedException {
-        childAddress = null;
-        children = 0;
+        this.childAddress = null;
+        this.children = 0;
 
-        metadata = getMetadata();
-        if (metadata == null) {
-            metadata = new DocumentMetadata();
-        }
-
-        //copy metadata
-        metadata.copyOf(other.getMetadata());
+        this.created = other.created;
+        this.lastModified = other.lastModified;
+        this.mimeType = other.mimeType;
+        this.docType = other.docType;
 
         final long timestamp = System.currentTimeMillis();
         if(prev != null) {
@@ -393,21 +563,21 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             copyModeAcl(broker, prev._1, permissions);
 
             // set birth time to same as prev file
-            metadata.setCreated(prev._2);
+            this.created = prev._2;
 
         } else {
             // copy mode and acl from source file
             copyModeAcl(broker, other.getPermissions(), permissions);
 
             // set birth time to the current timestamp
-            metadata.setCreated(timestamp);
+            this.created = timestamp;
         }
 
         // always set mtime
-        metadata.setLastModified(timestamp);
+        this.lastModified = timestamp;
 
         // reset pageCount: will be updated during storage
-        metadata.setPageCount(0);
+        this.pageCount = 0;
     }
 
     private void copyModeAcl(final DBBroker broker, final Permission srcPermissions, final Permission destPermissions) throws PermissionDeniedException {
@@ -442,7 +612,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @EnsureContainerLocked(mode=WRITE_LOCK)
     public void setUserLock(final Account user) {
-        getMetadata().setUserLock(user == null ? 0 : user.getId());
+        this.userLock = (user == null ? 0 : user.getId());
     }
 
     /**
@@ -452,12 +622,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @EnsureContainerLocked(mode=READ_LOCK)
     public Account getUserLock() {
-        final int lockOwnerId = getMetadata().getUserLock();
-        if(lockOwnerId == 0) {
+        if (userLock == 0) {
             return null;
         }
         final SecurityManager secman = pool.getSecurityManager();
-        return secman.getAccount(lockOwnerId);
+        return secman.getAccount(userLock);
     }
 
     /**
@@ -470,7 +639,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @EnsureContainerLocked(mode=READ_LOCK)
     public long getContentLength() {
-        final long length = getMetadata().getPageCount() * pool.getPageSize();
+        final long length = pageCount * pool.getPageSize();
         return (length < 0) ? 0 : length;
     }
 
@@ -484,7 +653,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             fragmentationLimit = (Integer) property;
         }
         if(fragmentationLimit != -1) {
-            getMetadata().setSplitCount(fragmentationLimit);
+            this.splitCount = fragmentationLimit;
         }
     }
 
@@ -564,10 +733,33 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
                     ostream.writeShort(StorageAddress.tidFromPointer(childAddress[i]));
                 }
             }
-            getMetadata().write(pool.getSymbols(), ostream);
+
+            // document attributes
+            writeDocumentAttributes(pool.getSymbols(), ostream);
+
         } catch(final IOException e) {
             LOG.warn("io error while writing document data", e);
             //TODO : raise exception ?
+        }
+    }
+
+    void writeDocumentAttributes(final SymbolTable symbolTable, final VariableByteOutputStream ostream) throws IOException {
+        ostream.writeLong(created);
+        ostream.writeLong(lastModified);
+        ostream.writeInt(symbolTable.getMimeTypeId(mimeType));
+        ostream.writeInt(pageCount);
+        ostream.writeInt(userLock);
+        if (docType != null) {
+            ostream.writeByte(HAS_DOCTYPE);
+            ((DocumentTypeImpl) docType).write(ostream);
+        } else {
+            ostream.writeByte(NO_DOCTYPE);
+        }
+        if (lockToken != null) {
+            ostream.writeByte(HAS_LOCKTOKEN);
+            lockToken.write(ostream);
+        } else {
+            ostream.writeByte(NO_LOCKTOKEN);
         }
     }
 
@@ -593,10 +785,31 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
         }
 
-        final DocumentMetadata metadata = new DocumentMetadata();
-        metadata.read(pool.getSymbols(), istream);
+        // load document attributes
+        final long created = istream.readLong();
+        final long lastModified = istream.readLong();
+        final int mimeTypeSymbolsIndex = istream.readInt();
+        final String mimeType = pool.getSymbols().getMimeType(mimeTypeSymbolsIndex);
+        final int pageCount = istream.readInt();
+        final int userLock = istream.readInt();
+        final DocumentTypeImpl docType;
+        if (istream.readByte() == HAS_DOCTYPE) {
+            docType = DocumentTypeImpl.read(istream);
+        } else {
+            docType = null;
+        }
+        final LockToken lockToken;
+        if (istream.readByte() == HAS_LOCKTOKEN) {
+            lockToken = LockToken.read(istream);
+        } else {
+            lockToken = null;
+        }
 
-        return new DocumentImpl(pool, null, docId, fileURI, permissions, children, childAddress, metadata);
+        final DocumentImpl doc = new DocumentImpl(pool, null, docId, fileURI, permissions, children, childAddress, created, lastModified, mimeType, docType);
+        doc.pageCount = pageCount;
+        doc.userLock = userLock;
+        doc.lockToken = lockToken;
+        return doc;
     }
 
     /**
@@ -788,7 +1001,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     @Override
     @EnsureContainerLocked(mode=READ_LOCK)
     public DocumentType getDoctype() {
-        return getMetadata().getDocType();
+        return docType;
     }
 
     /**
@@ -798,7 +1011,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @EnsureContainerLocked(mode=WRITE_LOCK)
     public void setDocumentType(final DocumentType docType) {
-        getMetadata().setDocType(docType);
+        this.docType = docType;
     }
 
     @Override

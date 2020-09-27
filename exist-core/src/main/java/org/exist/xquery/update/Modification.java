@@ -279,7 +279,7 @@ public abstract class Modification extends AbstractExpression
         try(final Txn transaction = broker.continueOrBeginTransaction()) {
             for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
                 final DocumentImpl next = i.next();
-                if(next.getMetadata().getSplitCount() > splitCount) {
+                if(next.getSplitCount() > splitCount) {
                     try(final ManagedDocumentLock nextLock = lockManager.acquireDocumentWriteLock(next.getURI())) {
                         broker.defragXMLResource(transaction, next);
                     }

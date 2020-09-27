@@ -357,7 +357,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
                     default:
                         throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Unknown resource type");
                 }
-                ((AbstractEXistResource) r).setMimeType(document.getMetadata().getMimeType());
+                ((AbstractEXistResource) r).setMimeType(document.getMimeType());
                 return r;
             }
         });
@@ -467,7 +467,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
 
                     // Include only when (1) lockToken is present or (2)
                     // lockToken indicates that it is not a null resource
-                    final LockToken lock = doc.getMetadata().getLockToken();
+                    final LockToken lock = doc.getLockToken();
                     if (lock == null || (!lock.isNullResource())) {
                         allresources.add(doc.getFileURI().toString());
                     }
@@ -654,12 +654,12 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
 
                 //Notice : the document should now have a LockMode.WRITE_LOCK update lock
                 //TODO : check that no exception occurs in order to allow it to be released
-                info.getDocument().getMetadata().setMimeType(res.getMimeType(broker, transaction));
+                info.getDocument().setMimeType(res.getMimeType(broker, transaction));
                 if (res.datecreated != null) {
-                    info.getDocument().getMetadata().setCreated(res.datecreated.getTime());
+                    info.getDocument().setCreated(res.datecreated.getTime());
                 }
                 if (res.datemodified != null) {
-                    info.getDocument().getMetadata().setLastModified(res.datemodified.getTime());
+                    info.getDocument().setLastModified(res.datemodified.getTime());
                 }
 
 
@@ -747,7 +747,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
 
     @Override
     public Date getCreationTime() throws XMLDBException {
-        return this.<Date>read().apply((collection, broker, transaction) -> new Date(collection.getCreationTime()));
+        return this.<Date>read().apply((collection, broker, transaction) -> new Date(collection.getCreated()));
     }
 
     @Override

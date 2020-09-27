@@ -50,7 +50,7 @@ public class InTxnLocalCollectionManagementService extends LocalCollectionManage
             try {
                 final org.exist.collections.Collection coll = broker.getOrCreateCollection(transaction, collName);
                 if (created != null) {
-                    coll.setCreationTime(created.getTime());
+                    coll.setCreated(created.getTime());
                 }
                 broker.saveCollection(transaction, coll);
                 return null;

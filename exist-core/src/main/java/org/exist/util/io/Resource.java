@@ -466,8 +466,8 @@ public class Resource extends File {
 
         final MimeType mimeType = mimeTable.getContentTypeFor(newName);
 
-        if (mimeType != null && !mimeType.getName().equals(doc.getMetadata().getMimeType())) {
-            doc.getMetadata().setMimeType(mimeType.getName());
+        if (mimeType != null && !mimeType.getName().equals(doc.getMimeType())) {
+            doc.setMimeType(mimeType.getName());
             broker.storeXMLResource(txn, doc);
 
             doc = source.getDocument(broker, uri.lastSegment());
@@ -484,7 +484,7 @@ public class Resource extends File {
                 try (final InputStream is1 = broker.getBinaryResource(txn, (BinaryDocument)doc)) {
 
                     final IndexInfo info = destination.validateXMLResource(txn, broker, newName, new InputSource(is1));
-                    info.getDocument().getMetadata().setMimeType(mimeType.getName());
+                    info.getDocument().setMimeType(mimeType.getName());
 
                     try (final InputStream is2 = broker.getBinaryResource(txn, (BinaryDocument)doc)) {
                         destination.store(txn, broker, info, new InputSource(is2));
@@ -517,10 +517,8 @@ public class Resource extends File {
                     }
 
                     try (final InputStream is = Files.newInputStream(tempFile)) {
-                        final DocumentMetadata meta = doc.getMetadata();
-
-                        final Date created = new Date(meta.getCreated());
-                        final Date lastModified = new Date(meta.getLastModified());
+                        final Date created = new Date(doc.getCreated());
+                        final Date lastModified = new Date(doc.getLastModified());
 
                         BinaryDocument binary = destination.validateBinaryResource(txn, broker, newName);
 
@@ -629,7 +627,7 @@ public class Resource extends File {
                     // store as xml resource
                     final String str = "<empty/>";
                     final IndexInfo info = collection.validateXMLResource(transaction, broker, fileName, str);
-                    info.getDocument().getMetadata().setMimeType(mimeType.getName());
+                    info.getDocument().setMimeType(mimeType.getName());
                     collection.store(transaction, broker, info, str);
 
                 } else {
@@ -867,7 +865,7 @@ public class Resource extends File {
 
                     // Include only when (1) locktoken is present or (2)
                     // locktoken indicates that it is not a null resource
-                    final LockToken lock = doc.getMetadata().getLockToken();
+                    final LockToken lock = doc.getLockToken();
                     if (lock == null || (!lock.isNullResource())) {
                         allresources.add(doc.getURI());
                     }
@@ -1069,8 +1067,8 @@ public class Resource extends File {
             modifyMetadata(new ModifyMetadata() {
 
                 @Override
-                public void modify(final DBBroker broker, DocumentImpl resource) throws IOException {
-                    resource.getMetadata().setLastModified(time);
+                public void modify(final DBBroker broker, DocumentImpl resource) {
+                    resource.setLastModified(time);
                 }
 
                 @Override
@@ -1094,12 +1092,12 @@ public class Resource extends File {
         }
 
         if (resource != null) {
-            return resource.getMetadata().getLastModified();
+            return resource.getLastModified();
         }
 
         if (collection != null) {
             //TODO: need lastModified for collection
-            return collection.getCreationTime();
+            return collection.getCreated();
         }
         return lastModified;
     }

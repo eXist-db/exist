@@ -445,7 +445,7 @@ public class DOMFile extends BTree implements Lockable {
         }
         final OverflowDOMPage overflowPage = new OverflowDOMPage();
         final int pagesCount = overflowPage.write(transaction, value);
-        doc.getMetadata().setPageCount(pagesCount);
+        doc.setPageCount(pagesCount);
         return overflowPage.getPageNum();
     }
 
@@ -465,7 +465,7 @@ public class DOMFile extends BTree implements Lockable {
         }
         final OverflowDOMPage overflowPage = new OverflowDOMPage();
         final int pagesCount = overflowPage.write(transaction, is);
-        doc.getMetadata().setPageCount(pagesCount);
+        doc.setPageCount(pagesCount);
         return overflowPage.getPageNum();
     }
 
@@ -726,7 +726,7 @@ public class DOMFile extends BTree implements Lockable {
      */
     private RecordPos splitDataPage(final Txn transaction, final RecordPos rec) {
         if (currentDocument != null) {
-            currentDocument.getMetadata().incSplitCount();
+            currentDocument.incSplitCount();
         }
         //Check if a split is really required. A split is not required if
         //all records following the split point are already links to other pages.
@@ -1801,7 +1801,7 @@ public class DOMFile extends BTree implements Lockable {
             //TODO : rethrow exception ? -pb
         }
         if (currentDocument != null) {
-            currentDocument.getMetadata().decPageCount();
+            currentDocument.decPageCount();
         }
     }
 
@@ -3093,7 +3093,7 @@ public class DOMFile extends BTree implements Lockable {
                 pageHeader.setDataLength(0);
                 pageHeader.setRecordCount((short) 0);
                 if (currentDocument != null) {
-                    currentDocument.getMetadata().incPageCount();
+                    currentDocument.incPageCount();
                 }
                 return page;
             } catch (final IOException ioe) {
@@ -3342,7 +3342,7 @@ public class DOMFile extends BTree implements Lockable {
                 pageHeader.setDataLength(0);
                 pageHeader.setRecordCount((short) 0);
                 if (currentDocument != null) {
-                    currentDocument.getMetadata().incPageCount();
+                    currentDocument.incPageCount();
                 }
                 return page;
             } catch (final IOException ioe) {

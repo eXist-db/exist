@@ -85,7 +85,7 @@ public class XMLDBGetMimeType extends BasicFunction {
 				// try to open the document and acquire a lock
 				try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(pathUri, LockMode.READ_LOCK)) {
 					if (lockedDoc != null) {
-						return new StringValue(lockedDoc.getDocument().getMetadata().getMimeType());
+						return new StringValue(lockedDoc.getDocument().getMimeType());
 					}
 				}
 			} catch(final Exception e) {

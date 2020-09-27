@@ -493,7 +493,7 @@ public class RpcConnection implements RpcAPI {
             desc.put("collections", collections);
             desc.put("documents", docs);
             desc.put("name", collection.getURI().toString());
-            desc.put("created", Long.toString(collection.getCreationTime()));
+            desc.put("created", Long.toString(collection.getCreated()));
             desc.put("owner", perms.getOwner().getName());
             desc.put("group", perms.getGroup().getName());
             desc.put("permissions", perms.getMode());
@@ -534,9 +534,9 @@ public class RpcConnection implements RpcAPI {
                 final long resourceLength = document.getContentLength();
                 hash.put("content-length", (resourceLength > (long) Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) resourceLength);
                 hash.put("content-length-64bit", Long.toString(resourceLength));
-                hash.put("mime-type", document.getMetadata().getMimeType());
-                hash.put("created", new Date(document.getMetadata().getCreated()));
-                hash.put("modified", new Date(document.getMetadata().getLastModified()));
+                hash.put("mime-type", document.getMimeType());
+                hash.put("created", new Date(document.getCreated()));
+                hash.put("modified", new Date(document.getLastModified()));
                 if (document.getResourceType() == DocumentImpl.BINARY_FILE) {
                     hash.put("blob-id", ((BinaryDocument)document).getBlobId().getId());
 
@@ -590,7 +590,7 @@ public class RpcConnection implements RpcAPI {
             final Permission perms = collection.getPermissionsNoLock();
             desc.put("collections", collections);
             desc.put("name", collection.getURI().toString());
-            desc.put("created", Long.toString(collection.getCreationTime()));
+            desc.put("created", Long.toString(collection.getCreated()));
             desc.put("owner", perms.getOwner().getName());
             desc.put("group", perms.getGroup().getName());
             desc.put("permissions", perms.getMode());
@@ -1177,7 +1177,7 @@ public class RpcConnection implements RpcAPI {
     }
 
     private Date getCreationDate(final XmldbURI collUri) throws PermissionDeniedException, EXistException {
-        return this.<Date>readCollection(collUri).apply((collection, broker, transaction) -> new Date(collection.getCreationTime()));
+        return this.<Date>readCollection(collUri).apply((collection, broker, transaction) -> new Date(collection.getCreated()));
     }
 
     @Override
@@ -1188,10 +1188,9 @@ public class RpcConnection implements RpcAPI {
 
     private List<Date> getTimestamps(final XmldbURI docUri) throws PermissionDeniedException, EXistException {
         return this.<List<Date>>readDocument(docUri).apply((document, broker, transaction) -> {
-            final DocumentMetadata metadata = document.getMetadata();
             final List<Date> list = new ArrayList<>(2);
-            list.add(new Date(metadata.getCreated()));
-            list.add(new Date(metadata.getLastModified()));
+            list.add(new Date(document.getCreated()));
+            list.add(new Date(document.getLastModified()));
             return list;
         });
     }
@@ -1204,7 +1203,7 @@ public class RpcConnection implements RpcAPI {
                 throw new PermissionDeniedException("User is not allowed to lock resource " + documentPath);
             }
 
-            document.getMetadata().setLastModified(lastModified);
+            document.setLastModified(lastModified);
             broker.storeXMLResource(transaction, document);
             return true;
         });
@@ -1356,13 +1355,13 @@ public class RpcConnection implements RpcAPI {
                     final IndexInfo info = collection.validateXMLResource(transaction, broker, docUri.lastSegment(), source);
                     final MimeType mime = MimeTable.getInstance().getContentTypeFor(docUri.lastSegment());
                     if (mime != null && mime.isXMLType()) {
-                        info.getDocument().getMetadata().setMimeType(mime.getName());
+                        info.getDocument().setMimeType(mime.getName());
                     }
                     if (created != null) {
-                        info.getDocument().getMetadata().setCreated(created.getTime());
+                        info.getDocument().setCreated(created.getTime());
                     }
                     if (modified != null) {
-                        info.getDocument().getMetadata().setLastModified(modified.getTime());
+                        info.getDocument().setLastModified(modified.getTime());
                     }
 
                     collection.store(transaction, broker, info, source);
@@ -1497,10 +1496,10 @@ public class RpcConnection implements RpcAPI {
                     if (treatAsXML) {
                         final IndexInfo info = collection.validateXMLResource(transaction, broker, docUri.lastSegment(), source);
                         if (created != null) {
-                            info.getDocument().getMetadata().setCreated(created.getTime());
+                            info.getDocument().setCreated(created.getTime());
                         }
                         if (modified != null) {
-                            info.getDocument().getMetadata().setLastModified(modified.getTime());
+                            info.getDocument().setLastModified(modified.getTime());
                         }
                         collection.store(transaction, broker, info, source);
 
@@ -1515,10 +1514,10 @@ public class RpcConnection implements RpcAPI {
                             collection.close();
 
                             if (created != null) {
-                                doc.getMetadata().setCreated(created.getTime());
+                                doc.setCreated(created.getTime());
                             }
                             if (modified != null) {
-                                doc.getMetadata().setLastModified(modified.getTime());
+                                doc.setLastModified(modified.getTime());
                             }
                         }
                     }
@@ -1571,10 +1570,10 @@ public class RpcConnection implements RpcAPI {
                 final DocumentImpl doc = collection.addBinaryResource(transaction, broker, docUri.lastSegment(), data, mimeType);
                 if(doc != null) {
                     if (created != null) {
-                        doc.getMetadata().setCreated(created.getTime());
+                        doc.setCreated(created.getTime());
                     }
                     if (modified != null) {
-                        doc.getMetadata().setLastModified(modified.getTime());
+                        doc.setLastModified(modified.getTime());
                     }
 
                     // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme

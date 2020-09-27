@@ -130,7 +130,7 @@ public class Scan extends BasicFunction {
                                 return Sequence.EMPTY_SEQUENCE;
                             }
                             if (doc.getResourceType() != DocumentImpl.BINARY_FILE ||
-                                    !doc.getMetadata().getMimeType().equals("application/xquery")) {
+                                    !doc.getMimeType().equals("application/xquery")) {
                                 throw new XPathException(this, "XQuery resource: " + uri + " is not an XQuery or " +
                                         "declares a wrong mime-type");
                             }

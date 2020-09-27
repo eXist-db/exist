@@ -1199,7 +1199,7 @@ public class NativeBroker extends DBBroker {
                 PermissionFactory.chown(this, createCollectionPerms, Optional.of(sourceCollection.getPermissions().getOwner().getName()), Optional.of(sourceCollection.getPermissions().getGroup().getName()));
             }
 
-            created = sourceCollection.getMetadata().getCreated();
+            created = sourceCollection.getCreated();
         } else {
             created = 0;
         }
@@ -2001,11 +2001,7 @@ public class NativeBroker extends DBBroker {
                     final int tmpDocId = getNextResourceId(transaction);
                     final Permission permission = PermissionFactory.getDefaultResourcePermission(getBrokerPool().getSecurityManager());
                     permission.setMode(Permission.DEFAULT_TEMPORARY_DOCUMENT_PERM);
-                    final DocumentMetadata metadata = new DocumentMetadata();
-                    final long now = System.currentTimeMillis();
-                    metadata.setLastModified(now);
-                    metadata.setCreated(now);
-                    final DocumentImpl targetDoc = new DocumentImpl(pool, temp, tmpDocId, docName, permission, 0, null, metadata);
+                    final DocumentImpl targetDoc = new DocumentImpl(pool, temp, tmpDocId, docName, permission, 0, null, System.currentTimeMillis(), null, null, null);
 
                     //index the temporary document
                     final DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc);
@@ -2589,11 +2585,11 @@ public class NativeBroker extends DBBroker {
 
         // btime (birth time)
         if (!overwrittingDest) {
-            destDocument.getMetadata().setCreated(srcDocument.getMetadata().getLastModified());  // Indeed! ...the birth time of the dest file is the last modified time of the source file
+            destDocument.setCreated(srcDocument.getLastModified());  // Indeed! ...the birth time of the dest file is the last modified time of the source file
         }
 
         // mtime (modified time)
-        destDocument.getMetadata().setLastModified(srcDocument.getMetadata().getLastModified());
+        destDocument.setLastModified(srcDocument.getLastModified());
 
     }
 
@@ -2805,7 +2801,7 @@ public class NativeBroker extends DBBroker {
 
     private void dropDomNodes(final Txn transaction, final DocumentImpl document) {
         try {
-            if(!document.getMetadata().isReferenced()) {
+            if(!document.isReferenced()) {
                 new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
                     @Override
                     public Object start() {
@@ -3006,8 +3002,8 @@ public class NativeBroker extends DBBroker {
                 }
             }.run();
             doc.copyChildren(tempDoc);
-            doc.getMetadata().setSplitCount(0);
-            doc.getMetadata().setPageCount(tempDoc.getMetadata().getPageCount());
+            doc.setSplitCount(0);
+            doc.setPageCount(tempDoc.getPageCount());
             storeXMLResource(transaction, doc);
             closeDocument();
             if (LOG.isDebugEnabled()) {

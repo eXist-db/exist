@@ -59,7 +59,7 @@ public class HTTPUtils {
 			for (final Iterator<DocumentImpl> i = documentSet.getDocumentIterator(); i.hasNext(); ) {
 				final DocumentImpl doc = i.next();
 				if (doc != null) {
-					mostRecentDocumentTime = Math.max(doc.getMetadata().getLastModified(),
+					mostRecentDocumentTime = Math.max(doc.getLastModified(),
 							mostRecentDocumentTime);
 //					LOG.debug("getFileName: " + doc.getFileName() + ", "
 //							+ doc.getLastModified());

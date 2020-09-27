@@ -235,7 +235,7 @@ public class CopyCollectionTest {
         final BrokerPool pool = existWebServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Collection col = broker.openCollection(TEST_COLLECTION_URI.append(colName), LockMode.READ_LOCK)) {
-            return col.getMetadata().getCreated();
+            return col.getCreated();
         }
     }
 
@@ -249,7 +249,7 @@ public class CopyCollectionTest {
             assertEquals("Group value was not expected", expectedGroup, permission.getGroup().getName());
             assertEquals("Mode value was not expected", expectedMode, permission.getMode());
 
-            assertThat("Created value is not correct", col.getMetadata().getCreated(), expectedCreated);
+            assertThat("Created value is not correct", col.getCreated(), expectedCreated);
         }
     }
 

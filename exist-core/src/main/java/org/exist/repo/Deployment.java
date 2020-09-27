@@ -808,7 +808,7 @@ public class Deployment {
                             }
                         }
                         if (info != null) {
-                            info.getDocument().getMetadata().setMimeType(mime.getName());
+                            info.getDocument().setMimeType(mime.getName());
                             final Permission permission = info.getDocument().getPermissions();
                             setPermissions(broker, requestedPerms, false, mime, permission);
 
@@ -822,7 +822,7 @@ public class Deployment {
 
                             final Permission permission = doc.getPermissions();
                             setPermissions(broker, requestedPerms, false, mime, permission);
-                            doc.getMetadata().setMimeType(mime.getName());
+                            doc.setMimeType(mime.getName());
                             broker.storeXMLResource(transaction, doc);
                         }
                     }
@@ -843,7 +843,7 @@ public class Deployment {
 
             final Permission permission = doc.getPermissions();
             setPermissions(broker, requestedPerms, false, mime, permission);
-            doc.getMetadata().setMimeType(mime.getName());
+            doc.setMimeType(mime.getName());
             broker.storeXMLResource(transaction, doc);
         }
     }

@@ -106,7 +106,7 @@ public class ExistCollection extends ExistResource {
             writeAllowed = permissions.validate(subject, Permission.WRITE);
             executeAllowed = permissions.validate(subject, Permission.EXECUTE);
 
-            creationTime = collection.getCreationTime();
+            creationTime = collection.getCreated();
             lastModified = creationTime; // Collection does not have more information.
 
             ownerUser = permissions.getOwner().getUsername();
@@ -316,7 +316,7 @@ public class ExistCollection extends ExistResource {
                     cfis.mark(Integer.MAX_VALUE);
                     final IndexInfo info = collection.validateXMLResource(txn, broker, newNameUri, new InputSource(cfis));
                     final DocumentImpl doc = info.getDocument();
-                    doc.getMetadata().setMimeType(mime.getName());
+                    doc.setMimeType(mime.getName());
                     cfis.reset();
                     collection.store(txn, broker, info, new InputSource(cfis));
                 } else {

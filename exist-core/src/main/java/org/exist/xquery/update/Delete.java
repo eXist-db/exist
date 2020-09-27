@@ -141,7 +141,7 @@ public class Delete extends Modification {
                         parent.removeChild(transaction, node);
                     }
 
-                    doc.getMetadata().setLastModified(System.currentTimeMillis());
+                    doc.setLastModified(System.currentTimeMillis());
                     modifiedDocuments.add(doc);
                     context.getBroker().storeXMLResource(transaction, doc);
                     notifier.notifyUpdate(doc, UpdateListener.UPDATE);

@@ -93,7 +93,7 @@ public class Rename extends Modification {
                 parent.updateChild(transaction, node, newNode);
                 modificationCount++;
 
-                doc.getMetadata().setLastModified(System.currentTimeMillis());
+                doc.setLastModified(System.currentTimeMillis());
                 modifiedDocuments.add(doc);
                 broker.storeXMLResource(transaction, doc);
                 notifier.notifyUpdate(doc, UpdateListener.UPDATE);

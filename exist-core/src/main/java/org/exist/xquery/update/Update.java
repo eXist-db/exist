@@ -175,7 +175,7 @@ public class Update extends Modification {
                         default:
                             throw new XPathException(this, "unsupported node-type");
                     }
-                    doc.getMetadata().setLastModified(System.currentTimeMillis());
+                    doc.setLastModified(System.currentTimeMillis());
                     modifiedDocuments.add(doc);
                     context.getBroker().storeXMLResource(transaction, doc);
                     notifier.notifyUpdate(doc, UpdateListener.UPDATE);

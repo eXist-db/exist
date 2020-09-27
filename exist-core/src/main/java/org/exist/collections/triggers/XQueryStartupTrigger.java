@@ -177,14 +177,12 @@ public class XQueryStartupTrigger implements StartupTrigger {
      * @param document The document
      * @return TRUE if the conditions are met, else FALSE
      */
-    private boolean isPermissionsOK(DocumentImpl document) {
-
-        Permission perms = document.getPermissions();
-
+    private boolean isPermissionsOK(final DocumentImpl document) {
+        final Permission perms = document.getPermissions();
         return (perms.getOwner().hasDbaRole()
                 && perms.getGroup().getName().equals(SecurityManager.DBA_GROUP)
                 && perms.getMode() == Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM
-                && document.getMetadata().getMimeType().equals(REQUIRED_MIMETYPE));
+                && document.getMimeType().equals(REQUIRED_MIMETYPE));
 
     }
 

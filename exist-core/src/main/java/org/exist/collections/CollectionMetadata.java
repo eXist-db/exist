@@ -26,17 +26,22 @@ import org.exist.ResourceMetadata;
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  * @author Adam Retter
+ *
+ * @deprecated Will be removed in eXist-db 6.0.0. Metadata methods
+ * are now directly accessible from {@link org.exist.collections.Collection}.
  */
+@Deprecated
 public class CollectionMetadata implements ResourceMetadata {
 
     private final Collection collection;
 
-    public CollectionMetadata(final Collection collection) {
+    CollectionMetadata(final Collection collection) {
         this.collection = collection;
     }
 
+    @Deprecated
     @Override
     public long getCreated() {
-        return collection.getCreationTime();
+        return collection.getCreated();
     }
 }

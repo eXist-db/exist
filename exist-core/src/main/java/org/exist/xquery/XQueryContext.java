@@ -2382,7 +2382,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                                     throw moduleLoadException("Module location hint URI '" + location + "' does not refer to anything.", location);
                                 }
 
-                                if ((sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE) || !"application/xquery".equals(sourceDoc.getMetadata().getMimeType())) {
+                                if ((sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE) || !"application/xquery".equals(sourceDoc.getMimeType())) {
                                     throw moduleLoadException("Module location hint URI '" + location + "' does not refer to an XQuery.", location);
                                 }
 

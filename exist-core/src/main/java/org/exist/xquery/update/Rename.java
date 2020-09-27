@@ -148,7 +148,7 @@ public class Rename extends Modification {
                     newNode.setNodeName(newQName, context.getBroker().getBrokerPool().getSymbols());
                     parent.updateChild(transaction, node, newNode);
 
-                    doc.getMetadata().setLastModified(System.currentTimeMillis());
+                    doc.setLastModified(System.currentTimeMillis());
                     modifiedDocuments.add(doc);
                     context.getBroker().storeXMLResource(transaction, doc);
                     notifier.notifyUpdate(doc, UpdateListener.UPDATE);

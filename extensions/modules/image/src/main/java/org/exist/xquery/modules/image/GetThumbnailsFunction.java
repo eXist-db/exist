@@ -248,7 +248,7 @@ public class GetThumbnailsFunction extends BasicFunction {
                             existingThumbsArray, docImage, prefix)))) {
                         if (docImage.getResourceType() == DocumentImpl.BINARY_FILE)
                             // TODO maybe extends for gifs too.
-                            if (docImage.getMetadata().getMimeType().startsWith(
+                            if (docImage.getMimeType().startsWith(
                                     "image/jpeg")) {
 
                                 binImage = (BinaryDocument) docImage;

@@ -214,7 +214,7 @@ public class RestoreHandler extends DefaultHandler {
                 Collection collection = broker.getCollection(collUri);
                 if (collection == null) {
                     collection = broker.getOrCreateCollection(transaction, collUri);
-                    collection.setCreationTime(getDateFromXSDateTimeStringForItem(created, name).getTime());
+                    collection.setCreated(getDateFromXSDateTimeStringForItem(created, name).getTime());
                     broker.saveCollection(transaction, collection);
                 }
 
@@ -333,16 +333,16 @@ public class RestoreHandler extends DefaultHandler {
                             final IndexInfo info = collection.validateXMLResource(transaction, broker, docName, is);
                             validated = true;
 
-                            info.getDocument().getMetadata().setMimeType(mimeType);
+                            info.getDocument().setMimeType(mimeType);
                             if (dateCreated != null) {
-                                info.getDocument().getMetadata().setCreated(dateCreated.getTime());
+                                info.getDocument().setCreated(dateCreated.getTime());
                             }
                             if (dateModified != null) {
-                                info.getDocument().getMetadata().setLastModified(dateModified.getTime());
+                                info.getDocument().setLastModified(dateModified.getTime());
                             }
                             if (publicId != null || systemId != null) {
                                 final DocumentType docType = new DocumentTypeImpl(nameDocType, publicId, systemId);
-                                info.getDocument().getMetadata().setDocType(docType);
+                                info.getDocument().setDocType(docType);
                             }
                             collection.store(transaction, broker, info, is);
 

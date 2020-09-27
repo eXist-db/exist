@@ -30,7 +30,6 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentMetadata;
 import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
@@ -382,14 +381,13 @@ public class SystemImportHandler extends DefaultHandler {
 					final IndexInfo info = currentCollection.validateXMLResource(transaction, broker, docUri, is);
 					
 					resource = info.getDocument();
-					final DocumentMetadata meta = resource.getMetadata();
-					meta.setMimeType(mimetype);
-					meta.setCreated(date_created.getTime());
-					meta.setLastModified(date_modified.getTime());
+					resource.setMimeType(mimetype);
+					resource.setCreated(date_created.getTime());
+					resource.setLastModified(date_modified.getTime());
 					
 	                if((publicid != null) || (systemid != null)) {
 	                	final DocumentType docType = new DocumentTypeImpl(namedoctype, publicid, systemid);
-	                	meta.setDocType(docType);
+	                	resource.setDocType(docType);
 	                }
 
 					rh.startDocumentRestore(resource, atts);
