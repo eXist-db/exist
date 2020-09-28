@@ -147,6 +147,7 @@ public class UtilModule extends AbstractInternalModule {
             new FunctionDef(Base64Functions.signatures[0], Base64Functions.class),
             new FunctionDef(Base64Functions.signatures[1], Base64Functions.class),
             new FunctionDef(Base64Functions.signatures[2], Base64Functions.class),
+            new FunctionDef(Base64Functions.signatures[3], Base64Functions.class),
             new FunctionDef(BaseConversionFunctions.FNS_INT_TO_OCTAL, BaseConversionFunctions.class),
             new FunctionDef(BaseConversionFunctions.FNS_OCTAL_TO_INT, BaseConversionFunctions.class),
             new FunctionDef(LineNumber.signature, LineNumber.class)

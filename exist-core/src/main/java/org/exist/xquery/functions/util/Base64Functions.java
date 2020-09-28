@@ -76,8 +76,18 @@ public class Base64Functions extends BasicFunction
                 new FunctionParameterSequenceType( "string", Type.STRING, Cardinality.ZERO_OR_ONE, "The Base64 string to be decoded" )
             },
             new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the decoded output" )
-        )
-    };
+        ),
+
+		new FunctionSignature(
+			new QName( "base64-encode-url-safe", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
+			"Encodes the given string as Base64 (url-safe)",
+			new SequenceType[] {
+					new FunctionParameterSequenceType( "string", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be Base64 encoded (url-safe)" )
+			},
+			new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the Base64, url-safe encoded output without padding" )
+		)
+
+	};
 	
 
     public Base64Functions( XQueryContext context, FunctionSignature signature )
@@ -104,8 +114,11 @@ public class Base64Functions extends BasicFunction
 					b64Str = b64Str.trim();
 				}
 				value = new StringValue(b64Str);
+			} else if (isCalledAs("base64-encode-url-safe")) {
+				String b64Str = Base64.encodeBase64URLSafeString(str.getBytes(UTF_8));
+				value = new StringValue(b64Str);
 	        } else {
-
+				// Base64.decodeBase64 can handle url-safe encoded data as well
 	        	final byte[] data = Base64.decodeBase64(str);
 				value = new StringValue(new String(data, UTF_8));
 	        }
