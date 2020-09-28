@@ -66,7 +66,8 @@ public class Base64Functions extends BasicFunction
                 new FunctionParameterSequenceType( "string", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be Base64 encoded" ),
 				new FunctionParameterSequenceType( "trim", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Trim trailing newlines?" )
             },
-            new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the Base64 encoded output" )
+            new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the Base64 encoded output" ),
+			"This function is deprecated. The output does not need to be trimmed, please use util:base64-encode#1 instead."
         ),
 		
          new FunctionSignature(
@@ -99,20 +100,12 @@ public class Base64Functions extends BasicFunction
     public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
     {
 		Sequence value	= Sequence.EMPTY_SEQUENCE;
-		boolean  trim	= true;
-		
+
         if( !args[0].isEmpty() ) {       
 			final String str = args[0].getStringValue();
-			
-			if( args.length == 2 ) {
-				trim = args[1].effectiveBooleanValue();
-			}
-	
+
 	        if (isCalledAs("base64-encode")) {
 				String b64Str = Base64.encodeBase64String(str.getBytes(UTF_8));
-				if (trim) {
-					b64Str = b64Str.trim();
-				}
 				value = new StringValue(b64Str);
 			} else if (isCalledAs("base64-encode-url-safe")) {
 				String b64Str = Base64.encodeBase64URLSafeString(str.getBytes(UTF_8));
