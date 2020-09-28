@@ -42,82 +42,80 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Base64 String conversion functions.
  *
- * @author  Andrzej Taramina (andrzej@chaeron.com)
+ * @author Andrzej Taramina (andrzej@chaeron.com)
  */
 
-public class Base64Functions extends BasicFunction
-{
-    protected static final Logger           logger       = LogManager.getLogger( Base64Functions.class );
+public class Base64Functions extends BasicFunction {
+    protected static final Logger logger = LogManager.getLogger(Base64Functions.class);
 
-   public final static FunctionSignature[] signatures = {
-        new FunctionSignature(
-            new QName( "base64-encode", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
-            "Encodes the given string as Base64",
-            new SequenceType[] {
-                new FunctionParameterSequenceType( "string", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be Base64 encoded" )
-            },
-            new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the Base64 encoded output, with trailing newlines trimmed" )
-        ),
-		
-		 new FunctionSignature(
-            new QName( "base64-encode", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
-            "Encodes the given string as Base64",
-            new SequenceType[] {
-                new FunctionParameterSequenceType( "string", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be Base64 encoded" ),
-				new FunctionParameterSequenceType( "trim", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Trim trailing newlines?" )
-            },
-            new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the Base64 encoded output" ),
-			"This function is deprecated. The output does not need to be trimmed, please use util:base64-encode#1 instead."
-        ),
-		
-         new FunctionSignature(
-            new QName( "base64-decode", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
-            "Decode the given Base64 encoded string back to clear text",
-            new SequenceType[] {
-                new FunctionParameterSequenceType( "string", Type.STRING, Cardinality.ZERO_OR_ONE, "The Base64 string to be decoded" )
-            },
-            new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the decoded output" )
-        ),
+    public final static FunctionSignature[] signatures = {
+            new FunctionSignature(
+                    new QName("base64-encode", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                    "Encodes the given string as Base64",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("string", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be Base64 encoded")
+                    },
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the Base64 encoded output, with trailing newlines trimmed")
+            ),
 
-		new FunctionSignature(
-			new QName( "base64-encode-url-safe", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
-			"Encodes the given string as Base64 (url-safe)",
-			new SequenceType[] {
-					new FunctionParameterSequenceType( "string", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be Base64 encoded (url-safe)" )
-			},
-			new FunctionReturnSequenceType( Type.STRING, Cardinality.ZERO_OR_ONE, "the Base64, url-safe encoded output without padding" )
-		)
+            new FunctionSignature(
+                    new QName("base64-encode", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                    "Encodes the given string as Base64",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("string", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be Base64 encoded"),
+                            new FunctionParameterSequenceType("trim", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "Trim trailing newlines?")
+                    },
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the Base64 encoded output"),
+                    "This function is deprecated. The output does not need to be trimmed, please use util:base64-encode#1 instead."
+            ),
 
-	};
-	
+            new FunctionSignature(
+                    new QName("base64-decode", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                    "Decode the given Base64 encoded string back to clear text",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("string", Type.STRING, Cardinality.ZERO_OR_ONE, "The Base64 string to be decoded")
+                    },
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the decoded output")
+            ),
 
-    public Base64Functions( XQueryContext context, FunctionSignature signature )
-    {
-        super( context, signature );
+            new FunctionSignature(
+                    new QName("base64-encode-url-safe", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                    "Encodes the given string as Base64 (url-safe)",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("string", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be Base64 encoded (url-safe)")
+                    },
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the Base64, url-safe encoded output without padding")
+            )
+
+    };
+
+
+    public Base64Functions(XQueryContext context, FunctionSignature signature) {
+        super(context, signature);
     }
-	
 
-    public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
-    {
-		Sequence value	= Sequence.EMPTY_SEQUENCE;
 
-        if( !args[0].isEmpty() ) {       
-			final String str = args[0].getStringValue();
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        if (args[0].isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
 
-	        if (isCalledAs("base64-encode")) {
-				String b64Str = Base64.encodeBase64String(str.getBytes(UTF_8));
-				value = new StringValue(b64Str);
-			} else if (isCalledAs("base64-encode-url-safe")) {
-				String b64Str = Base64.encodeBase64URLSafeString(str.getBytes(UTF_8));
-				value = new StringValue(b64Str);
-	        } else {
-				// Base64.decodeBase64 can handle url-safe encoded data as well
-	        	final byte[] data = Base64.decodeBase64(str);
-				value = new StringValue(new String(data, UTF_8));
-	        }
-		}
-		
-		return( value );
+        final String str = args[0].getStringValue();
+
+        if (isCalledAs("base64-encode")) {
+            String b64Str = Base64.encodeBase64String(str.getBytes(UTF_8));
+            return new StringValue(b64Str);
+        }
+
+        if (isCalledAs("base64-encode-url-safe")) {
+            String b64Str = Base64.encodeBase64URLSafeString(str.getBytes(UTF_8));
+            return new StringValue(b64Str);
+        }
+
+        // isCalledAs("base64-decode")
+        // Base64.decodeBase64 can handle standard and url-safe base64 encoded data
+        final byte[] data = Base64.decodeBase64(str);
+        return new StringValue(new String(data, UTF_8));
     }
 
 }
