@@ -68,7 +68,7 @@ public class Base64FunctionsTest {
 
     @Test
     public void testBase64EncodeUrlSafeNoSpecial() throws XMLDBException {
-        final String query = "util:base64-decode-url-safe( 'This is a test!' )";
+        final String query = "util:base64-encode-url-safe( 'This is a test!' )";
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
         assertEquals("VGhpcyBpcyBhIHRlc3Qh", r);
@@ -76,7 +76,7 @@ public class Base64FunctionsTest {
 
     @Test
     public void testBase64EncodeUrlSafeSpecial() throws XMLDBException {
-        final String query = "util:base64-decode-url-safe( '.ÿd' )";
+        final String query = "util:base64-encode-url-safe( '.ÿd' )";
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
         assertEquals("LsO_ZA", r);
