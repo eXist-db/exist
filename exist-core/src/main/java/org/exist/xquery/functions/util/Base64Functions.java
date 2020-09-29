@@ -90,12 +90,12 @@ public class Base64Functions extends BasicFunction {
     };
 
 
-    public Base64Functions(XQueryContext context, FunctionSignature signature) {
+    public Base64Functions(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
 
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
@@ -103,12 +103,12 @@ public class Base64Functions extends BasicFunction {
         final String str = args[0].getStringValue();
 
         if (isCalledAs("base64-encode")) {
-            String b64Str = Base64.encodeBase64String(str.getBytes(UTF_8));
+            final String b64Str = Base64.encodeBase64String(str.getBytes(UTF_8));
             return new StringValue(b64Str);
         }
 
         if (isCalledAs("base64-encode-url-safe")) {
-            String b64Str = Base64.encodeBase64URLSafeString(str.getBytes(UTF_8));
+            final String b64Str = Base64.encodeBase64URLSafeString(str.getBytes(UTF_8));
             return new StringValue(b64Str);
         }
 
