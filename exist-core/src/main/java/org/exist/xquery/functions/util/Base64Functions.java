@@ -51,7 +51,7 @@ public class Base64Functions extends BasicFunction {
     public final static FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("base64-encode", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-                    "Encodes the given string as Base64",
+                    "Encodes the given string as Base64 (see RFC 2045 §6.8)",
                     new SequenceType[]{
                             new FunctionParameterSequenceType("string", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be Base64 encoded")
                     },
@@ -80,7 +80,7 @@ public class Base64Functions extends BasicFunction {
 
             new FunctionSignature(
                     new QName("base64-encode-url-safe", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-                    "Encodes the given string as Base64, url-safe. No padding and use - and _ instead of + and /.",
+                    "Encodes the given string as Base64, url-safe. No padding and use - and _ instead of + and / (see RFC 4648 §5).",
                     new SequenceType[]{
                             new FunctionParameterSequenceType("string", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be Base64 encoded (url-safe)")
                     },
