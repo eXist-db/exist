@@ -51,6 +51,22 @@ public class Base64FunctionsTest {
     }
 
     @Test
+    public void testBase64EncodeWithTrim() throws XMLDBException {
+        final String query = "util:base64-encode( 'This is a longer test to enforce an encoded string longer than the chunking limit!', true() )";
+        final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("VGhpcyBpcyBhIGxvbmdlciB0ZXN0IHRvIGVuZm9yY2UgYW4gZW5jb2RlZCBzdHJpbmcgbG9uZ2VyIHRoYW4gdGhlIGNodW5raW5nIGxpbWl0IQ==", r);
+    }
+
+    @Test
+    public void testBase64EncodeWithTrimFalse() throws XMLDBException {
+        final String query = "util:base64-encode( 'This is a longer test to enforce an encoded string longer than the chunking limit!', false() )";
+        final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("VGhpcyBpcyBhIGxvbmdlciB0ZXN0IHRvIGVuZm9yY2UgYW4gZW5jb2RlZCBzdHJpbmcgbG9uZ2VyIHRoYW4gdGhlIGNodW5raW5nIGxpbWl0IQ==", r);
+    }
+
+    @Test
     public void testBase64Decode() throws XMLDBException {
         final String query = "util:base64-decode( 'VGhpcyBpcyBhIHRlc3Qh' )";
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
