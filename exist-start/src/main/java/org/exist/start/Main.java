@@ -158,12 +158,23 @@ public class Main {
             final String jreVersion = System.getProperty("java.version", "UNKNOWN");
             if (!jreVersion.startsWith("1.8") && !jreVersion.startsWith("11")) {
                 System.err.println("*****************************************************");
-                System.err.println("eXist-db should only be started with Java8 or Java11!");
-                System.err.println("OpenJDK versions 12 and newer contain at this moment a");
-                System.err.println("severe bug in the JIT compiler that will cause data loss.");
-                System.err.println("The problem has been reported and will be addressed in");
-                System.err.println("future versions of the OpenJDK.");
-                System.err.println("Detected version is " + jreVersion + ".");
+                System.err.println("Warning: eXist-db should only be used with Java 8 or 11!");
+                System.err.println();
+                System.err.println("OpenJDK versions 12 and higher currently suffer from a");
+                System.err.println("critical bug in the JIT compiler that will cause");
+                System.err.println("data loss in eXist-db.");
+                System.err.println();
+                System.err.println("The problem has been reported to the OpenJDK community.");
+                System.err.println();
+                System.err.println("For more information, see:");
+                System.err.println("- https://bugs.openjdk.java.net/browse/JDK-8253191");
+                System.err.println("- https://github.com/eXist-db/exist/issues/3375");
+                System.err.println();
+                System.err.println("The detected version of Java on your system is " + jreVersion + ".");
+                System.err.println();
+                System.err.println("eXist-db will continue its startup sequence after a");
+                System.err.println("short delay, but until this OpenJDK bug is resolved,");
+                System.err.println("we urge you to switch to Java 8 or 11.");
                 System.err.println("*****************************************************");
 
                 // Make sure message is visible and annoying
