@@ -46,6 +46,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -154,6 +155,25 @@ public class Main {
 
     public void run(String[] args) {
         try {
+            final String jreVersion = System.getProperty("java.version", "UNKNOWN");
+            if (!jreVersion.startsWith("1.8") && !jreVersion.startsWith("11")) {
+                System.err.println("*****************************************************");
+                System.err.println("eXist-db should only be started with Java8 or Java11!");
+                System.err.println("OpenJDK versions 12 and newer contain at this moment a");
+                System.err.println("severe bug in the JIT compiler that will cause data loss.");
+                System.err.println("The problem has been reported and will be addressed in");
+                System.err.println("future versions of the OpenJDK.");
+                System.err.println("Detected version is " + jreVersion + ".");
+                System.err.println("*****************************************************");
+
+                // Make sure message is visible and annoying
+                try {
+                    TimeUnit.SECONDS.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
             runEx(args);
         } catch (final StartException e) {
             System.exit(e.getErrorCode());
