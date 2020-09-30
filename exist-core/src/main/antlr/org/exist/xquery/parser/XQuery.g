@@ -586,8 +586,11 @@ singleType throws XPathException
 atomicType throws XPathException
 { String name= null; }
 :
-	name=qName
-	{ #atomicType= #[ATOMIC_TYPE, name]; }
+	name=q:qName
+	{
+	  #atomicType= #[ATOMIC_TYPE, name];
+	  #atomicType.copyLexInfo(#q);
+	}
 	;
 
 functionTest throws XPathException

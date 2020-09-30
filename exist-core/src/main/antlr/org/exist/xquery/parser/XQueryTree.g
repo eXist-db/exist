@@ -970,9 +970,11 @@ throws XPathException
 			    try {
                     QName qn= QName.parse(staticContext, t.getText());
                     int code= Type.getType(qn);
-                    if(!Type.subTypeOf(code, Type.ATOMIC))
-                        throw new XPathException(t, "Type " + qn.toString() + " is not an atomic type");
+                    if (!Type.subTypeOf(code, Type.ATOMIC))
+                        throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0051, qn.toString() + " is not atomic");
                     type.setPrimaryType(code);
+                } catch (final XPathException e) {
+                    throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0051, "Unknown simple type " + t.getText());
                 } catch (final IllegalQNameException e) {
                     throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + t.getText());
                 }
@@ -3378,6 +3380,8 @@ throws PermissionDeniedException, EXistException, XPathException
                 castExpr.setASTNode(castAST);
                 path.add(castExpr);
                 step = castExpr;
+            } catch (final XPathException e) {
+                throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0051, "Unknown simple type " + t.getText());
             } catch (final IllegalQNameException e) {
                 throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + t.getText());
             }
@@ -3404,6 +3408,8 @@ throws PermissionDeniedException, EXistException, XPathException
                 castExpr.setASTNode(castAST);
                 path.add(castExpr);
                 step = castExpr;
+            } catch (final XPathException e) {
+                throw new XPathException(t2.getLine(), t2.getColumn(), ErrorCodes.XPST0051, "Unknown simple type " + t2.getText());
             } catch (final IllegalQNameException e) {
                 throw new XPathException(t2.getLine(), t2.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + t2.getText());
             }
