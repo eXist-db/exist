@@ -46,7 +46,6 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -69,6 +68,7 @@ public class Main {
 
     private static final int ERROR_CODE_GENERAL = 1;
     private static final int ERROR_CODE_NO_JETTY_CONFIG = 7;
+    private static final int ERROR_CODE_RELIABLE_JAVA_DETECTED = 13;
 
     public static final String CONFIG_DIR_NAME = "etc";
 
@@ -156,9 +156,10 @@ public class Main {
     public void run(String[] args) {
         try {
             final String jreVersion = System.getProperty("java.version", "UNKNOWN");
-            if (!jreVersion.startsWith("1.8") && !jreVersion.startsWith("11")) {
+            if (!jreVersion.startsWith("1.8") && !jreVersion.startsWith("9.")
+                    && !jreVersion.startsWith("10.") && !jreVersion.startsWith("11.")) {
                 System.err.println("*****************************************************");
-                System.err.println("Warning: eXist-db should only be used with Java 8 or 11!");
+                System.err.println("Warning: Unreliable Java version has been detected!");
                 System.err.println();
                 System.err.println("OpenJDK versions 12 and higher currently suffer from a");
                 System.err.println("critical bug in the JIT compiler that will cause");
@@ -172,17 +173,12 @@ public class Main {
                 System.err.println();
                 System.err.println("The detected version of Java on your system is " + jreVersion + ".");
                 System.err.println();
-                System.err.println("eXist-db will continue its startup sequence after a");
-                System.err.println("short delay, but until this OpenJDK bug is resolved,");
-                System.err.println("we urge you to switch to Java 8 or 11.");
+                System.err.println("To prevent data loss, eXist-db will not be started.");
+                System.err.println("Until this OpenJDK bug is resolved, we urge you to");
+                System.err.println("switch to LTS versions Java 8 or 11.");
                 System.err.println("*****************************************************");
 
-                // Make sure message is visible and annoying
-                try {
-                    TimeUnit.SECONDS.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                throw new StartException(ERROR_CODE_RELIABLE_JAVA_DETECTED);
             }
 
             runEx(args);
