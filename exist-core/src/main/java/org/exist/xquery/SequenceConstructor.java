@@ -122,6 +122,21 @@ public class SequenceConstructor extends PathExpr {
         return result.toString();
     }
 
+    /**
+     * Add another PathExpr to this object's expression list.
+     * Performs a static check, if return type is a function type.
+     *
+     * @throws XPathException when Path returns a function type
+     * @param path A path to add to this path
+     */
+    public void addPathIfNotFunction(final PathExpr path) throws XPathException {
+        int retType = path.returnsType();
+        if (Type.subTypeOf(retType, Type.FUNCTION_REFERENCE)) {
+            throw new XPathException(path, ErrorCodes.XQTY0105, "Function types are not allowed in element content. Got " + Type.getTypeName(retType));
+        }
+        super.addPath(path);
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#returnsType()
      */

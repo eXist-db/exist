@@ -1663,10 +1663,10 @@ compElemConstructor throws XPathException
 { String eq; }
 :
 	( "element" LCURLY ) =>
-	"element"! LCURLY! expr RCURLY! LCURLY! (expr)? RCURLY!
+	"element"! LCURLY! expr RCURLY! compConstructorValue
 	{ #compElemConstructor = #(#[COMP_ELEM_CONSTRUCTOR], #compElemConstructor); }
 	|
-	"element"! eq=eqName LCURLY! (e3:expr)? RCURLY!
+	"element"! eq=eqName e3:compConstructorValue
 	{ #compElemConstructor = #(#[COMP_ELEM_CONSTRUCTOR, eq], #[STRING_LITERAL, eq], #e3); }
 	;
 

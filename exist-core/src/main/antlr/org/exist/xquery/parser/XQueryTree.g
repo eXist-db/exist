@@ -3158,7 +3158,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		(
 			{ elementContent = new PathExpr(context); }
 			contentExpr=expr[elementContent]
-			{ construct.addPath(elementContent); }
+			{ construct.addPathIfNotFunction(elementContent); }
 		)*
 	)
 	|
