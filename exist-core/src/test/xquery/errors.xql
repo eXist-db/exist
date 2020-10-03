@@ -325,13 +325,19 @@ function et:issue3473c() {
     }
 };
 
-(: https://github.com/eXist-db/exist/issues/3474 :)
+(:~
+ : function type item in element content in sequence
+ : throws at runtime not compile time
+ : https://github.com/eXist-db/exist/issues/3474
+ :)
 declare
-    %test:pending("to be addressed in another PR")
-    %test:assertEquals(333)
+    %test:assertEquals(337)
 function et:issue3474() {
     try {
-        element foo { map { "x": "y" } }
+        element foo {
+            "a",
+            map { "x": "y" }
+        }
     } catch * {
         $err:line-number
     }
