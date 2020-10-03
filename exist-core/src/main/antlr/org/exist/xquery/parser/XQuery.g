@@ -1663,12 +1663,19 @@ compElemConstructor throws XPathException
 { String eq; }
 :
 	( "element" LCURLY ) =>
-	"element"! LCURLY! expr RCURLY! compConstructorValue
+	"element"! LCURLY! expr RCURLY! compElemConstructorContent
 	{ #compElemConstructor = #(#[COMP_ELEM_CONSTRUCTOR], #compElemConstructor); }
 	|
-	"element"! eq=eqName e3:compConstructorValue
-	{ #compElemConstructor = #(#[COMP_ELEM_CONSTRUCTOR, eq], #[STRING_LITERAL, eq], #e3); }
+	"element"! eq=eqName v:compElemConstructorContent
+	{ #compElemConstructor = #(#[COMP_ELEM_CONSTRUCTOR, eq], #[STRING_LITERAL, eq], #v); }
 	;
+
+compElemConstructorContent throws XPathException
+:
+    ( LCURLY RCURLY ) => LCURLY! RCURLY!
+    | LCURLY^ (expr)?  RCURLY!
+    ;
+
 
 compAttrConstructor throws XPathException
 { String eq; }
