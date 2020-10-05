@@ -326,19 +326,42 @@ function et:issue3473c() {
 };
 
 (:~
- : function type item in element content in sequence
- : throws at runtime not compile time
- : https://github.com/eXist-db/exist/issues/3474
+ : function type item returned in element content in sequence at runtime
+ : related to https://github.com/eXist-db/exist/issues/3474
  :)
 declare
-    %test:assertEquals(337)
-function et:issue3474() {
+    %test:assertEquals(339)
+    %test:pending("expression seems to swallow subexpression location")
+function et:enclosed-expression-evaluates-to-map() {
     try {
         element foo {
-            "a",
-            map { "x": "y" }
+            (
+                "a",
+                map {}
+            )[2]
         }
-    } catch * {
+    }
+    catch err:XQTY0105 {
+        $err:line-number
+    }
+};
+
+(:~
+ : sequnce in enclosed expression with only a function type
+ : weird edge case which should evaluate to empty sequence
+ : but should arguably still throw
+ : related to https://github.com/eXist-db/exist/issues/3474
+ :)
+declare
+    %test:assertEquals(361)
+    %test:pending("expression seems to swallow subexpression location")
+function et:enclosed-expression-edge-case() {
+    try {
+        element foo {
+            (map {})[2]
+        }
+    }
+    catch err:XQTY0105 {
         $err:line-number
     }
 };
