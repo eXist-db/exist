@@ -23,6 +23,7 @@ package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
@@ -45,12 +46,20 @@ public class FunctionTypeInElementContent {
         assertCompilationSuccess(query);
     }
 
+    /**
+     * TODO: remove empty sequence after https://github.com/eXist-db/exist/issues/3472 is fixed
+     */
     @Test
     public void arrayConstructor() throws XMLDBException {
         final String query = "element test { array { () } }";
         assertCompilationSuccess(query);
     }
 
+    @Test
+    public void sequenceOfItems() throws XMLDBException {
+        final String query = "element test { (1, map {})[1] }";
+        assertCompilationSuccess(query);
+    }
 
     @Test
     public void partialBuiltIn() throws XMLDBException {
@@ -59,6 +68,31 @@ public class FunctionTypeInElementContent {
         assertCompilationError(query, error);
     }
 
+    /**
+     * TODO: Investigate does still throw without location info
+     */
+    @Ignore
+    @Test
+    public void functionReference() throws XMLDBException {
+        final String query = "element test { sum#0 }";
+        final String error = "err:XQTY0105 Function types are not allowed in element content. Got function(*) [at line 1, column 16, source: element test { sum#0 }]";
+        assertCompilationError(query, error);
+    }
+
+    /**
+     * Does not throw at compile time
+     */
+    @Ignore
+    @Test
+    public void functionVariable() throws XMLDBException {
+        final String query = "let $f := function () { () } return element test { $f }";
+        final String error = "err:XQTY0105 Function types are not allowed in element content. Got function(*) [at line 1, column 16, source: element test { sum(?) }]";
+        assertCompilationError(query, error);
+    }
+
+    /**
+     * TODO: remove empty sequence after https://github.com/eXist-db/exist/issues/3551 is fixed
+     */
     @Test
     public void userDefinedFunction() throws XMLDBException {
         final String query = "element test { function () { () } }";
@@ -74,28 +108,52 @@ public class FunctionTypeInElementContent {
         assertCompilationError(query, error);
     }
 
-//  -- no error is thrown at compile time
-//    @Test
-//    public void mapConstructorInSequence() throws XMLDBException {
-//        final String query = "element test {\n" +
-//                "    \"a\",\n" +
-//                "    map {}\n" +
-//                "}";
-//        final String error = "err:XQTY0105 Function types are not allowed in element content. Got map(*) [at line 1, column 14, source: element test { map {} }]";
-//        assertCompilationError(query, error);
-//    }
+    /**
+     * sequence in enclosed expression with only a function type
+     */
+    @Ignore
+    @Test
+    public void sequenceOfMaps() throws XMLDBException {
+        final String query = "element test { (map {}) }";
+        final String error = "An exception occurred during query execution: err:XQTY0105 Function types are not allowed in element content. Got map(*) [source: element foo { (map{}) }]";
+        assertCompilationError(query, error);
+    }
 
+    /**
+     * there is an edge case which would evaluate to empty sequence
+     * but should arguably still throw
+     * Does still throw without location info
+     * TODO: add (sub-expression) location
+     */
+    @Test
+    public void sequenceOfMapsEdgeCase() throws XMLDBException {
+        final String query = "element test { (map {})[2] }";
+        final String error = "err:XQTY0105 Function types are not allowed in element content. Got map(*) [source: element test { (map {})[2] }]";
+        assertCompilationError(query, error);
+    }
 
-//  -- no error is thrown at compile time nor run time
-//    @Test
-//    public void arrayInSequence() throws XMLDBException {
-//        final String query = "element test {\n" +
-//                "    \"a\",\n" +
-//                "    []\n" +
-//                "}";
-//        final String error = "err:XQTY0105 Function types are not allowed in element content. Got map(*) [at line 1, column 14, source: element test { map {} }]";
-//        assertCompilationError(query, error);
-//    }
+    /**
+     * -- no error is thrown at compile time
+     * TODO: add (sub-expression) location
+     */
+    @Test
+    public void ArrayOfMaps() throws XMLDBException {
+        final String query = "element test { [map {}] }";
+        final String error = "An exception occurred during query execution: err:XQTY0105 Function types are not allowed in element content. Got map(*) [source: element test { [map{}] }]";
+        assertCompilationError(query, error);
+    };
+
+    /**
+     * This could throw at compile time, but does not
+     * TODO: add (sub-expression) location
+     */
+    @Ignore
+    @Test
+    public void mapConstructorInSubExpression() throws XMLDBException {
+        final String query = "element test { \"a\", map {} }";
+        final String error = "err:XQTY0105 Function types are not allowed in element content. Got map(*) [at line 1, column 20, source: element test { map {} }]";
+        assertCompilationError(query, error);
+    }
 
     private void assertCompilationError(final String query, final String error) throws XMLDBException {
         final XQueryService service = (XQueryService)existEmbeddedServer.getRoot().getService("XQueryService", "1.0");

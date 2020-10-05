@@ -330,38 +330,45 @@ function et:issue3473c() {
  : related to https://github.com/eXist-db/exist/issues/3474
  :)
 declare
-    %test:assertEquals(339)
-    %test:pending("expression seems to swallow subexpression location")
-function et:enclosed-expression-evaluates-to-map() {
+    %test:assertTrue
+    %test:pending("location info still missing")
+function et:subexpression-in-enclosed-expression-evaluates-to-map() {
     try {
-        element foo {
-            (
-                "a",
-                map {}
-            )[2]
-        }
+        element test { 1, map {} }
     }
     catch err:XQTY0105 {
-        $err:line-number
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
     }
 };
 
-(:~
- : sequnce in enclosed expression with only a function type
- : weird edge case which should evaluate to empty sequence
- : but should arguably still throw
- : related to https://github.com/eXist-db/exist/issues/3474
- :)
 declare
-    %test:assertEquals(361)
-    %test:pending("expression seems to swallow subexpression location")
-function et:enclosed-expression-edge-case() {
+    %test:assertTrue
+    %test:pending("location info still missing")
+function et:enclosed-expression-evaluates-to-map() {
     try {
-        element foo {
-            (map {})[2]
-        }
+        element test { ( "a", map {} )[2] }
     }
     catch err:XQTY0105 {
-        $err:line-number
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
+    }
+};
+
+declare
+    %test:assertTrue
+function et:array-in-enclosed-expression-evaluates-to-map() {
+    try {
+        element test { [map {}] }
+    }
+    catch err:XQTY0105 {
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
     }
 };
