@@ -42,35 +42,35 @@ public class FunctionTypeInElementContent {
     @Test
     public void arrayLiteral() throws XMLDBException {
         final String query = "element test { [] }";
-        final String error = "err:XQTY0105 Function types are not allowed in element content. Got array(*) [at line 1, column 14, source: element test { [] }]";
-        assertCompilationError(query, error);
+        assertCompilationSuccess(query);
     }
+
+    @Test
+    public void arrayConstructor() throws XMLDBException {
+        final String query = "element test { array { () } }";
+        assertCompilationSuccess(query);
+    }
+
 
     @Test
     public void partialBuiltIn() throws XMLDBException {
         final String query = "element test { sum(?) }";
-        final String error = "err:XQTY0105 Function types are not allowed in element content. Got function(*) [at line 1, column 14, source: element test { sum(?) }]";
+        final String error = "err:XQTY0105 Function types are not allowed in element content. Got function(*) [at line 1, column 16, source: element test { sum(?) }]";
         assertCompilationError(query, error);
     }
 
     @Test
     public void userDefinedFunction() throws XMLDBException {
         final String query = "element test { function () { () } }";
-        final String error = "err:XQTY0105 Function types are not allowed in element content. Got function(*) [at line 1, column 14, source: element test { function () { () } }]";
-        assertCompilationError(query, error);
-    }
-
-    @Test
-    public void arrayConstructor() throws XMLDBException {
-        final String query = "element test { array { () } }";
-        final String error = "err:XQTY0105 Function types are not allowed in element content. Got array(*) [at line 1, column 14, source: element test { array { () } }]";
+        // TODO: user defined function has its location offset to a weird location
+        final String error = "err:XQTY0105 Function types are not allowed in element content. Got function(*) [at line 1, column 25, source: element test { function () { () } }]";
         assertCompilationError(query, error);
     }
 
     @Test
     public void mapConstructor() throws XMLDBException {
         final String query = "element test { map {} }";
-        final String error = "err:XQTY0105 Function types are not allowed in element content. Got map(*) [at line 1, column 14, source: element test { map {} }]";
+        final String error = "err:XQTY0105 Function types are not allowed in element content. Got map(*) [at line 1, column 16, source: element test { map {} }]";
         assertCompilationError(query, error);
     }
 
@@ -106,5 +106,11 @@ public class FunctionTypeInElementContent {
         } catch (XMLDBException ex) {
             assertEquals( error, ex.getMessage() );
         }
+    }
+    private void assertCompilationSuccess(final String query) throws XMLDBException {
+        final XQueryService service = (XQueryService)existEmbeddedServer.getRoot().getService("XQueryService", "1.0");
+
+        service.compile(query);
+        assertTrue( true );
     }
 }

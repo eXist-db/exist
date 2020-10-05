@@ -1673,7 +1673,9 @@ compElemConstructor throws XPathException
 compElemConstructorContent throws XPathException
 :
     ( LCURLY RCURLY ) => LCURLY! RCURLY!
-    | LCURLY^ (expr)?  RCURLY!
+    { #compElemConstructorContent= #(#[PARENTHESIZED, "Parenthesized"], null); }
+    | LCURLY! e:expr RCURLY!
+    { #compElemConstructorContent.copyLexInfo(#e); }
     ;
 
 
