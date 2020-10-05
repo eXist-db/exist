@@ -511,8 +511,15 @@ functionDecl [XQueryAST ann] throws XPathException
 	}
 	;
 
-functionBody throws XPathException:
-	LCURLY^ e:expr RCURLY! ;
+// add virtual parenthesizedExpr for empty function bodys
+// this adds an empty sequence
+// fixes #3551
+functionBody throws XPathException
+:
+    ( LCURLY RCURLY ) => l:LCURLY^ RCURLY!
+    { #functionBody= #(#l, #(#[PARENTHESIZED, "Parenthesized"], null)); }
+    | LCURLY^ expr RCURLY!
+    ;
 
 returnType throws XPathException:
 	"as"^ sequenceType ;
