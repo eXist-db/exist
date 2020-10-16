@@ -130,6 +130,7 @@ public class DirectoryList extends BasicFunction {
             directoryScanner.setIncludes(includes);
             directoryScanner.setBasedir(baseDir.toFile());
             directoryScanner.setCaseSensitive(true);
+            directoryScanner.scan();
 
             for (final String includedFile : directoryScanner.getIncludedFiles()) {
                 final Path file = baseDir.resolve(includedFile);
