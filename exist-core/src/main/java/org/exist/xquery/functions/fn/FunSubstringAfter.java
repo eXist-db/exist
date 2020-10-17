@@ -123,7 +123,7 @@ public class FunSubstringAfter extends CollatingFunction {
             cmp = seq2.getStringValue();
         }
         
-        if(cmp.length() == 0)
+        if(cmp.isEmpty())
             {result = new StringValue(value);}
         else {
             final Collator collator = getCollator(contextSequence, contextItem, 3);

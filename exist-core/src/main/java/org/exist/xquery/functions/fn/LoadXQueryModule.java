@@ -109,7 +109,7 @@ public class LoadXQueryModule extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         final String targetNamespace = args[0].getStringValue();
-        if (targetNamespace.length() == 0) {
+        if (targetNamespace.isEmpty()) {
             throw new XPathException(this, ErrorCodes.FOQM0001, "Target namespace must be a string with length > 0");
         }
         Sequence locationHints = Sequence.EMPTY_SEQUENCE;

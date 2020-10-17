@@ -145,7 +145,7 @@ public class FunId extends Function {
 
             for(final SequenceIterator i = idval.iterate(); i.hasNext(); ) {
     			nextId = i.nextItem().getStringValue();
-                if (nextId.length() == 0)
+                if (nextId.isEmpty())
                     {continue;}
     			if(nextId.indexOf(' ') != Constants.STRING_NOT_FOUND) {
     				// parse idrefs

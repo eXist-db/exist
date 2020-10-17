@@ -92,7 +92,7 @@ public class FunStringJoin extends BasicFunction {
 		String sep = null;
         if (getArgumentCount() == 2) {
             sep = args[1].getStringValue();
-            if(sep.length() == 0)
+            if(sep.isEmpty())
                 {sep = null;}
         }
 		final StringBuilder out = new StringBuilder();

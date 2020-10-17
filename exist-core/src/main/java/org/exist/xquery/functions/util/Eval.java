@@ -547,7 +547,7 @@ public class Eval extends BasicFunction {
                 final String qname = elem.getAttribute("name");
                 final String source = elem.getAttribute("source");
                 NodeValue value;
-                if (source != null && source.length() > 0) {
+                if (source != null && !source.isEmpty()) {
                     // load variable contents from URI
                     value = loadVarFromURI(source);
                 } else {

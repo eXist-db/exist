@@ -123,7 +123,7 @@ public class FunSubstringBefore extends CollatingFunction {
             cmp = seq2.getStringValue();
         }
 
-        if (cmp.length() == 0)
+        if (cmp.isEmpty())
             {result = StringValue.EMPTY_STRING;}
         else {
             final Collator collator = getCollator(contextSequence, contextItem, 3);

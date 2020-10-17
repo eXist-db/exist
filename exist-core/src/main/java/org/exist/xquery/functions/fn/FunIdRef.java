@@ -162,7 +162,7 @@ public class FunIdRef extends Function {
 
             for(final SequenceIterator i = idrefval.iterate(); i.hasNext(); ) {
     			nextId = i.nextItem().getStringValue();
-                if (nextId.length() == 0) {continue;}
+                if (nextId.isEmpty()) {continue;}
                 if(XMLNames.isNCName(nextId)) {
                     if (processInMem)
                         {getIdRef(result, contextSequence, nextId);}

@@ -231,7 +231,7 @@ public class FnFormatDates extends BasicFunction {
             picture = picture.substring(0, widthSep);
         }
         // get default format picture if none was specified
-        if (picture == null || picture.length() == 0) {
+        if (picture == null || picture.isEmpty()) {
             picture = getDefaultFormat(specifier);
         }
         final boolean allowDate = !Type.subTypeOf(dt.getType(), Type.TIME);
@@ -552,7 +552,7 @@ public class FnFormatDates extends BasicFunction {
     }
 
     private int[] getWidths(String width) throws XPathException {
-        if (width == null || width.length() == 0)
+        if (width == null || width.isEmpty())
             {return null;}
 
         int min = -1;
