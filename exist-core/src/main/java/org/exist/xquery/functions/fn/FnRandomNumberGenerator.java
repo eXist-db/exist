@@ -84,7 +84,7 @@ public class FnRandomNumberGenerator extends BasicFunction {
             }
         }
 
-        final XORShiftRandom random = seed.map(XORShiftRandom::new).orElseGet(() -> new XORShiftRandom());
+        final XORShiftRandom random = seed.map(XORShiftRandom::new).orElseGet(XORShiftRandom::new);
 
         return buildResult(context, random);
     }
