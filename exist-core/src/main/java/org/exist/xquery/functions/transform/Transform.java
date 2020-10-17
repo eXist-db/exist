@@ -62,7 +62,7 @@ import java.util.Properties;
  */
 public class Transform extends BasicFunction {
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
                     "Applies an XSL stylesheet to the node tree passed as first argument. The stylesheet " +

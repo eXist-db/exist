@@ -63,7 +63,7 @@ public class FunAnalyzeString extends BasicFunction {
     private final static QName QN_NR = new QName("nr", XMLConstants.NULL_NS_URI);
     private final static QName QN_NON_MATCH = new QName("non-match", Function.BUILTIN_FUNCTION_NS);
     
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             fnAnalyzeString,
             "Analyzes a string using a regular expression, returning an XML " +

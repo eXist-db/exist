@@ -88,7 +88,7 @@ public class FunNormalizeUnicode extends Function {
 	protected static final FunctionParameterSequenceType NF_PARAM = new FunctionParameterSequenceType("normalization-form", Type.STRING, Cardinality.EXACTLY_ONE, "The normalization form");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the normalized text");
 
-	public final static FunctionSignature signatures [] = {
+	public final static FunctionSignature[] signatures = {
     	new FunctionSignature(
 	      new QName("normalize-unicode", Function.BUILTIN_FUNCTION_NS),
 	      FUNCTION_DESCRIPTION_0_PARAM,

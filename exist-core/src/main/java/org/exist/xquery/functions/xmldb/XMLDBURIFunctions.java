@@ -46,7 +46,7 @@ import org.exist.xquery.value.Type;
  */
 public class XMLDBURIFunctions extends BasicFunction {
 	protected static final Logger logger = LogManager.getLogger(XMLDBURIFunctions.class);
-	public final static FunctionSignature signatures[] = new FunctionSignature[] {
+	public final static FunctionSignature[] signatures = new FunctionSignature[] {
 		new FunctionSignature(
 				new QName("encode", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Encodes the string $string such that it will be a valid collection or resource path. Provides similar functionality to java's URLEncoder.encode() function, with some enhancements.",

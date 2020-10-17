@@ -36,7 +36,7 @@ import javax.annotation.Nullable;
  */
 public class FunSubSequence extends Function {
 
-    public static final FunctionSignature signatures[] = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("subsequence", Function.BUILTIN_FUNCTION_NS),
                     "Returns a subsequence of the items in $source-sequence, "

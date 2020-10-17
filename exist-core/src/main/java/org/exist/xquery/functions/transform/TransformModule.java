@@ -40,7 +40,7 @@ public class TransformModule extends AbstractInternalModule {
     public final static String INCLUSION_DATE = "2004-09-12";
     public final static String RELEASED_IN_VERSION = "pre eXist-1.0";
 
-	private final static FunctionDef functions[] = {
+	private final static FunctionDef[] functions = {
 		new FunctionDef(Transform.signatures[0], Transform.class),
         new FunctionDef(Transform.signatures[1], Transform.class),
         new FunctionDef(Transform.signatures[2], Transform.class),

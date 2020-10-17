@@ -103,7 +103,7 @@ public class Jaxp extends BasicFunction {
 
     private final BrokerPool brokerPool;
     // Setup function signature
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
         new QName("jaxp", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
         simpleFunctionTxt,
@@ -218,7 +218,7 @@ public class Jaxp extends BasicFunction {
 
             } else {
                 // Get URL for catalog
-                final String catalogUrls[] = Shared.getUrls(args[2]);
+                final String[] catalogUrls = Shared.getUrls(args[2]);
                 final String singleUrl = catalogUrls[0];
 
                 if (singleUrl.endsWith("/")) {

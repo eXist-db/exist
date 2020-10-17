@@ -65,7 +65,7 @@ import java.util.TreeSet;
  */
 public class FunIdRef extends Function {
 	protected static final Logger logger = LogManager.getLogger(FunIdRef.class);
-	public final static FunctionSignature signature[] = {
+	public final static FunctionSignature[] signature = {
 		new FunctionSignature(
 			new QName("idref", Function.BUILTIN_FUNCTION_NS),
 			"Returns the sequence of element or attributes nodes with an IDREF value matching the " +

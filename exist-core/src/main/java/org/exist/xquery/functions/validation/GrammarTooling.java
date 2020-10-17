@@ -86,7 +86,7 @@ public class GrammarTooling extends BasicFunction  {
             "</report>\n";
     
     // Setup function signature
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("clear-grammar-cache", ValidationModule.NAMESPACE_URI,
             ValidationModule.PREFIX),
@@ -221,7 +221,7 @@ public class GrammarTooling extends BasicFunction  {
             LOG.debug("Successfully parsed "+allGrammars.size()+" grammars.");
             
             // Send all XSD grammars to grammarpool
-            Grammar grammars[] = new Grammar[allGrammars.size()];
+            Grammar[] grammars = new Grammar[allGrammars.size()];
             grammars = allGrammars.toArray(grammars);
             grammarpool.cacheGrammars(TYPE_XSD, grammars);
  
@@ -258,12 +258,12 @@ public class GrammarTooling extends BasicFunction  {
         
         final int nodeNr = builder.startElement("", "report", "report",null);
         
-        final Grammar xsds[] = grammarpool.retrieveInitialGrammarSet(TYPE_XSD);
+        final Grammar[] xsds = grammarpool.retrieveInitialGrammarSet(TYPE_XSD);
         for (Grammar xsd : xsds) {
             writeGrammar(xsd, builder);
         }
         
-        final Grammar dtds[] = grammarpool.retrieveInitialGrammarSet(TYPE_DTD);
+        final Grammar[] dtds = grammarpool.retrieveInitialGrammarSet(TYPE_DTD);
         for (Grammar dtd : dtds) {
             writeGrammar(dtd, builder);
         }

@@ -54,7 +54,7 @@ public class IdFunction extends BasicFunction {
     }
 
     @Override
-    public Sequence eval(final Sequence args[], final Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         if(mySignature == FNS_ID) {
             return functionId();
         } else {

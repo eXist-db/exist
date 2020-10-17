@@ -255,7 +255,7 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
 
     public ArrayType forEach(FunctionReference ref) throws XPathException {
         final ITransientCollection<Sequence> ret = PersistentVector.emptyVector().asTransient();
-        final Sequence fargs[] = new Sequence[1];
+        final Sequence[] fargs = new Sequence[1];
         for (ISeq<Sequence> seq = vector.seq(); seq != null; seq = seq.next()) {
             fargs[0] = seq.first();
             ret.conj(ref.evalFunction(null, null, fargs));
@@ -273,7 +273,7 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
 
     public ArrayType filter(FunctionReference ref) throws XPathException {
         final ITransientCollection<Sequence> ret = PersistentVector.emptyVector().asTransient();
-        final Sequence fargs[] = new Sequence[1];
+        final Sequence[] fargs = new Sequence[1];
         for (ISeq<Sequence> seq = vector.seq(); seq != null; seq = seq.next()) {
             fargs[0] = seq.first();
             final Sequence fret = ref.evalFunction(null, null, fargs);

@@ -108,7 +108,7 @@ public class Shared {
             sources.add(streamsource);
         }
 
-        StreamSource returnSources[] = new StreamSource[sources.size()];
+        StreamSource[] returnSources = new StreamSource[sources.size()];
         returnSources = sources.toArray(returnSources);
         return returnSources;
     }
@@ -276,7 +276,7 @@ public class Shared {
             urls.add(url);
         }
 
-        String returnUrls[] = new String[urls.size()];
+        String[] returnUrls = new String[urls.size()];
         returnUrls = urls.toArray(returnUrls);
         
         return returnUrls;
@@ -431,7 +431,7 @@ public class Shared {
      * Safely close the stream sources and underlying inputstreams.
      * @param sources Streamsources.
      */
-    public static void closeStreamSources(StreamSource sources[]){
+    public static void closeStreamSources(StreamSource[] sources){
 
         if(sources==null){
             return;

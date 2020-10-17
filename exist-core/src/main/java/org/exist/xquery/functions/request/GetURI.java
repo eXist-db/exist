@@ -41,7 +41,7 @@ public class GetURI extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetURI.class);
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("get-uri", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the URI of the current request. This will be the original URI as received from " +

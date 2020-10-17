@@ -40,7 +40,7 @@ public class Profile extends BasicFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(Profile.class);
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("enable-profiling", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Enable profiling output within the query. The profiling starts with this function call and will " +

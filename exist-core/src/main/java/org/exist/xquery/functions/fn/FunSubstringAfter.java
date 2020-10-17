@@ -50,7 +50,7 @@ public class FunSubstringAfter extends CollatingFunction {
 	protected static final FunctionParameterSequenceType COLLATION_ARG = new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI");
 	protected static final FunctionParameterSequenceType SEARCH_ARG = new FunctionParameterSequenceType("search", Type.STRING, Cardinality.ZERO_OR_ONE, "The search string");
 	protected static final FunctionParameterSequenceType SOURCE_ARG = new FunctionParameterSequenceType("source", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string");
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("substring-after", Function.BUILTIN_FUNCTION_NS),
 			"Returns the substring of the value of $source that follows the first occurrence " +

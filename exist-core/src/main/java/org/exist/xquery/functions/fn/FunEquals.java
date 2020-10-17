@@ -42,7 +42,7 @@ import org.exist.xquery.value.Type;
 @Deprecated
 public class FunEquals extends CollatingFunction {
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("equals", Function.BUILTIN_FUNCTION_NS),
             "Returns an xs:boolean indicating whether or not the value of " +

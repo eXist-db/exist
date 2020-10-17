@@ -199,7 +199,7 @@ public class Eval extends BasicFunction {
         return doEval(context, contextSequence, args);
     }
 
-    private Sequence doEval(final XQueryContext evalContext, final Sequence contextSequence, final Sequence args[])
+    private Sequence doEval(final XQueryContext evalContext, final Sequence contextSequence, final Sequence[] args)
             throws XPathException {
         if (evalContext.getProfiler().isEnabled()) {
             evalContext.getProfiler().start(this);

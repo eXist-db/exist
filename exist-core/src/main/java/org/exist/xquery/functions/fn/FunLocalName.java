@@ -62,7 +62,7 @@ public class FunLocalName extends Function {
                     "5.11 node-name AccessorDM. This will be an xs:string whose lexical form is an xs:NCName.";
 
 
-    public static final FunctionSignature signatures[] = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("local-name", Function.BUILTIN_FUNCTION_NS),
                     FUNCTION_DESCRIPTION,

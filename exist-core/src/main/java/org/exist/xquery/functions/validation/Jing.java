@@ -77,7 +77,7 @@ public class Jing extends BasicFunction  {
     private final BrokerPool brokerPool;
     
     // Setup function signature
-    public final static FunctionSignature signatures[] = {        
+    public final static FunctionSignature[] signatures = {
         
         new FunctionSignature(
                 new QName("jing", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),

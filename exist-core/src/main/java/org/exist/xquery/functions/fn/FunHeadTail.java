@@ -41,7 +41,7 @@ import org.exist.xquery.value.ValueSequence;
 
 public class FunHeadTail extends BasicFunction {
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("head", Function.BUILTIN_FUNCTION_NS),
             "The function returns the value of the expression $arg[1], i.e. the first item in the " +

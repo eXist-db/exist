@@ -152,7 +152,7 @@ public class FnRandomNumberGenerator extends BasicFunction {
 
         @Override
         public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
-            final Sequence args[] = getCurrentArguments();
+            final Sequence[] args = getCurrentArguments();
             if (args == null || args.length == 0) {
                 return Sequence.EMPTY_SEQUENCE;
             }

@@ -513,7 +513,7 @@ public class FnFormatDates extends BasicFunction {
                 name = name.toLowerCase();
             }
 
-            final int widths[] = getWidths(width);
+            final int[] widths = getWidths(width);
             if (widths != null) {
                 final int min = widths[0];
                 final int max = widths[1];
@@ -539,7 +539,7 @@ public class FnFormatDates extends BasicFunction {
             max = Integer.MAX_VALUE;
         }
         // explicit width takes precedence
-        final int widths[] = getWidths(width);
+        final int[] widths = getWidths(width);
         if (widths != null) {
             if (widths[0] > 0) {min = widths[0];}
             if (widths[1] > 0) {max = widths[1];}

@@ -68,7 +68,7 @@ public class XMLDBSetMimeType extends BasicFunction {
     }
 
     @Override
-    public Sequence eval(Sequence args[], Sequence contextSequence) throws XPathException {
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
         // Get handle to Mime-type info
         final MimeTable mimeTable = MimeTable.getInstance();

@@ -52,7 +52,7 @@ public class BaseConverter extends BasicFunction {
 	private static final FunctionReturnSequenceType int_result = new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "the xs:integer representation of $number in base $base");
 	private static final FunctionReturnSequenceType string_result = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the xs:string representation of $number in base $base");
 	
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("base-to-integer", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                     "Converts the number $number from base $base to xs:integer.",

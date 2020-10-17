@@ -45,7 +45,7 @@ public class FunContainsToken extends BasicFunction {
     private final static FunctionParameterSequenceType FS_TOKEN = param("token", Type.STRING, "The token to be searched for");
     private final static FunctionParameterSequenceType FS_COLLATION = optParam("pattern", Type.STRING, "Collation to use");
 
-    public final static FunctionSignature FS_CONTAINS_TOKEN[] = functionSignatures(
+    public final static FunctionSignature[] FS_CONTAINS_TOKEN = functionSignatures(
             FS_CONTAINS_TOKEN_NAME,
             "Determines whether or not any of the supplied strings, when tokenized at whitespace boundaries, " +
                     "contains the supplied token, under the rules of the supplied collation.",

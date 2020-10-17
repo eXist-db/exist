@@ -49,7 +49,7 @@ public class FunSum extends Function {
 	//Used to detect overflows : currently not used.
 	private boolean gotInfinity = false;
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("sum", Function.BUILTIN_FUNCTION_NS),
 			"Returns a value obtained by adding together the values in $arg. " +

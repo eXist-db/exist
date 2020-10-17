@@ -49,7 +49,7 @@ import org.w3c.dom.Node;
  */
 public class FunNodeName extends Function {
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("node-name", Function.BUILTIN_FUNCTION_NS),
                     "Returns an expanded-QName for node kinds that can have names. For other kinds " +

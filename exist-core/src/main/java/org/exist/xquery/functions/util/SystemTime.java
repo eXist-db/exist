@@ -48,7 +48,7 @@ public class SystemTime extends Function
 {
 //	private static final Logger logger = LogManager.getLogger(SystemTime.class);
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName( "system-time", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
             "Returns the current xs:time (with timezone) as reported by the Java method System.currentTimeMillis(). " +

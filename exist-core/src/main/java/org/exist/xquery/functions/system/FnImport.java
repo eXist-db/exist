@@ -70,7 +70,7 @@ public class FnImport extends BasicFunction {
 	protected final static FunctionReturnSequenceType RETURN =
 		new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the import results");
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 			NAME,
 			DESCRIPTION,

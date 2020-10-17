@@ -34,7 +34,7 @@ public class FunctionTrace extends BasicFunction {
 
     protected final static Logger logger = LogManager.getLogger(FunctionTrace.class);
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
                 new QName( "trace", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
                 "Returns function call statistics gathered by the trace log.",

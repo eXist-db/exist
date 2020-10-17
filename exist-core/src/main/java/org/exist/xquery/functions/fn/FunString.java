@@ -44,7 +44,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunString extends Function {
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("string", Function.BUILTIN_FUNCTION_NS),
 			"Returns the value of the context item as xs:string. " +

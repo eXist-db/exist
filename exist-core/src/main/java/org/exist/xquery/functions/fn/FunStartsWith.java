@@ -65,7 +65,7 @@ public class FunStartsWith extends CollatingFunction {
 	protected static final FunctionParameterSequenceType COLLATION_PARAM = new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if $prefix is a prefix of the string $source");
 	
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
 	new FunctionSignature (
 			       new QName("starts-with", Function.BUILTIN_FUNCTION_NS),
 			       FUNCTION_DESCRIPTION,

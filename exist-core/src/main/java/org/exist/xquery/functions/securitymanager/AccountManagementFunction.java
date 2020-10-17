@@ -241,7 +241,7 @@ public class AccountManagementFunction extends BasicFunction {
     }
 
     private String[] getGroups(final Sequence seq) {
-        final String groups[] = new String[seq.getItemCount()];
+        final String[] groups = new String[seq.getItemCount()];
         for(int i = 0; i < seq.getItemCount(); i++) {
             groups[i] = seq.itemAt(i).toString();
         }

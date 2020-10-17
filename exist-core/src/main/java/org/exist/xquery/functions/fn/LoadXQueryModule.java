@@ -242,7 +242,7 @@ public class LoadXQueryModule extends BasicFunction {
 
     public static void addFunctionRefsFromModule(final Expression parent, final XQueryContext tempContext,
             final ValueSequence resultSeq, final Module module) throws XPathException {
-        final FunctionSignature signatures[] = module.listFunctions();
+        final FunctionSignature[] signatures = module.listFunctions();
         for (final FunctionSignature signature : signatures) {
             if (!signature.isPrivate()) {
                 if (module.isInternalModule()) {

@@ -41,7 +41,7 @@ import org.exist.xquery.value.Type;
 
 public class FunEndsWith extends CollatingFunction {
 
-    public final static FunctionSignature signatures [] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("ends-with", Function.BUILTIN_FUNCTION_NS),
                 "Returns true() if the string value of $suffix is a suffix of the " +

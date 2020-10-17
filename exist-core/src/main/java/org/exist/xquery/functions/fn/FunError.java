@@ -45,7 +45,7 @@ public class FunError extends BasicFunction {
 
     protected static final Logger logger = LogManager.getLogger(FunError.class);
 
-    public final static FunctionSignature signature[] = {
+    public final static FunctionSignature[] signature = {
         new FunctionSignature(
             new QName("error", Function.BUILTIN_FUNCTION_NS),
             "Indicates that an irrecoverable error has occurred. " +

@@ -44,7 +44,7 @@ public class RandomFunction extends BasicFunction {
     
     protected static final Logger logger = LogManager.getLogger(RandomFunction.class);
 	
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("random", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Returns a random number between 0.0 and 1.0",

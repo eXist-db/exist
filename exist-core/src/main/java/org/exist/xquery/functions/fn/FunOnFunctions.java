@@ -35,7 +35,7 @@ import org.exist.xquery.value.Type;
 
 public class FunOnFunctions extends BasicFunction {
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("function-lookup", Function.BUILTIN_FUNCTION_NS),
             "Returns a reference to the function having a given name and arity, if there is one," +
