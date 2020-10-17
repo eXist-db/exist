@@ -394,23 +394,23 @@ public abstract class AbstractCompressFunction extends BasicFunction
 		}
 
         final byte[] value;
-		if (doc.getResourceType() == DocumentImpl.XML_FILE) {
-			// xml file
-			Serializer serializer = context.getBroker().getSerializer();
-			serializer.setUser(context.getSubject());
-			serializer.setProperty("omit-xml-declaration", "no");
+        if (doc.getResourceType() == DocumentImpl.XML_FILE) {
+            // xml file
+            Serializer serializer = context.getBroker().getSerializer();
+            serializer.setUser(context.getSubject());
+            serializer.setProperty("omit-xml-declaration", "no");
             getDynamicSerializerOptions(serializer);
             String strDoc = serializer.serialize(doc);
-            value = strDoc.getBytes();            
-		} else if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-			// binary file
-            try (final InputStream is = context.getBroker().getBinaryResource((BinaryDocument)doc);
-                 final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream(doc.getContentLength() == -1 ? 1024 : (int)doc.getContentLength())) {
+            value = strDoc.getBytes();
+        } else if (doc.getResourceType() == DocumentImpl.BINARY_FILE && doc.getContentLength() > 0) {
+            // binary file
+            try (final InputStream is = context.getBroker().getBinaryResource((BinaryDocument) doc);
+                 final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream(doc.getContentLength() == -1 ? 1024 : (int) doc.getContentLength())) {
                 baos.write(is);
                 value = baos.toByteArray();
             }
-		} else {
-		    value = new byte[0];
+        } else {
+            value = new byte[0];
         }
 
 		// close the entry
