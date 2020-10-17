@@ -82,7 +82,7 @@ public class RequestModule extends AbstractInternalModule {
         Arrays.sort(functions, new FunctionComparator());
     }
 
-    public RequestModule(final Map<String, List<? extends Object>> parameters) {
+    public RequestModule(final Map<String, List<?>> parameters) {
         super(functions, parameters, true);
     }
 

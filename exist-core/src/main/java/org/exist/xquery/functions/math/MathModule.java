@@ -60,7 +60,7 @@ public class MathModule extends AbstractInternalModule {
         new FunctionDef(TwoParamFunctions.FNS_POW, TwoParamFunctions.class)
     };
     
-    public MathModule(Map<String, List<? extends Object>> parameters) {
+    public MathModule(Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
     

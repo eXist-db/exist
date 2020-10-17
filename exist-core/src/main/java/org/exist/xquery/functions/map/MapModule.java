@@ -49,7 +49,7 @@ public class MapModule extends AbstractInternalModule {
             new FunctionDef(MapFunction.FNS_FOR_EACH, MapFunction.class)
     };
 
-    public MapModule(Map<String, List<? extends Object>> parameters) {
+    public MapModule(Map<String, List<?>> parameters) {
         super(functions, parameters, false);
     }
 

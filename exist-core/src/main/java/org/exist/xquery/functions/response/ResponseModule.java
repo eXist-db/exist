@@ -57,7 +57,7 @@ public class ResponseModule extends AbstractInternalModule {
             new FunctionDef(GetExists.signature, GetExists.class)
     };
 
-    public ResponseModule(final Map<String, List<? extends Object>> parameters) {
+    public ResponseModule(final Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
 
