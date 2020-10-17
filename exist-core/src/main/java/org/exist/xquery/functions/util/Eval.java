@@ -67,7 +67,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import static org.exist.xquery.FunctionDSL.*;
-import static org.exist.xquery.functions.util.UtilModule.*;
 import static org.exist.xquery.functions.util.UtilModule.functionSignatures;
 
 /**

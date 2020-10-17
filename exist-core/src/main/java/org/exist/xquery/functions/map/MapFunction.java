@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.functions.map;
 
-import com.ibm.icu.text.Collator;
 import io.lacuna.bifurcan.IEntry;
 import org.exist.dom.QName;
 import org.exist.xquery.*;

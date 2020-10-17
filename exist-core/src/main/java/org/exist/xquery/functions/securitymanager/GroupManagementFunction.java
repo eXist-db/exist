@@ -22,7 +22,6 @@
 package org.exist.xquery.functions.securitymanager;
 
 import org.exist.EXistException;
-import org.exist.config.ConfigurationException;
 import org.exist.dom.QName;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;

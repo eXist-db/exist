@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.persistent.ExtArrayNodeSet;
-import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.BasicFunction;
@@ -37,7 +35,6 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
 
 public class FunHeadTail extends BasicFunction {
 

@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.functions.validation;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -34,7 +33,6 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;

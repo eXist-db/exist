@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.functions.validation;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 
 import javax.xml.XMLConstants;
