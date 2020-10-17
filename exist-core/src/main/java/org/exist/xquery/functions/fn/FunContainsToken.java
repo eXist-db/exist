@@ -28,6 +28,7 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static org.exist.xquery.FunctionDSL.*;
 
@@ -83,9 +84,7 @@ public class FunContainsToken extends BasicFunction {
 
         for (int i = 0; i < args[0].getItemCount(); i++) {
             String[] chunks = Option.tokenize(args[0].itemAt(i).getStringValue());
-            for (String chunk : chunks) {
-                fragments.add(chunk);
-            }
+            fragments.addAll(Arrays.asList(chunks));
         }
 
         Collator collator = context.getDefaultCollator();
