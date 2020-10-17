@@ -27,6 +27,7 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Properties;
 import java.util.SimpleTimeZone;
@@ -619,7 +620,7 @@ public class Eval extends BasicFunction {
         final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getParserPool();
         try {
             final URL url = new URL(uri);
-            final InputStreamReader isr = new InputStreamReader(url.openStream(), "UTF-8");
+            final InputStreamReader isr = new InputStreamReader(url.openStream(), StandardCharsets.UTF_8);
             final InputSource src = new InputSource(isr);
 
             xr = parserPool.borrowXMLReader();

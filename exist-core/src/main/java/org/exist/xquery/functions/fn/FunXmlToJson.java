@@ -108,7 +108,7 @@ public class FunXmlToJson extends BasicFunction {
         boolean elementValueIsEscaped = false;
         XMLStreamReader reader = null;
         try (
-                final JsonGenerator jsonGenerator = jsonFactory.createGenerator(writer);
+                final JsonGenerator jsonGenerator = jsonFactory.createGenerator(writer)
         ) {
             reader = context.getXMLStreamReader(nodeValue);
             int previous = XMLStreamReader.START_DOCUMENT;

@@ -281,6 +281,6 @@ public class LoadXQueryModule extends BasicFunction {
     }
 
     private static String getXQueryVersion(final int version) {
-        return String.valueOf(version / 10) + '.' + String.valueOf(version % 10);
+        return String.valueOf(version / 10) + '.' + version % 10;
     }
 }
