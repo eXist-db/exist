@@ -70,7 +70,7 @@ public class FunNumber extends Function {
     protected static final FunctionParameterSequenceType ARG_PARAM = new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_ONE, "The input item");
     protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the numerical value");
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("number", Function.BUILTIN_FUNCTION_NS),
             FUNCTION_DESCRIPTION_0_PARAM,

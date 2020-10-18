@@ -109,7 +109,7 @@ public class LoadXQueryModule extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         final String targetNamespace = args[0].getStringValue();
-        if (targetNamespace.length() == 0) {
+        if (targetNamespace.isEmpty()) {
             throw new XPathException(this, ErrorCodes.FOQM0001, "Target namespace must be a string with length > 0");
         }
         Sequence locationHints = Sequence.EMPTY_SEQUENCE;
@@ -242,7 +242,7 @@ public class LoadXQueryModule extends BasicFunction {
 
     public static void addFunctionRefsFromModule(final Expression parent, final XQueryContext tempContext,
             final ValueSequence resultSeq, final Module module) throws XPathException {
-        final FunctionSignature signatures[] = module.listFunctions();
+        final FunctionSignature[] signatures = module.listFunctions();
         for (final FunctionSignature signature : signatures) {
             if (!signature.isPrivate()) {
                 if (module.isInternalModule()) {
@@ -281,6 +281,6 @@ public class LoadXQueryModule extends BasicFunction {
     }
 
     private static String getXQueryVersion(final int version) {
-        return String.valueOf(version / 10) + '.' + String.valueOf(version % 10);
+        return String.valueOf(version / 10) + '.' + version % 10;
     }
 }

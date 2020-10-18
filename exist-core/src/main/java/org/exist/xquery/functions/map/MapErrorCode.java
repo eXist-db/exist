@@ -23,7 +23,6 @@ package org.exist.xquery.functions.map;
 
 import org.exist.dom.QName;
 import org.exist.xquery.ErrorCodes;
-import org.exist.xquery.ErrorCodes.ErrorCode;
 
 public class MapErrorCode extends ErrorCodes.ErrorCode
 {

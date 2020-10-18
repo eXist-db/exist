@@ -46,7 +46,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunStringJoin extends BasicFunction {
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("string-join", Function.BUILTIN_FUNCTION_NS),
             "Returns a xs:string created by concatenating the members of the " +
@@ -92,7 +92,7 @@ public class FunStringJoin extends BasicFunction {
 		String sep = null;
         if (getArgumentCount() == 2) {
             sep = args[1].getStringValue();
-            if(sep.length() == 0)
+            if(sep.isEmpty())
                 {sep = null;}
         }
 		final StringBuilder out = new StringBuilder();

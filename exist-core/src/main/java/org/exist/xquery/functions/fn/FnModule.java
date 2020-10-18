@@ -266,7 +266,7 @@ public class FnModule extends AbstractInternalModule {
     public final static ErrorCodes.ErrorCode SEPM0019 = new ErrorCodes.ErrorCode("SEPM0019", "It is an error if an instance of the data model " +
             "used to specify the settings of serialization parameters specifies the value of the same parameter more than once.");
 
-    public FnModule(Map<String, List<? extends Object>> parameters) {
+    public FnModule(Map<String, List<?>> parameters) {
         super(functions, parameters, true);
     }
 

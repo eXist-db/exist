@@ -66,7 +66,7 @@ public class FnExport extends BasicFunction {
     protected final static FunctionReturnSequenceType RESULT =
             new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the export results");
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
             new FunctionSignature(
                     NAME,
                     DESCRIPTION,

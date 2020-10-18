@@ -47,7 +47,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
 	protected static final Logger logger = LogManager.getLogger(XMLDBHasLock.class);
-	public final static FunctionSignature signature[] = {
+	public final static FunctionSignature[] signature = {
 		new FunctionSignature(
 			new QName("document-has-lock", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Returns the user-id of the user that holds a write lock on the " + 

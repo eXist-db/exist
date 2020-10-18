@@ -53,7 +53,7 @@ public class SetAttribute extends SessionFunction {
     }
 
     @Override
-    public Sequence eval(final Sequence args[], final Optional<SessionWrapper> maybeSession) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> maybeSession) throws XPathException {
         final SessionWrapper session = getOrCreateSession(maybeSession);
 
         final String attributeName = args[0].getStringValue();

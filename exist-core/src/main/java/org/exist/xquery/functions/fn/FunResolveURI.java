@@ -72,7 +72,7 @@ public class FunResolveURI extends Function {
 	protected static final FunctionParameterSequenceType BASE_ARG = new FunctionParameterSequenceType("base", Type.STRING, Cardinality.EXACTLY_ONE, "The base URI");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the absolute URI");
 	
-    public final static FunctionSignature signatures [] = {
+    public final static FunctionSignature[] signatures = {
     	new FunctionSignature(
     		      new QName("resolve-uri", Function.BUILTIN_FUNCTION_NS),
     		      FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_COMMON,

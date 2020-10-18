@@ -53,7 +53,7 @@ public class FunTokenize extends FunMatches {
     private final static FunctionParameterSequenceType FS_TOKENIZE_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
     private final static FunctionParameterSequenceType FS_TOKENIZE_PARAM_PATTERN = param("pattern", Type.STRING, "The tokenization pattern");
 
-    public final static FunctionSignature FS_TOKENIZE[] = functionSignatures(
+    public final static FunctionSignature[] FS_TOKENIZE = functionSignatures(
             FS_TOKENIZE_NAME,
             "Breaks the input string $input into a sequence of strings, ",
             returnsOptMany(Type.STRING, "the token sequence"),

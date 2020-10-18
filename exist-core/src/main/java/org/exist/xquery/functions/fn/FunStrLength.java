@@ -41,7 +41,7 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
  */
 public class FunStrLength extends Function {
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("string-length", Function.BUILTIN_FUNCTION_NS),
                     "Returns an xs:integer equal to the length in characters of the value of the context item.\n" +

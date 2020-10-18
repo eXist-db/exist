@@ -41,7 +41,7 @@ public class GetParameter extends RequestFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(GetParameter.class);
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName(
 			"get-parameter",

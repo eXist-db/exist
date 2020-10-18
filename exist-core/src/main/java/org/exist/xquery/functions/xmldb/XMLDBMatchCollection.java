@@ -67,7 +67,7 @@ public class XMLDBMatchCollection extends BasicFunction {
         final String regexp = args[0].getStringValue();
         
         final List<String> collectionNames = context.getBroker().findCollectionsMatching(regexp);
-        if(collectionNames.size() > 0) {
+        if(!collectionNames.isEmpty()) {
             result = copyListToValueSequence(collectionNames);
         }
         

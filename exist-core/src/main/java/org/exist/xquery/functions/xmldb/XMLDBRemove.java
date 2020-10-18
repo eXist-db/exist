@@ -44,7 +44,7 @@ import org.xmldb.api.modules.CollectionManagementService;
  */
 public class XMLDBRemove extends XMLDBAbstractCollectionManipulator {
 	protected static final Logger logger = LogManager.getLogger(XMLDBRemove.class);
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("remove", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Removes the collection $collection-uri and its contents from the database. " +

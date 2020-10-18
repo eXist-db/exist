@@ -231,7 +231,7 @@ public class FnFormatDates extends BasicFunction {
             picture = picture.substring(0, widthSep);
         }
         // get default format picture if none was specified
-        if (picture == null || picture.length() == 0) {
+        if (picture == null || picture.isEmpty()) {
             picture = getDefaultFormat(specifier);
         }
         final boolean allowDate = !Type.subTypeOf(dt.getType(), Type.TIME);
@@ -513,7 +513,7 @@ public class FnFormatDates extends BasicFunction {
                 name = name.toLowerCase();
             }
 
-            final int widths[] = getWidths(width);
+            final int[] widths = getWidths(width);
             if (widths != null) {
                 final int min = widths[0];
                 final int max = widths[1];
@@ -539,7 +539,7 @@ public class FnFormatDates extends BasicFunction {
             max = Integer.MAX_VALUE;
         }
         // explicit width takes precedence
-        final int widths[] = getWidths(width);
+        final int[] widths = getWidths(width);
         if (widths != null) {
             if (widths[0] > 0) {min = widths[0];}
             if (widths[1] > 0) {max = widths[1];}
@@ -552,7 +552,7 @@ public class FnFormatDates extends BasicFunction {
     }
 
     private int[] getWidths(String width) throws XPathException {
-        if (width == null || width.length() == 0)
+        if (width == null || width.isEmpty())
             {return null;}
 
         int min = -1;

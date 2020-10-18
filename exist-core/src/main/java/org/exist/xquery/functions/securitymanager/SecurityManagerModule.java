@@ -117,7 +117,7 @@ public class SecurityManagerModule extends AbstractInternalModule {
         //</editor-fold>
     };
 
-    public SecurityManagerModule(Map<String, List<? extends Object>> parameters) {
+    public SecurityManagerModule(Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
 

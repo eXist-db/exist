@@ -68,7 +68,7 @@ public class XMLDBRegisterDatabase extends BasicFunction {
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet,
 	 *         org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(Sequence args[], Sequence contextSequence)
+	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		final String driverName = args[0].getStringValue();
 		final boolean createDatabase = args[1].effectiveBooleanValue();

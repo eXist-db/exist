@@ -93,7 +93,7 @@ public class ExtCollection extends Function {
         final List<String> args = getParameterValues(contextSequence, contextItem);
         final Sequence result;
         try {
-            if (args.size() == 0) {
+            if (args.isEmpty()) {
                 final Sequence docs = toSequence(context.getStaticallyKnownDocuments());
                 final Sequence dynamicCollection = context.getDynamicallyAvailableCollection("");
                 if (dynamicCollection != null) {

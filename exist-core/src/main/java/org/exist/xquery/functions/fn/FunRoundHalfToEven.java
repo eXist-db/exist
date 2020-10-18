@@ -81,7 +81,7 @@ public class FunRoundHalfToEven extends Function {
 	protected static final FunctionParameterSequenceType PRECISION_PARAM = new FunctionParameterSequenceType("precision", Type.INTEGER, Cardinality.EXACTLY_ONE, "The precision factor");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE, "the rounded value");
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 			new FunctionSignature(
 					new QName("round-half-to-even", Function.BUILTIN_FUNCTION_NS),
 					FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_COMMON,

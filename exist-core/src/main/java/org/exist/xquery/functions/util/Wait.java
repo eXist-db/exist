@@ -39,7 +39,7 @@ import org.exist.xquery.value.Type;
  */
 public class Wait extends BasicFunction 
 {
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
             new FunctionSignature (
                     new QName( "wait", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
                     "Wait for the specified number of milliseconds",

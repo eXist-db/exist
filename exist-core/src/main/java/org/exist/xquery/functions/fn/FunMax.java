@@ -89,7 +89,7 @@ public class FunMax extends CollatingFunction {
 		"determined according to the rules in 7.3.1 Collations.";
 
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 			new FunctionSignature(
 					new QName("max", Function.BUILTIN_FUNCTION_NS),
 					FUNCTION_DESCRIPTION_COMMON_1 +

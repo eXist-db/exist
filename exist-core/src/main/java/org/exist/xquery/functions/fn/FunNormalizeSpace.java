@@ -66,7 +66,7 @@ public class FunNormalizeSpace extends Function {
 
     private static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the normalized text");
 
-    public static final FunctionSignature signatures[] = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("normalize-space", Function.BUILTIN_FUNCTION_NS),
                     FUNCTION_DESCRIPTION_0_PARAM + FUNCTION_DESCRIPTION_COMMON_1 +

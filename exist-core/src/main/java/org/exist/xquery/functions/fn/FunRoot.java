@@ -58,7 +58,7 @@ public class FunRoot extends Function {
 		" The behavior of the zero argument version of the function is " +
         "exactly the same as if the context item had been passed in $arg.";
     
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
                 new QName("root", Function.BUILTIN_FUNCTION_NS),
                 FUNCTION_DESCRIPTION_0_PARAM,

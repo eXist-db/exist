@@ -136,7 +136,7 @@ public class FunUnparsedText extends BasicFunction {
 
     private String readAll(final Reader reader) throws IOException {
         final StringBuilder builder = new StringBuilder();
-        final char buf[] = new char[4096];
+        final char[] buf = new char[4096];
         int read = -1;
         while ((read = reader.read(buf)) > 0) {
             builder.append(buf, 0, read);

@@ -60,7 +60,7 @@ public class FunDistinctValues extends CollatingFunction {
 
     protected static final Logger logger = LogManager.getLogger(FunDistinctValues.class);
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("distinct-values", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
             "Returns a sequence where duplicate values of $atomic-values, " +

@@ -25,11 +25,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 import javax.xml.transform.stream.StreamSource;
 
@@ -37,7 +34,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.storage.serializers.Serializer;
@@ -108,7 +104,7 @@ public class Shared {
             sources.add(streamsource);
         }
 
-        StreamSource returnSources[] = new StreamSource[sources.size()];
+        StreamSource[] returnSources = new StreamSource[sources.size()];
         returnSources = sources.toArray(returnSources);
         return returnSources;
     }
@@ -276,7 +272,7 @@ public class Shared {
             urls.add(url);
         }
 
-        String returnUrls[] = new String[urls.size()];
+        String[] returnUrls = new String[urls.size()];
         returnUrls = urls.toArray(returnUrls);
         
         return returnUrls;
@@ -431,7 +427,7 @@ public class Shared {
      * Safely close the stream sources and underlying inputstreams.
      * @param sources Streamsources.
      */
-    public static void closeStreamSources(StreamSource sources[]){
+    public static void closeStreamSources(StreamSource[] sources){
 
         if(sources==null){
             return;

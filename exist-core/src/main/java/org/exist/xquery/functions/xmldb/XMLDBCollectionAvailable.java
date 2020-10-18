@@ -45,7 +45,7 @@ import org.xmldb.api.base.Collection;
  */
 public class XMLDBCollectionAvailable extends XMLDBAbstractCollectionManipulator {
 //    private static final Logger logger = LogManager.getLogger(XMLDBCollectionAvailable.class);
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
 	//Just to mimic doc-available()
 	new FunctionSignature(
 			      new QName("collection-available", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

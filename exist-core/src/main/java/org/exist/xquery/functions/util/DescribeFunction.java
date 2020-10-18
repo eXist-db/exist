@@ -137,7 +137,7 @@ public class DescribeFunction extends Function {
 
             description.append("\n\n");
             
-            final SequenceType argumentTypes[] = signature.getArgumentTypes();
+            final SequenceType[] argumentTypes = signature.getArgumentTypes();
             
             if(argumentTypes != null && argumentTypes.length>0){
 

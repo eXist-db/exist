@@ -49,7 +49,7 @@ public class Expand extends BasicFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(Expand.class);
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("expand", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Creates an in-memory copy of the passed node set, using the specified " +

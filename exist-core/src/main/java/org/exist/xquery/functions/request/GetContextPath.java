@@ -37,7 +37,7 @@ public class GetContextPath extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetContextPath.class);
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("get-context-path", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the context path of the current request, i.e. the portion of the request URI that " +

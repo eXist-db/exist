@@ -92,7 +92,7 @@ public class GetRunningXQueries extends BasicFunction
 			builder.startElement(new QName("xqueries", NAMESPACE_URI, PREFIX), null);
 
 			//Add all the running xqueries
-			final XQueryWatchDog watchdogs[] = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
+			final XQueryWatchDog[] watchdogs = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
 
 			for (XQueryWatchDog watchdog : watchdogs) {
 				final XQueryContext context = watchdog.getContext();

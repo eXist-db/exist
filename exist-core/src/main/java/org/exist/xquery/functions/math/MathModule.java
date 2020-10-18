@@ -40,7 +40,7 @@ public class MathModule extends AbstractInternalModule {
     public final static String INCLUSION_DATE = "2012-12-05";
     public final static String RELEASED_IN_VERSION = "eXist-2.0";
 
-    private final static FunctionDef functions[] = {
+    private final static FunctionDef[] functions = {
         
         new FunctionDef(OneParamFunctions.FNS_ACOS, OneParamFunctions.class),
         new FunctionDef(OneParamFunctions.FNS_ASIN, OneParamFunctions.class),
@@ -60,7 +60,7 @@ public class MathModule extends AbstractInternalModule {
         new FunctionDef(TwoParamFunctions.FNS_POW, TwoParamFunctions.class)
     };
     
-    public MathModule(Map<String, List<? extends Object>> parameters) {
+    public MathModule(Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
     

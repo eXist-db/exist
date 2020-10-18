@@ -190,7 +190,7 @@ public class InspectFunction extends BasicFunction {
         FunctionCallVisitor visitor = new FunctionCallVisitor();
         function.getFunctionBody().accept(visitor);
         Set<FunctionSignature> signatures = visitor.getFunctionCalls();
-        if (signatures.size() == 0) {
+        if (signatures.isEmpty()) {
             return;
         }
         builder.startElement(CALLS_QNAME, null);

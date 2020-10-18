@@ -27,6 +27,7 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Properties;
 import java.util.SimpleTimeZone;
@@ -67,7 +68,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import static org.exist.xquery.FunctionDSL.*;
-import static org.exist.xquery.functions.util.UtilModule.*;
 import static org.exist.xquery.functions.util.UtilModule.functionSignatures;
 
 /**
@@ -199,7 +199,7 @@ public class Eval extends BasicFunction {
         return doEval(context, contextSequence, args);
     }
 
-    private Sequence doEval(final XQueryContext evalContext, final Sequence contextSequence, final Sequence args[])
+    private Sequence doEval(final XQueryContext evalContext, final Sequence contextSequence, final Sequence[] args)
             throws XPathException {
         if (evalContext.getProfiler().isEnabled()) {
             evalContext.getProfiler().start(this);
@@ -547,7 +547,7 @@ public class Eval extends BasicFunction {
                 final String qname = elem.getAttribute("name");
                 final String source = elem.getAttribute("source");
                 NodeValue value;
-                if (source != null && source.length() > 0) {
+                if (source != null && !source.isEmpty()) {
                     // load variable contents from URI
                     value = loadVarFromURI(source);
                 } else {
@@ -620,7 +620,7 @@ public class Eval extends BasicFunction {
         final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getParserPool();
         try {
             final URL url = new URL(uri);
-            final InputStreamReader isr = new InputStreamReader(url.openStream(), "UTF-8");
+            final InputStreamReader isr = new InputStreamReader(url.openStream(), StandardCharsets.UTF_8);
             final InputSource src = new InputSource(isr);
 
             xr = parserPool.borrowXMLReader();

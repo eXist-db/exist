@@ -88,7 +88,7 @@ public class FunReplace extends FunMatches {
 	protected static final FunctionParameterSequenceType FLAGS_ARG = new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, "The flags");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the altered string");
 			
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("replace", Function.BUILTIN_FUNCTION_NS),
 			FUNCTION_DESCRIPTION_3_PARAM + FUNCTION_DESCRIPTION_COMMON,

@@ -68,7 +68,7 @@ public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
                     new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() on successful authentication, false() otherwise")
             );
 
-    public final static FunctionSignature loginSignatures[] = {
+    public final static FunctionSignature[] loginSignatures = {
 
             new FunctionSignature(
                     new QName("login", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
