@@ -604,7 +604,7 @@ public class Collations {
         }
 
         if(reorder != null) {
-            final String reorderCodes[] = reorder.split(",");
+            final String[] reorderCodes = reorder.split(",");
             final List<Integer> icuCollatorReorderCodes =
                     Arrays.stream(reorderCodes)
                     .map(Collations::toICUCollatorReorderCode)

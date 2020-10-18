@@ -61,7 +61,7 @@ public interface FilterInputStreamCache extends Closeable {
      * @throws IOException - if an I/O error occurs. In particular, an
      * IOException is thrown if the cache is invalidated.
      */
-    public void write(byte b[], int off, int len) throws IOException;
+    public void write(byte[] b, int off, int len) throws IOException;
 
     /**
      * Writes the specified byte to the cache. The general contract for write is
@@ -103,7 +103,7 @@ public interface FilterInputStreamCache extends Closeable {
      * @throws IOException if an I/O error occurs. In particular, an IOException
      * may be thrown if cache is invalidated.
      */
-    public void copyTo(int cacheOffset, byte b[], int off, int len) throws IOException;
+    public void copyTo(int cacheOffset, byte[] b, int off, int len) throws IOException;
 
     /**
      * Invalidates the cache

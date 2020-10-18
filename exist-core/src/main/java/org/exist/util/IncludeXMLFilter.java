@@ -47,7 +47,7 @@ public class IncludeXMLFilter extends DefaultHandler {
         this.handler = handler;
     }
 
-    public void characters( char ch[], int start, int length ) throws SAXException {
+    public void characters(char[] ch, int start, int length ) throws SAXException {
         handler.characters( ch, start, length );
     }
 

@@ -40,7 +40,7 @@ public class ByteConversion {
      * @deprecated reads the lowest byte first. will be replaced with
      *     {@link #byteToIntH(byte[], int)} for consistency.
      */
-    public final static int byteToInt( final byte data[], final int start ) {
+    public final static int byteToInt(final byte[] data, final int start ) {
         return ( data[start] & 0xff ) |
             ( ( data[start + 1] & 0xff ) << 8 ) |
             ( ( data[start + 2] & 0xff ) << 16 ) |
@@ -57,7 +57,7 @@ public class ByteConversion {
      *
      * @return the integer
      */
-    public final static int byteToIntH( final byte data[], final int start ) {
+    public final static int byteToIntH(final byte[] data, final int start ) {
         return ( data[start + 3] & 0xff ) |
             ( ( data[start + 2] & 0xff ) << 8 ) |
             ( ( data[start + 1] & 0xff ) << 16 ) |
