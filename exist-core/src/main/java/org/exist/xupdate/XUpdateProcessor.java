@@ -404,7 +404,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 						name = name.substring(p + 1);
 						namespace = atts.getValue("namespace");
 						if (namespace == null) {
-							namespace = (String) namespaces.get(prefix);
+							namespace = namespaces.get(prefix);
 						}
 						if (namespace == null) {
 							throw new SAXException(
@@ -445,7 +445,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 						}
 						namespace = atts.getValue("namespace");
 						if (namespace == null) {
-							namespace = (String) namespaces.get(prefix);
+							namespace = namespaces.get(prefix);
 						}
 						if (namespace == null) {
 							throw new SAXException(

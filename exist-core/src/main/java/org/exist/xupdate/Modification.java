@@ -185,7 +185,7 @@ public abstract class Modification {
 			        Type.getTypeName(resultSeq.getItemType()));}
 		if (LOG.isDebugEnabled())
 			{LOG.debug("found " + resultSeq.getItemCount() + " for select: " + selectStmt);}
-		return (NodeList)resultSeq.toNodeSet();
+		return resultSeq.toNodeSet();
 	}
 
 	/**
