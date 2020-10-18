@@ -133,7 +133,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
      * @throws PermissionDeniedException if the mode string is invalid
      */
     public static int aceSimpleSymbolicModeToInt(final String modeStr) throws PermissionDeniedException {
-        if (modeStr == null || modeStr.length() == 0 || modeStr.length() > 3) {
+        if (modeStr == null || modeStr.isEmpty() || modeStr.length() > 3) {
             throw new PermissionDeniedException("Invalid mode string '" + modeStr + "'");
         }
 

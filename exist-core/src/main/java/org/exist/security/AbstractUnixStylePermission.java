@@ -90,7 +90,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
 
             
             final char whoose[];
-            if(whoPerm[0].length() > 0) {
+            if(!whoPerm[0].isEmpty()) {
                 whoose = whoPerm[0].toCharArray();
             } else {
                 whoose = new char[]{ ALL_CHAR };
