@@ -552,7 +552,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
     private static boolean containsNode(final List<NodeId> list, final NodeId nodeId) {
-        return list.stream().filter(nodeId::equals).findFirst().isPresent();
+        return list.stream().anyMatch(nodeId::equals);
     }
 
     @Override
