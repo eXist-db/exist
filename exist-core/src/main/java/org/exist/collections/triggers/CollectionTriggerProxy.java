@@ -23,7 +23,6 @@ package org.exist.collections.triggers;
 
 import java.util.List;
 import java.util.Map;
-import org.exist.xmldb.XmldbURI;
 
 /**
  *

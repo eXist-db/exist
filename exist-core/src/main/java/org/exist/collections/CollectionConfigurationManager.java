@@ -45,7 +45,6 @@ import org.xml.sax.XMLReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.concurrent.locks.ReadWriteLock;
 
 /**
