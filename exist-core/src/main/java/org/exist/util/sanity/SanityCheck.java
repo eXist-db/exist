@@ -90,7 +90,7 @@ public class SanityCheck {
     public static void PRINT_STACK(final int level) {
         if (LOG.isTraceEnabled()) {
 
-            final StackTraceElement elements[] = new Exception("Trace").getStackTrace();
+            final StackTraceElement[] elements = new Exception("Trace").getStackTrace();
             final StringBuilder buf = new StringBuilder();
             final int depth = Math.min(level, elements.length);
             for (int i = 1; i < depth; i++) {

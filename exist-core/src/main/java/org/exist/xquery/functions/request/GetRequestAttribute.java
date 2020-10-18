@@ -38,7 +38,7 @@ public class GetRequestAttribute extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetRequestAttribute.class);
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("get-attribute", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the string value of the request attribute specified in the argument or the empty " +

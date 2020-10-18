@@ -55,7 +55,7 @@ public class InspectionModule extends AbstractInternalModule {
         )
     );
 
-    public InspectionModule(final Map<String, List<? extends Object>> parameters) {
+    public InspectionModule(final Map<String, List<?>> parameters) {
         super(functions, parameters, true);
     }
 

@@ -53,7 +53,7 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
 	protected static final FunctionParameterSequenceType ARG_TARGET = new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The target collection URI");
 	protected static final FunctionParameterSequenceType ARG_RESOURCE = new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource");
 	
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
         new QName("move", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
         "Moves the collection $source-collection-uri into the collection " +

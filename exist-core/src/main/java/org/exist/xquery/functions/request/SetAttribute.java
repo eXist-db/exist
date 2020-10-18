@@ -57,7 +57,7 @@ public class SetAttribute extends StrictRequestFunction {
 	}
 	
 	@Override
-	public Sequence eval(final Sequence args[], @Nonnull final RequestWrapper request) throws XPathException {
+	public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request) throws XPathException {
 		final String attribName = args[0].getStringValue();
 		final Sequence attribValue = args[1];
 

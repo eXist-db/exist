@@ -57,7 +57,7 @@ public class Compile extends BasicFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(Compile.class);
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("compile", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Compiles the XQuery expression given in parameter $expression. Returns an empty string " +

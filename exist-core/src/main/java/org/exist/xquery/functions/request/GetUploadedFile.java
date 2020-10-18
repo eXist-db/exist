@@ -47,7 +47,7 @@ import javax.annotation.Nonnull;
 public class GetUploadedFile extends StrictRequestFunction {
 
     protected static final Logger logger = LogManager.getLogger(GetUploadedFile.class);
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
         new QName("get-uploaded-file-data", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
         "Retrieve the base64 encoded data where the file part of a multi-part request has been stored. "

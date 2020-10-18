@@ -22,7 +22,6 @@
 package org.exist.xquery.functions.session;
 
 import org.exist.http.servlets.RequestWrapper;
-import org.exist.http.servlets.ResponseWrapper;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.*;
 import org.exist.xquery.value.Sequence;

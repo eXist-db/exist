@@ -50,7 +50,7 @@ import org.xmldb.api.base.XMLDBException;
 public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
     private static final Logger logger = LogManager.getLogger(XMLDBCreated.class);
 
-	public final static FunctionSignature createdSignatures[] = {
+	public final static FunctionSignature[] createdSignatures = {
         new FunctionSignature(
 			new QName("created", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the creation date of the resource $resource in $collection-uri. " +

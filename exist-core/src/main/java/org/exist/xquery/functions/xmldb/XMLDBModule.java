@@ -111,7 +111,7 @@ public class XMLDBModule extends AbstractInternalModule {
         Arrays.sort(functions, new FunctionComparator());
     }
 
-    public XMLDBModule(Map<String, List<? extends Object>> parameters) {
+    public XMLDBModule(Map<String, List<?>> parameters) {
         super(functions, parameters, true);
     }
 

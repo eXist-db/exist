@@ -21,15 +21,13 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.dom.memtree.NodeImpl;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 public class FunGenerateId extends BasicFunction {
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("generate-id", Function.BUILTIN_FUNCTION_NS),
             "This function returns a string that uniquely identifies a given node. Without an argument, the node to identify is " +

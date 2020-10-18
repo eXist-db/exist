@@ -64,7 +64,7 @@ public class FunDeepEqual extends CollatingFunction {
 
     protected static final Logger logger = LogManager.getLogger(FunDeepEqual.class);
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("deep-equal", Function.BUILTIN_FUNCTION_NS),
             "Returns true() iff every item in $items-1 is deep-equal to the item " +

@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.persistent.ExtArrayNodeSet;
-import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -36,7 +34,7 @@ import javax.annotation.Nullable;
  */
 public class FunSubSequence extends Function {
 
-    public static final FunctionSignature signatures[] = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("subsequence", Function.BUILTIN_FUNCTION_NS),
                     "Returns a subsequence of the items in $source-sequence, "

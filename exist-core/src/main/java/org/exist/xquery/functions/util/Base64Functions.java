@@ -49,7 +49,7 @@ public class Base64Functions extends BasicFunction
 {
     protected static final Logger           logger       = LogManager.getLogger( Base64Functions.class );
 
-   public final static FunctionSignature signatures[] = {
+   public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName( "base64-encode", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
             "Encodes the given string as Base64",

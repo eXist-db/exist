@@ -36,7 +36,7 @@ public class CollectionScanner {
 	throws XMLDBException {
 		final List<Resource> list = new ArrayList<>();
 		scan(list, current, vpath, pattern);
-		final Resource resources[] = new Resource[list.size()];
+		final Resource[] resources = new Resource[list.size()];
 		return (Resource[])list.toArray(resources);
 	}
 

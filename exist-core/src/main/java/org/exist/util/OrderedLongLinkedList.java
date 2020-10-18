@@ -21,8 +21,6 @@
  */
 package org.exist.util;
 
-import java.util.Iterator;
-
 /**
  * OrderedLongLinkedList.java
  * 

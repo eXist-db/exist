@@ -48,7 +48,7 @@ import org.exist.xquery.value.Type;
 public class XMLDBDefragment extends BasicFunction {
     private static final Logger logger = LogManager.getLogger(XMLDBDefragment.class);
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("defragment", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
                     "Start a defragmentation run on each document which has a node in $nodes. " +

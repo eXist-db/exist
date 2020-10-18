@@ -65,7 +65,7 @@ public class FunStartsWith extends CollatingFunction {
 	protected static final FunctionParameterSequenceType COLLATION_PARAM = new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if $prefix is a prefix of the string $source");
 	
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
 	new FunctionSignature (
 			       new QName("starts-with", Function.BUILTIN_FUNCTION_NS),
 			       FUNCTION_DESCRIPTION,
@@ -98,7 +98,7 @@ public class FunStartsWith extends CollatingFunction {
         Sequence result;
 	final String s1 = getArgument(0).eval(contextSequence).getStringValue();
 	final String s2 = getArgument(1).eval(contextSequence).getStringValue();        
-	if(s1.length() == 0 || s2.length() == 0)
+	if(s1.isEmpty() || s2.isEmpty())
             {result = Sequence.EMPTY_SEQUENCE;}
         else {
 	    final Collator collator = getCollator(contextSequence, contextItem, 3);

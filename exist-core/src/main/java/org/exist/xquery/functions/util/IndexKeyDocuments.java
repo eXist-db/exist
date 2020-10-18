@@ -108,7 +108,7 @@ public class IndexKeyDocuments extends BasicFunction {
 		        else
 		        	{result = new IntegerValue(occur[0].getDocuments());}
 	        } else {
-		        final ValueOccurrences occur[] = context.getBroker().getValueIndex()
+		        final ValueOccurrences[] occur = context.getBroker().getValueIndex()
                 .scanIndexKeys(docs, nodes, (Indexable) args[1]);
 		        if (occur.length == 0)
 		        	{result= Sequence.EMPTY_SEQUENCE;}

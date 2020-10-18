@@ -48,7 +48,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunCompare extends CollatingFunction {
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature (
             new QName("compare", Function.BUILTIN_FUNCTION_NS),
             "Returns the collatable comparison between $string-1 and $string-2, using $collation-uri. " +

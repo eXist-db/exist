@@ -43,5 +43,5 @@ public interface SAXEvent<T> {
      *
      * @throws SAXException if the application causes an error
      */
-    public void apply(final T handler) throws SAXException;
+    void apply(final T handler) throws SAXException;
 }

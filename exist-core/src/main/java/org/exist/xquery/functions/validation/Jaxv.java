@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.functions.validation;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 
 import javax.xml.XMLConstants;
@@ -78,7 +77,7 @@ public class Jaxv extends BasicFunction  {
             "(RELAX NG 1.0) http://relaxng.org/ns/structure/1.0";
 
     // Setup function signature
-    public final static FunctionSignature signatures[] = {        
+    public final static FunctionSignature[] signatures = {
         
         new FunctionSignature(
                 new QName("jaxv", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
@@ -156,7 +155,7 @@ public class Jaxv extends BasicFunction  {
 
         final ValidationReport report = new ValidationReport();
         StreamSource instance = null;
-        StreamSource grammars[] =null;
+        StreamSource[] grammars =null;
         String schemaLang = XMLConstants.W3C_XML_SCHEMA_NS_URI;
 
         try {

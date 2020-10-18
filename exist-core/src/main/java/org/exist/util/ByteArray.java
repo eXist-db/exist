@@ -30,7 +30,7 @@ public interface ByteArray {
 	void copyTo(int start, byte[] newBuf, int offset, int len);
 	void copyTo(ByteArray other);
     void copyTo(ByteBuffer buf);
-	public void copyTo(int start, ByteBuffer buf, int len);
+	void copyTo(int start, ByteBuffer buf, int len);
 	void append(byte b);
 	void append(byte[] b);
 	void append(byte[] b, int offset, int length);

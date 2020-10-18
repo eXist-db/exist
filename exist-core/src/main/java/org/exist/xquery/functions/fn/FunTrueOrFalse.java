@@ -70,7 +70,7 @@ public class FunTrueOrFalse extends BasicFunction {
         return Cardinality.EXACTLY_ONE;
     }
     
-	public Sequence eval(Sequence args[], Sequence contextSequence) {
+	public Sequence eval(Sequence[] args, Sequence contextSequence) {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));

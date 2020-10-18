@@ -43,7 +43,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FunData extends Function {
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("data", Function.BUILTIN_FUNCTION_NS),
             "Atomizes the context item, replacing all nodes in the sequence by their typed values.",

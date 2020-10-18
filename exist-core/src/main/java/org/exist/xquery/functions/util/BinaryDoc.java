@@ -114,7 +114,7 @@ public class BinaryDoc extends BasicFunction {
         }
 
         final String path = args[0].getStringValue();
-        try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK);) {
+        try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK)) {
             if(lockedDoc == null) {
                 return emptyParamReturnValue;
             }

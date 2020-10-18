@@ -34,7 +34,7 @@ import java.util.List;
 	code and internet
 */
 public final class SwapVals {
-	public final static void swap(long a[], int i, int j)
+	public final static void swap(long[] a, int i, int j)
 	//-----------------------------------------------
 	{
 		long T = a[i];
@@ -42,7 +42,7 @@ public final class SwapVals {
 		a[j] = T;
 	}
 
-	public final static void swap(int a[], int i, int j)
+	public final static void swap(int[] a, int i, int j)
 	//-----------------------------------------------
 	{
 		int T = a[i];

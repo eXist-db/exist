@@ -85,7 +85,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
         SERIALIZATION_PROPERTIES.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
     }
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
                     "Stores a new resource into the database. The resource is stored  "
@@ -149,10 +149,10 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
     }
 
     @Override
-    public Sequence evalWithCollection(Collection collection, Sequence args[], Sequence contextSequence) throws XPathException {
+    public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence) throws XPathException {
 
         String docName = args[1].isEmpty() ? null : args[1].getStringValue();
-        if (docName != null && docName.length() == 0) {
+        if (docName != null && docName.isEmpty()) {
             docName = null;
         } else if (docName != null) {
             docName = new AnyURIValue(docName).toXmldbURI().toString();

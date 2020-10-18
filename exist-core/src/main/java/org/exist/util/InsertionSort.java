@@ -95,7 +95,7 @@ public final class InsertionSort {
 		}
 	}
 
-	public final static <C extends Comparable<? super C>> void sort(C[] a, int lo0, int hi0, int b[])
+	public final static <C extends Comparable<? super C>> void sort(C[] a, int lo0, int hi0, int[] b)
 	//------------------------------------------------------------
 	{
 		// First case, no element or only one!
@@ -185,7 +185,7 @@ public final class InsertionSort {
 		}
 	}
 
-	public final static void sort(long a[], int lo0, int hi0, Object b[])
+	public final static void sort(long[] a, int lo0, int hi0, Object[] b)
 	//------------------------------------------------------------
 	{
 		// First case, no element or only one!

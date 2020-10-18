@@ -63,7 +63,7 @@ public class SessionModule extends AbstractInternalModule {
             new FunctionDef(GetExists.signature, GetExists.class)
     };
 
-    public SessionModule(final Map<String, List<? extends Object>> parameters) {
+    public SessionModule(final Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
 

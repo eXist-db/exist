@@ -56,7 +56,7 @@ public class SetCookie extends StrictResponseFunction {
     private static final FunctionParameterSequenceType DOMAIN_PARAM = new FunctionParameterSequenceType("domain", Type.STRING, Cardinality.ZERO_OR_ONE, "The cookie domain");
     private static final FunctionParameterSequenceType PATH_PARAM = new FunctionParameterSequenceType("path", Type.STRING, Cardinality.ZERO_OR_ONE, "The cookie path");
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
                     "Sets a HTTP Cookie on the HTTP Response.",

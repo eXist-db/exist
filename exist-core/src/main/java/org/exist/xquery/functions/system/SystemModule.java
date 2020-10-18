@@ -87,7 +87,7 @@ public class SystemModule extends AbstractInternalModule {
             new FunctionDef(ClearXQueryCache.signature, ClearXQueryCache.class)
     };
 	
-	public SystemModule(Map<String, List<? extends Object>> parameters) {
+	public SystemModule(Map<String, List<?>> parameters) {
 		super(functions, parameters);
 	}
 

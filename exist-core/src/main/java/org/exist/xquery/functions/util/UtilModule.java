@@ -162,7 +162,7 @@ public class UtilModule extends AbstractInternalModule {
 
     public final static QName ERROR_CODE_QNAME = new QName("error-code", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
 
-    public UtilModule(final Map<String, List<? extends Object>> parameters) throws XPathException {
+    public UtilModule(final Map<String, List<?>> parameters) throws XPathException {
         super(functions, parameters, true);
 
         final List<String> evalDisabledParamList = (List<String>) getParameter("evalDisabled");
