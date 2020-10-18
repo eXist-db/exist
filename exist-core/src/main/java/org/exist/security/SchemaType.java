@@ -27,7 +27,7 @@ package org.exist.security;
  */
 public interface SchemaType {
 
-    public abstract String getNamespace();
+    String getNamespace();
     
-    public abstract String getAlias();
+    String getAlias();
 }
