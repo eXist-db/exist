@@ -42,7 +42,7 @@ public interface CollectionTrigger extends Trigger {
      * @param uri of the collection the trigger listens on
      * @throws TriggerException if an error in the trigger function is thrown
      */
-    public void beforeCreateCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException;
+    void beforeCreateCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException;
     
     /**
      * This method is called after the operation has completed.
@@ -52,14 +52,14 @@ public interface CollectionTrigger extends Trigger {
      * @param collection the trigger listens on
      * @throws TriggerException if an error in the trigger function is thrown
      */
-    public void afterCreateCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException;
+    void afterCreateCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException;
 
-    public void beforeCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException;
-    public void afterCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException;
+    void beforeCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException;
+    void afterCopyCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException;
 
-    public void beforeMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException;
-    public void afterMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException;
+    void beforeMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI newUri) throws TriggerException;
+    void afterMoveCollection(DBBroker broker, Txn txn, Collection collection, XmldbURI oldUri) throws TriggerException;
 
-    public void beforeDeleteCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException;
-    public void afterDeleteCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException;
+    void beforeDeleteCollection(DBBroker broker, Txn txn, Collection collection) throws TriggerException;
+    void afterDeleteCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException;
 }

@@ -90,24 +90,24 @@ import org.exist.storage.txn.Txn;
  */
 public interface Trigger {
     
-    public static final Logger LOG = LogManager.getLogger(Trigger.class);
+    Logger LOG = LogManager.getLogger(Trigger.class);
 
-    public final static int STORE_DOCUMENT_EVENT = 0;
-    public final static int CREATE_COLLECTION_EVENT = 1;
+    int STORE_DOCUMENT_EVENT = 0;
+    int CREATE_COLLECTION_EVENT = 1;
 
-    public final static int UPDATE_DOCUMENT_EVENT = 2;
-    public final static int UPDATE_COLLECTION_EVENT = 3;
+    int UPDATE_DOCUMENT_EVENT = 2;
+    int UPDATE_COLLECTION_EVENT = 3;
 
-    public final static int RENAME_DOCUMENT_EVENT = 4;
-    public final static int RENAME_COLLECTION_EVENT = 5;
+    int RENAME_DOCUMENT_EVENT = 4;
+    int RENAME_COLLECTION_EVENT = 5;
 
-    public final static int MOVE_DOCUMENT_EVENT = 6;
-    public final static int MOVE_COLLECTION_EVENT = 7;
+    int MOVE_DOCUMENT_EVENT = 6;
+    int MOVE_COLLECTION_EVENT = 7;
 
-    public final static int REMOVE_DOCUMENT_EVENT = 8;
-    public final static int REMOVE_COLLECTION_EVENT = 9;
+    int REMOVE_DOCUMENT_EVENT = 8;
+    int REMOVE_COLLECTION_EVENT = 9;
 
-    public final static String[] OLD_EVENTS = { "STORE", "CREATE-COLLECTION", "UPDATE", "UPDATE-COLLECTION", "RENAME-DOCUMENT", "RENAME-COLLECTION", "MOVE-DOCUMENT", "MOVE-COLLECTION", "REMOVE", "DELETE-COLLECTION" };
+    String[] OLD_EVENTS = { "STORE", "CREATE-COLLECTION", "UPDATE", "UPDATE-COLLECTION", "RENAME-DOCUMENT", "RENAME-COLLECTION", "MOVE-DOCUMENT", "MOVE-COLLECTION", "REMOVE", "DELETE-COLLECTION" };
 
     /**
      * The configure method is called once whenever the collection configuration
@@ -128,5 +128,5 @@ public interface Trigger {
      *            configuration file.
      * @throws TriggerException if the trigger cannot be initialized.
      */
-    public void configure(DBBroker broker, Txn transaction, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException;
+    void configure(DBBroker broker, Txn transaction, Collection parent, Map<String, List<? extends Object>> parameters) throws TriggerException;
 }
