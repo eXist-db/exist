@@ -140,7 +140,7 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
             if (namespaceURI == null) {
                 namespaceURI = XMLConstants.NULL_NS_URI;
             }
-            if (enforceXHTML && elemPrefix.length() == 0 && namespaceURI.length() == 0) {
+            if (enforceXHTML && elemPrefix.isEmpty() && namespaceURI.isEmpty()) {
                 namespaceURI = Namespaces.XHTML_NS;
             }
             if (nsSupport.getURI(elemPrefix) == null) {
@@ -225,7 +225,7 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
             if(namespaceURI == null) {
                 namespaceURI = XMLConstants.NULL_NS_URI;
             }
-            if(enforceXHTML && prefix.length() == 0 && namespaceURI.length() == 0) {
+            if(enforceXHTML && prefix.isEmpty() && namespaceURI.isEmpty()) {
                 namespaceURI = Namespaces.XHTML_NS;
                 receiver.startElement(new QName(qname.getLocalPart(), namespaceURI, qname.getPrefix()));
             } else {
@@ -250,7 +250,7 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
                             namespaceDecls.put(XMLConstants.DEFAULT_NS_PREFIX, uri);
                             nsSupport.declarePrefix(XMLConstants.DEFAULT_NS_PREFIX, uri);
                         }
-                    } else if (attrQName.getPrefix() != null && attrQName.getPrefix().length() > 0) {
+                    } else if (attrQName.getPrefix() != null && !attrQName.getPrefix().isEmpty()) {
                         prefix = attrQName.getPrefix();
                         if (nsSupport.getURI(prefix) == null) {
                             uri = attrQName.getNamespaceURI();
@@ -322,7 +322,7 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
                 namespaceURI = XMLConstants.NULL_NS_URI;
             }
             
-            if(enforceXHTML && prefix.length() == 0 && namespaceURI.length() == 0) {
+            if(enforceXHTML && prefix.isEmpty() && namespaceURI.isEmpty()) {
                 namespaceURI = Namespaces.XHTML_NS;
                 receiver.endElement(new QName(qname.getLocalPart(), namespaceURI, qname.getPrefix()));
             } else {

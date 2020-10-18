@@ -25,9 +25,9 @@ package org.exist.util.sax.event;
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public abstract class TextEvent {
-    public final char ch[];
+    public final char[] ch;
 
-    public TextEvent(final char ch[], final int start, final int length) {
+    public TextEvent(final char[] ch, final int start, final int length) {
         this.ch = new char[length];
         System.arraycopy(ch, start, this.ch, 0, length);
     }

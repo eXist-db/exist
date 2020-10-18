@@ -136,7 +136,7 @@ public final class HeapSort {
 		}
 	}
 
-	public static void sort(long[] a, int lo, int hi, Object b[]) {
+	public static void sort(long[] a, int lo, int hi, Object[] b) {
 		// Establish the heap property.
 		for (int i=hi-1; i>=lo; i--)
 			fixHeap(a,b,lo,i,hi);

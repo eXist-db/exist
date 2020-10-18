@@ -246,7 +246,7 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
         // 1) create a new array of the correct size for the data
         final int change = data.length() - count;
         final int newValueLength = length_ + change;
-        final char newValue[] = CharArrayPool.getCharArray(newValueLength);
+        final char[] newValue = CharArrayPool.getCharArray(newValueLength);
 
         // 2) copy everything from value_ to newValue that is before our offset
         System.arraycopy(value_, 0, newValue, 0, offset);
@@ -256,7 +256,7 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
 
         // 4) copy everything from value_ to newValue_ that is after our offset + count
         final int remainingExistingCharacters;
-        if(data.length() > 0 && length_ < data.length()) {
+        if(!data.isEmpty() && length_ < data.length()) {
             // value_ is expanding or staying the same length
             remainingExistingCharacters = length_ - count;
         } else {
@@ -336,8 +336,8 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
             final XMLString anotherString = (XMLString) anObject;
             if (length_ == anotherString.length_) {
                 int n = length_;
-                final char v1[] = value_;
-                final char v2[] = anotherString.value_;
+                final char[] v1 = value_;
+                final char[] v2 = anotherString.value_;
                 int i = start_;
                 int j = anotherString.start_;
 

@@ -147,7 +147,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
     protected QName removeXhtmlPrefix(final QName qname) {
         final String prefix = qname.getPrefix();
         final String namespaceURI = qname.getNamespaceURI();
-        if(prefix != null && prefix.length() > 0 && namespaceURI != null && namespaceURI.equals(Namespaces.XHTML_NS)) {
+        if(prefix != null && !prefix.isEmpty() && namespaceURI != null && namespaceURI.equals(Namespaces.XHTML_NS)) {
             haveCollapsedXhtmlPrefix = true;
             return new QName(qname.getLocalPart(), namespaceURI);
         }
@@ -188,7 +188,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
     @Override
     public void namespace(final String prefix, final String nsURI) throws TransformerException {
-        if(haveCollapsedXhtmlPrefix && prefix != null && prefix.length() > 0 && nsURI.equals(Namespaces.XHTML_NS)) {
+        if(haveCollapsedXhtmlPrefix && prefix != null && !prefix.isEmpty() && nsURI.equals(Namespaces.XHTML_NS)) {
             return; //dont output the xmlns:prefix for the collapsed nodes prefix
         }
         

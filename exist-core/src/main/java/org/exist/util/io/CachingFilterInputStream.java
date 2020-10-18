@@ -259,7 +259,7 @@ public class CachingFilterInputStream extends FilterInputStream {
                 // we can't skip directly on the src otherwise it will never be read into the cache, so we read over the amount of bytes we want to skip instead
 
                 final int toReadFromSrc = (int) (len - actualLen);
-                final byte skipped[] = new byte[toReadFromSrc];
+                final byte[] skipped = new byte[toReadFromSrc];
 
                 //read some data from the source (and into the cache)
                 int toRead = toReadFromSrc;
@@ -283,7 +283,7 @@ public class CachingFilterInputStream extends FilterInputStream {
 
         } else {
 
-            final byte skipped[] = new byte[(int) len];  //TODO could overflow
+            final byte[] skipped = new byte[(int) len];  //TODO could overflow
             int toRead = (int)len;
 
             int totalRead = 0;

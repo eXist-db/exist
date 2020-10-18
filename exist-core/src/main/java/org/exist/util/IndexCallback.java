@@ -25,5 +25,5 @@ import org.exist.storage.btree.Value;
 
 public interface IndexCallback {
 
-	public boolean indexInfo(Value key, Value value);
+	boolean indexInfo(Value key, Value value);
 }

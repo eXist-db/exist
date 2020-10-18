@@ -204,7 +204,7 @@ public class HTML5Writer extends XHTML5Writer {
             }
             final Writer writer = getWriter();
             writer.write(' ');
-            if(qname.getPrefix() != null && qname.getPrefix().length() > 0) {
+            if(qname.getPrefix() != null && !qname.getPrefix().isEmpty()) {
                 writer.write(qname.getPrefix());
                 writer.write(':');
             }
