@@ -47,7 +47,6 @@ import org.exist.indexing.IndexManager;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.scheduler.JobConfig;
 import org.exist.scheduler.JobException;
-import org.exist.security.internal.RealmImpl;
 import org.exist.storage.BrokerFactory;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
