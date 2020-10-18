@@ -232,7 +232,7 @@ public class XMLWriter {
                 closeStartTag(false);
             }
             writer.write('<');
-            if(qname.getPrefix() != null && qname.getPrefix().length() > 0) {
+            if(qname.getPrefix() != null && !qname.getPrefix().isEmpty()) {
                 writer.write(qname.getPrefix());
                 writer.write(':');
             }
@@ -266,7 +266,7 @@ public class XMLWriter {
                 closeStartTag(true);
             } else {
                 writer.write("</");
-                if(qname.getPrefix() != null && qname.getPrefix().length() > 0) {
+                if(qname.getPrefix() != null && !qname.getPrefix().isEmpty()) {
                     writer.write(qname.getPrefix());
                     writer.write(':');
                 }
@@ -280,7 +280,7 @@ public class XMLWriter {
     }
 
     public void namespace(final String prefix, final String nsURI) throws TransformerException {
-        if((nsURI == null) && (prefix == null || prefix.length() == 0)) {
+        if((nsURI == null) && (prefix == null || prefix.isEmpty())) {
             return;
         }
 
@@ -289,7 +289,7 @@ public class XMLWriter {
                 throw new TransformerException("Found a namespace declaration outside an element");
             }
 
-            if(prefix != null && prefix.length() > 0) {
+            if(prefix != null && !prefix.isEmpty()) {
                 writer.write(' ');
                 writer.write("xmlns");
                 writer.write(':');
@@ -340,7 +340,7 @@ public class XMLWriter {
                 // element");
             }
             writer.write(' ');
-            if(qname.getPrefix() != null && qname.getPrefix().length() > 0) {
+            if(qname.getPrefix() != null && !qname.getPrefix().isEmpty()) {
                 writer.write(qname.getPrefix());
                 writer.write(':');
             }
@@ -394,7 +394,7 @@ public class XMLWriter {
             }
             writer.write("<?");
             writer.write(target);
-            if(data != null && data.length() > 0) {
+            if(data != null && !data.isEmpty()) {
                 writer.write(' ');
                 writer.write(data);
             }

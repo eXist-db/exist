@@ -313,9 +313,9 @@ public class Collations {
         if (collator == null) {
             return s1.startsWith(s2);
         } else {
-            if (s2.length() == 0) {
+            if (s2.isEmpty()) {
                 return true;
-            } else if (s1.length() == 0) {
+            } else if (s1.isEmpty()) {
                 return false;
             } else {
                 final SearchIterator searchIterator =
@@ -340,9 +340,9 @@ public class Collations {
         if (collator == null) {
             return s1.endsWith(s2);
         } else {
-            if (s2.length() == 0) {
+            if (s2.isEmpty()) {
                 return true;
-            } else if (s1.length() == 0) {
+            } else if (s1.isEmpty()) {
                 return false;
             } else {
                 final SearchIterator searchIterator =
@@ -375,9 +375,9 @@ public class Collations {
         if (collator == null) {
             return s1.contains(s2);
         } else {
-            if (s2.length() == 0) {
+            if (s2.isEmpty()) {
                 return true;
-            } else if (s1.length() == 0) {
+            } else if (s1.isEmpty()) {
                 return false;
             } else {
                 final SearchIterator searchIterator =
@@ -401,9 +401,9 @@ public class Collations {
         if (collator == null) {
             return s1.indexOf(s2);
         } else {
-            if (s2.length() == 0) {
+            if (s2.isEmpty()) {
                 return 0;
-            } else if (s1.length() == 0) {
+            } else if (s1.isEmpty()) {
                 return -1;
             } else {
                 final SearchIterator searchIterator =

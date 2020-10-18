@@ -328,7 +328,7 @@ public class Configuration implements ErrorHandler
 
     private void configureRepository(Element element) {
         String root = getConfigAttributeValue(element, "root");
-        if (root != null && root.length() > 0) {
+        if (root != null && !root.isEmpty()) {
             if (!root.endsWith("/"))
                 {root += "/";}
             config.put(Deployment.PROPERTY_APP_ROOT, root);
@@ -361,7 +361,7 @@ public class Configuration implements ErrorHandler
 
         final String optimize = getConfigAttributeValue( xquery, XQueryContext.ENABLE_QUERY_REWRITING_ATTRIBUTE );
 
-        if( ( optimize != null ) && ( optimize.length() > 0 ) ) {
+        if( ( optimize != null ) && (!optimize.isEmpty()) ) {
             config.put( XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING, optimize );
             LOG.debug( XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING + ": " + config.get( XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING ) );
         }
@@ -373,7 +373,7 @@ public class Configuration implements ErrorHandler
         
         final String backwardCompatible = getConfigAttributeValue( xquery, XQueryContext.XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE );
 
-        if( ( backwardCompatible != null ) && ( backwardCompatible.length() > 0 ) ) {
+        if( ( backwardCompatible != null ) && (!backwardCompatible.isEmpty()) ) {
             config.put( XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE, backwardCompatible );
             LOG.debug( XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE + ": " + config.get( XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE ) );
         }
@@ -554,10 +554,10 @@ public class Configuration implements ErrorHandler
                 final String  value = attr.getAttribute( "value" );
                 final String  type  = attr.getAttribute( "type" );
 
-                if( ( name == null ) || ( name.length() == 0 ) ) {
+                if( ( name == null ) || (name.isEmpty()) ) {
                     LOG.warn( "Discarded invalid attribute for TransformerFactory: '" + className + "', name not specified" );
 
-                } else if( ( type == null ) || ( type.length() == 0 ) || type.equalsIgnoreCase( "string" ) ) {
+                } else if( ( type == null ) || (type.isEmpty()) || type.equalsIgnoreCase( "string" ) ) {
                     attributes.put( name, value );
 
                 } else if( type.equalsIgnoreCase( "boolean" ) ) {
@@ -788,14 +788,14 @@ public class Configuration implements ErrorHandler
                 //get and set the job delay
                 final String jobDelay = getConfigAttributeValue(job, JobConfig.JOB_DELAY_ATTRIBUTE);
 
-                if((jobDelay != null) && (jobDelay.length() > 0)) {
+                if((jobDelay != null) && (!jobDelay.isEmpty())) {
                     jobConfig.setDelay(Long.parseLong(jobDelay));
                 }
 
                 //get and set the job repeat
                 final String jobRepeat = getConfigAttributeValue(job, JobConfig.JOB_REPEAT_ATTRIBUTE);
 
-                if((jobRepeat != null) && (jobRepeat.length() > 0)) {
+                if((jobRepeat != null) && (!jobRepeat.isEmpty())) {
                     jobConfig.setRepeat(Integer.parseInt(jobRepeat));
                 }
 
@@ -804,7 +804,7 @@ public class Configuration implements ErrorHandler
                 
                 for(final Entry<String, List<? extends Object>> param : params.entrySet()) {
                     final List<? extends Object> values = param.getValue();
-                    if(values != null && values.size() > 0) {
+                    if(values != null && !values.isEmpty()) {
                         jobConfig.addParameter(param.getKey(), values.get(0).toString());
                         
                         if(values.size() > 1) {
@@ -821,7 +821,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        if(jobList.size() > 0 ) {
+        if(!jobList.isEmpty()) {
             final JobConfig[] configs = new JobConfig[jobList.size()];
 
             for(int i = 0; i < jobList.size(); i++) {
@@ -1415,11 +1415,11 @@ public class Configuration implements ErrorHandler
                 final String  className = elem.getAttribute( IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE );
                 final String  id        = elem.getAttribute( IndexManager.INDEXER_MODULES_ID_ATTRIBUTE );
 
-                if( ( className == null ) || ( className.length() == 0 ) ) {
+                if( ( className == null ) || (className.isEmpty()) ) {
                     throw( new DatabaseConfigurationException( "Required attribute class is missing for module" ) );
                 }
 
-                if( ( id == null ) || ( id.length() == 0 ) ) {
+                if( ( id == null ) || (id.isEmpty()) ) {
                     throw( new DatabaseConfigurationException( "Required attribute id is missing for module" ) );
                 }
                 modConfig[i] = new IndexModuleConfig( id, className, elem );

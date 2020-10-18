@@ -256,7 +256,7 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
 
         // 4) copy everything from value_ to newValue_ that is after our offset + count
         final int remainingExistingCharacters;
-        if(data.length() > 0 && length_ < data.length()) {
+        if(!data.isEmpty() && length_ < data.length()) {
             // value_ is expanding or staying the same length
             remainingExistingCharacters = length_ - count;
         } else {

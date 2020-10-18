@@ -104,7 +104,7 @@ public class ParametersExtractor {
             List values = parameters.get(name);
 
             final String value = param.getAttribute(PARAMETER_VALUE_ATTRIBUTE);
-            if(value != null && value.length() > 0) {
+            if(value != null && !value.isEmpty()) {
                 if(values == null) {
                     values = new ArrayList<String>();
                 }
