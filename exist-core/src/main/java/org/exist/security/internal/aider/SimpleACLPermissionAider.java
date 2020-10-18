@@ -194,8 +194,8 @@ public class SimpleACLPermissionAider extends UnixStylePermissionAider implement
     @Override
     public Permission copy() {
         final List<ACEAider> copiedAces = new ArrayList<>(aces.size());
-        for (int i = 0; i < aces.size(); i++) {
-            copiedAces.add(aces.get(i).copy());
+        for (ACEAider ace : aces) {
+            copiedAces.add(ace.copy());
         }
         return new SimpleACLPermissionAider(getOwner().getName(), getGroup().getName(), getMode(), copiedAces);
     }
