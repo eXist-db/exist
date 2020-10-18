@@ -288,7 +288,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			final String normalized = preserveWhitespace ? charBuf.toString() :
 					charBuf.toString().trim();
 
-			if (normalized.length() > 0) {
+			if (!normalized.isEmpty()) {
 				final Text text = doc.createTextNode(charBuf.toString());
 				final Element last = stack.peek();
 				if (last == null) {
@@ -412,7 +412,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 						}
 					}
 					Element elem;
-					if (namespace != null && namespace.length() > 0) {
+					if (namespace != null && !namespace.isEmpty()) {
 						elem = doc.createElementNS(namespace, name);
 						elem.setPrefix(prefix);
 					} else {
@@ -452,7 +452,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 									"no namespace defined for prefix " + prefix);
 						}
 					}
-					Attr attrib = namespace != null && namespace.length() > 0 ?
+					Attr attrib = namespace != null && !namespace.isEmpty() ?
 							doc.createAttributeNS(namespace, name) :
 							doc.createAttribute(name);
 					if (stack.isEmpty()) {
@@ -522,7 +522,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					break;
 			}
 		} else if (inModification) {
-			final Element elem = namespaceURI != null && namespaceURI.length() > 0 ?
+			final Element elem = namespaceURI != null && !namespaceURI.isEmpty() ?
 									doc.createElementNS(namespaceURI, qName) :
 									doc.createElement(qName);
 			Attr a;
@@ -584,7 +584,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		if (inModification && charBuf.length() > 0) {
 			final String normalized = preserveWhitespace ? charBuf.toString() :
 					charBuf.toString().trim();
-			if (normalized.length() > 0) {
+			if (!normalized.isEmpty()) {
 				final Text text = doc.createTextNode(charBuf.toString());
 				final Element last = stack.peek();
 				if (last == null) {
@@ -695,7 +695,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		if (inModification && charBuf.length() > 0) {
 			final String normalized =
 					charBuf.toString().trim();
-			if (normalized.length() > 0) {
+			if (!normalized.isEmpty()) {
 				final Text text = doc.createTextNode(normalized);
 				final Element last = stack.peek();
 				if (last == null) {
@@ -793,7 +793,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		if (inModification && charBuf.length() > 0) {
 			final String normalized =
 					charBuf.toString().trim();
-			if (normalized.length() > 0) {
+			if (!normalized.isEmpty()) {
 				final Text text = doc.createTextNode(normalized);
 				final Element last = stack.peek();
 				if (last == null) {
