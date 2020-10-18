@@ -52,7 +52,6 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.xquery.*;
-import org.exist.xquery.NodeTest;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
