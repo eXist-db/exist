@@ -1387,7 +1387,7 @@ public class DOMFile extends BTree implements Lockable {
         boolean flushed = false;
         //TODO : record transaction as a valuable flush ?
         if (isRecoveryEnabled()) {
-            logManager.get().flush(true, false);
+            logManager.ifPresent(l -> l.flush(true, false));
         }
         if (!BrokerPool.FORCE_CORRUPTION) {
             flushed = flushed | super.flush();
@@ -3241,7 +3241,7 @@ public class DOMFile extends BTree implements Lockable {
             if (isDirty()) {
                 write();
                 if (isRecoveryEnabled() && syncJournal && logManager.get().lastWrittenLsn().compareTo(pageHeader.getLsn()) < 0) {
-                    logManager.get().flush(true, false);
+                    logManager.ifPresent(l -> l.flush(true, false));
                 }
                 return true;
             }
