@@ -53,9 +53,9 @@ public abstract class AbstractUnixStylePermission implements Permission {
 
         //TODO expand perm to full UNIX chmod i.e. perm ::= r | s | t | w | x | X | u | g | o
 
-        final String clauses[] = symbolicMode.split(",");
+        final String[] clauses = symbolicMode.split(",");
         for(final String clause : clauses) {
-            final String whoPerm[] = clause.split("[+\\-=]");
+            final String[] whoPerm = clause.split("[+\\-=]");
 
             int perm = 0;
             boolean uidgid = false;
@@ -89,7 +89,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
             }
 
             
-            final char whoose[];
+            final char[] whoose;
             if(!whoPerm[0].isEmpty()) {
                 whoose = whoPerm[0].toCharArray();
             } else {
@@ -285,7 +285,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
     public static int simpleSymbolicModeToInt(final String simpleModeStr) throws SyntaxException {
         int mode = 0;
 
-        final char modeArray[] = simpleModeStr.toCharArray();
+        final char[] modeArray = simpleModeStr.toCharArray();
         for(int i = 0; i < modeArray.length; i++) {
 
             final char c = modeArray[i];
@@ -332,7 +332,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
     }
     
     public static String modeToSimpleSymbolicMode(final int mode) {
-        final char ch[] = new char[] {
+        final char[] ch = new char[] {
             (mode & (READ << 6)) == 0 ? UNSET_CHAR : READ_CHAR,
             (mode & (WRITE << 6)) == 0 ? UNSET_CHAR : WRITE_CHAR,
             (mode & (EXECUTE << 6)) == 0 ? UNSET_CHAR : EXECUTE_CHAR,

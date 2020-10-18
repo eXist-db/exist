@@ -268,7 +268,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
     @Override
     public String toString() {
 
-        final char ch[] = new char[] {
+        final char[] ch = new char[] {
             (mode & (READ << 6)) == 0 ? UNSET_CHAR : READ_CHAR,
             (mode & (WRITE << 6)) == 0 ? UNSET_CHAR : WRITE_CHAR,
             (mode & (SET_UID << 9)) == 0 ? ((mode & (EXECUTE << 6)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : ((mode & (EXECUTE << 6)) == 0 ? SETUID_CHAR_NO_EXEC : SETUID_CHAR),

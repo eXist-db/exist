@@ -389,7 +389,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
      */
     @Override
     public String toString() {
-        final char ch[] = new char[] {
+        final char[] ch = new char[] {
             (vector & (READ << 28)) == 0 ? UNSET_CHAR : READ_CHAR,
             (vector & (WRITE << 28)) == 0 ? UNSET_CHAR : WRITE_CHAR,
             (vector & (1L << 31)) == 0 ? ((vector & (EXECUTE << 28)) == 0 ? UNSET_CHAR : EXECUTE_CHAR) : ((vector & (EXECUTE << 28)) == 0 ? SETUID_CHAR_NO_EXEC : SETUID_CHAR),
@@ -426,7 +426,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
         }
 
         //check group
-        final int userGroupIds[] = user.getGroupIds();
+        final int[] userGroupIds = user.getGroupIds();
         final int groupId = (int)((vector >>> 8) & 1048575);
         for(final int userGroupId : userGroupIds) {
             if(userGroupId == groupId) {
