@@ -3536,6 +3536,15 @@ public class NativeBroker extends DBBroker {
     @Override
     public void shutdown() {
         try {
+            final String EOL = System.getProperty("line.separator");
+            final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            final StringBuilder sb = new StringBuilder();
+            for(final StackTraceElement elt : stackTrace){
+                sb.append(elt.toString());
+                sb.append(EOL);
+            }
+            LOG.info("TRACE: {}", sb.toString());
+
             flush();
             sync(Sync.MAJOR);
             domDb.close();

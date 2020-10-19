@@ -1560,6 +1560,15 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      */
     public void shutdown(final boolean killed) {
         try {
+            final String EOL = System.getProperty("line.separator");
+            final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            final StringBuilder sb = new StringBuilder();
+            for(final StackTraceElement elt : stackTrace){
+                sb.append(elt.toString());
+                sb.append(EOL);
+            }
+            LOG.info("TRACE: {}", sb.toString());
+
             status.process(Event.START_SHUTDOWN);
         } catch(final IllegalStateException e) {
             // we are not operational!
