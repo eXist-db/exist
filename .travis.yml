@@ -4,7 +4,7 @@ dist: bionic
 
 # NOTE: To speed up multiple builds - Docker container is only built on JDK8, dependency checks also only happen on JDK8
 
-matrix:
+jobs:
   include:
 
     - jdk: openjdk8
@@ -30,6 +30,9 @@ matrix:
         - JAVA_HOME=$(/usr/libexec/java_home)
         - BUILD_DOCKER=false
         - MAVEN_OPTS="-Ddependency-check.skip=true"
+
+  allow_failures:
+    - jdk: openjdk14  # see https://github.com/eXist-db/exist/issues/3375
 
 cache:
   directories:
