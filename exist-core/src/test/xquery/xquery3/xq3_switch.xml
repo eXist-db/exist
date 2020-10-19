@@ -130,4 +130,19 @@ return
         </code>
         <expected>30</expected>
     </test>
+
+    <test output="text">
+        <task>A switch with an empty case value
+        </task>
+        <code><![CDATA[
+    xquery version "3.1";
+
+    switch(1)
+    case 2[. eq 1] return "foo"
+    default return "bar"
+]]>
+        </code>
+        <expected>bar</expected>
+    </test>
+
 </TestSet>

@@ -104,7 +104,7 @@ public class SwitchExpression extends AbstractExpression {
 	                if (caseSeq.hasMany()) {
 	                    throw new XPathException(this, ErrorCodes.XPTY0004, "Cardinality error in switch case operand ", caseSeq);
 	                }
-                    final AtomicValue caseVal = caseSeq.itemAt(0).atomize();
+                    final AtomicValue caseVal = caseSeq.isEmpty() ? AtomicValue.EMPTY_VALUE : caseSeq.itemAt(0).atomize();
 	                if (FunDeepEqual.deepEquals(caseVal, opVal, defaultCollator)) {
 	                    return next.returnClause.eval(contextSequence);
 	                }
