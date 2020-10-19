@@ -31,7 +31,7 @@ import static org.junit.Assert.assertSame;
 public class NamePoolTest {
 
     @Test
-    public void getSharedCommon() throws Exception {
+    public void getSharedNameIdentical() throws Exception {
         NamePool pool = new NamePool();
         QName q1 = new QName("n1", "http://exist-db.org", "x");
         QName q2 = new QName("n1", "http://exist-db.org", "x");
@@ -41,7 +41,27 @@ public class NamePoolTest {
     }
 
     @Test
-    public void getSharedType() throws Exception {
+    public void getSharedNameDifferentNamespace() throws Exception {
+        NamePool pool = new NamePool();
+        QName q1 = new QName("n1", "http://exist-db.COM", "x");
+        QName q2 = new QName("n1", "http://exist-db.org", "x");
+        pool.getSharedName(q1);
+        QName qr = pool.getSharedName(q2);
+        assertNotSame(q1, qr);
+    }
+
+    @Test
+    public void getSharedNameDifferentPrefix() throws Exception {
+        NamePool pool = new NamePool();
+        QName q1 = new QName("n1", "http://exist-db.org", "x");
+        QName q2 = new QName("n2", "http://exist-db.org", "x");
+        pool.getSharedName(q1);
+        QName qr = pool.getSharedName(q2);
+        assertNotSame(q1, qr);
+    }
+
+    @Test
+    public void getSharedNameDifferentType() throws Exception {
         NamePool pool = new NamePool();
         QName q1 = new QName("n1", "http://exist-db.org", "x", ElementValue.ELEMENT);
         QName q2 = new QName("n1", "http://exist-db.org", "x", ElementValue.ATTRIBUTE);
