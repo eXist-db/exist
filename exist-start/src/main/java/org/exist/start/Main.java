@@ -155,39 +155,45 @@ public class Main {
 
     public void run(String[] args) {
         try {
-            final String jreVersion = System.getProperty("java.version", "UNKNOWN");
-            if (!jreVersion.startsWith("1.8") && !jreVersion.startsWith("9.")
-                    && !jreVersion.startsWith("10.") && !jreVersion.startsWith("11.")) {
-                System.err.println("*****************************************************");
-                System.err.println("Warning: Unreliable Java version has been detected!");
-                System.err.println();
-                System.err.println("OpenJDK versions 12 and higher currently suffer from a");
-                System.err.println("critical bug in the JIT compiler that will cause");
-                System.err.println("data loss in eXist-db.");
-                System.err.println();
-                System.err.println("The problem has been reported to the OpenJDK community.");
-                System.err.println();
-                System.err.println("For more information, see:");
-                System.err.println("- https://bugs.openjdk.java.net/browse/JDK-8253191");
-                System.err.println("- https://github.com/eXist-db/exist/issues/3375");
-                System.err.println();
-                System.err.println("The detected version of Java on your system is " + jreVersion + ".");
-                System.err.println();
-                System.err.println("To prevent data loss, eXist-db will not be started.");
-                System.err.println("Until this OpenJDK bug is resolved, we urge you to");
-                System.err.println("switch to LTS versions Java 8 or 11.");
-                System.err.println("*****************************************************");
-
-                throw new StartException(ERROR_CODE_RELIABLE_JAVA_DETECTED);
-            }
-
             runEx(args);
         } catch (final StartException e) {
             System.exit(e.getErrorCode());
         }
     }
 
+    private void checkForCorrectJavaVersions() throws StartException {
+        final String jreVersion = System.getProperty("java.version", "UNKNOWN");
+        if (!jreVersion.startsWith("1.8") && !jreVersion.startsWith("9.")
+                && !jreVersion.startsWith("10.") && !jreVersion.startsWith("11.")) {
+            System.err.println("*****************************************************");
+            System.err.println("Warning: Unreliable Java version has been detected!");
+            System.err.println();
+            System.err.println("OpenJDK versions 12 and higher currently suffer from a");
+            System.err.println("critical bug in the JIT compiler that will cause");
+            System.err.println("data loss in eXist-db.");
+            System.err.println();
+            System.err.println("The problem has been reported to the OpenJDK community.");
+            System.err.println();
+            System.err.println("For more information, see:");
+            System.err.println("- https://bugs.openjdk.java.net/browse/JDK-8253191");
+            System.err.println("- https://github.com/eXist-db/exist/issues/3375");
+            System.err.println();
+            System.err.println("The detected version of Java on your system is " + jreVersion + ".");
+            System.err.println();
+            System.err.println("To prevent data loss, eXist-db will not be started.");
+            System.err.println("Until this OpenJDK bug is resolved, we urge you to");
+            System.err.println("switch to LTS versions Java 8 or 11.");
+            System.err.println("*****************************************************");
+
+            throw new StartException(ERROR_CODE_RELIABLE_JAVA_DETECTED);
+        }
+    }
+
     public void runEx(String[] args) throws StartException {
+
+        // Check if the OpenJDK version can corrupt eXist-db
+        checkForCorrectJavaVersions();
+
         final String _classname;
         if (args.length > 0) {
             if ("client".equals(args[0])) {
