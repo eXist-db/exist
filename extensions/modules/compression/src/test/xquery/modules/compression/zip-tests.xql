@@ -50,3 +50,19 @@ function z:fnZipUtf8Content() {
   return
     ($z:myZipContentUTF8Base64 eq  $z:myStaticUTF8ContentBase64)
 };
+
+(: Verify zero byte sized resource :)
+declare
+	%test:assertEquals("")
+function z:zeroByteBinResource() {
+    let $collection-uri :="/db/"
+    let $resource-name :="empty.txt"
+    let $contents :=""
+
+    let $empty-file := xmldb:store-as-binary($collection-uri, $resource-name, $contents)
+
+    let $zip := compression:zip(<entry type="uri" name="{$collection-uri}">{$collection-uri||$resource-name}</entry>, true())
+
+    return util:binary-to-string(util:binary-doc($collection-uri||$resource-name))
+};
+
