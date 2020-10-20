@@ -25,17 +25,17 @@ import java.util.List;
 
 public interface Group extends Principal {
 
-    public final static int UNDEFINED_ID = -1;
+    int UNDEFINED_ID = -1;
     
-    public boolean isManager(Account account);
+    boolean isManager(Account account);
 
-    public void addManager(Account account) throws PermissionDeniedException;
+    void addManager(Account account) throws PermissionDeniedException;
 
-    public void addManagers(List<Account> managers) throws PermissionDeniedException;
+    void addManagers(List<Account> managers) throws PermissionDeniedException;
 
-    public List<Account> getManagers() throws PermissionDeniedException;
+    List<Account> getManagers() throws PermissionDeniedException;
 
-    public void removeManager(Account account) throws PermissionDeniedException;
+    void removeManager(Account account) throws PermissionDeniedException;
 
-    public void assertCanModifyGroup(Account account) throws PermissionDeniedException;
+    void assertCanModifyGroup(Account account) throws PermissionDeniedException;
 }

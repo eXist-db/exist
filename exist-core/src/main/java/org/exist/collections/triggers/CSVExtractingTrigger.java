@@ -130,7 +130,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
                 if(extraction == null) {
                     extraction = new Extraction();
                     if(attrPredicate != null) {
-                        final String attrNameValueMatch[] = attrPredicate.split(" eq ");
+                        final String[] attrNameValueMatch = attrPredicate.split(" eq ");
                         extraction.setMatchAttribute(attrNameValueMatch[0], attrNameValueMatch[1]);
                     }
                 }
@@ -205,7 +205,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
     private void extractCSVValuesToElements() throws SAXException {
 
         //split the csv values
-        final String seperatedValues[] = charactersBuf.toString().split(getEscapedSeparatorForRegExp());
+        final String[] seperatedValues = charactersBuf.toString().split(getEscapedSeparatorForRegExp());
 
         //get the extractions for the current path
         final Extraction extraction = extractions.get(currentNodePath.toLocalPath());
@@ -214,7 +214,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
             //extract the value by index
             final int index = extractEntry.getIndex();
             if(index < seperatedValues.length) {
-                final char seperatedValue[] = seperatedValues[index].toCharArray();
+                final char[] seperatedValue = seperatedValues[index].toCharArray();
 
                 //create a new element for the extracted value
                 final String localName = extractEntry.getElementName();

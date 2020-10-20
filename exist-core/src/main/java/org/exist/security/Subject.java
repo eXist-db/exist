@@ -27,13 +27,13 @@ package org.exist.security;
  */
 public interface Subject extends Account {
 
-	public boolean authenticate(Object credentials);
+	boolean authenticate(Object credentials);
 
-	public boolean isAuthenticated();
+	boolean isAuthenticated();
 
-	public boolean isExternallyAuthenticated();
+	boolean isExternallyAuthenticated();
 
-	public String getSessionId();
+	String getSessionId();
 
-	public Session getSession();
+	Session getSession();
 }

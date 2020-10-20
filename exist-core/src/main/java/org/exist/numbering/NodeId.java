@@ -34,20 +34,20 @@ import java.io.IOException;
  */
 public interface NodeId extends Comparable<NodeId> {
 
-    public static final int LENGTH_NODE_ID_UNITS = 2; //sizeof short
+    int LENGTH_NODE_ID_UNITS = 2; //sizeof short
 
     /**
      * Static field representing the document node.
      */
-    public final static NodeId DOCUMENT_NODE = new DLN(0);
+    NodeId DOCUMENT_NODE = new DLN(0);
  
-    public final static NodeId END_OF_DOCUMENT = new DLN(0);
+    NodeId END_OF_DOCUMENT = new DLN(0);
 
-    public final static NodeId ROOT_NODE = new DLN(1);
+    NodeId ROOT_NODE = new DLN(1);
 
-    public final static int IS_CHILD = 1;
-    public final static int IS_DESCENDANT = 2;
-    public final static int IS_SELF = 3;
+    int IS_CHILD = 1;
+    int IS_DESCENDANT = 2;
+    int IS_SELF = 3;
 
     /**
      * Returns a new NodeId representing the first child

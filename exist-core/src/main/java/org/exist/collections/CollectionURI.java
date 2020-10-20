@@ -54,7 +54,7 @@ public class CollectionURI {
             uri[0] = FRAGMENT_SEPARATOR;
             segment.getChars(startOffset, segment.length(), uri, 1);
         } else {
-            char newURI[] = new char[length + 1 + segment.length() - startOffset];
+            char[] newURI = new char[length + 1 + segment.length() - startOffset];
             System.arraycopy(uri, 0, newURI, 0, length);
             newURI[length] = FRAGMENT_SEPARATOR;
             segment.getChars(startOffset, segment.length(), newURI, length+1);

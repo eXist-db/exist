@@ -31,8 +31,6 @@ import org.exist.security.Account;
 import org.exist.security.Credential;
 import org.exist.security.MessageDigester;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  * @author <a href="mailto:adam.retter@gmail.com">Adam Retter</a>

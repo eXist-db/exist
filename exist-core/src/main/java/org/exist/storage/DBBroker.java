@@ -41,7 +41,6 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.stax.IEmbeddedXMLStreamReader;
-import org.exist.storage.blob.BlobId;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.dom.INodeIterator;
 import org.exist.storage.lock.EnsureLocked;

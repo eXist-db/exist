@@ -83,7 +83,7 @@ public class TriggerEvents {
 		DELETE_DOCUMENT
 	}
 
-	private final static String EVENTS_STRING []  = {
+	private final static String[] EVENTS_STRING = {
 		"CREATE-COLLECTION",
 		"UPDATE-COLLECTION",
 		"COPY-COLLECTION",
@@ -97,7 +97,7 @@ public class TriggerEvents {
 		"DELETE-DOCUMENT"
 	};
 
-	private final static EVENTS _EVENTS_ []  = {
+	private final static EVENTS[] _EVENTS_ = {
 		EVENTS.CREATE_COLLECTION,
 		EVENTS.UPDATE_COLLECTION,
 		EVENTS.COPY_COLLECTION,
@@ -138,7 +138,7 @@ public class TriggerEvents {
 	    return result;
 	}
 
-	public final static String OLD_EVENTS_STRING []  = {
+	public final static String[] OLD_EVENTS_STRING = {
 		"STORE",
 		"UPDATE",
 		"REMOVE",

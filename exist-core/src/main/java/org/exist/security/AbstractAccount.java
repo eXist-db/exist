@@ -282,7 +282,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
     @Deprecated
     @Override
     public Group getDefaultGroup() {
-        if(groups != null && groups.size() > 0) {
+        if(groups != null && !groups.isEmpty()) {
             return groups.get(0);
         }
 

@@ -29,6 +29,6 @@ import java.util.List;
  */
 public interface TriggersVisitor<T extends Trigger> extends Trigger {
     
-    public List<T> getTriggers() throws TriggerException;
+    List<T> getTriggers() throws TriggerException;
 
 }

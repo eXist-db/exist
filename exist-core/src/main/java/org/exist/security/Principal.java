@@ -33,21 +33,21 @@ import java.util.Set;
  */
 public interface Principal extends java.security.Principal, Configurable {
 
-    public int getId();
+    int getId();
 
-    public Realm getRealm();
+    Realm getRealm();
 
-    public String getRealmId();
+    String getRealmId();
 
-    public void save() throws ConfigurationException, PermissionDeniedException;
+    void save() throws ConfigurationException, PermissionDeniedException;
 
-    public void save(DBBroker broker) throws ConfigurationException, PermissionDeniedException;
+    void save(DBBroker broker) throws ConfigurationException, PermissionDeniedException;
     
-    public void setMetadataValue(SchemaType schemaType, String value);
+    void setMetadataValue(SchemaType schemaType, String value);
 
-    public String getMetadataValue(SchemaType schemaType);
+    String getMetadataValue(SchemaType schemaType);
 
-    public Set<SchemaType> getMetadataKeys();
+    Set<SchemaType> getMetadataKeys();
     
-    public void clearMetadata();
+    void clearMetadata();
 }

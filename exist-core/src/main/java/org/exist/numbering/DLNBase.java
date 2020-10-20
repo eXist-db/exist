@@ -577,7 +577,7 @@ public class DLNBase {
     public String toBitString() {
         final StringBuilder buf = new StringBuilder();
         final int len = bits.length;
-        for (byte bit : bits) {
+        for (final byte bit : bits) {
             buf.append(toBitString(bit));
         }
         return buf.toString();

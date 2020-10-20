@@ -47,7 +47,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
 
     private static final int MAX_ACL_LENGTH = 255; //restrict to sizeof 1 byte
 
-    private int acl[] = new int[0];
+    private int[] acl = new int[0];
 
     public SimpleACLPermission(final SecurityManager sm) {
         super(sm);
@@ -85,7 +85,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
             throw new PermissionDeniedException("Maximum of " + MAX_ACL_LENGTH + " ACEs has been reached.");
         }
 
-        final int newAcl[] = new int[acl.length + 1];
+        final int[] newAcl = new int[acl.length + 1];
         System.arraycopy(acl, 0, newAcl, 0, acl.length);
         newAcl[newAcl.length - 1] = encodeAsACE(access_type, target, id, mode);
         this.acl = newAcl;
@@ -114,7 +114,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
             throw new PermissionDeniedException("No Such ACE index " + index + " in ACL.");
         }
 
-        final int newAcl[] = new int[acl.length + 1];
+        final int[] newAcl = new int[acl.length + 1];
         System.arraycopy(acl, 0, newAcl, 0, index);
         newAcl[index] = encodeAsACE(access_type, target, id, mode);
         if (acl.length > 0) {
@@ -133,7 +133,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
      * @throws PermissionDeniedException if the mode string is invalid
      */
     public static int aceSimpleSymbolicModeToInt(final String modeStr) throws PermissionDeniedException {
-        if (modeStr == null || modeStr.length() == 0 || modeStr.length() > 3) {
+        if (modeStr == null || modeStr.isEmpty() || modeStr.length() > 3) {
             throw new PermissionDeniedException("Invalid mode string '" + modeStr + "'");
         }
 
@@ -200,7 +200,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
             throw new PermissionDeniedException("ACL Entry does not exist");
         }
 
-        final int newAcl[] = new int[acl.length - 1];
+        final int[] newAcl = new int[acl.length - 1];
         System.arraycopy(acl, 0, newAcl, 0, index);
         System.arraycopy(acl, index + 1, newAcl, index, newAcl.length - index);
         this.acl = newAcl;
@@ -260,7 +260,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
     public String getACEModeString(final int index) {
         final int aceMode = getACEMode(index);
 
-        final char ch[] = new char[]{
+        final char[] ch = new char[]{
                 (aceMode & READ) != READ ? UNSET_CHAR : READ_CHAR,
                 (aceMode & WRITE) != WRITE ? UNSET_CHAR : WRITE_CHAR,
                 (aceMode & EXECUTE) != EXECUTE ? UNSET_CHAR : EXECUTE_CHAR
@@ -319,7 +319,7 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
         }
 
         final int userId = user.getId();
-        final int userGroupIds[] = user.getGroupIds();
+        final int[] userGroupIds = user.getGroupIds();
 
         /*
          * START EXTENDED ACL VALIDATION.

@@ -25,16 +25,12 @@ import com.evolvedbinary.j8fu.function.SupplierE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.ManagedLock;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
 
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Supplier;
 
 /**
  * DOMTransaction controls access to the DOM file

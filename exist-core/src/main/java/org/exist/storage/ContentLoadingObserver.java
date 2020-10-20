@@ -27,7 +27,6 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.TextImpl;
 import org.exist.storage.btree.DBException;
-import org.exist.util.ReadOnlyException;
 
 /** Receives callback event during document(s) loading and removal;
  * implemented by several classes that generate various indices;

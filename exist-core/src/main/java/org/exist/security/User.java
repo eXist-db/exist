@@ -24,9 +24,9 @@ package org.exist.security;
 @Deprecated //use Account
 public interface User extends Principal {
 
-    public final static int PLAIN_ENCODING = 0;
-    public final static int SIMPLE_MD5_ENCODING = 1;
-    public final static int MD5_ENCODING = 2;
+    int PLAIN_ENCODING = 0;
+    int SIMPLE_MD5_ENCODING = 1;
+    int MD5_ENCODING = 2;
 
     /**
      * Add the user to a group
@@ -35,7 +35,7 @@ public interface User extends Principal {
      * @return The group the user was added to
      * @throws PermissionDeniedException is user has not sufficient rights
      */
-    public Group addGroup(String group) throws PermissionDeniedException;
+    Group addGroup(String group) throws PermissionDeniedException;
 
     /**
      * Add the user to a group
@@ -44,7 +44,7 @@ public interface User extends Principal {
      * @return The group the user was added to
      * @throws PermissionDeniedException is user has not sufficient rights
      */
-    public Group addGroup(Group group) throws PermissionDeniedException;
+    Group addGroup(Group group) throws PermissionDeniedException;
 
     /**
      * Remove the user to a group
@@ -52,26 +52,26 @@ public interface User extends Principal {
      * @param group The group to remove the user from
      * @throws PermissionDeniedException is user has not sufficient rights
      */
-    public void remGroup(String group) throws PermissionDeniedException;
+    void remGroup(String group) throws PermissionDeniedException;
 
     /**
      * Get all groups this user belongs to
      *
      * @return The groups that the user belongs to
      */
-    public String[] getGroups();
+    String[] getGroups();
 
-    public int[] getGroupIds();
+    int[] getGroupIds();
 
-    public boolean hasDbaRole();
+    boolean hasDbaRole();
 
     /**
      * Get the primary group this user belongs to
      *
      * @return The primary group that the use belongs to
      */
-    public String getPrimaryGroup();
-    public Group getDefaultGroup();
+    String getPrimaryGroup();
+    Group getDefaultGroup();
 
     /**
      * Is the user a member of group?
@@ -79,7 +79,7 @@ public interface User extends Principal {
      * @param group The group to check if the user is a member of
      * @return true if the user is a member of the group
      */
-    public boolean hasGroup(String group);
+    boolean hasGroup(String group);
 
     /**
      * Sets the password attribute of the User object
@@ -88,14 +88,14 @@ public interface User extends Principal {
      * @deprecated See {@link org.exist.security.User#setCredential(org.exist.security.Credential)}
      */
     @Deprecated
-    public void setPassword(String passwd);
+    void setPassword(String passwd);
 
     /**
      * Sets the authentication credential for the user
      *
      * @param credential The authentication credential
      */
-    public void setCredential(Credential credential);
+    void setCredential(Credential credential);
 
     /**
      * Get the user's password
@@ -103,13 +103,13 @@ public interface User extends Principal {
      * @return The users password
      * @deprecated
      */
-    public String getPassword();
+    String getPassword();
 
     @Deprecated
-    public String getDigestPassword();
+    String getDigestPassword();
 
     @Deprecated
-    public void setGroups(String[] groups);
+    void setGroups(String[] groups);
     
     /**
      * Returns the person full name or account name.
