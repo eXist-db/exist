@@ -647,6 +647,11 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>3.0.0-M5</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-project-info-reports-plugin</artifactId>
                     <version>3.1.1</version>
                     <configuration>
@@ -747,6 +752,9 @@
                     <licenseSets>
                         <licenseSet>
                             <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <excludes>
+                                <exclude>FDB-backport-LGPL-21-ONLY-license.template.txt</exclude>
+                            </excludes>
                         </licenseSet>
                     </licenseSets>
                     <headerDefinitions>

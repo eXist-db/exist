@@ -614,7 +614,6 @@
                                 <exclude>BX-BSD-3-license.template.txt</exclude>
                                 <exclude>DBXML-10-license.template.txt</exclude>
                                 <exclude>FDB-backport-BSD-3-license.template.txt</exclude>
-                                <exclude>FDB-backport-LGPL-21-ONLY-license.template.txt</exclude>
                                 <exclude>**/README</exclude>
                                 <exclude>src/main/resources/org/exist/client/*.tmpl</exclude>
                                 <exclude>src/test/resources/uk-towns.txt</exclude>
@@ -750,7 +749,7 @@ The original license statement is also included below.]]></preamble>
                             <!--
                                 FDB backport to LGPL 2.1-only licensed code
                             -->
-                            <header>FDB-backport-LGPL-21-ONLY-license.template.txt</header>
+                            <header>${project.parent.relativePath}/FDB-backport-LGPL-21-ONLY-license.template.txt</header>
                             <includes>
                                 <include>src/test/java/org/exist/storage/MoveCollectionTest.java</include>
                                 <include>src/main/java/org/exist/storage/blob/**</include>
