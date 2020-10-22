@@ -30,7 +30,9 @@ import org.w3c.dom.Node;
 import org.exist.dom.INode;
 import org.xml.sax.Attributes;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:stenlee@gmail.com">Stanislav Jordanov</a>
@@ -45,43 +47,43 @@ import java.util.HashMap;
  */
 public class NodePath2 extends NodePath {
 
-    private final static Logger LOG = LogManager.getLogger(NodePath2.class);
+    private static final Logger LOG = LogManager.getLogger(NodePath2.class);
 
-    private HashMap<String, String> attribs[] = new HashMap[4];
+    private Map<String, String> attribs[];
 
     private int n_pos = 0;
 
     public NodePath2() {
         super();
+        this.attribs = new HashMap[4];
     }
 
-    public NodePath2(NodePath2 o) {
-        super(o);
-        n_pos = o.n_pos;
-        attribs = new HashMap[n_pos];
+    public NodePath2(final NodePath2 other) {
+        super(other);
+        this.n_pos = other.n_pos;
+        this.attribs = new HashMap[n_pos];
         for (int i = 0; i < n_pos; i++) {
-            attribs[i] = o.attribs(i);
+            attribs[i] = other.attribs(i);
         }
     }
-
 
     public void addNode(final Node node) {
         addNode(node, null);
     }
 
-    public void addNode(final Node node, Attributes saxAttribs) {
+    public void addNode(final Node node, final Attributes saxAttribs) {
         assert node instanceof Element;
 
         super.addComponent(((INode) node).getQName());
 
         if (n_pos == attribs.length) {
             //final HashMap<String, String>[] t = new HashMap[n_pos + 4];
-            final HashMap[] t = new HashMap[n_pos + 4];
+            final Map[] t = new HashMap[n_pos + 4];
             System.arraycopy(attribs, 0, t, 0, n_pos);
             attribs = t;
         }
 
-        HashMap<String, String> amap = new HashMap<>();
+        final Map<String, String> amap = new HashMap<>();
 
         if (saxAttribs != null) {
             int alen = saxAttribs.getLength();
@@ -90,29 +92,28 @@ public class NodePath2 extends NodePath {
                 amap.put(saxAttribs.getQName(i), saxAttribs.getValue(i));
             }
         } else {
-            NamedNodeMap nnm = node.getAttributes();
-            int alen = node.getAttributes().getLength();
+            final NamedNodeMap nnm = node.getAttributes();
+            final int alen = node.getAttributes().getLength();
 
             for (int i = 0; i < alen; ++i) {
-                Node child = nnm.item(i);
-                if (child.getNodeType() == Node.ATTRIBUTE_NODE)
+                final Node child = nnm.item(i);
+                if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
                     amap.put(child.getNodeName(), child.getNodeValue());
+                }
             }
         }
 
         attribs[n_pos++] = amap;
     }
 
-
     public void reverseNodes() {
         super.reverseComponents();
         for (int i = 0; i < n_pos / 2; ++i) {
-            HashMap tmp = attribs[i];
+            Map<String, String> tmp = attribs[i];
             attribs[i] = attribs[attribs.length - 1 - i];
             attribs[attribs.length - 1 - i] = tmp;
         }
     }
-
 
     public void removeLastNode() {
         super.removeLastComponent();
@@ -122,7 +123,7 @@ public class NodePath2 extends NodePath {
         }
     }
 
-
+    @Override
     public void removeLastComponent() {
         if (this.length() <= n_pos) {
             LOG.error("Whoa!!! addNode() possibly paired with removeLastComponent() instead of removeLastNode()");
@@ -131,17 +132,13 @@ public class NodePath2 extends NodePath {
     }
 
 
+    @Override
     public void reset() {
         super.reset();
-
-        for (int i = 0; i < n_pos; i++) {
-            attribs[i] = null;
-        }
+        Arrays.fill(attribs, null);
     }
 
-
-    //public HashMap<String, String>  attribs(int elementIdx) {
-    public HashMap<String, String> attribs(int elementIdx) {
+    public Map<String, String> attribs(final int elementIdx) {
         return attribs[elementIdx];
     }
 }

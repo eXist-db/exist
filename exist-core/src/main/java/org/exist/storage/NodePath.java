@@ -21,27 +21,30 @@
  */
 package org.exist.storage;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 
+import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 
 
 /**
  * @author wolf
+ * @author Adam Retter
  */
 public class NodePath implements Comparable<NodePath> {
 
-    private final static Logger LOG = LogManager.getLogger(NodePath.class);
+    private static final Logger LOG = LogManager.getLogger(NodePath.class);
 
     /**
      * (Illegal) QNames used as a marker for arbitrary path steps.
      */
-    public final static QName SKIP = new QName("//", "");
-    public final static QName WILDCARD = new QName("*", "");
+    public static final QName SKIP = new QName("//", "");
+    public static final QName WILDCARD = new QName("*", "");
 
     private QName[] components = new QName[5];
     private int pos = 0;
@@ -62,11 +65,11 @@ public class NodePath implements Comparable<NodePath> {
         this.includeDescendants = includeDescendants;
     }
 
-    public NodePath(final Map<String, String> namespaces, final String path) {
+    public NodePath(@Nullable final Map<String, String> namespaces, final String path) {
         init(namespaces, path);
     }
 
-    public NodePath(final Map<String, String> namespaces, final String path, final boolean includeDescendants) {
+    public NodePath(@Nullable final Map<String, String> namespaces, final String path, final boolean includeDescendants) {
         this.includeDescendants = includeDescendants;
         init(namespaces, path);
     }
@@ -84,20 +87,40 @@ public class NodePath implements Comparable<NodePath> {
     }
 
     public void append(final NodePath other) {
-        final QName[] newComponents = new QName[length() + other.length()];
-        System.arraycopy(components, 0, newComponents, 0, pos);
-        System.arraycopy(other.components, 0, newComponents, pos, other.length());
-        pos = newComponents.length;
-        components = newComponents;
+        // expand the array
+        final int newLength = length() + other.length();
+        this.components = Arrays.copyOf(components, newLength);
+        System.arraycopy(other.components, 0, components, pos, other.length());
+        this.pos = newLength;
     }
 
     public void addComponent(final QName component) {
         if (pos == components.length) {
-            final QName[] t = new QName[pos + 1];
-            System.arraycopy(components, 0, t, 0, pos);
-            components = t;
+            // extend the array
+            this.components = Arrays.copyOf(components, pos + 1);
         }
         components[pos++] = component;
+    }
+
+    /**
+     * Remove the Last Component from the NodePath.
+     *
+     * NOTE: this does not shrink the storage requirements
+     * of the NodePath
+     */
+    public void removeLastComponent() {
+        if (pos > 0) {
+            components[--pos] = null;
+        }
+    }
+
+    public void reset() {
+        Arrays.fill(components, null);
+        pos = 0;
+    }
+
+    public int length() {
+        return pos;
     }
 
     protected void reverseComponents() {
@@ -106,16 +129,6 @@ public class NodePath implements Comparable<NodePath> {
             components[i] = components[pos - 1 - i];
             components[pos - 1 - i] = tmp;
         }
-    }
-
-    public void removeLastComponent() {
-        if (pos > 0) {
-            components[--pos] = null;
-        }
-    }
-
-    public int length() {
-        return pos;
     }
 
     public QName getComponent(final int at) {
@@ -155,29 +168,29 @@ public class NodePath implements Comparable<NodePath> {
     public final boolean match(final NodePath other, int j) {
         boolean skip = false;
         int i = 0;
-        for( ; j < other.pos; j++) {
-            if(i == pos) {
-                if(includeDescendants) {
+        for ( ; j < other.pos; j++) {
+            if (i == pos) {
+                if (includeDescendants) {
                     return true;
                 }
                 return j == other.pos;
             }
-            if(components[i] == SKIP) {
+            if (components[i] == SKIP) {
                 ++i;
                 skip = true;
             }
-            if((components[i] == WILDCARD || other.components[j].compareTo(components[i]) == 0) &&
+            if ((components[i] == WILDCARD || other.components[j].compareTo(components[i]) == 0) &&
                     (!skip || j + 1 == other.pos || other.components[j + 1].compareTo(components[i]) != 0)) {
                 ++i;
                 skip = false;
-            } else if(skip) {
+            } else if (skip) {
                 continue;
             } else {
                 return false;
             }
         }
-        if(i == pos) {
-            if(includeDescendants) {
+        if (i == pos) {
+            if (includeDescendants) {
                 return true;
             }
             return j == other.pos;
@@ -185,26 +198,20 @@ public class NodePath implements Comparable<NodePath> {
         return false;
     }
 
-    public void reset() {
-        for(int i = 0;  i < pos; i++) {
-            components[i] = null;
-        }
-        pos = 0;
-    }
-
     @Override
     public String toString() {
         final StringBuilder buf = new StringBuilder();
-        for(int i = 0; i < pos; i++) {
+        for (int i = 0; i < pos; i++) {
         	buf.append("/");
-            if (components[i].getNameType() == ElementValue.ATTRIBUTE)
-            	{buf.append("@");}
+            if (components[i].getNameType() == ElementValue.ATTRIBUTE) {
+                buf.append("@");
+            }
             buf.append(components[i]);
         }
         return buf.toString();
     }
 
-    public void addComponent(final Map<String, String> namespaces, final String origComponent) {
+    public void addComponent(@Nullable final Map<String, String> namespaces, final String origComponent) {
         String component = origComponent;
         boolean isAttribute = false;
         if (component.startsWith("@")) {
@@ -242,7 +249,7 @@ public class NodePath implements Comparable<NodePath> {
         }
     }
 
-    private void init(final Map<String, String> namespaces, final String path) {
+    private void init(@Nullable final Map<String, String> namespaces, final String path) {
         //TODO : compute better length
         final StringBuilder token = new StringBuilder(path.length());
         int pos = 0;
@@ -277,15 +284,8 @@ public class NodePath implements Comparable<NodePath> {
     @Override
     public boolean equals(final Object obj) {
         if (obj != null && obj instanceof NodePath) {
-            final NodePath nodePath = (NodePath) obj;
-            if (nodePath.pos == pos) {
-                for (int i = 0; i < pos; i++) {
-                    if (!nodePath.components[i].equals(components[i])) {
-                        return false;
-                    }
-                }
-                return true;
-            }
+            final NodePath otherNodePath = (NodePath) obj;
+            return Arrays.equals(components, otherNodePath.components);
         }
         return false;
     }
@@ -293,8 +293,8 @@ public class NodePath implements Comparable<NodePath> {
     @Override
     public int hashCode() {
         int h = 0;
-        for(int i = 0; i < pos; i++) {
-            h = 31*h + components[i].hashCode();
+        for (int i = 0; i < pos; i++) {
+            h = 31 * h + components[i].hashCode();
         }
         return h;
     }
