@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.update;
 
+import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.IndexQueryService;
 import org.junit.After;
@@ -44,7 +45,7 @@ public abstract class AbstractTestUpdate {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     // required for updateAttributeInNamespacedElement
-    private final static String XCONF =
+    private static final String XCONF =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
         "   <index xmlns:t=\"http://test.com\">" +
         "       <lucene>" +
@@ -57,7 +58,7 @@ public abstract class AbstractTestUpdate {
 
     @Before
     public void setUp() throws Exception {
-        CollectionManagementService service =
+        final CollectionManagementService service =
             (CollectionManagementService) existEmbeddedServer.getRoot().getService(
                 "CollectionManagementService",
                 "1.0");
@@ -74,7 +75,7 @@ public abstract class AbstractTestUpdate {
                         "CollectionManagementService",
                         "1.0");
         service.removeCollection("test");
-        Collection confColl = DatabaseManager.getCollection("xmldb:exist:///db/system/config/db", "admin", null);
+        Collection confColl = DatabaseManager.getCollection("xmldb:exist:///db/system/config/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         service = (CollectionManagementService) confColl.getService("CollectionManagementService", "1.0");
         service.removeCollection("test");
         testCollection = null;
@@ -86,14 +87,14 @@ public abstract class AbstractTestUpdate {
      * @return the XQuery Service
      * @throws XMLDBException
      */
-    protected XQueryService storeXMLStringAndGetQueryService(String documentName,
-            String content) throws XMLDBException {
-        XMLResource doc =
+    protected XQueryService storeXMLStringAndGetQueryService(final String documentName,
+           final String content) throws XMLDBException {
+        final XMLResource doc =
             (XMLResource) testCollection.createResource(
                 documentName, "XMLResource" );
         doc.setContent(content);
         testCollection.storeResource(doc);
-        XQueryService service =
+        final XQueryService service =
             (XQueryService) testCollection.getService(
                 "XPathQueryService",
                 "1.0");
@@ -103,8 +104,8 @@ public abstract class AbstractTestUpdate {
     /** Helper that performs an XQuery and does JUnit assertion on result size.
      * @see #queryResource(XQueryService, String, String, int, String)
      */
-    protected ResourceSet queryResource(XQueryService service, String resource,
-            String query, int expected) throws XMLDBException {
+    protected ResourceSet queryResource(final XQueryService service, final String resource,
+            final String query, final int expected) throws XMLDBException {
         return queryResource(service, resource, query, expected, null);
     }
 
@@ -117,13 +118,14 @@ public abstract class AbstractTestUpdate {
      * @return a ResourceSet, allowing to do more assertions if necessary.
      * @throws XMLDBException
      */
-    protected ResourceSet queryResource(XQueryService service, String resource,
-            String query, int expected, String message) throws XMLDBException {
-        ResourceSet result = service.queryResource(resource, query);
-        if(message == null)
+    protected ResourceSet queryResource(final XQueryService service, final String resource,
+            final String query, final int expected, final String message) throws XMLDBException {
+        final ResourceSet result = service.queryResource(resource, query);
+        if (message == null) {
             assertEquals(query, expected, result.getSize());
-        else
+        } else {
             assertEquals(message, expected, result.getSize());
+        }
         return result;
     }
 }
