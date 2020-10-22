@@ -77,10 +77,8 @@ public class NodePath2 extends NodePath {
         super.addComponent(((INode) node).getQName());
 
         if (n_pos == attribs.length) {
-            //final HashMap<String, String>[] t = new HashMap[n_pos + 4];
-            final Map[] t = new HashMap[n_pos + 4];
-            System.arraycopy(attribs, 0, t, 0, n_pos);
-            attribs = t;
+            // expand the array
+            attribs = Arrays.copyOf(attribs, n_pos + 1);
         }
 
         final Map<String, String> amap = new HashMap<>();
