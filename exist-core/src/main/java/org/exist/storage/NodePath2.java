@@ -30,6 +30,7 @@ import org.w3c.dom.Node;
 import org.exist.dom.INode;
 import org.xml.sax.Attributes;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,7 +64,8 @@ public class NodePath2 extends NodePath {
         this.n_pos = other.n_pos;
         this.attribs = new HashMap[n_pos];
         for (int i = 0; i < n_pos; i++) {
-            attribs[i] = new HashMap<>(other.attribs(i));
+            final Map<String, String> otherAttribs = other.attribs(i);
+            attribs[i] = otherAttribs == null ? null : new HashMap<>(otherAttribs);
         }
     }
 
@@ -71,27 +73,31 @@ public class NodePath2 extends NodePath {
         addNode(node, null);
     }
 
-    public void addNode(final Node node, final Attributes saxAttribs) {
+    public void addNode(final Node node, @Nullable final Attributes saxAttribs) {
         assert node instanceof Element;
 
         super.addComponent(((INode) node).getQName());
 
         if (n_pos == attribs.length) {
-            // expand the array
+            // extend the array
             attribs = Arrays.copyOf(attribs, n_pos + 1);
         }
 
-        final Map<String, String> amap = new HashMap<>();
-        if (saxAttribs != null) {
+        Map<String, String> amap = null;
+        if (saxAttribs != null && saxAttribs.getLength() > 0) {
+            amap = new HashMap<>(saxAttribs.getLength());
             for (int i = 0; i < saxAttribs.getLength(); ++i) {
                 amap.put(saxAttribs.getQName(i), saxAttribs.getValue(i));
             }
         } else {
             final NamedNodeMap nnm = node.getAttributes();
-            for (int i = 0; i < nnm.getLength(); ++i) {
-                final Node child = nnm.item(i);
-                if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
-                    amap.put(child.getNodeName(), child.getNodeValue());
+            if (nnm != null && nnm.getLength() > 0) {
+                amap = new HashMap<>(nnm.getLength());
+                for (int i = 0; i < nnm.getLength(); ++i) {
+                    final Node child = nnm.item(i);
+                    if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
+                        amap.put(child.getNodeName(), child.getNodeValue());
+                    }
                 }
             }
         }
@@ -102,7 +108,7 @@ public class NodePath2 extends NodePath {
     public void reverseNodes() {
         super.reverseComponents();
         for (int i = 0; i < n_pos / 2; ++i) {
-            Map<String, String> tmp = attribs[i];
+            final Map<String, String> tmp = attribs[i];
             attribs[i] = attribs[attribs.length - 1 - i];
             attribs[attribs.length - 1 - i] = tmp;
         }
@@ -131,7 +137,7 @@ public class NodePath2 extends NodePath {
         Arrays.fill(attribs, null);
     }
 
-    public Map<String, String> attribs(final int elementIdx) {
+    public @Nullable Map<String, String> attribs(final int elementIdx) {
         return attribs[elementIdx];
     }
 }
