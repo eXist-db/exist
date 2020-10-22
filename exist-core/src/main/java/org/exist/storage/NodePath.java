@@ -88,7 +88,7 @@ public class NodePath implements Comparable<NodePath> {
 
     public void append(final NodePath other) {
         // expand the array
-        final int newLength = length() + other.length();
+        final int newLength = pos + other.length();
         this.components = Arrays.copyOf(components, newLength);
         System.arraycopy(other.components, 0, components, pos, other.length());
         this.pos = newLength;
