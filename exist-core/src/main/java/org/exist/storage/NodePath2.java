@@ -84,18 +84,13 @@ public class NodePath2 extends NodePath {
         }
 
         final Map<String, String> amap = new HashMap<>();
-
         if (saxAttribs != null) {
-            int alen = saxAttribs.getLength();
-
-            for (int i = 0; i < alen; ++i) {
+            for (int i = 0; i < saxAttribs.getLength(); ++i) {
                 amap.put(saxAttribs.getQName(i), saxAttribs.getValue(i));
             }
         } else {
             final NamedNodeMap nnm = node.getAttributes();
-            final int alen = node.getAttributes().getLength();
-
-            for (int i = 0; i < alen; ++i) {
+            for (int i = 0; i < nnm.getLength(); ++i) {
                 final Node child = nnm.item(i);
                 if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
                     amap.put(child.getNodeName(), child.getNodeValue());
