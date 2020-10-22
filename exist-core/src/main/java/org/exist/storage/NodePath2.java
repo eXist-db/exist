@@ -63,7 +63,7 @@ public class NodePath2 extends NodePath {
         this.n_pos = other.n_pos;
         this.attribs = new HashMap[n_pos];
         for (int i = 0; i < n_pos; i++) {
-            attribs[i] = other.attribs(i);
+            attribs[i] = new HashMap<>(other.attribs(i));
         }
     }
 
