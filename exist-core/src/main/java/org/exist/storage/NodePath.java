@@ -38,6 +38,8 @@ import javax.xml.XMLConstants;
  */
 public class NodePath implements Comparable<NodePath> {
 
+    private static final int DEFAULT_NODE_PATH_SIZE = 5;
+
     private static final Logger LOG = LogManager.getLogger(NodePath.class);
 
     /**
@@ -46,7 +48,7 @@ public class NodePath implements Comparable<NodePath> {
     public static final QName SKIP = new QName("//", "");
     public static final QName WILDCARD = new QName("*", "");
 
-    private QName[] components = new QName[5];
+    private QName[] components = new QName[DEFAULT_NODE_PATH_SIZE];
     private int pos = 0;
     private boolean includeDescendants = true;
 
@@ -115,7 +117,12 @@ public class NodePath implements Comparable<NodePath> {
     }
 
     public void reset() {
-        Arrays.fill(components, null);
+        // when resetting if this object has twice the capacity of a new object, then set it back to the default capacity
+        if (pos > DEFAULT_NODE_PATH_SIZE * 2) {
+            components = new QName[DEFAULT_NODE_PATH_SIZE];
+        } else {
+            Arrays.fill(components, null);
+        }
         pos = 0;
     }
 
