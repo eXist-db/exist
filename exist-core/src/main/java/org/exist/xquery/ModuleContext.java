@@ -148,16 +148,6 @@ public class ModuleContext extends XQueryContext {
         }
     }
 
-    @Override
-    public void setModule(final String namespaceURI, final Module module) {
-        if (module == null) {
-            modules.remove(namespaceURI);   // unbind the module
-        } else {
-            modules.put(namespaceURI, module);
-        }
-        setRootModule(namespaceURI, module);
-    }
-
     private XQueryContext getParentContext() {
         return parentContext;
     }
