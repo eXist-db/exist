@@ -58,10 +58,20 @@ public abstract class Function extends PathExpr {
     // Declare it in Namespaces instead? /ljo
     public final static String BUILTIN_FUNCTION_NS =
             "http://www.w3.org/2005/xpath-functions";
-    // The signature of the function.
+
+    /**
+     * The module that declared the function.
+     */
+    protected Module parentModule;
+
+    /**
+     * The signature of the function.
+     */
     protected FunctionSignature mySignature;
 
-    // The parent expression from which this function is called.
+    /**
+     * The parent expression from which this function is called.
+     */
     private Expression parent;
 
     /**
@@ -94,7 +104,7 @@ public abstract class Function extends PathExpr {
      * @return the parent module or null.
      */
     protected Module getParentModule() {
-        return context.getModule(mySignature.getName().getNamespaceURI());
+        return parentModule;
     }
 
     @Override
@@ -123,6 +133,7 @@ public abstract class Function extends PathExpr {
      *
      * @param context the xquery context
      * @param ast the ast node
+     * @param module the module from whence the function came
      * @param def the function definition
      *
      * @return the created function or null if the class could not be initialized.
@@ -130,7 +141,7 @@ public abstract class Function extends PathExpr {
      * @throws XPathException if the function could not be created
      */
     public static Function createFunction(final XQueryContext context, final XQueryAST ast,
-                                          final FunctionDef def) throws XPathException {
+            final Module module, final FunctionDef def) throws XPathException {
         if (def == null) {
             throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");
         }
@@ -146,7 +157,6 @@ public abstract class Function extends PathExpr {
                 // attempt for a constructor that takes 1 argument
                 final Constructor<? extends Function> cstr1 = fclazz.getConstructor(XQueryContext.class);
                 function = cstr1.newInstance(context);
-
             } catch (final NoSuchMethodException nsme1) {
                 try {
                     // attempt for a constructor that takes 2 arguments
@@ -157,7 +167,9 @@ public abstract class Function extends PathExpr {
                 }
             }
 
+            function.setParentModule(module);
             function.setLocation(ast.getLine(), ast.getColumn());
+
             return function;
 
         } catch (final Throwable e) {
@@ -170,6 +182,10 @@ public abstract class Function extends PathExpr {
             throw new XPathException(ast.getLine(), ast.getColumn(),
                     "Function implementation class " + fclazz.getName() + " not found", e);
         }
+    }
+
+    private void setParentModule(final Module parentModule) {
+        this.parentModule = parentModule;
     }
 
     /**

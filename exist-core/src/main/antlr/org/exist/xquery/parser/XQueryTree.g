@@ -614,37 +614,24 @@ throws PermissionDeniedException, EXistException, XPathException
 		i:MODULE_IMPORT
 		{
 			String modulePrefix = null;
-			String location = null;
-            List uriList= new ArrayList(2);
+            final List<AnyURIValue> uriList = new ArrayList<>(1);
 		}
 		( pfx:NCNAME { modulePrefix = pfx.getText(); } )?
 		moduleURI:STRING_LITERAL
 		( uriList [uriList] )?
 		{
 			if (modulePrefix != null) {
-				if (declaredNamespaces.get(modulePrefix) != null)
+				if (declaredNamespaces.get(modulePrefix) != null) {
 					throw new XPathException(i, ErrorCodes.XQST0033, "Prolog contains " +
 						"multiple declarations for namespace prefix: " + modulePrefix);
+                }
 				declaredNamespaces.put(modulePrefix, moduleURI.getText());
 			}
+
             try {
-                if (uriList.size() > 0) {
-			    for (Iterator j= uriList.iterator(); j.hasNext();) {
-                   try {
-                        location= ((AnyURIValue) j.next()).getStringValue();
-                       context.importModule(moduleURI.getText(), modulePrefix, location);
-                        staticContext.declareNamespace(modulePrefix, moduleURI.getText());
-                    } catch(XPathException xpe) {
-                        if (!j.hasNext()) {
-                            throw xpe;
-                        }
-                    }
-                }
-                } else {
-                    context.importModule(moduleURI.getText(), modulePrefix, location);
-                    staticContext.declareNamespace(modulePrefix, moduleURI.getText());
-                }
-            } catch(XPathException xpe) {
+                context.importModule(moduleURI.getText(), modulePrefix, uriList.toArray(new AnyURIValue[uriList.size()]));
+                staticContext.declareNamespace(modulePrefix, moduleURI.getText());
+            } catch (final XPathException xpe) {
                 xpe.prependMessage("error found while loading module " + modulePrefix + ": ");
                 throw xpe;
             }

@@ -26,9 +26,7 @@ import java.util.List;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.source.BinarySource;
 import org.exist.source.Source;
-import org.exist.source.StringSource;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Constants.StringTruncationOperator;
 import org.exist.xquery.parser.XQueryAST;
@@ -36,7 +34,10 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
+import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
+
+import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 
 public class FunctionFactory {
 
@@ -266,48 +267,77 @@ public class FunctionFactory {
         return call;
     }
 
-    private static Function functionCall(XQueryContext context,
-            XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
-        final Function fn;
+    private static Function functionCall(final XQueryContext context,
+            final XQueryAST ast, final List<Expression> params, final QName qname) throws XPathException {
+        Function fn = null;
         final String uri = qname.getNamespaceURI();
-        final Module module = context.getModule(uri);
-        if (module != null) {
-            //Function belongs to a module
-            if (module.isInternalModule()) {
-                fn = getInternalModuleFunction(context, ast, params, qname, module);
-            } else {
-                //Function is from an imported XQuery module
-                fn = getXQueryModuleFunction(context, ast, params, qname, module);
+        final Module[] modules = context.getModules(uri);
+        if (modules != null) {
+            // Function might belongs to a module
+            for (int i = 0; i < modules.length; i++) {
+                final Module module = modules[i];
+                final boolean throwOnNotFound = i == modules.length - 1;
+                if (module.isInternalModule()) {
+                    // Function is from an Internal Module
+                    fn = getInternalModuleFunction(context, ast, params, qname, module, throwOnNotFound);
+                } else {
+                    // Function is from an imported XQuery module
+                    fn = getXQueryModuleFunction(context, ast, params, qname, module, throwOnNotFound);
+                }
+
+                if (fn != null) {
+                    break;
+                }
             }
-        } else {
+        }
+
+        if (fn == null) {
+            // Function is a user-defined XQuery function in the same module as the caller
             fn = getUserDefinedFunction(context, ast, params, qname);
         }
+
         return fn;
     }
 
     /**
      * Gets a Java function from an Java XQuery Extension Module
+     *
+     * @param throwOnNotFound true to throw an XPST0017 if the functions is not found, false to just return null
      */
-    private static Function getInternalModuleFunction(XQueryContext context,
-            XQueryAST ast, List<Expression> params, QName qname, Module module) throws XPathException {
+    private static @Nullable Function getInternalModuleFunction(final XQueryContext context,
+            final XQueryAST ast, final List<Expression> params, QName qname, Module module,
+            final boolean throwOnNotFound) throws XPathException {
         //For internal modules: create a new function instance from the class
         FunctionDef def = ((InternalModule) module).getFunctionDef(qname, params.size());
         //TODO: rethink: xsl namespace function should search xpath one too
         if (def == null && Namespaces.XSL_NS.equals(qname.getNamespaceURI())) {
             //Search xpath namespace
-            Module _module_ = context.getModule(Namespaces.XPATH_FUNCTIONS_NS);
-            if(_module_ != null) {
-                module = _module_;
-                qname = new QName(qname.getLocalPart(), Namespaces.XPATH_FUNCTIONS_NS, qname.getPrefix());
-                def = ((InternalModule) module).getFunctionDef(qname, params.size());
+            final Module[] _modules_ = context.getModules(Namespaces.XPATH_FUNCTIONS_NS);
+            if (isNotEmpty(_modules_)) {
+                // there can be only one!
+                for (final Module _module_ : _modules_) {
+                    if (_module_ != null) {
+                        final QName _qname_ = new QName(qname.getLocalPart(), Namespaces.XPATH_FUNCTIONS_NS, qname.getPrefix());
+                        def = ((InternalModule) _module_).getFunctionDef(qname, params.size());
+                        if (def != null) {
+                            module = _module_;
+                            qname = _qname_;
+                            break;
+                        }
+                    }
+                }
             }
         }
         if (def == null) {
             final List<FunctionSignature> funcs = ((InternalModule) module).getFunctionsByName(qname);
             if (funcs.isEmpty()) {
-                throw new XPathException(ast.getLine(), ast.getColumn(),
-            		ErrorCodes.XPST0017, "Function " + qname.getStringValue() + "() " +
-                    " is not defined in module namespace: " + qname.getNamespaceURI());
+                if (throwOnNotFound) {
+                    throw new XPathException(ast.getLine(), ast.getColumn(),
+                            ErrorCodes.XPST0017, "Function " + qname.getStringValue() + "() " +
+                            " is not defined in module namespace: " + qname.getNamespaceURI());
+                } else {
+                    return null;
+                }
             } else {
                 final StringBuilder buf = new StringBuilder();
                 buf.append("Unexpectedly received ");
@@ -326,10 +356,10 @@ public class FunctionFactory {
         if ((Boolean) context.getBroker().getConfiguration()
                 .getProperty(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS) &&
                 def.getSignature().isDeprecated()) {
-            throw new XPathException(ast.getLine(), ast.getColumn(),
-                "Access to deprecated functions is not allowed. Call to '" + qname.getStringValue() + "()' denied. " + def.getSignature().getDeprecated());
+            throw new XPathException(ast.getLine(), ast.getColumn(), ErrorCodes.XPST0017,
+                    "Access to deprecated functions is not allowed. Call to '" + qname.getStringValue() + "()' denied. " + def.getSignature().getDeprecated());
         }
-        final Function fn = Function.createFunction(context, ast, def);
+        final Function fn = Function.createFunction(context, ast, module, def);
         fn.setArguments(params);
         fn.setASTNode(ast);
         return new InternalFunctionCall(fn);
@@ -356,9 +386,11 @@ public class FunctionFactory {
 
     /**
      * Gets an XQuery function from an XQuery Module
+     *
+     * @param throwOnNotFound true to throw an XPST0017 if the functions is not found, false to just return null
      */
-    private static FunctionCall getXQueryModuleFunction(XQueryContext context,
-            XQueryAST ast, List<Expression> params, QName qname, Module module) throws XPathException {
+    private static FunctionCall getXQueryModuleFunction(final XQueryContext context,
+            final XQueryAST ast, final List<Expression> params, final QName qname, final Module module, final boolean throwOnNotFound) throws XPathException {
         final FunctionCall fc;
         final UserDefinedFunction func = ((ExternalModule) module).getFunction(qname, params.size(), context);
         if (func == null) {
@@ -371,8 +403,12 @@ public class FunctionFactory {
                     final Source moduleSource = ((ExternalModule) module).getSource();
                     msg.append(" for module: ").append(moduleSource.pathOrShortIdentifier());
                 }
-                throw new XPathException(ast.getLine(), ast.getColumn(),
-                        ErrorCodes.XPST0017, msg.toString());
+                if (throwOnNotFound) {
+                    throw new XPathException(ast.getLine(), ast.getColumn(),
+                            ErrorCodes.XPST0017, msg.toString());
+                } else {
+                    return null;
+                }
 
             // If not, postpone the function resolution
             // Register a forward reference with the root module, so it gets resolved
@@ -431,7 +467,7 @@ public class FunctionFactory {
 		}
 		final SequenceType[] newParamArray = newParamTypes.toArray(new SequenceType[0]);
 		final FunctionSignature newSignature = new FunctionSignature(signature);
-        newSignature.setArgumentTypes(newParamArray);
+                newSignature.setArgumentTypes(newParamArray);
 
 		final UserDefinedFunction func = new UserDefinedFunction(context, newSignature);
 		for (final QName varName: variables) {

@@ -32,8 +32,9 @@ import org.apache.logging.log4j.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletException;
-import java.io.IOException;
 import java.util.ArrayList;
+
+import static org.apache.commons.lang3.ArrayUtils.isEmpty;
 
 public class ModuleCall extends URLRewrite {
     private static final Logger LOG = LogManager.getLogger(ModuleCall.class);
@@ -59,13 +60,23 @@ public class ModuleCall extends URLRewrite {
         }
         try {
             final QName fqn = QName.parse(context, funcName);
-            final Module module = context.getModule(fqn.getNamespaceURI());
-            final UserDefinedFunction func;
-            if (module != null) {
-                func = ((ExternalModule) module).getFunction(fqn, arity, context);
-            } else {
+            final Module[] modules = context.getModules(fqn.getNamespaceURI());
+            UserDefinedFunction func = null;
+            if (isEmpty(modules)) {
                 func = context.resolveFunction(fqn, arity);
+            } else {
+                for (final Module module : modules) {
+                    func = ((ExternalModule) module).getFunction(fqn, arity, context);
+                    if (func != null) {
+                        break;
+                    }
+                }
             }
+
+            if (func == null) {
+                throw new ServletException("<exist:call> could not resolve function: " + fqn + "#" + arity +".");
+            }
+
             call = new FunctionCall(context, func);
             call.setArguments(new ArrayList<>());
         } catch (final XPathException | QName.IllegalQNameException e) {

@@ -27,6 +27,7 @@ import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.urlrewrite.XQueryURLRewrite;
 import org.exist.source.Source;
 import org.exist.util.Configuration;
+import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
 
@@ -37,6 +38,8 @@ import java.util.*;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.commons.lang3.ArrayUtils.isEmpty;
 
 /**
  * Class to keep track of all running queries in a database instance. The main
@@ -367,10 +370,11 @@ public class ProcessMonitor implements BrokerPoolService {
      * @return HTTP request URI by which a query was called
      */
     public static String getRequestURI(final XQueryWatchDog watchdog) {
-        final RequestModule reqModule = (RequestModule) watchdog.getContext().getModule(RequestModule.NAMESPACE_URI);
-        if (reqModule == null) {
+        final Module[] modules = watchdog.getContext().getModules(RequestModule.NAMESPACE_URI);
+        if (isEmpty(modules)) {
             return null;
         }
+
         final Optional<RequestWrapper> maybeRequest = Optional.ofNullable(watchdog.getContext())
                 .map(XQueryContext::getHttpContext)
                 .map(XQueryContext.HttpContext::getRequest);

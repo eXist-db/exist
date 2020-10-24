@@ -45,6 +45,7 @@ public class InternalFunctionCall extends Function {
     public InternalFunctionCall(final Function f) {
         super(f.getContext(), f.getSignature());
         this.function = f;
+        this.parentModule = f.parentModule;
     }
 
     @Override

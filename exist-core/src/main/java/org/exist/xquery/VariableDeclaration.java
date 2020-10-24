@@ -28,6 +28,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
@@ -72,8 +73,13 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
         contextInfo.setParent(this);
         final Variable var = new VariableImpl(qname);
         var.setIsInitialized(false);
+
         if (!analyzeDone) {
-            final Module myModule = context.getModule(qname.getNamespaceURI());
+            final Module[] modules = context.getModules(qname.getNamespaceURI());
+
+            // can we find a module which declared this variable
+            final Module myModule = findDeclaringModule(modules);
+
             if (myModule != null) {
                 // NOTE: duplicate var declaration is handled in the XQuery tree parser, and may throw XQST0049
                 myModule.declareVariable(var);
@@ -85,6 +91,24 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
         }
         analyzeExpression(contextInfo);
         var.setIsInitialized(true);
+    }
+
+    private @Nullable Module findDeclaringModule(@Nullable final Module[] modules) {
+        if (modules != null && modules.length > 0) {
+            for (final Module module : modules) {
+                if (module instanceof ExternalModule) {
+                    if (((ExternalModuleImpl)module).getSource().equals(context.getSource())) {
+                        return module;
+                    }
+                } else if (module instanceof InternalModule) {
+                    //TODO(AR) implement
+                    throw new UnsupportedOperationException("TODO(AR) implement");
+                    //context.getSource().pathOrContentOrShortIdentifier().equals(module.loc)
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -112,7 +136,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 
         context.pushInScopeNamespaces(false);
         try {
-            final Module myModule = context.getRootModule(qname.getNamespaceURI());
+            final Module myModule = findDeclaringModule(context.getRootModules(qname.getNamespaceURI()));
 
             context.pushDocumentContext();
             try {
@@ -190,7 +214,6 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
         }
         return result.toString();
     }
-    
 
     @Override
     public int returnsType() {

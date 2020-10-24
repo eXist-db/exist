@@ -72,16 +72,19 @@ public class InspectModule extends BasicFunction {
 
         final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
         tempContext.setModuleLoadPath(context.getModuleLoadPath());
-        final Module module;
+        final Module[] modules;
         if (isCalledAs("inspect-module")) {
-            module = tempContext.importModule(null, null, args[0].getStringValue());
+            modules = tempContext.importModule(null, null, new AnyURIValue[] { (AnyURIValue) args[0].itemAt(0) });
         } else {
-            module = tempContext.importModule(args[0].getStringValue(), null, null);
+            modules = tempContext.importModule(args[0].getStringValue(), null, null);
         }
 
-        if (module == null) {
+        if (modules == null || modules.length == 0) {
             return Sequence.EMPTY_SEQUENCE;
         }
+
+        // this function only supports working with a singular module for a namespace!
+        final Module module = modules[0];
 
         try {
             context.pushDocumentContext();

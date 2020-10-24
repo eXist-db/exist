@@ -112,7 +112,7 @@ public class LoadXQueryModule extends BasicFunction {
         if (targetNamespace.isEmpty()) {
             throw new XPathException(this, ErrorCodes.FOQM0001, "Target namespace must be a string with length > 0");
         }
-        Sequence locationHints = Sequence.EMPTY_SEQUENCE;
+        AnyURIValue[] locationHints = null;
         String xqVersion = getXQueryVersion(context.getXQueryVersion());
         AbstractMapType externalVars = new MapType(context);
         Sequence contextItem = Sequence.EMPTY_SEQUENCE;
@@ -120,7 +120,11 @@ public class LoadXQueryModule extends BasicFunction {
         // evaluate options
         if (getArgumentCount() == 2) {
             final AbstractMapType map = (AbstractMapType) args[1].itemAt(0);
-            locationHints = map.get(OPTIONS_LOCATION_HINTS);
+            final Sequence locationHintsOption = map.get(OPTIONS_LOCATION_HINTS);
+            locationHints = new AnyURIValue[locationHintsOption.getItemCount()];
+            for (int i = 0; i < locationHints.length; i++) {
+                locationHints[i] = (AnyURIValue) locationHintsOption.itemAt(i).convertTo(Type.ANY_URI);
+            }
 
             final Sequence versions = map.get(OPTIONS_XQUERY_VERSION);
             if (!versions.isEmpty()) {
@@ -148,23 +152,11 @@ public class LoadXQueryModule extends BasicFunction {
         setExternalVars(externalVars, tempContext::declareGlobalVariable);
         tempContext.prepareForExecution();
 
-        Module loadedModule = null;
+        Module[] loadedModules = null;
         try {
-            if (locationHints.isEmpty()) {
-                // no location hint given, resolve from statically known modules
-                loadedModule = tempContext.importModule(targetNamespace, null, null);
-            } else {
-                // try to resolve the module from one of the location hints
-                for (final SequenceIterator i = locationHints.iterate(); i.hasNext(); ) {
-                    final String location = i.nextItem().getStringValue();
-                    final Module importedModule = tempContext.importModule(null, null, location);
-                    if (importedModule != null && importedModule.getNamespaceURI().equals(targetNamespace)) {
-                        loadedModule = importedModule;
-                        break;
-                    }
-                }
-            }
-        } catch (XPathException e) {
+            loadedModules = tempContext.importModule(targetNamespace, null, locationHints);
+
+        } catch (final XPathException e) {
             if (e.getErrorCode() == ErrorCodes.XQST0059) {
                 // importModule may throw exception if no location is given and module cannot be resolved
                 throw new XPathException(this, ErrorCodes.FOQM0002, "Module with URI " + targetNamespace + " not found");
@@ -173,7 +165,7 @@ public class LoadXQueryModule extends BasicFunction {
         }
 
         // not found, raise error
-        if (loadedModule == null) {
+        if (loadedModules == null || loadedModules.length == 0) {
             throw new XPathException(this, ErrorCodes.FOQM0002, "Module with URI " + targetNamespace + " not found");
         }
 
@@ -182,18 +174,45 @@ public class LoadXQueryModule extends BasicFunction {
                     getXQueryVersion(tempContext.getXQueryVersion()));
         }
 
-        final Module module = loadedModule;
-        module.setContextItem(contextItem);
-        setExternalVars(externalVars, module::declareVariable);
-        if (!module.isInternalModule()) {
-            // ensure variable declarations in the imported module are analyzed.
-            // unlike when using a normal import statement, this is not done automatically
-            ((ExternalModule)module).analyzeGlobalVars();
+        final IMap<AtomicValue, Sequence> variables = newLinearMap(null);
+        final IMap<AtomicValue, IMap<AtomicValue, Sequence>> functions = newLinearMap(null);
+
+        for (final Module loadedModule : loadedModules) {
+            loadedModule.setContextItem(contextItem);
+            setExternalVars(externalVars, loadedModule::declareVariable);
+            if (!loadedModule.isInternalModule()) {
+                // ensure variable declarations in the imported module are analyzed.
+                // unlike when using a normal import statement, this is not done automatically
+                ((ExternalModule) loadedModule).analyzeGlobalVars();
+            }
+
+            getModuleVariables(loadedModule, variables);
+            getModuleFunctions(loadedModule, tempContext, functions);
         }
 
+        final IMap<AtomicValue, Sequence> result = Map.from(io.lacuna.bifurcan.List.of(
+                new Maps.Entry<>(RESULT_FUNCTIONS, new MapType(context, functions.mapValues((k, v) -> (Sequence)new MapType(context, v.forked(), Type.INTEGER)).forked(), Type.QNAME)),
+                new Maps.Entry<>(RESULT_VARIABLES, new MapType(context, variables.forked(), Type.QNAME))
+        ));
+
+        return new MapType(context, result, Type.STRING);
+    }
+
+    private void getModuleVariables(final Module module, final IMap<AtomicValue, Sequence> variables) throws XPathException {
+        for (final Iterator<QName> i = module.getGlobalVariables(); i.hasNext(); ) {
+            final QName name = i.next();
+            try {
+                final Variable var = module.resolveVariable(name);
+                variables.put(new QNameValue(context, name), var.getValue());
+            } catch (final XPathException e) {
+                throw new XPathException(this, ErrorCodes.FOQM0005, "Incorrect type for external variable " + name);
+            }
+        }
+    }
+
+    private void getModuleFunctions(final Module module, final XQueryContext tempContext, final IMap<AtomicValue, IMap<AtomicValue, Sequence>> functions) throws XPathException {
         final ValueSequence functionSeq = new ValueSequence();
         addFunctionRefsFromModule(this, tempContext, functionSeq, module);
-        final IMap<AtomicValue, IMap<AtomicValue, Sequence>> functions = newLinearMap(null);
         for (final SequenceIterator i = functionSeq.iterate(); i.hasNext(); ) {
             final FunctionReference ref = (FunctionReference) i.nextItem();
             final FunctionSignature signature = ref.getSignature();
@@ -203,27 +222,8 @@ public class LoadXQueryModule extends BasicFunction {
                 entry = newLinearMap(null);
                 functions.put(qn, entry);
             }
-
             entry.put(new IntegerValue(signature.getArgumentCount()), ref);
         }
-
-        final IMap<AtomicValue, Sequence> variables = newLinearMap(null);
-        for (final Iterator<QName> i = module.getGlobalVariables(); i.hasNext(); ) {
-            final QName name = i.next();
-            try {
-                final Variable var = module.resolveVariable(name);
-                variables.put(new QNameValue(context, name), var.getValue());
-            } catch (XPathException e) {
-                throw new XPathException(this, ErrorCodes.FOQM0005, "Incorrect type for external variable " + name);
-            }
-        }
-
-        final IMap<AtomicValue, Sequence> result = Map.from(io.lacuna.bifurcan.List.of(
-                new Maps.Entry<>(RESULT_FUNCTIONS, new MapType(context, functions.mapValues((k, v) -> (Sequence)new MapType(context, v.forked(), Type.INTEGER)).forked(), Type.QNAME)),
-                new Maps.Entry<>(RESULT_VARIABLES, new MapType(context, variables.forked(), Type.QNAME))
-        ));
-
-        return new MapType(context, result, Type.STRING);
     }
 
     private void setExternalVars(final AbstractMapType externalVars, final ConsumerE<Variable, XPathException> setter)
@@ -261,7 +261,7 @@ public class LoadXQueryModule extends BasicFunction {
                     for (int i = 0; i < arity; i++) {
                         args.add(new Function.Placeholder(tempContext));
                     }
-                    final Function fn = Function.createFunction(tempContext, ast, def);
+                    final Function fn = Function.createFunction(tempContext, ast, module, def);
                     fn.setArguments(args);
                     final InternalFunctionCall call = new InternalFunctionCall(fn);
                     final FunctionCall ref = FunctionFactory.wrap(tempContext, call);

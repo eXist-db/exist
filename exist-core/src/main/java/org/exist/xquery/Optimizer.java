@@ -32,6 +32,8 @@ import org.exist.xquery.value.Type;
 
 import java.util.*;
 
+import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
+
 /**
  * Analyzes the query and marks optimizable expressions for the query engine.
  * This class just searches for potentially optimizable expressions in the query tree and
@@ -294,25 +296,32 @@ public class Optimizer extends DefaultExpressionVisitor {
      * @param ref the variable reference
      */
     @Override
-    public void visitVariableReference(VariableReference ref) {
+    public void visitVariableReference(final VariableReference ref) {
         final String ns = ref.getName().getNamespaceURI();
         if (ns != null && ns.length() > 0) {
-            final Module module = context.getModule(ns);
-            if (module != null && !module.isInternalModule()) {
-                final Collection<VariableDeclaration> vars = ((ExternalModule) module).getVariableDeclarations();
-                for (VariableDeclaration var: vars) {
-                    if (var.getName().equals(ref.getName()) && var.getExpression().isPresent()) {
-                        var.getExpression().get().accept(this);
-                        final Expression expression = simplifyPath(var.getExpression().get());
-                        final InlineableVisitor visitor = new InlineableVisitor();
-                        expression.accept(visitor);
-                        if (visitor.isInlineable()) {
-                            final Expression parent = ref.getParent();
-                            if (parent instanceof RewritableExpression) {
-//                                System.out.println(ref.getSource().toString() + " line " + ref.getLine() + ": " +
-//                                        "inlining " +
-//                                        "variable "+ ref.getName());
-                                ((RewritableExpression) parent).replace(ref, expression);
+
+            final Module[] modules = context.getModules(ns);
+            if (isNotEmpty(modules)) {
+                for (final Module module : modules) {
+                    if (module != null && !module.isInternalModule()) {
+                        final Collection<VariableDeclaration> vars = ((ExternalModule) module).getVariableDeclarations();
+                        for (final VariableDeclaration var: vars) {
+                            if (var.getName().equals(ref.getName()) && var.getExpression().isPresent()) {
+                                var.getExpression().get().accept(this);
+                                final Expression expression = simplifyPath(var.getExpression().get());
+                                final InlineableVisitor visitor = new InlineableVisitor();
+                                expression.accept(visitor);
+                                if (visitor.isInlineable()) {
+                                    final Expression parent = ref.getParent();
+                                    if (parent instanceof RewritableExpression) {
+                                        if (LOG.isDebugEnabled()) {
+                                            LOG.debug(ref.getSource().toString() + " line " + ref.getLine() + ": inlining variable "+ ref.getName());
+                                        }
+                                        ((RewritableExpression) parent).replace(ref, expression);
+                                    }
+                                }
+
+                                return;  // exit function!
                             }
                         }
                     }
