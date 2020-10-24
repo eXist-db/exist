@@ -129,7 +129,7 @@ public class ModuleContext extends XQueryContext {
                     } else if (".".equals(parentContext.moduleLoadPath)) {
                         if (!".".equals(dir)) {
                             if (dir.startsWith("/")) {
-                                setModuleLoadPath("." + dir);
+                                setModuleLoadPath(dir);
                             } else {
                                 setModuleLoadPath("./" + dir);
                             }
