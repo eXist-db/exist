@@ -32,211 +32,241 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
 /**
-* Wrapper for internal modules in order to
-* perform access control checks on internal
-* module function calls.  It delegates to
-* the wrapped <code>Function</code> for
-* everything, but checks permission before
-* delegating <code>eval</code>
-*/
-public class InternalFunctionCall extends Function
-{
-	private final Function function;
-	
-	public InternalFunctionCall(Function f)
-	{
-		super(f.getContext(), f.getSignature());
-		this.function = f;
-	}
+ * Wrapper for internal modules in order to
+ * perform access control checks on internal
+ * module function calls.  It delegates to
+ * the wrapped <code>Function</code> for
+ * everything, but checks permission before
+ * delegating <code>eval</code>
+ */
+public class InternalFunctionCall extends Function {
+    private final Function function;
 
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException
-	{
+    public InternalFunctionCall(final Function f) {
+        super(f.getContext(), f.getSignature());
+        this.function = f;
+    }
+
+    @Override
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         context.proceed(this);
 
         final long start = System.currentTimeMillis();
-        if (context.getProfiler().traceFunctions())
-            {context.getProfiler().traceFunctionStart(this);}
-        
+        if (context.getProfiler().traceFunctions()) {
+            context.getProfiler().traceFunctionStart(this);
+        }
+
         context.stackEnter(this);
         try {
             return function.eval(contextSequence, contextItem);
         } catch (final XPathException e) {
-            if (e.getLine() <= 0)
-                {e.setLocation(line, column, getSource());}
+            if (e.getLine() <= 0) {
+                e.setLocation(line, column, getSource());
+            }
             throw e;
         } finally {
             context.stackLeave(this);
-            
-            if (context.getProfiler().traceFunctions())
-                {context.getProfiler().traceFunctionEnd(this, System.currentTimeMillis() - start);}
+
+            if (context.getProfiler().traceFunctions()) {
+                context.getProfiler().traceFunctionEnd(this, System.currentTimeMillis() - start);
+            }
         }
     }
 
     public Function getFunction() {
         return function;
     }
-    
-	public int getArgumentCount()
-	{
-		return function.getArgumentCount();
-	}
-	public QName getName()
-	{
-		return function.getName();
-	}
-	public int returnsType()
-	{
-		return function.returnsType();
-	}
 
-	@Override
-	public Cardinality getCardinality() {
-		return function.getCardinality();
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Function#analyze(org.exist.xquery.AnalyzeContextInfo)
-	 */
-	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException
-	{
-		contextInfo.setParent(this);
+    @Override
+    public int getArgumentCount() {
+        return function.getArgumentCount();
+    }
+
+    @Override
+    public QName getName() {
+        return function.getName();
+    }
+
+    @Override
+    public int returnsType() {
+        return function.returnsType();
+    }
+
+    @Override
+    public Cardinality getCardinality() {
+        return function.getCardinality();
+    }
+
+    @Override
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
+        contextInfo.setParent(this);
         try {
             function.analyze(contextInfo);
         } catch (final XPathException e) {
-            if (e.getLine() <= 0)
-                {e.setLocation(line, column, getSource());}
+            if (e.getLine() <= 0) {
+                e.setLocation(line, column, getSource());
+            }
             throw e;
         }
     }
-	
-	public void setParent(Expression parent)
-	{
-		function.setParent(parent);
-	}
-	public Expression getParent()
-	{
-		return function.getParent();
-	}
-	
-	public XQueryContext getContext()
-	{
-		return function.getContext();
-	}
 
+    @Override
+    public void setParent(final Expression parent) {
+        function.setParent(parent);
+    }
+
+    @Override
+    public Expression getParent() {
+        return function.getParent();
+    }
+
+    @Override
+    public XQueryContext getContext() {
+        return function.getContext();
+    }
+
+    @Override
     public int getLine() {
         return function.getLine();
     }
 
+    @Override
     public int getColumn() {
         return function.getColumn();
     }
 
-    public void setASTNode(XQueryAST ast) {
+    @Override
+    public void setASTNode(final XQueryAST ast) {
         function.setASTNode(ast);
     }
 
-    public void setLocation(int line, int column) {
+    @Override
+    public void setLocation(final int line, final int column) {
         function.setLocation(line, column);
     }
 
-    public void add(Expression s)
-	{
-		function.add(s);
-	}
-	public void add(PathExpr path)
-	{
-		function.add(path);
-	}
-	public void addPath(PathExpr path)
-	{
-		function.addPath(path);
-	}
-	public void addPredicate(Predicate pred)
-	{
-		function.addPredicate(pred);
-	}
-	public void dump(ExpressionDumper dumper)
-	{
-		function.dump(dumper);
-	}
-	public void dump(Writer writer)
-	{
-		function.dump(writer);
-	}
-	public Expression getArgument(int pos)
-	{
-		return function.getArgument(pos);
-	}
-	public Sequence[] getArguments(Sequence contextSequence, Item contextItem) throws XPathException
-	{
-		return function.getArguments(contextSequence, contextItem);
-	}
-	public DocumentSet getContextDocSet()
-	{
-		return function.getContextDocSet();
-	}
-	public int getDependencies()
-	{
-		return function.getDependencies();
-	}
-	public DocumentSet getDocumentSet()
-	{
-		return function.getDocumentSet();
-	}
-	public Expression getExpression(int pos)
-	{
-		return function.getExpression(pos);
-	}
-	public Expression getLastExpression()
-	{
-		return function.getLastExpression();
-	}
-	public int getLength()
-	{
-		return function.getLength();
-	}
-	public String getLiteralValue()
-	{
-		return function.getLiteralValue();
-	}
-	public FunctionSignature getSignature()
-	{
-		return function.getSignature();
-	}
-	public boolean isCalledAs(String localName)
-	{
-		return function.isCalledAs(localName);
-	}
-	public void replaceLastExpression(Expression s)
-	{
-		function.replaceLastExpression(s);
-	}
-	public void reset()
-	{
-		function.reset();
-	}
-	public void resetState(boolean postOptimization)
-	{
-		function.resetState(postOptimization);
-	}
-	public void setArguments(List<Expression> arguments) throws XPathException
-	{
-		function.setArguments(arguments);
-	}
-	public void setContext(XQueryContext context)
-	{
-		function.setContext(context);
-	}
-	public void setContextDocSet(DocumentSet contextSet)
-	{
-		function.setContextDocSet(contextSet);
-	}
-	public String toString()
-	{
-		return function.toString();
-	}
+    @Override
+    public void add(final Expression s) {
+        function.add(s);
+    }
 
-    public void accept(ExpressionVisitor visitor) {
+    @Override
+    public void add(final PathExpr path) {
+        function.add(path);
+    }
+
+    @Override
+    public void addPath(final PathExpr path) {
+        function.addPath(path);
+    }
+
+    @Override
+    public void addPredicate(final Predicate pred) {
+        function.addPredicate(pred);
+    }
+
+    @Override
+    public void dump(final ExpressionDumper dumper) {
+        function.dump(dumper);
+    }
+
+    @Override
+    public void dump(final Writer writer) {
+        function.dump(writer);
+    }
+
+    @Override
+    public Expression getArgument(final int pos) {
+        return function.getArgument(pos);
+    }
+
+    @Override
+    public Sequence[] getArguments(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        return function.getArguments(contextSequence, contextItem);
+    }
+
+    @Override
+    public DocumentSet getContextDocSet() {
+        return function.getContextDocSet();
+    }
+
+    @Override
+    public int getDependencies() {
+        return function.getDependencies();
+    }
+
+    @Override
+    public DocumentSet getDocumentSet() {
+        return function.getDocumentSet();
+    }
+
+    @Override
+    public Expression getExpression(final int pos) {
+        return function.getExpression(pos);
+    }
+
+    @Override
+    public Expression getLastExpression() {
+        return function.getLastExpression();
+    }
+
+    @Override
+    public int getLength() {
+        return function.getLength();
+    }
+
+    @Override
+    public String getLiteralValue() {
+        return function.getLiteralValue();
+    }
+
+    @Override
+    public FunctionSignature getSignature() {
+        return function.getSignature();
+    }
+
+    @Override
+    public boolean isCalledAs(final String localName) {
+        return function.isCalledAs(localName);
+    }
+
+    @Override
+    public void replaceLastExpression(final Expression s) {
+        function.replaceLastExpression(s);
+    }
+
+    @Override
+    public void reset() {
+        function.reset();
+    }
+
+    @Override
+    public void resetState(final boolean postOptimization) {
+        function.resetState(postOptimization);
+    }
+
+    @Override
+    public void setArguments(final List<Expression> arguments) throws XPathException {
+        function.setArguments(arguments);
+    }
+
+    @Override
+    public void setContext(final XQueryContext context) {
+        function.setContext(context);
+    }
+
+    @Override
+    public void setContextDocSet(final DocumentSet contextSet) {
+        function.setContextDocSet(contextSet);
+    }
+
+    @Override
+    public String toString() {
+        return function.toString();
+    }
+
+    @Override
+    public void accept(final ExpressionVisitor visitor) {
         function.accept(visitor);
     }
 }
