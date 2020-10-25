@@ -486,9 +486,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.notificationService = servicesManager.register(new NotificationService());
 
         this.journalManager = recoveryEnabled ? Optional.of(new JournalManager()) : Optional.empty();
-        if(journalManager.isPresent()) {
-                servicesManager.register(journalManager.get());
-        }
+        journalManager.ifPresent(manager -> servicesManager.register(manager));
 
         final SystemTaskManager systemTaskManager = servicesManager.register(new SystemTaskManager(this));
         this.transactionManager = servicesManager.register(new TransactionManager(this, journalManager, systemTaskManager));
@@ -498,9 +496,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.symbols = servicesManager.register(new SymbolTable());
 
         this.expathRepo = Optional.ofNullable(new ExistRepository());
-        if(expathRepo.isPresent()) {
-            servicesManager.register(expathRepo.get());
-        }
+        expathRepo.ifPresent(existRepository -> servicesManager.register(existRepository));
         servicesManager.register(new ClasspathHelper());
 
         this.indexManager = servicesManager.register(new IndexManager(this));
@@ -1450,9 +1446,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
          *            made by some transaction T, it is necessary that the update record
          *            <T,X,v,w> appear on disk.
          */
-        if(journalManager.isPresent()) {
-            journalManager.get().flush(true, true);
-        }
+        journalManager.ifPresent(manager -> manager.flush(true, true));
 
         // sync various DBX files
         broker.sync(syncEvent);
