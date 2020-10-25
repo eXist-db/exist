@@ -115,7 +115,7 @@ public class FunAnalyzeString extends BasicFunction {
             if (!args[0].isEmpty()) {
                 input = args[0].itemAt(0).getStringValue();
             }
-            if (!"" .equals(input)) {
+            if (input != null && !input.isEmpty()) {
                 final String pattern = args[1].itemAt(0).getStringValue();
                 String flags = null;
                 if (args.length == 3) {

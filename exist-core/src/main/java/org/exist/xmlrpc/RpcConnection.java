@@ -3359,10 +3359,10 @@ public class RpcConnection implements RpcAPI {
             }
 
             DocumentType result = null;
-            if (!"".equals(doctypename)) {
+            if (doctypename != null && !doctypename.isEmpty()) {
                 result = new DocumentTypeImpl(doctypename,
-                        "".equals(publicid) ? null : publicid,
-                        "".equals(systemid) ? null : systemid);
+                        publicid != null && publicid.isEmpty() ? null : publicid,
+                        systemid != null && systemid.isEmpty() ? null : systemid);
             }
 
             document.setDocumentType(result);

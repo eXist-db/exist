@@ -188,7 +188,7 @@ public class FullXmldbURI extends XmldbURI {
                     context = context.substring(0, context.length() - 1);
                 }
             }
-            this.context = "".equals(context) ? null : context;
+            this.context = context != null && context.isEmpty() ? null : context;
             recomputeURI();
 
         } catch (final URISyntaxException e) {
