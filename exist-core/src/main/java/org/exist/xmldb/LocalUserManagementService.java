@@ -405,7 +405,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
         return withDb((broker, transaction) -> {
             final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
             final java.util.Collection<Account> users = sm.getUsers();
-            return users.toArray(new Account[users.size()]);
+            return users.toArray(new Account[0]);
         });
     }
 
@@ -472,7 +472,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
             final SecurityManager sm = broker.getBrokerPool().getSecurityManager();
             return sm.findAllGroupMembers(groupName);
         });
-        return groupMembers.toArray(new String[groupMembers.size()]);
+        return groupMembers.toArray(new String[0]);
     }
     
     @Override

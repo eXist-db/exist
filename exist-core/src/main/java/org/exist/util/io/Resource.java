@@ -820,7 +820,7 @@ public class Resource extends File {
                         list.add(entry.getUri().lastSegment().toString());
                     }
 
-                    return list.toArray(new String[list.size()]);
+                    return list.toArray(new String[0]);
                 }
             } catch (final LockException | PermissionDeniedException | IOException | EXistException e) {
                 LOG.error(e);

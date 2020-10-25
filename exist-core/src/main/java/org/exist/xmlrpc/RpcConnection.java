@@ -3645,7 +3645,7 @@ public class RpcConnection implements RpcAPI {
     @Override
     public void runCommand(final XmldbURI collectionURI, final List<String> params) throws EXistException, PermissionDeniedException {
         withDb((broker, transaction) -> {
-            org.exist.plugin.command.Commands.command(collectionURI, params.toArray(new String[params.size()]));
+            org.exist.plugin.command.Commands.command(collectionURI, params.toArray(new String[0]));
             return null;
         });
     }

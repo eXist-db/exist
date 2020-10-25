@@ -117,7 +117,7 @@ public class PartialFunctionApplication extends AbstractExpression {
 				}
 			}
 		}
-		final SequenceType[] newParamArray = newParamTypes.toArray(new SequenceType[newParamTypes.size()]);
+		final SequenceType[] newParamArray = newParamTypes.toArray(new SequenceType[0]);
 		final QName name = new QName(PARTIAL_FUN_PREFIX + hashCode(), XMLConstants.NULL_NS_URI);
 		final FunctionSignature newSignature = new FunctionSignature(name, newParamArray, signature.getReturnType());
 		final UserDefinedFunction func = new UserDefinedFunction(context, newSignature);
