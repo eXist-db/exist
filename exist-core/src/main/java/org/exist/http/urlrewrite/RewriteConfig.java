@@ -172,7 +172,7 @@ public class RewriteConfig {
         if (controllerConfig.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
 
             try (final DBBroker broker = urlRewrite.getBrokerPool().get(Optional.ofNullable(urlRewrite.getDefaultUser()))) {
-                try (final LockedDocument lockedDocument = broker.getXMLResource(XmldbURI.create(controllerConfig), LockMode.READ_LOCK);) {
+                try (final LockedDocument lockedDocument = broker.getXMLResource(XmldbURI.create(controllerConfig), LockMode.READ_LOCK)) {
                     final DocumentImpl doc = lockedDocument == null ? null : lockedDocument.getDocument();
                     if (doc != null) {
                         parse(doc);

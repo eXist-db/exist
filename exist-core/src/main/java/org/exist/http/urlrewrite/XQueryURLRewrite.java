@@ -874,7 +874,7 @@ public class XQueryURLRewrite extends HttpServlet {
             try {
                 final XmldbURI locationUri = XmldbURI.xmldbUriFor(query);
 
-                try (final LockedDocument lockedSourceDoc = broker.getXMLResource(locationUri.toCollectionPathURI(), LockMode.READ_LOCK);) {
+                try (final LockedDocument lockedSourceDoc = broker.getXMLResource(locationUri.toCollectionPathURI(), LockMode.READ_LOCK)) {
                     if (lockedSourceDoc == null) {
                         throw new ServletException("XQuery resource: " + query + " not found in database");
                     }

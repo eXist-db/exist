@@ -88,7 +88,7 @@ public class DBSource extends AbstractSource {
     @Override
     public Validity isValid(final DBBroker broker) {
         Validity result;
-        try(final LockedDocument lockedDoc = broker.getXMLResource(key, LockMode.READ_LOCK);) {
+        try(final LockedDocument lockedDoc = broker.getXMLResource(key, LockMode.READ_LOCK)) {
             if(lockedDoc == null) {
                 result = Validity.INVALID;
             } else if(lockedDoc.getDocument().getLastModified() > lastModified) {
