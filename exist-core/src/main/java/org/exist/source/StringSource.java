@@ -38,25 +38,21 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class StringSource extends AbstractSource {
 
-    private String content;
+    private final String content;
     
     public StringSource(final String content) {
+        super(hashKey(content));
         this.content = content;
     }
 
     @Override
     public String path() {
-        return type();
+        return null;
     }
 
     @Override
     public String type() {
         return "String";
-    }
-
-    @Override
-    public Object getKey() {
-        return content;
     }
 
     @Override
@@ -88,4 +84,9 @@ public class StringSource extends AbstractSource {
 	public void validate(final Subject subject, final int perm) {
 		// TODO protected?
 	}
+
+    @Override
+    public int hashCode() {
+        return content.hashCode();
+    }
 }

@@ -148,7 +148,7 @@ class XQueryInspector {
     
     private static String getDbUri(final Source source) {
         if(source != null && source instanceof DBSource) {
-            return source.getKey().toString();
+            return source.path();
         } else {
             return null;
         }

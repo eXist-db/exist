@@ -41,9 +41,12 @@ public class ClassLoaderSource extends URLSource {
      *               identifies the resource. Preceding "/" and "resource:"" are removed.
      * @throws IOException in case of an I/O error
      */
-    public ClassLoaderSource(String source) throws IOException {
+    public ClassLoaderSource(final String source) throws IOException {
+        super(sourceToUrl(source));
         this.source = source;
+    }
 
+    private static URL sourceToUrl(String source) throws IOException {
         if (source.startsWith(PROTOCOL)) {
             source = source.substring(PROTOCOL.length());
         }
@@ -55,7 +58,7 @@ public class ClassLoaderSource extends URLSource {
         if (url == null) {
             throw new IOException("Source not found: " + source);
         }
-        setURL(url);
+        return url;
     }
 
     @Override

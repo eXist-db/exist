@@ -33,7 +33,6 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.DBSource;
-import org.exist.source.Source;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
@@ -70,10 +69,10 @@ class XQueryCompiler {
             
                     //compile the query
                     final XQueryContext context = new XQueryContext(broker.getBrokerPool());
-                    final Source source = new DBSource(broker, (BinaryDocument)document, true);
+                    final DBSource source = new DBSource(broker, (BinaryDocument)document, true);
 
                     //set the module load path for any module imports that are relative
-                    context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + ((XmldbURI)source.getKey()).removeLastSegment());
+                    context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + source.getDocumentPath().removeLastSegment());
                     
                     return broker.getBrokerPool().getXQueryService().compile(broker, context, source);
                 } else {

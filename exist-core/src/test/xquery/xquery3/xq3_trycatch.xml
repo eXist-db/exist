@@ -260,18 +260,19 @@ xquery version '3.0';
 try{
     xmldb:store('/db/foobaar/', "text.xml", <a/>)
 } catch * {
-<result>
-<code>{$err:code}</code>
-<desc>{$err:description}</desc>
-</result>
+    <error>
+        <code>{$err:code}</code>
+        <value exists="{exists($err:value)}"/>
+        <description>{$err:description}</description>
+        <module>{$err:module}</module>
+        <line>{$err:line-number}</line>
+        <column>{$err:column-number}</column>
+    </error>
 }
 ]]>
         </code>
         <expected>
-            <result>
-                <code>java:org.xmldb.api.base.XMLDBException</code>
-                <desc>Collection /db/foobaar not found. Could not locate collection: /db/foobaar/</desc>
-            </result>
+            <error><code>java:org.xmldb.api.base.XMLDBException</code><value exists="false"/><description>Collection /db/foobaar not found. Could not locate collection: /db/foobaar/</description><module/><line>4</line><column>5</column></error>
         </expected>
     </test>
 
@@ -282,23 +283,29 @@ xquery version '3.0';
 try{
     xmldb:store('/db/foobaar/', "text.xml", <a/>)
 } catch java:org.XPathException {
-<a/>
+    <error>
+        <code>{$err:code}</code>
+    </error>
 } catch java:org.exist.xquery.XPathException {
-<b/>
+    <error>
+        <code>{$err:code}</code>
+    </error>
 } catch java:org.xmldb.api.base.XMLDBException {
-<c/>
+    <error>
+        <code>{$err:code}</code>
+    </error>
 } catch * {
-<d/>
+    <error>
+        <code>{$err:code}</code>
+    </error>
 }
 ]]>
         </code>
-        <expected>
-            <c/>
-        </expected>
+        <expected><error><code>java:org.xmldb.api.base.XMLDBException</code></error></expected>
     </test>
     
     <test output="text">
-        <task>Test for catching the right java exception 2</task>
+        <task>Test for catching the right java exception 3</task>
         <code><![CDATA[
         xquery version '3.0';
         let $x := "a b c"
@@ -307,30 +314,42 @@ try {
     fn:error(QName('http://foobar', 'foo:BAR'), "foofoo", <barbar/>)
 }
 catch * {
-    $err:code,'-', exists($err:value), $err:description,
-    $err:module, '(', $err:line-number, ',', $err:column-number, ')'
+    <error>
+        <code>{$err:code}</code>
+        <value exists="{exists($err:value)}"/>
+        <description>{$err:description}</description>
+        <module>{$err:module}</module>
+        <line>{$err:line-number}</line>
+        <column>{$err:column-number}</column>
+    </error>
 }
 ]]>
         </code>
-        <expected>foo:BAR - true foofoo String ( 6 , 5 )</expected>
+        <expected><error><code>foo:BAR</code><value exists="true"/><description>foofoo</description><module>String/-8064092393637135869</module><line>6</line><column>5</column></error></expected>
     </test>
 
 
 
     <test output="text">
-        <task>Test for catching the right java exception 2</task>
+        <task>Test for catching the right java exception 4</task>
         <code><![CDATA[
 xquery version '3.0';
 try {
     fn:error(fn:QName('http://www.w3.org/2005/xqt-errors', 'err:FOER0000'))
 }
 catch * {
-    $err:code, $err:value, " module: ",
-    $err:module, "(", $err:line-number, ",", $err:column-number, ")"
+    <error>
+        <code>{$err:code}</code>
+        <value exists="{exists($err:value)}">{$err:value}</value>
+        <description>{$err:description}</description>
+        <module>{$err:module}</module>
+        <line>{$err:line-number}</line>
+        <column>{$err:column-number}</column>
+    </error>
 }
 ]]>
         </code>
-        <expected>err:FOER0000  module:  String ( 4 , 5 )</expected>
+        <expected><error><code>err:FOER0000</code><value exists="false"/><description>An error has been raised by the query</description><module>String/4137657403599489699</module><line>4</line><column>5</column></error></expected>
     </test>
 
     <test output="text">

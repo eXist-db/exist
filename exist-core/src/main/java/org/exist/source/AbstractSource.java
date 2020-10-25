@@ -26,6 +26,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
+import net.jpountz.xxhash.XXHash64;
+import net.jpountz.xxhash.XXHashFactory;
 import org.exist.dom.QName;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.parser.DeclScanner;
@@ -34,10 +36,24 @@ import org.exist.xquery.parser.XQueryLexer;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * @author wolf
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public abstract class AbstractSource implements Source {
+
+    private final long key;
+
+    protected AbstractSource(final long key) {
+        this.key = key;
+    }
+
+    @Override
+    public long getKey() {
+        return key;
+    }
 
     @Override
     public Charset getEncoding() throws IOException {
@@ -47,15 +63,12 @@ public abstract class AbstractSource implements Source {
     @Override
     public boolean equals(final Object obj) {
     	if (obj != null && obj instanceof Source) {
-            return getKey().equals(((Source)obj).getKey());
+            return key == (((Source)obj).getKey());
 		}
     	return false;
     }
 
-    @Override
-    public int hashCode() {
-        return getKey().hashCode();
-    }
+    public abstract int hashCode();
 
     @Override
     public QName isModule() throws IOException {
@@ -100,5 +113,41 @@ public abstract class AbstractSource implements Source {
             return new QName(scanner.getPrefix(), scanner.getNamespace());
         }
         return null;
+    }
+
+    @Override
+    public String shortIdentifier() {
+        return type() + "/" + key;
+    }
+
+    @Override
+    public String pathOrShortIdentifier() {
+        String str = path();
+        if (str == null) {
+            str = shortIdentifier();
+        }
+        return str;
+    }
+
+    @Override
+    public String pathOrContentOrShortIdentifier() {
+        String str = path();
+        if (str == null) {
+            try {
+                str = getContent();
+            } catch (final IOException e) {
+                str = shortIdentifier();
+            }
+        }
+        return str;
+    }
+
+    protected static final long XXHASH64_SEED = 0x79742bc8;
+    protected static long hashKey(final String key) {
+        return hashKey(key.getBytes(UTF_8));
+    }
+    protected static long hashKey(final byte[] key) {
+        final XXHash64 xxHash64 = XXHashFactory.fastestInstance().hash64();
+        return xxHash64.hash(key, 0, key.length, XXHASH64_SEED);
     }
 }

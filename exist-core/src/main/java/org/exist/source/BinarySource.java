@@ -26,32 +26,29 @@ import org.exist.storage.DBBroker;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 
 import java.io.*;
+import java.util.Arrays;
 
 public class BinarySource extends AbstractSource {
 
     //TODO replace this with a streaming approach
-    private byte[] data;
-    private boolean checkEncoding = false;
+    private final byte[] data;
+    private final boolean checkEncoding;
     private String encoding = "UTF-8";
 
     public BinarySource(final byte[] data, final boolean checkXQEncoding) {
+        super(hashKey(data));
         this.data = data;
         this.checkEncoding = checkXQEncoding;
     }
 
     @Override
     public String path() {
-        return type();
+        return null;
     }
 
     @Override
     public String type() {
         return "Binary";
-    }
-
-    @Override
-    public Object getKey() {
-        return data;
     }
 
     @Override
@@ -95,5 +92,10 @@ public class BinarySource extends AbstractSource {
     @Override
     public void validate(final Subject subject, final int perm) {
         // TODO protected?
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(data);
     }
 }

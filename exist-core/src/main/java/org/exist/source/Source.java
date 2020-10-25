@@ -52,13 +52,16 @@ public interface Source {
     /**
      * Returns a unique key to identify the source.
      *
-     * This may be a unique URI or some sort of unique identifier.
-     *
      * @return unique key which identifies the source
      */
-    Object getKey();
+    long getKey();
 
-    String path();
+    /**
+     * Return the path to the source, or null if there is no path.
+     *
+     * @return the path, or null
+     */
+    @Nullable String path();
 
     /**
      * A user friendly string which identifies the type
@@ -147,4 +150,31 @@ public interface Source {
      * @return QName describing the module namespace, or null if the source is not a module.
      */
     @Nullable QName isModule() throws IOException;
+
+    @Override
+    boolean equals(Object obj);
+
+    /**
+     * Get's a short string identifier
+     * for the source.
+     *
+     * @return a short identifier, never null!
+     */
+    String shortIdentifier();
+
+    /**
+     * Get's the path, or a short string identifier
+     * for the source.
+     *
+     * @return the result, never null!
+     */
+    String pathOrShortIdentifier();
+
+    /**
+     * Get's the path. or the content,
+     * or a short string identifier for the source.
+     *
+     * @return the result, never null!
+     */
+    String pathOrContentOrShortIdentifier();
 }

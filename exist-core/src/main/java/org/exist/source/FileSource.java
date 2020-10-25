@@ -47,8 +47,6 @@ public class FileSource extends AbstractSource {
     private final Path path;
     private Charset encoding;
     private final boolean checkEncoding;
-
-    private final String filePath;
     private final long lastModified;
 
     /**
@@ -61,30 +59,21 @@ public class FileSource extends AbstractSource {
     }
 
     public FileSource(final Path path, final Charset encoding, final boolean checkXQEncoding) {
+        super(hashKey(path.toString()));
         this.path = path;
         this.encoding = encoding;
         this.checkEncoding = checkXQEncoding;
-        this.filePath = path.toAbsolutePath().toString();
         this.lastModified = lastModifiedSafe(path);
     }
 
     @Override
     public String path() {
-        return getFilePath();
+        return path.toAbsolutePath().toString();
     }
 
     @Override
     public String type() {
         return "File";
-    }
-
-    @Override
-    public Object getKey() {
-        return filePath;
-    }
-    
-    public String getFilePath() {
-    	return filePath;
     }
 
     public Path getPath() {
@@ -158,11 +147,16 @@ public class FileSource extends AbstractSource {
 
     @Override
     public String toString() {
-    	return filePath;
+    	return path();
     }
 
 	@Override
 	public void validate(final Subject subject, final int perm) {
 		// TODO protected?
 	}
+
+    @Override
+    public int hashCode() {
+        return path.hashCode();
+    }
 }

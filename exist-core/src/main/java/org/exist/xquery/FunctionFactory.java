@@ -369,9 +369,7 @@ public class FunctionFactory {
                         .append(" is not defined in namespace '").append(qname.getNamespaceURI()).append('\'');
                 if (module instanceof ExternalModule) {
                     final Source moduleSource = ((ExternalModule) module).getSource();
-                    if ((!(moduleSource instanceof BinarySource)) && (!(moduleSource instanceof StringSource))) {
-                        msg.append(" for module: ").append(moduleSource.path());
-                    }
+                    msg.append(" for module: ").append(moduleSource.pathOrShortIdentifier());
                 }
                 throw new XPathException(ast.getLine(), ast.getColumn(),
                         ErrorCodes.XPST0017, msg.toString());

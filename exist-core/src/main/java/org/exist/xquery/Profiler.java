@@ -172,7 +172,7 @@ public class Profiler {
     }
 
     public final void traceQueryEnd(XQueryContext context) {
-        stats.recordQuery(context.getSource().path(), (System.currentTimeMillis() - queryStart));
+        stats.recordQuery(context.getSource().pathOrShortIdentifier(), (System.currentTimeMillis() - queryStart));
     }
 
     public final void traceFunctionStart(Function function) {
@@ -188,7 +188,7 @@ public class Profiler {
             if (source == null) {
                 sourceMsg = String.format("[unknown source] [%d:%d]", function.getLine(), function.getColumn());
             } else {
-                sourceMsg = String.format("%s [%d:%d]", function.getContext().getSource().getKey(),
+                sourceMsg = String.format("%s [%d:%d]", function.getContext().getSource().pathOrShortIdentifier(),
                         function.getLine(), function.getColumn());
             }
             stats.recordFunctionCall(function.getSignature().getName(), sourceMsg, elapsed);
@@ -199,11 +199,11 @@ public class Profiler {
     }
 
     public final void traceIndexUsage(XQueryContext context, String indexType, Expression expression, int mode, long elapsed) {
-        stats.recordIndexUse(expression, indexType, context.getSource().path(), mode, elapsed);
+        stats.recordIndexUse(expression, indexType, context.getSource().pathOrShortIdentifier(), mode, elapsed);
     }
 
     public final void traceOptimization(XQueryContext context, PerformanceStats.OptimizationType type, Expression expression) {
-        stats.recordOptimization(expression, type, context.getSource().path());
+        stats.recordOptimization(expression, type, context.getSource().pathOrShortIdentifier());
     }
 
     private void save() {

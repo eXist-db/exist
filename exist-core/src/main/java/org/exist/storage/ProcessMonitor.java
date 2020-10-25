@@ -155,7 +155,7 @@ public class ProcessMonitor implements BrokerPoolService {
         if (found && elapsed > minTime) {
             synchronized (history) {
                 final Source source = watchdog.getContext().getSource();
-                final String sourceKey = source == null ? "unknown" : source.path();
+                final String sourceKey = source == null ? "unknown" : source.pathOrShortIdentifier();
                 QueryHistory qh = new QueryHistory(sourceKey, historyTimespan);
                 qh.setMostRecentExecutionTime(watchdog.getStartTime());
                 qh.setMostRecentExecutionDuration(elapsed);

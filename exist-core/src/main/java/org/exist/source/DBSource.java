@@ -44,16 +44,15 @@ import org.exist.xmldb.XmldbURI;
 public class DBSource extends AbstractSource {
     
     private final BinaryDocument doc;
-    private final XmldbURI key;
     private final long lastModified;
     private String encoding = "UTF-8";
     private final boolean checkEncoding;
     private final DBBroker broker;
     
     public DBSource(final DBBroker broker, final BinaryDocument doc, final boolean checkXQEncoding) {
+        super(hashKey(doc.getURI().toString()));
         this.broker = broker;
         this.doc = doc;
-        this.key = doc.getURI();
         this.lastModified = doc.getLastModified();
         this.checkEncoding = checkXQEncoding;
     }
@@ -68,13 +67,8 @@ public class DBSource extends AbstractSource {
         return "DB";
     }
 
-    @Override
-    public Object getKey() {
-        return key;
-    }
-
     public XmldbURI getDocumentPath() {
-    	return key;
+    	return doc.getURI();
     }
 
     public long getLastModified() {
@@ -84,8 +78,8 @@ public class DBSource extends AbstractSource {
     @Override
     public Validity isValid(final DBBroker broker) {
         Validity result;
-        try (final LockedDocument lockedDoc = broker.getXMLResource(key, LockMode.READ_LOCK)) {
-            if(lockedDoc == null) {
+        try (final LockedDocument lockedDoc = broker.getXMLResource(doc.getURI(), LockMode.READ_LOCK)) {
+            if (lockedDoc == null) {
                 result = Validity.INVALID;
             } else if(lockedDoc.getDocument().getLastModified() > lastModified) {
                 result = Validity.INVALID;
@@ -179,5 +173,10 @@ public class DBSource extends AbstractSource {
     
     public Permission getPermissions() {
         return doc.getPermissions();
+    }
+
+    @Override
+    public int hashCode() {
+        return getDocumentPath().hashCode();
     }
 }

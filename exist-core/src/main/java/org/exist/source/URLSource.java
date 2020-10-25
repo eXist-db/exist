@@ -51,15 +51,13 @@ public class URLSource extends AbstractSource {
 
     private static final Logger LOG = LogManager.getLogger(URLSource.class);
 
-    protected URL url;
+    protected final URL url;
     private URLConnection connection = null;
     private long lastModified = 0;
     private int responseCode = HttpURLConnection.HTTP_OK;
 
-    protected URLSource() {
-    }
-
     public URLSource(final URL url) {
+        super(hashKey(url.toString()));
         this.url = url;
     }
 
@@ -67,7 +65,7 @@ public class URLSource extends AbstractSource {
     public String path() {
         final String protocol = url.getProtocol();
         final String host = url.getHost();
-        if (protocol.equals("file") && (host == null || host.length() == 0 || "localhost".equals(host) || "127.0.0.1".equals(host))) {
+        if ("file".equals(protocol) && (host == null || host.length() == 0 || "localhost".equals(host) || "127.0.0.1".equals(host))) {
             return url.getFile();
         }
         return url.toExternalForm();
@@ -77,14 +75,10 @@ public class URLSource extends AbstractSource {
     public String type() {
         final String protocol = url.getProtocol();
         final String host = url.getHost();
-        if (protocol.equals("file") && (host == null || host.length() == 0 || "localhost".equals(host) || "127.0.0.1".equals(host))) {
+        if ("file".equals(protocol) && (host == null || host.length() == 0 || "localhost".equals(host) || "127.0.0.1".equals(host))) {
             return "File";
         }
         return "URL";
-    }
-
-    protected void setURL(final URL url) {
-        this.url = url;
     }
 
     public URL getURL() {
@@ -101,11 +95,6 @@ public class URLSource extends AbstractSource {
             LOG.warn("URL '" + url + "' could not be opened: " + e.getMessage());
             return 0;
         }
-    }
-
-    @Override
-    public Object getKey() {
-        return url;
     }
 
     @Override
@@ -239,5 +228,10 @@ public class URLSource extends AbstractSource {
         try (final InputStream is = getInputStream()) {
             return getModuleDecl(is);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return url.hashCode();
     }
 }
