@@ -175,7 +175,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             LOG.warn("Iterator == null: {}", otherSequence.getClass().getName());
             return;
         }
-        for (; iterator.hasNext(); ) {
+        while (iterator.hasNext()) {
             add(iterator.nextItem());
         }
     }
