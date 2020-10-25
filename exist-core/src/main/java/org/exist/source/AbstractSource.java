@@ -34,51 +34,27 @@ import org.exist.xquery.parser.XQueryLexer;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 
-
 /**
  * @author wolf
  */
 public abstract class AbstractSource implements Source {
-
-    private long cacheTime = 0;
 
     @Override
     public Charset getEncoding() throws IOException {
         return null;
     }
 
-    /* (non-Javadoc)
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
     	if (obj != null && obj instanceof Source) {
             return getKey().equals(((Source)obj).getKey());
 		}
     	return false;
     }
-    
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
+
     @Override
     public int hashCode() {
         return getKey().hashCode();
-    }
-    
-    /* (non-Javadoc)
-     * @see org.exist.source.Source#getCacheTimestamp()
-     */
-    public long getCacheTimestamp() {
-        return cacheTime;
-    }
-    
-    
-    /* (non-Javadoc)
-     * @see org.exist.source.Source#setCacheTimestamp(long)
-     */
-    public void setCacheTimestamp(long timestamp) {
-        cacheTime = timestamp;
     }
 
     @Override
@@ -93,7 +69,7 @@ public abstract class AbstractSource implements Source {
      * @param is the input stream
      * @return The guessed encoding.
      */
-    protected final static String guessXQueryEncoding(InputStream is) {
+    protected static String guessXQueryEncoding(final InputStream is) {
         final XQueryLexer lexer = new XQueryLexer(null, new InputStreamReader(is));
         final DeclScanner scanner = new DeclScanner(lexer);
         try {
@@ -112,7 +88,7 @@ public abstract class AbstractSource implements Source {
      * @return QName describing the module namespace or null if the source is not
      * a module.
      */
-    protected final static QName getModuleDecl(InputStream is) {
+    protected static QName getModuleDecl(final InputStream is) {
         final XQueryLexer lexer = new XQueryLexer(null, new InputStreamReader(is));
         final DeclScanner scanner = new DeclScanner(lexer);
         try {

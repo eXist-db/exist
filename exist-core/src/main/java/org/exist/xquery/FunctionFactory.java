@@ -29,7 +29,6 @@ import org.exist.dom.QName;
 import org.exist.source.BinarySource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
-import org.exist.source.StringSourceWithMapKey;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Constants.StringTruncationOperator;
 import org.exist.xquery.parser.XQueryAST;
@@ -370,7 +369,7 @@ public class FunctionFactory {
                         .append(" is not defined in namespace '").append(qname.getNamespaceURI()).append('\'');
                 if (module instanceof ExternalModule) {
                     final Source moduleSource = ((ExternalModule) module).getSource();
-                    if ((!(moduleSource instanceof BinarySource)) && (!(moduleSource instanceof StringSource)) && (!(moduleSource instanceof StringSourceWithMapKey))) {
+                    if ((!(moduleSource instanceof BinarySource)) && (!(moduleSource instanceof StringSource))) {
                         msg.append(" for module: ").append(moduleSource.path());
                     }
                 }

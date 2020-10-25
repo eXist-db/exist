@@ -21,7 +21,6 @@
  */
 package org.exist.source;
 
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
@@ -35,11 +34,12 @@ public class BinarySource extends AbstractSource {
     private boolean checkEncoding = false;
     private String encoding = "UTF-8";
 
-    public BinarySource(byte[] data, boolean checkXQEncoding) {
+    public BinarySource(final byte[] data, final boolean checkXQEncoding) {
         this.data = data;
         this.checkEncoding = checkXQEncoding;
     }
 
+    @Override
     public String path() {
         return type();
     }
@@ -49,6 +49,7 @@ public class BinarySource extends AbstractSource {
         return "Binary";
     }
 
+    @Override
     public Object getKey() {
         return data;
     }
@@ -63,15 +64,18 @@ public class BinarySource extends AbstractSource {
         return Source.Validity.VALID;
     }
 
+    @Override
     public Reader getReader() throws IOException {
         checkEncoding();
         return new InputStreamReader(getInputStream(), encoding);
     }
 
-    public InputStream getInputStream() throws IOException {
+    @Override
+    public InputStream getInputStream() {
         return new UnsynchronizedByteArrayInputStream(data);
     }
 
+    @Override
     public String getContent() throws IOException {
         checkEncoding();
         return new String(data, encoding);
@@ -88,8 +92,8 @@ public class BinarySource extends AbstractSource {
         }
     }
 
-	@Override
-	public void validate(Subject subject, int perm) throws PermissionDeniedException {
-		// TODO protected?
-	}
+    @Override
+    public void validate(final Subject subject, final int perm) {
+        // TODO protected?
+    }
 }

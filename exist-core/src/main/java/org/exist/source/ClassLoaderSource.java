@@ -31,15 +31,14 @@ import java.net.URL;
  */
 public class ClassLoaderSource extends URLSource {
 
-    public final static String PROTOCOL = "resource:";
+    public static final String PROTOCOL = "resource:";
 
     private final String source;
 
     /**
      * @param source The resource name (e.g. url).
-     *
-     *  The name of a resource is a '<code>/</code>'-separated path name that
-     *  identifies the resource. Preceding "/" and "resource:"" are removed.
+     *               The name of a resource is a '<code>/</code>'-separated path name that
+     *               identifies the resource. Preceding "/" and "resource:"" are removed.
      * @throws IOException in case of an I/O error
      */
     public ClassLoaderSource(String source) throws IOException {
