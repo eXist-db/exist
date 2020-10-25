@@ -30,6 +30,7 @@ import org.exist.util.*;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Deque;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -133,7 +134,7 @@ public class CollectionStore extends BFile {
         } else {
             writer.write('[');
             writer.write("Collection: ");
-            writer.write(new String(value.data(), value.start(), value.getLength(), "UTF-8"));
+            writer.write(new String(value.data(), value.start(), value.getLength(), StandardCharsets.UTF_8));
             writer.write(']');
         }
     }
