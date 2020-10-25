@@ -111,11 +111,14 @@ public class URLSource extends AbstractSource {
     @Override
     public Validity isValid(final DBBroker broker) {
         final long modified = getLastModification();
-        if (modified == 0 && modified > lastModified) {
-            return Validity.INVALID;
+        final Validity validity;
+        if (modified == 0 || modified > lastModified) {
+            validity = Validity.INVALID;
         } else {
-            return Validity.VALID;
+            validity = Validity.VALID;
         }
+        lastModified = modified;
+        return validity;
     }
 
     @Override
@@ -127,6 +130,7 @@ public class URLSource extends AbstractSource {
     public Charset getEncoding() throws IOException {
         if (connection == null) {
             connection = url.openConnection();
+            lastModified = connection.getLastModified();
         }
         final String contentType = connection.getContentType();
         if (contentType != null) {
@@ -150,6 +154,7 @@ public class URLSource extends AbstractSource {
         try {
             if (connection == null) {
                 connection = url.openConnection();
+                lastModified = connection.getLastModified();
                 if (connection instanceof HttpURLConnection) {
                     responseCode = ((HttpURLConnection) connection).getResponseCode();
                 }
@@ -171,6 +176,7 @@ public class URLSource extends AbstractSource {
         try {
             if (connection == null) {
                 connection = url.openConnection();
+                lastModified = connection.getLastModified();
                 if (connection instanceof HttpURLConnection) {
                     responseCode = ((HttpURLConnection) connection).getResponseCode();
                 }
@@ -197,6 +203,7 @@ public class URLSource extends AbstractSource {
         try {
             if (connection == null) {
                 connection = url.openConnection();
+                lastModified = connection.getLastModified();
                 if (connection instanceof HttpURLConnection) {
                     responseCode = ((HttpURLConnection) connection).getResponseCode();
                 }
