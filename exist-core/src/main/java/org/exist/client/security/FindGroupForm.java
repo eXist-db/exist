@@ -23,10 +23,8 @@ package org.exist.client.security;
 
 import org.exist.client.DialogCompleteWithResponse;
 import org.exist.client.DialogWithResponse;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import org.exist.xmldb.UserManagementService;
@@ -46,9 +44,7 @@ public class FindGroupForm extends javax.swing.JFrame implements DialogWithRespo
         this.userManagementService = userManagementService;
         
         allGroupNames = new HashSet<>();
-        for(final String groupName : userManagementService.getGroups()) {
-            allGroupNames.add(groupName);
-        }
+        allGroupNames.addAll(Arrays.asList(userManagementService.getGroups()));
         
         initComponents();
     }

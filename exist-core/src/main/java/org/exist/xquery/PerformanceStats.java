@@ -282,9 +282,7 @@ public class PerformanceStats implements BrokerPoolService {
                mine.executionTime += other.executionTime;
            }
        }
-        for (OptimizationStats stats : otherStats.optimizations) {
-            optimizations.add(stats);
-        }
+        optimizations.addAll(otherStats.optimizations);
     }
 
     @SuppressWarnings("unused")
