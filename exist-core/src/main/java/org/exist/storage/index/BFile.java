@@ -1639,7 +1639,7 @@ public class BFile extends BTree {
             if (isDirty()) {
                 try {
                     write();
-                    if (isRecoveryEnabled() && syncJournal && logManager.get().lastWrittenLsn().compareTo(getPageHeader().getLsn()) < 0) {
+                    if (isRecoveryEnabled() && syncJournal && logManager.isPresent() && logManager.get().lastWrittenLsn().compareTo(getPageHeader().getLsn()) < 0) {
                         logManager.ifPresent(l -> l.flush(true, false));
                     }
                     return true;

@@ -3240,7 +3240,7 @@ public class DOMFile extends BTree implements Lockable {
         public boolean sync(final boolean syncJournal) {
             if (isDirty()) {
                 write();
-                if (isRecoveryEnabled() && syncJournal && logManager.get().lastWrittenLsn().compareTo(pageHeader.getLsn()) < 0) {
+                if (isRecoveryEnabled() && syncJournal && logManager.isPresent() && logManager.get().lastWrittenLsn().compareTo(pageHeader.getLsn()) < 0) {
                     logManager.ifPresent(l -> l.flush(true, false));
                 }
                 return true;
