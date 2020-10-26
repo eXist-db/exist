@@ -820,6 +820,12 @@ throws PermissionDeniedException, EXistException, XPathException
 		( paramList [varList] )?
 		{
 			processParams(varList, func, signature);
+
+            final String qualifiedNameArity = signature.getName().toURIQualifiedName() + '#' + signature.getArgumentCount();
+            if (importedModuleFunctions != null && importedModuleFunctions.contains(qualifiedNameArity)) {
+                throw new XPathException(name.getLine(), name.getColumn(), ErrorCodes.XQST0034, "Prolog has " +
+                        "imports a module that defines a function which is already defined in the importing module: " + qualifiedNameArity);
+            }
 		}
 		(
 			#(
