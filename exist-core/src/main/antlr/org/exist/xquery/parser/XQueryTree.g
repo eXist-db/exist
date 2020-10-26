@@ -56,6 +56,8 @@ header {
 	import org.exist.storage.ElementValue;
 	import org.exist.xquery.functions.map.MapExpr;
 	import org.exist.xquery.functions.array.ArrayConstructor;
+
+	import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 }
 
 /**
@@ -79,6 +81,7 @@ options {
 	protected boolean foundError = false;
 	protected Map<String, String> declaredNamespaces = new HashMap<>();
 	protected Set<String> importedModules = new HashSet<>();
+	protected Set<String> importedModuleFunctions = null;
 	protected Set<QName> declaredGlobalVars = new TreeSet<>();
 
 	public XQueryTreeParser(XQueryContext context) {
@@ -637,12 +640,42 @@ throws PermissionDeniedException, EXistException, XPathException
             }
             importedModules.add(moduleNamespaceUri);
 
+            final Module[] modules;
             try {
-                context.importModule(moduleNamespaceUri, modulePrefix, uriList.toArray(new AnyURIValue[uriList.size()]));
+                modules = context.importModule(moduleNamespaceUri, modulePrefix, uriList.toArray(new AnyURIValue[uriList.size()]));
                 staticContext.declareNamespace(modulePrefix, moduleNamespaceUri);
             } catch (final XPathException xpe) {
                 xpe.prependMessage("error found while loading module " + modulePrefix + ": ");
                 throw xpe;
+            }
+
+            if (isNotEmpty(modules)) {
+                for (final Module module : modules) {
+
+                    // check modules does not import any duplicate function definitions
+                    final FunctionSignature[] signatures = module.listFunctions();
+                    if (isNotEmpty(signatures)) {
+                        for (final FunctionSignature signature : signatures) {
+                            final String qualifiedNameArity = signature.getName().toURIQualifiedName() + '#' + signature.getArgumentCount();
+                            if (importedModuleFunctions != null) {
+                                if (importedModuleFunctions.contains(qualifiedNameArity)) {
+                                    throw new XPathException(i, ErrorCodes.XQST0034, "Prolog has " +
+                                        "more than one imported module that defines the function: " + qualifiedNameArity);
+                                }
+                            } else {
+                                importedModuleFunctions = new HashSet<>();
+                            }
+
+                            importedModuleFunctions.add(qualifiedNameArity);
+                        }
+                    }
+
+                            } else {
+                                importedModuleFunctions.add(qualifiedNameArity);
+                            }
+                        }
+                    }
+                }
             }
 		}
 	)
