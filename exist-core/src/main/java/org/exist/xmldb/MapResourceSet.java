@@ -51,9 +51,7 @@ public class MapResourceSet implements ResourceSet
 
     public MapResourceSet(final Map<String, Resource> resources) {
         this.resources = resources;
-        for (Resource res : resources.values()) {
-            resourcesVector.add(res);
-        }
+        resourcesVector.addAll(resources.values());
     }
 
     public MapResourceSet(ResourceSet rs) throws XMLDBException {

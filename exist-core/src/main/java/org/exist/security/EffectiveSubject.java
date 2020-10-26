@@ -137,7 +137,7 @@ public class EffectiveSubject implements Subject {
         if(group != null) {
             final Set<String> groups = new HashSet<>(Arrays.asList(account.getGroups()));
             groups.add(group.getName());
-            return groups.toArray(new String[groups.size()]);
+            return groups.toArray(new String[0]);
         } else {
             return account.getGroups();
         }
@@ -148,7 +148,7 @@ public class EffectiveSubject implements Subject {
         if(group != null) {
             final Set<Integer> groupIds = new HashSet<>(Arrays.asList(ArrayUtils.toObject(account.getGroupIds())));
             groupIds.add(group.getId());
-            return ArrayUtils.toPrimitive(groupIds.toArray(new Integer[groupIds.size()]));
+            return ArrayUtils.toPrimitive(groupIds.toArray(new Integer[0]));
         } else {
             return account.getGroupIds();
         }

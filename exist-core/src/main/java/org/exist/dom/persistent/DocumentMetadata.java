@@ -91,7 +91,7 @@ public class DocumentMetadata implements ResourceMetadata {
 
     @Deprecated
     public void incPageCount() {
-        doc.incPageCount();;
+        doc.incPageCount();
     }
 
     @Deprecated

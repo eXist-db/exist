@@ -204,7 +204,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */
 	public int returnsType() {
-		return expression.isPresent() ? expression.get().returnsType() : Type.ITEM;
+		return expression.map(value -> value.returnsType()).orElse(Type.ITEM);
 	}
 	
 	/* (non-Javadoc)

@@ -26,6 +26,7 @@ import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
 
@@ -245,7 +246,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         while (e.hasMoreElements()) {
             final URL url = e.nextElement();
             try (final InputStream is = url.openStream();
-                 final BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"))) {
+                 final BufferedReader r = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = r.readLine()) != null) {
 

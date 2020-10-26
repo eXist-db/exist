@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -86,7 +87,7 @@ public class InMemoryInputStream {
 
             // Preserve doctype
             serializer.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
-            try(final Writer w = new OutputStreamWriter(os, "UTF-8")) {
+            try(final Writer w = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
               serializer.serialize(document, w);
             }
 

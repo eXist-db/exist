@@ -280,7 +280,7 @@ public class XmldbURL {
      */
     public String getHost(){
         final String hostname=myUrl.getHost();
-        if("".equals(hostname)){
+        if(hostname != null && hostname.isEmpty()){
             return null;
         } else {
             return hostname;

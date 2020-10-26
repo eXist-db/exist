@@ -117,7 +117,7 @@ public class JavaCall extends Function {
 	public void setArguments(List<Expression> arguments) throws XPathException {
 		final int argCount = arguments.size();
 
-        for (final Expression argument : arguments) steps.add(argument);
+        steps.addAll(arguments);
 
 		// search for candidate methods matching the given number of arguments
 		if ("new".equals(name)) {

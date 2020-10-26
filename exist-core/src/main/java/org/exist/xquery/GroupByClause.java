@@ -227,7 +227,7 @@ public class GroupByClause extends AbstractFLWORClause {
                 distinctSpecs.add(specs[i]);
             }
         }
-        this.groupSpecs = distinctSpecs.toArray(new GroupSpec[distinctSpecs.size()]);
+        this.groupSpecs = distinctSpecs.toArray(new GroupSpec[0]);
     }
 
     public GroupSpec[] getGroupSpecs() {

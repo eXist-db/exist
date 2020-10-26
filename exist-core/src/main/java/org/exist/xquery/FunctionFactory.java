@@ -419,7 +419,7 @@ public class FunctionFactory {
 				// overloaded function: add last sequence type
 				{newParamTypes.add(paramTypes[paramTypes.length - 1]);}
 		}
-		final SequenceType[] newParamArray = newParamTypes.toArray(new SequenceType[newParamTypes.size()]);
+		final SequenceType[] newParamArray = newParamTypes.toArray(new SequenceType[0]);
 		final FunctionSignature newSignature = new FunctionSignature(signature);
         newSignature.setArgumentTypes(newParamArray);
 

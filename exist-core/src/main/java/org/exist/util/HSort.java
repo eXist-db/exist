@@ -22,6 +22,7 @@
 package org.exist.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -560,7 +561,7 @@ public final class HSort {
 				"Heinz"
 			};
 
-            for (String s : a) l.add(s);
+            l.addAll(Arrays.asList(a));
 		} else {
 			System.err.println("Ordering file "+args[0]+"\n");
 			try(final java.io.BufferedReader is=new java.io.BufferedReader(new java.io.FileReader(args[0]))) {

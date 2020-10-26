@@ -120,7 +120,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
 
     protected int docSize = 0;
 
-    private enum ProcessTextParent { COMMENT, PI, CDATA_START, ELEMENT_START, ELEMENT_END};
+    private enum ProcessTextParent { COMMENT, PI, CDATA_START, ELEMENT_START, ELEMENT_END}
 
     /*
      * used to record the number of children of an element during validation

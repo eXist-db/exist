@@ -98,7 +98,7 @@ public class TestUtils {
                         continue;
                     }
 
-                    try(final Collection childColl = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI.append(childName), Lock.LockMode.WRITE_LOCK);) {
+                    try(final Collection childColl = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI.append(childName), Lock.LockMode.WRITE_LOCK)) {
                         broker.removeCollection(transaction, childColl);
                     }
                 }

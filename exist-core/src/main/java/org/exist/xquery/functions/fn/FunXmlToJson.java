@@ -163,7 +163,7 @@ public class FunXmlToJson extends BasicFunction {
                                 jsonGenerator.writeEndArray();
                                 break;
                             case "boolean":
-                                final boolean tempBoolean = !("".equals(tempString) || "0".equals(tempString) || "false".equals(tempString));
+                                final boolean tempBoolean = !(tempString.isEmpty() || "0".equals(tempString) || "false".equals(tempString));
                                 jsonGenerator.writeBoolean(tempBoolean);
                                 break;
                             case "map":

@@ -187,7 +187,7 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
                 LOG.warn("Iterator == null: {}", otherSequence.getClass().getName());
                 return;
             }
-            for (; iterator.hasNext(); ) {
+            while (iterator.hasNext()) {
                 add(iterator.nextItem());
             }
         }

@@ -21,10 +21,7 @@
  */
 package org.exist.client.security;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.table.DefaultTableModel;
@@ -63,9 +60,7 @@ public class AccessControlEntryDialog extends javax.swing.JFrame implements Dial
         }
         
         allGroupNames = new HashSet<>();
-        for(final String groupName : userManagementService.getGroups()) {
-            allGroupNames.add(groupName);
-        }
+        allGroupNames.addAll(Arrays.asList(userManagementService.getGroups()));
         
         initComponents();
         setTitle(title);
