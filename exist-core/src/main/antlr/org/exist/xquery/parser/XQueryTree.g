@@ -82,6 +82,7 @@ options {
 	protected Map<String, String> declaredNamespaces = new HashMap<>();
 	protected Set<String> importedModules = new HashSet<>();
 	protected Set<String> importedModuleFunctions = null;
+	protected Set<String> importedModuleVariables = null;
 	protected Set<QName> declaredGlobalVars = new TreeSet<>();
 
 	public XQueryTreeParser(XQueryContext context) {
@@ -670,9 +671,21 @@ throws PermissionDeniedException, EXistException, XPathException
                         }
                     }
 
+                    // check modules does not import any duplicate variable definitions
+                    final Iterator<QName> globalVariables = module.getGlobalVariables();
+                    if (globalVariables != null) {
+                        while (globalVariables.hasNext()) {
+                            final String qualifiedName = globalVariables.next().toURIQualifiedName();
+                            if (importedModuleVariables != null) {
+                                if (importedModuleVariables.contains(qualifiedName)) {
+                                        throw new XPathException(i, ErrorCodes.XQST0049, "Prolog has " +
+                                                "more than one imported module that defines the variable: " + qualifiedName);
+                                }
                             } else {
-                                importedModuleFunctions.add(qualifiedNameArity);
+                                importedModuleVariables = new HashSet<>();
                             }
+
+                            importedModuleVariables.add(qualifiedName);
                         }
                     }
                 }
