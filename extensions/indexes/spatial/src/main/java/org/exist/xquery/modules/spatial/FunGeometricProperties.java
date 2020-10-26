@@ -214,7 +214,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, " the spatial reference system of geometry $geometry")
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the spatial reference system of geometry $geometry")
         ),
         new FunctionSignature(
             new QName("getGeometryType", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
