@@ -80,10 +80,10 @@ options {
 	protected List<Exception> exceptions = new ArrayList<>(2);
 	protected boolean foundError = false;
 	protected Map<String, String> declaredNamespaces = new HashMap<>();
+	protected Set<QName> declaredGlobalVars = new TreeSet<>();
 	protected Set<String> importedModules = new HashSet<>();
 	protected Set<String> importedModuleFunctions = null;
-	protected Set<String> importedModuleVariables = null;
-	protected Set<QName> declaredGlobalVars = new TreeSet<>();
+	protected Set<QName> importedModuleVariables = null;
 
 	public XQueryTreeParser(XQueryContext context) {
         this(context, null);
@@ -485,11 +485,13 @@ throws PermissionDeniedException, EXistException, XPathException
 				} catch (final IllegalQNameException iqe) {
 				    throw new XPathException(qname.getLine(), qname.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + qname.getText());
 				}
-				if (declaredGlobalVars.contains(qn))
+				if (declaredGlobalVars.contains(qn)
+				        || (importedModuleVariables != null && importedModuleVariables.contains(qn))) {
 					throw new XPathException(qname, ErrorCodes.XQST0049, "It is a " +
 						"static error if more than one variable declared or " +
 						"imported by a module has the same expanded QName. " +
 						"Variable: " + qn.toString());
+                }
 				declaredGlobalVars.add(qn);
 			}
                         { List annots = new ArrayList(); }
@@ -675,17 +677,18 @@ throws PermissionDeniedException, EXistException, XPathException
                     final Iterator<QName> globalVariables = module.getGlobalVariables();
                     if (globalVariables != null) {
                         while (globalVariables.hasNext()) {
-                            final String qualifiedName = globalVariables.next().toURIQualifiedName();
+                            final QName globalVarName = globalVariables.next();
+
                             if (importedModuleVariables != null) {
-                                if (importedModuleVariables.contains(qualifiedName)) {
+                                if (importedModuleVariables.contains(globalVarName)) {
                                         throw new XPathException(i, ErrorCodes.XQST0049, "Prolog has " +
-                                                "more than one imported module that defines the variable: " + qualifiedName);
+                                                "more than one imported module that defines the variable: " + globalVarName.toURIQualifiedName());
                                 }
                             } else {
                                 importedModuleVariables = new HashSet<>();
                             }
 
-                            importedModuleVariables.add(qualifiedName);
+                            importedModuleVariables.add(globalVarName);
                         }
                     }
                 }
