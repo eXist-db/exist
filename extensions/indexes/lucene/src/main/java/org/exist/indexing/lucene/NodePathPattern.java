@@ -81,8 +81,9 @@ public class NodePathPattern {
         }
 
         @Override
-        public boolean evaluate(NodePath2 nodePath, int elementIdx) {
-            String val = nodePath.attribs(elementIdx).get(attrName);
+        public boolean evaluate(final NodePath2 nodePath, final int elementIdx) {
+            final Map<String, String> attrs = nodePath.attribs(elementIdx);
+            final String val = attrs == null ? null : attrs.get(attrName);
             switch (pcode) {
                 case EQUALS: // =
                 case EQ: // eq
@@ -94,7 +95,6 @@ public class NodePathPattern {
                     // actual attr val may be null (i.e. not present) or present but different:
                     return !Objects.equals(val, attrVal);
                 default:
-                    assert false;
                     throw new IllegalArgumentException("PredicateCode " + pcode + " not handled!");
             }
         }
