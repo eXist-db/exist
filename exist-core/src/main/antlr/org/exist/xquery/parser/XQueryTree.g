@@ -33,6 +33,7 @@ header {
 	import java.util.Set;
 	import java.util.TreeSet;
 	import java.util.HashMap;
+	import java.util.HashSet;
 	import java.util.Stack;
 	import javax.xml.XMLConstants;
 	import org.apache.xerces.util.XMLChar;
@@ -77,6 +78,7 @@ options {
 	protected List<Exception> exceptions = new ArrayList<>(2);
 	protected boolean foundError = false;
 	protected Map<String, String> declaredNamespaces = new HashMap<>();
+	protected Set<String> importedModules = new HashSet<>();
 	protected Set<QName> declaredGlobalVars = new TreeSet<>();
 
 	public XQueryTreeParser(XQueryContext context) {
@@ -628,9 +630,16 @@ throws PermissionDeniedException, EXistException, XPathException
 				declaredNamespaces.put(modulePrefix, moduleURI.getText());
 			}
 
+            final String moduleNamespaceUri = moduleURI.getText();
+            if (importedModules.contains(moduleNamespaceUri)) {
+                throw new XPathException(i, ErrorCodes.XQST0047, "Prolog has " +
+                    "more than one 'import module' statement for module(s) of namespace: " + moduleNamespaceUri);
+            }
+            importedModules.add(moduleNamespaceUri);
+
             try {
-                context.importModule(moduleURI.getText(), modulePrefix, uriList.toArray(new AnyURIValue[uriList.size()]));
-                staticContext.declareNamespace(modulePrefix, moduleURI.getText());
+                context.importModule(moduleNamespaceUri, modulePrefix, uriList.toArray(new AnyURIValue[uriList.size()]));
+                staticContext.declareNamespace(modulePrefix, moduleNamespaceUri);
             } catch (final XPathException xpe) {
                 xpe.prependMessage("error found while loading module " + modulePrefix + ": ");
                 throw xpe;
