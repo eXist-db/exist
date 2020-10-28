@@ -124,11 +124,11 @@ public class ModuleContext extends XQueryContext {
                     }
                 } else {
                     final String dir = FileUtils.dirname(location);
-                    if (dir.matches("^[a-z]+:.*")) {
-                        moduleLoadPath = dir;
+                    if (dir.matches("^[A-Za-z]+:.*")) {
+                        setModuleLoadPath(dir);
                     } else if (".".equals(parentContext.moduleLoadPath)) {
                         if (!".".equals(dir)) {
-                            if (dir.startsWith("/")) {
+                            if (dir.matches("(?:\\/.*)|(?:[a-zA-Z]:\\\\.*)")) {
                                 setModuleLoadPath(dir);
                             } else {
                                 setModuleLoadPath("./" + dir);
