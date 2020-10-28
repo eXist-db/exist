@@ -342,6 +342,44 @@ public class EvalTest {
         final Resource r = result.getResource(0);
         assertEquals("<i>1</i><i>2</i><i>3</i><i>4</i>", r.getContent());
     }
+
+    @Test
+    public void evalErrorInfo() {
+        final String query = "let $query := \"let $msg := 'some error message'\n" +
+                "let $code := xs:QName('some-error')\n" +
+                "return\n" +
+                "    fn:error($code, $msg)\"\n" +
+                "return\n" +
+                "    util:eval($query, false(), (), false())";
+        try {
+            existEmbeddedServer.executeQuery(query);
+
+            fail("Expected XPathException");
+
+        } catch (final XMLDBException e) {
+            assertTrue(e.getMessage().contains("line 6"));
+            assertTrue(e.getMessage().contains("column 5"));
+        }
+    }
+
+    @Test
+    public void evalPassErrorInfo() {
+        final String query = "let $query := \"let $msg := 'some error message'\n" +
+                "let $code := xs:QName('some-error')\n" +
+                "return\n" +
+                "    fn:error($code, $msg)\"\n" +
+                "return\n" +
+                "    util:eval($query, false(), (), true())";
+        try {
+            existEmbeddedServer.executeQuery(query);
+
+            fail("Expected XPathException");
+
+        } catch (final XMLDBException e) {
+            assertTrue(e.getMessage().contains("line 4"));
+            assertTrue(e.getMessage().contains("column 5"));
+        }
+    }
     
     private void writeModule(Collection collection, String modulename, String module) throws XMLDBException {
         BinaryResource res = (BinaryResource) collection.createResource(modulename, "BinaryResource");

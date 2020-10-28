@@ -95,6 +95,7 @@ public class DocTest {
 
         storeResource(test, "test.xq", "BinaryResource", "application/xquery", "doc('test.xml')");
         storeResource(test, "test1.xq", "BinaryResource", "application/xquery", "doc('/test.xml')");
+        storeResource(test, "test2.xq", "BinaryResource", "application/xquery", "doc('/db/test.xml')");
 
         storeResource(existEmbeddedServer.getRoot(), "test.xml", "XMLResource", null, "<x/>");
         storeResource(test, "test.xml", "XMLResource", null, "<y/>");
@@ -124,7 +125,7 @@ public class DocTest {
     }
 
     @Test
-    public void testURIResolveWithEval() throws XPathException, XMLDBException {
+    public void testURIResolveWithEval() throws XMLDBException {
         String query = "util:eval(xs:anyURI('/db/test/test.xq'), false(), ())";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
 
@@ -134,6 +135,14 @@ public class DocTest {
         assertEquals("y", n.getLocalName());
 
         query = "util:eval(xs:anyURI('/db/test/test1.xq'), false(), ())";
+        result = existEmbeddedServer.executeQuery(query);
+
+        res = (LocalXMLResource)result.getResource(0);
+        assertNotNull(res);
+        n = res.getContentAsDOM();
+        assertEquals("x", n.getLocalName());
+
+        query = "util:eval(xs:anyURI('/db/test/test2.xq'), false(), ())";
         result = existEmbeddedServer.executeQuery(query);
 
         res = (LocalXMLResource)result.getResource(0);

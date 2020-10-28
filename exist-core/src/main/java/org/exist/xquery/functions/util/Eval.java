@@ -1,14 +1,25 @@
 /*
- * eXist-db Open Source Native XML Database
- * Copyright (C) 2001 The eXist-db Authors
+ * Copyright (C) 2014, Evolved Binary Ltd
  *
- * info@exist-db.org
- * http://www.exist-db.org
+ * This file was originally ported from FusionDB to eXist-db by
+ * Evolved Binary, for the benefit of the eXist-db Open Source community.
+ * Only the ported code as it appears in this file, at the time that
+ * it was contributed to eXist-db, was re-licensed under The GNU
+ * Lesser General Public License v2.1 only for use in eXist-db.
+ *
+ * This license grant applies only to a snapshot of the code as it
+ * appeared when ported, it does not offer or infer any rights to either
+ * updates of this source code or access to the original source code.
+ *
+ * The GNU Lesser General Public License v2.1 only license follows.
+ *
+ * ---------------------------------------------------------------------
+ *
+ * Copyright (C) 2014, Evolved Binary Ltd
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * License as published by the Free Software Foundation; version 2.1.
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -27,7 +38,6 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Properties;
 import java.util.SimpleTimeZone;
@@ -67,11 +77,14 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.util.UtilModule.functionSignatures;
 
 /**
  * @author wolf
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class Eval extends BasicFunction {
 
@@ -115,6 +128,10 @@ public class Eval extends BasicFunction {
             "cache-flag", Type.BOOLEAN, "The flag for whether the compiled query should be cached. The cached query" +
                     "will be globally available within the db instance.");
 
+    private static final FunctionParameterSequenceType FS_PARAM_PASS = param(
+            "pass", Type.BOOLEAN, "Passes on the original error info (line and column number). By default, this option is false"
+    );
+
     private static final FunctionParameterSequenceType FS_PARAM_EXTERNAL_VARIABLE = optManyParam(
             "external-variable", Type.ANY_TYPE, "External variables to be bound for the query that is being " +
                     "evaluated. Should be alternating variable QName and value.");
@@ -123,11 +140,11 @@ public class Eval extends BasicFunction {
             "default-serialization-params", Type.ITEM, "The default parameters for serialization, these may" +
             "be overridden by any settings within the XQuery Prolog of the $expression.");
 
-    private static final FunctionParameterSequenceType FS_PARAM_STARTING_LOC = param(
+    private static final FunctionParameterSequenceType FS_PARAM_STARTING_LOC = optParam(
             "starting-loc", Type.DOUBLE, "the starting location within the results to return the values from"
     );
 
-    private static final FunctionParameterSequenceType FS_PARAM_LENGTH = param(
+    private static final FunctionParameterSequenceType FS_PARAM_LENGTH = optParam(
             "length", Type.DOUBLE, "the number of items from $starting-loc to return the values of"
     );
 
@@ -147,7 +164,8 @@ public class Eval extends BasicFunction {
             arities(
                     arity(FS_PARAM_EXPRESSION),
                     arity(FS_PARAM_EXPRESSION, FS_PARAM_CACHE),
-                    arity(FS_PARAM_EXPRESSION, FS_PARAM_CACHE, FS_PARAM_EXTERNAL_VARIABLE)
+                    arity(FS_PARAM_EXPRESSION, FS_PARAM_CACHE, FS_PARAM_EXTERNAL_VARIABLE),
+                    arity(FS_PARAM_EXPRESSION, FS_PARAM_CACHE, FS_PARAM_EXTERNAL_VARIABLE, FS_PARAM_PASS)
             )
     );
 
@@ -158,7 +176,8 @@ public class Eval extends BasicFunction {
             RETURN_NODE_TYPE,
             arities(
                     arity(FS_PARAM_EXPRESSION, FS_PARAM_CONTEXT, FS_PARAM_CACHE),
-                    arity(FS_PARAM_EXPRESSION, FS_PARAM_CONTEXT, FS_PARAM_CACHE, FS_PARAM_EVAL_CONTEXT_ITEM)
+                    arity(FS_PARAM_EXPRESSION, FS_PARAM_CONTEXT, FS_PARAM_CACHE, FS_PARAM_EVAL_CONTEXT_ITEM),
+                    arity(FS_PARAM_EXPRESSION, FS_PARAM_CONTEXT, FS_PARAM_CACHE, FS_PARAM_EVAL_CONTEXT_ITEM, FS_PARAM_PASS)
             )
     );
 
@@ -169,7 +188,8 @@ public class Eval extends BasicFunction {
             RETURN_ITEM_TYPE,
             arities(
                     arity(FS_PARAM_INLINE_CONTEXT, FS_PARAM_EXPRESSION),
-                    arity(FS_PARAM_INLINE_CONTEXT, FS_PARAM_EXPRESSION, FS_PARAM_CACHE)
+                    arity(FS_PARAM_INLINE_CONTEXT, FS_PARAM_EXPRESSION, FS_PARAM_CACHE),
+                    arity(FS_PARAM_INLINE_CONTEXT, FS_PARAM_EXPRESSION, FS_PARAM_CACHE, FS_PARAM_PASS)
             )
     );
 
@@ -181,7 +201,8 @@ public class Eval extends BasicFunction {
             arities(
                     arity(FS_PARAM_EXPRESSION, FS_PARAM_DEFAULT_SERIALISATION_PARAMS),
                     arity(FS_PARAM_EXPRESSION, FS_PARAM_DEFAULT_SERIALISATION_PARAMS, FS_PARAM_STARTING_LOC),
-                    arity(FS_PARAM_EXPRESSION, FS_PARAM_DEFAULT_SERIALISATION_PARAMS, FS_PARAM_STARTING_LOC, FS_PARAM_LENGTH)
+                    arity(FS_PARAM_EXPRESSION, FS_PARAM_DEFAULT_SERIALISATION_PARAMS, FS_PARAM_STARTING_LOC, FS_PARAM_LENGTH),
+                    arity(FS_PARAM_EXPRESSION, FS_PARAM_DEFAULT_SERIALISATION_PARAMS, FS_PARAM_STARTING_LOC, FS_PARAM_LENGTH, FS_PARAM_PASS)
             )
     );
 
@@ -199,7 +220,7 @@ public class Eval extends BasicFunction {
         return doEval(context, contextSequence, args);
     }
 
-    private Sequence doEval(final XQueryContext evalContext, final Sequence contextSequence, final Sequence[] args)
+    private Sequence doEval(final XQueryContext evalContext, final Sequence contextSequence, final Sequence args[])
             throws XPathException {
         if (evalContext.getProfiler().isEnabled()) {
             evalContext.getProfiler().start(this);
@@ -242,7 +263,7 @@ public class Eval extends BasicFunction {
         if (isCalledAs(FS_EVAL_AND_SERIALIZE_NAME)) {
             cache = true;
         } else if (argCount < getArgumentCount()) {
-            cache = ((BooleanValue) args[argCount].itemAt(0)).effectiveBooleanValue();
+            cache = ((BooleanValue) args[argCount++].itemAt(0)).effectiveBooleanValue();
         } else {
             cache = false;
         }
@@ -297,25 +318,36 @@ public class Eval extends BasicFunction {
         }
 
         //bind external vars?
-        if (isCalledAs(FS_EVAL_NAME) && getArgumentCount() == 3) {
-            if (!args[2].isEmpty()) {
-                final Sequence externalVars = args[2];
-                for (int i = 0; i < externalVars.getItemCount(); i++) {
-                    final Item varName = externalVars.itemAt(i);
-                    if (varName.getType() == Type.QNAME) {
-                        final Item varValue = externalVars.itemAt(++i);
-                        innerContext.declareVariable(((QNameValue) varName).getQName(), varValue);
-                    }
+        if (isCalledAs(FS_EVAL_NAME) && getArgumentCount() >= 3) {
+            final Sequence externalVars = args[argCount++];
+            for (int i = 0; i < externalVars.getItemCount(); i++) {
+                final Item varName = externalVars.itemAt(i);
+                if (varName.getType() == Type.QNAME) {
+                    final Item varValue = externalVars.itemAt(++i);
+                    innerContext.declareVariable(((QNameValue) varName).getQName(), varValue);
                 }
             }
         }
 
+        // determine if original line/column number are passed on
+        final boolean pass;
+        if (isCalledAs(FS_EVAL_NAME) && getArgumentCount() == 4) {
+            pass = args[3].itemAt(0).toJavaObject(Boolean.class);
+        } else if (isCalledAs(FS_EVAL_WITH_CONTEXT_NAME) && getArgumentCount() == 5) {
+            pass = args[4].itemAt(0).toJavaObject(Boolean.class);
+        } else if (isCalledAs(FS_EVAL_INLINE_NAME) && getArgumentCount() == 4) {
+            pass = args[3].itemAt(0).toJavaObject(Boolean.class);
+        } else if (isCalledAs(FS_EVAL_AND_SERIALIZE_NAME) && getArgumentCount() == 5) {
+            pass = args[4].itemAt(0).toJavaObject(Boolean.class);
+        } else {
+            // default
+            pass = false;
+        }
 
         // fixme! - hook for debugger here /ljo
         try {
-
-            if (this.getArgumentCount() == 4) {
-                final Item contextItem = (Item) args[3].itemAt(0);
+            if (isCalledAs(FS_EVAL_WITH_CONTEXT_NAME) && getArgumentCount() >= 4) {
+                final Item contextItem = args[argCount++].itemAt(0);
                 if (contextItem != null) {
                     //TODO : sort this out
                     if (exprContext != null) {
@@ -325,9 +357,11 @@ public class Eval extends BasicFunction {
                 }
             }
 
+
             if (initContextSequence != null) {
                 exprContext = initContextSequence;
             }
+
             Sequence result = null;
             try {
                 if (!isCalledAs(FS_EVAL_AND_SERIALIZE_NAME)) {
@@ -393,7 +427,10 @@ public class Eval extends BasicFunction {
             } catch (final IOException e1) {
             }
 
-            e.setLocation(line, column);
+            if (!pass) {
+                e.setLocation(line, column);
+            }
+
             throw e;
         }
     }
@@ -493,7 +530,7 @@ public class Eval extends BasicFunction {
                         throw new XPathException(this, "source for module " + location + " not found in database");
                     }
                     if (sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
-                            !"application/xquery".equals(sourceDoc.getMimeType())) {
+                            !"application/xquery".equals(sourceDoc.getMetadata().getMimeType())) {
                         throw new XPathException(this, "source for module " + location + " is not an XQuery or " +
                         "declares a wrong mime-type");
                     }
@@ -545,7 +582,7 @@ public class Eval extends BasicFunction {
                 final String qname = elem.getAttribute("name");
                 final String source = elem.getAttribute("source");
                 NodeValue value;
-                if (source != null && !source.isEmpty()) {
+                if (isNotEmpty(source)) {
                     // load variable contents from URI
                     value = loadVarFromURI(source);
                 } else {
@@ -618,7 +655,7 @@ public class Eval extends BasicFunction {
         final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getParserPool();
         try {
             final URL url = new URL(uri);
-            final InputStreamReader isr = new InputStreamReader(url.openStream(), StandardCharsets.UTF_8);
+            final InputStreamReader isr = new InputStreamReader(url.openStream(), UTF_8);
             final InputSource src = new InputSource(isr);
 
             xr = parserPool.borrowXMLReader();

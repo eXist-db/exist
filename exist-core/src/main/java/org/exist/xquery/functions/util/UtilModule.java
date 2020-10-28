@@ -73,14 +73,17 @@ public class UtilModule extends AbstractInternalModule {
             new FunctionDef(Eval.FS_EVAL[0], Eval.class),
             new FunctionDef(Eval.FS_EVAL[1], Eval.class),
             new FunctionDef(Eval.FS_EVAL[2], Eval.class),
+            new FunctionDef(Eval.FS_EVAL[3], Eval.class),
             new FunctionDef(Eval.FS_EVAL_WITH_CONTEXT[0], Eval.class),
             new FunctionDef(Eval.FS_EVAL_WITH_CONTEXT[1], Eval.class),
+            new FunctionDef(Eval.FS_EVAL_WITH_CONTEXT[2], Eval.class),
             new FunctionDef(Eval.FS_EVAL_INLINE[0], Eval.class),
             new FunctionDef(Eval.FS_EVAL_INLINE[1], Eval.class),
-
+            new FunctionDef(Eval.FS_EVAL_INLINE[2], Eval.class),
             new FunctionDef(Eval.FS_EVAL_AND_SERIALIZE[0], Eval.class),
             new FunctionDef(Eval.FS_EVAL_AND_SERIALIZE[1], Eval.class),
             new FunctionDef(Eval.FS_EVAL_AND_SERIALIZE[2], Eval.class),
+            new FunctionDef(Eval.FS_EVAL_AND_SERIALIZE[3], Eval.class),
             new FunctionDef(Compile.signatures[0], Compile.class),
             new FunctionDef(Compile.signatures[1], Compile.class),
             new FunctionDef(Compile.signatures[2], Compile.class),
@@ -163,7 +166,7 @@ public class UtilModule extends AbstractInternalModule {
 
     public final static QName ERROR_CODE_QNAME = new QName("error-code", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
 
-    public UtilModule(final Map<String, List<?>> parameters) throws XPathException {
+    public UtilModule(final Map<String, List<? extends Object>> parameters) throws XPathException {
         super(functions, parameters, true);
 
         final List<String> evalDisabledParamList = (List<String>) getParameter("evalDisabled");
