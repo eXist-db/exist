@@ -31,20 +31,22 @@ import java.net.URL;
  */
 public class ClassLoaderSource extends URLSource {
 
-    public final static String PROTOCOL = "resource:";
+    public static final String PROTOCOL = "resource:";
 
     private final String source;
 
     /**
      * @param source The resource name (e.g. url).
-     *
-     *  The name of a resource is a '<code>/</code>'-separated path name that
-     *  identifies the resource. Preceding "/" and "resource:"" are removed.
+     *               The name of a resource is a '<code>/</code>'-separated path name that
+     *               identifies the resource. Preceding "/" and "resource:"" are removed.
      * @throws IOException in case of an I/O error
      */
-    public ClassLoaderSource(String source) throws IOException {
+    public ClassLoaderSource(final String source) throws IOException {
+        super(sourceToUrl(source));
         this.source = source;
+    }
 
+    private static URL sourceToUrl(String source) throws IOException {
         if (source.startsWith(PROTOCOL)) {
             source = source.substring(PROTOCOL.length());
         }
@@ -56,7 +58,7 @@ public class ClassLoaderSource extends URLSource {
         if (url == null) {
             throw new IOException("Source not found: " + source);
         }
-        setURL(url);
+        return url;
     }
 
     @Override

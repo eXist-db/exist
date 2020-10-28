@@ -124,12 +124,12 @@ public class ModuleContext extends XQueryContext {
                     }
                 } else {
                     final String dir = FileUtils.dirname(location);
-                    if (dir.matches("^[a-z]+:.*")) {
-                        moduleLoadPath = dir;
+                    if (dir.matches("^[A-Za-z]+:.*")) {
+                        setModuleLoadPath(dir);
                     } else if (".".equals(parentContext.moduleLoadPath)) {
                         if (!".".equals(dir)) {
-                            if (dir.startsWith("/")) {
-                                setModuleLoadPath("." + dir);
+                            if (dir.matches("(?:\\/.*)|(?:[a-zA-Z]:\\\\.*)")) {
+                                setModuleLoadPath(dir);
                             } else {
                                 setModuleLoadPath("./" + dir);
                             }
@@ -146,16 +146,6 @@ public class ModuleContext extends XQueryContext {
                 e.printStackTrace();
             }
         }
-    }
-
-    @Override
-    public void setModule(final String namespaceURI, final Module module) {
-        if (module == null) {
-            modules.remove(namespaceURI);   // unbind the module
-        } else {
-            modules.put(namespaceURI, module);
-        }
-        setRootModule(namespaceURI, module);
     }
 
     private XQueryContext getParentContext() {

@@ -21,12 +21,10 @@
  */
 package org.exist.source;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
@@ -40,27 +38,21 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class StringSource extends AbstractSource {
 
-    private String data;
+    private final String content;
     
-    public StringSource(String content) {
-        this.data = content;
+    public StringSource(final String content) {
+        super(hashKey(content));
+        this.content = content;
     }
 
     @Override
     public String path() {
-        return type();
+        return null;
     }
 
     @Override
     public String type() {
         return "String";
-    }
-
-    /* (non-Javadoc)
-             * @see org.exist.source.Source#getKey()
-             */
-    public Object getKey() {
-        return data;
     }
 
     @Override
@@ -73,26 +65,28 @@ public class StringSource extends AbstractSource {
         return Source.Validity.VALID;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.source.Source#getReader()
-     */
-    public Reader getReader() throws IOException {
-        return new StringReader(data);
+    @Override
+    public Reader getReader() {
+        return new StringReader(content);
     }
 
-    public InputStream getInputStream() throws IOException {
-        return new UnsynchronizedByteArrayInputStream(data.getBytes(UTF_8));
+    @Override
+    public InputStream getInputStream() {
+        return new UnsynchronizedByteArrayInputStream(content.getBytes(UTF_8));
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.source.Source#getContent()
-     */
-    public String getContent() throws IOException {
-        return data;
+    @Override
+    public String getContent() {
+        return content;
     }
 
 	@Override
-	public void validate(Subject subject, int perm) throws PermissionDeniedException {
+	public void validate(final Subject subject, final int perm) {
 		// TODO protected?
 	}
+
+    @Override
+    public int hashCode() {
+        return content.hashCode();
+    }
 }

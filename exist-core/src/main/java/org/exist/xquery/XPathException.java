@@ -316,7 +316,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
         if(callStack == null) {
            callStack = new ArrayList<>();
         }
-        callStack.add(new FunctionStackElement(def, def.getSource().path(), call.getLine(), call.getColumn()));
+        callStack.add(new FunctionStackElement(def, def.getSource().pathOrShortIdentifier(), call.getLine(), call.getColumn()));
     }
     
     public List<FunctionStackElement> getCallStack() {
@@ -367,7 +367,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
                 }
             }
             if(source != null) {
-                buf.append("source: ").append(source.getKey());
+                buf.append("source: ").append(source.pathOrShortIdentifier());
             }
             buf.append("]");
         }

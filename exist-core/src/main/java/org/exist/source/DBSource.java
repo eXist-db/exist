@@ -24,7 +24,6 @@ package org.exist.source;
 import java.io.*;
 
 import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.Permission;
@@ -45,16 +44,15 @@ import org.exist.xmldb.XmldbURI;
 public class DBSource extends AbstractSource {
     
     private final BinaryDocument doc;
-    private final XmldbURI key;
     private final long lastModified;
     private String encoding = "UTF-8";
     private final boolean checkEncoding;
     private final DBBroker broker;
     
     public DBSource(final DBBroker broker, final BinaryDocument doc, final boolean checkXQEncoding) {
+        super(hashKey(doc.getURI().toString()));
         this.broker = broker;
         this.doc = doc;
-        this.key = doc.getURI();
         this.lastModified = doc.getLastModified();
         this.checkEncoding = checkXQEncoding;
     }
@@ -69,16 +67,8 @@ public class DBSource extends AbstractSource {
         return "DB";
     }
 
-    /* (non-Javadoc)
-             * @see org.exist.source.Source#getKey()
-             */
-    @Override
-    public Object getKey() {
-        return key;
-    }
-
     public XmldbURI getDocumentPath() {
-    	return key;
+    	return doc.getURI();
     }
 
     public long getLastModified() {
@@ -88,15 +78,15 @@ public class DBSource extends AbstractSource {
     @Override
     public Validity isValid(final DBBroker broker) {
         Validity result;
-        try(final LockedDocument lockedDoc = broker.getXMLResource(key, LockMode.READ_LOCK)) {
-            if(lockedDoc == null) {
+        try (final LockedDocument lockedDoc = broker.getXMLResource(doc.getURI(), LockMode.READ_LOCK)) {
+            if (lockedDoc == null) {
                 result = Validity.INVALID;
             } else if(lockedDoc.getDocument().getLastModified() > lastModified) {
                 result = Validity.INVALID;
             } else {
                 result = Validity.VALID;
             }
-        } catch(final PermissionDeniedException pde) {
+        } catch (final PermissionDeniedException pde) {
             result = Validity.INVALID;
         }
 
@@ -106,9 +96,9 @@ public class DBSource extends AbstractSource {
     @Override
     public Validity isValid(final Source other) {
         final Validity result;
-        if(!(other instanceof DBSource)) {
+        if (!(other instanceof DBSource)) {
             result = Validity.INVALID;
-        } else if(((DBSource)other).getLastModified() > lastModified) {
+        } else if (((DBSource)other).getLastModified() > lastModified) {
             result = Validity.INVALID;
         } else {
             result = Validity.VALID;
@@ -117,9 +107,6 @@ public class DBSource extends AbstractSource {
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.source.Source#getReader()
-     */
     @Override
     public Reader getReader() throws IOException {
         final InputStream is = broker.getBinaryResource(doc);
@@ -135,21 +122,16 @@ public class DBSource extends AbstractSource {
         return broker.getBinaryResource(doc);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.source.Source#getContent()
-     */
     @Override
     public String getContent() throws IOException {
         final long binaryLength = doc.getContentLength();
-        if(binaryLength > (long)Integer.MAX_VALUE) {
+        if (binaryLength > Integer.MAX_VALUE) {
             throw new IOException("Resource too big to be read using this method.");
         }
 
-        //final byte [] data = new byte[(int)binaryLength];
-        try(final InputStream raw = broker.getBinaryResource(doc);
-        final UnsynchronizedByteArrayOutputStream buf = new UnsynchronizedByteArrayOutputStream((int)binaryLength)) {
+        try (final InputStream raw = broker.getBinaryResource(doc);
+                final UnsynchronizedByteArrayOutputStream buf = new UnsynchronizedByteArrayOutputStream((int)binaryLength)) {
             buf.write(raw);
-            //raw.close();
             try (final InputStream is = buf.toInputStream()) {
                 checkEncoding(is);
                 return buf.toString(encoding);
@@ -159,13 +141,13 @@ public class DBSource extends AbstractSource {
 
     @Override
     public QName isModule() throws IOException {
-        try(final InputStream is = broker.getBinaryResource(doc)) {
+        try (final InputStream is = broker.getBinaryResource(doc)) {
             return getModuleDecl(is);
         }
     }
 
-    private void checkEncoding(final InputStream is) throws IOException {
-        if(checkEncoding) {
+    private void checkEncoding(final InputStream is) {
+        if (checkEncoding) {
             final String checkedEnc = guessXQueryEncoding(is);
             if(checkedEnc != null) {
                 encoding = checkedEnc;
@@ -183,7 +165,7 @@ public class DBSource extends AbstractSource {
         
         //TODO This check should not even be here! Its up to the database to refuse access not requesting source
         
-        if(!doc.getPermissions().validate(subject, mode)) {
+        if (!doc.getPermissions().validate(subject, mode)) {
             final String modeStr = new UnixStylePermissionAider(mode).toString();
             throw new PermissionDeniedException("Subject '" + subject.getName() + "' does not have '" + modeStr + "' access to resource '" + doc.getURI() + "'.");
         }
@@ -191,5 +173,10 @@ public class DBSource extends AbstractSource {
     
     public Permission getPermissions() {
         return doc.getPermissions();
+    }
+
+    @Override
+    public int hashCode() {
+        return getDocumentPath().hashCode();
     }
 }

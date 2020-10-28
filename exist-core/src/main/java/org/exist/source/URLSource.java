@@ -24,7 +24,6 @@ package org.exist.source;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 
@@ -43,144 +42,141 @@ import java.util.regex.Pattern;
 
 /**
  * A source implementation reading from an URL.
- * 
+ *
  * @author wolf
  */
 public class URLSource extends AbstractSource {
 
-	private final static Pattern URL_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
+    private static final Pattern URL_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
 
-	private final static Logger LOG = LogManager.getLogger(URLSource.class);
-	
-	protected URL url;
-	private URLConnection connection = null;
-	private long lastModified = 0;
+    private static final Logger LOG = LogManager.getLogger(URLSource.class);
+
+    protected final URL url;
+    private URLConnection connection = null;
+    private long lastModified = 0;
     private int responseCode = HttpURLConnection.HTTP_OK;
 
-	protected URLSource() {   
-    }
-    
-	public URLSource(URL url) {
-		this.url = url;
-	}
-
-	@Override
-	public String path() {
-		final String protocol = url.getProtocol();
-		final String host = url.getHost();
-		if(protocol.equals("file") && (host == null || host.length() == 0 || "localhost".equals(host) || "127.0.0.1".equals(host)))
-		{
-			return url.getFile();
-		}
-		return url.toExternalForm();
-	}
-
-	@Override
-	public String type() {
-		final String protocol = url.getProtocol();
-		final String host = url.getHost();
-		if(protocol.equals("file") && (host == null || host.length() == 0 || "localhost".equals(host) || "127.0.0.1".equals(host)))
-		{
-			return "File";
-		}
-		return "URL";
-	}
-
-	protected void setURL(URL url) {
+    public URLSource(final URL url) {
+        super(hashKey(url.toString()));
         this.url = url;
     }
-    
-    public URL getURL() {
-    	return url;
+
+    @Override
+    public String path() {
+        final String protocol = url.getProtocol();
+        final String host = url.getHost();
+        if ("file".equals(protocol) && (host == null || host.length() == 0 || "localhost".equals(host) || "127.0.0.1".equals(host))) {
+            return url.getFile();
+        }
+        return url.toExternalForm();
     }
 
-    
-	private long getLastModification() {
-		try {
-			if(connection == null)
-				{connection = url.openConnection();}
-			return connection.getLastModified();
-		} catch (final IOException e) {
-			LOG.warn("URL '" + url + "' could not be opened: " + e.getMessage());
-			return 0;
-		}
-	}
-	
-	@Override
-	public Object getKey() {
-		return url;
-	}
+    @Override
+    public String type() {
+        final String protocol = url.getProtocol();
+        final String host = url.getHost();
+        if ("file".equals(protocol) && (host == null || host.length() == 0 || "localhost".equals(host) || "127.0.0.1".equals(host))) {
+            return "File";
+        }
+        return "URL";
+    }
 
-	@Override
-	public Validity isValid(final DBBroker broker) {
-		final long modified = getLastModification();
-		if(modified == 0 && modified > lastModified) {
-			return Validity.INVALID;
-		} else {
-			return Validity.VALID;
-		}
-	}
+    public URL getURL() {
+        return url;
+    }
 
-	@Override
-	public Validity isValid(final Source other) {
-		return Validity.INVALID;
-	}
+    private long getLastModification() {
+        try {
+            if (connection == null) {
+                connection = url.openConnection();
+            }
+            return connection.getLastModified();
+        } catch (final IOException e) {
+            LOG.warn("URL '" + url + "' could not be opened: " + e.getMessage());
+            return 0;
+        }
+    }
 
-	@Override
-	public Charset getEncoding() throws IOException {
-		if (connection == null) {
-			connection = url.openConnection();
-		}
-		final String contentType = connection.getContentType();
-		if (contentType != null) {
-			final Matcher matcher = URL_PATTERN.matcher(contentType);
-			if (matcher.find()) {
-				try {
-					return Charset.forName(matcher.group(1).trim().toUpperCase());
-				} catch (IllegalArgumentException e) {
-					// unknown or illegal charset
-					return null;
-				}
-			} else if (contentType.startsWith("text/")) {
-				return StandardCharsets.ISO_8859_1;
-			}
-		}
-		return null;
-	}
+    @Override
+    public Validity isValid(final DBBroker broker) {
+        final long modified = getLastModification();
+        final Validity validity;
+        if (modified == 0 || modified > lastModified) {
+            validity = Validity.INVALID;
+        } else {
+            validity = Validity.VALID;
+        }
+        lastModified = modified;
+        return validity;
+    }
 
-	@Override
-	public Reader getReader() throws IOException {
-		try {
-			if(connection == null) {
-				connection = url.openConnection();
-                if (connection instanceof HttpURLConnection)
-                    {responseCode = ((HttpURLConnection) connection).getResponseCode();}
+    @Override
+    public Validity isValid(final Source other) {
+        return Validity.INVALID;
+    }
+
+    @Override
+    public Charset getEncoding() throws IOException {
+        if (connection == null) {
+            connection = url.openConnection();
+            lastModified = connection.getLastModified();
+        }
+        final String contentType = connection.getContentType();
+        if (contentType != null) {
+            final Matcher matcher = URL_PATTERN.matcher(contentType);
+            if (matcher.find()) {
+                try {
+                    return Charset.forName(matcher.group(1).trim().toUpperCase());
+                } catch (final IllegalArgumentException e) {
+                    // unknown or illegal charset
+                    return null;
+                }
+            } else if (contentType.startsWith("text/")) {
+                return StandardCharsets.ISO_8859_1;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Reader getReader() throws IOException {
+        try {
+            if (connection == null) {
+                connection = url.openConnection();
+                lastModified = connection.getLastModified();
+                if (connection instanceof HttpURLConnection) {
+                    responseCode = ((HttpURLConnection) connection).getResponseCode();
+                }
             }
             Reader reader = null;
-            if (responseCode != HttpURLConnection.HTTP_NOT_FOUND)
-			    {reader = new InputStreamReader(connection.getInputStream(), "UTF-8");}
-			connection = null;
-			return reader;
-		} catch (final IOException e) {
-			LOG.warn("URL '" + url + "' could not be opened: " + e.getMessage());
-			throw e;
-		}
-	}
+            if (responseCode != HttpURLConnection.HTTP_NOT_FOUND) {
+                reader = new InputStreamReader(connection.getInputStream(), "UTF-8");
+            }
+            connection = null;
+            return reader;
+        } catch (final IOException e) {
+            LOG.warn("URL '" + url + "' could not be opened: " + e.getMessage());
+            throw e;
+        }
+    }
 
-	@Override
+    @Override
     public InputStream getInputStream() throws IOException {
         try {
-            if(connection == null) {
+            if (connection == null) {
                 connection = url.openConnection();
-                if (connection instanceof HttpURLConnection)
-                    {responseCode = ((HttpURLConnection) connection).getResponseCode();}
+                lastModified = connection.getLastModified();
+                if (connection instanceof HttpURLConnection) {
+                    responseCode = ((HttpURLConnection) connection).getResponseCode();
+                }
             }
             InputStream is = null;
-            if (responseCode != HttpURLConnection.HTTP_NOT_FOUND)
-                {is = connection.getInputStream();}
+            if (responseCode != HttpURLConnection.HTTP_NOT_FOUND) {
+                is = connection.getInputStream();
+            }
             connection = null;
             return is;
-            
+
         } catch (final ConnectException e) {
             LOG.warn("Unable to connect to URL '" + url + "': " + e.getMessage());
             throw e;
@@ -192,43 +188,50 @@ public class URLSource extends AbstractSource {
     }
 
     @Override
-	public String getContent() throws IOException {
-		try {
-			if(connection == null) {
-				connection = url.openConnection();
-                if (connection instanceof HttpURLConnection)
-                    {responseCode = ((HttpURLConnection) connection).getResponseCode();}
+    public String getContent() {
+        try {
+            if (connection == null) {
+                connection = url.openConnection();
+                lastModified = connection.getLastModified();
+                if (connection instanceof HttpURLConnection) {
+                    responseCode = ((HttpURLConnection) connection).getResponseCode();
+                }
             }
-			final String content = connection.getContent().toString();
-			connection = null;
-			return content;
-		} catch (final IOException e) {
-			LOG.warn("URL '" + url + "' could not be opened: " + e.getMessage());
-			return null;
-		}
-	}
+            final String content = connection.getContent().toString();
+            connection = null;
+            return content;
+        } catch (final IOException e) {
+            LOG.warn("URL '" + url + "' could not be opened: " + e.getMessage());
+            return null;
+        }
+    }
 
     public int getResponseCode() {
         return responseCode;
     }
 
     @Override
-	public String toString() {
-		if (url == null) {
-			return "[not set]";
-		}
-		return url.toString();
-	}
+    public String toString() {
+        if (url == null) {
+            return "[not set]";
+        }
+        return url.toString();
+    }
 
-	@Override
-	public void validate(Subject subject, int perm) throws PermissionDeniedException {
-		// TODO protected?
-	}
+    @Override
+    public void validate(final Subject subject, final int perm) {
+        // TODO protected?
+    }
 
     @Override
     public QName isModule() throws IOException {
-		try (final InputStream is = getInputStream()) {
-			return getModuleDecl(is);
-		}
+        try (final InputStream is = getInputStream()) {
+            return getModuleDecl(is);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return url.hashCode();
     }
 }

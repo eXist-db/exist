@@ -128,16 +128,8 @@ public class LogFunction extends BasicFunction {
         buf.append(this.getLine());
 
         // Add source information to the log statement when provided
-        if (getSource() != null && getSource().getKey() != null) {
-            buf.append(" ");
-
-            // Do not write content of query from String into log.
-            if (getSource() instanceof StringSource) {
-                buf.append(getSource().type());
-            } else {
-                buf.append(getSource().getKey());
-            }
-
+        if (getSource() != null) {
+            buf.append(' ').append(getSource().pathOrShortIdentifier());
         }
 
         buf.append(") ");

@@ -283,13 +283,11 @@ public class Eval extends BasicFunction {
         //set module load path
         if (Type.subTypeOf(expr.getType(), Type.ANY_URI)) {
             String uri = null;
-            final Object key = querySource.getKey();
 
-            if (key instanceof XmldbURI) {
-                uri = XmldbURI.EMBEDDED_SERVER_URI.append(((XmldbURI) key).removeLastSegment()).toString();
-//          } else if (key instanceof URL) {
-//              TODO: uri = ((URL) key).getParent()
-            } else if (key instanceof String && querySource instanceof FileSource) {
+            if (querySource instanceof DBSource) {
+                final XmldbURI documentPath = ((DBSource)querySource).getDocumentPath();
+                uri = XmldbURI.EMBEDDED_SERVER_URI.append(documentPath).removeLastSegment().toString();
+            } else if (querySource instanceof FileSource) {
                 uri = ((FileSource) querySource).getPath().getParent().toString();
             }
 

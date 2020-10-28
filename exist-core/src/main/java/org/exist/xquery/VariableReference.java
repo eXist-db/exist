@@ -30,7 +30,7 @@ import org.exist.xquery.value.Type;
 
 /**
  * Represents a reference to an in-scope variable.
- * 
+ *
  * @author wolf
  */
 public class VariableReference extends AbstractExpression {
@@ -38,7 +38,7 @@ public class VariableReference extends AbstractExpression {
     private final QName qname;
     private Expression parent;
 
-    public VariableReference(XQueryContext context, QName qname) {
+    public VariableReference(final XQueryContext context, final QName qname) {
         super(context);
         this.qname = qname;
     }
@@ -47,10 +47,8 @@ public class VariableReference extends AbstractExpression {
         return qname;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
-     */
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    @Override
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         this.parent = contextInfo.getParent();
         Variable var = null;
         try {
@@ -59,40 +57,45 @@ public class VariableReference extends AbstractExpression {
             // ignore: variable might not be known yet
             return;
         }
-        if (var == null)
-            {throw new XPathException(this, ErrorCodes.XPDY0002,
-                "variable '$" + qname + "' is not set.");}
-        if (!var.isInitialized())
-            {throw new XPathException(this, ErrorCodes.XQST0054,
-                "variable declaration of '$" + qname + "' cannot " +
-                "be executed because of a circularity.");}
+        if (var == null) {
+            throw new XPathException(this, ErrorCodes.XPDY0002,
+                    "variable '$" + qname + "' is not set.");
+        }
+        if (!var.isInitialized()) {
+            throw new XPathException(this, ErrorCodes.XQST0054,
+                    "variable declaration of '$" + qname + "' cannot " +
+                            "be executed because of a circularity.");
+        }
         contextInfo.setStaticReturnType(var.getStaticType());
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-     */
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    @Override
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
-                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());}
+                    "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT ITEM", contextItem.toSequence());
+            }
         }
         final Variable var = getVariable();
-        if (var == null)
-            {throw new XPathException(this, ErrorCodes.XPDY0002, "variable '$" + qname + "' is not set.");}
+        if (var == null) {
+            throw new XPathException(this, ErrorCodes.XPDY0002, "variable '$" + qname + "' is not set.");
+        }
         final Sequence seq = var.getValue();
-        if (seq == null)
-            {throw new XPathException(this, ErrorCodes.XPDY0002, "undefined value for variable '$" + qname + "'");}
+        if (seq == null) {
+            throw new XPathException(this, ErrorCodes.XPDY0002, "undefined value for variable '$" + qname + "'");
+        }
         final Sequence result = seq;
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", result);}
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", result);
+        }
         return result;
     }
 
@@ -105,31 +108,25 @@ public class VariableReference extends AbstractExpression {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#preselect(org.exist.dom.persistent.DocumentSet, org.exist.xquery.StaticContext)
-     */
-    public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
+    public DocumentSet preselect(final DocumentSet in_docs) {
         return in_docs;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
-     */
-    public void dump(ExpressionDumper dumper) {
+    @Override
+    public void dump(final ExpressionDumper dumper) {
         dumper.display('$').display(qname);
     }
 
+    @Override
     public String toString() {
         return "$" + qname;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#returnsType()
-     */
+    @Override
     public int returnsType() {
         try {
             final Variable var = context.resolveVariable(qname);
-            if(var != null) {
+            if (var != null) {
                 if (var.getValue() != null) {
                     final int type = var.getValue().getItemType();
                     return type;
@@ -143,9 +140,7 @@ public class VariableReference extends AbstractExpression {
         return Type.ITEM;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.AbstractExpression#getDependencies()
-     */
+    @Override
     public int getDependencies() {
         try {
             final Variable var = context.resolveVariable(qname);
@@ -173,14 +168,13 @@ public class VariableReference extends AbstractExpression {
         return Cardinality.ZERO_OR_MORE; // unknown cardinality
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.AbstractExpression#resetState()
-     */
-    public void resetState(boolean postOptimization) {
+    @Override
+    public void resetState(final boolean postOptimization) {
         super.resetState(postOptimization);
     }
 
-    public void accept(ExpressionVisitor visitor) {
+    @Override
+    public void accept(final ExpressionVisitor visitor) {
         visitor.visitVariableReference(this);
     }
 

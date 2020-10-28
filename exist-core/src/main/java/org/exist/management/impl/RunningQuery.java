@@ -40,7 +40,7 @@ public class RunningQuery {
     public RunningQuery(final XQueryWatchDog watchdog, final String requestURI) {
         this.id = watchdog.getContext().hashCode();
         this.sourceType = watchdog.getContext().getSource().type();
-        this.sourceKey = watchdog.getContext().getSource().path();
+        this.sourceKey = watchdog.getContext().getSource().pathOrShortIdentifier();
         this.terminating = watchdog.isTerminating();
         this.requestURI = requestURI;
         this.thread = watchdog.getRunningThread();

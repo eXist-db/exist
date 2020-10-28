@@ -181,7 +181,7 @@ public class XQueryPool implements BrokerPoolService {
 
             if (!isCompiledQueryValid(broker, source, firstCompiledXQuery)) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug(source.getKey() + " is invalid, removing from XQuery Pool...");
+                    LOG.debug(source.pathOrShortIdentifier() + " is invalid, removing from XQuery Pool...");
                 }
 
                 // query is invalid, returning null will remove the entry from the cache

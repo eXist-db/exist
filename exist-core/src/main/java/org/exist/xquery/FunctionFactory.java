@@ -26,6 +26,9 @@ import java.util.List;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.exist.source.BinarySource;
+import org.exist.source.Source;
+import org.exist.source.StringSource;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Constants.StringTruncationOperator;
 import org.exist.xquery.parser.XQueryAST;
@@ -361,9 +364,16 @@ public class FunctionFactory {
         if (func == null) {
             // check if the module has been compiled already
             if (module.isReady()) {
+                final StringBuilder msg = new StringBuilder("Function ")
+                        .append(qname.getStringValue()).append('#').append(params.size())
+                        .append(" is not defined in namespace '").append(qname.getNamespaceURI()).append('\'');
+                if (module instanceof ExternalModule) {
+                    final Source moduleSource = ((ExternalModule) module).getSource();
+                    msg.append(" for module: ").append(moduleSource.pathOrShortIdentifier());
+                }
                 throw new XPathException(ast.getLine(), ast.getColumn(),
-            		ErrorCodes.XPST0017, "Function " + qname.getStringValue() +
-                    "() is not defined in namespace '" + qname.getNamespaceURI() + "'");
+                        ErrorCodes.XPST0017, msg.toString());
+
             // If not, postpone the function resolution
             // Register a forward reference with the root module, so it gets resolved
             // when the main query has been compiled.

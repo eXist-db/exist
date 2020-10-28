@@ -32,10 +32,8 @@ import java.nio.file.Path;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
-
 
 /**
  * A source implementation reading from the path system.
@@ -44,14 +42,12 @@ import org.exist.storage.DBBroker;
  */
 public class FileSource extends AbstractSource {
 
-    private final static Logger LOG = LogManager.getLogger(FileSource.class);
+    private static final Logger LOG = LogManager.getLogger(FileSource.class);
 
     private final Path path;
     private Charset encoding;
     private final boolean checkEncoding;
-
-    private String filePath;
-    private long lastModified;
+    private final long lastModified;
 
     /**
      * Defaults to UTF-8 encoding for the path path
@@ -63,30 +59,21 @@ public class FileSource extends AbstractSource {
     }
 
     public FileSource(final Path path, final Charset encoding, final boolean checkXQEncoding) {
+        super(hashKey(path.toString()));
         this.path = path;
         this.encoding = encoding;
         this.checkEncoding = checkXQEncoding;
-        this.filePath = path.toAbsolutePath().toString();
         this.lastModified = lastModifiedSafe(path);
     }
 
     @Override
     public String path() {
-        return getFilePath();
+        return path.toAbsolutePath().toString();
     }
 
     @Override
     public String type() {
         return "File";
-    }
-
-    @Override
-    public Object getKey() {
-        return filePath;
-    }
-    
-    public String getFilePath() {
-    	return filePath;
     }
 
     public Path getPath() {
@@ -96,7 +83,7 @@ public class FileSource extends AbstractSource {
     @Override
     public Validity isValid(final DBBroker broker) {
         final long currentLastModified = lastModifiedSafe(path);
-        if(currentLastModified == -1 || currentLastModified > lastModified) {
+        if (currentLastModified == -1 || currentLastModified > lastModified) {
             return Validity.INVALID;
         } else {
             return Validity.VALID;
@@ -133,7 +120,7 @@ public class FileSource extends AbstractSource {
 
     private void checkEncoding() throws IOException {
         if (checkEncoding) {
-            try(final InputStream is = Files.newInputStream(path)) {
+            try (final InputStream is = Files.newInputStream(path)) {
                 final String checkedEnc = guessXQueryEncoding(is);
                 if (checkedEnc != null) {
                     encoding = Charset.forName(checkedEnc);
@@ -145,7 +132,7 @@ public class FileSource extends AbstractSource {
     private long lastModifiedSafe(final Path path) {
         try {
             return Files.getLastModifiedTime(path).toMillis();
-        } catch(final IOException ioe) {
+        } catch (final IOException ioe) {
             LOG.error(ioe);
             return -1;
         }
@@ -153,18 +140,23 @@ public class FileSource extends AbstractSource {
 
     @Override
     public QName isModule() throws IOException {
-        try(final InputStream is = Files.newInputStream(path)) {
+        try (final InputStream is = Files.newInputStream(path)) {
             return getModuleDecl(is);
         }
     }
 
     @Override
     public String toString() {
-    	return filePath;
+    	return path();
     }
 
 	@Override
-	public void validate(final Subject subject, final int perm) throws PermissionDeniedException {
+	public void validate(final Subject subject, final int perm) {
 		// TODO protected?
 	}
+
+    @Override
+    public int hashCode() {
+        return path.hashCode();
+    }
 }

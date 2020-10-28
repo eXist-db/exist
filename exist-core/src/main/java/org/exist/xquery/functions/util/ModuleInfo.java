@@ -229,15 +229,16 @@ public class ModuleInfo extends BasicFunction {
 		}
 	}
 
-	private void outputModule(MemTreeBuilder builder, Module module) {
+	private void outputModule(final MemTreeBuilder builder, final Module module) {
 		builder.startElement(MODULE_QNAME, null);
 		
 		builder.addAttribute(MODULE_URI_ATTR, module.getNamespaceURI());
 		builder.addAttribute(MODULE_PREFIX_ATTR, module.getDefaultPrefix());
 		if (!module.isInternalModule()) {
 			final Source source = ((ExternalModule)module).getSource();
-			if (source != null)
-				{builder.addAttribute(MODULE_SOURCE_ATTR, source.getKey().toString());}
+			if (source != null) {
+				builder.addAttribute(MODULE_SOURCE_ATTR, source.pathOrContentOrShortIdentifier());
+			}
 		}
 		builder.startElement(MODULE_DESC_QNAME, null);
 		builder.characters(module.getDescription());
