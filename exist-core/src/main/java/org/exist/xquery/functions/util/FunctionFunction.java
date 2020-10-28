@@ -30,6 +30,8 @@ import org.exist.xquery.util.Error;
 import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.*;
 
+import static org.apache.commons.lang3.ArrayUtils.isEmpty;
+
 /**
  * @author wolf
  */
@@ -71,9 +73,7 @@ public class FunctionFunction extends BasicFunction {
     	funcCall.analyze(contextInfo);
     }
 
-	/* (non-Javadoc)
-     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
-     */
+	@Override
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
     	
@@ -93,19 +93,28 @@ public class FunctionFunction extends BasicFunction {
 	    }
 	    
 	    // check if the function is from a module 
-	    final Module module = context.getModule(qname.getNamespaceURI());
-	    UserDefinedFunction func;
-	    if(module == null) {
+	    final Module[] modules = context.getModules(qname.getNamespaceURI());
+	    UserDefinedFunction func = null;
+	    if (isEmpty(modules)) {
 	        func = context.resolveFunction(qname, arity);
 	    } else {
-	        if(module.isInternalModule()) {
-                logger.error("Cannot create a reference to an internal Java function");
-                throw new XPathException(this, "Cannot create a reference to an internal Java function");
-            }
-	        func = ((ExternalModule)module).getFunction(qname, arity, context);
+	    	for (final Module module : modules) {
+				func = ((ExternalModule)module).getFunction(qname, arity, context);
+				if (func != null) {
+					if (module.isInternalModule()) {
+						logger.error("Cannot create a reference to an internal Java function");
+						throw new XPathException(this, "Cannot create a reference to an internal Java function");
+					}
+
+					break;
+				}
+			}
 	    }
-        if (func == null)
-            {throw new XPathException(this, Messages.getMessage(Error.FUNC_NOT_FOUND, qname, Integer.toString(arity)));}
+
+        if (func == null) {
+        	throw new XPathException(this, Messages.getMessage(Error.FUNC_NOT_FOUND, qname, Integer.toString(arity)));
+        }
+
 	    final FunctionCall funcCall = new FunctionCall(context, func);
         funcCall.setLocation(line, column);
 	    return funcCall;

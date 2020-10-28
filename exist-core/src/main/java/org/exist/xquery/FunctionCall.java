@@ -101,35 +101,6 @@ public class FunctionCall extends Function {
     public UserDefinedFunction getFunction() {
         return functionDef;
     }
-
-	/**
-	 * For calls to functions in external modules, check that the instance of the function we were
-	 * bound to matches the current implementation of the module bound to our context.  If not,
-	 * rebind to the correct instance, but don't bother resetting the signature since it's guaranteed
-	 * (I hope!) to be the same.
-	 * @throws XPathException 
-	 */
-	private void updateFunction() throws XPathException {
-		if (functionDef.getContext() instanceof ModuleContext) {
-			final ModuleContext modContext = (ModuleContext) functionDef.getContext();
-			// util:eval will stuff non-module function declarations into a module context sometimes,
-			// so watch out for those and ignore them.
-			if (functionDef.getName() != null && 
-					functionDef.getName().getNamespaceURI().equals(modContext.getModuleNamespace()) &&
-                    modContext.getRootContext() != context.getRootContext()) {
-                final ExternalModule rootModule = (ExternalModule) context.getRootModule(functionDef.getName().getNamespaceURI());
-                if (rootModule != null) {
-                    final UserDefinedFunction replacementFunctionDef =
-                        rootModule.getFunction(functionDef.getName(), getArgumentCount(), modContext);
-                    if (replacementFunctionDef != null) {
-                        expression = functionDef = (UserDefinedFunction) replacementFunctionDef.clone();
-                        mySignature = functionDef.getSignature();
-                        functionDef.setCaller(this);
-                    }
-                }
-            }
-        }
-    }
         
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Function#analyze(org.exist.xquery.AnalyzeContextInfo)

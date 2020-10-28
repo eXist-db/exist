@@ -666,7 +666,10 @@
                                 <exclude>src/test/java/org/exist/storage/txn/ReusableTxnTest.java</exclude>
                                 <exclude>src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java</exclude>
                                 <exclude>src/test/java/org/exist/storage/txn/TxnTest.java</exclude>
+                                <exclude>src/main/java/org/exist/util/CollectionOfArrayIterator.java</exclude>
+                                <exclude>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/Cardinality.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/ImportModuleTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/functions/map/MapType.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/value/SubSequence.java</exclude>
@@ -792,7 +795,10 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/test/java/org/exist/storage/txn/ReusableTxnTest.java</include>
                                 <include>src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java</include>
                                 <include>src/test/java/org/exist/storage/txn/TxnTest.java</include>
+                                <include>src/main/java/org/exist/util/CollectionOfArrayIterator.java</include>
+                                <include>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</include>
                                 <include>src/main/java/org/exist/xquery/Cardinality.java</include>
+                                <include>src/test/java/org/exist/xquery/ImportModuleTest.java</include>
                                 <include>src/main/java/org/exist/xquery/functions/map/MapType.java</include>
                                 <include>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</include>
                                 <include>src/main/java/org/exist/xquery/value/SubSequence.java</include>

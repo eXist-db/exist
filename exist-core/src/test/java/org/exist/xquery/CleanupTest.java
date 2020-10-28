@@ -22,7 +22,6 @@
 
 package org.exist.xquery;
 
-import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
@@ -35,7 +34,6 @@ import org.exist.xmldb.EXistXQueryService;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Sequence;
 import org.junit.*;
-import org.junit.runner.RunWith;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 
@@ -108,7 +106,9 @@ public class CleanupTest {
         final EXistXQueryService service = (EXistXQueryService)collection.getService("XQueryService", "1.0");
         final CompiledExpression compiled = service.compile(TEST_QUERY);
 
-        final Module module = ((PathExpr) compiled).getContext().getModule(MODULE_NS);
+        final Module[] modules = ((PathExpr) compiled).getContext().getModules(MODULE_NS);
+        assertEquals(1, modules.length);
+        final Module module = modules[0];
         final java.util.Collection<VariableDeclaration> varDecls = ((ExternalModule) module).getVariableDeclarations();
         final Iterator<VariableDeclaration> vi = varDecls.iterator();
         final VariableDeclaration var1 = vi.next();
@@ -157,7 +157,9 @@ public class CleanupTest {
         final EXistXQueryService service = (EXistXQueryService)collection.getService("XQueryService", "1.0");
 
         final CompiledExpression compiled = service.compile(INTERNAL_MODULE_EVAL_TEST);
-        final Module module = ((PathExpr) compiled).getContext().getModule(MODULE_NS);
+        final Module[] modules = ((PathExpr) compiled).getContext().getModules(MODULE_NS);
+        assertEquals(1, modules.length);
+        final Module module = modules[0];
         module.declareVariable(new QName("VAR", MODULE_NS, "t"), "TEST");
 
         final ResourceSet result = service.execute(compiled);
@@ -173,7 +175,9 @@ public class CleanupTest {
         final EXistXQueryService service = (EXistXQueryService)collection.getService("XQueryService", "1.0");
 
         final CompiledExpression compiled = service.compile(INTERNAL_MODULE_TEST);
-        final Module module = ((PathExpr) compiled).getContext().getModule(MODULE_NS);
+        final Module[] modules = ((PathExpr) compiled).getContext().getModules(MODULE_NS);
+        assertEquals(1, modules.length);
+        final Module module = modules[0];
         module.declareVariable(new QName("VAR", MODULE_NS, "t"), "TEST");
         final InternalFunctionCall root = (InternalFunctionCall) ((PathExpr) compiled).getFirst();
         final TestModule.TestFunction func = (TestModule.TestFunction) root.getFunction();

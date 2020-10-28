@@ -24,6 +24,7 @@ package org.exist.xquery;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -32,9 +33,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -51,8 +51,8 @@ import com.evolvedbinary.j8fu.function.TriFunctionE;
 import com.evolvedbinary.j8fu.function.QuadFunctionE;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import com.ibm.icu.text.Collator;
-import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectRBTreeMap;
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.objects.*;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
@@ -84,6 +84,7 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Collations;
+import org.exist.util.CollectionOfArrayIterator;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.NamePool;
@@ -98,6 +99,8 @@ import org.w3c.dom.Node;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static javax.xml.XMLConstants.XMLNS_ATTRIBUTE;
 import static javax.xml.XMLConstants.XML_NS_PREFIX;
+import static org.apache.commons.lang3.ArrayUtils.isEmpty;
+import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 import static org.exist.Namespaces.XML_NS;
 
 /**
@@ -207,13 +210,17 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     /**
      * Loaded modules.
+     *
+     * Map<NamespaceURI, Modules>
      */
-    protected Map<String, Module> modules = new HashMap<>();
+    protected Object2ObjectMap<String, Module[]> modules = new Object2ObjectOpenHashMap<>(8, Hash.VERY_FAST_LOAD_FACTOR);
 
     /**
      * Loaded modules, including ones bubbled up from imported modules.
+     *
+     * Map<NamespaceURI, Modules>
      */
-    private Map<String, Module> allModules = new HashMap<>();
+    private Object2ObjectMap<String, Module[]> allModules = new Object2ObjectOpenHashMap<>();
 
     /**
      * Used to save current state when modules are imported dynamically
@@ -513,13 +520,11 @@ public class XQueryContext implements BinaryValueManager, Context {
      */
     public void prepareForReuse() throws XPathException {
         // prepare the variables of the internal modules (which were previously reset)
-        try (final Stream<InternalModule> internalModules = allModules
-                .values()
-                .stream()
-                .filter(module -> module instanceof InternalModule)
-                .map(module -> (InternalModule) module)) {
-            for (final InternalModule internalModule : internalModules.collect(Collectors.toList())) {
-                internalModule.prepare(this);
+        for (final Module[] modules : allModules.values()) {
+            for (final Module module : modules) {
+                if (module instanceof InternalModule) {
+                    ((InternalModule) module).prepare(this);
+                }
             }
         }
     }
@@ -590,25 +595,26 @@ public class XQueryContext implements BinaryValueManager, Context {
         ctx.attributes = new HashMap<>(this.attributes);
 
         // make imported modules available in the new context
-        ctx.modules = new HashMap<>();
+        ctx.modules = new Object2ObjectOpenHashMap<>(this.modules.size(), Hash.VERY_FAST_LOAD_FACTOR);
+        for (final Object2ObjectMap.Entry<String, Module[]> entry : Object2ObjectMaps.fastIterable(this.modules)) {
+            final String namespaceURI = entry.getKey();
+            final Module[] modules = entry.getValue();
 
-        for (final Module module : this.modules.values()) {
+            ctx.modules.put(namespaceURI, Arrays.copyOf(modules, modules.length));
 
+            final String prefix = this.staticPrefixes.get(namespaceURI);
             try {
-                ctx.modules.put(module.getNamespaceURI(), module);
-                final String prefix = this.staticPrefixes.get(module.getNamespaceURI());
-                ctx.declareNamespace(prefix, module.getNamespaceURI());
+                ctx.declareNamespace(prefix, namespaceURI);
             } catch (final XPathException e) {
                 // ignore
+                LOG.warn(e);
             }
         }
-        ctx.allModules = new HashMap<>();
 
-        for (final Module module : this.allModules.values()) {
-
-            if (module != null) { //UNDERSTAND: why is it possible? -shabanovd
-                ctx.allModules.put(module.getNamespaceURI(), module);
-            }
+        ctx.allModules = new Object2ObjectOpenHashMap<>(this.allModules.size());
+        for (final Object2ObjectMap.Entry<String, Module[]> allModulesEntry : Object2ObjectMaps.fastIterable(this.allModules)) {
+            final Module[] modules = allModulesEntry.getValue();
+            ctx.allModules.put(allModulesEntry.getKey(), Arrays.copyOf(modules, modules.length));
         }
 
         ctx.watchdog = this.watchdog;
@@ -1396,8 +1402,10 @@ public class XQueryContext implements BinaryValueManager, Context {
             watchdog.reset();
         }
 
-        for (final Module module : allModules.values()) {
-            module.reset(this, keepGlobals);
+        for (final Module[] modules : allModules.values()) {
+            for (final Module module : modules) {
+                module.reset(this, keepGlobals);
+            }
         }
 
         if (!keepGlobals) {
@@ -1461,7 +1469,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public Iterator<Module> getModules() {
-        return modules.values().iterator();
+        return new CollectionOfArrayIterator<>(modules.values());
     }
 
     @Override
@@ -1471,40 +1479,62 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public Iterator<Module> getAllModules() {
-        return allModules.values().iterator();
+        return new CollectionOfArrayIterator<>(allModules.values());
     }
 
     @Override
     @Nullable
-    public Module getModule(final String namespaceURI) {
+    public Module[] getModules(final String namespaceURI) {
         return modules.get(namespaceURI);
     }
 
     @Override
-    public Module getRootModule(final String namespaceURI) {
+    public Module[] getRootModules(final String namespaceURI) {
         return allModules.get(namespaceURI);
     }
 
     @Override
-    public void setModule(final String namespaceURI, final Module module) {
-        if (module == null) {
-            modules.remove(namespaceURI); // unbind the module
+    public void setModules(final String namespaceURI, @Nullable final Module[] modules) {
+        if (modules == null) {
+            this.modules.remove(namespaceURI); // unbind the module
         } else {
-            modules.put(namespaceURI, module);
+            this.modules.put(namespaceURI, modules);
         }
-        setRootModule(namespaceURI, module);
+        setRootModules(namespaceURI, modules);
     }
 
-    protected void setRootModule(final String namespaceURI, final Module module) {
+    @Override
+    public void addModule(final String namespaceURI, final Module module) {
         if (module == null) {
+            throw new IllegalArgumentException();
+        } else {
+            this.modules.compute(namespaceURI, addToMapValueArray(module));
+        }
+        addRootModule(namespaceURI, module);
+    }
+
+    protected void setRootModules(final String namespaceURI, @Nullable final Module[] modules) {
+        if (modules == null) {
             allModules.remove(namespaceURI); // unbind the module
             return;
         }
 
-        if (allModules.get(namespaceURI) != module) {
+        if (allModules.get(namespaceURI) != modules) {
             setModulesChanged();
         }
-        allModules.put(namespaceURI, module);
+        allModules.put(namespaceURI, modules);
+    }
+
+    protected void addRootModule(final String namespaceURI, final Module module) {
+        if (module == null) {
+            throw new IllegalArgumentException();
+        } else {
+            final Module[] current = this.allModules.get(namespaceURI);
+            final Module[] updated = this.allModules.compute(namespaceURI, addToMapValueArray(module));
+            if (current != updated) {
+                setModulesChanged();  // NOTE: intentional object identity comparison
+            }
+        }
     }
 
     protected void setModulesChanged() {
@@ -1513,13 +1543,15 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public boolean checkModulesValid() {
-        for (final Module module : allModules.values()) {
-            if (!module.isInternalModule()) {
-                if (!((ExternalModule) module).moduleIsValid(getBroker())) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Module with URI " + module.getNamespaceURI() + " has changed and needs to be reloaded");
+        for (final Module[] modules : allModules.values()) {
+            for (final Module module : modules) {
+                if (!module.isInternalModule()) {
+                    if (!((ExternalModule) module).moduleIsValid(getBroker())) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Module with URI " + module.getNamespaceURI() + " has changed and needs to be reloaded");
+                        }
+                        return false;
                     }
-                    return false;
                 }
             }
         }
@@ -1532,10 +1564,12 @@ public class XQueryContext implements BinaryValueManager, Context {
             return;
         }
         analyzed = true;
-        for (final Module module : expr.getContext().modules.values()) {
-            if (!module.isInternalModule()) {
-                final Expression root = ((ExternalModule) module).getRootExpression();
-                ((ExternalModule) module).getContext().analyzeAndOptimizeIfModulesChanged(root);
+        for (final Module[] modules : expr.getContext().modules.values()) {
+            for (final Module module : modules) {
+                if (!module.isInternalModule()) {
+                    final Expression root = ((ExternalModule) module).getRootExpression();
+                    ((ExternalModule) module).getContext().analyzeAndOptimizeIfModulesChanged(root);
+                }
             }
         }
         expr.analyze(new AnalyzeContextInfo());
@@ -1556,17 +1590,22 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     @Nullable
     public Module loadBuiltInModule(final String namespaceURI, final String moduleClass) {
-        Module module = null;
+        Module[] modules = null;
         if (namespaceURI != null) {
-            module = getModule(namespaceURI);
+            modules = getModules(namespaceURI);
         }
 
-        if (module != null) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("module " + namespaceURI + " is already present");
+        if (modules != null) {
+            for (final Module module : modules) {
+                if (moduleClass.equals(module.getClass().getName())) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("module " + namespaceURI + " is already present");
+                    }
+                    return module;
+                }
             }
-            return module;
         }
+
         return initBuiltInModule(namespaceURI, moduleClass);
     }
 
@@ -1595,8 +1634,8 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     @SuppressWarnings("unchecked")
-    private Module instantiateModule(final String namespaceURI, final Class<Module> mClazz,
-                                     final Map<String, Map<String, List<? extends Object>>> moduleParameters) {
+    private @Nullable Module instantiateModule(final String namespaceURI, final Class<Module> mClazz,
+            final Map<String, Map<String, List<? extends Object>>> moduleParameters) {
         Module module = null;
         try {
             try {
@@ -1618,22 +1657,37 @@ public class XQueryContext implements BinaryValueManager, Context {
                 declareNamespace(module.getDefaultPrefix(), module.getNamespaceURI());
             }
 
-            modules.put(module.getNamespaceURI(), module);
-            allModules.put(module.getNamespaceURI(), module);
+            modules.compute(module.getNamespaceURI(), addToMapValueArray(module));
+            allModules.compute(module.getNamespaceURI(), addToMapValueArray(module));
 
             if (module instanceof InternalModule) {
                 ((InternalModule) module).prepare(this);
             }
-        } catch (final Throwable e) {
-            if (e instanceof InterruptedException) {
-                // NOTE: must set interrupted flag
-                Thread.currentThread().interrupt();
-            }
-
+        } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | XPathException e) {
             LOG.warn("error while instantiating module class " + mClazz.getName(), e);
         }
 
         return module;
+    }
+
+    private static BiFunction<String, Module[], Module[]> addToMapValueArray(final Module module) {
+        return (namespaceURI, modules) -> {
+            if (modules == null) {
+                modules = new Module[]{ module };
+            } else {
+                // check if the module is already present
+                for (final Module existingModule : modules) {
+                    if (existingModule == module) {  // NOTE: intentional object identity comparison
+                        return modules;  // already present, no further action needed
+                    }
+                }
+
+                // add the module to the modules
+                modules = Arrays.copyOf(modules, modules.length + 1);
+                modules[modules.length - 1] = module;
+            }
+            return modules;
+        };
     }
 
     @Override
@@ -1730,12 +1784,18 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public Variable declareVariable(final QName qn, final Object value) throws XPathException {
         Variable var;
-        final Module module = getModule(qn.getNamespaceURI());
+        final Module[] modules = getModules(qn.getNamespaceURI());
 
-        if (module != null) {
-            var = module.declareVariable(qn, value);
+        if (isNotEmpty(modules)) {
+            if (modules.length > 1) {
+                // TODO(AR) is seems that we will never enter this state...
+                throw new IllegalStateException("There is more than one module, but the variable can only be declared in one!");
+            }
+
+            var = modules[0].declareVariable(qn, value);
             return var;
         }
+
         final Sequence val = XPathUtil.javaObjectToXPath(value, this);
         var = globalVariables.get(qn);
 
@@ -1799,10 +1859,15 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         // check if the variable is declared in a module
         if (var == null) {
-            final Module module = getModule(qname.getNamespaceURI());
+            final Module[] modules = getModules(qname.getNamespaceURI());
 
-            if (module != null) {
-                var = module.resolveVariable(qname);
+            if (modules != null) {
+                for (final Module module : modules) {
+                    var = module.resolveVariable(qname);
+                    if (var != null) {
+                        break;
+                    }
+                }
             }
         }
 
@@ -1835,10 +1900,12 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public boolean isVarDeclared(final QName qname) {
-        final Module module = getModule(qname.getNamespaceURI());
-        if (module != null) {
-            if (module.isVarDeclared(qname)) {
-                return true;
+        final Module[] modules = getModules(qname.getNamespaceURI());
+        if (modules != null) {
+            for (final Module module : modules) {
+                if (module.isVarDeclared(qname)) {
+                    return true;
+                }
             }
         }
         return globalVariables.containsKey(qname);
@@ -2309,7 +2376,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     @Override
-    public Module importModule(String namespaceURI, String prefix, String location)
+    public Module[] importModule(@Nullable String namespaceURI, @Nullable String prefix, @Nullable AnyURIValue[] locationHints)
             throws XPathException {
 
         if (XML_NS_PREFIX.equals(prefix) || XMLNS_ATTRIBUTE.equals(prefix)) {
@@ -2320,120 +2387,138 @@ public class XQueryContext implements BinaryValueManager, Context {
             throw new XPathException(ErrorCodes.XQST0088, "The first URILiteral in a module import must be of nonzero length.");
         }
 
-        Module module = null;
+        Module[] modules = null;
 
         if (namespaceURI != null) {
-            module = getRootModule(namespaceURI);
+            modules = getRootModules(namespaceURI);
         }
 
-        if (module != null) {
+        if (isNotEmpty(modules)) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Module " + namespaceURI + " already present.");
             }
             // Set locally to remember the dependency in case it was inherited.
-            setModule(namespaceURI, module);
+            setModules(namespaceURI, modules);
 
         } else {
             // if location is not specified, try to resolve in expath repo
-            if (location == null && namespaceURI != null) {
-                module = resolveInEXPathRepository(namespaceURI, prefix);
+            if (isEmpty(locationHints) && namespaceURI != null) {
+                final Module module = resolveInEXPathRepository(namespaceURI, prefix);
+                if (module != null) {
+                    modules = new Module[]{ module };
+                }
             }
 
-            if (module == null) {
+            if (isEmpty(modules)) {
 
-                if (location == null && namespaceURI != null) {
+                if (isEmpty(locationHints) && namespaceURI != null) {
                     // check if there's a static mapping in the configuration
-                    location = getModuleLocation(namespaceURI);
+                    final String moduleLocation = getModuleLocation(namespaceURI);
+                    if (moduleLocation != null) {
+                        locationHints = new AnyURIValue[]{ new AnyURIValue(moduleLocation) };
+                    }
 
-                    if (location == null) {
-                        location = namespaceURI;
+                    if (isEmpty(locationHints)) {
+                        locationHints = new AnyURIValue[] { new AnyURIValue(namespaceURI) };
                     }
                 }
 
-                //Is the module's namespace mapped to a URL ?
-                if (mappedModules.containsKey(location)) {
-                    location = mappedModules.get(location).toString();
-                }
-
-                // is it a Java module?
-                if (location.startsWith(JAVA_URI_START)) {
-                    location = location.substring(JAVA_URI_START.length());
-                    module = loadBuiltInModule(namespaceURI, location);
-
-                } else {
-                    Source moduleSource;
-
-                    if (location.startsWith(XmldbURI.XMLDB_URI_PREFIX)
-                            || ((location.indexOf(':') == -1) && moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX))) {
-
-                        // Is the module source stored in the database?
-                        try {
-                            XmldbURI locationUri = XmldbURI.xmldbUriFor(location);
-
-                            if (moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
-                                final XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor(moduleLoadPath);
-                                locationUri = moduleLoadPathUri.resolveCollectionPath(locationUri);
-                            }
-
-                            try (final LockedDocument lockedSourceDoc = getBroker().getXMLResource(locationUri.toCollectionPathURI(), LockMode.READ_LOCK)) {
-
-                                final DocumentImpl sourceDoc = lockedSourceDoc == null ? null : lockedSourceDoc.getDocument();
-                                if (sourceDoc == null) {
-                                    throw moduleLoadException("Module location hint URI '" + location + "' does not refer to anything.", location);
-                                }
-
-                                if ((sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE) || !"application/xquery".equals(sourceDoc.getMimeType())) {
-                                    throw moduleLoadException("Module location hint URI '" + location + "' does not refer to an XQuery.", location);
-                                }
-
-                                moduleSource = new DBSource(getBroker(), (BinaryDocument) sourceDoc, true);
-
-                                // we don't know if the module will get returned, oh well
-                                module = compileOrBorrowModule(prefix, namespaceURI, location, moduleSource);
-
-                            } catch (final PermissionDeniedException e) {
-                                throw moduleLoadException("Permission denied to read module source from location hint URI '" + location + ".", location, e);
-                            }
-                        } catch (final URISyntaxException e) {
-                            throw moduleLoadException("Invalid module location hint URI '" + location + "'.", location, e);
+                for (int i = 0; i < locationHints.length; i++) {
+                    final Module module = importModuleFromLocation(namespaceURI, prefix, locationHints[i]);
+                    if (module != null) {
+                        if (modules == null) {
+                            modules = new Module[1];
+                        } else if (i >= modules.length) {
+                            modules = Arrays.copyOf(modules, modules.length + 1);
                         }
-
-                    } else {
-
-                        // No. Load from file or URL
-                        try {
-                            //TODO: use URIs to ensure proper resolution of relative locations
-                            moduleSource = SourceFactory.getSource(getBroker(), moduleLoadPath, location, true);
-                            if (moduleSource == null) {
-                                throw moduleLoadException("Source for module '" + namespaceURI + "' not found module location hint URI '" + location + "'.", location);
-                            }
-
-                        } catch (final MalformedURLException e) {
-                            throw moduleLoadException("Invalid module location hint URI '" + location + "'.", location, e);
-                        } catch (final IOException e) {
-                            throw moduleLoadException("Source for module '" + namespaceURI + "' could not be read, module location hint URI '" + location + "'.", location, e);
-                        } catch (final PermissionDeniedException e) {
-                            throw moduleLoadException("Permission denied to read module source from location hint URI '" + location + ".", location, e);
-                        }
-
-                        // we don't know if the module will get returned, oh well
-                        module = compileOrBorrowModule(prefix, namespaceURI, location, moduleSource);
+                        modules[modules.length - 1] = module;
                     }
                 }
+
+
             } // NOTE: expathrepo related, closes the EXPath else (if module != null)
         }
 
-        if (module != null) {
+        if (isNotEmpty(modules)) {
             if (namespaceURI == null) {
-                namespaceURI = module.getNamespaceURI();
+                namespaceURI = modules[0].getNamespaceURI();
             }
             if (prefix == null) {
-                prefix = module.getDefaultPrefix();
+                prefix = modules[0].getDefaultPrefix();
             }
             declareNamespace(prefix, namespaceURI);
         }
 
-        return module;
+        return modules;
+    }
+
+    private Module importModuleFromLocation(final String namespaceURI, @Nullable final String prefix, final AnyURIValue locationHint) throws XPathException {
+        String location = locationHint.toString();
+
+        //Is the module's namespace mapped to a URL ?
+        if (mappedModules.containsKey(location)) {
+            location = mappedModules.get(location).toString();
+        }
+
+        // is it a Java module?
+        if (location.startsWith(JAVA_URI_START)) {
+            location = location.substring(JAVA_URI_START.length());
+            return loadBuiltInModule(namespaceURI, location);
+        }
+
+        if (location.startsWith(XmldbURI.XMLDB_URI_PREFIX)
+                || ((location.indexOf(':') == -1) && moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX))) {
+
+            // Is the module source stored in the database?
+            try {
+                XmldbURI locationUri = XmldbURI.xmldbUriFor(location);
+
+                if (moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+                    final XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor(moduleLoadPath);
+                    locationUri = moduleLoadPathUri.resolveCollectionPath(locationUri);
+                }
+
+                try (final LockedDocument lockedSourceDoc = getBroker().getXMLResource(locationUri.toCollectionPathURI(), LockMode.READ_LOCK)) {
+
+                    final DocumentImpl sourceDoc = lockedSourceDoc == null ? null : lockedSourceDoc.getDocument();
+                    if (sourceDoc == null) {
+                        throw moduleLoadException("Module location hint URI '" + location + "' does not refer to anything.", location);
+                    }
+
+                    if ((sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE) || !"application/xquery".equals(sourceDoc.getMimeType())) {
+                        throw moduleLoadException("Module location hint URI '" + location + "' does not refer to an XQuery.", location);
+                    }
+
+                    final Source moduleSource = new DBSource(getBroker(), (BinaryDocument) sourceDoc, true);
+                    return compileOrBorrowModule(prefix, namespaceURI, location, moduleSource);
+
+                } catch (final PermissionDeniedException e) {
+                    throw moduleLoadException("Permission denied to read module source from location hint URI '" + location + ".", location, e);
+                }
+            } catch (final URISyntaxException e) {
+                throw moduleLoadException("Invalid module location hint URI '" + location + "'.", location, e);
+            }
+
+        } else {
+
+            // No. Load from file or URL
+            final Source moduleSource;
+            try {
+                //TODO: use URIs to ensure proper resolution of relative locations
+                moduleSource = SourceFactory.getSource(getBroker(), moduleLoadPath, location, true);
+                if (moduleSource == null) {
+                    throw moduleLoadException("Source for module '" + namespaceURI + "' not found module location hint URI '" + location + "'.", location);
+                }
+            } catch (final MalformedURLException e) {
+                throw moduleLoadException("Invalid module location hint URI '" + location + "'.", location, e);
+            } catch (final IOException e) {
+                throw moduleLoadException("Source for module '" + namespaceURI + "' could not be read, module location hint URI '" + location + "'.", location, e);
+            } catch (final PermissionDeniedException e) {
+                throw moduleLoadException("Permission denied to read module source from location hint URI '" + location + ".", location, e);
+            }
+
+            return compileOrBorrowModule(prefix, namespaceURI, location, moduleSource);
+        }
     }
 
     protected XPathException moduleLoadException(final String message, final String moduleLocation)
@@ -2478,7 +2563,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                                                  final Source source) throws XPathException {
         final ExternalModule module = compileModule(prefix, namespaceURI, location, source);
         if (module != null) {
-            setModule(module.getNamespaceURI(), module);
+            addModule(module.getNamespaceURI(), module);
             declareModuleVars(module);
         }
         return module;
@@ -2494,9 +2579,8 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @return The compiled module, or null if the source is not a module
      * @throws XPathException if the module could not be loaded (XQST0059) or compiled (XPST0003)
      */
-    private @Nullable
-    ExternalModule compileModule(final String prefix, String namespaceURI, final String location,
-                                 final Source source) throws XPathException {
+    private @Nullable ExternalModule compileModule(final String prefix, String namespaceURI, final String location,
+            final Source source) throws XPathException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Loading module from " + location);
         }
@@ -2516,7 +2600,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
 
             final ExternalModuleImpl modExternal = new ExternalModuleImpl(namespaceURI, prefix);
-            setModule(namespaceURI, modExternal);
+            addModule(namespaceURI, modExternal);
             final XQueryContext modContext = new ModuleContext(this, prefix, namespaceURI, location);
             modExternal.setContext(modContext);
             final XQueryLexer lexer = new XQueryLexer(modContext, reader);
@@ -2671,16 +2755,26 @@ public class XQueryContext implements BinaryValueManager, Context {
      * Save state
      */
     private class SavedState {
-        private Map<String, Module> modulesSaved = null;
-        private Map<String, Module> allModulesSaved = null;
+        private Object2ObjectOpenHashMap<String, Module[]> modulesSaved = null;
+        private Object2ObjectOpenHashMap<String, Module[]> allModulesSaved = null;
         private Map<String, String> staticNamespacesSaved = null;
         private Map<String, String> staticPrefixesSaved = null;
 
         @SuppressWarnings("unchecked")
         void save() {
             if (modulesSaved == null) {
-                modulesSaved = new HashMap<>(modules);
-                allModulesSaved = new HashMap(allModules);
+                modulesSaved = new Object2ObjectOpenHashMap<>(modules.size(), Hash.VERY_FAST_LOAD_FACTOR);
+                for (final Object2ObjectMap.Entry<String, Module[]> entry : Object2ObjectMaps.fastIterable(modules)) {
+                    final Module[] mods = entry.getValue();
+                    modulesSaved.put(entry.getKey(), Arrays.copyOf(mods, mods.length));
+                }
+
+                allModulesSaved = new Object2ObjectOpenHashMap(allModules.size());
+                for (final Object2ObjectMap.Entry<String, Module[]> entry : Object2ObjectMaps.fastIterable(allModules)) {
+                    final Module[] mods = entry.getValue();
+                    allModulesSaved.put(entry.getKey(), Arrays.copyOf(mods, mods.length));
+                }
+
                 staticNamespacesSaved = new HashMap(staticNamespaces);
                 staticPrefixesSaved = new HashMap(staticPrefixes);
             }
@@ -2917,19 +3011,29 @@ public class XQueryContext implements BinaryValueManager, Context {
                 final Class<Module> moduleClass = entry.getValue();
 
                 // first check if the module has already been loaded in the parent context
-                final Module module = getModule(namespaceURI);
+                final Module[] modules = getModules(namespaceURI);
+                Module foundModule = null;
+                if (modules != null) {
+                    for (final Module module : modules) {
+                        if (moduleClass.equals(module.getClass())) {
+                            foundModule = module;
+                            break;
+                        }
+                    }
+                }
 
-                if (module == null) {
+
+                if (foundModule == null) {
                     // Module does not exist yet, instantiate
                     instantiateModule(namespaceURI, moduleClass,
                             (Map<String, Map<String, List<? extends Object>>>) config.getProperty(PROPERTY_MODULE_PARAMETERS));
 
-                } else if (getPrefixForURI(module.getNamespaceURI()) == null && !module.getDefaultPrefix().isEmpty()) {
+                } else if (getPrefixForURI(namespaceURI) == null && !foundModule.getDefaultPrefix().isEmpty()) {
 
                     // make sure the namespaces of default modules are known,
                     // even if they were imported in a parent context
                     try {
-                        declareNamespace(module.getDefaultPrefix(), module.getNamespaceURI());
+                        declareNamespace(foundModule.getDefaultPrefix(), foundModule.getNamespaceURI());
 
                     } catch (final XPathException e) {
                         LOG.warn("Internal error while loading default modules: " + e.getMessage(), e);

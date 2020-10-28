@@ -26,6 +26,8 @@ import java.util.Iterator;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 
+import javax.annotation.Nullable;
+
 /**
  * Defines an XQuery library module. A module consists of function definitions
  * and global variables. It is uniquely identified by a namespace URI and an optional
@@ -94,9 +96,9 @@ public interface Module {
 	 * @param qname the function name
 	 * @return the function signature or null if the function is not defined.
 	 */
-	public Iterator<FunctionSignature> getSignaturesForFunction(QName qname);
+	@Nullable Iterator<FunctionSignature> getSignaturesForFunction(QName qname);
 	
-	public Variable resolveVariable(QName qname) throws XPathException;
+	@Nullable Variable resolveVariable(QName qname) throws XPathException;
 	
 	public Variable declareVariable(QName qname, Object value) throws XPathException;
 	

@@ -27,11 +27,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.Module;
 import org.exist.xquery.functions.fn.LoadXQueryModule;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 public class PrologFunctions extends BasicFunction {
 	
@@ -45,7 +41,7 @@ public class PrologFunctions extends BasicFunction {
 			new SequenceType[] {
 				new FunctionParameterSequenceType("module-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The namespace URI of the module"),
 				new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.EXACTLY_ONE, "The prefix to be assigned to the namespace"),
-				new FunctionParameterSequenceType("location", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The location of the module")
+				new FunctionParameterSequenceType("location", Type.ANY_URI, Cardinality.ZERO_OR_MORE, "The location of the module")
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY_SEQUENCE),
 			LoadXQueryModule.LOAD_XQUERY_MODULE_2),
@@ -111,17 +107,24 @@ public class PrologFunctions extends BasicFunction {
 		
 		final String uri = args[0].getStringValue();
 		final String prefix = args[1].getStringValue();
-		final String location = args[2].getStringValue();
-		final Module module = context.importModule(uri, prefix, location);
+		final Sequence seq = args[2];
+		final AnyURIValue[] locationHints = new AnyURIValue[seq.getItemCount()];
+		for (int i = 0; i < locationHints.length; i++) {
+			locationHints[i] = (AnyURIValue)seq.itemAt(i);
+		}
+
+		final Module[] modules = context.importModule(uri, prefix, locationHints);
 
 		context.getRootContext().resolveForwardReferences();
 
-		if (!module.isInternalModule()) {
-			// ensure variable declarations in the imported module are analyzed.
-			// unlike when using a normal import statement, this is not done automatically
-			((ExternalModule)module).analyzeGlobalVars();
+		for (final Module module : modules) {
+			if (!module.isInternalModule()) {
+				// ensure variable declarations in the imported module are analyzed.
+				// unlike when using a normal import statement, this is not done automatically
+				((ExternalModule)module).analyzeGlobalVars();
+			}
 		}
-		
+
 //		context.getRootContext().analyzeAndOptimizeIfModulesChanged((PathExpr) context.getRootExpression());
 	}
 	

@@ -33,6 +33,7 @@ header {
 	import java.util.Set;
 	import java.util.TreeSet;
 	import java.util.HashMap;
+	import java.util.HashSet;
 	import java.util.Stack;
 	import javax.xml.XMLConstants;
 	import org.apache.xerces.util.XMLChar;
@@ -55,6 +56,8 @@ header {
 	import org.exist.storage.ElementValue;
 	import org.exist.xquery.functions.map.MapExpr;
 	import org.exist.xquery.functions.array.ArrayConstructor;
+
+	import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 }
 
 /**
@@ -78,6 +81,9 @@ options {
 	protected boolean foundError = false;
 	protected Map<String, String> declaredNamespaces = new HashMap<>();
 	protected Set<QName> declaredGlobalVars = new TreeSet<>();
+	protected Set<String> importedModules = new HashSet<>();
+	protected Set<String> importedModuleFunctions = null;
+	protected Set<QName> importedModuleVariables = null;
 
 	public XQueryTreeParser(XQueryContext context) {
         this(context, null);
@@ -479,11 +485,13 @@ throws PermissionDeniedException, EXistException, XPathException
 				} catch (final IllegalQNameException iqe) {
 				    throw new XPathException(qname.getLine(), qname.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + qname.getText());
 				}
-				if (declaredGlobalVars.contains(qn))
+				if (declaredGlobalVars.contains(qn)
+				        || (importedModuleVariables != null && importedModuleVariables.contains(qn))) {
 					throw new XPathException(qname, ErrorCodes.XQST0049, "It is a " +
 						"static error if more than one variable declared or " +
 						"imported by a module has the same expanded QName. " +
 						"Variable: " + qn.toString());
+                }
 				declaredGlobalVars.add(qn);
 			}
                         { List annots = new ArrayList(); }
@@ -614,39 +622,76 @@ throws PermissionDeniedException, EXistException, XPathException
 		i:MODULE_IMPORT
 		{
 			String modulePrefix = null;
-			String location = null;
-            List uriList= new ArrayList(2);
+            final List<AnyURIValue> uriList = new ArrayList<>(1);
 		}
 		( pfx:NCNAME { modulePrefix = pfx.getText(); } )?
 		moduleURI:STRING_LITERAL
 		( uriList [uriList] )?
 		{
 			if (modulePrefix != null) {
-				if (declaredNamespaces.get(modulePrefix) != null)
+				if (declaredNamespaces.get(modulePrefix) != null) {
 					throw new XPathException(i, ErrorCodes.XQST0033, "Prolog contains " +
 						"multiple declarations for namespace prefix: " + modulePrefix);
+                }
 				declaredNamespaces.put(modulePrefix, moduleURI.getText());
 			}
+
+            final String moduleNamespaceUri = moduleURI.getText();
+            if (importedModules.contains(moduleNamespaceUri)) {
+                throw new XPathException(i, ErrorCodes.XQST0047, "Prolog has " +
+                    "more than one 'import module' statement for module(s) of namespace: " + moduleNamespaceUri);
+            }
+            importedModules.add(moduleNamespaceUri);
+
+            final org.exist.xquery.Module[] modules;
             try {
-                if (uriList.size() > 0) {
-			    for (Iterator j= uriList.iterator(); j.hasNext();) {
-                   try {
-                        location= ((AnyURIValue) j.next()).getStringValue();
-                       context.importModule(moduleURI.getText(), modulePrefix, location);
-                        staticContext.declareNamespace(modulePrefix, moduleURI.getText());
-                    } catch(XPathException xpe) {
-                        if (!j.hasNext()) {
-                            throw xpe;
+                modules = context.importModule(moduleNamespaceUri, modulePrefix, uriList.toArray(new AnyURIValue[uriList.size()]));
+                staticContext.declareNamespace(modulePrefix, moduleNamespaceUri);
+            } catch (final XPathException xpe) {
+                xpe.prependMessage("error found while loading module " + modulePrefix + ": ");
+                throw xpe;
+            }
+
+            if (isNotEmpty(modules)) {
+                for (final org.exist.xquery.Module module : modules) {
+
+                    // check modules does not import any duplicate function definitions
+                    final FunctionSignature[] signatures = module.listFunctions();
+                    if (isNotEmpty(signatures)) {
+                        for (final FunctionSignature signature : signatures) {
+                            final String qualifiedNameArity = signature.getName().toURIQualifiedName() + '#' + signature.getArgumentCount();
+                            if (importedModuleFunctions != null) {
+                                if (importedModuleFunctions.contains(qualifiedNameArity)) {
+                                    throw new XPathException(i, ErrorCodes.XQST0034, "Prolog has " +
+                                        "more than one imported module that defines the function: " + qualifiedNameArity);
+                                }
+                            } else {
+                                importedModuleFunctions = new HashSet<>();
+                            }
+
+                            importedModuleFunctions.add(qualifiedNameArity);
+                        }
+                    }
+
+                    // check modules does not import any duplicate variable definitions
+                    final Iterator<QName> globalVariables = module.getGlobalVariables();
+                    if (globalVariables != null) {
+                        while (globalVariables.hasNext()) {
+                            final QName globalVarName = globalVariables.next();
+
+                            if (importedModuleVariables != null) {
+                                if (importedModuleVariables.contains(globalVarName)) {
+                                        throw new XPathException(i, ErrorCodes.XQST0049, "Prolog has " +
+                                                "more than one imported module that defines the variable: " + globalVarName.toURIQualifiedName());
+                                }
+                            } else {
+                                importedModuleVariables = new HashSet<>();
+                            }
+
+                            importedModuleVariables.add(globalVarName);
                         }
                     }
                 }
-                } else {
-                    context.importModule(moduleURI.getText(), modulePrefix, location);
-                    staticContext.declareNamespace(modulePrefix, moduleURI.getText());
-                }
-            } catch(XPathException xpe) {
-                xpe.prependMessage("error found while loading module " + modulePrefix + ": ");
-                throw xpe;
             }
 		}
 	)
@@ -775,6 +820,12 @@ throws PermissionDeniedException, EXistException, XPathException
 		( paramList [varList] )?
 		{
 			processParams(varList, func, signature);
+
+            final String qualifiedNameArity = signature.getName().toURIQualifiedName() + '#' + signature.getArgumentCount();
+            if (importedModuleFunctions != null && importedModuleFunctions.contains(qualifiedNameArity)) {
+                throw new XPathException(name.getLine(), name.getColumn(), ErrorCodes.XQST0034, "Prolog has " +
+                        "imports a module that defines a function which is already defined in the importing module: " + qualifiedNameArity);
+            }
 		}
 		(
 			#(

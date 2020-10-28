@@ -41,6 +41,8 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import javax.xml.XMLConstants;
 
+import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
+
 /**
  * Describe a built-in function identified by its QName.
  * 
@@ -92,12 +94,14 @@ public class DescribeFunction extends Function {
 			final int nodeNr = builder.startElement("", "function", "function", attribs);
 
 			FunctionSignature signature;
-			final Module module = context.getModule(uri);
-			if (module != null) {
-				final Iterator<FunctionSignature> i = module.getSignaturesForFunction(qname);
-				while (i.hasNext()) {
-					signature = i.next();
-					writeSignature(signature, builder);
+			final Module[] modules = context.getModules(uri);
+			if (isNotEmpty(modules)) {
+				for (final Module module : modules) {
+					final Iterator<FunctionSignature> i = module.getSignaturesForFunction(qname);
+					while (i.hasNext()) {
+						signature = i.next();
+						writeSignature(signature, builder);
+					}
 				}
 			} else {
 				final Iterator<FunctionSignature> i = context.getSignaturesForFunction(qname);
