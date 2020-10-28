@@ -63,15 +63,15 @@ public class FunctionAvailable extends BasicFunction {
         final QName functionName = ((QNameValue)args[0].itemAt(0)).getQName();
         final int arity = ((IntegerValue)args[1].itemAt(0)).getInt();
         
-        final Module[] modules = context.getModules(functionName.getNamespaceURI());
+        final org.exist.xquery.Module[] modules = context.getModules(functionName.getNamespaceURI());
         boolean found = false;
         if (isEmpty(modules)) {
             found = context.resolveFunction(functionName, arity) != null;
         } else {
-            for (final Module module : modules) {
-                if(module instanceof InternalModule) {
+            for (final org.exist.xquery.Module module : modules) {
+                if (module instanceof InternalModule) {
                     found = ((InternalModule)module).getFunctionDef(functionName, arity) != null;
-                } else if(module instanceof ExternalModule) {
+                } else if (module instanceof ExternalModule) {
                     found = ((ExternalModule)module).getFunction(functionName, arity, context) != null;
                 }
 

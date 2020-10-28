@@ -643,7 +643,7 @@ throws PermissionDeniedException, EXistException, XPathException
             }
             importedModules.add(moduleNamespaceUri);
 
-            final Module[] modules;
+            final org.exist.xquery.Module[] modules;
             try {
                 modules = context.importModule(moduleNamespaceUri, modulePrefix, uriList.toArray(new AnyURIValue[uriList.size()]));
                 staticContext.declareNamespace(modulePrefix, moduleNamespaceUri);
@@ -653,7 +653,7 @@ throws PermissionDeniedException, EXistException, XPathException
             }
 
             if (isNotEmpty(modules)) {
-                for (final Module module : modules) {
+                for (final org.exist.xquery.Module module : modules) {
 
                     // check modules does not import any duplicate function definitions
                     final FunctionSignature[] signatures = module.listFunctions();
