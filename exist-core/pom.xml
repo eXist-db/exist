@@ -193,7 +193,7 @@
         <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
-            <version>3.17.0</version>
+            <version>3.17.1</version>
         </dependency>
 
         <dependency>
