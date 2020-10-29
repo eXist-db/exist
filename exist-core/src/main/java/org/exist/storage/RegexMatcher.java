@@ -26,26 +26,24 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.exist.EXistException;
+import org.exist.util.PatternFactory;
 
 /**
  * A {@link org.exist.storage.TermMatcher} that matches index entries against a
  * regular expression. Used by {@link org.exist.storage.NativeValueIndex}.
- * 
- * @author wolf
- *
  */
 class RegexMatcher implements TermMatcher {
 	
 	private Matcher matcher;
-    private boolean matchAll = false;
+    private boolean matchAll;
 
-    public RegexMatcher(String expr, int flags) throws EXistException {
+    public RegexMatcher(final String expr, final int flags) throws EXistException {
         this(expr, flags, false);
     }
-    
-    public RegexMatcher(String expr, int flags, boolean matchAll) throws EXistException {
+
+    public RegexMatcher(final String expr, final int flags, final boolean matchAll) throws EXistException {
         try {
-            final Pattern pattern = Pattern.compile(expr, flags);
+            final Pattern pattern = PatternFactory.getInstance().getPattern(expr, flags);
             matcher = pattern.matcher("");
         } catch(final PatternSyntaxException e) {
             throw new EXistException("Invalid regular expression: " + e.getMessage());
@@ -53,12 +51,8 @@ class RegexMatcher implements TermMatcher {
         this.matchAll = matchAll;        
     }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.Comparator#equals(java.lang.Object)
-	 */
-	public boolean matches(CharSequence term) {
+	@Override
+	public boolean matches(final CharSequence term) {
         matcher.reset(term);
         return matchAll ? matcher.matches() : matcher.find();
 	}

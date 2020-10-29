@@ -41,7 +41,7 @@
         <code><![CDATA[xquery version "3.1";
 
 let $f := function($x as xs:string) {true()}
-let $words := analyze-string('', '\w+')/fn:match/ text ()
+let $words := analyze-string('', '\w+')/fn:match/text()
 return for $w in $words where $f($w) return $w
 
 ]]></code>

@@ -21,17 +21,16 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
+
+import net.sf.saxon.Configuration;
+import net.sf.saxon.om.Item;
+import net.sf.saxon.regex.RegexIterator;
+import net.sf.saxon.regex.RegularExpression;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.util.PatternFactory;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.NodeValue;
@@ -42,18 +41,11 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import javax.xml.XMLConstants;
 
-import static org.exist.xquery.regex.RegexUtil.*;
-
 /**
  * XPath and XQuery 3.0 F+O fn:analyze-string()
- * 
- * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
- * @serial 201211101626
- * 
- * Corrections were made by to the previous buggy version
- * by taking inspiration from the BaseX 7.3 version.
+ *
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-
 public class FunAnalyzeString extends BasicFunction {
 
     private final static QName fnAnalyzeString = new QName("analyze-string", Function.BUILTIN_FUNCTION_NS);
@@ -117,7 +109,7 @@ public class FunAnalyzeString extends BasicFunction {
             }
             if (input != null && !input.isEmpty()) {
                 final String pattern = args[1].itemAt(0).getStringValue();
-                String flags = null;
+                String flags = "";
                 if (args.length == 3) {
                     flags = args[2].itemAt(0).getStringValue();
                 }
@@ -132,81 +124,69 @@ public class FunAnalyzeString extends BasicFunction {
     }
 
     private void analyzeString(final MemTreeBuilder builder, final String input, String pattern, final String flags) throws XPathException {
+        final Configuration config = context.getBroker().getBrokerPool().getSaxonConfiguration();
 
-        final int iFlags = parseFlags(this, flags);
+        final List<String> warnings = new ArrayList<>(1);
 
-        if(!hasLiteral(iFlags)) {
-            pattern = translateRegexp(this, pattern, hasIgnoreWhitespace(iFlags), hasCaseInsensitive(iFlags));
-        }
+        try {
+            final RegularExpression regularExpression = config.compileRegularExpression(pattern, flags, "XP30", warnings);
 
-        final Pattern ptn = PatternFactory.getInstance().getPattern(pattern, iFlags);
-        
-        final Matcher matcher = ptn.matcher(input);
-        
-        int offset = 0;
-        while(matcher.find()) {
-            if(matcher.start() != offset) {
-                nonMatch(builder, input.substring(offset, matcher.start()));
-            }
-            match(builder, matcher, input, 0);
-            
-            offset = matcher.end();
-        }
-        
-        if(offset != input.length()) {
-            nonMatch(builder, input.substring(offset));
-        }
-    }
-    
-    private static class GroupPosition {
-        public int groupNumber;
-        public int position;
+            //TODO(AR) cache the regular expression... might be possible through Saxon config
 
-        public GroupPosition(final int groupNumber, final int position) {
-            this.groupNumber = groupNumber;
-            this.position = position;
-        }
-    }
-    
-    private GroupPosition match(final MemTreeBuilder builder, final Matcher matcher, final String input, final int group) {
-        if(group == 0) {
-            builder.startElement(QN_MATCH, null);
-        } else {
-            final AttributesImpl attributes = new AttributesImpl();
-            attributes.addAttribute("", QN_NR.getLocalPart(), QN_NR.getLocalPart(), "int", Integer.toString(group));
-            builder.startElement(QN_GROUP, attributes);
-        }
-        
-        final int groupStart = matcher.start(group);
-        final int groupEnd = matcher.end(group);
-        final int groupCount = matcher.groupCount();
-        
-        GroupPosition groupAndPosition = new GroupPosition(group + 1, groupStart);
-        while(groupAndPosition.groupNumber <= groupCount && matcher.end(groupAndPosition.groupNumber) <= groupEnd) {
-            final int start = matcher.start(groupAndPosition.groupNumber);
-            if(start >= 0) { //group matched
-                if(groupAndPosition.position < start) {
-                    builder.characters(input.substring(groupAndPosition.position, start));
+            final RegexIterator regexIterator = regularExpression.analyze(input);
+            Item item;
+            while ((item = regexIterator.next()) != null) {
+                if (regexIterator.isMatching()) {
+                    match(builder, regexIterator);
+                } else {
+                    nonMatch(builder, item);
                 }
-                groupAndPosition = match(builder, matcher, input, groupAndPosition.groupNumber);
-            } else {
-                groupAndPosition.groupNumber++; //skip to next group
+            }
+
+            for (final String warning : warnings) {
+                LOG.warn(warning);
+            }
+        } catch (final net.sf.saxon.trans.XPathException e) {
+            switch (e.getErrorCodeLocalPart()) {
+                case "FORX0001":
+                    throw new XPathException(this, ErrorCodes.FORX0001, e.getMessage());
+                case "FORX0002":
+                    throw new XPathException(this, ErrorCodes.FORX0002, e.getMessage());
+                case "FORX0003":
+                    throw new XPathException(this, ErrorCodes.FORX0003, e.getMessage());
+                default:
+                    throw new XPathException(this, e.getMessage());
             }
         }
-        
-        if(groupAndPosition.position < groupEnd) {
-            builder.characters(input.substring(groupAndPosition.position, groupEnd));
-            groupAndPosition.position = groupEnd;
-        }
-        
+    }
+    
+    private void match(final MemTreeBuilder builder, final RegexIterator regexIterator) throws net.sf.saxon.trans.XPathException {
+        builder.startElement(QN_MATCH, null);
+        regexIterator.processMatchingSubstring(new RegexIterator.MatchHandler() {
+            @Override
+            public void characters(final CharSequence s) {
+                builder.characters(s);
+            }
+
+            @Override
+            public void onGroupStart(final int groupNumber) throws net.sf.saxon.trans.XPathException {
+                final AttributesImpl attributes = new AttributesImpl();
+                attributes.addAttribute("", QN_NR.getLocalPart(), QN_NR.getLocalPart(), "int", Integer.toString(groupNumber));
+
+                builder.startElement(QN_GROUP, attributes);
+            }
+
+            @Override
+            public void onGroupEnd(final int groupNumber) throws net.sf.saxon.trans.XPathException {
+                builder.endElement();
+            }
+        });
         builder.endElement();
-        
-        return groupAndPosition;
     }
 
-    private void nonMatch(final MemTreeBuilder builder, final String nonMatch) {
+    private void nonMatch(final MemTreeBuilder builder, final Item item) {
         builder.startElement(QN_NON_MATCH, null);
-        builder.characters(nonMatch);
+        builder.characters(item.getStringValueCS());
         builder.endElement();
     }
 }
