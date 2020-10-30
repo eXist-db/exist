@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.fn;
 
+import org.apache.commons.lang3.StringUtils;
 import org.exist.dom.QName;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.*;
@@ -38,22 +39,35 @@ import java.util.Properties;
  */
 public class FunTrace extends BasicFunction {
     
-    public final static FunctionSignature signature =
+    public final static FunctionSignature[] signatures = {
+            new FunctionSignature(
+                    new QName("trace", Function.BUILTIN_FUNCTION_NS),
+                    "This function is intended to be used in debugging queries by "
+                            + "providing a trace of their execution. The input $value is "
+                            + "returned, unchanged, as the result of the function. "
+                            + "In addition, the input $value, converted to an xs:string, "
+                            + "is directed to a trace data set in the eXist log files.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value"),
+                    },
+                    new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the labelled $value in the log")
+            ),
         new FunctionSignature(
-            new QName("trace", Function.BUILTIN_FUNCTION_NS),
-            "This function is intended to be used in debugging queries by "
-            +"providing a trace of their execution. The input $value is "
-            +"returned, unchanged, as the result of the function. "
-            +"In addition, the inputs $value, converted to an xs:string, "
-            +"and $label is directed to a trace data set in the eXist log files.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value"),
-                new FunctionParameterSequenceType("label", Type.STRING, Cardinality.EXACTLY_ONE, "The label in the log file")
-            },
-            new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the labelled $value in the log")
-        );
+                new QName("trace", Function.BUILTIN_FUNCTION_NS),
+                "This function is intended to be used in debugging queries by "
+                        + "providing a trace of their execution. The input $value is "
+                        + "returned, unchanged, as the result of the function. "
+                        + "In addition, the inputs $value, converted to an xs:string, "
+                        + "and $label is directed to a trace data set in the eXist log files.",
+                new SequenceType[]{
+                        new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value"),
+                        new FunctionParameterSequenceType("label", Type.STRING, Cardinality.EXACTLY_ONE, "The label in the log file")
+                },
+                new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the labelled $value in the log")
+        )
+    };
     
-    public FunTrace(XQueryContext context) {
+    public FunTrace(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
     
@@ -61,17 +75,17 @@ public class FunTrace extends BasicFunction {
  * (non-Javadoc)
  * @see org.exist.xquery.BasicFunction#eval(Sequence[], Sequence)
  */
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-        String label = args[1].getStringValue();
-        if(label==null){
-            label="";
-        }
+    // Get value for label, default to "-"
+    String label = (args.length == 2) ? StringUtils.defaultIfBlank(args[1].getStringValue(), "-") : "-";
 
-        Sequence result ;
-        
-        if(args[0].isEmpty()){
-            result = Sequence.EMPTY_SEQUENCE;
+    Sequence result;
+
+    if (args[0].isEmpty()) {
+        // Write to log
+        LOG.debug("{} [{}] [{}]: {}", label, "-", Type.getTypeName(Type.EMPTY), "-");
+        result = Sequence.EMPTY_SEQUENCE;
             
         } else {
             // Copy all Items from input to output sequence
