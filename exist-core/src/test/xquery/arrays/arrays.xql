@@ -1033,3 +1033,9 @@ declare
 function arr:sort-node() {
     array:sort([<b/>, <a/>, <c/>])?* ! local-name(.)
 };
+
+declare
+    %test:assertError("err:XPTY0004")
+function arr:sort-mixed-1() {
+    array:sort([4, <b/>, 1, <d/>, "22", "2"])?*
+};
