@@ -75,12 +75,12 @@ public class FunTrace extends BasicFunction {
  * (non-Javadoc)
  * @see org.exist.xquery.BasicFunction#eval(Sequence[], Sequence)
  */
-public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
     // Get value for label, default to "-"
-    String label = (args.length == 2) ? StringUtils.defaultIfBlank(args[1].getStringValue(), "-") : "-";
+    final String label = (args.length == 2) ? StringUtils.defaultIfBlank(args[1].getStringValue(), "-") : "-";
 
-    Sequence result;
+    final Sequence result;
 
     if (args[0].isEmpty()) {
         // Write to log
@@ -107,14 +107,14 @@ public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathExce
 
                     position++;
 
-                    try (StringWriter writer = new StringWriter()) {
-                        XQuerySerializer xqs = new XQuerySerializer(context.getBroker(), props, writer);
+                    try (final StringWriter writer = new StringWriter()) {
+                        final XQuerySerializer xqs = new XQuerySerializer(context.getBroker(), props, writer);
                         xqs.serialize(next.toSequence());
 
                         // Write to log
                         LOG.debug("{} [{}] [{}]: {}", label, position, Type.getTypeName(next.getType()), writer.toString());
 
-                    } catch (IOException | SAXException e) {
+                    } catch (final IOException | SAXException e) {
                         throw new XPathException(this, e.getMessage());
                     }
 
