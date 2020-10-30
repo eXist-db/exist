@@ -341,7 +341,7 @@ function arr:tail-empty() {
     array:tail([])
 };
 
-declare 
+declare
     %test:assertEquals(2, 3)
 function arr:tail-on-array() {
     array:tail([1,[2,3]])?*?*
@@ -1008,4 +1008,34 @@ declare
     %test:assertError("err:FOAY0001")
 function arr:put_pos_illegal_index() {
     array:put(["a", "b", "c", "d"], 5, "x")?*
+};
+
+declare
+    %test:assertEquals(1, 3, 4, 5, 6)
+function arr:sort-int() {
+    array:sort([1, 4, 6, 5, 3])?*
+};
+
+declare
+    %test:assertEquals("1", "-2", "5", "8", "10", "-10", "10")
+function arr:sort-abs() {
+    array:sort([1, -2, 5, 10, -10, 10, 8], (), fn:abs#1)?*
+};
+
+declare
+    %test:assertEquals(0,0, 0,1, 1,0, 1,1)
+function arr:sort-seq() {
+    array:sort([(1,0), (1,1), (0,1), (0,0)])?*
+};
+
+declare
+    %test:assertEquals("b", "a", "c")
+function arr:sort-node() {
+    array:sort([<b/>, <a/>, <c/>])?* ! local-name(.)
+};
+
+declare
+    %test:assertError("err:XPTY0004")
+function arr:sort-mixed-1() {
+    array:sort([4, <b/>, 1, <d/>, "22", "2"])?*
 };

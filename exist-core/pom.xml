@@ -672,6 +672,9 @@
                                 <exclude>src/test/java/org/exist/xquery/ImportModuleTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/functions/map/MapType.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/value/AtomicValueComparator.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/value/ItemComparator.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/value/SequenceComparator.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/value/SubSequence.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/value/SubSequenceRangeTest.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/value/SubSequenceTest.java</exclude>
@@ -801,6 +804,9 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/test/java/org/exist/xquery/ImportModuleTest.java</include>
                                 <include>src/main/java/org/exist/xquery/functions/map/MapType.java</include>
                                 <include>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</include>
+                                <include>src/main/java/org/exist/xquery/value/AtomicValueComparator.java</include>
+                                <include>src/main/java/org/exist/xquery/value/ItemComparator.java</include>
+                                <include>src/main/java/org/exist/xquery/value/SequenceComparator.java</include>
                                 <include>src/main/java/org/exist/xquery/value/SubSequence.java</include>
                                 <include>src/test/java/org/exist/xquery/value/SubSequenceRangeTest.java</include>
                                 <include>src/test/java/org/exist/xquery/value/SubSequenceTest.java</include>

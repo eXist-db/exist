@@ -43,16 +43,18 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FunData extends Function {
 
+    public static final QName qnData = new QName("data", Function.BUILTIN_FUNCTION_NS);
+
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(
-            new QName("data", Function.BUILTIN_FUNCTION_NS),
+            qnData,
             "Atomizes the context item, replacing all nodes in the sequence by their typed values.",
             new SequenceType[0],
             new FunctionReturnSequenceType(Type.ATOMIC,
                 Cardinality.ZERO_OR_MORE, "the atomic values of the items in $items")
         ),
         new FunctionSignature(
-            new QName("data", Function.BUILTIN_FUNCTION_NS),
+            qnData,
             "Atomizes the sequence $items, replacing all nodes in the sequence by their typed values.",
             new SequenceType[] {
                 new FunctionParameterSequenceType("items", Type.ITEM,
