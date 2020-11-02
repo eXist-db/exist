@@ -72,7 +72,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
     }
 
     @Override
-    public void init(ServletConfig config) throws ServletException {
+    public void init(final ServletConfig config) throws ServletException {
         super.init(config);
 
         String useDynamicContentType = config.getInitParameter("dynamic-content-type");
@@ -81,7 +81,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         }
 
         final FeatureEnabled xquerySubmission = parseFeatureEnabled(config, "xquery-submission", FeatureEnabled.TRUE);
-        final FeatureEnabled xupdateSubmission = parseFeatureEnabled(config,"xupdate-submission", FeatureEnabled.TRUE);
+        final FeatureEnabled xupdateSubmission = parseFeatureEnabled(config, "xupdate-submission", FeatureEnabled.TRUE);
 
         // Instantiate REST Server
         srvREST = new RESTServer(getPool(), getFormEncoding(), getContainerEncoding(), useDynamicContentType.equalsIgnoreCase("yes")
@@ -93,7 +93,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
 
     private FeatureEnabled parseFeatureEnabled(final ServletConfig config, final String paramName, final FeatureEnabled defaultValue) {
         final String paramValue = config.getInitParameter(paramName);
-        if(paramValue != null) {
+        if (paramValue != null) {
             switch (paramValue) {
                 case "disabled":
                     return FeatureEnabled.FALSE;
@@ -107,15 +107,9 @@ public class EXistServlet extends AbstractExistHttpServlet {
         return defaultValue;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * javax.servlet.http.HttpServlet#doPut(javax.servlet.http.HttpServletRequest
-     * , javax.servlet.http.HttpServletResponse)
-     */
     @Override
-    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPut(final HttpServletRequest request, final HttpServletResponse response)
+            throws ServletException, IOException {
         // first, adjust the path
         String path = adjustPath(request);
 
@@ -133,18 +127,17 @@ public class EXistServlet extends AbstractExistHttpServlet {
         // third, authenticate the user
         final Subject user = authenticate(request, response);
         if (user == null) {
-            // You now get a challenge if there is no user
-            // response.sendError(HttpServletResponse.SC_FORBIDDEN,
-            // "Permission denied: unknown user or password");
+            // You now get a HTTP Authentication challenge if there is no user
             return;
         }
 
-        try(final DBBroker broker = getPool().get(Optional.of(user));
-                final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
+        // fourth, process the request
+        try (final DBBroker broker = getPool().get(Optional.of(user));
+             final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
             final XmldbURI dbpath = XmldbURI.createInternal(path);
             final Collection collection = broker.getCollection(dbpath);
             if (collection != null) {
-                response.sendError(400, "A PUT request is not allowed against a plain collection path.");
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "A PUT request is not allowed against a plain collection path.");
                 return;
             }
             srvREST.doPut(broker, transaction, dbpath, request, response);
@@ -160,7 +153,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
             // If the current user is the Default User and they do not have permission
             // then send a challenge request to prompt the client for a username/password.
             // Else return a FORBIDDEN Error
-            if (user != null && user.equals(getDefaultUser())) {
+            if (user.equals(getDefaultUser())) {
                 getAuthenticator().sendChallenge(request, response);
             } else {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
@@ -177,9 +170,12 @@ public class EXistServlet extends AbstractExistHttpServlet {
     }
 
     /**
-     * @param request
+     * Returns an adjusted the URL path of the request.
+     *
+     * @param request the http servlet request
+     * @return the adjusted path of the request
      */
-    private String adjustPath(HttpServletRequest request) throws ServletException {
+    private String adjustPath(final HttpServletRequest request) throws ServletException {
         String path = request.getPathInfo();
 
         if (path == null) {
@@ -195,20 +191,20 @@ public class EXistServlet extends AbstractExistHttpServlet {
         // for the sake of interoperability, remove any unnecessary escapes
         try {
             // URI.create undoes _all_ escaping, so protect slashes first
-            URI u = URI.create("file://" + path.replaceAll("%2F", "%252F"));
+            final URI u = URI.create("file://" + path.replaceAll("%2F", "%252F"));
             // URI four-argument constructor recreates all the necessary ones
-            URI v = new URI("http", "host", u.getPath(), null).normalize();
+            final URI v = new URI("http", "host", u.getPath(), null).normalize();
             // unprotect slashes in now normalized path
             path = v.getRawPath().replaceAll("%252F", "%2F");
         } catch (final URISyntaxException e) {
             throw new ServletException(e.getMessage(), e);
         }
         // eat trailing slashes, else collections might not be found
-        while(path.endsWith("/")) {
+        while (path.endsWith("/")) {
             path = path.substring(0, path.length() - 1);
         }
         // path now is in proper canonical encoded form
-        
+
         if (LOG.isDebugEnabled()) {
             LOG.debug("Out: " + path);
         }
@@ -216,15 +212,9 @@ public class EXistServlet extends AbstractExistHttpServlet {
         return path;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest
-     * , javax.servlet.http.HttpServletResponse)
-     */
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(final HttpServletRequest request, final HttpServletResponse response)
+            throws ServletException, IOException {
 
         // first, adjust the path
         String path = adjustPath(request);
@@ -242,15 +232,13 @@ public class EXistServlet extends AbstractExistHttpServlet {
         // third, authenticate the user
         final Subject user = authenticate(request, response);
         if (user == null) {
-            // You now get a challenge if there is no user
-            // response.sendError(HttpServletResponse.SC_FORBIDDEN,
-            // "Permission denied: unknown user " + "or password");
+            // You now get a HTTP Authentication challenge if there is no user
             return;
         }
 
         // fourth, process the request
-        try(final DBBroker broker = getPool().get(Optional.of(user));
-               final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
+        try (final DBBroker broker = getPool().get(Optional.of(user));
+             final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
             srvREST.doGet(broker, transaction, request, response, path);
             transaction.commit();
         } catch (final BadRequestException e) {
@@ -263,7 +251,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
             // If the current user is the Default User and they do not have permission
             // then send a challenge request to prompt the client for a username/password.
             // Else return a FORBIDDEN Error
-            if (user != null && user.equals(getDefaultUser())) {
+            if (user.equals(getDefaultUser())) {
                 getAuthenticator().sendChallenge(request, response);
             } else {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
@@ -289,7 +277,8 @@ public class EXistServlet extends AbstractExistHttpServlet {
     }
 
     @Override
-    protected void doHead(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doHead(final HttpServletRequest request, final HttpServletResponse response)
+            throws ServletException, IOException {
         // first, adjust the path
         String path = adjustPath(request);
 
@@ -306,15 +295,13 @@ public class EXistServlet extends AbstractExistHttpServlet {
         // third, authenticate the user
         final Subject user = authenticate(request, response);
         if (user == null) {
-            // You now get a challenge if there is no user
-            // response.sendError(HttpServletResponse.SC_FORBIDDEN,
-            // "Permission denied: unknown user " + "or password");
+            // You now get a HTTP Authentication challenge if there is no user
             return;
         }
 
         // fourth, process the request
-        try(final DBBroker broker = getPool().get(Optional.of(user));
-                final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
+        try (final DBBroker broker = getPool().get(Optional.of(user));
+             final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
             srvREST.doHead(broker, transaction, request, response, path);
             transaction.commit();
         } catch (final BadRequestException e) {
@@ -327,7 +314,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
             // If the current user is the Default User and they do not have permission
             // then send a challenge request to prompt the client for a username/password.
             // Else return a FORBIDDEN Error
-            if (user != null && user.equals(getDefaultUser())) {
+            if (user.equals(getDefaultUser())) {
                 getAuthenticator().sendChallenge(request, response);
             } else {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
@@ -348,15 +335,8 @@ public class EXistServlet extends AbstractExistHttpServlet {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * javax.servlet.http.HttpServlet#doDelete(javax.servlet.http.HttpServletRequest
-     * , javax.servlet.http.HttpServletResponse)
-     */
     @Override
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doDelete(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         // first, adjust the path
         String path = adjustPath(request);
 
@@ -370,22 +350,20 @@ public class EXistServlet extends AbstractExistHttpServlet {
         // third, authenticate the user
         final Subject user = authenticate(request, response);
         if (user == null) {
-            // You now get a challenge if there is no user
-            // response.sendError(HttpServletResponse.SC_FORBIDDEN,
-            // "Permission denied: unknown user " + "or password");
+            // You now get a HTTP Authentication challenge if there is no user
             return;
         }
 
         // fourth, process the request
-        try(final DBBroker broker = getPool().get(Optional.of(user));
-                final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
+        try (final DBBroker broker = getPool().get(Optional.of(user));
+             final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
             srvREST.doDelete(broker, transaction, path, request, response);
             transaction.commit();
         } catch (final PermissionDeniedException e) {
             // If the current user is the Default User and they do not have permission
             // then send a challenge request to prompt the client for a username/password.
             // Else return a FORBIDDEN Error
-            if (user != null && user.equals(getDefaultUser())) {
+            if (user.equals(getDefaultUser())) {
                 getAuthenticator().sendChallenge(request, response);
             } else {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
@@ -403,15 +381,9 @@ public class EXistServlet extends AbstractExistHttpServlet {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest
-     * , javax.servlet.http.HttpServletResponse)
-     */
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(final HttpServletRequest req, final HttpServletResponse response)
+            throws ServletException, IOException {
         HttpServletRequest request = null;
         try {
             // For POST request, If we are logging the requests we must wrap
@@ -449,22 +421,20 @@ public class EXistServlet extends AbstractExistHttpServlet {
             // third, authenticate the user
             final Subject user = authenticate(request, response);
             if (user == null) {
-                // You now get a challenge if there is no user
-                // response.sendError(HttpServletResponse.SC_FORBIDDEN,
-                // "Permission denied: unknown user " + "or password");
+                // You now get a HTTP Authentication challenge if there is no user
                 return;
             }
 
             // fourth, process the request
-            try(final DBBroker broker = getPool().get(Optional.of(user));
-                    final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
+            try (final DBBroker broker = getPool().get(Optional.of(user));
+                 final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
                 srvREST.doPost(broker, transaction, request, response, path);
                 transaction.commit();
             } catch (final PermissionDeniedException e) {
                 // If the current user is the Default User and they do not have permission
                 // then send a challenge request to prompt the client for a username/password.
                 // Else return a FORBIDDEN Error
-                if (user != null && user.equals(getDefaultUser())) {
+                if (user.equals(getDefaultUser())) {
                     getAuthenticator().sendChallenge(request, response);
                 } else {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
@@ -489,8 +459,8 @@ public class EXistServlet extends AbstractExistHttpServlet {
                 throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
             }
         } finally {
-            if (request != null && request instanceof HttpServletRequestWrapper) {
-                ((HttpServletRequestWrapper)request).close();
+            if (request instanceof HttpServletRequestWrapper) {
+                ((HttpServletRequestWrapper) request).close();
             }
         }
     }
