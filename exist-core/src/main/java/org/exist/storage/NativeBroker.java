@@ -2755,8 +2755,8 @@ public class NativeBroker extends DBBroker {
             throw new IOException(DATABASE_IS_READ_ONLY);
         }
         try {
-            if(LOG.isInfoEnabled()) {
-                LOG.info("Removing document {} ({}) ...", document.getFileURI(), document.getDocId());
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("Removing document {} ({}) ...", document.getFileURI(), document.getDocId());
             }
 
             final DocumentTrigger trigger = new DocumentTriggers(this, transaction);
