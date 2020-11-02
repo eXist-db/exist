@@ -321,7 +321,7 @@ public class Configuration implements ErrorHandler
             final Element document = (Element)nlDocument.item(0);
             final boolean documentUsePathLocks = parseBoolean(getConfigAttributeValue(document, "use-path-locks"), false);
 
-            config.put(LockManager.CONFIGURATION_PATHS_MULTI_WRITER, documentUsePathLocks);
+            config.put(LockManager.CONFIGURATION_PATH_LOCKS_FOR_DOCUMENTS, documentUsePathLocks);
         }
     }
 
