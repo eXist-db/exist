@@ -138,13 +138,20 @@ public class EXistServlet extends AbstractExistHttpServlet {
             final XmldbURI dbpath = XmldbURI.createInternal(path);
             try (final Collection collection = broker.getCollection(dbpath)) {
                 if (collection != null) {
+                    transaction.abort();
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST, "A PUT request is not allowed against a plain collection path.");
                     return;
                 }
             }
-            srvREST.doPut(broker, transaction, dbpath, request, response);
 
-            transaction.commit();
+            try {
+                srvREST.doPut(broker, transaction, dbpath, request, response);
+                transaction.commit();
+
+            } catch (final Throwable t) {
+                transaction.abort();
+                throw t;
+            }
 
         } catch (final BadRequestException e) {
             if (response.isCommitted()) {
@@ -241,8 +248,16 @@ public class EXistServlet extends AbstractExistHttpServlet {
         // fourth, process the request
         try (final DBBroker broker = getPool().get(Optional.of(user));
              final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
-            srvREST.doGet(broker, transaction, request, response, path);
-            transaction.commit();
+
+            try {
+                srvREST.doGet(broker, transaction, request, response, path);
+                transaction.commit();
+
+            } catch (final Throwable t) {
+                transaction.abort();
+                throw t;
+            }
+
         } catch (final BadRequestException e) {
             if (response.isCommitted()) {
                 throw new ServletException(e.getMessage());
@@ -304,8 +319,16 @@ public class EXistServlet extends AbstractExistHttpServlet {
         // fourth, process the request
         try (final DBBroker broker = getPool().get(Optional.of(user));
              final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
-            srvREST.doHead(broker, transaction, request, response, path);
-            transaction.commit();
+
+            try {
+                srvREST.doHead(broker, transaction, request, response, path);
+                transaction.commit();
+
+            } catch (final Throwable t) {
+                transaction.abort();
+                throw t;
+            }
+
         } catch (final BadRequestException e) {
             if (response.isCommitted()) {
                 throw new ServletException(e.getMessage(), e);
@@ -359,8 +382,17 @@ public class EXistServlet extends AbstractExistHttpServlet {
         // fourth, process the request
         try (final DBBroker broker = getPool().get(Optional.of(user));
              final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
-            srvREST.doDelete(broker, transaction, path, request, response);
-            transaction.commit();
+
+            try {
+                srvREST.doDelete(broker, transaction, path, request, response);
+                transaction.commit();
+
+            } catch (final Throwable t) {
+                transaction.abort();
+                throw t;
+            }
+
+
         } catch (final PermissionDeniedException e) {
             // If the current user is the Default User and they do not have permission
             // then send a challenge request to prompt the client for a username/password.
@@ -430,8 +462,16 @@ public class EXistServlet extends AbstractExistHttpServlet {
             // fourth, process the request
             try (final DBBroker broker = getPool().get(Optional.of(user));
                  final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
-                srvREST.doPost(broker, transaction, request, response, path);
-                transaction.commit();
+
+                try {
+                    srvREST.doPost(broker, transaction, request, response, path);
+                    transaction.commit();
+
+                } catch (final Throwable t) {
+                    transaction.abort();
+                    throw t;
+                }
+
             } catch (final PermissionDeniedException e) {
                 // If the current user is the Default User and they do not have permission
                 // then send a challenge request to prompt the client for a username/password.
