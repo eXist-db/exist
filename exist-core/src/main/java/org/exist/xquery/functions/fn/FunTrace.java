@@ -33,44 +33,47 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Properties;
 
+import static org.exist.xquery.FunctionDSL.*;
+
 /**
  * @author Dannes Wessels
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunTrace extends BasicFunction {
-    
-    public final static FunctionSignature[] signatures = {
-            new FunctionSignature(
-                    new QName("trace", Function.BUILTIN_FUNCTION_NS),
-                    "This function is intended to be used in debugging queries by "
-                            + "providing a trace of their execution. The input $value is "
-                            + "returned, unchanged, as the result of the function. "
-                            + "In addition, the input $value, converted to an xs:string, "
-                            + "is directed to a trace data set in the eXist log files.",
-                    new SequenceType[]{
-                            new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value"),
-                    },
-                    new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the labelled $value in the log")
-            ),
-        new FunctionSignature(
-                new QName("trace", Function.BUILTIN_FUNCTION_NS),
-                "This function is intended to be used in debugging queries by "
-                        + "providing a trace of their execution. The input $value is "
-                        + "returned, unchanged, as the result of the function. "
-                        + "In addition, the inputs $value, converted to an xs:string, "
-                        + "and $label is directed to a trace data set in the eXist log files.",
-                new SequenceType[]{
-                        new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value"),
-                        new FunctionParameterSequenceType("label", Type.STRING, Cardinality.EXACTLY_ONE, "The label in the log file")
-                },
-                new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the labelled $value in the log")
-        )
-    };
-    
+
+
+    private static final FunctionParameterSequenceType FS_PARAM_VALUE = optManyParam("value", Type.ITEM, "The values");
+    private static final FunctionParameterSequenceType FS_PARAM_LABEL = param("label", Type.STRING, "The label in the log file");
+
+    private static final QName FS_TRACE_NAME = new QName("trace", Function.BUILTIN_FUNCTION_NS);
+
+    static final FunctionSignature FS_TRACE1 = functionSignature(
+            FS_TRACE_NAME,
+            "This function is intended to be used in debugging queries by "
+                    + "providing a trace of their execution. The input $value is "
+                    + "returned, unchanged, as the result of the function. "
+                    + "In addition, the inputs $value is serialized with adaptive settings "
+                    + "and is written into the eXist log files.",
+            returnsOptMany(Type.ITEM, "The unlabelled $value in the log"),
+            FS_PARAM_VALUE
+    );
+
+    static final FunctionSignature FS_TRACE2 = functionSignature(
+            FS_TRACE_NAME,
+            "This function is intended to be used in debugging queries by "
+                    + "providing a trace of their execution. The input $value is "
+                    + "returned, unchanged, as the result of the function. "
+                    + "In addition, the inputs $value is serialized with adaptive settings "
+                    + "and is written together with $label into the eXist log files.",
+            returnsOptMany(Type.ITEM, "The labelled $value in the log"),
+            FS_PARAM_VALUE,
+            FS_PARAM_LABEL
+    );
+
     public FunTrace(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
-    
+
 /*
  * (non-Javadoc)
  * @see org.exist.xquery.BasicFunction#eval(Sequence[], Sequence)
@@ -86,11 +89,11 @@ public Sequence eval(final Sequence[] args, final Sequence contextSequence) thro
         // Write to log
         LOG.debug("{} [{}] [{}]: {}", label, "-", Type.getTypeName(Type.EMPTY), "-");
         result = Sequence.EMPTY_SEQUENCE;
-            
+
         } else {
             // Copy all Items from input to output sequence
             result = new ValueSequence();
-            
+
             int position = 0;
 
             // Force adaptive serialization
