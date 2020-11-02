@@ -134,11 +134,13 @@ public class EXistServlet extends AbstractExistHttpServlet {
         // fourth, process the request
         try (final DBBroker broker = getPool().get(Optional.of(user));
              final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
+
             final XmldbURI dbpath = XmldbURI.createInternal(path);
-            final Collection collection = broker.getCollection(dbpath);
-            if (collection != null) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "A PUT request is not allowed against a plain collection path.");
-                return;
+            try (final Collection collection = broker.getCollection(dbpath)) {
+                if (collection != null) {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "A PUT request is not allowed against a plain collection path.");
+                    return;
+                }
             }
             srvREST.doPut(broker, transaction, dbpath, request, response);
 
