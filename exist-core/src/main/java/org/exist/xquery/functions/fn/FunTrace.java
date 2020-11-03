@@ -21,7 +21,7 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.QName;
+import org.apache.commons.lang3.StringUtils;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -32,51 +32,68 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Properties;
 
+import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.functions.fn.FnModule.functionSignature;
+
 /**
  * @author Dannes Wessels
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunTrace extends BasicFunction {
-    
-    public final static FunctionSignature signature =
-        new FunctionSignature(
-            new QName("trace", Function.BUILTIN_FUNCTION_NS),
+
+
+    private static final FunctionParameterSequenceType FS_PARAM_VALUE = optManyParam("value", Type.ITEM, "The values");
+    private static final FunctionParameterSequenceType FS_PARAM_LABEL = param("label", Type.STRING, "The label in the log file");
+
+    private static final String FS_TRACE_NAME = "trace";
+
+    static final FunctionSignature FS_TRACE1 = functionSignature(
+            FS_TRACE_NAME,
             "This function is intended to be used in debugging queries by "
-            +"providing a trace of their execution. The input $value is "
-            +"returned, unchanged, as the result of the function. "
-            +"In addition, the inputs $value, converted to an xs:string, "
-            +"and $label is directed to a trace data set in the eXist log files.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value"),
-                new FunctionParameterSequenceType("label", Type.STRING, Cardinality.EXACTLY_ONE, "The label in the log file")
-            },
-            new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the labelled $value in the log")
-        );
-    
-    public FunTrace(XQueryContext context) {
+                    + "providing a trace of their execution. The input $value is "
+                    + "returned, unchanged, as the result of the function. "
+                    + "In addition, the inputs $value is serialized with adaptive settings "
+                    + "and is written into the eXist log files.",
+            returnsOptMany(Type.ITEM, "The unlabelled $value in the log"),
+            FS_PARAM_VALUE
+    );
+
+    static final FunctionSignature FS_TRACE2 = functionSignature(
+            FS_TRACE_NAME,
+            "This function is intended to be used in debugging queries by "
+                    + "providing a trace of their execution. The input $value is "
+                    + "returned, unchanged, as the result of the function. "
+                    + "In addition, the inputs $value is serialized with adaptive settings "
+                    + "and is written together with $label into the eXist log files.",
+            returnsOptMany(Type.ITEM, "The labelled $value in the log"),
+            FS_PARAM_VALUE,
+            FS_PARAM_LABEL
+    );
+
+    public FunTrace(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
-    
+
 /*
  * (non-Javadoc)
  * @see org.exist.xquery.BasicFunction#eval(Sequence[], Sequence)
  */
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
-        String label = args[1].getStringValue();
-        if(label==null){
-            label="";
-        }
+    // Get value for label, default to "-"
+    final String label = (args.length == 2) ? StringUtils.defaultIfBlank(args[1].getStringValue(), "-") : "-";
 
-        Sequence result ;
-        
-        if(args[0].isEmpty()){
-            result = Sequence.EMPTY_SEQUENCE;
-            
+    final Sequence result;
+
+    if (args[0].isEmpty()) {
+        // Write to log
+        LOG.debug("{} [{}] [{}]: {}", label, "-", Type.getTypeName(Type.EMPTY), "-");
+        result = Sequence.EMPTY_SEQUENCE;
+
         } else {
             // Copy all Items from input to output sequence
             result = new ValueSequence();
-            
+
             int position = 0;
 
             // Force adaptive serialization
@@ -93,14 +110,14 @@ public class FunTrace extends BasicFunction {
 
                     position++;
 
-                    try (StringWriter writer = new StringWriter()) {
-                        XQuerySerializer xqs = new XQuerySerializer(context.getBroker(), props, writer);
+                    try (final StringWriter writer = new StringWriter()) {
+                        final XQuerySerializer xqs = new XQuerySerializer(context.getBroker(), props, writer);
                         xqs.serialize(next.toSequence());
 
                         // Write to log
                         LOG.debug("{} [{}] [{}]: {}", label, position, Type.getTypeName(next.getType()), writer.toString());
 
-                    } catch (IOException | SAXException e) {
+                    } catch (final IOException | SAXException e) {
                         throw new XPathException(this, e.getMessage());
                     }
 
