@@ -22,7 +22,6 @@
 package org.exist.xquery.functions.fn;
 
 import org.apache.commons.lang3.StringUtils;
-import org.exist.dom.QName;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -34,6 +33,7 @@ import java.io.StringWriter;
 import java.util.Properties;
 
 import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.functions.fn.FnModule.functionSignature;
 
 /**
  * @author Dannes Wessels
@@ -45,7 +45,7 @@ public class FunTrace extends BasicFunction {
     private static final FunctionParameterSequenceType FS_PARAM_VALUE = optManyParam("value", Type.ITEM, "The values");
     private static final FunctionParameterSequenceType FS_PARAM_LABEL = param("label", Type.STRING, "The label in the log file");
 
-    private static final QName FS_TRACE_NAME = new QName("trace", Function.BUILTIN_FUNCTION_NS);
+    private static final String FS_TRACE_NAME = "trace";
 
     static final FunctionSignature FS_TRACE1 = functionSignature(
             FS_TRACE_NAME,
