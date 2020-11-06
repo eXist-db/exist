@@ -139,16 +139,13 @@ public class SendEmailFunction extends BasicFunction
 	    		String proto = session.getProperty("mail.transport.protocol");
 			if(proto==null)
 				proto = "smtp";
-			Transport t = session.getTransport(proto);
-			try {
-				if(session.getProperty("mail."+proto+".auth")!=null)
-					t.connect(session.getProperty("mail."+proto+".user"),session.getProperty("mail."+proto+".password"));
-				for(Message msg: messages) {
-					t.sendMessage(msg,msg.getAllRecipients());
-				}
-			} finally {
-				t.close();
-			}
+            try (Transport t = session.getTransport(proto)) {
+                if (session.getProperty("mail." + proto + ".auth") != null)
+                    t.connect(session.getProperty("mail." + proto + ".user"), session.getProperty("mail." + proto + ".password"));
+                for (Message msg : messages) {
+                    t.sendMessage(msg, msg.getAllRecipients());
+                }
+            }
 			
 			return( Sequence.EMPTY_SEQUENCE );
 		} catch(TransformerException te) {
