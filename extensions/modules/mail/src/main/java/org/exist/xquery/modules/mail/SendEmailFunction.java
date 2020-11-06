@@ -537,7 +537,7 @@ public class SendEmailFunction extends BasicFunction
             // we have an attachment as well as text and/or html so we need a multipart/mixed message
             multipartBoundary =  MultipartBoundary;
         }
-        else if(!aMail.getText().equals("") && !aMail.getXHTML().equals(""))
+        else if(!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty())
         {
             // we have text and html so we need a multipart/alternative message and no attachment
             multipartAlternative = true;
@@ -563,14 +563,14 @@ public class SendEmailFunction extends BasicFunction
         }
 
         // TODO - need to put out a multipart/mixed boundary here when HTML, text and attachment present
-        if(!aMail.getText().equals("") && !aMail.getXHTML().equals("") && aMail.attachmentIterator().hasNext())
+        if(!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext())
         {
             out.println("Content-Type: multipart/alternative; boundary=\"" + MultipartBoundary + "_alt\";");
             out.println("--" + MultipartBoundary + "_alt");
         }
 
         //text email
-        if(!aMail.getText().equals(""))
+        if(!aMail.getText().isEmpty())
         {
             out.println("Content-Type: text/plain; charset=" + charset);
             out.println("Content-Transfer-Encoding: 8bit");
@@ -581,9 +581,9 @@ public class SendEmailFunction extends BasicFunction
 
             if(multipartBoundary != null)
             {
-                if(!aMail.getXHTML().equals("") || aMail.attachmentIterator().hasNext())
+                if(!aMail.getXHTML().isEmpty() || aMail.attachmentIterator().hasNext())
                 {
-                    if(!aMail.getText().equals("") && !aMail.getXHTML().equals("") && aMail.attachmentIterator().hasNext())
+                    if(!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext())
                     {
                         out.println("--" + MultipartBoundary + "_alt");
                     }
@@ -594,7 +594,7 @@ public class SendEmailFunction extends BasicFunction
                 }
                 else
                 {
-                    if(!aMail.getText().equals("") && !aMail.getXHTML().equals("") && aMail.attachmentIterator().hasNext())
+                    if(!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext())
                     {
                         out.println("--" + MultipartBoundary + "_alt--");
                     }
@@ -607,7 +607,7 @@ public class SendEmailFunction extends BasicFunction
         }
 
         //HTML email
-        if(!aMail.getXHTML().equals(""))
+        if(!aMail.getXHTML().isEmpty())
         {
                 out.println("Content-Type: text/html; charset=" + charset);
                 out.println("Content-Transfer-Encoding: 8bit");
@@ -621,7 +621,7 @@ public class SendEmailFunction extends BasicFunction
                 {
                     if(aMail.attachmentIterator().hasNext())
                     {
-                        if(!aMail.getText().equals("") && !aMail.getXHTML().equals("") && aMail.attachmentIterator().hasNext())
+                        if(!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext())
                         {
                             out.println("--" + MultipartBoundary + "_alt--");
                             out.println("--" + multipartBoundary);
@@ -633,7 +633,7 @@ public class SendEmailFunction extends BasicFunction
                     }
                     else
                     {
-                        if(!aMail.getText().equals("") && !aMail.getXHTML().equals("") && aMail.attachmentIterator().hasNext())
+                        if(!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext())
                         {
                             out.println("--" + MultipartBoundary + "_alt--");
                         }
