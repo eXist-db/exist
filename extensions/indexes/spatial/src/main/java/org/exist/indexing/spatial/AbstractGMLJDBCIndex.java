@@ -104,9 +104,7 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
 
     @Override
     public void close() throws DBException {
-        Iterator<AbstractGMLJDBCIndexWorker> i = workers.values().iterator();
-        while (i.hasNext()) {
-            AbstractGMLJDBCIndexWorker worker = i.next();
+        for (AbstractGMLJDBCIndexWorker worker : workers.values()) {
             //Flush any pending stuff 
             worker.flush();
             //Reset state
@@ -131,9 +129,7 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
 
     @Override
     public void remove() throws DBException {
-        Iterator<AbstractGMLJDBCIndexWorker> i = workers.values().iterator();
-        while (i.hasNext()) {
-            AbstractGMLJDBCIndexWorker worker = i.next();
+        for (AbstractGMLJDBCIndexWorker worker : workers.values()) {
             //Flush any pending stuff
             worker.flush();
             //Reset state

@@ -104,20 +104,20 @@ public class XQDocTask extends AbstractXMLDBTask {
                     log("Found " + files.length + " files to upload.\n");
 
                     Path baseDir=scanner.getBasedir().toPath();
-                    for (int i = 0; i < files.length; i++) {
-                        Path file = baseDir.resolve(files[i]);
-                        log("Storing " + files[i] + " ...\n");
+                    for (String s : files) {
+                        Path file = baseDir.resolve(s);
+                        log("Storing " + s + " ...\n");
                         byte[] data = read(file);
                         try {
                             service.declareVariable("name", FileUtils.fileName(file));
                             service.declareVariable("data", data);
                             service.execute(source);
                         } catch (XMLDBException e) {
-                            String msg="XMLDB exception caught: " + e.getMessage();
-                            if(failonerror)
-                                throw new BuildException(msg,e);
+                            String msg = "XMLDB exception caught: " + e.getMessage();
+                            if (failonerror)
+                                throw new BuildException(msg, e);
                             else
-                                log(msg,e, Project.MSG_ERR);
+                                log(msg, e, Project.MSG_ERR);
                         }
                     }
                 }
