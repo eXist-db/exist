@@ -92,7 +92,7 @@ public class LuceneFacetConfig extends AbstractFieldConfig {
         } else {
             for (SequenceIterator i = result.unorderedIterator(); i.hasNext(); ) {
                 final String value = i.nextItem().getStringValue();
-                if (value.length() > 0) {
+                if (!value.isEmpty()) {
                     luceneDoc.add(new FacetField(dimension, value));
                 }
             }
@@ -103,7 +103,7 @@ public class LuceneFacetConfig extends AbstractFieldConfig {
         final List<String> paths = new ArrayList<>(seq.getItemCount());
         for (SequenceIterator i = seq.unorderedIterator(); i.hasNext(); ) {
             final String value = i.nextItem().getStringValue();
-            if (value.length() > 0) {
+            if (!value.isEmpty()) {
                 paths.add(value);
             }
         }

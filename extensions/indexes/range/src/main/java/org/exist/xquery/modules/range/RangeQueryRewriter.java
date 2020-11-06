@@ -69,7 +69,7 @@ public class RangeQueryRewriter extends QueryRewriter {
 
                     Expression innerExpr = pred.getExpression(0);
                     List<LocationStep> steps = getStepsToOptimize(innerExpr);
-                    if (steps == null || steps.size() == 0) {
+                    if (steps == null || steps.isEmpty()) {
                         // no optimizable steps found
                         continue;
                     }

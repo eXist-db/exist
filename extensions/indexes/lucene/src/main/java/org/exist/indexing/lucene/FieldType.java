@@ -63,7 +63,7 @@ public class FieldType {
     	
     	String aId = config.getAttribute(ANALYZER_ID_ATTR);
     	// save Analyzer for later use in LuceneMatchListener
-        if (aId != null && aId.length() > 0) {
+        if (aId != null && !aId.isEmpty()) {
         	final Analyzer configuredAnalyzer = analyzers.getAnalyzerById(aId);
             if (configuredAnalyzer == null)
                 throw new DatabaseConfigurationException("No analyzer configured for id " + aId);
@@ -74,7 +74,7 @@ public class FieldType {
         }
         
         String boostAttr = config.getAttribute(BOOST_ATTRIB);
-        if (boostAttr != null && boostAttr.length() > 0) {
+        if (boostAttr != null && !boostAttr.isEmpty()) {
             try {
                 boost = Float.parseFloat(boostAttr);
             } catch (NumberFormatException e) {
@@ -84,7 +84,7 @@ public class FieldType {
         }
         
         String storeAttr = config.getAttribute(STORE_ATTRIB);
-        if (storeAttr != null && storeAttr.length() > 0) {
+        if (storeAttr != null && !storeAttr.isEmpty()) {
         	store = storeAttr.equalsIgnoreCase("yes") ? Field.Store.YES : Field.Store.NO;
         }
     }

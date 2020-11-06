@@ -291,7 +291,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     }
 
     private void saveDocumentNodes(Connection conn) throws SQLException {
-        if (geometries.size() == 0)
+        if (geometries.isEmpty())
             return;
 
         PreparedStatement ps = conn.prepareStatement("INSERT INTO " + GMLHSQLIndex.TABLE_NAME + "(" +

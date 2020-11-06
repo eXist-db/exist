@@ -563,7 +563,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		String pattern  = ((Element)terms).getAttribute( "pattern" );
 		
-		if( pattern != null && pattern.length() > 0 ) {
+		if( pattern != null && !pattern.isEmpty()) {
 			st = new FromStringTerm( pattern );
 		} else {
 			throw( new XPathException(this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
@@ -578,7 +578,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		String pattern  = ((Element)terms).getAttribute( "pattern" );
 		
-		if( pattern != null && pattern.length() > 0 ) {
+		if( pattern != null && !pattern.isEmpty()) {
 			st = new SubjectTerm( pattern );
 		} else {
 			throw( new XPathException(this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
@@ -593,7 +593,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		String pattern  = ((Element)terms).getAttribute( "pattern" );
 		
-		if( pattern != null && pattern.length() > 0 ) {
+		if( pattern != null && !pattern.isEmpty()) {
 			st = new BodyTerm( pattern );
 		} else {
 			throw( new XPathException(this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
@@ -613,7 +613,7 @@ public class MessageListFunctions extends BasicFunction
 			throw( new XPathException(this, "recipientType not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
-		if( pattern != null && pattern.length() > 0 ) {
+		if( pattern != null && !pattern.isEmpty()) {
 			Message.RecipientType rtype = null;
 			
 			if( type.equalsIgnoreCase( "to" ) ) {
@@ -645,7 +645,7 @@ public class MessageListFunctions extends BasicFunction
 			throw( new XPathException(this, "name not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
-		if( pattern != null && pattern.length() > 0 ) {
+		if( pattern != null && !pattern.isEmpty()) {
 			st = new HeaderTerm( name, pattern );
 		} else {
 			throw( new XPathException(this, "pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
@@ -665,7 +665,7 @@ public class MessageListFunctions extends BasicFunction
 			throw( new XPathException(this, "value not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
-		if( flag != null && flag.length() > 0 ) {
+		if( flag != null && !flag.isEmpty()) {
 			Flags flags = null;
 			
 			if( flag.equalsIgnoreCase( "answered" ) ) {
@@ -758,7 +758,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		String comp  = ((Element)terms).getAttribute( "comparison" );
 		
-		if( comp != null && comp.length() > 0 ) {
+		if( comp != null && !comp.isEmpty()) {
 			if( comp.equalsIgnoreCase( "eq" ) ) {
 				cp = ComparisonTerm.EQ;
 			} else if( comp.equalsIgnoreCase( "ge" ) ) {

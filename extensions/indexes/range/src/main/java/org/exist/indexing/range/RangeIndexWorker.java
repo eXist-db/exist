@@ -447,7 +447,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private void write() {
-        if (nodesToWrite == null || nodesToWrite.size() == 0)
+        if (nodesToWrite == null || nodesToWrite.isEmpty())
             return;
         IndexWriter writer = null;
         try {
@@ -791,7 +791,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         boolean match = true;
         if (qname.getLocalPart() != null)
             match = qname.getLocalPart().equals(candidate.getLocalPart());
-        if (match && qname.getNamespaceURI() != null && qname.getNamespaceURI().length() > 0)
+        if (match && qname.getNamespaceURI() != null && !qname.getNamespaceURI().isEmpty())
             match = qname.getNamespaceURI().equals(candidate.getNamespaceURI());
         return match;
     }

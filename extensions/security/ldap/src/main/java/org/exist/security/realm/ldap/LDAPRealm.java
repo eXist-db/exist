@@ -717,7 +717,7 @@ public class LDAPRealm extends AbstractRealm {
             }
         }
 
-        if (whiteList != null && whiteList.size() > 0) {
+        if (whiteList != null && !whiteList.isEmpty()) {
             for (String whiteEntry : whiteList) {
                 if (ensureCase(whiteEntry).equals(name)) {
                     return true;

@@ -1063,7 +1063,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (qname.getLocalPart() != null && (!qname.getLocalPart().equals(QName.WILDCARD))) {
             match = qname.getLocalPart().equals(candidate.getLocalPart());
         }
-        if (match && qname.getNamespaceURI() != null && (!qname.getNamespaceURI().equals(QName.WILDCARD)) && qname.getNamespaceURI().length() > 0) {
+        if (match && qname.getNamespaceURI() != null && (!qname.getNamespaceURI().equals(QName.WILDCARD)) && !qname.getNamespaceURI().isEmpty()) {
             match = qname.getNamespaceURI().equals(candidate.getNamespaceURI());
         }
         return match;

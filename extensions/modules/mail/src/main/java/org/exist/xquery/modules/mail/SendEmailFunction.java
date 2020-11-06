@@ -916,7 +916,7 @@ public class SendEmailFunction extends BasicFunction
                                     }
                                     
                                     // Now, time to store it
-                                    if (content != null && contentType != null && contentType.length() > 0) {
+                                    if (content != null && contentType != null && !contentType.isEmpty()) {
                                         String charset = elementBodyPart.getAttribute("charset");
                                         String encoding = elementBodyPart.getAttribute("encoding");
                                         
@@ -992,7 +992,7 @@ public class SendEmailFunction extends BasicFunction
                     msg.setFrom();
 
                 // Preparing content and attachments
-                if (attachments.size() > 0) {
+                if (!attachments.isEmpty()) {
                     if (multibody == null) {
                         multibody = new MimeMultipart("mixed");
                         if (body != null) {

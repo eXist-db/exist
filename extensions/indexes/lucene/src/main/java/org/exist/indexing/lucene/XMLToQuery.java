@@ -250,7 +250,7 @@ public class XMLToQuery {
 
     private int getSlop(Element node) throws XPathException {
         String slop = node.getAttribute("slop");
-        if (slop != null && slop.length() > 0) {
+        if (slop != null && !slop.isEmpty()) {
             try {
                 return Integer.parseInt(slop);
             } catch (NumberFormatException e) {
@@ -319,7 +319,7 @@ public class XMLToQuery {
     private Query fuzzyQuery(String field, Element node) throws XPathException {
         int maxEdits = FuzzyQuery.defaultMaxEdits;
         String attr = node.getAttribute("max-edits");
-        if (attr != null && attr.length() > 0) {
+        if (attr != null && !attr.isEmpty()) {
             try {
                 maxEdits = Integer.parseInt(attr);
                 if (maxEdits < 0 || maxEdits > LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE) {
@@ -424,7 +424,7 @@ public class XMLToQuery {
 
     private void setBoost(Element node, Query query) throws XPathException {
         String boost = node.getAttribute("boost");
-        if (boost != null && boost.length() > 0) {
+        if (boost != null && !boost.isEmpty()) {
             try {
                 query.setBoost(Float.parseFloat(boost));
             } catch (NumberFormatException e) {
@@ -458,7 +458,7 @@ public class XMLToQuery {
 
     private String getField(Element node, String defaultField) {
         final String field = node.getAttribute("field");
-        if (field != null && field.length() > 0) {
+        if (field != null && !field.isEmpty()) {
             return field;
         }
         return defaultField;
