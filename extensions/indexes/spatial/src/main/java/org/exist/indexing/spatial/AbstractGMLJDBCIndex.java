@@ -56,7 +56,7 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
     /**
      * An IndexWorker "pool"
      */
-    protected HashMap<DBBroker, AbstractGMLJDBCIndexWorker> workers = new HashMap<DBBroker, AbstractGMLJDBCIndexWorker>();
+    protected HashMap<DBBroker, AbstractGMLJDBCIndexWorker> workers = new HashMap<>();
 
     /**
      * The connection to the DB that will be needed for global operations 

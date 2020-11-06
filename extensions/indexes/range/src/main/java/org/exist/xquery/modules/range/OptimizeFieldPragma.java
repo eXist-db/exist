@@ -93,12 +93,12 @@ public class OptimizeFieldPragma extends Pragma {
     private Expression tryRewriteToFields(LocationStep locationStep, List<Predicate> preds, NodePath contextPath, Sequence contextSequence) throws XPathException {
         // without context path, we cannot rewrite the entire query
         if (contextPath != null) {
-            List<Predicate> notOptimizable = new ArrayList<Predicate>(preds.size());
+            List<Predicate> notOptimizable = new ArrayList<>(preds.size());
             List<RangeIndexConfig> configs = getConfigurations(contextSequence);
             // walk through the predicates attached to the current location step
             // check if expression can be optimized
 
-            final Map<Predicate, List<Expression>> predicateArgs = new IdentityHashMap<Predicate, List<Expression>>(preds.size());
+            final Map<Predicate, List<Expression>> predicateArgs = new IdentityHashMap<>(preds.size());
 
             for (final Predicate pred : preds) {
                 List<Expression> args = null;
@@ -141,7 +141,7 @@ public class OptimizeFieldPragma extends Pragma {
 
                     ComplexRangeIndexConfigElement rice = null;
                     final List<Predicate> precedingPreds = preds.subList(0, preds.indexOf(pred));
-                    final ArrayList<Predicate> matchedPreds = new ArrayList<Predicate>();
+                    final ArrayList<Predicate> matchedPreds = new ArrayList<>();
 
                     for (ComplexRangeIndexConfigElement testRice : rices) {
 
@@ -182,7 +182,7 @@ public class OptimizeFieldPragma extends Pragma {
                         if (field != null) {
                             if (args == null) {
                                 // initialize args
-                                args = new ArrayList<Expression>(4);
+                                args = new ArrayList<>(4);
                                 arg0 = new SequenceConstructor(context);
                                 args.add(arg0);
                                 arg1 = new SequenceConstructor(context);
@@ -225,7 +225,7 @@ public class OptimizeFieldPragma extends Pragma {
                 if (predicateArgs.size() == 1) {
                     func.setArguments(predicateArgs.entrySet().iterator().next().getValue());
                 } else {
-                    final List<Expression> mergedArgs = new ArrayList<Expression>(predicateArgs.size() * 4);
+                    final List<Expression> mergedArgs = new ArrayList<>(predicateArgs.size() * 4);
                     final SequenceConstructor arg0 = new SequenceConstructor(context);
                     mergedArgs.add(arg0);
                     final SequenceConstructor arg1 = new SequenceConstructor(context);
@@ -272,7 +272,7 @@ public class OptimizeFieldPragma extends Pragma {
      * Find all complex configurations matching the path
      */
     private List<ComplexRangeIndexConfigElement> findConfigurations(NodePath path, List<RangeIndexConfig> configs) {
-        ArrayList<ComplexRangeIndexConfigElement> rices = new ArrayList<ComplexRangeIndexConfigElement>();
+        ArrayList<ComplexRangeIndexConfigElement> rices = new ArrayList<>();
 
         for (RangeIndexConfig config : configs) {
             List<ComplexRangeIndexConfigElement> foundRices = config.findAll(path);
@@ -285,7 +285,7 @@ public class OptimizeFieldPragma extends Pragma {
     }
 
     private List<RangeIndexConfig> getConfigurations(Sequence contextSequence) {
-        List<RangeIndexConfig> configs = new ArrayList<RangeIndexConfig>();
+        List<RangeIndexConfig> configs = new ArrayList<>();
         for (final Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
             final Collection collection = i.next();
             if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {

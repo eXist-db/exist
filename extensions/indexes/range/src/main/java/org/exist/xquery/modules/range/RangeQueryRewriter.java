@@ -126,7 +126,7 @@ public class RangeQueryRewriter extends QueryRewriter {
     }
 
     protected static Lookup rewrite(Expression expression, NodePath path) throws XPathException {
-        ArrayList<Expression> eqArgs = new ArrayList<Expression>(2);
+        ArrayList<Expression> eqArgs = new ArrayList<>(2);
         if (expression instanceof GeneralComparison) {
             GeneralComparison comparison = (GeneralComparison) expression;
             eqArgs.add(comparison.getLeft());
@@ -256,7 +256,7 @@ public class RangeQueryRewriter extends QueryRewriter {
         if (!(parentExpr instanceof RewritableExpression)) {
             return null;
         }
-        final List<LocationStep> prevSteps = new ArrayList<LocationStep>();
+        final List<LocationStep> prevSteps = new ArrayList<>();
         prevSteps.add(current);
         RewritableExpression parent = (RewritableExpression) parentExpr;
         Expression previous = parent.getPrevious(current);

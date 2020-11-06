@@ -271,7 +271,7 @@ public class Lookup extends Function implements Optimizable {
 
         List<QName> qnames = null;
         if (contextQName != null) {
-            qnames = new ArrayList<QName>(1);
+            qnames = new ArrayList<>(1);
             qnames.add(contextQName);
         }
 
@@ -341,7 +341,7 @@ public class Lookup extends Function implements Optimizable {
                 }
                 List<QName> qnames = null;
                 if (contextQName != null) {
-                    qnames = new ArrayList<QName>(1);
+                    qnames = new ArrayList<>(1);
                     qnames.add(contextQName);
                 }
                 final RangeIndex.Operator operator = getOperator();

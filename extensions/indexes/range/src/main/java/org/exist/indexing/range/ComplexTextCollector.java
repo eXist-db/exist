@@ -32,7 +32,7 @@ public class ComplexTextCollector implements TextCollector {
 
     private NodePath parentPath;
     private ComplexRangeIndexConfigElement config;
-    private List<Field> fields = new LinkedList<Field>();
+    private List<Field> fields = new LinkedList<>();
     private RangeIndexConfigField currentField = null;
     private int length = 0;
 

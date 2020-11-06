@@ -74,12 +74,12 @@ public class AlternativeStrings implements EvaluatableExpression, MergeableExpre
 
         if (otherExpression instanceof FixedString) {
             FixedString fixedString = (FixedString) otherExpression;
-            concatenatedStrings = new HashSet<String>(strings.size());
+            concatenatedStrings = new HashSet<>(strings.size());
             for (String s : strings)
                 concatenatedStrings.add(s + fixedString.fixedString);
         } else {
             AlternativeStrings otherAlternatives = (AlternativeStrings) otherExpression;
-            concatenatedStrings = new HashSet<String>(strings.size() * otherAlternatives.strings.size());
+            concatenatedStrings = new HashSet<>(strings.size() * otherAlternatives.strings.size());
             for (String s : strings)
                 for (String os : otherAlternatives.strings)
                     concatenatedStrings.add(s + os);

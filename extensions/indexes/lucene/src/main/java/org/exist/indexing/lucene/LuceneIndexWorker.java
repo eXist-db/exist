@@ -1457,8 +1457,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private class LuceneStreamListener extends AbstractStreamListener {
-        private ArrayList<PendingAttr> pendingAttrs = new ArrayList<PendingAttr>();
-	private ArrayList<AttrImpl> attributes = new ArrayList<AttrImpl>(10);
+        private ArrayList<PendingAttr> pendingAttrs = new ArrayList<>();
+	private ArrayList<AttrImpl> attributes = new ArrayList<>(10);
         private ElementImpl currentElement;
 
         @Override

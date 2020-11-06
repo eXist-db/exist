@@ -80,7 +80,7 @@ public class SimpleTextCollector implements TextCollector {
 
     @Override
     public List<Field> getFields() {
-        List<Field> fields = new ArrayList<Field>(1);
+        List<Field> fields = new ArrayList<>(1);
         fields.add(new Field(buf, wsTreatment, caseSensitive));
         return fields;
     }

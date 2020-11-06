@@ -217,7 +217,7 @@ public class XMLToQuery {
 
     private SpanQuery getSpanRegex(String field, Element node, Analyzer analyzer) {
     	String regex = getText(node);
-    	return new SpanMultiTermQueryWrapper<RegexpQuery>(new RegexpQuery(new Term(field, regex)));
+    	return new SpanMultiTermQueryWrapper<>(new RegexpQuery(new Term(field, regex)));
     }
     
     private SpanQuery getSpanFirst(String field, Element node, Analyzer analyzer) throws XPathException {

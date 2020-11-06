@@ -100,7 +100,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     protected ReindexMode currentMode = ReindexMode.UNKNOWN;
     protected DocumentImpl currentDoc = null;  
     private boolean isDocumentGMLAware = false;
-    protected Map<NodeId, SRSGeometry> geometries = new TreeMap<NodeId, SRSGeometry>();
+    protected Map<NodeId, SRSGeometry> geometries = new TreeMap<>();
     NodeId currentNodeId = null;
     Geometry streamedGeometry = null;
     boolean documentDeleted = false;
@@ -109,7 +109,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     protected GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler); 
     protected GMLFilterDocument geometryDocument = new GMLFilterDocument(geometryFilter);
     protected GMLStreamListener gmlStreamListener = new GMLStreamListener();
-    protected TreeMap<String, MathTransform> transformations = new TreeMap<String, MathTransform>();
+    protected TreeMap<String, MathTransform> transformations = new TreeMap<>();
     protected boolean useLenientMode = false;
     protected GeometryCoordinateSequenceTransformer coordinateTransformer = new GeometryCoordinateSequenceTransformer();
     protected GeometryTransformer gmlTransformer = new GeometryTransformer();
@@ -149,7 +149,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             Node node = configNodes.item(i);
             if (node.getNodeType() == Node.ELEMENT_NODE &&
                     INDEX_ELEMENT.equals(node.getLocalName())) { 
-                map = new TreeMap<String, GMLIndexConfig>();
+                map = new TreeMap<>();
                 GMLIndexConfig config = new GMLIndexConfig(namespaces, (Element)node);
                 map.put(AbstractGMLJDBCIndex.ID, config);
             }
@@ -559,7 +559,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 
     public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
         //TODO : try to use contextSet
-        Map<Geometry, Occurrences> occurences = new TreeMap<Geometry, Occurrences>();
+        Map<Geometry, Occurrences> occurences = new TreeMap<>();
         Connection conn = null;
         try {
             conn = acquireConnection();

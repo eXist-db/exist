@@ -141,7 +141,7 @@ public class XQDocTask extends AbstractXMLDBTask {
 
     public void addFileset(FileSet set) {
         if (fileSets == null)
-            fileSets = new ArrayList<FileSet>();
+            fileSets = new ArrayList<>();
         fileSets.add(set);
     }
 

@@ -222,7 +222,7 @@ public class NGramSearch extends Function implements Optimizable {
             NGramIndex.ID);
         DocumentSet docs = contextSequence.getDocumentSet();
         String key = getArgument(1).eval(contextSequence).getStringValue();
-        List<QName> qnames = new ArrayList<QName>(1);
+        List<QName> qnames = new ArrayList<>(1);
         qnames.add(contextQName);
         preselectResult = processMatches(index, docs, qnames, key, useContext ? contextSequence.toNodeSet() : null,
             NodeSet.DESCENDANT);
@@ -257,7 +257,7 @@ public class NGramSearch extends Function implements Optimizable {
                 String key = getArgument(1).eval(contextSequence, contextItem).getStringValue();
                 List<QName> qnames = null;
                 if (contextQName != null) {
-                    qnames = new ArrayList<QName>(1);
+                    qnames = new ArrayList<>(1);
                     qnames.add(contextQName);
                 }
                 result = processMatches(index, docs, qnames, key, inNodes, NodeSet.ANCESTOR);
@@ -316,7 +316,7 @@ public class NGramSearch extends Function implements Optimizable {
         if (queryTokens.isEmpty())
             return new EmptyExpression();
 
-        List<WildcardedExpression> expressions = new ArrayList<WildcardedExpression>();
+        List<WildcardedExpression> expressions = new ArrayList<>();
 
         if (queryTokens.get(0).equals("^")) {
             expressions.add(new StartAnchor());
@@ -372,7 +372,7 @@ public class NGramSearch extends Function implements Optimizable {
                 expressions.add(wildcard);
             } else {
                 if (token.startsWith("[")) {
-                    Set<String> strings = new HashSet<String>(token.length() - 2);
+                    Set<String> strings = new HashSet<>(token.length() - 2);
                     for (int i = 1; i < token.length() - 1; i++)
                         strings.add(Character.toString(token.charAt(i)));
                     expressions.add(new AlternativeStrings(this, strings));
@@ -393,7 +393,7 @@ public class NGramSearch extends Function implements Optimizable {
     }
 
     private static List<String> tokenizeQuery(final String query) throws XPathException {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
 
         StringBuilder token = new StringBuilder();
 
