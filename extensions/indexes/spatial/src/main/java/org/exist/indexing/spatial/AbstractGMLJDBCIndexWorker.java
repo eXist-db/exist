@@ -477,9 +477,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         try {
             conn = acquireConnection();
             return getGeometricPropertyForNode(context, p, conn, propertyName);
-        } catch (SQLException e) {
-            throw new SpatialIndexException(e);
-        } catch (XPathException e) {
+        } catch (SQLException | XPathException e) {
             throw new SpatialIndexException(e);
         } finally {
             try {
@@ -498,9 +496,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         try {
             conn = acquireConnection();
             return getGeometricPropertyForNodes(context, contextSet, conn, propertyName);
-        } catch (SQLException e) {
-            throw new SpatialIndexException(e);
-        } catch (XPathException e) {
+        } catch (SQLException | XPathException e) {
             throw new SpatialIndexException(e);
         } finally {
             try {
@@ -679,8 +675,6 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
                 }
                 transformations.put(sourceCRS + "_" + targetCRS, transform);
                 LOG.debug("Instantiated transformation from '" + sourceCRS + "' to '" + targetCRS + "'");
-            } catch (NoSuchAuthorityCodeException e) {
-                LOG.error(e);
             } catch (FactoryException e) {
                 LOG.error(e);
             }

@@ -116,10 +116,8 @@ public class EXistResult implements Result {
         try {
             final NodeValue nodeValue = ModuleUtils.sourceToXML(context, src);
             result.add(nodeValue);
-        } catch(final SAXException saxe) {
+        } catch(final SAXException | IOException saxe) {
             throw new HttpClientException("Unable to add Source to result:" + saxe.getMessage(), saxe);
-        } catch(final IOException ioe) {
-            throw new HttpClientException("Unable to add Source to result:" + ioe.getMessage(), ioe);
         }
     }
 
