@@ -56,36 +56,31 @@ public class EXistElement implements Element {
     @Override
     public Iterable<Attribute> attributes() {
         
-        return new Iterable<Attribute>() {
+        return () -> new Iterator<Attribute>() {
+
+            private final NamedNodeMap attrs = element.getNode().getAttributes();
+            private final int length = attrs.getLength();
+            private int position = 0;
+
             @Override
-            public Iterator<Attribute> iterator() {
-                return new Iterator<Attribute>() {
-                    
-                    private final NamedNodeMap attrs = element.getNode().getAttributes();
-                    private final int length = attrs.getLength();
-                    private int position = 0;
-                    
-                    @Override
-                    public boolean hasNext() {
-                        return(position < length);
-                    }
+            public boolean hasNext() {
+                return(position < length);
+            }
 
-                    @Override
-                    public Attribute next() {
-                        if(position >= length){
-                            throw new NoSuchElementException();
-                        }
-                        
-                        return new EXistAttribute((Attr)attrs.item(position++));
-                    }
+            @Override
+            public Attribute next() {
+                if(position >= length){
+                    throw new NoSuchElementException();
+                }
 
-                    @Override
-                    public void remove() {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-                    
-                };
-            }  
+                return new EXistAttribute((Attr)attrs.item(position++));
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
         };
     }
 

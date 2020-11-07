@@ -74,17 +74,15 @@ public abstract class AbstractFieldConfig {
                     sb.append("=\"").append(uri).append("\";\n");
                 }
             });
-            config.getImports().ifPresent(moduleImports -> {
-                moduleImports.forEach((moduleImport -> {
-                    sb.append("import module namespace ");
-                    sb.append(moduleImport.prefix);
-                    sb.append("=\"");
-                    sb.append(moduleImport.uri);
-                    sb.append("\" at \"");
-                    sb.append(resolveURI(configElement.getBaseURI(), moduleImport.at));
-                    sb.append("\";\n");
-                }));
-            });
+            config.getImports().ifPresent(moduleImports -> moduleImports.forEach((moduleImport -> {
+                sb.append("import module namespace ");
+                sb.append(moduleImport.prefix);
+                sb.append("=\"");
+                sb.append(moduleImport.uri);
+                sb.append("\" at \"");
+                sb.append(resolveURI(configElement.getBaseURI(), moduleImport.at));
+                sb.append("\";\n");
+            })));
             sb.append(xpath);
 
             this.expression = Optional.of(sb.toString());
