@@ -342,31 +342,36 @@ public class NGramSearch extends Function implements Optimizable {
                     wildcard = new Wildcard(1, 1);
             } else {
                     String qualifier = token.substring(1);
-                    if (qualifier.equals("?"))
-                        wildcard = new Wildcard(0, 1);
-                    else if (qualifier.equals("*"))
-                        wildcard = new Wildcard(0, Integer.MAX_VALUE);
-                    else if (qualifier.equals("+"))
-                        wildcard = new Wildcard(1, Integer.MAX_VALUE);
-                    else {
-                        Pattern p = Pattern.compile(INTERVAL_QUALIFIER_PATTERN);
-                        Matcher m = p.matcher(qualifier);
-                        if (!m.matches()) // Should not happen
-                            throw new XPathException(
-                        		this,
-                        		ErrorCodes.FTDY0020,
-                        		"query string violates wildcard qualifier syntax"
-                    		);
-                        try {
-                        	wildcard = new Wildcard(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
-                        } catch (NumberFormatException nfe) {
-                            throw new XPathException(this, 
-                        		ErrorCodes.FTDY0020, 
-                        		"query string violates wildcard qualifier syntax",
-                        		new StringValue(query),
-                        		nfe
-                    		);
-                        }
+                    switch (qualifier) {
+                        case "?":
+                            wildcard = new Wildcard(0, 1);
+                            break;
+                        case "*":
+                            wildcard = new Wildcard(0, Integer.MAX_VALUE);
+                            break;
+                        case "+":
+                            wildcard = new Wildcard(1, Integer.MAX_VALUE);
+                            break;
+                        default:
+                            Pattern p = Pattern.compile(INTERVAL_QUALIFIER_PATTERN);
+                            Matcher m = p.matcher(qualifier);
+                            if (!m.matches()) // Should not happen
+                                throw new XPathException(
+                                        this,
+                                        ErrorCodes.FTDY0020,
+                                        "query string violates wildcard qualifier syntax"
+                                );
+                            try {
+                                wildcard = new Wildcard(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
+                            } catch (NumberFormatException nfe) {
+                                throw new XPathException(this,
+                                        ErrorCodes.FTDY0020,
+                                        "query string violates wildcard qualifier syntax",
+                                        new StringValue(query),
+                                        nfe
+                                );
+                            }
+                            break;
                     }
                 }
                 expressions.add(wildcard);

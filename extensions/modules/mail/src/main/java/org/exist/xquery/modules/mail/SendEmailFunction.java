@@ -893,26 +893,30 @@ public class SendEmailFunction extends BasicFunction
                                     Element elementBodyPart = (Element) bodyPart;
                                     String content = null;
                                     String contentType = null;
-                                    
-                                    if (bodyPart.getLocalName().equals("text")) {
-                                        // Setting the Subject and Content Type
-                                        content = bodyPart.getFirstChild().getNodeValue();
-                                        contentType = "plain";
-                                    } else if (bodyPart.getLocalName().equals("xhtml")) {
-                                        //Convert everything inside <xhtml></xhtml> to text
-                                        TransformerFactory transFactory = TransformerFactory.newInstance();
-                                        Transformer transformer = transFactory.newTransformer();
-                                        DOMSource source = new DOMSource(bodyPart.getFirstChild());
-                                        StringWriter strWriter = new StringWriter();
-                                        StreamResult result = new StreamResult(strWriter);
-                                        transformer.transform(source, result);
-                                        
-                                        content = strWriter.toString();
-                                        contentType = "html";
-                                    } else if (bodyPart.getLocalName().equals("generic")) {
-                                        // Setting the Subject and Content Type
-                                        content = elementBodyPart.getFirstChild().getNodeValue();
-                                        contentType = elementBodyPart.getAttribute("type");
+
+                                    switch (bodyPart.getLocalName()) {
+                                        case "text":
+                                            // Setting the Subject and Content Type
+                                            content = bodyPart.getFirstChild().getNodeValue();
+                                            contentType = "plain";
+                                            break;
+                                        case "xhtml":
+                                            //Convert everything inside <xhtml></xhtml> to text
+                                            TransformerFactory transFactory = TransformerFactory.newInstance();
+                                            Transformer transformer = transFactory.newTransformer();
+                                            DOMSource source = new DOMSource(bodyPart.getFirstChild());
+                                            StringWriter strWriter = new StringWriter();
+                                            StreamResult result = new StreamResult(strWriter);
+                                            transformer.transform(source, result);
+
+                                            content = strWriter.toString();
+                                            contentType = "html";
+                                            break;
+                                        case "generic":
+                                            // Setting the Subject and Content Type
+                                            content = elementBodyPart.getFirstChild().getNodeValue();
+                                            contentType = elementBodyPart.getAttribute("type");
+                                            break;
                                     }
                                     
                                     // Now, time to store it
