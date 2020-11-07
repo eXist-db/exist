@@ -554,7 +554,7 @@ public class MessageListFunctions extends BasicFunction
 			throw( new XPathException(this, "At least one child term is required for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
-		return st.toArray(new SearchTerm[st.size()]);
+		return st.toArray(new SearchTerm[0]);
 	}
 
 	private SearchTerm parseFromTerm( Node terms ) throws XPathException

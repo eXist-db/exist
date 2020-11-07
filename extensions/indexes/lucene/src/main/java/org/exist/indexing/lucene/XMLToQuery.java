@@ -173,7 +173,7 @@ public class XMLToQuery {
             } catch (IOException e) {
                 throw new XPathException("Error while parsing phrase query: " + qstr);
             }
-            return new SpanNearQuery(list.toArray(new SpanTermQuery[list.size()]), slop, inOrder);
+            return new SpanNearQuery(list.toArray(new SpanTermQuery[0]), slop, inOrder);
         }
         SpanQuery[] children = parseSpanChildren(field, node, analyzer);
         return new SpanNearQuery(children, slop, inOrder);
@@ -206,7 +206,7 @@ public class XMLToQuery {
             }
             child = child.getNextSibling();
         }
-        return list.toArray(new SpanQuery[list.size()]);
+        return list.toArray(new SpanQuery[0]);
     }
 
     private void getSpanTerm(List<SpanQuery> list, String field, Element node, Analyzer analyzer) throws XPathException {

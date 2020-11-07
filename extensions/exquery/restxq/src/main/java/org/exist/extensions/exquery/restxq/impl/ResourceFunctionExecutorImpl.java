@@ -315,7 +315,7 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             fnArgs.add(fnArg);
         }
         
-        return fnArgs.toArray(new org.exist.xquery.value.Sequence[fnArgs.size()]);
+        return fnArgs.toArray(new org.exist.xquery.value.Sequence[0]);
     }
 
     

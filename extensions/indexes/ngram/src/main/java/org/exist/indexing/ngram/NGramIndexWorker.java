@@ -483,7 +483,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
             }
         }
-        return cb.map.values().toArray(new Occurrences[cb.map.size()]);
+        return cb.map.values().toArray(new Occurrences[0]);
     }
 
     //This listener is always the same whatever the document and the mode
