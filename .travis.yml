@@ -19,6 +19,11 @@ jobs:
         - BUILD_DOCKER=false
         - MAVEN_OPTS="-Ddependency-check.skip=true"
 
+    - jdk: openjdk14
+      env:
+        - BUILD_DOCKER=false
+        - MAVEN_OPTS="-Ddependency-check.skip=true"
+        
     - jdk: openjdk15
       env:
         - BUILD_DOCKER=false
