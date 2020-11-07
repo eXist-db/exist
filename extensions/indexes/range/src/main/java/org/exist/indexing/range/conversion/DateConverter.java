@@ -71,9 +71,6 @@ public class DateConverter implements TypeConverter {
             }
             final long dl = RangeIndexConfigElement.dateToLong(dv);
             return new LongField(fieldName, dl, LongField.TYPE_NOT_STORED);
-        } catch (NumberFormatException e) {
-            // wrong type: ignore
-            LOG.debug("Invalid date format: " + content, e);
         } catch (Exception e) {
             // wrong type: ignore
             LOG.debug("Invalid date format: " + content, e);
