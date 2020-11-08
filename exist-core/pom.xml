@@ -671,6 +671,8 @@
                                 <exclude>src/main/java/org/exist/xquery/Cardinality.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/ImportModuleTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/functions/map/MapType.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/functions/session/AbstractSessionTest.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/functions/session/AttributeTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/functions/util/Eval.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/value/AtomicValueComparator.java</exclude>
@@ -804,6 +806,8 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/main/java/org/exist/xquery/Cardinality.java</include>
                                 <include>src/test/java/org/exist/xquery/ImportModuleTest.java</include>
                                 <include>src/main/java/org/exist/xquery/functions/map/MapType.java</include>
+                                <include>src/test/java/org/exist/xquery/functions/session/AbstractSessionTest.java</include>
+                                <include>src/test/java/org/exist/xquery/functions/session/AttributeTest.java</include>
                                 <include>src/main/java/org/exist/xquery/functions/util/Eval.java</include>
                                 <include>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</include>
                                 <include>src/main/java/org/exist/xquery/value/AtomicValueComparator.java</include>
