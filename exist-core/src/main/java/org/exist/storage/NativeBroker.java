@@ -146,7 +146,7 @@ public class NativeBroker extends DBBroker {
 
     public static final int OFFSET_COLLECTION_ID = 0;
 
-    public final static String INIT_COLLECTION_CONFIG = "collection.xconf.init";
+    public final static String INIT_COLLECTION_CONFIG = CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE + ".init";
 
     /** in-memory buffer size to use when copying binary resources */
     private final static int BINARY_RESOURCE_BUF_SIZE = 65536;

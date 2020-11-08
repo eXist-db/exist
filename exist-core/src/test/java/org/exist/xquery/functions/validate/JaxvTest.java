@@ -28,6 +28,8 @@ import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.InputStreamUtil;
 import org.junit.*;
+
+import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
 import static org.junit.Assert.*;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
@@ -61,7 +63,7 @@ public class JaxvTest {
         Collection conf = null;
         try {
             conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/personal");
-            ExistXmldbEmbeddedServer.storeResource(conf, "collection.xconf", noValidation.getBytes());
+            ExistXmldbEmbeddedServer.storeResource(conf, DEFAULT_COLLECTION_CONFIG_FILE, noValidation.getBytes());
         } finally {
             if(conf != null) {
                 conf.close();

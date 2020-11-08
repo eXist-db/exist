@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 
+import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
+
 public class PackageTriggerTest {
 
     static final String xarFile = "triggertest-1.1.0.xar";
@@ -103,7 +105,7 @@ public class PackageTriggerTest {
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()))) {
             final XQuery xquery = brokerPool.getXQueryService();
             final Sequence result = xquery.execute(broker, "xmldb:create-collection('/db/system/config/db','trigger-test'), " +
-                    "xmldb:store('/db/system/config/db/trigger-test', 'collection.xconf', " +
+                    "xmldb:store('/db/system/config/db/trigger-test', '" + DEFAULT_COLLECTION_CONFIG_FILE + "', " +
                     "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><triggers><trigger class=\"org.exist.repo.ExampleTrigger\"/></triggers></collection>)", null);
             Assert.assertEquals(2, result.getItemCount());
         }

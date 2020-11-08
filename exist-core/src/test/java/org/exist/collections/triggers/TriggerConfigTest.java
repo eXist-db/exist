@@ -34,6 +34,7 @@ import org.exist.util.LockException;
 import org.exist.xmldb.IndexQueryService;
 import org.junit.*;
 
+import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -164,7 +165,7 @@ public class TriggerConfigTest {
             iqs.configureCollection(EMPTY_COLLECTION_CONFIG);
 
             Collection configCol =  DatabaseManager.getCollection(BASE_URI + "/db/system/config" + testCollection, "admin", "");
-            Resource resource = configCol.createResource("collection.xconf", "XMLResource");
+            Resource resource = configCol.createResource(DEFAULT_COLLECTION_CONFIG_FILE, "XMLResource");
             resource.setContent(COLLECTION_CONFIG);
             configCol.storeResource(resource);
 
