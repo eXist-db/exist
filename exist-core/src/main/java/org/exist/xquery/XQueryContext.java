@@ -2031,7 +2031,12 @@ public class XQueryContext implements BinaryValueManager, Context {
                 final Optional<SessionWrapper> maybeSession = Optional.ofNullable(getHttpContext())
                         .map(HttpContext::getSession);
                 if (maybeSession.isPresent()) {
-                    return (Subject) maybeSession.get().getAttribute(HTTP_SESSIONVAR_XMLDB_USER);
+                    try {
+                        return (Subject) maybeSession.get().getAttribute(HTTP_SESSIONVAR_XMLDB_USER);
+                    } catch (final IllegalStateException e) {
+                        // this is thrown if HttpSession#getAttribute is called on an invalid session
+                        return null;
+                    }
                 }
             }
         }

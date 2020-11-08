@@ -22,6 +22,7 @@
 package org.exist.xquery.functions.session;
 
 import java.util.Enumeration;
+import java.util.Optional;
 
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
@@ -37,6 +38,7 @@ import javax.annotation.Nonnull;
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author Loren Cahlander
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class GetAttributeNames extends StrictSessionFunction {
     public final static FunctionSignature signature =
@@ -52,9 +54,14 @@ public class GetAttributeNames extends StrictSessionFunction {
     }
 
     @Override
-    public Sequence eval(final Sequence[] args, @Nonnull final SessionWrapper session)
-            throws XPathException {
-        final Enumeration<String> attributeNames = session.getAttributeNames();
+    public Sequence eval(final Sequence[] args, @Nonnull final SessionWrapper session) throws XPathException {
+
+        final Optional<Enumeration<String>> maybeAttributeNames = withValidSession(session, SessionWrapper::getAttributeNames);
+        if (!maybeAttributeNames.isPresent()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+
+        final Enumeration<String> attributeNames = maybeAttributeNames.get();
         if (!attributeNames.hasMoreElements()) {
             return Sequence.EMPTY_SEQUENCE;
         }

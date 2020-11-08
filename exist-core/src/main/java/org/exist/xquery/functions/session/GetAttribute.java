@@ -38,6 +38,7 @@ import java.util.Optional;
  *
  * @author Wolfgang Meier
  * @author Loren Cahlander
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class GetAttribute extends SessionFunction {
 
@@ -63,28 +64,12 @@ public class GetAttribute extends SessionFunction {
 
         final String attributeName = args[0].getStringValue();
 
-        try {
-            final Object o = session.get().getAttribute(attributeName);
-            if (o == null) {
-                return Sequence.EMPTY_SEQUENCE;
-            }
-            return XPathUtil.javaObjectToXPath(o, context);
-        } catch (final IllegalStateException ise) {
-            /*
-            This occurs when SessionWrapper#getAttribute(String) is called
-            on an invalidated HttpSession.
-
-            The description of the XQuery function session:get-attribute#1 is such
-            that we cannot raise an error, so the only option is to return an empty
-            sequence.
-            */
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Called session:get-attribute('" + attributeName + "') on an invalidated session!");
-            }
-
-            // TODO(AR) consider revising this in future so that session:get-attribute#1 can raise an error if the session is invalid
+        final Optional<Object> maybeAttributeValue = withValidSession(session.get(), s -> Optional.ofNullable(s.getAttribute(attributeName))).orElse(Optional.empty());
+        if (!maybeAttributeValue.isPresent()) {
             return Sequence.EMPTY_SEQUENCE;
         }
+
+        final Object o = maybeAttributeValue.get();
+        return XPathUtil.javaObjectToXPath(o, context);
     }
 }

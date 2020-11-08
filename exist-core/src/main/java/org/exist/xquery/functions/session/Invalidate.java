@@ -33,6 +33,7 @@ import java.util.Optional;
 
 /**
  * @author wolf
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class Invalidate extends SessionFunction {
 
@@ -48,13 +49,14 @@ public class Invalidate extends SessionFunction {
     }
 
     @Override
-    public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> session)
-            throws XPathException {
+    public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> session) throws XPathException {
         if (!session.isPresent()) {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        session.get().invalidate();
-        return Sequence.EMPTY_SEQUENCE;
+        return withValidSession(session.get(), s -> {
+            s.invalidate();
+            return Sequence.EMPTY_SEQUENCE;
+        }).orElse(Sequence.EMPTY_SEQUENCE);
     }
 }

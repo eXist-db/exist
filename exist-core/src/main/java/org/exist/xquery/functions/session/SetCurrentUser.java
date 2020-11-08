@@ -42,6 +42,7 @@ import java.util.Optional;
 /**
  * @author Wolfgang Meier
  * @author Loren Cahlander
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class SetCurrentUser extends UserSwitchingBasicFunction {
 
@@ -82,7 +83,7 @@ public class SetCurrentUser extends UserSwitchingBasicFunction {
         switchUser(user);
 
         //validated user, store in session
-        final SessionWrapper session = SessionFunction.getOrCreateSession(this, context,
+        final SessionWrapper session = SessionFunction.getValidOrCreateSession(this, context,
                 Optional.ofNullable(context.getHttpContext())
                         .map(XQueryContext.HttpContext::getSession)
         );
