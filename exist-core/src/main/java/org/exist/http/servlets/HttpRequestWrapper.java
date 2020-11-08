@@ -60,26 +60,27 @@ import org.apache.logging.log4j.Logger;
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  * @author <a href="mailto:dannes@exist-db.org">Dannes Wessels</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class HttpRequestWrapper implements RequestWrapper {
 
-    private static Logger LOG = LogManager.getLogger(HttpRequestWrapper.class.getName());
+    private static final Logger LOG = LogManager.getLogger(HttpRequestWrapper.class);
     
-    private HttpServletRequest servletRequest;
-    private String formEncoding = null;
+    private final HttpServletRequest servletRequest;
+    private final String formEncoding;
     private String containerEncoding = null;
 
     private String pathInfo = null;
     private String servletPath = null;
 
-    private boolean isMultipartContent=false;
+    private final boolean isMultipartContent;
 
     // Use linkedhashmap to preserver order
     // Object can be a single object, or a List of objects
-    private Map<String, Object> params = new LinkedHashMap<>();
+    private final Map<String, Object> params = new LinkedHashMap<>();
 
     // flag to administer wether multi-part formdata was processed
-    private boolean isFormDataParsed = false;
+    private final boolean isFormDataParsed;
 
     /**
      * Constructs a wrapper for the given servlet request. multipart/form-data 
@@ -89,7 +90,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      * 
      * @param servletRequest The request as viewed by the servlet
      */
-    public HttpRequestWrapper(HttpServletRequest servletRequest) {
+    public HttpRequestWrapper(final HttpServletRequest servletRequest) {
         this(servletRequest, "UTF-8", "UTF-8");
     }
     
@@ -101,8 +102,8 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @param formEncoding The encoding of the request's forms
      * @param containerEncoding The encoding of the servlet
      */
-    public HttpRequestWrapper(HttpServletRequest servletRequest, String formEncoding,
-            String containerEncoding) {
+    public HttpRequestWrapper(final HttpServletRequest servletRequest, final String formEncoding,
+            final String containerEncoding) {
         this(servletRequest, formEncoding, containerEncoding, true);
     }
 
@@ -114,8 +115,8 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @param containerEncoding The encoding of the servlet
      * @param parseMultipart Set to TRUE to enable parse multipart/form-data when available.
      */
-    public HttpRequestWrapper(HttpServletRequest servletRequest, String formEncoding,
-            String containerEncoding, boolean parseMultipart) {
+    public HttpRequestWrapper(final HttpServletRequest servletRequest, final String formEncoding,
+            final String containerEncoding, final boolean parseMultipart) {
         this.servletRequest = servletRequest;
         this.formEncoding = formEncoding;
         this.containerEncoding = containerEncoding;
@@ -127,7 +128,7 @@ public class HttpRequestWrapper implements RequestWrapper {
         parseParameters();
 
         // Determine if request is a multipart
-        isMultipartContent=ServletFileUpload.isMultipartContent(servletRequest);
+        isMultipartContent = ServletFileUpload.isMultipartContent(servletRequest);
 
         // Get multi-part formdata parameters when it is a mpfd request
         // and when instructed to do so
@@ -138,19 +139,20 @@ public class HttpRequestWrapper implements RequestWrapper {
 
             // Get multi-part formdata
             parseMultipartContent();
+        } else {
+            isFormDataParsed = false;
         }
 
-        LOG.debug("Retrieved "+params.size() + " parameters.");
-
+        LOG.debug("Retrieved " + params.size() + " parameters.");
     }
 
     @Override
-    public Object getAttribute(String name) {
+    public Object getAttribute(final String name) {
         return servletRequest.getAttribute(name);
     }
 
     @Override
-    public Enumeration getAttributeNames() {
+    public Enumeration<String> getAttributeNames() {
         return servletRequest.getAttributeNames();
     }
 
@@ -162,7 +164,7 @@ public class HttpRequestWrapper implements RequestWrapper {
         return servletRequest.getCookies();
     }
 
-    private static void addParameter(Map<String, Object> map, String paramName, Object value) {
+    private static void addParameter(final Map<String, Object> map, final String paramName, final Object value) {
 
         final Object original = map.get(paramName);
 
@@ -175,7 +177,7 @@ public class HttpRequestWrapper implements RequestWrapper {
 
             } else {
                 // Single value already detected, convert to List and add both items
-                final ArrayList<Object> list = new ArrayList<>();
+                final List<Object> list = new ArrayList<>();
                 list.add(original);
                 list.add(value);
                 map.put(paramName, list);
@@ -237,7 +239,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @param obj List or Fileitem
      * @return First Fileitem in list or Fileitem.
      */
-    private List<FileItem> getFileItem(Object obj) {
+    private List<FileItem> getFileItem(final Object obj) {
 
     	final List<FileItem> fileList = new LinkedList<>();
         if (obj instanceof List) {
@@ -263,7 +265,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     /**
      * @param value
      */
-    private String decode(String value) {
+    private String decode(final String value) {
 
         if (formEncoding == null || value == null) {
             return value;
@@ -319,6 +321,20 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
+     * @see javax.servlet.http.HttpServletRequest#getContentLengthLong()
+     */
+    @Override
+    public long getContentLengthLong() {
+        long retval = servletRequest.getContentLengthLong();
+        final String lenstr = servletRequest.getHeader("Content-Length");
+        if (lenstr != null) {
+            retval = Long.parseLong(lenstr);
+        }
+
+        return retval;
+    }
+
+    /**
      * @see javax.servlet.http.HttpServletRequest#getContentType()
      */
     @Override
@@ -338,8 +354,8 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @see javax.servlet.http.HttpServletRequest#getHeader(String)
      */
     @Override
-    public String getHeader(String arg0) {
-        return servletRequest.getHeader(arg0);
+    public String getHeader(final String name) {
+        return servletRequest.getHeader(name);
     }
 
     /**
@@ -347,7 +363,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @return An enumeration of header names
      */
     @Override
-    public Enumeration getHeaderNames() {
+    public Enumeration<String> getHeaderNames() {
         return servletRequest.getHeaderNames();
     }
 
@@ -355,8 +371,8 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @see javax.servlet.http.HttpServletRequest#getHeaders(String)
      */
     @Override
-    public Enumeration getHeaders(String arg0) {
-        return servletRequest.getHeaders(arg0);
+    public Enumeration<String> getHeaders(final String name) {
+        return servletRequest.getHeaders(name);
     }
 
     /**
@@ -371,7 +387,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @see javax.servlet.http.HttpServletRequest#getParameter(String)
      */
     @Override
-    public String getParameter(String name) {
+    public String getParameter(final String name) {
 
         // Parameters
         Object o = params.get(name);
@@ -415,7 +431,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @see javax.servlet.http.HttpServletRequest#getParameter(String)
      */
     @Override
-    public List<Path> getFileUploadParam(String name) {
+    public List<Path> getFileUploadParam(final String name) {
         if (!isFormDataParsed) {
             return null;
         }
@@ -437,7 +453,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @see javax.servlet.http.HttpServletRequest#getParameter(String)
      */
     @Override
-    public List<String> getUploadedFileName(String name) {
+    public List<String> getUploadedFileName(final String name) {
         if (!isFormDataParsed) {
             return null;
         }
@@ -459,7 +475,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @see javax.servlet.http.HttpServletRequest#getParameterNames()
      */
     @Override
-    public Enumeration getParameterNames() {
+    public Enumeration<String> getParameterNames() {
         return Collections.enumeration(params.keySet());
     }
 
@@ -467,10 +483,10 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @see javax.servlet.http.HttpServletRequest#getParameterValues(String)
      */
     @Override
-    public String[] getParameterValues(String key) {
+    public String[] getParameterValues(final String name) {
 
         // params already retrieved
-        final Object obj = params.get(key);
+        final Object obj = params.get(name);
 
         // Fast return
         if (obj == null) {
@@ -680,8 +696,8 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @see javax.servlet.http.HttpServletRequest#getSession(boolean)
      */
     @Override
-    public SessionWrapper getSession(boolean arg0) {
-        final HttpSession session = servletRequest.getSession(arg0);
+    public SessionWrapper getSession(final boolean create) {
+        final HttpSession session = servletRequest.getSession(create);
         if (session == null) {
             return null;
         } else {
@@ -733,41 +749,41 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @see javax.servlet.http.HttpServletRequest#isUserInRole(String)
      */
     @Override
-    public boolean isUserInRole(String arg0) {
-        return servletRequest.isUserInRole(arg0);
+    public boolean isUserInRole(final String role) {
+        return servletRequest.isUserInRole(role);
     }
 
     /**
      * @see javax.servlet.http.HttpServletRequest#removeAttribute(String)
      */
     @Override
-    public void removeAttribute(String arg0) {
-        servletRequest.removeAttribute(arg0);
+    public void removeAttribute(final String name) {
+        servletRequest.removeAttribute(name);
     }
 
     /**
      * @see javax.servlet.http.HttpServletRequest#setAttribute(String, Object)
      */
     @Override
-    public void setAttribute(String arg0, Object arg1) {
-        servletRequest.setAttribute(arg0, arg1);
+    public void setAttribute(final String name, final Object o) {
+        servletRequest.setAttribute(name, o);
     }
 
     /**
      * @see javax.servlet.http.HttpServletRequest#setCharacterEncoding(String)
      */
     @Override
-    public void setCharacterEncoding(String arg0) throws UnsupportedEncodingException {
-        servletRequest.setCharacterEncoding(arg0);
+    public void setCharacterEncoding(final String env) throws UnsupportedEncodingException {
+        servletRequest.setCharacterEncoding(env);
     }
 
 
-    public void setPathInfo(String arg0) {
-        pathInfo = arg0;
+    public void setPathInfo(final String pathInfo) {
+        this.pathInfo = pathInfo;
     }
 
-    public void setServletPath(String arg0) {
-        servletPath = arg0;
+    public void setServletPath(final String servletPath) {
+        this.servletPath = servletPath;
     }
 
     /**

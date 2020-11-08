@@ -21,11 +21,12 @@
  */
 package org.exist.http.servlets;
 
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -34,256 +35,172 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class HttpResponseWrapper implements ResponseWrapper {
 	
-	private HttpServletResponse response;
-	
+	private final HttpServletResponse response;
+
+	/**
+	 * Used the feature "Guess last modification time for an XQuery result"
+	 */
+	private Object2LongMap<String> dateHeaders = null;
+	private static final long NO_SUCH_DATE_HEADER = -1;
+
 	/**
 	 * @param response the http response
 	 */
-	public HttpResponseWrapper(HttpServletResponse response) {
+	public HttpResponseWrapper(final HttpServletResponse response) {
 		this.response = response;
 	}
 	
-	/**
-	 * @param name Name of the Cookie
-	 * @param value Value of the Cookie
-	 */
-	public void addCookie(String name, String value)
-	{
+	@Override
+	public void addCookie(final String name, final String value) {
 		response.addCookie(new Cookie(name, encode(value)));
 	}
-	
-	/**
-     * The method <code>addCookie</code>
-     *
-     * @param name Name of the Cookie
-     * @param value Value of the Cookie
-     * @param maxAge an <code>int</code> value
-     */
-	public void addCookie(final String name, final String value, final int maxAge)
-	{
+
+	@Override
+	public void addCookie(final String name, final String value, final int maxAge) {
 		final Cookie cookie = new Cookie(name, encode(value));
 		cookie.setMaxAge(maxAge);
 		response.addCookie(cookie);
 	}
 	
-	/**
-     * The method <code>addCookie</code>
-     *
-     * @param name Name of the Cookie
-     * @param value Value of the Cookie
-     * @param maxAge an <code>int</code> value
-	 * @param secure security of the Cookie
-     */
-	public void addCookie(final String name, final String value, final int maxAge, boolean secure)
-	{
+	@Override
+	public void addCookie(final String name, final String value, final int maxAge, final boolean secure) {
+		final Cookie cookie = new Cookie(name, encode(value));
+		cookie.setMaxAge(maxAge);
+		cookie.setSecure(secure);
+		response.addCookie(cookie);
+	}
+	
+	@Override
+	public void addCookie(final String name, final String value, final int maxAge, boolean secure, final String domain, final String path) {
 		final Cookie cookie = new Cookie(name, encode(value));
 		cookie.setMaxAge(maxAge);
 		cookie.setSecure( secure );
+		if (domain != null) {
+			cookie.setDomain(domain);
+		}
+		if (path != null) {
+			cookie.setPath(path);
+		}
 		response.addCookie(cookie);
 	}
 	
-	/**
-	 * The method <code>addCookie</code>
-	 *
-	 * @param name Name of the Cookie
-	 * @param value Value of the Cookie
-	 * @param maxAge an <code>int</code> value
-	 * @param secure security of the Cookie
-	 * @param domain domain of the cookie
-	 * @param path path scope of the cookie
-	 */
-	public void addCookie(final String name, final String value, final int maxAge, boolean secure, final String domain, final String path)
+	@Override
+	public void setContentType(final String type)
 	{
-		final Cookie cookie = new Cookie(name, encode(value));
-		cookie.setMaxAge(maxAge);
-		cookie.setSecure( secure );
-		if(domain!=null)
-			{cookie.setDomain(domain);}
-		if(path!=null)
-			{cookie.setPath(path);}
-		response.addCookie(cookie);
+		response.setContentType(type);
 	}
 	
-	/**
-	 * @param contentType Content Type of the response
-	 */
-	public void setContentType(String contentType)
-	{
-		response.setContentType(contentType);
+	@Override
+	public void addDateHeader(final String name, final long date) {
+		response.addDateHeader(name, date);
 	}
 	
-	/**
-	 * Add a date header.
-	 *
-	 * @param name the header name
-	 * @param value the value of the header
-	 */
-	public void addDateHeader(String name, long value) {
-		response.addDateHeader(name, value);
-	}
-	
-	/**
-	 * Add a header.
-	 *
-	 * @param name the header name
-	 * @param value the value of the header
-	 */
-	public void addHeader(String name, String value) {
+	@Override
+	public void addHeader(final String name, final String value) {
 		response.addHeader(name, encode(value));
 	}
 	
-	/**
-	 * Add a int header.
-	 *
-	 * @param name the header name
-	 * @param value the value of the header
-	 */
-	public void addIntHeader(String name, int value) {
+	@Override
+	public void addIntHeader(final String name, final int value) {
 		response.addIntHeader(name, value);
 	}
 	
-	/**
-	 * Returns true of the response contains the header.
-	 *
-	 * @param name the header name
-	 * @return a boolean indicating whether the header is present
-	 */
-	public boolean containsHeader(String name) {
+	@Override
+	public boolean containsHeader(final String name) {
 		return response.containsHeader(name);
 	}
 	
-	/**
-	 * Encode a String as a URL.
-	 *
-	 * @param s the string to encode
-	 * @return the encoded value
-	 */
-	public String encodeURL(String s) {
+	@Override
+	public String encodeURL(final String s) {
 		return response.encodeURL(s);
 	}
-	
-	public void flushBuffer() throws IOException
-	{
+
+	@Override
+	public void flushBuffer() throws IOException {
 		response.flushBuffer();
 	}
 	
-	/**
-	 * @return returns the default character encoding
-	 */
+	@Override
 	public String getCharacterEncoding() {
 		return response.getCharacterEncoding();
 	}
 	
-	/**
-	 * @return returns the locale
-	 */
+	@Override
 	public Locale getLocale() {
 		return response.getLocale();
 	}
 
-	/**
-	 * @return returns isCommitted
-	 */
+	@Override
 	public boolean isCommitted() {
 		return response.isCommitted();
 	}
 	
-	/**
-	 * Send a HTTP Reedirect.
-	 *
-	 * @param url the URL to redirect to
-	 * @throws IOException if an I/O error occurs
-	 */
-	public void sendRedirect(String url) throws IOException {
-		response.sendRedirect(url);
-	}
-	
-	/** used the feature "Guess last modification time for an XQuery result" */
-	private Map<String, Long> dateHeaders = new HashMap<>();
-
-	/**
-	 * Set a date header.
-	 *
-	 * @param name the header name
-	 * @param value the header value
-	 */
-	public void setDateHeader(String name, long value) {
-		dateHeaders.put(name, value);
-		response.setDateHeader(name, value);
+	@Override
+	public void sendRedirect(final String location) throws IOException {
+		response.sendRedirect(location);
 	}
 
-	/**
-	 * Get a date header.
-	 *
-	 * @param name the header name
-	 *
-	 * @return the value of Date Header corresponding to given name, 0 if none has been set.
-	 */
-	public long getDateHeader(String name) {
+	@Override
+	public void setDateHeader(final String name, final long date) {
+		if (dateHeaders == null) {
+			dateHeaders = new Object2LongOpenHashMap<>();
+			dateHeaders.defaultReturnValue(NO_SUCH_DATE_HEADER);
+		}
+		dateHeaders.put(name, date);
+		response.setDateHeader(name, date);
+	}
+
+	@Override
+	public long getDateHeader(final String name) {
 		long ret = 0;
-		final Long val = dateHeaders.get(name);
-		if ( val != null )
-			{ret = val;}
+		final long val = dateHeaders != null ? dateHeaders.getLong(name) : NO_SUCH_DATE_HEADER;
+		if (val != NO_SUCH_DATE_HEADER) {
+			ret = val;
+		}
 		return ret;
 	}
 	
-	/**
-	 * Set a header.
-	 *
-	 * @param name the header name
-	 * @param value the header value
-	 */
-	public void setHeader(String name, String value) {
+	@Override
+	public void setHeader(final String name, final String value) {
 		response.setHeader(name, encode(value));
 	}
 
-	/**
-	 * Set an int header.
-	 *
-	 * @param name the header name
-	 * @param value the header value
-	 */
-	public void setIntHeader(String name, int value) {
+	@Override
+	public void setIntHeader(final String name, final int value) {
 		response.setIntHeader(name, value);
 	}
 
 	@Override
-	public void sendError(final int code) throws IOException {
-		response.sendError(code);
+	public void sendError(final int sc) throws IOException {
+		response.sendError(sc);
 	}
 
 	@Override
-	public void sendError(final int code, final String msg) throws IOException {
-		response.sendError(code, msg);
+	public void sendError(final int sc, final String msg) throws IOException {
+		response.sendError(sc, msg);
 	}
 
-	/**
-	 * Set the HTP Status Code
-	 *
-     * @param statusCode the status code.
-     */
-	public void setStatusCode(int statusCode) {
-		response.setStatus(statusCode);
+	@Override
+	public void setStatusCode(final int sc) {
+		response.setStatus(sc);
 	}
 	
-	/**
-	 * Set the locale.
-	 *
-	 * @param locale the locale.
-	 */
-	public void setLocale(Locale locale) {
+	@Override
+	public void setLocale(final Locale locale) {
 		response.setLocale(locale);
 	}
-	
+
+	@Override
 	public OutputStream getOutputStream() throws IOException {
 		return response.getOutputStream();
 	}
 	
 	// TODO: remove this hack after fixing HTTP 1.1 :)
-	private String encode(String value){
+	private String encode(final String value){
         return new String(value.getBytes(), ISO_8859_1);
 	}
 }
