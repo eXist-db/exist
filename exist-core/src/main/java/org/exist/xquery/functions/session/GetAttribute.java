@@ -70,16 +70,20 @@ public class GetAttribute extends SessionFunction {
             }
             return XPathUtil.javaObjectToXPath(o, context);
         } catch (final IllegalStateException ise) {
-            //TODO: if we throw an exception here it means that getAttribute()
-            //cannot be called after invalidate() on the session object. This is the
-            //way that it works in Java, however this isnt the way it works in xquery currently
-            //we can change this but we need to be aware of the consequences, the eXist admin webapp is a
-            //good example of what happens if you change this - try logging out of the webapp ;-)
-            // - deliriumsky
+            /*
+            This occurs when SessionWrapper#getAttribute(String) is called
+            on an invalidated HttpSession.
 
-            //log.error(ise.getStackTrace());
-            //throw new XPathException(this, "Session has an IllegalStateException for getAttribute() - " + ise.getStackTrace() + System.getProperty("line.separator") + System.getProperty("line.separator") + "Did you perhaps call session:invalidate() previously?");
+            The description of the XQuery function session:get-attribute#1 is such
+            that we cannot raise an error, so the only option is to return an empty
+            sequence.
+            */
 
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Called session:get-attribute('" + attributeName + "') on an invalidated session!");
+            }
+
+            // TODO(AR) consider revising this in future so that session:get-attribute#1 can raise an error if the session is invalid
             return Sequence.EMPTY_SEQUENCE;
         }
     }
