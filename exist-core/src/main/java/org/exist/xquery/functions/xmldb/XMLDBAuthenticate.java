@@ -200,7 +200,7 @@ public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
 
         final RequestWrapper request = Optional.ofNullable(context.getHttpContext())
                 .map(XQueryContext.HttpContext::getRequest)
-                .orElseThrow(() -> new XPathException(this, ErrorCodes.XPDY0002, "No response object found in the current XQuery context."));
+                .orElseThrow(() -> new XPathException(this, ErrorCodes.XPDY0002, "No request object found in the current XQuery context."));
 
         final Optional<SessionWrapper> newSession = Optional.ofNullable(request.getSession(true));
         newSession.ifPresent(session -> context.setHttpContext(context.getHttpContext().setSession(session)));
