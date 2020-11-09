@@ -444,11 +444,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         isReferenced = referenced;
     }
 
-    @EnsureContainerLocked(mode=READ_LOCK)
-    public boolean isCollectionConfig() {
-        return fileURI.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI);
-    }
-
     @Override
     @EnsureContainerLocked(mode=READ_LOCK)
     public Permission getPermissions() {

@@ -26,6 +26,7 @@ import org.junit.*;
 import org.exist.security.Account;
 
 import static org.exist.TestUtils.*;
+import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -636,7 +637,7 @@ public class CollectionConfigurationTest {
 
         // remove config document thus dropping the configuration
         Collection confCol = DatabaseManager.getCollection("xmldb:exist://" + CONF_COLL_URI.toString(), ADMIN_DB_USER, ADMIN_DB_PWD);
-        Resource confDoc = confCol.getResource("collection.xconf");
+        Resource confDoc = confCol.getResource(DEFAULT_COLLECTION_CONFIG_FILE);
         assertNotNull(confDoc);
         confCol.removeResource(confDoc);
 //            cms = (CollectionManagementService) confCol.getService("CollectionManagementService", "1.0");
@@ -693,7 +694,7 @@ public class CollectionConfigurationTest {
 
         // remove config document thus dropping the configuration
         Collection confCol = DatabaseManager.getCollection("xmldb:exist://" + CONF_COLL_URI.toString(), ADMIN_DB_USER, ADMIN_DB_PWD);
-        Resource confDoc = confCol.getResource("collection.xconf");
+        Resource confDoc = confCol.getResource(DEFAULT_COLLECTION_CONFIG_FILE);
         assertNotNull(confDoc);
         confCol.removeResource(confDoc);
 

@@ -37,6 +37,7 @@ import java.util.Map;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.easymock.EasyMock.*;
+import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
 import static org.exist.indexing.lucene.LuceneIndexConfig.MATCH_ATTR;
 import static org.exist.indexing.lucene.LuceneIndexConfig.QNAME_ATTR;
 
@@ -48,7 +49,7 @@ public class RangeIndexConfigTest {
     @Test
     public void errorsHaveSourceContext() throws NoSuchFieldException, IllegalAccessException {
         final String badCreateQName = "tei:persName "; // Note the trailing
-        final String mockCollectionXConfUri = "/db/system/conf/db/mock/collection.xconf";
+        final String mockCollectionXConfUri = "/db/system/conf/db/mock/" + DEFAULT_COLLECTION_CONFIG_FILE;
 
         final NodeList mockConfigNodes = createMock(NodeList.class);
         final Element mockConfigNode = createMock(Element.class);

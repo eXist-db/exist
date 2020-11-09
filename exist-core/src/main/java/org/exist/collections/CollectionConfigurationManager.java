@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
@@ -67,8 +68,6 @@ public class CollectionConfigurationManager implements BrokerPoolService {
 
     /** /db/system/config/db **/
     public static final XmldbURI ROOT_COLLECTION_CONFIG_URI = CONFIG_COLLECTION_URI.append(XmldbURI.ROOT_COLLECTION_NAME);
-
-    public static final String COLLECTION_CONFIG_FILENAME = "collection.xconf";
 
     public static final CollectionURI COLLECTION_CONFIG_PATH = new CollectionURI(CONFIG_COLLECTION_URI.getRawCollectionPath());
 
@@ -252,9 +251,16 @@ public class CollectionConfigurationManager implements BrokerPoolService {
             for (final Iterator<DocumentImpl> i = configCollection.iterator(broker); i.hasNext();) {
                 final DocumentImpl confDoc = i.next();
                 if (confDoc.getFileURI().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
+
+                    if (confDoc instanceof BinaryDocument) {
+                        LOG.warn("Found a possible Collection configuration document: " + confDoc.getURI() + ", however it is a Binary document! A user may have stored the document as a Binary document by mistake. Skipping...");
+                        continue;
+                    }
+
                     if (LOG.isTraceEnabled()) {
                         LOG.trace("Reading collection configuration from '" + confDoc.getURI() + "'");
                     }
+
                     final CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool());
 
                     // [ 1807744 ] Invalid collection.xconf causes a non startable database
@@ -279,7 +285,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
         }
     }
 
-    public CollectionConfiguration getOrCreateCollectionConfiguration(final DBBroker broker, Collection collection) {
+    public CollectionConfiguration getOrCreateCollectionConfiguration(final DBBroker broker, final Collection collection) {
         final CollectionURI path = new CollectionURI(COLLECTION_CONFIG_PATH);
         path.append(collection.getURI().getRawCollectionPath());
 

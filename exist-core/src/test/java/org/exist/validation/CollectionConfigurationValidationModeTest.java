@@ -32,6 +32,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.modules.CollectionManagementService;
 
+import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
 import static org.junit.Assert.*;
 
 /**
@@ -72,9 +73,9 @@ public class CollectionConfigurationValidationModeTest {
     }
 
     private void storeCollectionXconf(final String collection, final String document) throws XMLDBException {
-        final ResourceSet result = existEmbeddedServer.executeQuery("xmldb:store(\"" + collection + "\", \"collection.xconf\", " + document + ")");
+        final ResourceSet result = existEmbeddedServer.executeQuery("xmldb:store(\"" + collection + "\", \"" + DEFAULT_COLLECTION_CONFIG_FILE + "\", " + document + ")");
         final String r = (String) result.getResource(0).getContent();
-        assertEquals("Store xconf", collection + "/collection.xconf", r);
+        assertEquals("Store xconf", collection + "/" + DEFAULT_COLLECTION_CONFIG_FILE, r);
     }
 
     private void storeDocument(final String collection, final String name, final String document) throws XMLDBException {
