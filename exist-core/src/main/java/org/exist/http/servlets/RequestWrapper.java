@@ -32,98 +32,226 @@ import java.util.List;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.Cookie;
 
-/**
- * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
- */
- public interface RequestWrapper {
+public interface RequestWrapper {
 
-     Object getAttribute(String name);
+    /**
+     * @see javax.servlet.ServletRequest#getAttributeNames()
+     */
+    Enumeration<String> getAttributeNames();
 
-     Enumeration<String> getAttributeNames();
-    
-     String getCharacterEncoding();
-	
-	 long getContentLength();
-	
-	 InputStream getInputStream() throws IOException;
-	
-	 Cookie[] getCookies();
-	
-	 String getContentType();
-	
-	 String getContextPath();
-	
-	 String getHeader(String arg0);
-	
-	 Enumeration getHeaderNames();
-	
-	 Enumeration getHeaders(String arg0);
-	
-	 String getMethod();
-	
-	 String getParameter(String arg0);
-	
-	 Enumeration<String> getParameterNames();
-	
-	 String[] getParameterValues(String arg0);
-	
-	 List<Path> getFileUploadParam(String parameter);
-	
-	 List<String> getUploadedFileName(String parameter);
-	
-	 String getPathInfo();
-	
-	 String getPathTranslated();
-	
-	 String getProtocol();
-	
-	 String getQueryString();
-	
-	 String getRemoteAddr();
-	
-	 String getRemoteHost();
-	
-	 int getRemotePort();
-	
-	 String getRemoteUser();
-	
-	 String getRequestedSessionId();
-	
-	 String getRequestURI();
-	
-	 StringBuffer getRequestURL();
-	
-	 String getScheme();
-	
-	 String getServerName();
-	
-	 int getServerPort();
-	
-	 String getServletPath();
-	
-	 SessionWrapper getSession();
-	
-	 SessionWrapper getSession(boolean arg0);
-	
-	 Principal getUserPrincipal();
-	
-	 boolean isRequestedSessionIdFromCookie();
-	
-	 boolean isRequestedSessionIdFromURL();
-	
-	 boolean isRequestedSessionIdValid();
-	
-	 boolean isSecure();
-	
-	 boolean isUserInRole(String arg0);
-	
-	 void removeAttribute(String arg0);
-	
-	 void setAttribute(String arg0, Object arg1);
-	
-	 void setCharacterEncoding(String arg0) throws UnsupportedEncodingException;
+    /**
+     * @see javax.servlet.ServletRequest#getAttribute(String)
+     */
+    Object getAttribute(String name);
 
-	 boolean isMultipartContent();
+    /**
+     * @see javax.servlet.ServletRequest#setAttribute(String, Object)
+     */
+    void setAttribute(String name, Object o);
 
-	 RequestDispatcher getRequestDispatcher(final String path);
+    /**
+     * @see javax.servlet.ServletRequest#removeAttribute(String)
+     */
+    void removeAttribute(String name);
+
+    /**
+     * @see javax.servlet.ServletRequest#getCharacterEncoding()
+     */
+    String getCharacterEncoding();
+
+    /**
+     * @see javax.servlet.ServletRequest#setCharacterEncoding(String)
+     */
+    void setCharacterEncoding(String env) throws UnsupportedEncodingException;
+
+    /**
+     * @see javax.servlet.ServletRequest#getContentLength()
+     */
+    long getContentLength();
+
+    /**
+     * @see javax.servlet.ServletRequest#getContentLengthLong()
+     */
+    long getContentLengthLong();
+
+    /**
+     * @see javax.servlet.ServletRequest#getInputStream()
+     */
+    InputStream getInputStream() throws IOException;
+
+    /**
+     * @see javax.servlet.ServletRequest#getContentType()
+     */
+    String getContentType();
+
+    /**
+     * @see javax.servlet.ServletRequest#getParameterNames()
+     */
+    Enumeration<String> getParameterNames();
+
+    /**
+     * @see javax.servlet.ServletRequest#getParameter(String)
+     */
+    String getParameter(String name);
+
+    /**
+     * @see javax.servlet.ServletRequest#getParameterValues(String)
+     */
+    String[] getParameterValues(String name);
+
+    /**
+     * @see javax.servlet.ServletRequest#getProtocol()
+     */
+    String getProtocol();
+
+    /**
+     * @see javax.servlet.ServletRequest#getScheme()
+     */
+    String getScheme();
+
+    /**
+     * @see javax.servlet.ServletRequest#getServerName()
+     */
+    String getServerName();
+
+    /**
+     * @see javax.servlet.ServletRequest#getServerPort()
+     */
+    int getServerPort();
+
+    /**
+     * @see javax.servlet.ServletRequest#getRemoteAddr()
+     */
+    String getRemoteAddr();
+
+    /**
+     * @see javax.servlet.ServletRequest#getRemoteHost()
+     */
+    String getRemoteHost();
+
+    /**
+     * @see javax.servlet.ServletRequest#getRemotePort()
+     */
+    int getRemotePort();
+
+    /**
+     * @see javax.servlet.ServletRequest#isSecure()
+     */
+    boolean isSecure();
+
+    /**
+     * @see javax.servlet.ServletRequest#getRequestDispatcher(String)
+     */
+    RequestDispatcher getRequestDispatcher(final String path);
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getCookies()
+     */
+    Cookie[] getCookies();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getContextPath()
+     */
+    String getContextPath();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getHeaderNames()
+     */
+    Enumeration<String> getHeaderNames();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getHeader(String)
+     */
+    String getHeader(String name);
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getHeaders(String)
+     */
+    Enumeration<String> getHeaders(String name);
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getMethod()
+     */
+    String getMethod();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getPathInfo()
+     */
+    String getPathInfo();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getPathTranslated()
+     */
+    String getPathTranslated();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getQueryString()
+     */
+    String getQueryString();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getRemoteUser()
+     */
+    String getRemoteUser();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getRequestedSessionId()
+     */
+    String getRequestedSessionId();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#isRequestedSessionIdFromCookie()
+     */
+    boolean isRequestedSessionIdFromCookie();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#isRequestedSessionIdFromURL()
+     */
+    boolean isRequestedSessionIdFromURL();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#isRequestedSessionIdValid()
+     */
+    boolean isRequestedSessionIdValid();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getRequestURI()
+     */
+    String getRequestURI();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getRequestURL()
+     */
+    StringBuffer getRequestURL();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getServletPath()
+     */
+    String getServletPath();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getSession()
+     */
+    SessionWrapper getSession();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getSession()
+     */
+    SessionWrapper getSession(boolean create);
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#getUserPrincipal()
+     */
+    Principal getUserPrincipal();
+
+    /**
+     * @see javax.servlet.http.HttpServletRequest#isUserInRole(String)
+     */
+    boolean isUserInRole(String role);
+
+    boolean isMultipartContent();
+
+    List<Path> getFileUploadParam(String parameter);
+
+    List<String> getUploadedFileName(String parameter);
 }

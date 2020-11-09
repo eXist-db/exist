@@ -22,6 +22,7 @@
 package org.exist.xquery.functions.session;
 
 import java.util.Enumeration;
+import java.util.Optional;
 
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
@@ -33,7 +34,7 @@ import org.exist.xquery.value.Type;
 import javax.annotation.Nonnull;
 
 /**
- * @author Adam Retter (adam.retter@devon.gov.uk)
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author Loren Cahlander
  */
 public class Clear extends StrictSessionFunction {
@@ -51,14 +52,14 @@ public class Clear extends StrictSessionFunction {
 
     @Override
     protected Sequence eval(final Sequence[] args, @Nonnull final SessionWrapper session) throws XPathException {
-        final Enumeration<String> attributeNames = session.getAttributeNames();
-        if (!attributeNames.hasMoreElements()) {
-            return Sequence.EMPTY_SEQUENCE;
-        }
 
-        while (attributeNames.hasMoreElements()) {
-            final String attributeName = attributeNames.nextElement();
-            session.removeAttribute(attributeName);
+        final Optional<Enumeration<String>> maybeAttributeNames = withValidSession(session, SessionWrapper::getAttributeNames);
+        if (maybeAttributeNames.isPresent()) {
+            final Enumeration<String> attributeNames = maybeAttributeNames.get();
+            while (attributeNames.hasMoreElements()) {
+                final String attributeName = attributeNames.nextElement();
+                session.removeAttribute(attributeName);
+            }
         }
 
         return Sequence.EMPTY_SEQUENCE;

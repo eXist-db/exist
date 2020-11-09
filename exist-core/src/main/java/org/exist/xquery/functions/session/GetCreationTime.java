@@ -36,7 +36,7 @@ import org.exist.xquery.value.Type;
  * Returns the time when this session was created, or
  * January 1, 1970 GMT if it is an invalidated session
  *
- * @author José María Fernández (jmfg@users.sourceforge.net)
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class GetCreationTime extends SessionFunction {
 
@@ -59,11 +59,8 @@ public class GetCreationTime extends SessionFunction {
             return XPathUtil.javaObjectToXPath(-1, context);
         }
 
-        try {
-            final long creationTime = session.get().getCreationTime();
-            return new DateTimeValue(new Date(creationTime));
-        } catch (final IllegalStateException ise) {
-            return new DateTimeValue(new Date(0));
-        }
+        final Date creationTime = withValidSession(session.get(), SessionWrapper::getCreationTime).map(Date::new)
+                .orElseGet(() -> new Date(0));
+        return new DateTimeValue(creationTime);
     }
 }

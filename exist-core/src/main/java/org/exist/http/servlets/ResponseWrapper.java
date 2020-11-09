@@ -26,167 +26,149 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Locale;
 
-/**
- * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
- */
 public interface ResponseWrapper {
+
+    /**
+     * @see javax.servlet.ServletResponse#flushBuffer()
+     */
+    void flushBuffer() throws IOException;
+
+    /**
+     * @see javax.servlet.ServletResponse#getCharacterEncoding()
+     */
+    String getCharacterEncoding();
+
+    /**
+     * @see javax.servlet.ServletResponse#getLocale()
+     */
+    Locale getLocale();
+
+    /**
+     * @see javax.servlet.ServletResponse#setLocale(Locale)
+     */
+    void setLocale(Locale loc);
+
+    /**
+     * @see javax.servlet.ServletResponse#setContentType(String)
+     */
+    void setContentType(String type);
+
+    /**
+     * @see javax.servlet.ServletResponse#getOutputStream()
+     */
+    OutputStream getOutputStream() throws IOException;
+
+    /**
+     * @see javax.servlet.ServletResponse#isCommitted()
+     */
+    boolean isCommitted();
 	
-	/**
-	 * Add a cookie.
-	 *
-	 * @param name	Name of the Cookie
-	 * @param value	Value of the Cookie
-	 */
-	public void addCookie(String name, String value);
+    /**
+     * Add a cookie.
+     *
+     * @param name  Name of the Cookie
+     * @param value Value of the Cookie
+     */
+    void addCookie(String name, String value);
 
-	/**
-	 * Add a cookie.
-	 *
-	 * @param name	Name of the Cookie
-	 * @param value	Value of the Cookie
-	 * @param maxAge maxAge of the Cookie
-	 */
-	public void addCookie(String name, String value, int maxAge);
-	
-	/**
-	 * Add a cookie.
-	 *
-	 * @param name	Name of the Cookie
-	 * @param value	Value of the Cookie
-	 * @param maxAge maxAge of the Cookie
-	 * @param secure security of the Cookie
-	 */
-	public void addCookie(String name, String value, int maxAge, boolean secure);
-	
-	/**
-	 * Add a cookie.
-	 *
-	 * @param name Name of the Cookie
-	 * @param value Value of the Cookie
-	 * @param maxAge an <code>int</code> value
-	 * @param secure security of the Cookie
-	 * @param domain domain of the cookie
-	 * @param path path scope of the cookie
-	 */
-	public void addCookie(String name, String value, int maxAge, boolean secure, String domain, String path);
+    /**
+     * Add a cookie.
+     *
+     * @param name   Name of the Cookie
+     * @param value  Value of the Cookie
+     * @param maxAge maxAge of the Cookie
+     */
+    void addCookie(String name, String value, int maxAge);
 
-	/**
-	 * Add a date header.
-	 *
-	 * @param name the header name
-	 * @param value the value of the header
-	 */
-	public void addDateHeader(String name, long value);
+    /**
+     * Add a cookie.
+     *
+     * @param name   Name of the Cookie
+     * @param value  Value of the Cookie
+     * @param maxAge maxAge of the Cookie
+     * @param secure security of the Cookie
+     */
+    void addCookie(String name, String value, int maxAge, boolean secure);
 
-	/**
-	 * Add a header.
-	 *
-	 * @param name the header name
-	 * @param value the value of the header
-	 */
-	public void addHeader(String name, String value);
+    /**
+     * Add a cookie.
+     *
+     * @param name   Name of the Cookie
+     * @param value  Value of the Cookie
+     * @param maxAge an <code>int</code> value
+     * @param secure security of the Cookie
+     * @param domain domain of the cookie
+     * @param path   path scope of the cookie
+     */
+    void addCookie(String name, String value, int maxAge, boolean secure, String domain, String path);
 
-	/**
-	 * Add a int header.
-	 *
-	 * @param name the header name
-	 * @param value the value of the header
-	 */
-	public void addIntHeader(String name, int value);
+    /**
+     * @see javax.servlet.http.HttpServletResponse#setDateHeader(String, long)
+     */
+    void setDateHeader(String name, long date);
 
-	/**
-	 * Returns true of the response contains the header.
-	 *
-	 * @param name the header name
-	 * @return a boolean indicating whether the header is present
-	 */
-	public boolean containsHeader(String name);
+    /**
+     * @see javax.servlet.http.HttpServletResponse#addDateHeader(String, long)
+     */
+    void addDateHeader(String name, long date);
 
-	/**
-	 * Encode a String as a URL.
-	 *
-	 * @param s the string to encode
-	 * @return the encoded value
-	 */
-	public String encodeURL(String s);
+    /**
+     * @see javax.servlet.http.HttpServletResponse#setIntHeader(String, int)
+     */
+    void setIntHeader(String name, int value);
 
+    /**
+     * @see javax.servlet.http.HttpServletResponse#addIntHeader(String, int)
+     */
+    void addIntHeader(String name, int value);
 
-	public void flushBuffer() throws IOException;
+    /**
+     * @see javax.servlet.http.HttpServletResponse#addDateHeader(String, long)
+     */
+    void addHeader(String name, String value);
 
-	/**
-	 * Get the character encoding.
-	 *
-	 * @return returns the default character encoding
-	 */
-	public String getCharacterEncoding();
+    /**
+     * @see javax.servlet.http.HttpServletResponse#containsHeader(String)
+     */
+    boolean containsHeader(String name);
 
-	/**
-	 * @return returns the default locale
-	 */
-	public Locale getLocale();
-	
-	/**
-	 * @return returns isCommitted
-	 */
-	public boolean isCommitted();
-	
-	/**
-	 * @param contentType Content Type of the response
-	 */
-	public void setContentType(String contentType);
+    /**
+     * @see javax.servlet.http.HttpServletResponse#setHeader(String, String)
+     */
+    void setHeader(String name, String value);
 
-	/**
-	 * Set a date header.
-	 *
-	 * @param name the header name
-	 * @param value the header value
-	 */
-	public void setDateHeader(String name, long value);
+    /**
+     * @see javax.servlet.http.HttpServletResponse#encodeURL(String)
+     */
+    String encodeURL(String s);
 
-	/**
-	 * Set a header.
-	 *
-	 * @param name the header name
-	 * @param value the header value
-	 */
-	public void setHeader(String name, String value);
+    /**
+     * @see javax.servlet.http.HttpServletResponse#sendRedirect(String)
+     */
+    void sendRedirect(String location) throws IOException;
 
-	/**
-	 * Set an int header.
-	 *
-	 * @param name the header name
-	 * @param value the header value
-	 */
-	public void setIntHeader(String name, int value);
+    /**
+     * @see javax.servlet.http.HttpServletResponse#sendError(int)
+     */
+    void sendError(final int sc) throws IOException;
 
-	void sendError(final int code) throws IOException;
+    /**
+     * @see javax.servlet.http.HttpServletResponse#sendError(int, String)
+     */
+    void sendError(final int sc, final String msg) throws IOException;
 
-	void sendError(final int code, final String msg) throws IOException;
+    /**
+     * Get a date header.
+     *
+     * @param name the header name
+     * @return the value of Date Header corresponding to given name,0 if none has been set.
+     */
+    long getDateHeader(String name);
 
-	/**
-	 * Set the HTP Status Code
-	 *
-	 * @param statusCode the status code.
-	 */
-    public void setStatusCode(int statusCode);
-
-	/**
-	 * Set the locale.
-	 *
-	 * @param locale the locale.
-	 */
-	public void setLocale(Locale locale);
-	
-	public void sendRedirect(String url) throws IOException;
-	
-	/**
-	 * Get a date header.
-	 *
-	 * @param name the header name
-	 *
-	 * @return the value of Date Header corresponding to given name,0 if none has been set.
-	 */
-	public long getDateHeader(String name);
-    
-    public OutputStream getOutputStream() throws IOException;
+    /**
+     * Set the HTP Status Code
+     *
+     * @param statusCode the status code.
+     */
+    void setStatusCode(int statusCode);
 }
