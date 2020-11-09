@@ -150,7 +150,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (node.getNodeType() == Node.ELEMENT_NODE &&
                     INDEX_ELEMENT.equals(node.getLocalName())) {
                 final String qname = ((Element) node).getAttribute(QNAME_ATTR);
-                if (qname == null || qname.length() == 0) {
+                if (qname == null || qname.isEmpty()) {
                     throw new DatabaseConfigurationException("Configuration error: element " + node.getNodeName() +
                             " must have an attribute " + QNAME_ATTR);
                 }
@@ -483,7 +483,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
             }
         }
-        return cb.map.values().toArray(new Occurrences[cb.map.size()]);
+        return cb.map.values().toArray(new Occurrences[0]);
     }
 
     //This listener is always the same whatever the document and the mode

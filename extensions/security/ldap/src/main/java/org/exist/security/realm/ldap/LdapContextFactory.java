@@ -110,7 +110,7 @@ public class LdapContextFactory implements Configurable {
             username = principalPatternFormat.format(new String[]{username});
         }
 
-        final Hashtable<String, Object> env = new Hashtable<String, Object>();
+        final Hashtable<String, Object> env = new Hashtable<>();
 
         env.put(Context.SECURITY_AUTHENTICATION, authentication);
         if (ssl) {

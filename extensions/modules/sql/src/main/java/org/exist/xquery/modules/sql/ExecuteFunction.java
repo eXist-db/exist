@@ -320,7 +320,7 @@ public class ExecuteFunction extends BasicFunction {
 
                                 String colElement = "field";
 
-                                if (makeNodeFromColumnName && columnName.length() > 0) {
+                                if (makeNodeFromColumnName && !columnName.isEmpty()) {
                                     // use column names as the XML node
 
                                     /*
@@ -334,7 +334,7 @@ public class ExecuteFunction extends BasicFunction {
 
                                 if (!makeNodeFromColumnName || columnName.length() <= 0) {
                                     final String name;
-                                    if (columnName.length() > 0) {
+                                    if (!columnName.isEmpty()) {
                                         name = SQLUtils.escapeXmlAttr(columnName);
                                     } else {
                                         name = "Column: " + (i + 1);

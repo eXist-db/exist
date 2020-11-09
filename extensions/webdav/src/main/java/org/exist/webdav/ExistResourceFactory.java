@@ -93,8 +93,6 @@ public class ExistResourceFactory implements ResourceFactory {
 
     }
 
-    ;
-
     /*
      * Construct Resource for path. A Document or Collection resource is returned, NULL if type
      * could not be detected.

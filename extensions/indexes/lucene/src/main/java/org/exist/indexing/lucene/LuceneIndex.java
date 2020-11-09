@@ -181,9 +181,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         close();
         Path dir = getDataDir().resolve(getDirName());
         try {
-            Files.list(dir).forEach(path -> {
-                FileUtils.deleteQuietly(path);
-            });
+            Files.list(dir).forEach(path -> FileUtils.deleteQuietly(path));
         } catch (Exception e) {
             // never abort at this point, so recovery can continue
             LOG.warn(e.getMessage(), e);

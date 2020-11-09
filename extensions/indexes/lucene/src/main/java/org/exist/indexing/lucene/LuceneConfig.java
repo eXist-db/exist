@@ -420,10 +420,10 @@ public class LuceneConfig {
             this.prefix = config.getAttribute(ATTR_MODULE_PREFIX);
             this.at = config.getAttribute(ATTR_MODULE_AT);
 
-            if (this.prefix == null || this.prefix.length() == 0) {
+            if (this.prefix == null || this.prefix.isEmpty()) {
                 throw new DatabaseConfigurationException("Attribute prefix for <module> required");
             }
-            if (this.uri == null || this.uri.length() == 0) {
+            if (this.uri == null || this.uri.isEmpty()) {
                 throw new DatabaseConfigurationException("Attribute uri for <module> required");
             }
         }

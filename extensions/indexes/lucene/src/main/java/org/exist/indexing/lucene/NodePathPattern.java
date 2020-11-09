@@ -132,7 +132,7 @@ public class NodePathPattern {
                 case '/':
                     final String next = token.toString();
                     token.setLength(0);
-                    if (next.length() > 0) {
+                    if (!next.isEmpty()) {
                         addSegment(namespaces, next);
                     }
                     if (matchPattern.charAt(++pos) == '/') {

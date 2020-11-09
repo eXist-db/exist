@@ -111,7 +111,7 @@ public class ParseCQL extends BasicFunction {
       		CQLNode query_cql = parser.parse(query);
       		if (output.equals(OutputTypeXCQL)) {
 		    String xmlContent = query_cql.toXCQL();
-		    if (xmlContent.length() == 0) {
+		    if (xmlContent.isEmpty()) {
 			return Sequence.EMPTY_SEQUENCE;
 		    }
 		    StringReader reader = new StringReader(xmlContent);

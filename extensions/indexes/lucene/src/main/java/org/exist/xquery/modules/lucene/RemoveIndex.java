@@ -67,7 +67,7 @@ public class RemoveIndex extends BasicFunction {
         final String path = args[0].itemAt(0).getStringValue();
 
         // Retrieve document from database
-        try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK);) {
+        try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK)) {
             // Verify the document actually exists
             if (lockedDoc == null) {
                 throw new XPathException("Document " + path + " does not exist.");

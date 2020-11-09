@@ -170,12 +170,10 @@ public class Scan extends BasicFunction {
             if (root == null)
                 return Sequence.EMPTY_SEQUENCE;
             return normalize((NodeValue) ((Document) root).getDocumentElement());
-        } catch (XQDocException e) {
+        } catch (XQDocException | SAXException e) {
             throw new XPathException(this, "error while scanning module: " + e.getMessage(), e);
         } catch (IOException e) {
             throw new XPathException(this, "IO error while scanning module: " + e.getMessage(), e);
-        } catch (SAXException e) {
-            throw new XPathException(this, "error while scanning module: " + e.getMessage(), e);
         }
     }
 

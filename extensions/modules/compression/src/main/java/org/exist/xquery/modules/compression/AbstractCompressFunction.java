@@ -273,7 +273,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
             final String stripOffset) throws XPathException {
 
         final String ns = element.getNamespaceURI();
-        if(!(element.getNodeName().equals("entry") || (ns != null && ns.length() > 0))) {
+        if(!(element.getNodeName().equals("entry") || (ns != null && !ns.isEmpty()))) {
             throw new XPathException(this, "Item must be type of xs:anyURI or element entry.");
         }
 

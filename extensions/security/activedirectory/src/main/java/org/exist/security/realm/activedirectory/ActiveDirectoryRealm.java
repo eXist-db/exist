@@ -124,7 +124,7 @@ public class ActiveDirectoryRealm extends LDAPRealm {
 				Attributes attrs = sr.getAttributes();
 				Map<String, Object> amap = null;
 				if (attrs != null) {
-					amap = new HashMap<String, Object>();
+					amap = new HashMap<>();
 					NamingEnumeration<? extends Attribute> ne = attrs.getAll();
 					while (ne.hasMore()) {
 						Attribute attr = ne.next();

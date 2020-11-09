@@ -64,7 +64,7 @@ public class RangeIndexModule extends AbstractInternalModule {
         new FunctionDef(IndexKeys.signatures[1], IndexKeys.class)
     };
 
-    public final static Map<String, RangeIndex.Operator> OPERATOR_MAP = new HashMap<String, RangeIndex.Operator>();
+    public final static Map<String, RangeIndex.Operator> OPERATOR_MAP = new HashMap<>();
     static {
         OPERATOR_MAP.put("eq", RangeIndex.Operator.EQ);
         OPERATOR_MAP.put("lt", RangeIndex.Operator.LT);

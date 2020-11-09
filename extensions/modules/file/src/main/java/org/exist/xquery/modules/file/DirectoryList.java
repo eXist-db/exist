@@ -161,7 +161,7 @@ public class DirectoryList extends BasicFunction {
                 builder.addAttribute(new QName("human-size", null, null), humanSize);
                 builder.addAttribute(new QName("modified", null, null), new DateTimeValue(new Date(Files.getLastModifiedTime(file).toMillis())).getStringValue());
 
-                if (relDir != null && relDir.length() > 0) {
+                if (relDir != null && !relDir.isEmpty()) {
                     builder.addAttribute(new QName("subdir", null, null), relDir);
                 }
 

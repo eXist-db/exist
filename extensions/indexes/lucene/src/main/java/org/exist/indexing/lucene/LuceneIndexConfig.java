@@ -101,17 +101,17 @@ public class LuceneIndexConfig {
         }
 
         String name = config.getAttribute(FIELD_ATTR);
-        if (name != null && name.length() > 0)
+        if (name != null && !name.isEmpty())
         	setName(name);
 
         String fieldType = config.getAttribute(TYPE_ATTR);
-        if (fieldType != null && fieldType.length() > 0)
+        if (fieldType != null && !fieldType.isEmpty())
         	type = fieldTypes.get(fieldType);
         if (type == null)
         	type = new FieldType(config, analyzers);
 
         String indexParam = config.getAttribute(INDEX_ATTR);
-        if (indexParam != null && indexParam.length() > 0) {
+        if (indexParam != null && !indexParam.isEmpty()) {
             doIndex = "yes".equalsIgnoreCase(indexParam) || "true".equalsIgnoreCase(indexParam);
         }
 

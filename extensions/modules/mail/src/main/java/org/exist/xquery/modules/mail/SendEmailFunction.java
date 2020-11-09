@@ -139,16 +139,13 @@ public class SendEmailFunction extends BasicFunction
 	    		String proto = session.getProperty("mail.transport.protocol");
 			if(proto==null)
 				proto = "smtp";
-			Transport t = session.getTransport(proto);
-			try {
-				if(session.getProperty("mail."+proto+".auth")!=null)
-					t.connect(session.getProperty("mail."+proto+".user"),session.getProperty("mail."+proto+".password"));
-				for(Message msg: messages) {
-					t.sendMessage(msg,msg.getAllRecipients());
-				}
-			} finally {
-				t.close();
-			}
+            try (Transport t = session.getTransport(proto)) {
+                if (session.getProperty("mail." + proto + ".auth") != null)
+                    t.connect(session.getProperty("mail." + proto + ".user"), session.getProperty("mail." + proto + ".password"));
+                for (Message msg : messages) {
+                    t.sendMessage(msg, msg.getAllRecipients());
+                }
+            }
 			
 			return( Sequence.EMPTY_SEQUENCE );
 		} catch(TransformerException te) {
@@ -537,7 +534,7 @@ public class SendEmailFunction extends BasicFunction
             // we have an attachment as well as text and/or html so we need a multipart/mixed message
             multipartBoundary =  MultipartBoundary;
         }
-        else if(!aMail.getText().equals("") && !aMail.getXHTML().equals(""))
+        else if(!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty())
         {
             // we have text and html so we need a multipart/alternative message and no attachment
             multipartAlternative = true;
@@ -563,14 +560,14 @@ public class SendEmailFunction extends BasicFunction
         }
 
         // TODO - need to put out a multipart/mixed boundary here when HTML, text and attachment present
-        if(!aMail.getText().equals("") && !aMail.getXHTML().equals("") && aMail.attachmentIterator().hasNext())
+        if(!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext())
         {
             out.println("Content-Type: multipart/alternative; boundary=\"" + MultipartBoundary + "_alt\";");
             out.println("--" + MultipartBoundary + "_alt");
         }
 
         //text email
-        if(!aMail.getText().equals(""))
+        if(!aMail.getText().isEmpty())
         {
             out.println("Content-Type: text/plain; charset=" + charset);
             out.println("Content-Transfer-Encoding: 8bit");
@@ -581,9 +578,9 @@ public class SendEmailFunction extends BasicFunction
 
             if(multipartBoundary != null)
             {
-                if(!aMail.getXHTML().equals("") || aMail.attachmentIterator().hasNext())
+                if(!aMail.getXHTML().isEmpty() || aMail.attachmentIterator().hasNext())
                 {
-                    if(!aMail.getText().equals("") && !aMail.getXHTML().equals("") && aMail.attachmentIterator().hasNext())
+                    if(!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext())
                     {
                         out.println("--" + MultipartBoundary + "_alt");
                     }
@@ -594,7 +591,7 @@ public class SendEmailFunction extends BasicFunction
                 }
                 else
                 {
-                    if(!aMail.getText().equals("") && !aMail.getXHTML().equals("") && aMail.attachmentIterator().hasNext())
+                    if(!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext())
                     {
                         out.println("--" + MultipartBoundary + "_alt--");
                     }
@@ -607,7 +604,7 @@ public class SendEmailFunction extends BasicFunction
         }
 
         //HTML email
-        if(!aMail.getXHTML().equals(""))
+        if(!aMail.getXHTML().isEmpty())
         {
                 out.println("Content-Type: text/html; charset=" + charset);
                 out.println("Content-Transfer-Encoding: 8bit");
@@ -621,7 +618,7 @@ public class SendEmailFunction extends BasicFunction
                 {
                     if(aMail.attachmentIterator().hasNext())
                     {
-                        if(!aMail.getText().equals("") && !aMail.getXHTML().equals("") && aMail.attachmentIterator().hasNext())
+                        if(!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext())
                         {
                             out.println("--" + MultipartBoundary + "_alt--");
                             out.println("--" + multipartBoundary);
@@ -633,7 +630,7 @@ public class SendEmailFunction extends BasicFunction
                     }
                     else
                     {
-                        if(!aMail.getText().equals("") && !aMail.getXHTML().equals("") && aMail.attachmentIterator().hasNext())
+                        if(!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext())
                         {
                             out.println("--" + MultipartBoundary + "_alt--");
                         }
@@ -896,30 +893,34 @@ public class SendEmailFunction extends BasicFunction
                                     Element elementBodyPart = (Element) bodyPart;
                                     String content = null;
                                     String contentType = null;
-                                    
-                                    if (bodyPart.getLocalName().equals("text")) {
-                                        // Setting the Subject and Content Type
-                                        content = bodyPart.getFirstChild().getNodeValue();
-                                        contentType = "plain";
-                                    } else if (bodyPart.getLocalName().equals("xhtml")) {
-                                        //Convert everything inside <xhtml></xhtml> to text
-                                        TransformerFactory transFactory = TransformerFactory.newInstance();
-                                        Transformer transformer = transFactory.newTransformer();
-                                        DOMSource source = new DOMSource(bodyPart.getFirstChild());
-                                        StringWriter strWriter = new StringWriter();
-                                        StreamResult result = new StreamResult(strWriter);
-                                        transformer.transform(source, result);
-                                        
-                                        content = strWriter.toString();
-                                        contentType = "html";
-                                    } else if (bodyPart.getLocalName().equals("generic")) {
-                                        // Setting the Subject and Content Type
-                                        content = elementBodyPart.getFirstChild().getNodeValue();
-                                        contentType = elementBodyPart.getAttribute("type");
+
+                                    switch (bodyPart.getLocalName()) {
+                                        case "text":
+                                            // Setting the Subject and Content Type
+                                            content = bodyPart.getFirstChild().getNodeValue();
+                                            contentType = "plain";
+                                            break;
+                                        case "xhtml":
+                                            //Convert everything inside <xhtml></xhtml> to text
+                                            TransformerFactory transFactory = TransformerFactory.newInstance();
+                                            Transformer transformer = transFactory.newTransformer();
+                                            DOMSource source = new DOMSource(bodyPart.getFirstChild());
+                                            StringWriter strWriter = new StringWriter();
+                                            StreamResult result = new StreamResult(strWriter);
+                                            transformer.transform(source, result);
+
+                                            content = strWriter.toString();
+                                            contentType = "html";
+                                            break;
+                                        case "generic":
+                                            // Setting the Subject and Content Type
+                                            content = elementBodyPart.getFirstChild().getNodeValue();
+                                            contentType = elementBodyPart.getAttribute("type");
+                                            break;
                                     }
                                     
                                     // Now, time to store it
-                                    if (content != null && contentType != null && contentType.length() > 0) {
+                                    if (content != null && contentType != null && !contentType.isEmpty()) {
                                         String charset = elementBodyPart.getAttribute("charset");
                                         String encoding = elementBodyPart.getAttribute("encoding");
                                         
@@ -995,7 +996,7 @@ public class SendEmailFunction extends BasicFunction
                     msg.setFrom();
 
                 // Preparing content and attachments
-                if (attachments.size() > 0) {
+                if (!attachments.isEmpty()) {
                     if (multibody == null) {
                         multibody = new MimeMultipart("mixed");
                         if (body != null) {

@@ -52,11 +52,11 @@ public class RangeIndexConfigField {
     public RangeIndexConfigField(NodePath parentPath, Element elem, Map<String, String> namespaces) throws DatabaseConfigurationException {
         name = elem.getAttribute("name");
         path = parentPath;
-        if (name == null || name.length() == 0) {
+        if (name == null || name.isEmpty()) {
             throw new DatabaseConfigurationException("Range index module: field element requires a name attribute");
         }
         String match = elem.getAttribute("match");
-        if (match != null && match.length() > 0) {
+        if (match != null && !match.isEmpty()) {
             try {
                 relPath = new NodePath(namespaces, match);
                 if (relPath.length() == 0)
@@ -70,7 +70,7 @@ public class RangeIndexConfigField {
             path = parentPath;
         }
         String typeStr = elem.getAttribute("type");
-        if (typeStr != null && typeStr.length() > 0) {
+        if (typeStr != null && !typeStr.isEmpty()) {
             try {
                 this.type = Type.getType(typeStr);
             } catch (XPathException e) {
@@ -78,15 +78,13 @@ public class RangeIndexConfigField {
             }
         }
         String custom = elem.getAttribute("converter");
-        if (custom != null && custom.length() > 0) {
+        if (custom != null && !custom.isEmpty()) {
             try {
                 Class customClass = Class.forName(custom);
                 typeConverter = (org.exist.indexing.range.conversion.TypeConverter) customClass.newInstance();
             } catch (ClassNotFoundException e) {
                 RangeIndex.LOG.warn("Class for custom-type not found: " + custom);
-            } catch (InstantiationException e) {
-                RangeIndex.LOG.warn("Failed to initialize custom-type: " + custom, e);
-            } catch (IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 RangeIndex.LOG.warn("Failed to initialize custom-type: " + custom, e);
             }
         }
@@ -105,7 +103,7 @@ public class RangeIndexConfigField {
         }
 
         String caseStr = elem.getAttribute("case");
-        if (caseStr != null && caseStr.length() > 0) {
+        if (caseStr != null && !caseStr.isEmpty()) {
             caseSensitive = caseStr.equalsIgnoreCase("yes");
         }
     }

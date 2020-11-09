@@ -27,11 +27,11 @@ public class Wildcard implements WildcardedExpression, MergeableExpression {
 
     public int getMinimumLength() {
         return minimumLength;
-    };
+    }
 
     public int getMaximumLength() {
         return maximumLength;
-    };
+    }
 
     public Wildcard(final int minimumLength, final int maximumLength) {
         this.minimumLength = minimumLength;

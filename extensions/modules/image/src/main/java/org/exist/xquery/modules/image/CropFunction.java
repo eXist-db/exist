@@ -142,7 +142,7 @@ public class CropFunction extends BasicFunction {
 
         //TODO currently ONLY tested for JPEG!!!
         BufferedImage bImage = null;
-        try (InputStream inputStream = ((BinaryValue) args[0].itemAt(0)).getInputStream();) {
+        try (InputStream inputStream = ((BinaryValue) args[0].itemAt(0)).getInputStream()) {
             //get the image data
             Image image = ImageIO.read(inputStream);
 

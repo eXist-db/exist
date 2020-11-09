@@ -131,18 +131,23 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
                 final String key = (String)paramEntry.getKey();
                 final String value = (String)paramEntry.getValue();
 
-                if(key.equals("FOPauthor")) {
-                    foUserAgent.setAuthor(value);
-                } else if(key.equals("FOPtitle")) {
-                    foUserAgent.setTitle(value);
-                } else if(key.equals("FOPkeywords")) {
-                    foUserAgent.setTitle(value);
-                } else if(key.equals("FOPdpi")) {
-                    try {
-                        foUserAgent.setTargetResolution(Integer.parseInt(value));
-                    } catch(final NumberFormatException nfe) {
-                        LOG.warn("Unable to set DPI to: " + value);
-                    }
+                switch (key) {
+                    case "FOPauthor":
+                        foUserAgent.setAuthor(value);
+                        break;
+                    case "FOPtitle":
+                        foUserAgent.setTitle(value);
+                        break;
+                    case "FOPkeywords":
+                        foUserAgent.setTitle(value);
+                        break;
+                    case "FOPdpi":
+                        try {
+                            foUserAgent.setTargetResolution(Integer.parseInt(value));
+                        } catch (final NumberFormatException nfe) {
+                            LOG.warn("Unable to set DPI to: " + value);
+                        }
+                        break;
                 }
             }
         }

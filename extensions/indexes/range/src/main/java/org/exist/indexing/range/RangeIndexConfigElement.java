@@ -63,7 +63,7 @@ public class RangeIndexConfigElement {
 
     public RangeIndexConfigElement(Element node, Map<String, String> namespaces) throws DatabaseConfigurationException {
         String match = node.getAttribute(MATCH_ATTR);
-        if (match != null && match.length() > 0) {
+        if (match != null && !match.isEmpty()) {
             try {
                 path = new NodePath(namespaces, match);
                 if (path.length() == 0)
@@ -78,7 +78,7 @@ public class RangeIndexConfigElement {
             isQNameIndex = true;
         }
         String typeStr = node.getAttribute(TYPE_ATTR);
-        if (typeStr != null && typeStr.length() > 0) {
+        if (typeStr != null && !typeStr.isEmpty()) {
             try {
                 this.type = Type.getType(typeStr);
             } catch (XPathException e) {
@@ -89,12 +89,12 @@ public class RangeIndexConfigElement {
         parseChildren(node);
 
         String collation = node.getAttribute("collation");
-        if (collation != null && collation.length() > 0) {
+        if (collation != null && !collation.isEmpty()) {
             analyzer.addCollation(collation);
             usesCollation = true;
         }
         String nested = node.getAttribute("nested");
-        includeNested = (nested == null || nested.length() == 0 || nested.equalsIgnoreCase("yes"));
+        includeNested = (nested == null || nested.isEmpty() || nested.equalsIgnoreCase("yes"));
 
         // normalize whitespace if whitespace="normalize"
         String whitespace = node.getAttribute("whitespace");
@@ -107,19 +107,17 @@ public class RangeIndexConfigElement {
         }
 
         String caseStr = node.getAttribute("case");
-        if (caseStr != null && caseStr.length() > 0) {
+        if (caseStr != null && !caseStr.isEmpty()) {
             caseSensitive = caseStr.equalsIgnoreCase("yes");
         }
         String custom = node.getAttribute("converter");
-        if (custom != null && custom.length() > 0) {
+        if (custom != null && !custom.isEmpty()) {
             try {
                 Class customClass = Class.forName(custom);
                 typeConverter = (org.exist.indexing.range.conversion.TypeConverter) customClass.newInstance();
             } catch (ClassNotFoundException e) {
                 RangeIndex.LOG.warn("Class for custom-type not found: " + custom);
-            } catch (InstantiationException e) {
-                RangeIndex.LOG.warn("Failed to initialize custom-type: " + custom, e);
-            } catch (IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 RangeIndex.LOG.warn("Failed to initialize custom-type: " + custom, e);
             }
         }
@@ -180,9 +178,7 @@ public class RangeIndexConfigElement {
                 default:
                     return new TextField(fieldName, content, Field.Store.NO);
             }
-        } catch (NumberFormatException e) {
-            // wrong type: ignore
-        } catch (XPathException e) {
+        } catch (NumberFormatException | XPathException e) {
             // wrong type: ignore
         }
         return null;
