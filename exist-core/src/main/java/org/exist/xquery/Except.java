@@ -58,7 +58,7 @@ public class Except extends CombiningExpression {
                 result = ls.toNodeSet().except(rs.toNodeSet());
             } else {
                 result = new ValueSequence();
-                final Set<Item> set = new TreeSet<>(ItemComparator.INSTANCE);
+                final Set<Item> set = new TreeSet<>(new ItemComparator());
                 for (final SequenceIterator i = rs.unorderedIterator(); i.hasNext(); ) {
                     set.add(i.nextItem());
                 }

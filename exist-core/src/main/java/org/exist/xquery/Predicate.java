@@ -54,7 +54,7 @@ public class Predicate extends PathExpr {
         UNKNOWN,
         NODE,
         BOOLEAN,
-        POSITIONAL;
+        POSITIONAL
     }
 
     private CachedResult cached = null;

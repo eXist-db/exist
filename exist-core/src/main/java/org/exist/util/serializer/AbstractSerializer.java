@@ -41,7 +41,7 @@ public abstract class AbstractSerializer {
     protected final static int MICRO_XML_WRITER = 5;
     protected final static int HTML5_WRITER = 6;
 
-    protected XMLWriter writers[] = {
+    protected XMLWriter[] writers = {
         new IndentingXMLWriter(),
         new XHTMLWriter(),
         new TEXTWriter(),

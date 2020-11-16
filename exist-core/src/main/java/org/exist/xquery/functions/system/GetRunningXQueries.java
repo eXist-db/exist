@@ -92,7 +92,7 @@ public class GetRunningXQueries extends BasicFunction
 			builder.startElement(new QName("xqueries", NAMESPACE_URI, PREFIX), null);
 
 			//Add all the running xqueries
-			final XQueryWatchDog watchdogs[] = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
+			final XQueryWatchDog[] watchdogs = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
 
 			for (XQueryWatchDog watchdog : watchdogs) {
 				final XQueryContext context = watchdog.getContext();
@@ -121,7 +121,7 @@ public class GetRunningXQueries extends BasicFunction
 		builder.addAttribute(new QName("caller", null, null), context == getContext() ? "true" : "false");
 		
 		builder.startElement( new QName( "sourceKey", NAMESPACE_URI, PREFIX ), null );
-		builder.characters( context.getSource().path() );
+		builder.characters( context.getSource().pathOrShortIdentifier() );
 		builder.endElement();
 
 		builder.startElement( new QName( "xqueryExpression", NAMESPACE_URI, PREFIX ), null );

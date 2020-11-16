@@ -83,7 +83,7 @@ public class FilterInputStreamCacheMonitor {
             } else {
                 id = "unknown";
             }
-            builder.append(info.getRegistered() + ": " + id);
+            builder.append(info.getRegistered()).append(": ").append(id);
         }
         return builder.toString();
     }

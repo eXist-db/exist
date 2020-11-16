@@ -45,7 +45,7 @@ import java.util.TreeSet;
  */
 public class FunId extends Function {
 	protected static final Logger logger = LogManager.getLogger(FunId.class);
-	public final static FunctionSignature signature[] = {
+	public final static FunctionSignature[] signature = {
 			new FunctionSignature(
 				new QName("id", Function.BUILTIN_FUNCTION_NS),
 				"Returns the sequence of element nodes that have an ID value " +
@@ -145,7 +145,7 @@ public class FunId extends Function {
 
             for(final SequenceIterator i = idval.iterate(); i.hasNext(); ) {
     			nextId = i.nextItem().getStringValue();
-                if (nextId.length() == 0)
+                if (nextId.isEmpty())
                     {continue;}
     			if(nextId.indexOf(' ') != Constants.STRING_NOT_FOUND) {
     				// parse idrefs

@@ -38,6 +38,7 @@ import org.exist.xquery.value.Type;
  * session
  *
  * @author José María Fernández (jmfg@users.sourceforge.net)
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class GetLastAccessedTime extends SessionFunction {
 
@@ -57,17 +58,13 @@ public class GetLastAccessedTime extends SessionFunction {
     }
 
     @Override
-    public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> session)
-            throws XPathException {
+    public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> session) throws XPathException {
         if (!session.isPresent()) {
             return XPathUtil.javaObjectToXPath(-1, context);
         }
 
-        try {
-            final long lastAccessedTime = session.get().getLastAccessedTime();
-            return new DateTimeValue(new Date(lastAccessedTime));
-        } catch (final IllegalStateException ise) {
-            return new DateTimeValue(new Date(0));
-        }
+        final Date lastAccessedTime = withValidSession(session.get(), SessionWrapper::getLastAccessedTime).map(Date::new)
+                .orElseGet(() -> new Date(0));
+        return new DateTimeValue(lastAccessedTime);
     }
 }

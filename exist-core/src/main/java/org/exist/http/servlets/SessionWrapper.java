@@ -21,32 +21,70 @@
  */
 package org.exist.http.servlets;
 
+import javax.servlet.http.HttpSession;
 import java.util.Enumeration;
 
-/**
- * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
- */
 public interface SessionWrapper {
-	
-	public Object getAttribute(String arg0);
-	
-	public Enumeration<String> getAttributeNames();
-	
-	public long getCreationTime();
-	
-	public String getId();
-	
-	public long getLastAccessedTime();
-	
-	public int getMaxInactiveInterval();
-	
-	public void invalidate();
-	
-	public boolean isNew();
-	
-	public void removeAttribute(String arg0);
-	
-	public void setAttribute(String arg0, Object arg1);
-	
-	public void setMaxInactiveInterval(int arg0);
+
+	/**
+	 * @see HttpSession#getAttributeNames()
+	 */
+	Enumeration<String> getAttributeNames();
+
+	/**
+	 * @see HttpSession#getAttribute(String)
+	 */
+	Object getAttribute(String name);
+
+	/**
+	 * @see HttpSession#setAttribute(String, Object)
+	 */
+	void setAttribute(String name, Object value);
+
+	/**
+	 * @see HttpSession#removeAttribute(String)
+	 */
+	void removeAttribute(String name);
+
+	/**
+	 * @see HttpSession#getCreationTime()
+	 */
+	long getCreationTime();
+
+	/**
+	 * @see HttpSession#getId()
+	 */
+	String getId();
+
+	/**
+	 * @see HttpSession#getLastAccessedTime()
+	 */
+	long getLastAccessedTime();
+
+	/**
+	 * @see HttpSession#getMaxInactiveInterval()
+	 */
+	int getMaxInactiveInterval();
+
+	/**
+	 * @see HttpSession#setMaxInactiveInterval(int)
+	 */
+	void setMaxInactiveInterval(int interval);
+
+	/**
+	 * @see HttpSession#invalidate()
+	 */
+	void invalidate();
+
+	/**
+	 * @see HttpSession#isNew()
+	 */
+	boolean isNew();
+
+	/**
+	 * Returns true of the session is invalid.
+	 *
+	 * @return true if the session is invalid, false otherwise.
+	 */
+	boolean isInvalid();
 }

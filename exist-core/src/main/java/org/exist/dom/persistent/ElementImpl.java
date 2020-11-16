@@ -1850,6 +1850,7 @@ public class ElementImpl extends NamedNode implements Element {
                 "Node is not a child of this element");
         }
 
+        final NodePath thisPath = getPath();
         IStoredNode<?> previous = (IStoredNode<?>) oldNode.getPreviousSibling();
         if(previous == null) {
             previous = this;
@@ -1878,7 +1879,7 @@ public class ElementImpl extends NamedNode implements Element {
             indexes.setMode(ReindexMode.STORE);
             listener = indexes.getStreamListener();
             newNode = appendChild(transaction, oldNode.getNodeId(), new NodeImplRef(previous),
-                getPath(), newChild, listener);
+                thisPath, newChild, listener);
             //Reindex if required
             broker.storeXMLResource(transaction, getOwnerDocument());
             broker.updateNode(transaction, this, false);

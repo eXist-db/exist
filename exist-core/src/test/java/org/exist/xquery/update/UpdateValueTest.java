@@ -34,7 +34,7 @@ public class UpdateValueTest extends AbstractTestUpdate {
     @Test
     public void updateNamespacedAttribute() throws XMLDBException {
         final String docName = "pathNs.xml";
-        XQueryService service =
+        final XQueryService service =
             storeXMLStringAndGetQueryService(docName, "<test><t xml:id=\"id1\"/></test>");
 
         queryResource(service, docName, "//t[@xml:id eq 'id1']", 1);

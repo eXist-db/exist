@@ -309,7 +309,7 @@ public class TryCatchExpression extends AbstractExpression {
 
         final Sequence module;
         if (t != null && t instanceof XPathException && ((XPathException)t).getSource() != null) {
-            module = new StringValue(((XPathException)t).getSource().path());
+            module = new StringValue(((XPathException)t).getSource().pathOrShortIdentifier());
         } else {
             module = Sequence.EMPTY_SEQUENCE;
         }

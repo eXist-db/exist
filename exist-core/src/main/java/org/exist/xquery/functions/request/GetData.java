@@ -112,13 +112,8 @@ public class GetData extends StrictRequestFunction {
                     FilterInputStreamCache cache = null;
                     try {
                         //we have to cache the input stream, so we can reread it, as we may use it twice (once for xml attempt and once for string attempt)
-                        cache = FilterInputStreamCacheFactory.getCacheInstance(new FilterInputStreamCacheConfiguration() {
-
-                            @Override
-                            public String getCacheClass() {
-                                return (String) context.getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
-                            }
-                        }, isRequest);
+                        cache = FilterInputStreamCacheFactory.getCacheInstance(()
+                                -> (String) context.getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), isRequest);
                         is = new CachingFilterInputStream(cache);
 
                         //mark the start of the stream

@@ -41,7 +41,7 @@ import org.exist.xquery.value.Type;
 
 public class FunContains extends CollatingFunction {
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("contains", Function.BUILTIN_FUNCTION_NS),
             "Returns an xs:boolean indicating whether or not the value of " +
@@ -100,11 +100,11 @@ public class FunContains extends CollatingFunction {
         Sequence result;
         //s2 takes precedence over s1
         final String s2 = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-        if ("".equals(s2)) {
+        if (s2 != null && s2.isEmpty()) {
             result = BooleanValue.TRUE;
         } else {
             final String s1 = getArgument(0).eval(contextSequence, contextItem).getStringValue();
-            if ("".equals(s1)) {
+            if (s1 != null && s1.isEmpty()) {
                 result = BooleanValue.FALSE;
             } else {
                 final Collator collator = getCollator(contextSequence, contextItem, 3);

@@ -137,7 +137,7 @@ public abstract class AbstractFilterInputStreamCache extends FilterInputStream i
         }
 
         if (srcOffset < n) {
-            final byte skipped[] = new byte[(int) (n - srcOffset)];
+            final byte[] skipped = new byte[(int) (n - srcOffset)];
             int srcLen = src.read(skipped);
 
             //have we reached the end of the stream?
@@ -154,7 +154,7 @@ public abstract class AbstractFilterInputStreamCache extends FilterInputStream i
             return srcOffset;
         } else {
 
-            final byte skipped[] = new byte[(int) n];  //TODO could overflow
+            final byte[] skipped = new byte[(int) n];  //TODO could overflow
             int actualLen = src.read(skipped);
 
             //increase srcOffset due to read operation above

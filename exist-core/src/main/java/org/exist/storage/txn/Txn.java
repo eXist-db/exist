@@ -23,8 +23,6 @@ package org.exist.storage.txn;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Supplier;
 
 import net.jcip.annotations.NotThreadSafe;
 import com.evolvedbinary.j8fu.function.SupplierE;
@@ -34,11 +32,9 @@ import org.apache.logging.log4j.LogManager;
 import org.exist.Transaction;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
-import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.util.LockException;
-import org.exist.xmldb.XmldbURI;
 
 /**
  * @author wolf

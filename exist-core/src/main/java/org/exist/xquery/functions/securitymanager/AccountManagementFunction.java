@@ -22,7 +22,6 @@
 package org.exist.xquery.functions.securitymanager;
 
 import org.exist.EXistException;
-import org.exist.config.ConfigurationException;
 import org.exist.dom.QName;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
@@ -241,7 +240,7 @@ public class AccountManagementFunction extends BasicFunction {
     }
 
     private String[] getGroups(final Sequence seq) {
-        final String groups[] = new String[seq.getItemCount()];
+        final String[] groups = new String[seq.getItemCount()];
         for(int i = 0; i < seq.getItemCount(); i++) {
             groups[i] = seq.itemAt(i).toString();
         }

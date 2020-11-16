@@ -37,7 +37,6 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.function.Predicate;
@@ -393,16 +392,19 @@ public class FileUtils {
      * Get the directory name from the path.
      *
      * @param path a path or uri
-     * @return the directory portion of a path by stripping the last '/' and
-     * anything following, unless the path has no '/', in which case '.' is returned,
-     * or ends with '/', in
-     * which case return the path unchanged.
+     * @return the directory portion of a path by stripping the last '/' or '\' and
+     * anything following. If the path has no '/' or '\', then '.' is returned. If the
+     * path ends with '/' or '\', the path is returned unchanged.
      */
     public static String dirname(final String path) {
-        final int islash = path.lastIndexOf('/');
-        if (islash >= 0 && islash < path.length() - 1) {
-            return path.substring(0, islash);
-        } else if (islash >= 0) {
+        int idx = path.lastIndexOf('/');
+        if (idx == -1) {
+            idx = path.lastIndexOf('\\');
+        }
+
+        if (idx >= 0 && idx < path.length() - 1) {
+            return path.substring(0, idx);
+        } else if (idx >= 0) {
             return path;
         } else {
             return ".";

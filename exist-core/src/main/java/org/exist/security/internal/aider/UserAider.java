@@ -209,7 +209,7 @@ public class UserAider implements Account {
 
     @Override
     public Group getDefaultGroup() {
-        if (groups != null && groups.size() > 0) {
+        if (groups != null && !groups.isEmpty()) {
             final Iterator<Group> iterator = groups.values().iterator();
             if (iterator.hasNext()) {
                 return iterator.next();

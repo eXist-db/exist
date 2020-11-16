@@ -53,7 +53,7 @@ public class FunAdjustTimezone extends BasicFunction {
     public final static FunctionReturnSequenceType DATE_01_RETURN = new FunctionReturnSequenceType(Type.DATE, Cardinality.ZERO_OR_ONE, "the adjusted date");
     public final static FunctionReturnSequenceType TIME_01_RETURN = new FunctionReturnSequenceType(Type.TIME, Cardinality.ZERO_OR_ONE, "the adjusted time");
 
-    public final static FunctionSignature fnAdjustDateTimeToTimezone[] = {
+    public final static FunctionSignature[] fnAdjustDateTimeToTimezone = {
         new FunctionSignature(
             new QName("adjust-dateTime-to-timezone", Function.BUILTIN_FUNCTION_NS),
             "Adjusts the xs:dateTime value $date-time to the implicit timezone of the current locale.",
@@ -72,7 +72,7 @@ public class FunAdjustTimezone extends BasicFunction {
             DATE_TIME_01_RETURN)
     };
 
-    public final static FunctionSignature fnAdjustDateToTimezone[] = {
+    public final static FunctionSignature[] fnAdjustDateToTimezone = {
         new FunctionSignature(
             new QName("adjust-date-to-timezone", Function.BUILTIN_FUNCTION_NS),
             "Adjusts the xs:date value $date to the implicit timezone of the current locale.",
@@ -91,7 +91,7 @@ public class FunAdjustTimezone extends BasicFunction {
             DATE_01_RETURN)
     };
 
-    public final static FunctionSignature fnAdjustTimeToTimezone[] = {
+    public final static FunctionSignature[] fnAdjustTimeToTimezone = {
         new FunctionSignature(
             new QName("adjust-time-to-timezone", Function.BUILTIN_FUNCTION_NS),
             "Adjusts the xs:time value $time to the implicit timezone of the current locale.",

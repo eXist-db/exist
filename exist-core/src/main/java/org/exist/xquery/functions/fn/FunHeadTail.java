@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.persistent.ExtArrayNodeSet;
-import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.BasicFunction;
@@ -37,11 +35,10 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
 
 public class FunHeadTail extends BasicFunction {
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("head", Function.BUILTIN_FUNCTION_NS),
             "The function returns the value of the expression $arg[1], i.e. the first item in the " +

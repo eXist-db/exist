@@ -63,7 +63,7 @@ public class FixedString implements EvaluatableExpression, MergeableExpression {
             return new FixedString(this.nGramSearch, fixedString + otherString.fixedString);
         } else {
             AlternativeStrings otherAlternatives = (AlternativeStrings) otherExpression;
-            Set<String> strings = new HashSet<String>(otherAlternatives.strings.size());
+            Set<String> strings = new HashSet<>(otherAlternatives.strings.size());
             for (String os : otherAlternatives.strings)
                 strings.add(fixedString + os);
             return new AlternativeStrings(this.nGramSearch, strings);

@@ -32,7 +32,7 @@ import org.exist.xquery.value.Type;
 import javax.annotation.Nonnull;
 
 /**
- * @author Adam Retter (adam.retter@devon.gov.uk)
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author Loren Cahlander
  */
 public class RemoveAttribute extends StrictSessionFunction {
@@ -51,10 +51,13 @@ public class RemoveAttribute extends StrictSessionFunction {
     }
 
     @Override
-    public Sequence eval(final Sequence[] args, @Nonnull final SessionWrapper session)
-            throws XPathException {
-        final String attrib = args[0].getStringValue();
-        session.removeAttribute(attrib);
-        return Sequence.EMPTY_SEQUENCE;
+    public Sequence eval(final Sequence[] args, @Nonnull final SessionWrapper session) throws XPathException {
+
+        final String name = args[0].getStringValue();
+
+        return withValidSession(session, s -> {
+            s.removeAttribute(name);
+            return Sequence.EMPTY_SEQUENCE;
+        }).orElse(Sequence.EMPTY_SEQUENCE);
     }
 }

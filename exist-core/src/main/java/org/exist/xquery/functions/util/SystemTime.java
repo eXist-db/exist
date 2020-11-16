@@ -24,7 +24,6 @@ package org.exist.xquery.functions.util;
 import java.util.Date;
 
 //import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -48,7 +47,7 @@ public class SystemTime extends Function
 {
 //	private static final Logger logger = LogManager.getLogger(SystemTime.class);
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName( "system-time", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
             "Returns the current xs:time (with timezone) as reported by the Java method System.currentTimeMillis(). " +

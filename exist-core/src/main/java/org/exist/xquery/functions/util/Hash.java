@@ -51,7 +51,7 @@ public class Hash extends BasicFunction {
 	private static final FunctionParameterSequenceType base64flag = new FunctionParameterSequenceType("base64flag", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The flag that specifies whether to return the result as Base64 encoded");
 	private static final FunctionReturnSequenceType result = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the hashcode");
 	
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("hash", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                     "Calculates a hashcode from a string based on a specified algorithm.",

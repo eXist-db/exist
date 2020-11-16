@@ -47,7 +47,7 @@ public class IncludeXMLFilter extends DefaultHandler {
         this.handler = handler;
     }
 
-    public void characters( char ch[], int start, int length ) throws SAXException {
+    public void characters(char[] ch, int start, int length ) throws SAXException {
         handler.characters( ch, start, length );
     }
 
@@ -57,7 +57,7 @@ public class IncludeXMLFilter extends DefaultHandler {
 
     public void endElement( String namespaceURI, String localName, String qName )
          throws SAXException {
-        if ( localName == null || localName.length() == 0 )
+        if ( localName == null || localName.isEmpty())
             {localName = qName;}
         handler.endElement( namespaceURI, localName, qName );
     }
@@ -86,7 +86,7 @@ public class IncludeXMLFilter extends DefaultHandler {
 
     public void startElement( String namespaceURI, String localName, String qName, Attributes atts )
          throws SAXException {
-        if ( localName == null || localName.length() == 0 )
+        if ( localName == null || localName.isEmpty())
             {localName = qName;}
         handler.startElement( namespaceURI, localName, qName, atts );
     }

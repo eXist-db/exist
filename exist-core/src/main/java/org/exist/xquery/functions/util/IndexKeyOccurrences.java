@@ -59,7 +59,7 @@ public class IndexKeyOccurrences extends BasicFunction {
 	protected static final FunctionParameterSequenceType indexParam = new FunctionParameterSequenceType("index", Type.STRING, Cardinality.EXACTLY_ONE, "The index in which the search is made");
 	protected static final FunctionReturnSequenceType result = new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the number of occurrences for the indexed value");
 
-	public final static FunctionSignature signatures[] = { 
+	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 				new QName("index-key-occurrences", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 				"Return the number of occurrences for an indexed value.",
@@ -109,7 +109,7 @@ public class IndexKeyOccurrences extends BasicFunction {
 		        else
 		        	{result = new IntegerValue(occur[0].getOccurrences());}
 	        } else {
-	        	ValueOccurrences occur[] = context.getBroker().getValueIndex().scanIndexKeys(docs, nodes, (Indexable) (args[1].itemAt(0)));
+	        	ValueOccurrences[] occur = context.getBroker().getValueIndex().scanIndexKeys(docs, nodes, (Indexable) (args[1].itemAt(0)));
 		        if (occur.length == 0)
 		        	{occur = context.getBroker().getValueIndex().scanIndexKeys(docs, nodes, null, (Indexable) (args[1].itemAt(0)));}
 		        if (occur.length == 0)

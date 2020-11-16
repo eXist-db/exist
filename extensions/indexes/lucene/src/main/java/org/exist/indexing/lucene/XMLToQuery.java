@@ -173,7 +173,7 @@ public class XMLToQuery {
             } catch (IOException e) {
                 throw new XPathException("Error while parsing phrase query: " + qstr);
             }
-            return new SpanNearQuery(list.toArray(new SpanTermQuery[list.size()]), slop, inOrder);
+            return new SpanNearQuery(list.toArray(new SpanTermQuery[0]), slop, inOrder);
         }
         SpanQuery[] children = parseSpanChildren(field, node, analyzer);
         return new SpanNearQuery(children, slop, inOrder);
@@ -206,7 +206,7 @@ public class XMLToQuery {
             }
             child = child.getNextSibling();
         }
-        return list.toArray(new SpanQuery[list.size()]);
+        return list.toArray(new SpanQuery[0]);
     }
 
     private void getSpanTerm(List<SpanQuery> list, String field, Element node, Analyzer analyzer) throws XPathException {
@@ -217,7 +217,7 @@ public class XMLToQuery {
 
     private SpanQuery getSpanRegex(String field, Element node, Analyzer analyzer) {
     	String regex = getText(node);
-    	return new SpanMultiTermQueryWrapper<RegexpQuery>(new RegexpQuery(new Term(field, regex)));
+    	return new SpanMultiTermQueryWrapper<>(new RegexpQuery(new Term(field, regex)));
     }
     
     private SpanQuery getSpanFirst(String field, Element node, Analyzer analyzer) throws XPathException {
@@ -250,7 +250,7 @@ public class XMLToQuery {
 
     private int getSlop(Element node) throws XPathException {
         String slop = node.getAttribute("slop");
-        if (slop != null && slop.length() > 0) {
+        if (slop != null && !slop.isEmpty()) {
             try {
                 return Integer.parseInt(slop);
             } catch (NumberFormatException e) {
@@ -319,7 +319,7 @@ public class XMLToQuery {
     private Query fuzzyQuery(String field, Element node) throws XPathException {
         int maxEdits = FuzzyQuery.defaultMaxEdits;
         String attr = node.getAttribute("max-edits");
-        if (attr != null && attr.length() > 0) {
+        if (attr != null && !attr.isEmpty()) {
             try {
                 maxEdits = Integer.parseInt(attr);
                 if (maxEdits < 0 || maxEdits > LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE) {
@@ -424,7 +424,7 @@ public class XMLToQuery {
 
     private void setBoost(Element node, Query query) throws XPathException {
         String boost = node.getAttribute("boost");
-        if (boost != null && boost.length() > 0) {
+        if (boost != null && !boost.isEmpty()) {
             try {
                 query.setBoost(Float.parseFloat(boost));
             } catch (NumberFormatException e) {
@@ -458,7 +458,7 @@ public class XMLToQuery {
 
     private String getField(Element node, String defaultField) {
         final String field = node.getAttribute("field");
-        if (field != null && field.length() > 0) {
+        if (field != null && !field.isEmpty()) {
             return field;
         }
         return defaultField;

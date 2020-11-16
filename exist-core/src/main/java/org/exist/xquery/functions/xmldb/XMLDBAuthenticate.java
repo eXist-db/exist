@@ -47,8 +47,8 @@ import org.xmldb.api.base.XMLDBException;
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author Andrzej Taramina (andrzej@chaeron.com)
  * @author ljo
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-
 public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
     private static final Logger logger = LogManager.getLogger(XMLDBAuthenticate.class);
 
@@ -68,7 +68,7 @@ public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
                     new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() on successful authentication, false() otherwise")
             );
 
-    public final static FunctionSignature loginSignatures[] = {
+    public final static FunctionSignature[] loginSignatures = {
 
             new FunctionSignature(
                     new QName("login", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
@@ -166,7 +166,7 @@ public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
     }
 
     private String getLocation() {
-        return "@ " + getContext().getSource().path() + " [" + getLine() + ":" + getColumn() + "]";
+        return "@ " + getContext().getSource().pathOrShortIdentifier() + " [" + getLine() + ":" + getColumn() + "]";
     }
 
     /**
@@ -178,7 +178,20 @@ public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
      */
     private void cacheUserInHttpSession(final Subject user, final boolean createSession) throws XPathException {
         final Optional<SessionWrapper> session = getSession(createSession);
-        session.ifPresent(sess -> sess.setAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER, user));
+        session.ifPresent(sess -> {
+            try {
+                sess.setAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER, user);
+            } catch (final IllegalStateException ise) {
+                /*
+                This occurs when setAttribute is called
+                on an invalidated HttpSession.
+                */
+
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Attempted to cache a user in an invalidated HttpSession");
+                }
+            }
+        });
     }
 
     /**
@@ -190,17 +203,23 @@ public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
      */
     private Optional<SessionWrapper> getSession(final boolean createSession)
             throws XPathException {
-        final Optional<SessionWrapper> existingSession =
+        final Optional<SessionWrapper> maybeExistingSession =
                 Optional.ofNullable(context.getHttpContext())
                         .map(XQueryContext.HttpContext::getSession);
 
-        if (existingSession.isPresent() || !createSession) {
-            return existingSession;
+        if (maybeExistingSession.isPresent() || !createSession) {
+            if (!createSession) {
+                return maybeExistingSession;
+            }
+
+            if (!maybeExistingSession.get().isInvalid()) {
+                return maybeExistingSession;
+            }
         }
 
         final RequestWrapper request = Optional.ofNullable(context.getHttpContext())
                 .map(XQueryContext.HttpContext::getRequest)
-                .orElseThrow(() -> new XPathException(this, ErrorCodes.XPDY0002, "No response object found in the current XQuery context."));
+                .orElseThrow(() -> new XPathException(this, ErrorCodes.XPDY0002, "No request object found in the current XQuery context."));
 
         final Optional<SessionWrapper> newSession = Optional.ofNullable(request.getSession(true));
         newSession.ifPresent(session -> context.setHttpContext(context.getHttpContext().setSession(session)));

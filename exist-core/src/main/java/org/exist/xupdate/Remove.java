@@ -35,7 +35,6 @@ import org.exist.storage.UpdateListener;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 
 import java.util.Map;

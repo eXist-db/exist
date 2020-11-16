@@ -167,12 +167,10 @@ public class MetadataFunctions extends BasicFunction {
 
                 return ModuleUtils.inputSourceToXML(context, new InputSource(baos.toInputStream()));
             }
-        } catch (final IOException ex) {
+        } catch (final IOException | InterruptedException ex) {
             throw new XPathException(this, "Could not execute the Exiftool " + ex.getMessage(), ex);
         } catch (final SAXException saxe) {
             throw new XPathException(this, "Could not parse output from the Exiftool " + saxe.getMessage(), saxe);
-        } catch (final InterruptedException ie) {
-            throw new XPathException(this, "Could not execute the Exiftool " + ie.getMessage(), ie);
         }
     }
 
@@ -209,14 +207,10 @@ public class MetadataFunctions extends BasicFunction {
                 return ModuleUtils.inputSourceToXML(context, new InputSource(baos.toInputStream()));
             }
 
-        } catch (final IOException ex) {
+        } catch (final IOException | InterruptedException | PermissionDeniedException ex) {
             throw new XPathException(this, "Could not execute the Exiftool " + ex.getMessage(), ex);
-        } catch(final PermissionDeniedException pde) {
-            throw new XPathException(this, "Could not execute the Exiftool " + pde.getMessage(), pde);
         } catch (final SAXException saxe) {
             throw new XPathException(this, "Could not parse output from the Exiftool " + saxe.getMessage(), saxe);
-        } catch (final InterruptedException ie) {
-            throw new XPathException(this, "Could not execute the Exiftool " + ie.getMessage(), ie);
         }
     }
 }

@@ -47,7 +47,7 @@ import org.exist.xquery.value.Type;
 public class BinaryToString extends BasicFunction {
 
     protected static final Logger logger = LogManager.getLogger(BinaryToString.class);
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
         new QName("binary-to-string", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
         "Returns the contents of a binary resource as an xs:string value. The binary data "

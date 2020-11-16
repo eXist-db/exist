@@ -21,7 +21,9 @@
  */
 package org.exist.storage;
 
-import org.junit.Test;import static org.junit.Assert.assertFalse;import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class NodePathTest {
 
@@ -79,4 +81,33 @@ public class NodePathTest {
         path = new NodePath(null, "//c/d");
         assertTrue(path.match(new NodePath(null, "/a/b/c/c/d")));
     }
+
+    @Test
+    public void appendFromEmpty() {
+        NodePath path = new NodePath();
+        path.append(new NodePath(null, "/a/b/c/d"));
+        assertEquals("/a/b/c/d", path.toString());
+        path.append(new NodePath(null, "/1/2/3"));
+        assertEquals("/a/b/c/d/1/2/3", path.toString());
+    }
+
+    @Test
+    public void appendFromNonEmpty() {
+        NodePath path = new NodePath(null, "/a");
+        assertEquals("/a", path.toString());
+        path.append(new NodePath(null, "/1/2/3"));
+        assertEquals("/a/1/2/3", path.toString());
+
+        path = new NodePath(null, "/a");
+        assertEquals("/a", path.toString());
+        path.append(new NodePath(null, "/1/2/3/4/5/6"));
+        assertEquals("/a/1/2/3/4/5/6", path.toString());
+
+        path = new NodePath(null, "/a/b/c/d");
+        assertEquals("/a/b/c/d", path.toString());
+        path.append(new NodePath(null, "/1/2/3"));
+        assertEquals("/a/b/c/d/1/2/3", path.toString());
+    }
+
+
 }

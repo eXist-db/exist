@@ -30,7 +30,6 @@ import org.exist.storage.txn.Txn;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Optional;
 
 public class SystemTaskManager implements BrokerPoolService {
 

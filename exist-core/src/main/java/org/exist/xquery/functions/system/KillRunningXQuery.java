@@ -53,7 +53,7 @@ public class KillRunningXQuery extends BasicFunction
     final static String PREFIX                              = SystemModule.PREFIX;
     
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName( "kill-running-xquery", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
 			"Kill a running XQuey (dba role only).",
@@ -111,7 +111,7 @@ public class KillRunningXQuery extends BasicFunction
 		}
         
         if( id != 0 ) {
-            final XQueryWatchDog watchdogs[] = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
+            final XQueryWatchDog[] watchdogs = getContext().getBroker().getBrokerPool().getProcessMonitor().getRunningXQueries();
             for (XQueryWatchDog watchdog : watchdogs) {
                 final XQueryContext context = watchdog.getContext();
 

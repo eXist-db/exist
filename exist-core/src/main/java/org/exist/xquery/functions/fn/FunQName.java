@@ -102,7 +102,7 @@ public class FunQName extends BasicFunction {
         	throw new XPathException(this, ErrorCodes.FOCA0002, "Invalid lexical form of either prefix or local name.", argsSeq);
         }
 
-		if ((prefix != null && prefix.length() > 0) && (namespace == null || namespace.length() == 0)){
+		if ((prefix != null && !prefix.isEmpty()) && (namespace == null || namespace.isEmpty())){
                 final ValueSequence argsSeq = new ValueSequence(args[0]);
                 argsSeq.addAll(args[1]);
                 throw new XPathException(this, ErrorCodes.FOCA0002, "Non-empty namespace prefix with empty namespace URI", argsSeq);

@@ -28,6 +28,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -171,7 +172,7 @@ public class JMXServlet extends HttpServlet {
             request.setAttribute(useAttribute.toString(), root);
 
         } else {
-            final Writer writer = new OutputStreamWriter(response.getOutputStream(), "UTF-8");
+            final Writer writer = new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8);
             final DOMSerializer streamer = new DOMSerializer(writer, defaultProperties);
             try {
                 streamer.serialize(root);

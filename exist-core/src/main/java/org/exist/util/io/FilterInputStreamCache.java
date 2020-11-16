@@ -38,8 +38,8 @@ import java.io.IOException;
  */
 public interface FilterInputStreamCache extends Closeable {
 
-    public final static int END_OF_STREAM = -1;
-    public final static String INPUTSTREAM_CLOSED = "The underlying InputStream has been closed";
+    int END_OF_STREAM = -1;
+    String INPUTSTREAM_CLOSED = "The underlying InputStream has been closed";
 
     //TODO ensure that FilterInputStreamCache implementations are enforced thread-safe
     /**
@@ -61,7 +61,7 @@ public interface FilterInputStreamCache extends Closeable {
      * @throws IOException - if an I/O error occurs. In particular, an
      * IOException is thrown if the cache is invalidated.
      */
-    public void write(byte b[], int off, int len) throws IOException;
+    void write(byte[] b, int off, int len) throws IOException;
 
     /**
      * Writes the specified byte to the cache. The general contract for write is
@@ -72,14 +72,14 @@ public interface FilterInputStreamCache extends Closeable {
      * @throws IOException if an I/O error occurs. In particular, an IOException
      * may be thrown if cache is invalidated.
      */
-    public void write(int i) throws IOException;
+    void write(int i) throws IOException;
 
     /**
      * Gets the length of the cache
      *
      * @return The length of the cache
      */
-    public int getLength();
+    int getLength();
 
     /**
      * Retrieves the byte at offset off from the cache
@@ -90,7 +90,7 @@ public interface FilterInputStreamCache extends Closeable {
      * @throws IOException if an I/O error occurs. In particular, an IOException
      * may be thrown if cache is invalidated.
      */
-    public byte get(int off) throws IOException;
+    byte get(int off) throws IOException;
 
     /**
      * Copies data from the cache to a buffer
@@ -103,7 +103,7 @@ public interface FilterInputStreamCache extends Closeable {
      * @throws IOException if an I/O error occurs. In particular, an IOException
      * may be thrown if cache is invalidated.
      */
-    public void copyTo(int cacheOffset, byte b[], int off, int len) throws IOException;
+    void copyTo(int cacheOffset, byte[] b, int off, int len) throws IOException;
 
     /**
      * Invalidates the cache
@@ -113,29 +113,29 @@ public interface FilterInputStreamCache extends Closeable {
      * @throws IOException if an I/O error occurs. In particular, an IOException
      * may be thrown if cache is already invalidated.
      */
-    public void invalidate() throws IOException;
+    void invalidate() throws IOException;
 
-    public int available() throws IOException;
+    int available() throws IOException;
 
-    public void mark(int readlimit);
+    void mark(int readlimit);
 
-    public boolean markSupported();
+    boolean markSupported();
 
-    public abstract int read() throws IOException;
+    int read() throws IOException;
 
-    public int read(byte[] b) throws IOException;
+    int read(byte[] b) throws IOException;
 
-    public int read(byte[] b, int off, int len) throws IOException;
+    int read(byte[] b, int off, int len) throws IOException;
 
-    public void reset() throws IOException;
+    void reset() throws IOException;
 
-    public long skip(long n) throws IOException;
+    long skip(long n) throws IOException;
 
-    public int getSrcOffset();
+    int getSrcOffset();
 
-    public boolean isSrcClosed();
+    boolean isSrcClosed();
     
-    public boolean srcIsFilterInputStreamCache();
+    boolean srcIsFilterInputStreamCache();
 
     /**
      * Increments the number of shared references to the cache.

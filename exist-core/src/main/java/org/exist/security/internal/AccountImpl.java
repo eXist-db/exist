@@ -283,7 +283,7 @@ public class AccountImpl extends AbstractAccount {
         public synchronized boolean isCheckPasswords() {
             if(checkPasswords == null) {
                 final String property = getProperty(PROP_CHECK_PASSWORDS);
-                if(property == null || property.length() == 0) {
+                if(property == null || property.isEmpty()) {
                     checkPasswords = DEFAULT_CHECK_PASSWORDS;
                 } else {
                     checkPasswords = property.equalsIgnoreCase("yes") || property.equalsIgnoreCase("true");

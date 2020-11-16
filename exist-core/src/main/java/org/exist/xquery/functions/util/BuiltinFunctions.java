@@ -33,6 +33,9 @@ import org.exist.xquery.value.*;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.StreamSupport;
+
+import static org.apache.commons.lang3.ArrayUtils.isEmpty;
 
 /**
  * Returns a sequence containing the QNames of all built-in functions
@@ -83,9 +86,7 @@ public class BuiltinFunctions extends BasicFunction {
 		super(context, signature);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
+	@Override
 	public Sequence eval(final Sequence[] args, final Sequence contextSequence)
 			throws XPathException {
 
@@ -94,26 +95,26 @@ public class BuiltinFunctions extends BasicFunction {
 			final String uri = args[0].getStringValue();
 
 			// Get 'internal' modules
-			Module module = context.getModule(uri);
+			Module[] modules = context.getModules(uri);
 
 			// If not found, try to load Java module
-			if (module == null && context.getRepository().isPresent()) {
-				module = context.getRepository().get().resolveJavaModule(uri, context);
+			if (isEmpty(modules) && context.getRepository().isPresent()) {
+				modules = new Module[] { context.getRepository().get().resolveJavaModule(uri, context) };
 			}
 
-			// There is no module afterall
-			if (module == null) {
+			// There is no module after all
+			if (isEmpty(modules)) {
 				throw new XPathException(this, "No module found matching namespace URI: " + uri);
 			}
 
 			if (isCalledAs("declared-variables")) {
-				addVariablesFromModule(resultSeq, module);
+				addVariablesFromModules(resultSeq, modules);
 
 			} else if (isCalledAs("list-functions")) {
-				addFunctionRefsFromModule(resultSeq, module);
+				addFunctionRefsFromModules(resultSeq, modules);
 
 			} else {
-				addFunctionsFromModule(resultSeq, module);
+				addFunctionsFromModules(resultSeq, modules);
 			}
 		} else {
 			if (isCalledAs("list-functions")) {
@@ -121,10 +122,10 @@ public class BuiltinFunctions extends BasicFunction {
 
 			} else {
 				// registered-functions
-				for (final Iterator<Module> i = context.getModules(); i.hasNext(); ) {
-					final Module module = i.next();
-					addFunctionsFromModule(resultSeq, module);
-				}
+				final Iterable<Module> iterableModules = () -> context.getModules();
+				final Module[] modules = StreamSupport.stream(iterableModules.spliterator(), false).toArray(Module[]::new);
+				addFunctionsFromModules(resultSeq, modules);
+
 				// Add all functions declared in the local module
 				for (final Iterator<UserDefinedFunction> i = context.localFunctions(); i.hasNext(); ) {
 					final UserDefinedFunction func = i.next();
@@ -136,25 +137,29 @@ public class BuiltinFunctions extends BasicFunction {
 		return resultSeq;
 	}
 
-	private void addFunctionsFromModule(final ValueSequence resultSeq, final Module module) {
+	private void addFunctionsFromModules(final ValueSequence resultSeq, final Module[] modules) {
 		final Set<QName> set = new TreeSet<>();
-		final FunctionSignature[] signatures = module.listFunctions();
-		// add to set to remove duplicate QName's
-		for (final FunctionSignature signature : signatures) {
-			final QName qname = signature.getName();
-			set.add(qname);
-		}
-		for(final QName qname : set) {
-			resultSeq.add(new QNameValue(context, qname));
+		for (final Module module : modules) {
+			final FunctionSignature[] signatures = module.listFunctions();
+			// add to set to remove duplicate QName's
+			for (final FunctionSignature signature : signatures) {
+				final QName qname = signature.getName();
+				set.add(qname);
+			}
+			for (final QName qname : set) {
+				resultSeq.add(new QNameValue(context, qname));
+			}
 		}
 	}
 
-	private void addFunctionRefsFromModule(final ValueSequence resultSeq, final Module module) throws XPathException {
-		final FunctionSignature[] signatures = module.listFunctions();
-		for (final FunctionSignature signature : signatures) {
-			final FunctionCall call = FunOnFunctions.lookupFunction(this, signature.getName(), signature.getArgumentCount());
-			if (call != null) {
-				resultSeq.add(new FunctionReference(call));
+	private void addFunctionRefsFromModules(final ValueSequence resultSeq, final Module[] modules) throws XPathException {
+		for (final Module module : modules) {
+			final FunctionSignature[] signatures = module.listFunctions();
+			for (final FunctionSignature signature : signatures) {
+				final FunctionCall call = FunOnFunctions.lookupFunction(this, signature.getName(), signature.getArgumentCount());
+				if (call != null) {
+					resultSeq.add(new FunctionReference(call));
+				}
 			}
 		}
 	}
@@ -170,9 +175,11 @@ public class BuiltinFunctions extends BasicFunction {
 		}
 	}
 
-	private void addVariablesFromModule(final ValueSequence resultSeq, final Module module) {
-		for (final Iterator<QName> i = module.getGlobalVariables(); i.hasNext(); ) {
-			resultSeq.add(new QNameValue(context, i.next()));
+	private void addVariablesFromModules(final ValueSequence resultSeq, final Module[] modules) {
+		for (final Module module : modules) {
+			for (final Iterator<QName> i = module.getGlobalVariables(); i.hasNext(); ) {
+				resultSeq.add(new QNameValue(context, i.next()));
+			}
 		}
 	}
 }

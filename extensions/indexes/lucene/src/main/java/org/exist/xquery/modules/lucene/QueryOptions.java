@@ -146,7 +146,7 @@ public class QueryOptions {
             List<String> subValues = new ArrayList<>(input.getItemCount());
             for (SequenceIterator si = input.unorderedIterator(); si.hasNext(); ) {
                 final String value = si.nextItem().getStringValue();
-                if (value.length() > 0) {
+                if (!value.isEmpty()) {
                     subValues.add(value);
                 }
             }
@@ -166,7 +166,7 @@ public class QueryOptions {
                 final List<String> subValues = new ArrayList<>(seq.getItemCount());
                 for (SequenceIterator si = seq.unorderedIterator(); si.hasNext(); ) {
                     final String value = si.nextItem().getStringValue();
-                    if (value.length() > 0) {
+                    if (!value.isEmpty()) {
                         subValues.add(value);
                     }
                 }
@@ -252,9 +252,7 @@ public class QueryOptions {
         }
         if (allowLeadingWildcard)
             parser.setAllowLeadingWildcard(true);
-        if (phraseSlop.isPresent()) {
-            parser.setPhraseSlop(phraseSlop.get());
-        }
+        phraseSlop.ifPresent(integer -> parser.setPhraseSlop(integer));
         if (filterRewrite)
             parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
         else

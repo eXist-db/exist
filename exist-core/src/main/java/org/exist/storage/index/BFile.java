@@ -369,7 +369,7 @@ public class BFile extends BTree {
         boolean flushed = false;
         //TODO : consider log operation as a flush ?
         if (isRecoveryEnabled()) {
-            logManager.get().flush(true, false);
+            logManager.ifPresent(l -> l.flush(true, false));
         }
         flushed = flushed | dataCache.flush();
         flushed = flushed | super.flush();
@@ -1639,8 +1639,8 @@ public class BFile extends BTree {
             if (isDirty()) {
                 try {
                     write();
-                    if (isRecoveryEnabled() && syncJournal && logManager.get().lastWrittenLsn().compareTo(getPageHeader().getLsn()) < 0) {
-                        logManager.get().flush(true, false);
+                    if (isRecoveryEnabled() && syncJournal && logManager.isPresent() && logManager.get().lastWrittenLsn().compareTo(getPageHeader().getLsn()) < 0) {
+                        logManager.ifPresent(l -> l.flush(true, false));
                     }
                     return true;
                 } catch (final IOException e) {

@@ -43,7 +43,7 @@ public class FunEnvironment extends BasicFunction {
 
     protected static final Logger logger = LogManager.getLogger(FunEnvironment.class);
 
-    public final static FunctionSignature signature[] = {
+    public final static FunctionSignature[] signature = {
         new FunctionSignature(
             new QName("available-environment-variables", Function.BUILTIN_FUNCTION_NS),
             "Returns a list of environment variable names.",

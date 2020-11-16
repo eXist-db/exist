@@ -76,7 +76,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
     protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the sequence of document paths");
 
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
             new FunctionSignature(
                     FUNCTION_NAME,
                     FUNCTION_DESCRIPTION,
@@ -115,7 +115,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
 
         final Sequence patternsSeq = args[2];
         final int patternsLen = patternsSeq.getItemCount();
-        final String includes[] = new String[patternsLen];
+        final String[] includes = new String[patternsLen];
         for (int i = 0; i < patternsLen; i++) {
             includes[i] = patternsSeq.itemAt(0).getStringValue();
         }

@@ -64,7 +64,7 @@ public class RangeIndex extends LuceneIndex {
         private static final Map<String, Operator> LOOKUP_MAP;
 
         static {
-            LOOKUP_MAP = new HashMap<String, Operator>();
+            LOOKUP_MAP = new HashMap<>();
             for (Operator operator : Operator.values()) {
                 LOOKUP_MAP.put(operator.name, operator);
             }

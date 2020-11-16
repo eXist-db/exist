@@ -874,7 +874,7 @@ public class XQueryURLRewrite extends HttpServlet {
             try {
                 final XmldbURI locationUri = XmldbURI.xmldbUriFor(query);
 
-                try (final LockedDocument lockedSourceDoc = broker.getXMLResource(locationUri.toCollectionPathURI(), LockMode.READ_LOCK);) {
+                try (final LockedDocument lockedSourceDoc = broker.getXMLResource(locationUri.toCollectionPathURI(), LockMode.READ_LOCK)) {
                     if (lockedSourceDoc == null) {
                         throw new ServletException("XQuery resource: " + query + " not found in database");
                     }
@@ -1186,7 +1186,7 @@ public class XQueryURLRewrite extends HttpServlet {
             for (final Entry<String, List<String>> param : addedParams.entrySet()) {
                 final List<String> values = param.getValue();
                 if (values != null) {
-                    parameterMap.put(param.getKey(), values.toArray(new String[values.size()]));
+                    parameterMap.put(param.getKey(), values.toArray(new String[0]));
                 } else {
                     parameterMap.put(param.getKey(), new String[0]);
                 }
@@ -1204,7 +1204,7 @@ public class XQueryURLRewrite extends HttpServlet {
             final List<String> values = addedParams.get(name);
 
             if (values != null) {
-                return values.toArray(new String[values.size()]);
+                return values.toArray(new String[0]);
             } else {
                 return null;
             }

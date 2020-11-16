@@ -48,7 +48,6 @@ import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
-import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
@@ -185,7 +184,7 @@ public abstract class Modification {
 			        Type.getTypeName(resultSeq.getItemType()));}
 		if (LOG.isDebugEnabled())
 			{LOG.debug("found " + resultSeq.getItemCount() + " for select: " + selectStmt);}
-		return (NodeList)resultSeq.toNodeSet();
+		return resultSeq.toNodeSet();
 	}
 
 	/**

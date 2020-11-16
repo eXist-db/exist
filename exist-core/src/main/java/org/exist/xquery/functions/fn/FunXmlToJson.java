@@ -108,7 +108,7 @@ public class FunXmlToJson extends BasicFunction {
         boolean elementValueIsEscaped = false;
         XMLStreamReader reader = null;
         try (
-                final JsonGenerator jsonGenerator = jsonFactory.createGenerator(writer);
+                final JsonGenerator jsonGenerator = jsonFactory.createGenerator(writer)
         ) {
             reader = context.getXMLStreamReader(nodeValue);
             int previous = XMLStreamReader.START_DOCUMENT;
@@ -163,11 +163,11 @@ public class FunXmlToJson extends BasicFunction {
                                 jsonGenerator.writeEndArray();
                                 break;
                             case "boolean":
-                                final boolean tempBoolean = !("".equals(tempString) || "0".equals(tempString) || "false".equals(tempString));
+                                final boolean tempBoolean = !(tempString.isEmpty() || "0".equals(tempString) || "false".equals(tempString));
                                 jsonGenerator.writeBoolean(tempBoolean);
                                 break;
                             case "map":
-                                while (mapkeyArrayList.size() > 0 && mapkeyArrayList.remove(mapkeyArrayList.size() - 1) != stackSeparator) {
+                                while (!mapkeyArrayList.isEmpty() && mapkeyArrayList.remove(mapkeyArrayList.size() - 1) != stackSeparator) {
                                 }
                                 jsonGenerator.writeEndObject();
                                 break;

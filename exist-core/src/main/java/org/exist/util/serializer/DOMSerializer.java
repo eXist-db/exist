@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.xml.XMLConstants;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
 import org.exist.dom.memtree.NodeImpl;

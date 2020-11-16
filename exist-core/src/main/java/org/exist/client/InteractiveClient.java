@@ -2178,9 +2178,7 @@ public class InteractiveClient {
                 configFile = Optional.ofNullable(ConfigurationHelper.lookup((String) CONF_XML.get("")));
             }
         }
-        if (configFile.isPresent()) {
-            properties.setProperty(CONFIGURATION, configFile.get().toAbsolutePath().toString());
-        }
+        configFile.ifPresent(value -> properties.setProperty(CONFIGURATION, value.toAbsolutePath().toString()));
 
         properties.putAll(loadClientProperties());
 

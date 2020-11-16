@@ -22,6 +22,7 @@
 package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.junit.rules.TemporaryFolder;
 import org.xmldb.api.base.Resource;
 
 import java.io.*;
@@ -52,6 +53,9 @@ public class StoredModuleTest {
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
+
+    @ClassRule
+    public static final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private final static String MODULE =
             "module namespace itg-modules = \"http://localhost:80/itg/xquery\";\n" +
@@ -215,23 +219,28 @@ public class StoredModuleTest {
         assertEquals("hi from module 4", r);
     }
 
-    @Ignore("this test pollutes the filesystem by calling writeFile on a non-temporary folder")
     @Test 
     public void testRelativeImportFile() throws Exception {
-        String collection2Name = "module2";
-        String collection3Name = "module2/module3";
+        final String collection2Name = "module2";
+        final String collection3Name = "module3";
+
+        final Path tempDir = temporaryFolder.newFolder("testRelativeImportFile").toPath();
+        final Path c2 = tempDir.resolve(collection2Name);
+        Files.createDirectories(c2);
+        // note c3 is a sub-directory of c2, i.e. module2/module3
+        final Path c3 = c2.resolve(collection3Name);
+        Files.createDirectories(c3);
 
         String query = "import module namespace mod2 = 'urn:module2' " +
-                "at  '/test/temp/" + collection2Name + "/module2.xqm'; " +
+                "at  '" + c2.resolve("module2.xqm").toAbsolutePath() + "'; " +
                 "mod2:showMe()";
-        
-        String c2 = "test/temp/" + collection2Name;
-        writeFile(c2 + "/module2.xqm", module2);
-        writeFile(c2 + "/module3.xqm", module3b);
-        writeFile(c2 + "/module4.xqm", module4);
 
-        String c3 = "test/temp/" + collection3Name;
-        writeFile(c3 + "/module3.xqm", module3a);
+
+        writeFile(c2.resolve("module2.xqm"), module2);
+        writeFile(c2.resolve("module3.xqm"), module3b);
+        writeFile(c2.resolve("module4.xqm"), module4);
+
+        writeFile(c3.resolve("module3.xqm"), module3a);
 
         // test relative module import in subfolder
         ResourceSet rs = existEmbeddedServer.executeQuery(query);
@@ -239,7 +248,7 @@ public class StoredModuleTest {
         assertEquals("hi from module 3a", r);
         
         // test relative module import in same folder, and using ".."
-        writeFile(c2 + "/module2.xqm", module2b);
+        writeFile(c2.resolve("module2.xqm"), module2b);
 
         rs = existEmbeddedServer.executeQuery(query);
         r = (String) rs.getResource(0).getContent();
@@ -388,14 +397,9 @@ public class StoredModuleTest {
         
     }
 
-    private void writeFile(String path, String module) throws IOException {
-        path = path.replace("/", File.separator);
-        final Path f = Paths.get(path);
-        final Path dir = f.getParent();
-        assertTrue (Files.exists(dir) || Files.createDirectories(dir) != null);
-        assertTrue (Files.isWritable(dir));
-        assertTrue (Files.isWritable(f) || Files.createFile(f) != null);
-        try(final PrintWriter writer = new PrintWriter(Files.newBufferedWriter(f))) {
+    private void writeFile(final Path path, final String module) throws IOException {
+        //assertTrue(Files.isWritable(path));
+        try (final PrintWriter writer = new PrintWriter(Files.newBufferedWriter(path))) {
             writer.print(module);
         }
     }

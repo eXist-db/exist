@@ -72,7 +72,7 @@ public class FunLang extends Function {
 
 		"If $lang is the empty sequence it is interpreted as the zero-length string.";
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("lang", Function.BUILTIN_FUNCTION_NS),
 			FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_BOTH,

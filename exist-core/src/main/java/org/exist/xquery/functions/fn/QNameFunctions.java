@@ -98,7 +98,7 @@ public class QNameFunctions extends BasicFunction {
     		final QName qname = value.getQName();
     		if (isCalledAs("prefix-from-QName")) {
     			final String prefix = qname.getPrefix();
-    			if (prefix == null || prefix.length() == 0)
+    			if (prefix == null || prefix.isEmpty())
                     {result = Sequence.EMPTY_SEQUENCE;}
     			else
                     {result = new StringValue(prefix, Type.NCNAME);}

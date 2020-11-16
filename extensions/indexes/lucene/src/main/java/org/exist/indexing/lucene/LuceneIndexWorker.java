@@ -1063,7 +1063,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (qname.getLocalPart() != null && (!qname.getLocalPart().equals(QName.WILDCARD))) {
             match = qname.getLocalPart().equals(candidate.getLocalPart());
         }
-        if (match && qname.getNamespaceURI() != null && (!qname.getNamespaceURI().equals(QName.WILDCARD)) && qname.getNamespaceURI().length() > 0) {
+        if (match && qname.getNamespaceURI() != null && (!qname.getNamespaceURI().equals(QName.WILDCARD)) && !qname.getNamespaceURI().isEmpty()) {
             match = qname.getNamespaceURI().equals(candidate.getNamespaceURI());
         }
         return match;
@@ -1457,8 +1457,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private class LuceneStreamListener extends AbstractStreamListener {
-        private ArrayList<PendingAttr> pendingAttrs = new ArrayList<PendingAttr>();
-	private ArrayList<AttrImpl> attributes = new ArrayList<AttrImpl>(10);
+        private ArrayList<PendingAttr> pendingAttrs = new ArrayList<>();
+	private ArrayList<AttrImpl> attributes = new ArrayList<>(10);
         private ElementImpl currentElement;
 
         @Override

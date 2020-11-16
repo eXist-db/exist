@@ -94,7 +94,7 @@ public class FunMin extends CollatingFunction {
 		"The collation used by the invocation of this function is determined " +
 		"according to the rules in 7.3.1 Collations.";
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("min", Function.BUILTIN_FUNCTION_NS),
             FUNCTION_DESCRIPTION_COMMON_1 +

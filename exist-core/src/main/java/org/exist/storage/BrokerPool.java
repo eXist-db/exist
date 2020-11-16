@@ -23,8 +23,8 @@ package org.exist.storage;
 
 import com.evolvedbinary.j8fu.fsm.AtomicFSM;
 import com.evolvedbinary.j8fu.fsm.FSM;
+import com.evolvedbinary.j8fu.lazy.AtomicLazyVal;
 import net.jcip.annotations.GuardedBy;
-import net.jcip.annotations.NotThreadSafe;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -87,6 +87,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -379,6 +380,13 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     private StartupTriggersManager startupTriggersManager;
 
     /**
+     * Configuration for Saxon.
+     *
+     * One instance per-database, lazily initialised.
+     */
+    private AtomicLazyVal<net.sf.saxon.Configuration> saxonConfig = new AtomicLazyVal<>(net.sf.saxon.Configuration::newConfiguration);
+
+    /**
      * Creates and configures the database instance.
      *
      * @param instanceName A name for the database instance.
@@ -487,9 +495,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.notificationService = servicesManager.register(new NotificationService());
 
         this.journalManager = recoveryEnabled ? Optional.of(new JournalManager()) : Optional.empty();
-        if(journalManager.isPresent()) {
-                servicesManager.register(journalManager.get());
-        }
+        journalManager.ifPresent(manager -> servicesManager.register(manager));
 
         final SystemTaskManager systemTaskManager = servicesManager.register(new SystemTaskManager(this));
         this.transactionManager = servicesManager.register(new TransactionManager(this, journalManager, systemTaskManager));
@@ -499,9 +505,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.symbols = servicesManager.register(new SymbolTable());
 
         this.expathRepo = Optional.ofNullable(new ExistRepository());
-        if(expathRepo.isPresent()) {
-            servicesManager.register(expathRepo.get());
-        }
+        expathRepo.ifPresent(existRepository -> servicesManager.register(existRepository));
         servicesManager.register(new ClasspathHelper());
 
         this.indexManager = servicesManager.register(new IndexManager(this));
@@ -1451,9 +1455,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
          *            made by some transaction T, it is necessary that the update record
          *            <T,X,v,w> appear on disk.
          */
-        if(journalManager.isPresent()) {
-            journalManager.get().flush(true, true);
-        }
+        journalManager.ifPresent(manager -> manager.flush(true, true));
 
         // sync various DBX files
         broker.sync(syncEvent);
@@ -1920,6 +1922,10 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
     public PluginsManager getPluginsManager() {
         return pluginManager;
+    }
+
+    public net.sf.saxon.Configuration getSaxonConfiguration() {
+        return saxonConfig.get();
     }
 
     /**

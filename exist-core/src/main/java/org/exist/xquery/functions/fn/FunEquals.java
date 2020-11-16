@@ -42,7 +42,7 @@ import org.exist.xquery.value.Type;
 @Deprecated
 public class FunEquals extends CollatingFunction {
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("equals", Function.BUILTIN_FUNCTION_NS),
             "Returns an xs:boolean indicating whether or not the value of " +
@@ -102,8 +102,8 @@ public class FunEquals extends CollatingFunction {
         Sequence result;
         final String s1 = getArgument(0).eval(contextSequence, contextItem).getStringValue();
         final String s2 = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-        if (s1.length() == 0 || s2.length() == 0 ) {
-            if (s1.length() == 0 && s2.length() == 0 ) {
+        if (s1.isEmpty() || s2.isEmpty()) {
+            if (s1.isEmpty() && s2.isEmpty()) {
                 result = BooleanValue.TRUE;
             } else {
                 result = Sequence.EMPTY_SEQUENCE;

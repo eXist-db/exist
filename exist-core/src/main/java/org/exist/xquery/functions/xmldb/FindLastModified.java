@@ -25,7 +25,6 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.NodeSetIterator;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -41,7 +40,7 @@ import org.exist.xquery.value.Type;
 
 public class FindLastModified extends BasicFunction {
 
-	public final static FunctionSignature signatures[] = new FunctionSignature[]{
+	public final static FunctionSignature[] signatures = new FunctionSignature[]{
 			new FunctionSignature(
 					new QName("find-last-modified-since", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 					"Filters the given node set to only include nodes from resources which were modified since the specified " +

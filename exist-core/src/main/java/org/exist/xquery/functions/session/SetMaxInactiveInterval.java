@@ -36,6 +36,7 @@ import java.util.Optional;
  * Set the max inactive interval for the current session
  *
  * @author José María Fernández (jmfg@users.sourceforge.net)
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class SetMaxInactiveInterval extends SessionFunction {
 
@@ -56,9 +57,8 @@ public class SetMaxInactiveInterval extends SessionFunction {
     }
 
     @Override
-    public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> maybeSession)
-            throws XPathException {
-        final SessionWrapper session = getOrCreateSession(maybeSession);
+    public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> maybeSession) throws XPathException {
+        final SessionWrapper session = getValidOrCreateSession(maybeSession);
 
         final int interval = ((IntegerValue) args[0].convertTo(Type.INT)).getInt();
         session.setMaxInactiveInterval(interval);

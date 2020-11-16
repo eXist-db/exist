@@ -54,7 +54,7 @@ public class FunBaseURI extends BasicFunction {
 
     protected static final Logger logger = LogManager.getLogger(FunBaseURI.class);
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
             "Returns the value of the base URI property for the context item.",

@@ -48,8 +48,8 @@ public final class NodeSets {
      */
     public static NodeSet transformNodes(final NodeSet nodes, final Function<NodeProxy, NodeProxy> transform) throws XPathException {
         final NodeSet result = new ExtArrayNodeSet();
-        for(final NodeSetIterator iterator = nodes.iterator(); iterator.hasNext();) {
-            final NodeProxy node = transform.apply(iterator.next());
+        for (NodeProxy nodeProxy : nodes) {
+            final NodeProxy node = transform.apply(nodeProxy);
             if (node != null) {
                 result.add(node);
             }

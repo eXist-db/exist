@@ -163,7 +163,7 @@ public class FunResolveQName extends BasicFunction {
      */
     public String findNamespaceURI(ElementImpl element, String prefix) {
         final String namespaceURI = element.getNamespaceURI();
-        if (namespaceURI != null && namespaceURI.length() > 0 && prefix.equals(element.getPrefix())) {
+        if (namespaceURI != null && !namespaceURI.isEmpty() && prefix.equals(element.getPrefix())) {
             return namespaceURI;
         }
         if (element.declaresNamespacePrefixes()) {
@@ -188,7 +188,7 @@ public class FunResolveQName extends BasicFunction {
     public static String findNamespaceURI(Element element, String prefix) {
         //TODO how do you get to the declared namespaces on plain elements?
         final String namespaceURI = element.getNamespaceURI();
-        if (namespaceURI != null && namespaceURI.length() > 0 && prefix.equals(element.getPrefix())) {
+        if (namespaceURI != null && !namespaceURI.isEmpty() && prefix.equals(element.getPrefix())) {
             return namespaceURI;
         } else {
             return null;
@@ -204,7 +204,7 @@ public class FunResolveQName extends BasicFunction {
      */
     public static String findNamespaceURI(org.exist.dom.memtree.ElementImpl element, String prefix) {
         final String namespaceURI = element.getNamespaceURI();
-        if (namespaceURI != null && namespaceURI.length() > 0 && prefix.equals(element.getPrefix())) {
+        if (namespaceURI != null && !namespaceURI.isEmpty() && prefix.equals(element.getPrefix())) {
             return namespaceURI;
         }
         if (element.declaresNamespacePrefixes()) {

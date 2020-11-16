@@ -83,7 +83,7 @@ public class RangeIndexConfig {
 
     /* find all complex configurations for path (that might have different conditions) */
     public List<ComplexRangeIndexConfigElement> findAll(NodePath path) {
-        ArrayList<ComplexRangeIndexConfigElement> rices = new ArrayList<ComplexRangeIndexConfigElement>();
+        ArrayList<ComplexRangeIndexConfigElement> rices = new ArrayList<>();
 
         for (RangeIndexConfigElement rice : paths.values()) {
             do {

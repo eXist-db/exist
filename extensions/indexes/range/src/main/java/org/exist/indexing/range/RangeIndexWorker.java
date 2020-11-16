@@ -87,7 +87,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public static final String FIELD_ADDRESS = "address";
     public static final String FIELD_ID = "id";
 
-    private static Set<String> LOAD_FIELDS = new TreeSet<String>();
+    private static Set<String> LOAD_FIELDS = new TreeSet<>();
     static {
         LOAD_FIELDS.add(FIELD_DOC_ID);
         LOAD_FIELDS.add(FIELD_NODE_ID);
@@ -447,7 +447,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private void write() {
-        if (nodesToWrite == null || nodesToWrite.size() == 0)
+        if (nodesToWrite == null || nodesToWrite.isEmpty())
             return;
         IndexWriter writer = null;
         try {
@@ -510,7 +510,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             LOG.warn("An exception was caught while indexing document: " + e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
-            nodesToWrite = new ArrayList<RangeIndexDoc>();
+            nodesToWrite = new ArrayList<>();
             cachedNodesSize = 0;
         }
     }
@@ -695,7 +695,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * @return List of QName objects on which indexes are defined
      */
     private List<QName> getDefinedIndexes(List<QName> qnames) throws IOException {
-        List<QName> indexes = new ArrayList<QName>(20);
+        List<QName> indexes = new ArrayList<>(20);
         if (qnames != null && !qnames.isEmpty()) {
             for (QName qname : qnames) {
                 if (qname.getLocalPart() == null || qname.getNamespaceURI() == null)
@@ -791,7 +791,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         boolean match = true;
         if (qname.getLocalPart() != null)
             match = qname.getLocalPart().equals(candidate.getLocalPart());
-        if (match && qname.getNamespaceURI() != null && qname.getNamespaceURI().length() > 0)
+        if (match && qname.getNamespaceURI() != null && !qname.getNamespaceURI().isEmpty())
             match = qname.getNamespaceURI().equals(candidate.getNamespaceURI());
         return match;
     }
@@ -957,7 +957,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public Occurrences[] scanIndexByField(String field, DocumentSet docs, String start, long max) {
         try {
             return index.withReader(reader -> {
-                TreeMap<String, Occurrences> map = new TreeMap<String, Occurrences>();
+                TreeMap<String, Occurrences> map = new TreeMap<>();
                 scan(docs, null, start, null, max, map, reader, field);
 
                 Occurrences[] occur = new Occurrences[map.size()];
@@ -971,7 +971,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private Occurrences[] scanIndexByQName(List<QName> qnames, DocumentSet docs, NodeSet nodes, String start, String end, long max) throws IOException {
         return index.withReader(reader -> {
-            TreeMap<String, Occurrences> map = new TreeMap<String, Occurrences>();
+            TreeMap<String, Occurrences> map = new TreeMap<>();
             for (QName qname : qnames) {
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 scan(docs, nodes, start, end, max, map, reader, field);

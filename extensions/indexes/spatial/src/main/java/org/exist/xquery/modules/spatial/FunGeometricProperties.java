@@ -214,7 +214,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType[]{
                 FunSpatialSearch.GEOMETRY_PARAMETER
             },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, " the spatial reference system of geometry $geometry")
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the spatial reference system of geometry $geometry")
         ),
         new FunctionSignature(
             new QName("getGeometryType", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
@@ -336,7 +336,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                         throw new XPathException("Unable to get a geometry from the node");
                     }
                     //Transform the geometry to EPSG:4326 if relevant
-                    if (propertyName.indexOf("EPSG4326") != Constants.STRING_NOT_FOUND) {
+                    if (propertyName.contains("EPSG4326")) {
                         geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");
                         if (isCalledAs("getEPSG4326WKT")) {
                             result = new StringValue(wktWriter.write(geometry));

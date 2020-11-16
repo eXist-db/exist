@@ -44,7 +44,7 @@ public class OrderByClause extends AbstractFLWORClause {
 
     public OrderByClause(XQueryContext context, List<OrderSpec> orderSpecs) {
         super(context);
-        this.orderSpecs = orderSpecs.toArray(new OrderSpec[orderSpecs.size()]);
+        this.orderSpecs = orderSpecs.toArray(new OrderSpec[0]);
     }
 
     public OrderSpec[] getOrderSpecs() {

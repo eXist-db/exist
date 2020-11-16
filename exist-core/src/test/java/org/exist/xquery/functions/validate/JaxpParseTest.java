@@ -24,6 +24,8 @@ package org.exist.xquery.functions.validate;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.InputStreamUtil;
 import org.junit.*;
+
+import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
 import static org.junit.Assert.*;
 import static org.exist.samples.Samples.SAMPLES;
 
@@ -61,7 +63,7 @@ public class JaxpParseTest {
         Collection conf = null;
         try {
             conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/parse_validate");
-            ExistXmldbEmbeddedServer.storeResource(conf, "collection.xconf", noValidation.getBytes());
+            ExistXmldbEmbeddedServer.storeResource(conf, DEFAULT_COLLECTION_CONFIG_FILE, noValidation.getBytes());
         } finally {
             if(conf != null) {
                 conf.close();

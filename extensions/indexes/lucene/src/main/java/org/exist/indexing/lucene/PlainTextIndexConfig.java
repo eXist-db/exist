@@ -47,7 +47,7 @@ public class PlainTextIndexConfig {
         
         float retVal = 1.0f;
 
-        if (value != null && value.length() > 0) {
+        if (value != null && !value.isEmpty()) {
             try {
                 retVal = Float.parseFloat(value);
                 

@@ -399,7 +399,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         ResultSet rs = null;
         try {
             rs = ps.executeQuery();
-            Map<Geometry, String> map = new TreeMap<Geometry, String>();
+            Map<Geometry, String> map = new TreeMap<>();
             while (rs.next()) {
                 Geometry EPSG4326_geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));
                 //Returns the EPSG:4326 WKT for every geometry to make occurrence aggregation consistent

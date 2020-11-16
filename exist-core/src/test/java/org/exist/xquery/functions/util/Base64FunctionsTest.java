@@ -51,6 +51,22 @@ public class Base64FunctionsTest {
     }
 
     @Test
+    public void testBase64EncodeWithTrim() throws XMLDBException {
+        final String query = "util:base64-encode( 'This is a longer test to enforce an encoded string longer than the chunking limit!', true() )";
+        final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("VGhpcyBpcyBhIGxvbmdlciB0ZXN0IHRvIGVuZm9yY2UgYW4gZW5jb2RlZCBzdHJpbmcgbG9uZ2VyIHRoYW4gdGhlIGNodW5raW5nIGxpbWl0IQ==", r);
+    }
+
+    @Test
+    public void testBase64EncodeWithTrimFalse() throws XMLDBException {
+        final String query = "util:base64-encode( 'This is a longer test to enforce an encoded string longer than the chunking limit!', false() )";
+        final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("VGhpcyBpcyBhIGxvbmdlciB0ZXN0IHRvIGVuZm9yY2UgYW4gZW5jb2RlZCBzdHJpbmcgbG9uZ2VyIHRoYW4gdGhlIGNodW5raW5nIGxpbWl0IQ==", r);
+    }
+
+    @Test
     public void testBase64Decode() throws XMLDBException {
         final String query = "util:base64-decode( 'VGhpcyBpcyBhIHRlc3Qh' )";
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
@@ -66,5 +82,28 @@ public class Base64FunctionsTest {
         assertEquals("This is a test!", r);
     }
 
+    @Test
+    public void testBase64EncodeUrlSafeNoSpecial() throws XMLDBException {
+        final String query = "util:base64-encode-url-safe( 'This is a test!' )";
+        final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("VGhpcyBpcyBhIHRlc3Qh", r);
+    }
+
+    @Test
+    public void testBase64EncodeUrlSafeSpecial() throws XMLDBException {
+        final String query = "util:base64-encode-url-safe( '.ÿd' )";
+        final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals("LsO_ZA", r);
+    }
+
+    @Test
+    public void testBase64DecodeUrlSafe() throws XMLDBException {
+        final String query = "util:base64-decode( 'LsO_ZA' )";
+        final ResourceSet result = existXmldbEmbeddedServer.executeQuery(query);
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals(".ÿd", r);
+    }
 
 }

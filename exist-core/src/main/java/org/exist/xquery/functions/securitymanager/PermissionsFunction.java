@@ -366,7 +366,7 @@ public class PermissionsFunction extends BasicFunction {
     }
     
     private Sequence functionHasAccess(final XmldbURI pathUri, final String modeStr) throws XPathException {
-        if(modeStr == null || modeStr.length() == 0 || modeStr.length() > 3) {
+        if(modeStr == null || modeStr.isEmpty() || modeStr.length() > 3) {
             throw new XPathException("Mode string must be partial i.e. rwx not rwxrwxrwx");
         }
         

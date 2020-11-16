@@ -518,9 +518,7 @@ public class TransactionManager implements BrokerPoolService {
                     final boolean checkpoint = uncommitted == 0;
 
                     final long txnId = nextTxnId.getAndIncrement();
-                    if (journalManager.isPresent()) {
-                        journalManager.get().shutdown(txnId, checkpoint);
-                    }
+                    journalManager.ifPresent(manager -> manager.shutdown(txnId, checkpoint));
 
                     transactions.clear();
 

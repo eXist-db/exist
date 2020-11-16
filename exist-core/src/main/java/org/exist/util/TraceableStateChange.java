@@ -31,7 +31,7 @@ package org.exist.util;
  */
 public abstract class TraceableStateChange<S, C> {
     private final C change;
-    private final StackTraceElement trace[];
+    private final StackTraceElement[] trace;
     private final S state;
     private final Thread thread;
 

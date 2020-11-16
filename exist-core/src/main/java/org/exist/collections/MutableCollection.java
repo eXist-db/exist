@@ -469,7 +469,7 @@ public class MutableCollection implements Collection {
     @Override
     public DocumentSet allDocs(final DBBroker broker, final MutableDocumentSet docs, final boolean recursive,
             final LockedDocumentMap lockMap, final LockMode lockType) throws LockException, PermissionDeniedException {
-        XmldbURI uris[] = null;
+        XmldbURI[] uris = null;
 
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
             if (getPermissionsNoLock().validate(broker.getCurrentSubject(), Permission.READ)) {

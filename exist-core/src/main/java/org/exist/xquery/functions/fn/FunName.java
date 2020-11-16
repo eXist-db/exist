@@ -69,7 +69,7 @@ public class FunName extends Function {
 
                     "Otherwise, the value returned is fn:string(fn:node-name($arg)).";
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("name", Function.BUILTIN_FUNCTION_NS),
                     FUNCTION_DESCRIPTION_0_PARAM + FUNCTION_DESCRIPTION_COMMON,

@@ -25,7 +25,6 @@ import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
@@ -36,6 +35,7 @@ import java.util.Optional;
  * if the attribute does not exist.
  *
  * @author Loren Cahlander
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class GetMaxInactiveInterval extends SessionFunction {
 
@@ -55,17 +55,12 @@ public class GetMaxInactiveInterval extends SessionFunction {
     }
 
     @Override
-    public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> session)
-            throws XPathException {
+    public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> session) throws XPathException {
         if (!session.isPresent()) {
             return XPathUtil.javaObjectToXPath(-1, context);
         }
 
-        try {
-            final int interval = session.get().getMaxInactiveInterval();
-            return XPathUtil.javaObjectToXPath(interval, context);
-        } catch (final IllegalStateException ise) {
-            return XPathUtil.javaObjectToXPath(-1, context);
-        }
+        final int interval = withValidSession(session.get(), SessionWrapper::getMaxInactiveInterval).orElse(-1);
+        return XPathUtil.javaObjectToXPath(interval, context);
     }
 }

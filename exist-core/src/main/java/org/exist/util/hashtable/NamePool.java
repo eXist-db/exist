@@ -74,7 +74,7 @@ public class NamePool {
             } else if (other.qname.getNamespaceURI() == null) {
                 c = Constants.SUPERIOR;
             } else {
-                c = other.qname.getNamespaceURI().compareTo(other.qname.getNamespaceURI());
+                c = qname.getNamespaceURI().compareTo(other.qname.getNamespaceURI());
             }
             return c == Constants.EQUAL ? qname.getLocalPart().compareTo(other.qname.getLocalPart()) : c;
         }

@@ -124,12 +124,12 @@ public class ModuleContext extends XQueryContext {
                     }
                 } else {
                     final String dir = FileUtils.dirname(location);
-                    if (dir.matches("^[a-z]+:.*")) {
-                        moduleLoadPath = dir;
+                    if (dir.matches("^[A-Za-z]+:.*")) {
+                        setModuleLoadPath(dir);
                     } else if (".".equals(parentContext.moduleLoadPath)) {
                         if (!".".equals(dir)) {
-                            if (dir.startsWith("/")) {
-                                setModuleLoadPath("." + dir);
+                            if (dir.matches("(?:\\/.*)|(?:[a-zA-Z]:\\\\.*)")) {
+                                setModuleLoadPath(dir);
                             } else {
                                 setModuleLoadPath("./" + dir);
                             }
@@ -146,16 +146,6 @@ public class ModuleContext extends XQueryContext {
                 e.printStackTrace();
             }
         }
-    }
-
-    @Override
-    public void setModule(final String namespaceURI, final Module module) {
-        if (module == null) {
-            modules.remove(namespaceURI);   // unbind the module
-        } else {
-            modules.put(namespaceURI, module);
-        }
-        setRootModule(namespaceURI, module);
     }
 
     private XQueryContext getParentContext() {
@@ -203,20 +193,25 @@ public class ModuleContext extends XQueryContext {
     }
 
     @Override
-    public Module getModule(final String namespaceURI) {
-        Module module = super.getModule(namespaceURI);
+    public Module[] getModules(final String namespaceURI) {
+        Module[] modules = super.getModules(namespaceURI);
         // TODO: I don't think modules should be able to access their parent context's modules,
         // since that breaks lexical scoping.  However, it seems that some eXist modules rely on
         // this so let's leave it for now.  (pkaminsk2)
-        if (module == null) {
-            module = parentContext.getModule(namespaceURI);
+        if (modules == null) {
+            modules = parentContext.getModules(namespaceURI);
         }
-        return module;
+        return modules;
     }
 
     @Override
-    protected void setRootModule(final String namespaceURI, final Module module) {
-        parentContext.setRootModule(namespaceURI, module);
+    protected void setRootModules(final String namespaceURI, final Module[] modules) {
+        parentContext.setRootModules(namespaceURI, modules);
+    }
+
+    @Override
+    protected void addRootModule(final String namespaceURI, final Module module) {
+        parentContext.addRootModule(namespaceURI, module);
     }
 
     @Override
@@ -230,8 +225,8 @@ public class ModuleContext extends XQueryContext {
     }
 
     @Override
-    public Module getRootModule(final String namespaceURI) {
-        return parentContext.getRootModule(namespaceURI);
+    public Module[] getRootModules(final String namespaceURI) {
+        return parentContext.getRootModules(namespaceURI);
     }
 
     @Override
@@ -331,14 +326,19 @@ public class ModuleContext extends XQueryContext {
 
         // check if the variable is declared in a module
         if (var == null) {
-            Module module;
+            Module[] modules;
             if (moduleNamespace.equals(qname.getNamespaceURI())) {
-                module = getRootModule(moduleNamespace);
+                modules = getRootModules(moduleNamespace);
             } else {
-                module = getModule(qname.getNamespaceURI());
+                modules = getModules(qname.getNamespaceURI());
             }
-            if (module != null) {
-                var = module.resolveVariable(qname);
+            if (modules != null) {
+                for (final Module module : modules) {
+                    var = module.resolveVariable(qname);
+                    if (var != null) {
+                        break;
+                    }
+                }
             }
         }
 

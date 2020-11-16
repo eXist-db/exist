@@ -24,6 +24,7 @@ package org.exist.xquery;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.*;
 
+import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -117,7 +118,7 @@ public class UnionTest {
     private void storeCollectionConfig() throws XMLDBException {
         
         final Collection colConfig = getOrCreateCollection("/db/system/config/db/" + TEST_COLLECTION_NAME);
-        final XMLResource docConfig = (XMLResource) colConfig.createResource("collection.xconf", "XMLResource");
+        final XMLResource docConfig = (XMLResource) colConfig.createResource(DEFAULT_COLLECTION_CONFIG_FILE, "XMLResource");
         docConfig.setContent(INDEX_CONFIG);
         colConfig.storeResource(docConfig);
     }

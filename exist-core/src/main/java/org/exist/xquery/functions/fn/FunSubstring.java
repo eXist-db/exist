@@ -49,7 +49,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FunSubstring extends Function {
 	
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 			new FunctionSignature(
 				new QName("substring", Function.BUILTIN_FUNCTION_NS),
 				"Returns the portion of the value of $source beginning at the position indicated " +

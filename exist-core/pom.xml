@@ -59,7 +59,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.11.2</version>
+            <version>2.11.3</version>
         </dependency>
 
         <!-- dependency>
@@ -146,7 +146,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.66</version>
+            <version>1.67</version>
         </dependency>
 
         <dependency>
@@ -193,13 +193,13 @@
         <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
-            <version>3.16.0</version>
+            <version>3.17.1</version>
         </dependency>
 
         <dependency>
             <groupId>org.fusesource.jansi</groupId>
             <artifactId>jansi</artifactId>
-            <version>1.18</version>
+            <version>2.0.1</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -614,7 +614,6 @@
                                 <exclude>BX-BSD-3-license.template.txt</exclude>
                                 <exclude>DBXML-10-license.template.txt</exclude>
                                 <exclude>FDB-backport-BSD-3-license.template.txt</exclude>
-                                <exclude>FDB-backport-LGPL-21-ONLY-license.template.txt</exclude>
                                 <exclude>**/README</exclude>
                                 <exclude>src/main/resources/org/exist/client/*.tmpl</exclude>
                                 <exclude>src/test/resources/uk-towns.txt</exclude>
@@ -667,9 +666,20 @@
                                 <exclude>src/test/java/org/exist/storage/txn/ReusableTxnTest.java</exclude>
                                 <exclude>src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java</exclude>
                                 <exclude>src/test/java/org/exist/storage/txn/TxnTest.java</exclude>
+                                <exclude>src/main/java/org/exist/util/CollectionOfArrayIterator.java</exclude>
+                                <exclude>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/Cardinality.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/ImportModuleTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/functions/map/MapType.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/functions/session/AbstractSessionTest.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/functions/xmldb/AbstractXMLDBTest.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/functions/session/AttributeTest.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/functions/xmldb/XMLDBAuthenticateTest.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/functions/util/Eval.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/value/AtomicValueComparator.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/value/ItemComparator.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/value/SequenceComparator.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/value/SubSequence.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/value/SubSequenceRangeTest.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/value/SubSequenceTest.java</exclude>
@@ -750,7 +760,7 @@ The original license statement is also included below.]]></preamble>
                             <!--
                                 FDB backport to LGPL 2.1-only licensed code
                             -->
-                            <header>FDB-backport-LGPL-21-ONLY-license.template.txt</header>
+                            <header>${project.parent.relativePath}/FDB-backport-LGPL-21-ONLY-license.template.txt</header>
                             <includes>
                                 <include>src/test/java/org/exist/storage/MoveCollectionTest.java</include>
                                 <include>src/main/java/org/exist/storage/blob/**</include>
@@ -793,9 +803,20 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/test/java/org/exist/storage/txn/ReusableTxnTest.java</include>
                                 <include>src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java</include>
                                 <include>src/test/java/org/exist/storage/txn/TxnTest.java</include>
+                                <include>src/main/java/org/exist/util/CollectionOfArrayIterator.java</include>
+                                <include>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</include>
                                 <include>src/main/java/org/exist/xquery/Cardinality.java</include>
+                                <include>src/test/java/org/exist/xquery/ImportModuleTest.java</include>
                                 <include>src/main/java/org/exist/xquery/functions/map/MapType.java</include>
+                                <include>src/test/java/org/exist/xquery/functions/session/AbstractSessionTest.java</include>
+                                <include>src/test/java/org/exist/xquery/functions/xmldb/AbstractXMLDBTest.java</include>
+                                <include>src/test/java/org/exist/xquery/functions/session/AttributeTest.java</include>
+                                <include>src/test/java/org/exist/xquery/functions/xmldb/XMLDBAuthenticateTest.java</include>
+                                <include>src/main/java/org/exist/xquery/functions/util/Eval.java</include>
                                 <include>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</include>
+                                <include>src/main/java/org/exist/xquery/value/AtomicValueComparator.java</include>
+                                <include>src/main/java/org/exist/xquery/value/ItemComparator.java</include>
+                                <include>src/main/java/org/exist/xquery/value/SequenceComparator.java</include>
                                 <include>src/main/java/org/exist/xquery/value/SubSequence.java</include>
                                 <include>src/test/java/org/exist/xquery/value/SubSequenceRangeTest.java</include>
                                 <include>src/test/java/org/exist/xquery/value/SubSequenceTest.java</include>

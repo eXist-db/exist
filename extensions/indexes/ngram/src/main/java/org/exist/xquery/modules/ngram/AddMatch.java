@@ -98,12 +98,10 @@ public class AddMatch extends BasicFunction {
 					break;  // exit-for
 				}
 			}
-		} catch (IOException e) {
-			throw new XPathException(this, ErrorCodes.FOER0000, "Exception caught while reading document");
-		} catch (XMLStreamException e) {
+		} catch (IOException | XMLStreamException e) {
 			throw new XPathException(this, ErrorCodes.FOER0000, "Exception caught while reading document");
 		}
-		
+
 		if (nodeId != null) {
 			Match match = new NGramMatch(getContextId(), node.getNodeId(), matchStr);
 			match.addOffset(0, matchStr.length());

@@ -366,7 +366,7 @@ public class ExistDocument extends ExistResource {
 
         // Try to get document
         try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
-                final LockedDocument lockedDocument = broker.getXMLResource(xmldbUri, LockMode.WRITE_LOCK);) {
+                final LockedDocument lockedDocument = broker.getXMLResource(xmldbUri, LockMode.WRITE_LOCK)) {
 
             final DocumentImpl document = lockedDocument.getDocument();
             if (document == null) {

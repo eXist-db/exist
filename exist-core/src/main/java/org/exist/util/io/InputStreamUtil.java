@@ -59,7 +59,7 @@ public class InputStreamUtil {
      */
     public static void copy(final InputStream is, final OutputStream os, final int bufferSize) throws IOException {
         int read;
-        final byte buffer[] = new byte[bufferSize];
+        final byte[] buffer = new byte[bufferSize];
         while ((read = is.read(buffer)) > -1) {
             os.write(buffer, 0, read);
         }

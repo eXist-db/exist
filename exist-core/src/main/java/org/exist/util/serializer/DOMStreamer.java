@@ -195,7 +195,7 @@ public class DOMStreamer {
                 }
                 final ElementInfo info = new ElementInfo(node);
                 String[] declaredPrefixes = null;
-                if (namespaceDecls.size() > 0) {
+                if (!namespaceDecls.isEmpty()) {
                     declaredPrefixes = new String[namespaceDecls.size()];
                 }
                 // output all namespace declarations

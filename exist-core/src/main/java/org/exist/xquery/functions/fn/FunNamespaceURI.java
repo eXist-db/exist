@@ -66,7 +66,7 @@ public class FunNamespaceURI extends Function {
                     "in no namespace, then the function returns the xs:anyURI " +
                     "corresponding to the zero-length string.";
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
                     FUNCTION_DESCRIPTION_0_PARAM + FUNCTION_DESCRIPTION_COMMON,

@@ -222,7 +222,7 @@ public class NGramSearch extends Function implements Optimizable {
             NGramIndex.ID);
         DocumentSet docs = contextSequence.getDocumentSet();
         String key = getArgument(1).eval(contextSequence).getStringValue();
-        List<QName> qnames = new ArrayList<QName>(1);
+        List<QName> qnames = new ArrayList<>(1);
         qnames.add(contextQName);
         preselectResult = processMatches(index, docs, qnames, key, useContext ? contextSequence.toNodeSet() : null,
             NodeSet.DESCENDANT);
@@ -257,7 +257,7 @@ public class NGramSearch extends Function implements Optimizable {
                 String key = getArgument(1).eval(contextSequence, contextItem).getStringValue();
                 List<QName> qnames = null;
                 if (contextQName != null) {
-                    qnames = new ArrayList<QName>(1);
+                    qnames = new ArrayList<>(1);
                     qnames.add(contextQName);
                 }
                 result = processMatches(index, docs, qnames, key, inNodes, NodeSet.ANCESTOR);
@@ -316,7 +316,7 @@ public class NGramSearch extends Function implements Optimizable {
         if (queryTokens.isEmpty())
             return new EmptyExpression();
 
-        List<WildcardedExpression> expressions = new ArrayList<WildcardedExpression>();
+        List<WildcardedExpression> expressions = new ArrayList<>();
 
         if (queryTokens.get(0).equals("^")) {
             expressions.add(new StartAnchor());
@@ -342,37 +342,42 @@ public class NGramSearch extends Function implements Optimizable {
                     wildcard = new Wildcard(1, 1);
             } else {
                     String qualifier = token.substring(1);
-                    if (qualifier.equals("?"))
-                        wildcard = new Wildcard(0, 1);
-                    else if (qualifier.equals("*"))
-                        wildcard = new Wildcard(0, Integer.MAX_VALUE);
-                    else if (qualifier.equals("+"))
-                        wildcard = new Wildcard(1, Integer.MAX_VALUE);
-                    else {
-                        Pattern p = Pattern.compile(INTERVAL_QUALIFIER_PATTERN);
-                        Matcher m = p.matcher(qualifier);
-                        if (!m.matches()) // Should not happen
-                            throw new XPathException(
-                        		this,
-                        		ErrorCodes.FTDY0020,
-                        		"query string violates wildcard qualifier syntax"
-                    		);
-                        try {
-                        	wildcard = new Wildcard(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
-                        } catch (NumberFormatException nfe) {
-                            throw new XPathException(this, 
-                        		ErrorCodes.FTDY0020, 
-                        		"query string violates wildcard qualifier syntax",
-                        		new StringValue(query),
-                        		nfe
-                    		);
-                        }
+                    switch (qualifier) {
+                        case "?":
+                            wildcard = new Wildcard(0, 1);
+                            break;
+                        case "*":
+                            wildcard = new Wildcard(0, Integer.MAX_VALUE);
+                            break;
+                        case "+":
+                            wildcard = new Wildcard(1, Integer.MAX_VALUE);
+                            break;
+                        default:
+                            Pattern p = Pattern.compile(INTERVAL_QUALIFIER_PATTERN);
+                            Matcher m = p.matcher(qualifier);
+                            if (!m.matches()) // Should not happen
+                                throw new XPathException(
+                                        this,
+                                        ErrorCodes.FTDY0020,
+                                        "query string violates wildcard qualifier syntax"
+                                );
+                            try {
+                                wildcard = new Wildcard(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
+                            } catch (NumberFormatException nfe) {
+                                throw new XPathException(this,
+                                        ErrorCodes.FTDY0020,
+                                        "query string violates wildcard qualifier syntax",
+                                        new StringValue(query),
+                                        nfe
+                                );
+                            }
+                            break;
                     }
                 }
                 expressions.add(wildcard);
             } else {
                 if (token.startsWith("[")) {
-                    Set<String> strings = new HashSet<String>(token.length() - 2);
+                    Set<String> strings = new HashSet<>(token.length() - 2);
                     for (int i = 1; i < token.length() - 1; i++)
                         strings.add(Character.toString(token.charAt(i)));
                     expressions.add(new AlternativeStrings(this, strings));
@@ -393,7 +398,7 @@ public class NGramSearch extends Function implements Optimizable {
     }
 
     private static List<String> tokenizeQuery(final String query) throws XPathException {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
 
         StringBuilder token = new StringBuilder();
 

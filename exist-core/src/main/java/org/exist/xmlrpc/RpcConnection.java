@@ -3359,10 +3359,10 @@ public class RpcConnection implements RpcAPI {
             }
 
             DocumentType result = null;
-            if (!"".equals(doctypename)) {
+            if (doctypename != null && !doctypename.isEmpty()) {
                 result = new DocumentTypeImpl(doctypename,
-                        "".equals(publicid) ? null : publicid,
-                        "".equals(systemid) ? null : systemid);
+                        publicid != null && publicid.isEmpty() ? null : publicid,
+                        systemid != null && systemid.isEmpty() ? null : systemid);
             }
 
             document.setDocumentType(result);
@@ -3645,7 +3645,7 @@ public class RpcConnection implements RpcAPI {
     @Override
     public void runCommand(final XmldbURI collectionURI, final List<String> params) throws EXistException, PermissionDeniedException {
         withDb((broker, transaction) -> {
-            org.exist.plugin.command.Commands.command(collectionURI, params.toArray(new String[params.size()]));
+            org.exist.plugin.command.Commands.command(collectionURI, params.toArray(new String[0]));
             return null;
         });
     }

@@ -239,7 +239,7 @@ public class FunHigherOrderFun extends BasicFunction {
     }
 
     private Sequence foldLeft(final FunctionReference ref, Sequence accum, final SequenceIterator seq) throws XPathException {
-        final Sequence refArgs[] = new Sequence[2];
+        final Sequence[] refArgs = new Sequence[2];
         while (seq.hasNext()) {
             refArgs[0] = accum;
             refArgs[1] = seq.nextItem().toSequence();
@@ -255,7 +255,7 @@ public class FunHigherOrderFun extends BasicFunction {
      * @param seq An iterator which moves from right to left
      */
     private Sequence foldRightNonRecursive(final FunctionReference ref, Sequence accum, final SequenceIterator seq) throws XPathException {
-        final Sequence refArgs[] = new Sequence[2];
+        final Sequence[] refArgs = new Sequence[2];
         while (seq.hasNext()) {
             refArgs[0] = seq.nextItem().toSequence();
             refArgs[1] = accum;

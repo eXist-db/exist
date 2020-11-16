@@ -28,6 +28,7 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static org.exist.xquery.FunctionDSL.*;
 
@@ -45,7 +46,7 @@ public class FunContainsToken extends BasicFunction {
     private final static FunctionParameterSequenceType FS_TOKEN = param("token", Type.STRING, "The token to be searched for");
     private final static FunctionParameterSequenceType FS_COLLATION = optParam("pattern", Type.STRING, "Collation to use");
 
-    public final static FunctionSignature FS_CONTAINS_TOKEN[] = functionSignatures(
+    public final static FunctionSignature[] FS_CONTAINS_TOKEN = functionSignatures(
             FS_CONTAINS_TOKEN_NAME,
             "Determines whether or not any of the supplied strings, when tokenized at whitespace boundaries, " +
                     "contains the supplied token, under the rules of the supplied collation.",
@@ -83,9 +84,7 @@ public class FunContainsToken extends BasicFunction {
 
         for (int i = 0; i < args[0].getItemCount(); i++) {
             String[] chunks = Option.tokenize(args[0].itemAt(i).getStringValue());
-            for (String chunk : chunks) {
-                fragments.add(chunk);
-            }
+            fragments.addAll(Arrays.asList(chunks));
         }
 
         Collator collator = context.getDefaultCollator();

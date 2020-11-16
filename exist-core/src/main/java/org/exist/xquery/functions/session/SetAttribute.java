@@ -34,6 +34,7 @@ import java.util.Optional;
 /**
  * @author Wolfgang Meier
  * @author Loren Cahlander
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class SetAttribute extends SessionFunction {
 
@@ -53,8 +54,8 @@ public class SetAttribute extends SessionFunction {
     }
 
     @Override
-    public Sequence eval(final Sequence args[], final Optional<SessionWrapper> maybeSession) throws XPathException {
-        final SessionWrapper session = getOrCreateSession(maybeSession);
+    public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> maybeSession) throws XPathException {
+        final SessionWrapper session = getValidOrCreateSession(maybeSession);
 
         final String attributeName = args[0].getStringValue();
         final Sequence attributeValue = args[1];

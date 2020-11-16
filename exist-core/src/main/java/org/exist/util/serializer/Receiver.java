@@ -37,38 +37,38 @@ import org.xml.sax.SAXException;
  */
 public interface Receiver<T extends INodeHandle> {
 
-    public final static QName MATCH_ELEMENT =
+    QName MATCH_ELEMENT =
             new QName("match", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
 
-    public void startDocument() throws SAXException;
+    void startDocument() throws SAXException;
 
-	public void endDocument() throws SAXException;
+	void endDocument() throws SAXException;
 
-	public void startPrefixMapping(String prefix, String namespaceURI) throws SAXException;
+	void startPrefixMapping(String prefix, String namespaceURI) throws SAXException;
 	
-	public void endPrefixMapping(String prefix) throws SAXException;
+	void endPrefixMapping(String prefix) throws SAXException;
 	
-	public void startElement(QName qname, AttrList attribs) throws SAXException;
+	void startElement(QName qname, AttrList attribs) throws SAXException;
 
-	public void endElement(QName qname) throws SAXException;
+	void endElement(QName qname) throws SAXException;
 
-	public void characters(CharSequence seq) throws SAXException;
+	void characters(CharSequence seq) throws SAXException;
 
-	public void attribute(QName qname, String value)
+	void attribute(QName qname, String value)
 			throws SAXException;
 
-	public void comment(char[] ch, int start, int length)
+	void comment(char[] ch, int start, int length)
 			throws SAXException;
     
-    public void cdataSection(char[] ch, int start, int len) throws SAXException;
+    void cdataSection(char[] ch, int start, int len) throws SAXException;
 	
-	public void processingInstruction(String target, String data) throws SAXException;
+	void processingInstruction(String target, String data) throws SAXException;
 	
-	public void documentType(String name, String publicId, String systemId) throws SAXException;
+	void documentType(String name, String publicId, String systemId) throws SAXException;
 
-    public void highlightText(CharSequence seq) throws SAXException;
+    void highlightText(CharSequence seq) throws SAXException;
     
-    public void setCurrentNode(T node);
+    void setCurrentNode(T node);
     
-    public Document getDocument();
+    Document getDocument();
 }

@@ -35,10 +35,10 @@ import org.exist.numbering.NodeId;
  */
 public class AttrList {
 
-    protected NodeId nodeIds[] = new NodeId[4];
-	protected QName names[] = new QName[4];
-	protected String values[] = new String[4];
-    protected int type[] = new int[4];
+    protected NodeId[] nodeIds = new NodeId[4];
+	protected QName[] names = new QName[4];
+	protected String[] values = new String[4];
+    protected int[] type = new int[4];
     protected int size = 0;
 
     public void addAttribute(QName name, String value) {
@@ -90,16 +90,16 @@ public class AttrList {
 		if(size == names.length) {
 			// resize
 			final int newSize = names.length * 3 / 2;
-            NodeId tnodeIds[] = new NodeId[newSize];
+            NodeId[] tnodeIds = new NodeId[newSize];
             System.arraycopy(nodeIds, 0, tnodeIds, 0, nodeIds.length);
 
-			QName tnames[] = new QName[newSize];
+			QName[] tnames = new QName[newSize];
 			System.arraycopy(names, 0, tnames, 0, names.length);
 			
-			String tvalues[] = new String[newSize];
+			String[] tvalues = new String[newSize];
 			System.arraycopy(values, 0, tvalues, 0, values.length);
 
-            int ttype[] = new int[newSize];
+            int[] ttype = new int[newSize];
             System.arraycopy(type, 0, ttype, 0, type.length);
 
             nodeIds = tnodeIds;

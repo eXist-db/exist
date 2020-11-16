@@ -42,7 +42,7 @@ import java.util.Arrays;
 
 public class FunSort extends BasicFunction {
 
-  public final static FunctionSignature signatures[] = {
+  public final static FunctionSignature[] signatures = {
     new FunctionSignature(
       new QName("sort", Function.BUILTIN_FUNCTION_NS),
         "Sorts a supplied sequence.",
@@ -98,7 +98,7 @@ public class FunSort extends BasicFunction {
 
     try (FunctionReference ref = function(args, 2)) {
 
-      final Sequence refArgs[] = new Sequence[1];
+      final Sequence[] refArgs = new Sequence[1];
 
       Item item;
       Sequence value;

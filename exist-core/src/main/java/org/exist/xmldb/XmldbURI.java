@@ -489,7 +489,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
         final String oldCollectionPath = encodedCollectionPath;
 
         try {
-            encodedCollectionPath = "".equals(collectionPath) ? null : collectionPath;
+            encodedCollectionPath = collectionPath != null && collectionPath.isEmpty() ? null : collectionPath;
 
             //include root slash if we have a context
             if ((encodedCollectionPath != null) && ((getContext() != null) && (encodedCollectionPath.charAt(0) != '/'))) {

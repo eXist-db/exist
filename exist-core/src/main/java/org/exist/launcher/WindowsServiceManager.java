@@ -149,9 +149,7 @@ class WindowsServiceManager implements ServiceManager {
 
     private static <T> List<T> newList(final T... items) {
         final List<T> list = new ArrayList<>(items.length);
-        for (final T item : items) {
-            list.add(item);
-        }
+        list.addAll(Arrays.asList(items));
         return list;
     }
 

@@ -28,10 +28,18 @@ import javax.servlet.http.HttpSession;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class HttpSessionWrapper implements SessionWrapper {
 
-	private HttpSession session;
+	private final HttpSession session;
+
+	/**
+	 * @param session The HTTP Session
+	 */
+	public HttpSessionWrapper(final HttpSession session) {
+		this.session = session;
+	}
 
 	/**
 	 * Get the Servlet Context
@@ -42,90 +50,69 @@ public class HttpSessionWrapper implements SessionWrapper {
 		return session.getServletContext();
 	}
 
-	/**
-	 * @param session The HTTP Session
-	 */
-	public HttpSessionWrapper(HttpSession session) {
-		this.session = session;
-	}
-
-	/**
-	 * @param name the name of the attribute
-	 * @return Returns the session attribute object or null
-	 */
-	public Object getAttribute(String name) {
+	@Override
+	public Object getAttribute(final String name) {
 		return session.getAttribute(name);
 	}
 
-	/**
-	 * @return An enumeration of all the attribute names
-	 */
-	public Enumeration getAttributeNames() {
+	@Override
+	public Enumeration<String> getAttributeNames() {
 		return session.getAttributeNames();
 	}
 
-	/**
-	 * @return The creation time of the session
-	 */
+	@Override
 	public long getCreationTime() {
 		return session.getCreationTime();
 	}
 
-	/**
-	 * @return The id of the session
-	 */
+	@Override
 	public String getId() {
 		return session.getId();
 	}
 
-	/**
-	 * @return The last time the session was accessed
-	 */
+	@Override
 	public long getLastAccessedTime() {
 		return session.getLastAccessedTime();
 	}
 
-	/**
-	 * @return The maximum inactive interval.
-	 */
+	@Override
 	public int getMaxInactiveInterval() {
 		return session.getMaxInactiveInterval();
 	}
 
-	/**
-	 * Invalidate the session.
-	 */
+	@Override
 	public void invalidate() {
 		session.invalidate();
 	}
 
-	/**
-	 * @return A boolean indicating if the session was just created
-	 */
+	@Override
 	public boolean isNew() {
         return session.isNew();
     }
 
-	/**
-	 * @param name the name of the attribute
-	 */
-	public void removeAttribute(String name) {
+	@Override
+	public void removeAttribute(final String name) {
 		session.removeAttribute(name);
 	}
 
-	/**
-	 * @param name the name of the attribute
-	 * @param value the value of the attribute
-	 */
-	public void setAttribute(String name, Object value) {
+	@Override
+	public void setAttribute(final String name, final Object value) {
 		session.setAttribute(name, value);
 	}
 
-	/**
-	 * @param interval the maximum inactive interval
-	 */
-	public void setMaxInactiveInterval(int interval) {
+	@Override
+	public void setMaxInactiveInterval(final int interval) {
 		session.setMaxInactiveInterval(interval);
 	}
 
+	@Override
+	public boolean isInvalid() {
+		try {
+			session.getLastAccessedTime();  // will throw IllegalStateException if session is Invalidated
+			return false;
+		} catch (final IllegalStateException e) {
+			// thrown by HttpSession#getLastAccessedTime() if the session was invalidated!
+			return true;
+		}
+	}
 }

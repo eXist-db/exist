@@ -47,7 +47,7 @@ public class UUID extends BasicFunction {
 
     private static final Logger logger = LogManager.getLogger(UUID.class);
     
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("uuid", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                     "Generate a version 4 (random) universally unique identifier (UUID) string, e.g. 154ad200-9c79-44f3-8cff-9780d91552a6",

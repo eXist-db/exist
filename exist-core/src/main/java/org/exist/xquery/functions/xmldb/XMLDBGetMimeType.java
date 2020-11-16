@@ -64,7 +64,7 @@ public class XMLDBGetMimeType extends BasicFunction {
 		super(context, signature);
 	}
 	
-	public Sequence eval(Sequence args[], Sequence contextSequence)
+	public Sequence eval(Sequence[] args, Sequence contextSequence)
         throws XPathException {
 
 		final String path = new AnyURIValue(args[0].itemAt(0).getStringValue()).toString();

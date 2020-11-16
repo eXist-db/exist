@@ -41,7 +41,7 @@ public class Create extends SessionFunction {
     public final static FunctionSignature signature =
             new FunctionSignature(
                     new QName("create", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
-                    "Initialize an HTTP session if not already present",
+                    "Initialize an HTTP session if not already present (and valid)",
                     null,
                     new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE));
 
@@ -51,7 +51,7 @@ public class Create extends SessionFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> session) throws XPathException {
-        getOrCreateSession(session);
+        getValidOrCreateSession(session);
         return Sequence.EMPTY_SEQUENCE;
     }
 }

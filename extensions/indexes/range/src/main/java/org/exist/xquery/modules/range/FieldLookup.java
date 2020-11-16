@@ -212,9 +212,7 @@ public class FieldLookup extends Function implements Optimizable {
         } else {
             RangeIndex.Operator operator = getOperator();
             operators = new RangeIndex.Operator[fieldSeq.getItemCount()];
-            for (int i = 0; i < operators.length; i++) {
-                operators[i] = operator;
-            }
+            Arrays.fill(operators, operator);
         }
 
         Sequence[] keys = new Sequence[getArgumentCount() - j];
@@ -278,9 +276,7 @@ public class FieldLookup extends Function implements Optimizable {
             } else {
                 RangeIndex.Operator operator = getOperator();
                 operators = new RangeIndex.Operator[fields.getItemCount()];
-                for (int i = 0; i < operators.length; i++) {
-                    operators[i] = operator;
-                }
+                Arrays.fill(operators, operator);
             }
             if (operators.length != fields.getItemCount()) {
                 throw new XPathException(this, "Number of operators specified must correspond to number of fields queried");

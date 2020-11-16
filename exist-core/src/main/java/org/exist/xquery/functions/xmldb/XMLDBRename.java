@@ -47,7 +47,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 	protected static final Logger logger = LogManager.getLogger(XMLDBRename.class);
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("rename", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Renames the collection $source-collection-uri with new name $new-collection-name. " +

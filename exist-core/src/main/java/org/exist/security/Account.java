@@ -23,7 +23,7 @@ package org.exist.security;
 
 public interface Account extends User {
 
-    public final static int UNDEFINED_ID = -1;
+    int UNDEFINED_ID = -1;
 
 
     /**
@@ -36,20 +36,20 @@ public interface Account extends User {
      */
     void setPrimaryGroup(Group group) throws PermissionDeniedException;
     
-    public void assertCanModifyAccount(Account user) throws PermissionDeniedException;
+    void assertCanModifyAccount(Account user) throws PermissionDeniedException;
     
     /**
      * Get the umask of the user
      *
      * @return The umask as an integer
      */
-    public int getUserMask();
+    int getUserMask();
     
     /**
      * Set the umask of the user
      *
      * @param umask The umask as an integer
      */
-    public void setUserMask(final int umask);
+    void setUserMask(final int umask);
 
 }

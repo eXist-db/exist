@@ -328,7 +328,7 @@ public class MimeTable {
 
                 // If a default-mime-type is specified, create a new default mime type
                 if (defaultMimeAttr != null
-                        && defaultMimeAttr.length() > 0) {
+                        && !defaultMimeAttr.isEmpty()) {
                     defaultMime = new MimeType(defaultMimeAttr, type);
 
                     // If the default-resource-type is specified, and the default-mime-type is unspecified, use a predefined type
@@ -350,7 +350,7 @@ public class MimeTable {
 
             if (MIME_TYPE.equals(qName)) {
                 final String name = attributes.getValue("name");
-                if (name == null || name.length() == 0) {
+                if (name == null || name.isEmpty()) {
                     LOG.error("No name specified for mime-type");
                     return;
                 }

@@ -21,13 +21,11 @@
  */
 package org.exist.xquery.functions.session;
 
-import org.exist.http.servlets.ResponseWrapper;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.value.Sequence;
 
 import javax.annotation.Nonnull;

@@ -477,7 +477,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
         });
 
         // Copy content of list into String array.
-        return resources.toArray(new String[resources.size()]);
+        return resources.toArray(new String[0]);
     }
 
     @Override

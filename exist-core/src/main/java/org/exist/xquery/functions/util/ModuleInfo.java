@@ -49,6 +49,8 @@ import org.exist.xquery.value.ValueSequence;
 
 import javax.xml.XMLConstants;
 
+import static org.apache.commons.lang3.ArrayUtils.isEmpty;
+
 /**
  * @author wolf
  */
@@ -109,7 +111,7 @@ public class ModuleInfo extends BasicFunction {
 			new QName("get-module-description", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns a short description of the module identified by the namespace URI.",
 			new SequenceType[] { NAMESPACE_URI_PARAMETER },
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the description of the active function module identified by the namespace URI"),
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the description of the active function module identified by the namespace URI"),
                         InspectModule.FNS_INSPECT_MODULE_URI
         );
 	
@@ -154,14 +156,19 @@ public class ModuleInfo extends BasicFunction {
 		
 		if("get-module-description".equals(getSignature().getName().getLocalPart())) {
 			final String uri = args[0].getStringValue();
-			final Module module = context.getModule(uri);
-			if(module == null)
-				{throw new XPathException(this, "No module found matching namespace URI: " + uri);}
-			return new StringValue(module.getDescription());
+			final Module[] modules = context.getModules(uri);
+			if (isEmpty(modules)) {
+				throw new XPathException(this, "No module found matching namespace URI: " + uri);
+			}
+			final Sequence result = new ValueSequence();
+			for (final Module module : modules) {
+				result.add(new StringValue(module.getDescription()));
+			}
+			return result;
 		} else if ("is-module-registered".equals(getSignature().getName().getLocalPart())) {
 			final String uri = args[0].getStringValue();
-			final Module module = context.getModule(uri);
-			return new BooleanValue(module != null);
+			final Module[] modules = context.getModules(uri);
+			return new BooleanValue(modules != null && modules.length > 0);
         } else if ("mapped-modules".equals(getSignature().getName().getLocalPart())) {
             final ValueSequence resultSeq = new ValueSequence();
             for (final Iterator<String> i = context.getMappedModuleURIs(); i.hasNext();) {
@@ -200,9 +207,10 @@ public class ModuleInfo extends BasicFunction {
 				builder.startElement(MODULES_QNAME, null);
 				
 				if (getArgumentCount() == 1) {
-					final Module module = context.getModule(args[0].getStringValue());
-					if (module != null)
-						{outputModule(builder, module);}
+					final Module[] modules = context.getModules(args[0].getStringValue());
+					if (modules != null) {
+						outputModules(builder, modules);
+					}
 				} else {
 					for(final Iterator<Module> i = context.getRootModules(); i.hasNext(); ) {
 						final Module module = i.next();
@@ -229,15 +237,26 @@ public class ModuleInfo extends BasicFunction {
 		}
 	}
 
-	private void outputModule(MemTreeBuilder builder, Module module) {
+	private void outputModules(final MemTreeBuilder builder, final Module[] modules) {
+		if (modules == null) {
+			return;
+		}
+
+		for (final Module module : modules) {
+			outputModule(builder, module);
+		}
+	}
+
+	private void outputModule(final MemTreeBuilder builder, final Module module) {
 		builder.startElement(MODULE_QNAME, null);
 		
 		builder.addAttribute(MODULE_URI_ATTR, module.getNamespaceURI());
 		builder.addAttribute(MODULE_PREFIX_ATTR, module.getDefaultPrefix());
 		if (!module.isInternalModule()) {
 			final Source source = ((ExternalModule)module).getSource();
-			if (source != null)
-				{builder.addAttribute(MODULE_SOURCE_ATTR, source.getKey().toString());}
+			if (source != null) {
+				builder.addAttribute(MODULE_SOURCE_ATTR, source.pathOrContentOrShortIdentifier());
+			}
 		}
 		builder.startElement(MODULE_DESC_QNAME, null);
 		builder.characters(module.getDescription());

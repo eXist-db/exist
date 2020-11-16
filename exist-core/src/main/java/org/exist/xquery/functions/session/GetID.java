@@ -35,7 +35,7 @@ import javax.annotation.Nonnull;
  * Returns the ID of the current session or an empty sequence
  * if there is no session.
  *
- * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author Loren Cahlander
  */
 public class GetID extends StrictSessionFunction {
@@ -51,12 +51,11 @@ public class GetID extends StrictSessionFunction {
     }
 
     @Override
-    public Sequence eval(final Sequence[] args, @Nonnull final SessionWrapper session)
-            throws XPathException {
-        final String id = session.getId();
-        if (id == null) {
-            return Sequence.EMPTY_SEQUENCE;
-        }
-        return (new StringValue(id));
+    public Sequence eval(final Sequence[] args, @Nonnull final SessionWrapper session) throws XPathException {
+
+        return withValidSession(session, SessionWrapper::getId)
+                .filter(id -> id != null)
+                .map(id -> (Sequence)new StringValue(id))
+                .orElse(Sequence.EMPTY_SEQUENCE);
     }
 }

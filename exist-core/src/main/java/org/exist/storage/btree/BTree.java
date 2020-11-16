@@ -1016,7 +1016,7 @@ public class BTree extends Paged implements Lockable {
                 try {
                     write();
                     if (isRecoveryEnabled() && syncJournal) {
-                        logManager.get().flush(true, false);
+                        logManager.ifPresent(l -> l.flush(true, false));
                     }
                     return true;
                 } catch (final IOException e) {

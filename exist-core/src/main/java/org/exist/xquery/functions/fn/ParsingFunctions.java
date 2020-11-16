@@ -55,7 +55,7 @@ public class ParsingFunctions extends BasicFunction {
 
 	protected static final Logger logger = LogManager.getLogger(ParsingFunctions.class);
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 			new FunctionSignature(
 					new QName("parse-xml", Function.BUILTIN_FUNCTION_NS),
 					"This function takes as input an XML document represented as a string,"
@@ -77,7 +77,7 @@ public class ParsingFunctions extends BasicFunction {
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		final String xmlContent = args[0].itemAt(0).getStringValue();
-		if (xmlContent.length() == 0) {
+		if (xmlContent.isEmpty()) {
 			return Sequence.EMPTY_SEQUENCE;
 		}
         

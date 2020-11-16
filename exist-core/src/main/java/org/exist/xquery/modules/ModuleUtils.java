@@ -350,12 +350,30 @@ public class ModuleUtils {
             
             //modify the map
             modifier.modify(map);
-            
         }
     }
-    
+
+    public static <T, U> U readContextMap(final XQueryContext context, final String contextMapName, final ContextMapReader<T, U> reader) {
+        try(final ManagedLock<ReadWriteLock> readLock = ManagedLock.acquire(contextMapLocks.getLock(contextMapName), LockMode.READ_LOCK)) {
+            // get the existing map from the context
+            Map<Long, T> map = (Map<Long, T>)context.getAttribute(contextMapName);
+            if (map == null) {
+                map = Collections.emptyMap();
+            }
+
+            //modify the map
+            return reader.read(map);
+        }
+    }
+
+    @FunctionalInterface
     public interface ContextMapModifier<T> {
-        public void modify(Map<Long, T> map);
+        void modify(Map<Long, T> map);
+    }
+
+    @FunctionalInterface
+    public interface ContextMapReader<T, U> {
+        U read(Map<Long, T> map);
     }
     
     public static abstract class ContextMapEntryModifier<T> implements ContextMapModifier<T> {

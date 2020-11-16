@@ -49,16 +49,27 @@ public interface Source {
         UNKNOWN
     }
 
-    String path();
-
-    String type();
+    /**
+     * Returns a unique key to identify the source.
+     *
+     * @return unique key which identifies the source
+     */
+    long getKey();
 
     /**
-     * Returns a unique key to identify the source, usually
-     * an URI.
-     * @return unique key to identify the source, usually an URI
+     * Return the path to the source, or null if there is no path.
+     *
+     * @return the path, or null
      */
-    Object getKey();
+    @Nullable String path();
+
+    /**
+     * A user friendly string which identifies the type
+     * of source.
+     *
+     * @return the type of the source
+     */
+    String type();
     
     /**
      * Is this source object still valid?
@@ -92,42 +103,78 @@ public interface Source {
     /**
      * Returns a {@link Reader} to read the contents
      * of the source.
-     * @return Reader to read the contents of the source
+     *
+     * @return the reader for reading the contents of the source
      * @throws IOException in case of an I/O error
      */
     Reader getReader() throws IOException;
 
+    /**
+     * Returns an {@link InputStream} to read the contents
+     * of the source.
+     *
+     * @return the input stream for reading the contents of the source
+     * @throws IOException in case of an I/O error
+     */
     InputStream getInputStream() throws IOException;
 
+    /**
+     * Returns the content of the source as a String.
+     *
+     * @return the content of the source
+     * @throws IOException in case of an I/O error
+     */
     String getContent() throws IOException;
 
     /**
-     * Returns the character encoding of the underlying source or null if unknown.
+     * Returns the character encoding of the underlying source, or null if unknown.
      *
-     * @return the character encoding
+     * @return the character encoding, or null
      * @throws IOException in case of an I/O error
      */
     @Nullable Charset getEncoding() throws IOException;
-
-    /**
-     * Set a timestamp for this source. This is used
-     * by {@link org.exist.storage.XQueryPool} to
-     * check if a source has timed out.
-     * 
-     * @param timestamp for the source
-     */
-    void setCacheTimestamp(long timestamp);
-    
-    long getCacheTimestamp();
     
     /**
      * Check: has subject requested permissions for this resource?
      *
-     * @param  subject The subject
-     * @param  perm The requested permissions
+     * @param subject The subject
+     * @param perm The requested permissions
      * @throws PermissionDeniedException if user has not sufficient rights
      */
     void validate(Subject subject, int perm) throws PermissionDeniedException;
 
-    QName isModule() throws IOException;
+    /**
+     * Check if the source is an XQuery module. If it is, return a QName containing
+     * the module prefix as local name and the module namespace as namespace URI.
+     *
+     * @return QName describing the module namespace, or null if the source is not a module.
+     */
+    @Nullable QName isModule() throws IOException;
+
+    @Override
+    boolean equals(Object obj);
+
+    /**
+     * Get's a short string identifier
+     * for the source.
+     *
+     * @return a short identifier, never null!
+     */
+    String shortIdentifier();
+
+    /**
+     * Get's the path, or a short string identifier
+     * for the source.
+     *
+     * @return the result, never null!
+     */
+    String pathOrShortIdentifier();
+
+    /**
+     * Get's the path. or the content,
+     * or a short string identifier for the source.
+     *
+     * @return the result, never null!
+     */
+    String pathOrContentOrShortIdentifier();
 }

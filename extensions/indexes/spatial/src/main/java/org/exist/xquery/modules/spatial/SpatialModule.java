@@ -66,7 +66,6 @@ public class SpatialModule extends AbstractInternalModule {
         new FunctionDef(FunGeometricProperties.signatures[16], FunGeometricProperties.class),
         new FunctionDef(FunGeometricProperties.signatures[17], FunGeometricProperties.class),
         new FunctionDef(FunGeometricProperties.signatures[18], FunGeometricProperties.class),
-        new FunctionDef(FunGeometricProperties.signatures[18], FunGeometricProperties.class),
         new FunctionDef(FunGeometricProperties.signatures[19], FunGeometricProperties.class),
         new FunctionDef(FunGeometricProperties.signatures[20], FunGeometricProperties.class),
         new FunctionDef(FunGeometricProperties.signatures[21], FunGeometricProperties.class),

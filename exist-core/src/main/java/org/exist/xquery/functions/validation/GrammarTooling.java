@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.functions.validation;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -34,7 +33,6 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;
@@ -86,7 +84,7 @@ public class GrammarTooling extends BasicFunction  {
             "</report>\n";
     
     // Setup function signature
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("clear-grammar-cache", ValidationModule.NAMESPACE_URI,
             ValidationModule.PREFIX),
@@ -221,7 +219,7 @@ public class GrammarTooling extends BasicFunction  {
             LOG.debug("Successfully parsed "+allGrammars.size()+" grammars.");
             
             // Send all XSD grammars to grammarpool
-            Grammar grammars[] = new Grammar[allGrammars.size()];
+            Grammar[] grammars = new Grammar[allGrammars.size()];
             grammars = allGrammars.toArray(grammars);
             grammarpool.cacheGrammars(TYPE_XSD, grammars);
  
@@ -258,12 +256,12 @@ public class GrammarTooling extends BasicFunction  {
         
         final int nodeNr = builder.startElement("", "report", "report",null);
         
-        final Grammar xsds[] = grammarpool.retrieveInitialGrammarSet(TYPE_XSD);
+        final Grammar[] xsds = grammarpool.retrieveInitialGrammarSet(TYPE_XSD);
         for (Grammar xsd : xsds) {
             writeGrammar(xsd, builder);
         }
         
-        final Grammar dtds[] = grammarpool.retrieveInitialGrammarSet(TYPE_DTD);
+        final Grammar[] dtds = grammarpool.retrieveInitialGrammarSet(TYPE_DTD);
         for (Grammar dtd : dtds) {
             writeGrammar(dtd, builder);
         }

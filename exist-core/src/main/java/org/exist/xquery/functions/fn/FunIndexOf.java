@@ -83,7 +83,7 @@ public class FunIndexOf extends BasicFunction {
 
 		"The result sequence is in ascending numeric order.";
 
-	public final static FunctionSignature fnIndexOf[] = {
+	public final static FunctionSignature[] fnIndexOf = {
 			new FunctionSignature(
 					new QName("index-of", Function.BUILTIN_FUNCTION_NS),
 					FUNCTION_DESCRIPTION,

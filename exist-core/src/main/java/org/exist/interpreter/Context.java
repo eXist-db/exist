@@ -22,10 +22,7 @@
 package org.exist.interpreter;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
@@ -388,18 +385,20 @@ public interface Context {
     Iterator<Module> getAllModules();
 
     /**
-     * Get the built-in module registered for the given namespace URI.
+     * Get the built-in module(s) registered for the given namespace URI.
      *
      * @param namespaceURI the namespace of the module.
      *
      * @return the module, or null
      */
     @Nullable
-    Module getModule(String namespaceURI);
+    Module[] getModules(String namespaceURI);
 
-    Module getRootModule(String namespaceURI);
+    Module[] getRootModules(String namespaceURI);
 
-    void setModule(String namespaceURI, Module module);
+    void setModules(String namespaceURI, @Nullable Module[] modules);
+
+    void addModule(String namespaceURI, Module module);
 
     /**
      * For compiled expressions: check if the source of any module imported by the current
@@ -744,14 +743,17 @@ public interface Context {
     void mapModule(String namespace, XmldbURI uri);
 
     /**
-     * Import a module and make it available in this context. The prefix and location parameters are optional. If prefix is null, the default prefix
-     * specified by the module is used. If location is null, the module will be read from the namespace URI.
+     * Import one or more library modules into the function signatures and in-scope variables of the importing module.
      *
-     * @param namespaceURI the namespace URI of the module
-     * @param prefix the namespace prefix of the module
-     * @param location the location of the module
+     * The prefix and location parameters are optional.
+     * If prefix is null, the first default prefix specified by the module(s) is used.
+     * If locationHints are empty or null, the module(s) may be read from the namespace URI.
      *
-     * @return the imported module
+     * @param namespaceURI the namespace URI of the module(s)
+     * @param prefix the namespace prefix of the module(s), or null
+     * @param locationHints hints as to the location of the module(s), or null
+     *
+     * @return the imported module(s)
      *
      * @throws XPathException if an error occurs whilst importing the module, with the error codes:
      *      XPST0003
@@ -761,7 +763,7 @@ public interface Context {
      *      XQST0070
      *      XQST0088
      */
-    Module importModule(String namespaceURI, String prefix, String location) throws XPathException;
+    Module[] importModule(@Nullable String namespaceURI, @Nullable String prefix, @Nullable AnyURIValue[] locationHints) throws XPathException;
 
     /**
      * Returns the static location mapped to an XQuery source module, if known.

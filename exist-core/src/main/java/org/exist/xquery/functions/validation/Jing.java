@@ -26,7 +26,6 @@ import com.thaiopensource.validate.SchemaReader;
 import com.thaiopensource.validate.ValidateProperty;
 import com.thaiopensource.validate.ValidationDriver;
 import com.thaiopensource.validate.rng.CompactSchemaReader;
-import java.io.IOException;
 
 import java.net.MalformedURLException;
 
@@ -77,7 +76,7 @@ public class Jing extends BasicFunction  {
     private final BrokerPool brokerPool;
     
     // Setup function signature
-    public final static FunctionSignature signatures[] = {        
+    public final static FunctionSignature[] signatures = {
         
         new FunctionSignature(
                 new QName("jing", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),

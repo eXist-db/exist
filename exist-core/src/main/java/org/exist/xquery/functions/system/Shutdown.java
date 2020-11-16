@@ -49,7 +49,7 @@ public class Shutdown extends BasicFunction
 {
 	protected final static Logger logger = LogManager.getLogger(Shutdown.class);
 
-	public final static FunctionSignature signatures[] = {
+	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("shutdown", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Shutdown eXist immediately.  This method is only available to the DBA role.",
