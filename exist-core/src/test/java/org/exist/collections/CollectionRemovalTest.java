@@ -134,7 +134,7 @@ public class CollectionRemovalTest {
     private void retrieveDoc(final XmldbURI uri) throws EXistException, PermissionDeniedException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Collection test = broker.openCollection(uri, LockMode.WRITE_LOCK)) {
+                final Collection test = broker.openCollection(uri, LockMode.READ_LOCK)) {
             assertNotNull(test);
 
             try(final LockedDocument lockedDoc = test.getDocumentWithLock(broker, XmldbURI.createInternal("document.xml"), LockMode.READ_LOCK)) {
