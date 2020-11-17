@@ -576,7 +576,12 @@ public class LockManager {
      * @return true if a WRITE_LOCK is held
      */
     public boolean isDocumentLockedForWrite(final XmldbURI documentPath) {
-        final MultiLock existingLock = getDocumentLock(documentPath.toString());
+        final MultiLock existingLock;
+        if (!usePathLocksForDocuments) {
+            existingLock = getDocumentLock(documentPath.toString());
+        } else {
+            existingLock = getPathLock(documentPath.toString());
+        }
         return existingLock.getWriteLockCount() > 0;
     }
 
@@ -588,7 +593,12 @@ public class LockManager {
      * @return true if a READ_LOCK is held
      */
     public boolean isDocumentLockedForRead(final XmldbURI documentPath) {
-        final MultiLock existingLock = getDocumentLock(documentPath.toString());
+        final MultiLock existingLock;
+        if (!usePathLocksForDocuments) {
+            existingLock = getDocumentLock(documentPath.toString());
+        } else {
+            existingLock = getPathLock(documentPath.toString());
+        }
         return existingLock.getReadLockCount() > 0;
     }
 
