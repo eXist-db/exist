@@ -26,6 +26,8 @@ import com.bradmcevoy.http.exceptions.*;
 import com.bradmcevoy.http.webdav.DefaultUserAgentHelper;
 import com.bradmcevoy.http.webdav.UserAgentHelper;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.CountingOutputStream;
+import org.apache.commons.io.output.NullOutputStream;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
@@ -248,7 +250,7 @@ public class MiltonDocument extends MiltonResource
                 }
 
                 // Stream document to '/dev/null' and count bytes
-                try (final ByteCountOutputStream counter = new ByteCountOutputStream()) {
+                try (final CountingOutputStream counter = new CountingOutputStream(NullOutputStream.NULL_OUTPUT_STREAM)) {
                     existDocument.stream(counter);
                     size = counter.getByteCount();
                 } catch (Exception ex) {
