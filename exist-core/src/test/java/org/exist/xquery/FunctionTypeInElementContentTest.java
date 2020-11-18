@@ -46,9 +46,7 @@ public class FunctionTypeInElementContentTest {
         assertCompilationSuccess(query);
     }
 
-    /**
-     * TODO: remove empty sequence after https://github.com/eXist-db/exist/issues/3472 is fixed
-     */
+    // TODO: array content could be removed after https://github.com/eXist-db/exist/issues/3472 is fixed
     @Test
     public void arrayConstructor() throws XMLDBException {
         final String query = "element test { array { () } }";
@@ -68,9 +66,7 @@ public class FunctionTypeInElementContentTest {
         assertCompilationError(query, error);
     }
 
-    /**
-     * TODO: Investigate does still throw without location info
-     */
+    // TODO: Investigate does still throw without location info
     @Ignore
     @Test
     public void functionReference() throws XMLDBException {
@@ -79,9 +75,7 @@ public class FunctionTypeInElementContentTest {
         assertCompilationError(query, error);
     }
 
-    /**
-     * Does not throw at compile time
-     */
+    // Does not throw at compile time
     @Ignore
     @Test
     public void functionVariable() throws XMLDBException {
@@ -90,9 +84,6 @@ public class FunctionTypeInElementContentTest {
         assertCompilationError(query, error);
     }
 
-    /**
-     * TODO: remove empty sequence after https://github.com/eXist-db/exist/issues/3551 is fixed
-     */
     @Test
     public void userDefinedFunction() throws XMLDBException {
         final String query = "element test { function () { () } }";
@@ -120,11 +111,10 @@ public class FunctionTypeInElementContentTest {
     }
 
     /**
-     * there is an edge case which would evaluate to empty sequence
-     * but should arguably still throw
-     * Does still throw without location info
-     * TODO: add (sub-expression) location
+     * This is an edge case, which would evaluate to empty sequence
+     * but should arguably still throw.
      */
+    // TODO: add (sub-expression) location
     @Test
     public void sequenceOfMapsEdgeCase() throws XMLDBException {
         final String query = "element test { (map {})[2] }";
@@ -132,10 +122,8 @@ public class FunctionTypeInElementContentTest {
         assertCompilationError(query, error);
     }
 
-    /**
-     * -- no error is thrown at compile time
-     * TODO: add (sub-expression) location
-     */
+    // TODO: add (sub-expression) location
+    // TODO: this could throw at compile time
     @Test
     public void ArrayOfMaps() throws XMLDBException {
         final String query = "element test { [map {}] }";
@@ -143,10 +131,8 @@ public class FunctionTypeInElementContentTest {
         assertCompilationError(query, error);
     };
 
-    /**
-     * This could throw at compile time, but does not
-     * TODO: add (sub-expression) location
-     */
+    // TODO: add (sub-expression) location
+    // TODO: This should throw at compile time, but does not
     @Ignore
     @Test
     public void mapConstructorInSubExpression() throws XMLDBException {
