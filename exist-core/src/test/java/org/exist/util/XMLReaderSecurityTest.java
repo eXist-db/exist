@@ -159,7 +159,7 @@ public class XMLReaderSecurityTest {
 
             try (final Collection testCollection = broker.openCollection(TEST_COLLECTION, Lock.LockMode.READ_LOCK)) {
 
-                try (final LockedDocument testDoc = testCollection.getDocumentWithLock(broker, docName, Lock.LockMode.READ_LOCK);){
+                try (final LockedDocument testDoc = testCollection.getDocumentWithLock(broker, docName, Lock.LockMode.READ_LOCK)) {
 
                     // release the collection lock early inline with asymmetrical locking
                     testCollection.close();
@@ -192,7 +192,7 @@ public class XMLReaderSecurityTest {
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
              final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
-            try (final Collection testCollection = broker.openCollection(TEST_COLLECTION, Lock.LockMode.WRITE_LOCK);){
+            try (final Collection testCollection = broker.openCollection(TEST_COLLECTION, Lock.LockMode.WRITE_LOCK)) {
 
                 //debugReader("cannotExpandExternalEntitiesWhenDisabled", broker, testCollection);
 

@@ -1602,7 +1602,7 @@ public class PermissionsFunctionChownTest {
     private static void assertCollectionSetUidSetGid(final Subject execAsUser, final XmldbURI uri, final boolean isSet) throws EXistException, PermissionDeniedException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(execAsUser))) {
-            try (final Collection col = broker.openCollection(uri, Lock.LockMode.READ_LOCK);) {
+            try (final Collection col = broker.openCollection(uri, Lock.LockMode.READ_LOCK)) {
 
                 if (isSet) {
                     assertTrue(col.getPermissions().isSetUid());
