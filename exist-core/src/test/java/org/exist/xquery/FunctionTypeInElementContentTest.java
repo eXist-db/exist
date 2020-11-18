@@ -79,14 +79,14 @@ public class FunctionTypeInElementContentTest {
     @Ignore
     @Test
     public void functionVariable() throws XMLDBException {
-        final String query = "let $f := function () { () } return element test { $f }";
+        final String query = "let $f := function () {} return element test { $f }";
         final String error = "err:XQTY0105 Function types are not allowed in element content. Got function(*) [at line 1, column 16, source: element test { sum(?) }]";
         assertCompilationError(query, error);
     }
 
     @Test
     public void userDefinedFunction() throws XMLDBException {
-        final String query = "element test { function () { () } }";
+        final String query = "element test { function () {} }";
         // TODO: user defined function has its location offset to a weird location
         final String error = "err:XQTY0105 Function types are not allowed in element content. Got function(*) [at line 1, column 25, source: element test { function () { () } }]";
         assertCompilationError(query, error);
