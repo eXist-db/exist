@@ -21,14 +21,13 @@
  */
 package org.exist.xquery;
 
-import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.ClassRule;
-import org.junit.Ignore;
+import org.exist.EXistException;
+import org.exist.security.PermissionDeniedException;
+import org.exist.test.XQueryCompilationTest;
 import org.junit.Test;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XQueryService;
 
-import static org.junit.Assert.*;
+import static org.exist.test.DiffMatcher.elemSource;
+import static org.exist.test.XQueryAssertions.*;
 
 /**
  * Ensure function types returned in element content throws at compile time and has location information
@@ -36,84 +35,79 @@ import static org.junit.Assert.*;
  *
  * @author <a href="mailto:juri@existsolutions.com">Juri Leino</a>
  */
-public class FunctionTypeInElementContentTest {
-    @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(true, true, true);
+public class FunctionTypeInElementContentTest extends XQueryCompilationTest {
 
     @Test
-    public void arrayLiteral() throws XMLDBException {
+    public void arrayLiteral() throws EXistException, PermissionDeniedException {
         final String query = "element test { [] }";
-        assertCompilationSuccess(query);
+        assertXQResultSimilar(elemSource("<test/>"), executeQuery(query));
     }
 
     // TODO: array content could be removed after https://github.com/eXist-db/exist/issues/3472 is fixed
     @Test
-    public void arrayConstructor() throws XMLDBException {
+    public void arrayConstructor() throws EXistException, PermissionDeniedException {
         final String query = "element test { array { () } }";
-        assertCompilationSuccess(query);
+        assertXQResultSimilar(elemSource("<test/>"), executeQuery(query));
     }
 
     @Test
-    public void sequenceOfItems() throws XMLDBException {
+    public void sequenceOfItems() throws EXistException, PermissionDeniedException {
         final String query = "element test { (1, map {})[1] }";
-        assertCompilationSuccess(query);
+        assertXQResultSimilar(elemSource("<test>1</test>"), executeQuery(query));
     }
 
     @Test
-    public void partialBuiltIn() throws XMLDBException {
+    public void partialBuiltIn() throws EXistException, PermissionDeniedException {
         final String query = "element test { sum(?) }";
-        final String error = "err:XQTY0105 Function types are not allowed in element content. Got function(*) [at line 1, column 16, source: element test { sum(?) }]";
-        assertCompilationError(query, error);
+        final String error = "Function types are not allowed in element content. Got function(*)";
+        assertXQStaticError(ErrorCodes.XQTY0105, 1, 16, error, compileQuery(query));
     }
 
-    // TODO: Investigate does still throw without location info
-    @Ignore
+    // TODO: Does still throw without location info
     @Test
-    public void functionReference() throws XMLDBException {
+    public void functionReference() throws EXistException, PermissionDeniedException {
         final String query = "element test { sum#0 }";
-        final String error = "err:XQTY0105 Function types are not allowed in element content. Got function(*) [at line 1, column 16, source: element test { sum#0 }]";
-        assertCompilationError(query, error);
+        final String error = "Function types are not allowed in element content. Got function(*)";
+        assertXQStaticError(ErrorCodes.XQTY0105, 0, 0, error, compileQuery(query));
     }
 
-    // Does not throw at compile time
-    @Ignore
+    // TODO: Does not throw at compile time
     @Test
-    public void functionVariable() throws XMLDBException {
+    public void functionVariable() throws EXistException, PermissionDeniedException {
         final String query = "let $f := function () {} return element test { $f }";
-        final String error = "err:XQTY0105 Function types are not allowed in element content. Got function(*) [at line 1, column 16, source: element test { sum(?) }]";
-        assertCompilationError(query, error);
+        final String error = "Enclosed expression contains function item";
+        assertXQDynamicError(ErrorCodes.XQTY0105, 1, 49, error, executeQuery(query));
     }
 
+    // TODO: user defined function has its location offset to a weird location
     @Test
-    public void userDefinedFunction() throws XMLDBException {
+    public void userDefinedFunction() throws EXistException, PermissionDeniedException {
         final String query = "element test { function () {} }";
-        // TODO: user defined function has its location offset to a weird location
-        final String error = "err:XQTY0105 Function types are not allowed in element content. Got function(*) [at line 1, column 25, source: element test { function () { () } }]";
-        assertCompilationError(query, error);
+        final String error = "Function types are not allowed in element content. Got function(*)";
+        assertXQStaticError(ErrorCodes.XQTY0105, 1, 25, error, compileQuery(query));
     }
 
     @Test
-    public void mapConstructor() throws XMLDBException {
+    public void mapConstructor() throws EXistException, PermissionDeniedException {
         final String query = "element test { map {} }";
-        final String error = "err:XQTY0105 Function types are not allowed in element content. Got map(*) [at line 1, column 16, source: element test { map {} }]";
-        assertCompilationError(query, error);
+        final String error = "Function types are not allowed in element content. Got map(*)";
+        assertXQStaticError(ErrorCodes.XQTY0105, 1, 16, error, compileQuery(query));
     }
 
     @Test
-    public void mapConstructorLookup() throws XMLDBException {
+    public void mapConstructorLookup() throws EXistException, PermissionDeniedException {
         final String query = "element test { map {1:1}?1 }";
-        assertCompilationSuccess(query);
+        assertXQResultSimilar(elemSource("<test>1</test>"), executeQuery(query));
     }
 
     /**
      * sequence in enclosed expression with only a function type
      */
-    @Ignore
     @Test
-    public void sequenceOfMaps() throws XMLDBException {
+    public void sequenceOfMaps() throws EXistException, PermissionDeniedException {
         final String query = "element test { (map {}) }";
-        final String error = "An exception occurred during query execution: err:XQTY0105 Function types are not allowed in element content. Got map(*) [source: element foo { (map{}) }]";
-        assertCompilationError(query, error);
+        final String error = "Function types are not allowed in element content. Got map(*)";
+        assertXQDynamicError(ErrorCodes.XQTY0105, 0, 0, error, executeQuery(query));
     }
 
     /**
@@ -122,45 +116,27 @@ public class FunctionTypeInElementContentTest {
      */
     // TODO: add (sub-expression) location
     @Test
-    public void sequenceOfMapsEdgeCase() throws XMLDBException {
+    public void sequenceOfMapsEdgeCase() throws EXistException, PermissionDeniedException {
         final String query = "element test { (map {})[2] }";
-        final String error = "err:XQTY0105 Function types are not allowed in element content. Got map(*) [source: element test { (map {})[2] }]";
-        assertCompilationError(query, error);
+        final String error = "Function types are not allowed in element content. Got map(*)";
+        assertXQStaticError(ErrorCodes.XQTY0105, 0, 0, error, compileQuery(query));
     }
 
     // TODO: add (sub-expression) location
     // TODO: this could throw at compile time
     @Test
-    public void ArrayOfMaps() throws XMLDBException {
+    public void arrayOfMaps() throws EXistException, PermissionDeniedException {
         final String query = "element test { [map {}] }";
-        final String error = "An exception occurred during query execution: err:XQTY0105 Function types are not allowed in element content. Got map(*) [source: element test { [map{}] }]";
-        assertCompilationError(query, error);
+        final String error = "Enclosed expression contains function item";
+        assertXQDynamicError(ErrorCodes.XQTY0105, 1, 16, error, executeQuery(query));
     };
 
     // TODO: add (sub-expression) location
     // TODO: This should throw at compile time, but does not
-    @Ignore
     @Test
-    public void mapConstructorInSubExpression() throws XMLDBException {
+    public void mapConstructorInSubExpression() throws EXistException, PermissionDeniedException {
         final String query = "element test { \"a\", map {} }";
-        final String error = "err:XQTY0105 Function types are not allowed in element content. Got map(*) [at line 1, column 20, source: element test { map {} }]";
-        assertCompilationError(query, error);
-    }
-
-    private void assertCompilationError(final String query, final String error) throws XMLDBException {
-        final XQueryService service = (XQueryService)existEmbeddedServer.getRoot().getService("XQueryService", "1.0");
-
-        try {
-            service.compile(query);
-            fail("no XMLDBException was thrown during compilation.");
-        } catch (XMLDBException ex) {
-            assertEquals( error, ex.getMessage() );
-        }
-    }
-    private void assertCompilationSuccess(final String query) throws XMLDBException {
-        final XQueryService service = (XQueryService)existEmbeddedServer.getRoot().getService("XQueryService", "1.0");
-
-        service.compile(query);
-        assertTrue( true );
+        final String error = "Enclosed expression contains function item";
+        assertXQDynamicError(ErrorCodes.XQTY0105, 0, 0, error, executeQuery(query));
     }
 }
