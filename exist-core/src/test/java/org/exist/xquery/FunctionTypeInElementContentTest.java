@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  *
  * @author <a href="mailto:juri@existsolutions.com">Juri Leino</a>
  */
-public class FunctionTypeInElementContent {
+public class FunctionTypeInElementContentTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(true, true, true);
 
