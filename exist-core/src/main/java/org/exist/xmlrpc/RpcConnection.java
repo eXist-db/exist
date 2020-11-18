@@ -275,9 +275,11 @@ public class RpcConnection implements RpcAPI {
         do {
             MutableDocumentSet docs = null;
             final LockedDocumentMap lockedDocuments = new LockedDocumentMap();
-            try(final Collection coll = broker.openCollection(XmldbURI.createInternal(protectColl), LockMode.READ_LOCK)) {
+            final LockMode documentLockMode = LockMode.WRITE_LOCK;
+            final LockMode collectionLockMode = broker.getBrokerPool().getLockManager().relativeCollectionLockMode(LockMode.READ_LOCK, documentLockMode);
+            try (final Collection coll = broker.openCollection(XmldbURI.createInternal(protectColl), collectionLockMode)) {
                 docs = new DefaultDocumentSet();
-                coll.allDocs(broker, docs, true, lockedDocuments, LockMode.WRITE_LOCK);
+                coll.allDocs(broker, docs, true, lockedDocuments, documentLockMode);
                 return lockedDocuments;
             } catch (final LockException e) {
                 LOG.warn("Deadlock detected. Starting over again. Docs: {}; locked: {}. Cause: {}", docs.getDocumentCount(), lockedDocuments.size(), e.getMessage());

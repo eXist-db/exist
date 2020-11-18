@@ -603,6 +603,48 @@ public class LockManager {
     }
 
     /**
+     * Returns the LockMode that should be used for accessing
+     * a Collection when that access is just for the purposes
+     * or accessing a document(s) within the Collection.
+     *
+     * When Path Locks are enabled for Documents, both Collections and
+     * Documents share the same lock domain, a path based tree hierarchy.
+     * With a shared lock-hierarchy, if we were to READ_LOCK a Collection
+     * and then request a WRITE_LOCK for a Document in that Collection we
+     * would reach a dead-lock situation. To avoid this, if this method is
+     * called like
+     * {@code relativeCollectionLockMode(LockMode.READ_LOCK, LockMode.WRITE_LOCK)}
+     * it will return a WRITE_LOCK. That is to say that to aid dealock-avoidance,
+     * this function may return a stricter locking mode than the {@code desiredCollectionLockMode}.
+     *
+     * When Path Locks are disabled (the default) for Documents, Collection and Documents
+     * have independent locking domains. In this case this function will always return
+     * the {@code desiredCollectionLockMode}.
+     *
+     * @param desiredCollectionLockMode The desired lock mode for the Collection.
+     * @param documentLockMode The lock mode that will be used for subsequent document operations in the Collection.
+     *
+     * @return The lock mode that should be used for accessing the Collection.
+     */
+    public Lock.LockMode relativeCollectionLockMode(final Lock.LockMode desiredCollectionLockMode,
+            final Lock.LockMode documentLockMode) {
+        if (!usePathLocksForDocuments) {
+            return desiredCollectionLockMode;
+
+        } else {
+            switch (documentLockMode) {
+                case NO_LOCK:
+                case INTENTION_READ:
+                case READ_LOCK:
+                    return Lock.LockMode.READ_LOCK;
+
+                default:
+                    return Lock.LockMode.WRITE_LOCK;
+            }
+        }
+    }
+
+    /**
      * Retrieves a lock for a {@link org.exist.storage.dom.DOMFile}
      *
      * This function is concerned with just the lock object
