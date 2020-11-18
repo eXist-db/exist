@@ -99,6 +99,12 @@ public class FunctionTypeInElementContentTest {
         assertCompilationError(query, error);
     }
 
+    @Test
+    public void mapConstructorLookup() throws XMLDBException {
+        final String query = "element test { map {1:1}?1 }";
+        assertCompilationSuccess(query);
+    }
+
     /**
      * sequence in enclosed expression with only a function type
      */
