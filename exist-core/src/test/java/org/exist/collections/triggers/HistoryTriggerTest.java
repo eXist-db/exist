@@ -132,7 +132,7 @@ public class HistoryTriggerTest {
             storeInTestCollection(transaction, broker, testDoc2Name, testDoc2Content);
 
             // overwrite the first document by copying the second over it (and make sure we don't get a StackOverflow exception)
-            try(final Collection testCollection = broker.openCollection(TEST_COLLECTION_URI, Lock.LockMode.WRITE_LOCK);) {
+            try(final Collection testCollection = broker.openCollection(TEST_COLLECTION_URI, Lock.LockMode.WRITE_LOCK)) {
                 assertNotNull(testCollection);
 
                 try(final LockedDocument lockedDoc2 = testCollection.getDocumentWithLock(broker, testDoc2Name, Lock.LockMode.READ_LOCK)) {

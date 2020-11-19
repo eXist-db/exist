@@ -143,7 +143,7 @@ public class TwoDatabasesTest {
         return top;
     }
 
-    private boolean getBin(final DBBroker broker, final String suffix) throws PermissionDeniedException, IOException, LockException {
+    private boolean getBin(final DBBroker broker, final String suffix) throws PermissionDeniedException, IOException {
         BinaryDocument binDoc = null;
         try(final Collection top = broker.openCollection(XmldbURI.create("xmldb:exist:///db"), LockMode.READ_LOCK)) {
             binDoc = (BinaryDocument) top.getDocument(broker, XmldbURI.create("bin"));
