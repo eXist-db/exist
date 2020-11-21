@@ -2209,7 +2209,8 @@ public class NativeBroker extends DBBroker {
         //TODO : resolve URIs !
         final XmldbURI collUri = fileName.removeLastSegment();
         final XmldbURI docUri = fileName.lastSegment();
-        try(final Collection collection = openCollection(collUri, LockMode.READ_LOCK)) {
+        final LockMode collectionLockMode = lockManager.relativeCollectionLockMode(LockMode.READ_LOCK, lockMode);
+        try(final Collection collection = openCollection(collUri, collectionLockMode)) {
             if (collection == null) {
                 LOG.debug("Collection '{}' not found!", collUri);
                 return null;
