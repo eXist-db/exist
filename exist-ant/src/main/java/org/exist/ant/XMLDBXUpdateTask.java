@@ -107,13 +107,13 @@ public class XMLDBXUpdateTask extends AbstractXMLDBTask
      *
      * @param resource the resource.
      */
-    public void setResource( String resource )
+    public void setResource(final String resource )
     {
         this.resource = resource;
     }
 
 
-    public void setCommands( String commands )
+    public void setCommands(final String commands )
     {
         this.commands = commands;
     }

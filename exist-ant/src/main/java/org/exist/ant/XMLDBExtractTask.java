@@ -180,7 +180,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                 if (col != null) {
                     log("Extracting collection: " + col.getName(), Project.MSG_DEBUG);
                     File dir = destDir;
-                    String subdir;
+                    final String subdir;
 
                     if (path != null) {
                         dir = new File(destDir, path + File.separator + childCol);
@@ -295,7 +295,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                 final String fname = res.getId();
                 dest = new File(dest, fname);
             }
-            FileOutputStream os;
+            final FileOutputStream os;
             os = new FileOutputStream(dest);
 
             ((ExtendedResource) res).getContentIntoAStream(os);

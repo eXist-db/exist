@@ -84,13 +84,13 @@ public class UserPasswordTask extends UserTask
     }
 
 
-    public void setName( String name )
+    public void setName(final String name )
     {
         this.name = name;
     }
 
 
-    public void setSecret( String secret )
+    public void setSecret(final String secret )
     {
         this.secret = secret;
     }

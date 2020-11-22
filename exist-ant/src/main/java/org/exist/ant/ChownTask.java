@@ -75,19 +75,19 @@ public class ChownTask extends UserTask
     }
 
 
-    public void setName( String user )
+    public void setName(final String user )
     {
         this.name = user;
     }
 
 
-    public void setResource( String resource )
+    public void setResource(final String resource )
     {
         this.resource = resource;
     }
 
 
-    public void setGroup( String group )
+    public void setGroup(final String group )
     {
         this.group = group;
     }

@@ -65,7 +65,7 @@ public abstract class AbstractXMLDBTask extends Task
      *
      * @param driver the driver
      */
-    public void setDriver( String driver )
+    public void setDriver(final String driver )
     {
         this.driver = driver;
     }
@@ -76,7 +76,7 @@ public abstract class AbstractXMLDBTask extends Task
      *
      * @param password the password
      */
-    public void setPassword( String password )
+    public void setPassword(final String password )
     {
         this.password = password;
     }
@@ -87,7 +87,7 @@ public abstract class AbstractXMLDBTask extends Task
      *
      * @param user the user.
      */
-    public void setUser( String user )
+    public void setUser(final String user )
     {
         this.user = user;
     }
@@ -98,7 +98,7 @@ public abstract class AbstractXMLDBTask extends Task
      *
      * @param uri the URI
      */
-    public void setUri( String uri )
+    public void setUri(final String uri )
     {
         this.uri = uri;
     }
@@ -109,7 +109,7 @@ public abstract class AbstractXMLDBTask extends Task
      *
      * @param ssl true to use SSL, false otherwise
      */
-    public void setSsl( boolean ssl )
+    public void setSsl(final boolean ssl )
     {
         this.ssl = ssl;
     }
@@ -120,25 +120,25 @@ public abstract class AbstractXMLDBTask extends Task
      *
      * @param create true to initialise the database, false otherwise.
      */
-    public void setInitdb( boolean create )
+    public void setInitdb(final boolean create )
     {
         this.createDatabase = create;
     }
 
 
-    public void setConfiguration( String config )
+    public void setConfiguration(final String config )
     {
         this.configuration = config;
     }
 
 
-    public void setFailonerror( boolean failonerror )
+    public void setFailonerror(final boolean failonerror )
     {
         this.failonerror = failonerror;
     }
     
     
-    public void setPermissions( String permissions )
+    public void setPermissions(final String permissions )
     {
         this.permissions = permissions;
     }
@@ -177,7 +177,7 @@ public abstract class AbstractXMLDBTask extends Task
     }
 
 
-    protected final Collection mkcol( Collection rootCollection, String baseURI, String path, String relPath ) throws XMLDBException
+    protected final Collection mkcol(final Collection rootCollection, final String baseURI, String path, final String relPath ) throws XMLDBException
     {
         CollectionManagementService mgtService;
         Collection                  current   = rootCollection;
@@ -215,7 +215,7 @@ public abstract class AbstractXMLDBTask extends Task
     }
     
     
-    protected final void setPermissions( Resource res ) throws BuildException
+    protected final void setPermissions(final Resource res ) throws BuildException
     {
     	Collection            base    = null;
     	UserManagementService service = null;
@@ -255,7 +255,7 @@ public abstract class AbstractXMLDBTask extends Task
     }
     
     
-    protected final void setPermissions( Collection col ) throws BuildException
+    protected final void setPermissions(final Collection col ) throws BuildException
     {
         try {
         	if( permissions != null ) {
@@ -274,7 +274,7 @@ public abstract class AbstractXMLDBTask extends Task
     }
     
     
-    protected final void setPermissions( Resource res, UserManagementService service ) throws BuildException
+    protected final void setPermissions(final Resource res, final UserManagementService service ) throws BuildException
     {
     	 try {
     	 	if( permissions != null ) {

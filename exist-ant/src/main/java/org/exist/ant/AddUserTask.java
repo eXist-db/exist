@@ -80,19 +80,19 @@ public class AddUserTask extends UserTask {
     }
 
 
-    public void setName( String name )
+    public void setName(final String name )
     {
         this.name = name;
     }
 
 
-    public void setPrimaryGroup( String primaryGroup )
+    public void setPrimaryGroup(final String primaryGroup )
     {
         this.primaryGroup = primaryGroup;
     }
 
 
-    public void setSecret( String secret )
+    public void setSecret(final String secret )
     {
         this.secret = secret;
     }

@@ -78,7 +78,7 @@ public class BackupTask extends AbstractXMLDBTask
      *
      * @param dir the directory.
      */
-    public void setDir( String dir )
+    public void setDir(final String dir )
     {
         this.dir = dir;
     }
