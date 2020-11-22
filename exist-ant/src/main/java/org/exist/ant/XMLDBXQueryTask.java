@@ -43,11 +43,7 @@ import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 
 import java.net.URL;
 
@@ -192,29 +188,10 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
 
             final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 
-            final Writer writer;
-            if (dest.isDirectory()) {
-
-                if (!dest.exists()) {
-                    dest.mkdirs();
-                }
-
-                String fname = resource.getId();
-
-                if (!fname.endsWith(".xml")) {
-                    fname += ".xml";
-                }
-
-                final File file = new File(dest, fname);
-                writer = new OutputStreamWriter(new FileOutputStream(file), UTF_8);
-
-            } else {
-                writer = new OutputStreamWriter(new FileOutputStream(dest), UTF_8);
+            try(final Writer writer = getWriter(resource, dest)) {
+                serializer.setOutput(writer, outputProperties);
+                resource.getContentAsSAX(serializer);
             }
-
-            serializer.setOutput(writer, outputProperties);
-            resource.getContentAsSAX(serializer);
-            writer.close();
             SerializerPool.getInstance().returnObject(serializer);
 
         } else {
@@ -226,6 +203,29 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
                 log(msg, Project.MSG_ERR);
             }
         }
+    }
+
+    private Writer getWriter(XMLResource resource, File dest) throws XMLDBException, FileNotFoundException {
+        final Writer writer;
+        if (dest.isDirectory()) {
+
+            if (!dest.exists()) {
+                dest.mkdirs();
+            }
+
+            String fname = resource.getId();
+
+            if (!fname.endsWith(".xml")) {
+                fname += ".xml";
+            }
+
+            final File file = new File(dest, fname);
+            writer = new OutputStreamWriter(new FileOutputStream(file), UTF_8);
+
+        } else {
+            writer = new OutputStreamWriter(new FileOutputStream(dest), UTF_8);
+        }
+        return writer;
     }
 
 
