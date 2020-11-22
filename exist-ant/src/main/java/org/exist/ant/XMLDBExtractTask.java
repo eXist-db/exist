@@ -34,11 +34,7 @@ import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.ExtendedResource;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 
 import java.util.Properties;
 
@@ -246,21 +242,12 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
             outputProperties.setProperty(OutputKeys.INDENT, "yes");
             final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 
-            final Writer writer;
-
-            if (dest.isDirectory()) {
-                String fname = res.getId();
-                final File file = new File(dest, fname);
-                writer = new OutputStreamWriter(new FileOutputStream(file), UTF_8);
-            } else {
-                writer = new OutputStreamWriter(new FileOutputStream(dest), UTF_8);
+            try (final Writer writer = getWriter(res, dest)) {
+                log("Writing resource " + res.getId() + " to destination " + dest.getAbsolutePath(), Project.MSG_DEBUG);
+                serializer.setOutput(writer, outputProperties);
+                res.getContentAsSAX(serializer);
+                SerializerPool.getInstance().returnObject(serializer);
             }
-
-            log("Writing resource " + res.getId() + " to destination " + dest.getAbsolutePath(), Project.MSG_DEBUG);
-            serializer.setOutput(writer, outputProperties);
-            res.getContentAsSAX(serializer);
-            SerializerPool.getInstance().returnObject(serializer);
-            writer.close();
 
         } else {
             final String msg = "Destination xml file " + ((dest != null) ? (dest.getAbsolutePath() + " ") : "") + "exists. Use " + "overwrite property to overwrite this file.";
@@ -271,6 +258,18 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                 log(msg, Project.MSG_ERR);
             }
         }
+    }
+
+    private Writer getWriter(XMLResource res, File dest) throws XMLDBException, FileNotFoundException {
+        final Writer writer;
+        if (dest.isDirectory()) {
+            String fname = res.getId();
+            final File file = new File(dest, fname);
+            writer = new OutputStreamWriter(new FileOutputStream(file), UTF_8);
+        } else {
+            writer = new OutputStreamWriter(new FileOutputStream(dest), UTF_8);
+        }
+        return writer;
     }
 
     /**
