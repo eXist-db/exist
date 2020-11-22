@@ -1,5 +1,5 @@
 <div align="center" id="logo">
-<a href="http://exist-db.org/" target="_blank">
+<a href="https://exist-db.org/" target="_blank">
 <img src="https://raw.githubusercontent.com/eXist-db/exist/develop/exist-jetty-config/src/main/resources/webapp/logo.jpg" alt="eXist Logo" width="333" height="132"></img>
 </a>
 </div>
@@ -18,29 +18,26 @@
 		<img src="https://opencollective.com/existdb/backers/badge.svg">
 	</a>
 
-[![Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-contributor%20covenant-%235e0d73.svg)](http://contributor-covenant.org/version/1/4/)
+[![Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-contributor%20covenant-%235e0d73.svg)](https://contributor-covenant.org/version/1/4/)
 
-eXist-db is a high-performance open source native XML database—a NoSQL document database and application platform built entirely around XML technologies. The main homepage for eXist-db can be found at [exist-db.org](http://www.exist-db.org "eXist Homepage"). This is the GitHub repository of eXist source code, and this page links to resources for downloading, building, and contributing to eXist-db, below.
+eXist-db is a high-performance open source native XML database—a NoSQL document database and application platform built entirely around XML technologies. The main homepage for eXist-db can be found at [exist-db.org](https://exist-db.org "eXist Homepage"). This is the GitHub repository of eXist source code, and this page links to resources for downloading, building, and contributing to eXist-db, below.
 
 The eXist-db community has adopted the [Contributor Covenant](https://www.contributor-covenant.org/) [Code of Conduct](https://www.contributor-covenant.org/version/1/4/code-of-conduct).
 
 ## Open Community Calls
-We hold an open community call each week on Monday. The start time alternates between:  
--   18:30-19:30 UTC
--   14:30-15:30 UTC
-to allow members from different timezones to join.
+We hold an open Community Call each week on Monday, from 19:30-20:30 CET. The meetings are posted to this [public Google Calendar](https://calendar.google.com/calendar/u/0?cid=OHVnNmtwcnFnNWNvNmRwZGZxc2FrY283MWtAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ). 
 
-If you wish to participate, please join the chatroom (link above) shortly before each call to receive an invitation link.
+If you wish to participate, please join the #community channel on our Slack workspace (invitation link below). Pinned to that channel is a link to the upcoming meeting's agenda, which contains the link to the call, as well as a link to timeanddate.com to look up the time of the meeting for your local time zone. 
 
-The notes of past community calls are located [here](https://drive.google.com/drive/folders/0B4NLNdpw86LPc2JsV294NDFfTjQ)
+The notes of past Community Calls are located [here](https://drive.google.com/drive/folders/0B4NLNdpw86LPc2JsV294NDFfTjQ).
 
 ## Resources
 
--   **Homepage:** [http://exist-db.org](http://exist-db.org)
--   **Binaries:** [http://exist-db.org/exist/apps/homepage/index.html#download](http://exist-db.org/exist/apps/homepage/index.html#download)
--   **Documentation:** [http://exist-db.org/exist/apps/doc](http://exist-db.org/exist/apps/doc)
+-   **Homepage:** [https://exist-db.org](https://exist-db.org)
+-   **Binaries:** [https://exist-db.org/exist/apps/homepage/index.html#download](https://exist-db.org/exist/apps/homepage/index.html#download)
+-   **Documentation:** [https://exist-db.org/exist/apps/doc](https://exist-db.org/exist/apps/doc)
 -   **Book:** [https://www.oreilly.com/library/view/exist/9781449337094/](https://www.oreilly.com/library/view/exist/9781449337094/)
--   **Packages:** [http://exist-db.org/exist/apps/public-repo](http://exist-db.org/exist/apps/public-repo)
+-   **Packages:** [https://exist-db.org/exist/apps/public-repo](https://exist-db.org/exist/apps/public-repo)
 -   **Source code:** [https://github.com/eXist-db/exist](https://github.com/eXist-db/exist)
 -   **Git clone URL:** `git://github.com/eXist-db/exist.git`
 -   **Mailing list:** [https://lists.sourceforge.net/lists/listinfo/exist-open](https://lists.sourceforge.net/lists/listinfo/exist-open)
