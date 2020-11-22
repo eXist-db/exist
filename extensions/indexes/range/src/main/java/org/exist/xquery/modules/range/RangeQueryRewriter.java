@@ -138,13 +138,17 @@ public class RangeQueryRewriter extends QueryRewriter {
             InternalFunctionCall fcall = (InternalFunctionCall) expression;
             Function function = fcall.getFunction();
             if (function instanceof Lookup) {
-                if (function.isCalledAs("matches")) {
-                    eqArgs.add(function.getArgument(0));
-                    eqArgs.add(function.getArgument(1));
-                    Lookup func = Lookup.create(function.getContext(), RangeIndex.Operator.MATCH, path);
-                    func.setArguments(eqArgs);
-                    return func;
+                final RangeIndex.Operator operator = RangeIndex.Operator.getByName(function.getName().getLocalPart());
+
+                if(function==null){
+                    return null;
                 }
+                
+                eqArgs.add(function.getArgument(0));
+                eqArgs.add(function.getArgument(1));
+                Lookup func = Lookup.create(function.getContext(), operator, path);
+                func.setArguments(eqArgs);
+                return func;
             }
         }
         return null;
