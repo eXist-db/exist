@@ -2091,6 +2091,14 @@ throws PermissionDeniedException, EXistException, XPathException
 	step=postfixExpr [step]
 	{ path.add(step); }
 	|
+    s:SELF
+	{
+	    step= new ContextItemExpression(context);
+        step.setASTNode(s);
+    }
+    step=postfixExpr [step]
+    { path.add(step); }
+	|
 	#(
 		PARENTHESIZED
 		{ PathExpr pathExpr= new PathExpr(context); }
@@ -2560,7 +2568,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	SELF
 	{
-		step= new LocationStep(context, Constants.SELF_AXIS, new TypeTest(Type.NODE));
+		step = new ContextItemExpression(context);
 		path.add(step);
 	}
 	( predicate [(LocationStep) step] )*
