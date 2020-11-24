@@ -36,6 +36,8 @@ import org.exist.xmldb.ExtendedResource;
 
 import java.io.*;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
@@ -260,14 +262,14 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
         }
     }
 
-    private Writer getWriter(XMLResource res, File dest) throws XMLDBException, FileNotFoundException {
+    private Writer getWriter(XMLResource res, File dest) throws XMLDBException, IOException {
         final Writer writer;
         if (dest.isDirectory()) {
-            String fname = res.getId();
-            final File file = new File(dest, fname);
-            writer = new OutputStreamWriter(new FileOutputStream(file), UTF_8);
+            final Path file = dest.toPath().resolve(res.getId());
+            writer = Files.newBufferedWriter(file, UTF_8);
+
         } else {
-            writer = new OutputStreamWriter(new FileOutputStream(dest), UTF_8);
+            writer = Files.newBufferedWriter(destFile.toPath(), UTF_8);
         }
         return writer;
     }

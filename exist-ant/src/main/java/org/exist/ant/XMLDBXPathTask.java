@@ -38,6 +38,8 @@ import org.exist.util.serializer.SerializerPool;
 
 import java.io.*;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
@@ -193,22 +195,24 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
         }
     }
 
-    private Writer getWriter(XMLResource resource, File dest) throws XMLDBException, FileNotFoundException {
+    private Writer getWriter(XMLResource resource, File dest) throws XMLDBException, IOException {
         final Writer writer;
         if (dest.isDirectory()) {
 
             if (!dest.exists()) {
                 dest.mkdirs();
             }
-            String fname = resource.getId();
 
+            String fname = resource.getId();
             if (!fname.endsWith(".xml")) {
                 fname += ".xml";
             }
-            final File file = new File(dest, fname);
-            writer = new OutputStreamWriter(new FileOutputStream(file), UTF_8);
+
+            final Path file = dest.toPath().resolve(fname);
+            writer = Files.newBufferedWriter(file, UTF_8);
+
         } else {
-            writer = new OutputStreamWriter(new FileOutputStream(dest), UTF_8 );
+            writer = Files.newBufferedWriter(dest.toPath(), UTF_8);
         }
         return writer;
     }
