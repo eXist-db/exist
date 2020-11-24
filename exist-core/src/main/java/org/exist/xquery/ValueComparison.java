@@ -77,7 +77,7 @@ public class ValueComparison extends GeneralComparison {
             final Collator collator = getCollator(contextSequence);
 			return BooleanValue.valueOf(compareAtomic(collator, lv, rv, StringTruncationOperator.NONE, relation));
 		} 
-        throw new XPathException(this, "Type error: sequence with more than one item is not allowed here");
+        throw new XPathException(this, ErrorCodes.XPTY0004, "Type error: sequence with more than one item is not allowed here");
 	}
 
 	protected Sequence nodeSetCompare(NodeSet nodes, Sequence contextSequence) throws XPathException {		
@@ -89,14 +89,14 @@ public class ValueComparison extends GeneralComparison {
             for (final NodeProxy current : nodes) {
                 ContextItem context = current.getContext();
                 if (context == null) {
-                    throw new XPathException(this, "Context is missing for node set comparison");
+                    throw new XPathException(this, ErrorCodes.XPDY0002, "Context is missing for node set comparison");
                 }
                 do {
                     final AtomicValue lv = current.atomize();
                     final Sequence rs = getRight().eval(context.getNode().toSequence());
                     if (!rs.hasOne()) {
-                        throw new XPathException(this,
-                                "Type error: sequence with less or more than one item is not allowed here");
+                        throw new XPathException(this, ErrorCodes.XPTY0004,
+								"Type error: sequence with less or more than one item is not allowed here");
                     }
                     if (compareAtomic(collator, lv, rs.itemAt(0).atomize(), StringTruncationOperator.NONE, relation)) {
                         result.add(current);
@@ -106,8 +106,8 @@ public class ValueComparison extends GeneralComparison {
         } else {
             final Sequence rs = getRight().eval(null);
             if (!rs.hasOne())
-                {throw new XPathException(this,
-                        "Type error: sequence with less or more than one item is not allowed here");}
+                {throw new XPathException(this, ErrorCodes.XPTY0004,
+						"Type error: sequence with less or more than one item is not allowed here");}
             final AtomicValue rv = rs.itemAt(0).atomize();
             for (final NodeProxy current : nodes) {
                 final AtomicValue lv = current.atomize();
