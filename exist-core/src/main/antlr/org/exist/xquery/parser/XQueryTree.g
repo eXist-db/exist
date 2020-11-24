@@ -2074,18 +2074,15 @@ throws PermissionDeniedException, EXistException, XPathException
 primaryExpr [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
-{
-	step = null;
-}:
+{ step = null; }
+:
 	step=constructor [path]
 	step=postfixExpr [step]
-	{
-		path.add(step);
-	}
+	{ path.add(step); }
 	|
 	step=mapConstr [path]
-  step=postfixExpr [step]
-  { path.add(step); }
+    step=postfixExpr [step]
+    { path.add(step); }
 	|
 	step=arrayConstr [path]
 	step=postfixExpr [step]
