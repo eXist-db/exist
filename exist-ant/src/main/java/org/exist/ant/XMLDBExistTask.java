@@ -87,7 +87,7 @@ public class XMLDBExistTask extends AbstractXMLDBTask implements Condition
      *
      * @param resource the resource.
      */
-    public void setResource( String resource )
+    public void setResource(final String resource )
     {
         this.resource = resource;
     }

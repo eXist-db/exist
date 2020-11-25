@@ -69,7 +69,7 @@ public class RemoveUserTask extends UserTask
     }
 
 
-    public void setName( String name )
+    public void setName(final String name )
     {
         this.name = name;
     }

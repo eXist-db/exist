@@ -36,12 +36,10 @@ import org.xmldb.api.modules.XPathQueryService;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
@@ -179,26 +177,10 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
 
             final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 
-            final Writer writer;
-            if (dest.isDirectory()) {
-
-                if (!dest.exists()) {
-                    dest.mkdirs();
-                }
-                String fname = resource.getId();
-
-                if (!fname.endsWith(".xml")) {
-                    fname += ".xml";
-                }
-                final File file = new File(dest, fname);
-                writer = new OutputStreamWriter(new FileOutputStream(file), UTF_8);
-            } else {
-                writer = new OutputStreamWriter(new FileOutputStream(dest), UTF_8 );
+            try(final Writer writer = getWriter(resource, dest)) {
+                serializer.setOutput(writer, outputProperties);
+                resource.getContentAsSAX(serializer);
             }
-
-            serializer.setOutput(writer, outputProperties);
-            resource.getContentAsSAX(serializer);
-            writer.close();
 
             SerializerPool.getInstance().returnObject(serializer);
 
@@ -211,6 +193,28 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
                 log(msg, Project.MSG_ERR);
             }
         }
+    }
+
+    private Writer getWriter(XMLResource resource, File dest) throws XMLDBException, IOException {
+        final Writer writer;
+        if (dest.isDirectory()) {
+
+            if (!dest.exists()) {
+                dest.mkdirs();
+            }
+
+            String fname = resource.getId();
+            if (!fname.endsWith(".xml")) {
+                fname += ".xml";
+            }
+
+            final Path file = dest.toPath().resolve(fname);
+            writer = Files.newBufferedWriter(file, UTF_8);
+
+        } else {
+            writer = Files.newBufferedWriter(dest.toPath(), UTF_8);
+        }
+        return writer;
     }
 
     /**

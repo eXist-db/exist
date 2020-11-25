@@ -76,13 +76,13 @@ public class ChmodTask extends UserTask
     }
 
 
-    public void setResource( String resource )
+    public void setResource(final String resource )
     {
         this.resource = resource;
     }
     
     
-    public void setMode( String mode )
+    public void setMode(final String mode )
     {
         this.mode = mode;
         

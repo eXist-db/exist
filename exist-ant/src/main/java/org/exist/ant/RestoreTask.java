@@ -169,19 +169,19 @@ public class RestoreTask extends AbstractXMLDBTask
      *
      * @param dir the directory
      */
-    public void setDir( File dir )
+    public void setDir(final File dir )
     {
         this.dir = dir.toPath();
     }
 
 
-    public void setFile( File file )
+    public void setFile(final File file )
     {
         this.zipFile = file.toPath();
     }
 
 
-    public void setRestorePassword( String pass )
+    public void setRestorePassword(final String pass )
     {
         this.restorePassword = pass;
     }

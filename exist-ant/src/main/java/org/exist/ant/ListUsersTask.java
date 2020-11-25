@@ -87,13 +87,13 @@ public class ListUsersTask extends UserTask
     }
 
 
-    public void setOutputproperty( String outputproperty )
+    public void setOutputproperty(final String outputproperty )
     {
         this.outputproperty = outputproperty;
     }
 
 
-    public void setSeparator( String separator )
+    public void setSeparator(final String separator )
     {
         this.separator = separator;
     }

@@ -135,7 +135,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
                 log("Storing " + srcFile.getName());
 
                 MimeType mime = getMimeTable().getContentTypeFor(srcFile.getName());
-                String baseMimeType;
+                final String baseMimeType;
 
                 if (forceMimeType != null) {
                     baseMimeType = forceMimeType;
@@ -278,7 +278,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
                             }
 
                             MimeType currentMime = getMimeTable().getContentTypeFor(file.getName());
-                            String currentBaseMimeType;
+                            final String currentBaseMimeType;
 
                             if (forceMimeType != null) {
                                 currentBaseMimeType = forceMimeType;

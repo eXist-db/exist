@@ -64,7 +64,7 @@ public class Classpath implements Iterable<Path> {
     }
         
     public boolean addComponent(final String component) {
-        if (component != null && component.length() > 0) {
+        if (component != null && !component.isEmpty()) {
             try {
                 final Path p = Paths.get(component);
                 if (Files.exists(p))
