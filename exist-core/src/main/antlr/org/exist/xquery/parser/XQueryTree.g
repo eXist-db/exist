@@ -2074,22 +2074,27 @@ throws PermissionDeniedException, EXistException, XPathException
 primaryExpr [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
-{
-	step = null;
-}:
+{ step = null; }
+:
 	step=constructor [path]
 	step=postfixExpr [step]
-	{
-		path.add(step);
-	}
+	{ path.add(step); }
 	|
 	step=mapConstr [path]
-  step=postfixExpr [step]
-  { path.add(step); }
+    step=postfixExpr [step]
+    { path.add(step); }
 	|
 	step=arrayConstr [path]
 	step=postfixExpr [step]
 	{ path.add(step); }
+	|
+    s:SELF
+	{
+	    step= new ContextItemExpression(context);
+        step.setASTNode(s);
+    }
+    step=postfixExpr [step]
+    { path.add(step); }
 	|
 	#(
 		PARENTHESIZED
@@ -2560,7 +2565,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	|
 	SELF
 	{
-		step= new LocationStep(context, Constants.SELF_AXIS, new TypeTest(Type.NODE));
+		step = new ContextItemExpression(context);
 		path.add(step);
 	}
 	( predicate [(LocationStep) step] )*
