@@ -181,18 +181,18 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
 
                 if (col != null) {
                     log("Extracting collection: " + col.getName(), Project.MSG_DEBUG);
-                    File dir = destDir.toFile();
+                    Path dir = destDir;
                     final String subdir;
 
                     if (path != null) {
-                        dir = new File(destDir.toFile(), path + File.separator + childCol);
+                        dir = destDir.resolve(path + File.separator + childCol);
                         subdir = path + File.separator + childCol;
                     } else {
                         subdir = childCol;
                     }
 
-                    if (!dir.exists() && createdirectories) {
-                        dir.mkdirs();
+                    if (Files.notExists(dir) && createdirectories) {
+                        Files.createDirectories(dir);
                     }
 
                     extractResources(col, subdir);
