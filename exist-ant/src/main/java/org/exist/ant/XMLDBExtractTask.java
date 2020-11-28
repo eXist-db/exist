@@ -297,11 +297,10 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                 final String fname = res.getId();
                 dest = new File(dest, fname);
             }
-            final FileOutputStream os;
-            os = new FileOutputStream(dest);
 
-            ((ExtendedResource) res).getContentIntoAStream(os);
-
+            try(final OutputStream os = Files.newOutputStream(dest.toPath())) {
+                ((ExtendedResource) res).getContentIntoAStream(os);
+            }
 
         } else {
             final String msg = "Dest binary file " + ((dest != null) ? (dest.getAbsolutePath() + " ") : "") + "exists. Use " + "overwrite property to overwrite file.";

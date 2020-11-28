@@ -30,15 +30,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Observable;
 import java.util.Observer;
@@ -78,6 +74,8 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 class DocumentView extends JFrame {
 
@@ -410,33 +408,31 @@ class DocumentView extends JFrame {
     }
 
     private void export() throws XMLDBException {
-        final String workDir = properties.getProperty("working-dir", System //$NON-NLS-1$
-                .getProperty("user.dir")); //$NON-NLS-1$
+        final String workDir = properties.getProperty("working-dir", System.getProperty("user.dir"));
         final JFileChooser chooser = new JFileChooser(workDir);
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setSelectedFile(Paths.get(resource.getId()).toFile());
-        if (chooser.showDialog(this, Messages.getString("DocumentView.44")) == JFileChooser.APPROVE_OPTION) { //$NON-NLS-1$
+
+        if (chooser.showDialog(this, Messages.getString("DocumentView.44")) == JFileChooser.APPROVE_OPTION) {
             final File file = chooser.getSelectedFile();
             if (file.exists()
                     && JOptionPane.showConfirmDialog(this,
-                    Messages.getString("DocumentView.45"), Messages.getString("DocumentView.46"), //$NON-NLS-1$ //$NON-NLS-2$
+                    Messages.getString("DocumentView.45"), Messages.getString("DocumentView.46"),
                     JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
                 return;
             }
-            try {
-                final OutputStreamWriter writer = new OutputStreamWriter(
-                        new FileOutputStream(file), Charset.forName(properties
-                        .getProperty("encoding"))); //$NON-NLS-1$
+
+            final Charset encoding = Charset.forName(properties.getProperty("encoding"));
+            try (final Writer writer = Files.newBufferedWriter(file.toPath(), encoding)) {
                 writer.write(text.getText());
-                writer.close();
+
             } catch (final IOException e) {
-                ClientFrame.showErrorMessage(Messages.getString("DocumentView.48") //$NON-NLS-1$
-                        + e.getMessage(), e);
+                ClientFrame.showErrorMessage(Messages.getString("DocumentView.48") + e.getMessage(), e);
             }
+
             final File selectedDir = chooser.getCurrentDirectory();
-            properties
-                    .setProperty("working-dir", selectedDir.getAbsolutePath()); //$NON-NLS-1$
+            properties.setProperty("working-dir", selectedDir.getAbsolutePath());
         }
     }
 
