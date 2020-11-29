@@ -23,6 +23,7 @@ package org.exist.xslt;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
@@ -91,9 +92,9 @@ public class TransformerFactoryAllocator {
                     LOG.debug("Set transformer factory: " + transformerFactoryClassName);
                 }
                 final Hashtable<String, Object> attributes = (Hashtable<String, Object>) pool.getConfiguration().getProperty(PROPERTY_TRANSFORMER_ATTRIBUTES);
-                final Enumeration<String> attrNames = attributes.keys();
-                while (attrNames.hasMoreElements()) {
-                    final String name = attrNames.nextElement();
+                Iterator<String> iterator = attributes.keySet().iterator();
+                while (iterator.hasNext()) {
+                    final String name = iterator.next();
                     final Object value = attributes.get(name);
                     try {
                         factory.setAttribute(name, value);
