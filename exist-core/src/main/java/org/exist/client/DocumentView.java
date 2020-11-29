@@ -222,9 +222,7 @@ class DocumentView extends JFrame {
         item = new JMenuItem(Messages.getString("DocumentView.17"), KeyEvent.VK_S); //$NON-NLS-1$
         item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        item.addActionListener(e -> {
-            save();
-        });
+        item.addActionListener(e -> save());
         fileMenu.add(item);
         /*
         // Refresh
