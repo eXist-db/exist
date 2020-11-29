@@ -141,7 +141,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
         if (resources != null) {
             Path dir = destDir;
 
-            log("Extracting to directory " + destFile.toAbsolutePath().toString(), Project.MSG_DEBUG);
+            log("Extracting to directory " + destDir.toAbsolutePath().toString(), Project.MSG_DEBUG);
 
             if (path != null) {
                 dir =  destDir.resolve(path);
