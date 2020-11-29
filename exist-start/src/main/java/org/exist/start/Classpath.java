@@ -134,9 +134,9 @@ public class Classpath implements Iterable<Path> {
                     } catch(final MalformedURLException e) {
                         return Optional.<URL>empty();
                     }
-                }).filter(ou -> ou.isPresent())
+                }).filter(Optional::isPresent)
                 .map(Optional::get)
-                .toArray(sz -> new URL[sz]);
+                .toArray(URL[]::new);
 
         // try and ensure we have a classloader
         parent = or(

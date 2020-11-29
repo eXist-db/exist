@@ -214,25 +214,25 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         lblSizeValue = new javax.swing.JLabel();
 
         miInsertAceBefore.setText("Insert ACE before...");
-        miInsertAceBefore.addActionListener(evt -> miInsertAceBeforeActionPerformed(evt));
+        miInsertAceBefore.addActionListener(this::miInsertAceBeforeActionPerformed);
         pmAcl.add(miInsertAceBefore);
 
         miInsertAceAfter.setText("Insert ACE after...");
-        miInsertAceAfter.addActionListener(evt -> miInsertAceAfterActionPerformed(evt));
+        miInsertAceAfter.addActionListener(this::miInsertAceAfterActionPerformed);
         pmAcl.add(miInsertAceAfter);
         pmAcl.add(jSeparator3);
 
         miMoveUp.setText("Move ACE up");
-        miMoveUp.addActionListener(evt -> miMoveUpActionPerformed(evt));
+        miMoveUp.addActionListener(this::miMoveUpActionPerformed);
         pmAcl.add(miMoveUp);
 
         miMoveDown.setText("Move ACE down");
-        miMoveDown.addActionListener(evt -> miMoveDownActionPerformed(evt));
+        miMoveDown.addActionListener(this::miMoveDownActionPerformed);
         pmAcl.add(miMoveDown);
         pmAcl.add(jSeparator4);
 
         miRemoveAce.setText("Remove ACE");
-        miRemoveAce.addActionListener(evt -> miRemoveAceActionPerformed(evt));
+        miRemoveAce.addActionListener(this::miRemoveAceActionPerformed);
         pmAcl.add(miRemoveAce);
 
         jTextArea1.setColumns(20);
@@ -267,10 +267,10 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         lblGroupValue.setText("<group>");
 
         btnChangeOwner.setText("...");
-        btnChangeOwner.addActionListener(evt -> btnChangeOwnerActionPerformed(evt));
+        btnChangeOwner.addActionListener(this::btnChangeOwnerActionPerformed);
 
         btnChangeGroup.setText("...");
-        btnChangeGroup.addActionListener(evt -> btnChangeGroupActionPerformed(evt));
+        btnChangeGroup.addActionListener(this::btnChangeGroupActionPerformed);
 
         tblBasePermissions.setModel(getBasicPermissionsTableModel());
         tblBasePermissions.setRowSelectionAllowed(false);
@@ -290,13 +290,13 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         jScrollPane3.setViewportView(tblAcl);
 
         btnSave.setText("Save");
-        btnSave.addActionListener(evt -> btnSaveActionPerformed(evt));
+        btnSave.addActionListener(this::btnSaveActionPerformed);
 
         btnClose.setText("Close");
-        btnClose.addActionListener(evt -> btnCloseActionPerformed(evt));
+        btnClose.addActionListener(this::btnCloseActionPerformed);
 
         btnAddAce.setText("Add Access Control Entry...");
-        btnAddAce.addActionListener(evt -> btnAddAceActionPerformed(evt));
+        btnAddAce.addActionListener(this::btnAddAceActionPerformed);
 
         lblDigest.setText("Digest:");
 
