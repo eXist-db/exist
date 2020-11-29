@@ -92,7 +92,7 @@ public class TransformerFactoryAllocator {
                     LOG.debug("Set transformer factory: " + transformerFactoryClassName);
                 }
                 final Hashtable<String, Object> attributes = (Hashtable<String, Object>) pool.getConfiguration().getProperty(PROPERTY_TRANSFORMER_ATTRIBUTES);
-                Iterator<String> iterator = attributes.keySet().iterator();
+                final Iterator<String> iterator = attributes.keySet().iterator();
                 while (iterator.hasNext()) {
                     final String name = iterator.next();
                     final Object value = attributes.get(name);
