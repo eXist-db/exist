@@ -86,9 +86,7 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
         super.configure(pool, dataDir, config);
         try {
             checkDatabase();
-        } catch (ClassNotFoundException e) {
-            throw new DatabaseConfigurationException(e.getMessage());
-        } catch (SQLException e) {
+        } catch (ClassNotFoundException | SQLException e) {
             throw new DatabaseConfigurationException(e.getMessage());
         }
     }

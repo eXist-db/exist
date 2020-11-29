@@ -514,10 +514,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         try {
             conn = acquireConnection();
             return checkIndex(broker, conn);
-        } catch (SQLException e) {
-            LOG.error(e);
-            return false;
-        } catch (SpatialIndexException e) {
+        } catch (SQLException | SpatialIndexException e) {
             LOG.error(e);
             return false;
         } finally {
