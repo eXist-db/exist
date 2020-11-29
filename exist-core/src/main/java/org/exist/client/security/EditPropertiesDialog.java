@@ -190,12 +190,12 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         tblBasePermissions = new javax.swing.JTable();
         if (applyTo.size() > 1) {
             tblBasePermissions.setDefaultRenderer(Boolean.class, new TristateCheckBoxTableCellRenderer<Boolean>(bool -> Tuple(null, TristateState.fromBoolean(bool))));
-            tblBasePermissions.setDefaultEditor(Boolean.class, new TristateCheckboxTableCellEditor<Boolean>(bool -> Tuple(null, TristateState.fromBoolean(bool)), state -> TristateState.toBoolean(state._2)));
+            tblBasePermissions.setDefaultEditor(Boolean.class, new TristateCheckboxTableCellEditor<>(bool -> Tuple(null, TristateState.fromBoolean(bool)), state -> TristateState.toBoolean(state._2)));
             tblBasePermissions.setDefaultRenderer(LabelledBoolean.class, new TristateCheckBoxTableCellRenderer<LabelledBoolean>(labelledBool -> Tuple(labelledBool.getLabel(), TristateState.fromBoolean(labelledBool.isSet()))));
-            tblBasePermissions.setDefaultEditor(LabelledBoolean.class, new TristateCheckboxTableCellEditor<LabelledBoolean>(labelledBool -> Tuple(labelledBool.getLabel(), TristateState.fromBoolean(labelledBool.isSet())), state -> new LabelledBoolean(state._1, TristateState.toBoolean(state._2))));
+            tblBasePermissions.setDefaultEditor(LabelledBoolean.class, new TristateCheckboxTableCellEditor<>(labelledBool -> Tuple(labelledBool.getLabel(), TristateState.fromBoolean(labelledBool.isSet())), state -> new LabelledBoolean(state._1, TristateState.toBoolean(state._2))));
         } else {
             tblBasePermissions.setDefaultRenderer(LabelledBoolean.class, new CheckboxTableCellRenderer<LabelledBoolean>(labelledBoolean -> Tuple(labelledBoolean.getLabel(), labelledBoolean.isSet())));
-            tblBasePermissions.setDefaultEditor(LabelledBoolean.class, new CheckboxTableCellEditor<LabelledBoolean>(labelledBoolean -> Tuple(labelledBoolean.getLabel(), labelledBoolean.isSet()), state -> new LabelledBoolean(state._1, state._2)));
+            tblBasePermissions.setDefaultEditor(LabelledBoolean.class, new CheckboxTableCellEditor<>(labelledBoolean -> Tuple(labelledBoolean.getLabel(), labelledBoolean.isSet()), state -> new LabelledBoolean(state._1, state._2)));
         }
         lblAccessControlList = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
