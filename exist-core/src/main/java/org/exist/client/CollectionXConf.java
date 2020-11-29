@@ -676,12 +676,10 @@ public class CollectionXConf
 				{
 					if(parameters.size() > 0)
 					{
-						Iterator iterator = parameters.keySet().iterator();
-						while(iterator.hasNext())
-						{
-							final String name = (String) iterator.next();
+						for (Object o : parameters.keySet()) {
+							final String name = (String) o;
 							final String value = parameters.getProperty(name);
-						
+
 							trigger.append("<parameter name=\"");
 							trigger.append(name);
 							trigger.append("\" value=\"");
