@@ -185,7 +185,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                     final String subdir;
 
                     if (path != null) {
-                        dir = destDir.resolve(path + File.separator + childCol);
+                        dir = destDir.resolve(path).resolve(childCol);
                         subdir = path + File.separator + childCol;
                     } else {
                         subdir = childCol;
