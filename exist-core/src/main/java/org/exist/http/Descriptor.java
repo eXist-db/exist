@@ -293,7 +293,7 @@ public class Descriptor implements ErrorHandler {
                 path = path.replace('\\', '/');
 
                 //does the path match the <allow-source><xquery path=""/></allow-source> path
-                if ((s.equals(path)) || (path.indexOf(s) > -1)) {
+                if ((s.equals(path)) || (path.contains(s))) {
                     //yes, return true
                     return (true);
                 }
