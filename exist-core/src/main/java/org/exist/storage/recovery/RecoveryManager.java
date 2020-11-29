@@ -92,21 +92,20 @@ public class RecoveryManager {
             // load the last log file
 			final Path last = journalRecovery.getFile.apply(lastNum);
 			// scan the last log file and record the last checkpoint found
-			final JournalReader reader = new JournalReader(broker, last, lastNum);
-            try {
-            	// try to read the last log record to see if it is a checkpoint
-            	boolean checkpointFound = false;
-    			try {
+            try (JournalReader reader = new JournalReader(broker, last, lastNum)) {
+                // try to read the last log record to see if it is a checkpoint
+                boolean checkpointFound = false;
+                try {
                     final Loggable lastLog = reader.lastEntry();
                     if (lastLog != null && lastLog.getLogType() == LogEntryTypes.CHECKPOINT) {
-                    	final Checkpoint checkpoint = (Checkpoint) lastLog;
-                    	// Found a checkpoint. To be sure it is indeed a valid checkpoint
-                    	// record, we compare the LSN stored in it with the current LSN.
-                    	if (checkpoint.getStoredLsn().equals(checkpoint.getLsn())) {
-                    		checkpointFound = true;
-                    		LOG.debug("Database is in clean state. Last checkpoint: " + 
-                    				checkpoint.getDateString());
-                    	}
+                        final Checkpoint checkpoint = (Checkpoint) lastLog;
+                        // Found a checkpoint. To be sure it is indeed a valid checkpoint
+                        // record, we compare the LSN stored in it with the current LSN.
+                        if (checkpoint.getStoredLsn().equals(checkpoint.getLsn())) {
+                            checkpointFound = true;
+                            LOG.debug("Database is in clean state. Last checkpoint: " +
+                                    checkpoint.getDateString());
+                        }
                     }
                 } catch (final LogException e) {
                     LOG.info("Reading last journal log entry failed: " + e.getMessage() + ". Will scan the log...");
@@ -114,51 +113,51 @@ public class RecoveryManager {
                     // which indicates a db crash
                     checkpointFound = false;
                 }
-    			if (!checkpointFound) {
+                if (!checkpointFound) {
                     LOG.info("Unclean shutdown detected. Scanning journal...");
                     broker.getBrokerPool().reportStatus("Unclean shutdown detected. Scanning log...");
-    				reader.positionFirst();
-    				final Long2ObjectMap<Loggable> txnsStarted = new Long2ObjectOpenHashMap<>();
-	    			Checkpoint lastCheckpoint = null;
-	    			Lsn lastLsn = Lsn.LSN_INVALID;
-	                Loggable next;
-	                try {
-						final ProgressBar progress = new ProgressBar("Scanning journal ", FileUtils.sizeQuietly(last));
-	        			while ((next = reader.nextEntry()) != null) {
+                    reader.positionFirst();
+                    final Long2ObjectMap<Loggable> txnsStarted = new Long2ObjectOpenHashMap<>();
+                    Checkpoint lastCheckpoint = null;
+                    Lsn lastLsn = Lsn.LSN_INVALID;
+                    Loggable next;
+                    try {
+                        final ProgressBar progress = new ProgressBar("Scanning journal ", FileUtils.sizeQuietly(last));
+                        while ((next = reader.nextEntry()) != null) {
 //	                        LOG.debug(next.dump());
-							progress.set(next.getLsn().getOffset());
-							if (next.getLogType() == LogEntryTypes.TXN_START) {
-				                // new transaction starts: add it to the transactions table
-				                txnsStarted.put(next.getTransactionId(), next);
-				            } else if (next.getLogType() == LogEntryTypes.TXN_ABORT) {
-				            	// transaction aborted: remove it from the transactions table
-				            	txnsStarted.remove(next.getTransactionId());
-				            } else if (next.getLogType() == LogEntryTypes.CHECKPOINT) {
-				            	txnsStarted.clear();
-	        					lastCheckpoint = (Checkpoint) next;
-				            }
-	        				lastLsn = next.getLsn();
-	        			}
-	                } catch (final LogException e) {
-	                    if (LOG.isDebugEnabled()) {
+                            progress.set(next.getLsn().getOffset());
+                            if (next.getLogType() == LogEntryTypes.TXN_START) {
+                                // new transaction starts: add it to the transactions table
+                                txnsStarted.put(next.getTransactionId(), next);
+                            } else if (next.getLogType() == LogEntryTypes.TXN_ABORT) {
+                                // transaction aborted: remove it from the transactions table
+                                txnsStarted.remove(next.getTransactionId());
+                            } else if (next.getLogType() == LogEntryTypes.CHECKPOINT) {
+                                txnsStarted.clear();
+                                lastCheckpoint = (Checkpoint) next;
+                            }
+                            lastLsn = next.getLsn();
+                        }
+                    } catch (final LogException e) {
+                        if (LOG.isDebugEnabled()) {
                             LOG.debug("Caught exception while reading log", e);
                         }
                         LOG.warn("Last readable journal log entry lsn: " + lastLsn);
                     }
 
-	    			// if the last checkpoint record is not the last record in the file
-	    			// we need a recovery.
-	    			if ((lastCheckpoint == null || !lastCheckpoint.getLsn().equals(lastLsn)) &&
-	    					txnsStarted.size() > 0) {
-	    				LOG.info("Dirty transactions: " + txnsStarted.size());
-	    				// starting recovery: reposition the log reader to the last checkpoint
-						if (lastCheckpoint == null)
-						    {reader.positionFirst();}
-						else {
-						    reader.position(lastCheckpoint.getLsn());
-						    next = reader.nextEntry();
-						}
-	                    recoveryRun = true;
+                    // if the last checkpoint record is not the last record in the file
+                    // we need a recovery.
+                    if ((lastCheckpoint == null || !lastCheckpoint.getLsn().equals(lastLsn)) &&
+                            txnsStarted.size() > 0) {
+                        LOG.info("Dirty transactions: " + txnsStarted.size());
+                        // starting recovery: reposition the log reader to the last checkpoint
+                        if (lastCheckpoint == null) {
+                            reader.positionFirst();
+                        } else {
+                            reader.position(lastCheckpoint.getLsn());
+                            next = reader.nextEntry();
+                        }
+                        recoveryRun = true;
                         try {
                             LOG.info("Running recovery...");
                             broker.getBrokerPool().reportStatus("Running recovery...");
@@ -192,9 +191,8 @@ public class RecoveryManager {
                     } else {
                         LOG.info("Database is in clean state. Nothing to recover from the journal.");
                     }
-    			}
+                }
             } finally {
-                reader.close();
                 // remove .log files from directory even if recovery failed.
                 // Re-applying them on a second start up attempt would definitely damage the db, so we better
                 // delete them before user tries to launch again.
