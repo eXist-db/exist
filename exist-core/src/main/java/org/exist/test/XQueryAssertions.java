@@ -26,13 +26,22 @@ import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
+import org.hamcrest.Matcher;
+import javax.xml.transform.Source;
 
-import static org.junit.Assert.*;
+import static org.exist.test.DiffMatcher.hasIdenticalXml;
+import static org.exist.test.DiffMatcher.hasSimilarXml;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 /**
  * This set of assertions are meant to help when testing XQuery compilation, execution and errors
  * Especially useful, if the testsuite inherits from/ extends XQueryCompilationTest class
+ *
  * @author <a href="mailto:juri@existsolutions.com">Juri Leino</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class XQueryAssertions {
     public static void assertXQStaticError(final ErrorCodes.ErrorCode expectedCode, final int line, final int column, final String expectedMessage, final Either<XPathException, CompiledXQuery> actual) {
@@ -61,10 +70,20 @@ public class XQueryAssertions {
         assertXQErrorCode(expectedCode, xpe);
     }
 
-    public static void assertXQResultToStringEquals(final String expectedSerializedString, final Either<XPathException, Sequence> actual) {
-        assertTrue("Expected: " + expectedSerializedString + ", but got result: " + actual.toString(), actual.isRight());
+    public static void assertThatXQResult(final Either<XPathException, Sequence> actual, final Matcher<Sequence> expectedMatcher) {
+        if (actual.isLeft()) {
+            fail("Expected result, but found XPathException: " + actual.left().get().toString());
+        }
         final Sequence sequence = actual.right().get();
-        assertEquals(expectedSerializedString, sequence.toString());
+        assertThat(sequence, expectedMatcher);
+    }
+
+    public static void assertXQResultSimilar(final Source expectedSource, final Either<XPathException, Sequence> actual) {
+        assertThatXQResult(actual, hasSimilarXml(expectedSource));
+    }
+
+    public static void assertXQResultIdentical(final Source expectedSource, final Either<XPathException, Sequence> actual) {
+        assertThatXQResult(actual, hasIdenticalXml(expectedSource));
     }
 
     public static void assertXQErrorCode(final ErrorCodes.ErrorCode expectedCode, final XPathException exception) {
@@ -86,5 +105,4 @@ public class XQueryAssertions {
         assertEquals("Expected message to be " + expectedMessage + ", but got " + exception.getMessage(),
                 expectedMessage, exception.getDetailMessage());
     }
-
 }

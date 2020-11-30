@@ -21,18 +21,29 @@
  */
 package org.exist.xquery;
 
+import com.evolvedbinary.j8fu.Either;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.XQueryCompilationTest;
+import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.Sequence;
 import org.junit.Test;
+import org.w3c.dom.Node;
+import org.xmlunit.builder.Input;
+import org.xmlunit.util.Convert;
 
-import static org.exist.test.XQueryAssertions.assertXQResultToStringEquals;
+import javax.xml.transform.Source;
+
+import static org.exist.test.XQueryAssertions.assertThatXQResult;
 import static org.exist.test.XQueryAssertions.assertXQStaticError;
+import static org.exist.test.XQueryAssertions.assertXQResultSimilar;
+import static org.hamcrest.Matchers.equalTo;
 
 /**
- * Ensure absolute XPath expression will raise a static error
+ * Ensure absolute XPath expression will raise a static error.
  *
  * @author <a href="mailto:juri@existsolutions.com">Juri Leino</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class AbsolutePathTests extends XQueryCompilationTest {
     @Test
@@ -76,32 +87,74 @@ public class AbsolutePathTests extends XQueryCompilationTest {
 
     @Test
     public void immediateLambdaWithDocumentAndDoubleSlash() throws EXistException, PermissionDeniedException {
+        final Source expected = elemSource("<result><x/><x/><x/></result>");
+
         final String query = "let $f := function($d) { $d ! //x }\n" +
                 "let $d := document { <root><x/><x/><y><x/></y></root> }\n" +
-                "return serialize($f($d))";
-        assertXQResultToStringEquals("<x/><x/><x/>", executeQuery(query));
+                "return\n" +
+                "  <result>{ $f($d) }</result>";
+        final Either<XPathException, Sequence> actual = executeQuery(query);
+
+        assertXQResultSimilar(expected, actual);
     }
 
     @Test
     public void immediateLambdaWithDocumentAndSlash() throws EXistException, PermissionDeniedException {
+        final Source expected = elemSource("<root/>");
+
         final String query = "let $f := function($d) { $d ! /root }\n" +
                 "let $d := document { <root/> }\n" +
-                "return serialize($f($d))";
-        assertXQResultToStringEquals("<root/>", executeQuery(query));
+                "return\n" +
+                "  $f($d)";
+        final Either<XPathException, Sequence> actual = executeQuery(query);
+
+        assertXQResultSimilar(expected, actual);
     }
 
     @Test
     public void immediateLambdaWithDocumentAndLoneSlash() throws EXistException, PermissionDeniedException {
+        final Source expected = docSource("<root/>");
+
         final String query = "let $f := function($d) { $d ! / }\n" +
                 "let $d := document { <root/> }\n" +
-                "return serialize($f($d))";
-        assertXQResultToStringEquals("<root/>", executeQuery(query));
+                "return\n" +
+                "  $f($d)";
+        final Either<XPathException, Sequence> actual = executeQuery(query);
+
+        assertXQResultSimilar(expected, actual);
     }
 
     @Test
     public void topLevelAbsolutePath() throws EXistException, PermissionDeniedException {
+        final Sequence expected = new IntegerValue(1);
+
         final String query = "count(//*)";
-        assertXQResultToStringEquals("1", executeQuery(query));
+        final Either<XPathException, Sequence> actual = executeQuery(query);
+
+        assertThatXQResult(actual, equalTo(expected));
     }
 
+    /**
+     * Creates an Document6 Source form an XML String.
+     *
+     * @param str a string representation of XML.
+     *
+     * @return a Document Source.
+     */
+    private static Source docSource(final String str) {
+        return Input.fromString(str).build();
+    }
+
+    /**
+     * Creates an Element Source form an XML String.
+     *
+     * @param str a string representation of XML.
+     *
+     * @return an Element Source.
+     */
+    private static Source elemSource(final String str) {
+        final Node documentNode = Convert.toNode(docSource(str));
+        final Node firstElement = documentNode.getFirstChild();
+        return Input.fromNode(firstElement).build();
+    }
 }
