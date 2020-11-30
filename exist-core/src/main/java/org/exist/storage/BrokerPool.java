@@ -495,7 +495,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.notificationService = servicesManager.register(new NotificationService());
 
         this.journalManager = recoveryEnabled ? Optional.of(new JournalManager()) : Optional.empty();
-        journalManager.ifPresent(manager -> servicesManager.register(manager));
+        journalManager.ifPresent(servicesManager::register);
 
         final SystemTaskManager systemTaskManager = servicesManager.register(new SystemTaskManager(this));
         this.transactionManager = servicesManager.register(new TransactionManager(this, journalManager, systemTaskManager));
@@ -505,7 +505,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.symbols = servicesManager.register(new SymbolTable());
 
         this.expathRepo = Optional.ofNullable(new ExistRepository());
-        expathRepo.ifPresent(existRepository -> servicesManager.register(existRepository));
+        expathRepo.ifPresent(servicesManager::register);
         servicesManager.register(new ClasspathHelper());
 
         this.indexManager = servicesManager.register(new IndexManager(this));

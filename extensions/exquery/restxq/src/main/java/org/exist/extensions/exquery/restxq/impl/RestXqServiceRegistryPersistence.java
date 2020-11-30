@@ -88,8 +88,8 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
 
         //only load the registry if a serialized registry exists on disk
         getRegistryFile(false)
-                .filter(r -> Files.exists(r))
-                .filter(r -> Files.isRegularFile(r))
+                .filter(Files::exists)
+                .filter(Files::isRegularFile)
                 .ifPresent(this::loadRegistry);
     }
     

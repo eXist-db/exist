@@ -103,7 +103,7 @@ public class FunXmlToJson extends BasicFunction {
         final JsonFactory jsonFactory = new JsonFactory();
         final Integer stackSeparator = 0;
         //use ArrayList<Object> to store String type keys and non-string type separators
-        final ArrayList<Object> mapkeyArrayList = new ArrayList<Object>();
+        final ArrayList<Object> mapkeyArrayList = new ArrayList<>();
         boolean elementKeyIsEscaped = false;
         boolean elementValueIsEscaped = false;
         XMLStreamReader reader = null;

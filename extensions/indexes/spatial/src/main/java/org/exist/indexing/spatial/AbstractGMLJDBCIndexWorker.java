@@ -146,7 +146,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         this.controller = controller;
         Map<String, GMLIndexConfig> map = null;
         for(int i = 0; i < configNodes.getLength(); i++) {
-            Node node = configNodes.item(i);
+            final Node node = configNodes.item(i);
             if (node.getNodeType() == Node.ELEMENT_NODE &&
                     INDEX_ELEMENT.equals(node.getLocalName())) { 
                 map = new TreeMap<>();
@@ -164,7 +164,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         if (document != null) {
             IndexSpec idxConf = document.getCollection().getIndexConfiguration(getBroker());
             if (idxConf != null) {
-                Map collectionConfig = (Map) idxConf.getCustomIndexSpec(AbstractGMLJDBCIndex.ID);
+                final Map collectionConfig = (Map) idxConf.getCustomIndexSpec(AbstractGMLJDBCIndex.ID);
                 if (collectionConfig != null) {
                     isDocumentGMLAware = true;
                     if (collectionConfig.get(AbstractGMLJDBCIndex.ID) != null)
@@ -514,10 +514,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         try {
             conn = acquireConnection();
             return checkIndex(broker, conn);
-        } catch (SQLException e) {
-            LOG.error(e);
-            return false;
-        } catch (SpatialIndexException e) {
+        } catch (final SQLException | SpatialIndexException e) {
             LOG.error(e);
             return false;
         } finally {

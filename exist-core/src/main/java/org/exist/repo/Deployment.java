@@ -459,7 +459,7 @@ public class Deployment {
 
                 if (!errors.isEmpty()) {
                     throw new PackageException("Deployment incomplete, " + errors.size() + " issues found: " +
-                        errors.stream().collect(Collectors.joining("; ")));
+                            String.join("; ", errors));
                 }
                 return Optional.ofNullable(targetCollection.getCollectionPath());
             }

@@ -652,7 +652,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                         shell.setCaretPosition(doc.getLength());
                     }
                 }
-                if (e.paramString().indexOf(Messages.getString("ClientFrame.93")) > Constants.STRING_NOT_FOUND) { //$NON-NLS-1$
+                if (e.paramString().contains(Messages.getString("ClientFrame.93"))) { //$NON-NLS-1$
                     if (shell.getCaretPosition() <= commandStart) {
                         e.consume();
                     }

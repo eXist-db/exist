@@ -21,6 +21,7 @@
  */
 package org.exist.security.internal;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.codec.binary.Base64;
@@ -169,7 +170,7 @@ public class Password implements Credential {
                 throw new RuntimeException("Cannot compare passwords with different algorithms i.e. " + algorithm + " and " + p.algorithm);
             }
             
-            return (pw == p.pw || (pw != null && pw.equals(p.pw)));
+            return (Objects.equals(pw, p.pw));
         }
     	
     	if(obj instanceof String) {

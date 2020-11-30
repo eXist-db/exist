@@ -156,9 +156,7 @@ public class Main {
 
         final boolean guiMode = getBool(arguments, guiArg);
         final boolean quiet = getBool(arguments, quietArg);
-        Optional.ofNullable(arguments.get(optionArg)).ifPresent(options -> {
-            options.forEach(properties::setProperty);
-        });
+        Optional.ofNullable(arguments.get(optionArg)).ifPresent(options -> options.forEach(properties::setProperty));
 
         properties.setProperty(USER_PROP, arguments.get(userArg));
         final String optionPass = arguments.get(passwordArg);

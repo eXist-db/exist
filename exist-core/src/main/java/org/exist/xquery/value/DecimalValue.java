@@ -32,6 +32,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.function.IntSupplier;
 import java.util.regex.Pattern;
 
@@ -300,14 +301,14 @@ public class DecimalValue extends NumericValue {
      * @see org.exist.xquery.value.NumericValue#ceiling()
      */
     public NumericValue ceiling() throws XPathException {
-        return new DecimalValue(value.setScale(0, BigDecimal.ROUND_CEILING));
+        return new DecimalValue(value.setScale(0, RoundingMode.CEILING));
     }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.NumericValue#floor()
      */
     public NumericValue floor() throws XPathException {
-        return new DecimalValue(value.setScale(0, BigDecimal.ROUND_FLOOR));
+        return new DecimalValue(value.setScale(0, RoundingMode.FLOOR));
     }
 
     /* (non-Javadoc)
@@ -316,11 +317,11 @@ public class DecimalValue extends NumericValue {
     public NumericValue round() throws XPathException {
         switch (value.signum()) {
             case -1:
-                return new DecimalValue(value.setScale(0, BigDecimal.ROUND_HALF_DOWN));
+                return new DecimalValue(value.setScale(0, RoundingMode.HALF_DOWN));
             case 0:
                 return this;
             case 1:
-                return new DecimalValue(value.setScale(0, BigDecimal.ROUND_HALF_UP));
+                return new DecimalValue(value.setScale(0, RoundingMode.HALF_UP));
             default:
                 return this;
         }
@@ -342,11 +343,11 @@ public class DecimalValue extends NumericValue {
         }
 
         if (pre >= 0) {
-            return new DecimalValue(value.setScale(pre, BigDecimal.ROUND_HALF_EVEN));
+            return new DecimalValue(value.setScale(pre, RoundingMode.HALF_EVEN));
         } else {
             return new DecimalValue(
                     value.movePointRight(pre).
-                            setScale(0, BigDecimal.ROUND_HALF_EVEN).
+                            setScale(0, RoundingMode.HALF_EVEN).
                             movePointLeft(pre));
         }
     }
@@ -416,7 +417,7 @@ public class DecimalValue extends NumericValue {
 
                 //Copied from Saxon 8.6.1
                 final int scale = Math.max(DIVIDE_PRECISION, Math.max(value.scale(), ((DecimalValue) other).value.scale()));
-                final BigDecimal result = value.divide(((DecimalValue) other).value, scale, BigDecimal.ROUND_HALF_DOWN);
+                final BigDecimal result = value.divide(((DecimalValue) other).value, scale, RoundingMode.HALF_DOWN);
                 return new DecimalValue(result);
             //End of copy
         }
@@ -428,7 +429,7 @@ public class DecimalValue extends NumericValue {
         }
 
         final DecimalValue dv = (DecimalValue) other.convertTo(Type.DECIMAL);
-        final BigInteger quot = value.divide(dv.value, 0, BigDecimal.ROUND_DOWN).toBigInteger();
+        final BigInteger quot = value.divide(dv.value, 0, RoundingMode.DOWN).toBigInteger();
         return new IntegerValue(quot);
     }
 
@@ -441,8 +442,8 @@ public class DecimalValue extends NumericValue {
                 throw new XPathException(ErrorCodes.FOAR0001, "division by zero");
             }
 
-            final BigDecimal quotient = value.divide(((DecimalValue) other).value, 0, BigDecimal.ROUND_DOWN);
-            final BigDecimal remainder = value.subtract(quotient.setScale(0, BigDecimal.ROUND_DOWN).multiply(((DecimalValue) other).value));
+            final BigDecimal quotient = value.divide(((DecimalValue) other).value, 0, RoundingMode.DOWN);
+            final BigDecimal remainder = value.subtract(quotient.setScale(0, RoundingMode.DOWN).multiply(((DecimalValue) other).value));
             return new DecimalValue(remainder);
         } else {
             return ((NumericValue) convertTo(other.getType())).mod(other);
