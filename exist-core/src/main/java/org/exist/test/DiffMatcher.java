@@ -37,9 +37,11 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.hamcrest.Description;
 import org.hamcrest.DiagnosingMatcher;
+import org.w3c.dom.Node;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
+import org.xmlunit.util.Convert;
 
 import javax.xml.transform.Source;
 
@@ -141,5 +143,29 @@ public class DiffMatcher extends DiagnosingMatcher<Sequence> {
         description
                 .appendText("nodes match ")
                 .appendValue(expectedSource);
+    }
+
+    /**
+     * Creates an Document Source form an XML String.
+     *
+     * @param str a string representation of XML.
+     *
+     * @return a Document Source.
+     */
+    public static Source docSource(final String str) {
+        return Input.fromString(str).build();
+    }
+
+    /**
+     * Creates an Element Source form an XML String.
+     *
+     * @param str a string representation of XML.
+     *
+     * @return an Element Source.
+     */
+    public static Source elemSource(final String str) {
+        final Node documentNode = Convert.toNode(docSource(str));
+        final Node firstElement = documentNode.getFirstChild();
+        return Input.fromNode(firstElement).build();
     }
 }

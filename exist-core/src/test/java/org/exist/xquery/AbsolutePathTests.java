@@ -28,14 +28,14 @@ import org.exist.test.XQueryCompilationTest;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.junit.Test;
-import org.w3c.dom.Node;
-import org.xmlunit.builder.Input;
-import org.xmlunit.util.Convert;
 
 import javax.xml.transform.Source;
 
+import static org.exist.test.DiffMatcher.docSource;
+import static org.exist.test.DiffMatcher.elemSource;
 import static org.exist.test.XQueryAssertions.assertThatXQResult;
 import static org.exist.test.XQueryAssertions.assertXQStaticError;
+import static org.exist.test.XQueryAssertions.assertXQResultIdentical;
 import static org.exist.test.XQueryAssertions.assertXQResultSimilar;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -95,7 +95,7 @@ public class AbsolutePathTests extends XQueryCompilationTest {
                 "  <result>{ $f($d) }</result>";
         final Either<XPathException, Sequence> actual = executeQuery(query);
 
-        assertXQResultSimilar(expected, actual);
+        assertXQResultIdentical(expected, actual);
     }
 
     @Test
@@ -108,7 +108,7 @@ public class AbsolutePathTests extends XQueryCompilationTest {
                 "  $f($d)";
         final Either<XPathException, Sequence> actual = executeQuery(query);
 
-        assertXQResultSimilar(expected, actual);
+        assertXQResultIdentical(expected, actual);
     }
 
     @Test
@@ -132,29 +132,5 @@ public class AbsolutePathTests extends XQueryCompilationTest {
         final Either<XPathException, Sequence> actual = executeQuery(query);
 
         assertThatXQResult(actual, equalTo(expected));
-    }
-
-    /**
-     * Creates an Document6 Source form an XML String.
-     *
-     * @param str a string representation of XML.
-     *
-     * @return a Document Source.
-     */
-    private static Source docSource(final String str) {
-        return Input.fromString(str).build();
-    }
-
-    /**
-     * Creates an Element Source form an XML String.
-     *
-     * @param str a string representation of XML.
-     *
-     * @return an Element Source.
-     */
-    private static Source elemSource(final String str) {
-        final Node documentNode = Convert.toNode(docSource(str));
-        final Node firstElement = documentNode.getFirstChild();
-        return Input.fromNode(firstElement).build();
     }
 }
