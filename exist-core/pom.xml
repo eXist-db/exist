@@ -456,6 +456,13 @@
             <artifactId>junit</artifactId>
             <scope>compile</scope>
             <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
+            <exclusions>
+                <exclusion>
+                    <!-- we ourselves have a test scoped dependency on a newer hamcrest... see below! -->
+                    <groupId>org.hamcrest</groupId>
+                    <artifactId>hamcrest-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
