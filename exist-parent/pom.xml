@@ -108,7 +108,8 @@
         <exquery.distribution.version>0.2.0</exquery.distribution.version>
         <icu.version>59.1</icu.version>
         <izpack.version>5.1.3</izpack.version>
-        <jaxb.version>2.3.1</jaxb.version>
+        <jaxb.api.version>3.0.0</jaxb.api.version>
+        <jaxb.impl.version>3.0.0-M5</jaxb.impl.version>
         <jetty.version>9.4.35.v20201120</jetty.version>
         <log4j.version>2.14.0</log4j.version>
         <lucene.version>4.10.4</lucene.version>
@@ -135,15 +136,16 @@
             </dependency>
 
             <dependency>
-                <groupId>javax.xml.bind</groupId>
-                <artifactId>jaxb-api</artifactId>
-                <version>${jaxb.version}</version>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${jaxb.api.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>org.glassfish.jaxb</groupId>
-                <artifactId>jaxb-runtime</artifactId>
-                <version>${jaxb.version}</version>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-impl</artifactId>
+                <version>${jaxb.impl.version}</version>
+                <scope>runtime</scope>
             </dependency>
 
             <dependency>
