@@ -48,7 +48,7 @@ function fnt:cleanup() {
     xmldb:remove("/db/fn-test")
 };
 
-declare 
+declare
     %test:args("NFC")
     %test:assertEquals(6, 6)
     %test:args("NFD")
@@ -126,3 +126,26 @@ function fnt:tokenize-onearg($str as xs:string) {
      tokenize($str)
 };
 
+declare
+    %test:assertEquals("/db/fn-test/test.xml")
+function fnt:document-uri0() {
+     root(collection('/db/fn-test')//book)/document-uri()
+};
+
+declare
+    %test:assertError("err:XPDY0002")
+function fnt:document-uri0_empty() {
+     root(collection('/db/fn-test')//bookies)/document-uri()
+};
+
+declare
+    %test:assertEquals("/db/fn-test/test.xml")
+function fnt:document-uri1() {
+     document-uri(root(collection('/db/fn-test')//book))
+};
+
+declare
+    %test:assertEmpty
+function fnt:document-uri1_empty() {
+     document-uri(root(collection('/db/fn-test')//bookies))
+};
