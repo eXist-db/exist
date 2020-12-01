@@ -37,6 +37,7 @@ import static org.exist.xquery.functions.fn.FnModule.functionSignature;
 
 /**
  * @author wolf
+ * @author Dannes
  */
 public class FunDocumentURI extends Function {
 
