@@ -456,6 +456,13 @@
             <artifactId>junit</artifactId>
             <scope>compile</scope>
             <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
+            <exclusions>
+                <exclusion>
+                    <!-- we ourselves have a test scoped dependency on a newer hamcrest... see below! -->
+                    <groupId>org.hamcrest</groupId>
+                    <artifactId>hamcrest-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -484,12 +491,10 @@
         <dependency>
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-core</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-matchers</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.xmlunit</groupId>
@@ -665,6 +670,7 @@
                                 <exclude>src/test/java/org/exist/storage/txn/ReusableTxnTest.java</exclude>
                                 <exclude>src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java</exclude>
                                 <exclude>src/test/java/org/exist/storage/txn/TxnTest.java</exclude>
+                                <exclude>src/main/java/org/exist/test/DiffMatcher.java</exclude>
                                 <exclude>src/main/java/org/exist/util/CollectionOfArrayIterator.java</exclude>
                                 <exclude>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/Cardinality.java</exclude>
@@ -802,6 +808,7 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/test/java/org/exist/storage/txn/ReusableTxnTest.java</include>
                                 <include>src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java</include>
                                 <include>src/test/java/org/exist/storage/txn/TxnTest.java</include>
+                                <include>src/main/java/org/exist/test/DiffMatcher.java</include>
                                 <include>src/main/java/org/exist/util/CollectionOfArrayIterator.java</include>
                                 <include>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</include>
                                 <include>src/main/java/org/exist/xquery/Cardinality.java</include>

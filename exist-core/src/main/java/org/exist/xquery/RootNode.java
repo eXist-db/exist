@@ -21,7 +21,6 @@
  */
 package org.exist.xquery;
 
-import org.exist.collections.ManagedLocks;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NewArrayNodeSet;
@@ -30,8 +29,6 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.storage.UpdateListener;
-import org.exist.storage.lock.ManagedDocumentLock;
-import org.exist.util.LockException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
@@ -67,7 +64,14 @@ public class RootNode extends Step {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
 
-        // first check if a context item is declared
+        // first, if we have been explicitly given a context item or context sequence, we can just use that
+        if (contextItem != null) {
+            return new ValueSequence(contextItem);
+        } else if (contextSequence != null && contextSequence != Sequence.EMPTY_SEQUENCE) {
+            return contextSequence;
+        }
+
+        // second, check if a context item is declared
         final ContextItemDeclaration decl = context.getContextItemDeclartion();
         if (decl != null) {
             final Sequence seq = decl.eval(null, null);

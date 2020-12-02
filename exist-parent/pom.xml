@@ -432,6 +432,13 @@
                 <groupId>org.xmlunit</groupId>
                 <artifactId>xmlunit-matchers</artifactId>
                 <version>${xmlunit.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <!-- we ourselves have a test scoped dependency on a newer hamcrest... see below! -->
+                        <groupId>org.hamcrest</groupId>
+                        <artifactId>hamcrest-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.xmlunit</groupId>
@@ -444,6 +451,13 @@
                 <artifactId>junit</artifactId>
                 <version>4.13.1</version>
                 <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
+                <exclusions>
+                    <exclusion>
+                        <!-- we ourselves have a test scoped dependency on a newer hamcrest... see below! -->
+                        <groupId>org.hamcrest</groupId>
+                        <artifactId>hamcrest-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>

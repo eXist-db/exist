@@ -521,7 +521,11 @@ functionBody throws XPathException
 :
     ( LCURLY RCURLY ) => l:LCURLY^ RCURLY!
     { #functionBody= #(#l, #(#[PARENTHESIZED, "Parenthesized"], null)); }
-    | LCURLY^ expr RCURLY!
+    | LCURLY^
+    { lexer.inFunctionBody = true; }
+    expr
+    { lexer.inFunctionBody = false; }
+    RCURLY!
     ;
 
 returnType throws XPathException:
@@ -1059,8 +1063,20 @@ unaryExpr throws XPathException
 	;
 
 valueExpr throws XPathException
+{ Boolean inFunctionBodyState = lexer.inFunctionBody; }
 :
-	pathExpr (BANG^ pathExpr)*
+	pathExpr (
+	    BANG^
+	    {
+	        // simple map operator might add new document context
+	        lexer.inFunctionBody = false;
+        }
+	    pathExpr
+	    {
+	        // reset state
+	        lexer.inFunctionBody = inFunctionBodyState;
+        }
+    )*
 	|
 	extensionExpr
 	;
@@ -1111,15 +1127,33 @@ pathExpr throws XPathException
 	relativePathExpr
 	|
 	( SLASH relativePathExpr )
-	=> SLASH relPath:relativePathExpr
-	{ #pathExpr= #(#[ABSOLUTE_SLASH, "AbsoluteSlash"], #relPath); }
+	=> s1:SLASH relPath:relativePathExpr
+	{
+	  if (lexer.inFunctionBody) {
+        throw new XPathException(#s1.getLine(), #s1.getColumn(), ErrorCodes.XPDY0002,
+               "Leading '/' selects nothing, ContextItem is absent in function body");
+	  }
+	  #pathExpr= #(#[ABSOLUTE_SLASH, "AbsoluteSlash"], #relPath);
+	}
 	// lone slash
 	|
-	SLASH
-	{ #pathExpr= #[ABSOLUTE_SLASH, "AbsoluteSlash"]; }
+	s2:SLASH
+	{
+	  if (lexer.inFunctionBody) {
+        throw new XPathException(#s2.getLine(), #s2.getColumn(), ErrorCodes.XPDY0002,
+               "Leading '/' selects nothing, ContextItem is absent in function body");
+	  }
+	  #pathExpr= #[ABSOLUTE_SLASH, "AbsoluteSlash"];
+	}
 	|
-	DSLASH relPath2:relativePathExpr
-	{ #pathExpr= #(#[ABSOLUTE_DSLASH, "AbsoluteSlashSlash"], #relPath2); }
+	ds:DSLASH relPath2:relativePathExpr
+	{
+	  if (lexer.inFunctionBody) {
+        throw new XPathException(#ds.getLine(), #ds.getColumn(), ErrorCodes.XPDY0002,
+               "Leading '//' selects nothing, ContextItem is absent in function body");
+	  }
+	  #pathExpr= #(#[ABSOLUTE_DSLASH, "AbsoluteSlashSlash"], #relPath2);
+	}
 	;
 
 relativePathExpr throws XPathException
@@ -2188,6 +2222,7 @@ options {
 	protected boolean inStringConstructor = false;
 	protected boolean inElementContent= false;
 	protected boolean inAttributeContent= false;
+	protected boolean inFunctionBody= false;
 	protected char attrDelimChar = '"';
 	protected boolean inComment= false;
 	protected boolean inPragma = false;
