@@ -21,18 +21,14 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
-import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.FunctionDSL.optManyParam;
+import static org.exist.xquery.FunctionDSL.returnsOpt;
 import static org.exist.xquery.functions.fn.FnModule.functionSignature;
 
 /**
@@ -67,57 +63,57 @@ public class FunDocumentURI extends Function {
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
-    public Sequence eval(final Sequence contextSequence, final Item contextItem)  throws XPathException {
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                     "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null) {
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,"CONTEXT SEQUENCE", contextSequence);
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
             }
             if (contextItem != null) {
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,"CONTEXT ITEM", contextItem.toSequence());
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
             }
         }
 
-        final boolean isContextItem = (contextItem != null);
+        final boolean contextItemIsAbsent = (contextItem == null);
+        final boolean argumentIsOmitted = (getArgumentCount() == 0);
 
-        if(!isContextItem && getArgumentCount()==0){
-            // Bug in eXist-db? the 0-parameter function is invoked
-            // which effectively means that the zero-argument function is active.
-            throw new XPathException(this, ErrorCodes.XPDY0002, "Context item is absent ");
-        }
-
-        // Get sequence from contextItem or from parameter
-        final Sequence seq = (isContextItem)
-                ? contextItem.toSequence()
-                : getArgument(0).eval(contextSequence, contextItem);
-
-        if (isContextItem && seq.isEmpty()) {
-            // This is the actual empty context item check
+        // Error condition
+        if(argumentIsOmitted && contextItemIsAbsent){
             throw new XPathException(this, ErrorCodes.XPDY0002, "Context item is absent.");
         }
 
-        if (isContextItem &&  !Type.subTypeOf(seq.getItemType(), Type.NODE) ) {
-            // If context item is provided, it must be a node
+        // Get sequence from contextItem or from context Sequence
+        final Sequence seq = (argumentIsOmitted)
+                ? contextItem.toSequence()
+                : getArgument(0).eval(contextSequence, contextItem);
+
+        // Rule 1: If $arg is the empty sequence, the function returns the empty sequence.
+        if(seq.isEmpty()){
+            return Sequence.EMPTY_SEQUENCE;
+        }
+
+        // Error condition
+        if (argumentIsOmitted && !Type.subTypeOf(seq.getItemType(), Type.NODE)) {
             throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node.");
         }
 
-        Sequence result = Sequence.EMPTY_SEQUENCE;
-        if (!seq.isEmpty()) {
-            final NodeValue value = (NodeValue) seq.itemAt(0);
-            if (value.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                final NodeProxy node = (NodeProxy) value;
-                //Returns the empty sequence if the node is not a document node.
-                if (node.isDocument()) {
-                    final XmldbURI path = node.getOwnerDocument().getURI();
-                    result = new AnyURIValue(path);
-                }
 
-            } else {
-                if (value instanceof DocumentImpl && ((DocumentImpl)value).getDocumentURI() != null) {
-                    result = new AnyURIValue(((DocumentImpl)value).getDocumentURI());
-                }
+        // Error condition: Returns the empty sequence if the node is not a document
+        Sequence result = Sequence.EMPTY_SEQUENCE;
+
+        final NodeValue value = (NodeValue) seq.itemAt(0);
+        if (value.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+            final NodeProxy node = (NodeProxy) value;
+            if (node.isDocument()) {
+                final XmldbURI path = node.getOwnerDocument().getURI();
+                result = new AnyURIValue(path);
+            }
+
+        } else {
+            if (value instanceof DocumentImpl && ((DocumentImpl) value).getDocumentURI() != null) {
+                result = new AnyURIValue(((DocumentImpl) value).getDocumentURI());
             }
         }
 
