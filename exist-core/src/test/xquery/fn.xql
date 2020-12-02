@@ -127,14 +127,26 @@ function fnt:tokenize-onearg($str as xs:string) {
 };
 
 declare
-    %test:assertEquals("/db/fn-test/test.xml")
+    %test:assertError("err:XPDY0002")
+function fnt:document-uri0_noarg() {
+     document-uri()
+};
+
+declare
+    %test:assertError("err:XPDY0002")
 function fnt:document-uri0() {
+     document-uri(.)
+};
+
+declare
+    %test:assertEquals("/db/fn-test/test.xml")
+function fnt:document-uri0_context() {
      root(collection('/db/fn-test')//book)/document-uri()
 };
 
 declare
     %test:assertError("err:XPDY0002")
-function fnt:document-uri0_empty() {
+function fnt:document-uri0_context_empty() {
      root(collection('/db/fn-test')//bookies)/document-uri()
 };
 
