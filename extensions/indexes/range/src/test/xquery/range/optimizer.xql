@@ -690,7 +690,7 @@ declare
     %test:args("Млатишума")
     %test:assertEquals(2)
 function ot:eq-string-collation-with-diacritics($name) {
-    count(//tei:form[tei:orth = $name])
+    count(collection($ot:COLLECTION)//tei:form[tei:orth = $name])
 };
 
 declare
@@ -699,7 +699,7 @@ declare
     %test:args("Млатишума")
     %test:assertError("range:EXXQDYFT0001")
 function ot:contains-string-collation-with-diacritics($name) {
-    count(//tei:form[contains(tei:orth, $name)])
+    count(collection($ot:COLLECTION)//tei:form[contains(tei:orth, $name)])
 };
 
 declare
@@ -708,7 +708,7 @@ declare
     %test:args("Млатишума")
     %test:assertEquals(0)
 function ot:ne-string-collation-with-diacritics($name) {
-    count(//tei:form[tei:orth != $name])
+    count(collection($ot:COLLECTION)//tei:form[tei:orth != $name])
 };
 
 (:~ See XPath general comparison optimisation bug #2786 :)

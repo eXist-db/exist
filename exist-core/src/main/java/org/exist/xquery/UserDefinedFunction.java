@@ -158,7 +158,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
  						". Expected " + getSignature().getArgumentTypes()[j].getCardinality().getHumanDescription() +
  						", got " + currentArguments[j].getItemCount());}
 			}
-			result = body.eval(contextSequence, contextItem);
+			result = body.eval(null, null);
 			return result;
 		} finally {
 			// restore the local variable stack

@@ -164,9 +164,9 @@ function bang:constructor() {
 };
 
 declare
-    %test:assertTrue
+    %test:assertEquals("a", "b", "c")
 function bang:implicit-context() {
-    count(//* ! local-name(.))
+    document { <a><b/><c/></a> } ! //* ! local-name(.)
 };
 
 declare
