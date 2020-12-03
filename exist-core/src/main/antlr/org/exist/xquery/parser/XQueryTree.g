@@ -3157,8 +3157,11 @@ throws PermissionDeniedException, EXistException, XPathException
 		qnameExpr=expr [qnamePathExpr]
 		(
 			{ elementContent = new PathExpr(context); }
-			contentExpr=expr[elementContent]
-			{ construct.addPath(elementContent); }
+			contentExpr=ec:expr[elementContent]
+			{
+			  elementContent.setASTNode(ec);
+			  construct.addPathIfNotFunction(elementContent);
+			}
 		)*
 	)
 	|
