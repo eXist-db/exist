@@ -169,3 +169,9 @@ function fnt:fn-document-uri-32() {
      return
          fn:contains(fn:doc($uri)/document-uri(), $uri)
 };
+
+declare
+    %test:assertError("err:XPTY0004")
+function fnt:document-uri0_no_node_context() {
+     util:eval-with-context("document-uri()", (), false(), "a")
+};
