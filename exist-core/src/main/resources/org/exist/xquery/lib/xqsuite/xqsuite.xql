@@ -880,7 +880,7 @@ declare %private function test:assertXPath($annotation as element(annotation), $
             $prolog || "$result" || $expr
         else
             $prolog || $expr
-    let $eval-result := util:eval($eval-query)
+    let $eval-result := util:eval($eval-query, false(), (), true())
     let $xr := test:checkXPathResult($eval-result)
     return
         if ($xr) then
