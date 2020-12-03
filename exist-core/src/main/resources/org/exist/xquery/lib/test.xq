@@ -302,9 +302,9 @@ declare function t:xpath($output as item()*, $xpath as element()) {
     let $expr := $xpath/string()
     return
         if (matches($expr, "^\s*/")) then
-            util:eval(concat("$output", $expr))
+            util:eval(concat("$output", $expr), false(), (), true())
         else
-            util:eval($expr)
+            util:eval($expr, false(), (), true())
 };
 
 declare function t:run-testSet($set as element(TestSet), $id as xs:string?) {
