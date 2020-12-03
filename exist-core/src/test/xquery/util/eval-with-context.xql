@@ -35,3 +35,9 @@ function ut:timeout() {
     return
         util:eval-with-context("util:wait(2), <ok/>", $context, false() )
 };
+
+declare
+    %test:assertEquals(1)
+function ut:root-node() {
+    util:eval-with-context('count(/)', (), false(), document { <x/> })
+};
