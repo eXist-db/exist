@@ -163,9 +163,9 @@ function fnt:document-uri1_empty() {
 };
 
 declare
-    %test:assertEquals("TRUE")
+    %test:assertTrue
 function fnt:fn-document-uri-32() {
      let $uri := "/db/fn-test/test.xml"
      return
-     fn:upper-case(fn:string(fn:contains((fn:doc($uri))/document-uri(),$uri)))
+         fn:contains(fn:doc($uri)/document-uri(), $uri)
 };
