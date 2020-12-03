@@ -161,3 +161,11 @@ declare
 function fnt:document-uri1_empty() {
      document-uri(root(collection('/db/fn-test')//bookies))
 };
+
+declare
+    %test:assertTrue
+function fnt:fn-document-uri-32() {
+     let $uri := "/db/fn-test/test.xml"
+     return
+         fn:contains(fn:doc($uri)/document-uri(), $uri)
+};
