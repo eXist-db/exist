@@ -35,11 +35,12 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class SequenceConstructor extends PathExpr {
 
-    public SequenceConstructor(XQueryContext context) {
+    public SequenceConstructor(final XQueryContext context) {
         super(context);
     }
 
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    @Override
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         contextInfo.setParent(this);
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
         unordered = (contextInfo.getFlags() & UNORDERED) > 0;
@@ -58,20 +59,20 @@ public class SequenceConstructor extends PathExpr {
         contextInfo.setStaticReturnType(staticType);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-     */
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    @Override
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
                 "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());}
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
+            }
         }
         final ValueSequence result = new ValueSequence();
         result.keepUnOrdered(unordered);
@@ -86,21 +87,21 @@ public class SequenceConstructor extends PathExpr {
                 context.popDocumentContext();
             }
         }
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", result);}
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", result);
+        }
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
-     */
-    public void dump(ExpressionDumper dumper) {
+    @Override
+    public void dump(final ExpressionDumper dumper) {
         dumper.display("(");
         dumper.startIndent();
         boolean moreThanOne = false;
         for(final Expression step : steps) {
-            if (moreThanOne)
-                {dumper.display(", ");}
+            if (moreThanOne) {
+                dumper.display(", ");
+            }
             moreThanOne = true;
             step.dump(dumper);
         }
@@ -108,13 +109,15 @@ public class SequenceConstructor extends PathExpr {
         dumper.nl().display(")");
     }
 
+    @Override
     public String toString() {
         final StringBuilder result = new StringBuilder();
         result.append("( ");
         boolean moreThanOne = false;
         for (final Expression step : steps) {
-            if (moreThanOne)
-                {result.append(", ");}
+            if (moreThanOne) {
+                result.append(", ");
+            }
             moreThanOne = true;
             result.append(step.toString());
         }
@@ -138,9 +141,7 @@ public class SequenceConstructor extends PathExpr {
         super.addPath(path);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#returnsType()
-     */
+    @Override
     public int returnsType() {
         return Type.ITEM;
     }
@@ -155,10 +156,8 @@ public class SequenceConstructor extends PathExpr {
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.AbstractExpression#resetState()
-     */
-    public void resetState(boolean postOptimization) {
+    @Override
+    public void resetState(final boolean postOptimization) {
         super.resetState(postOptimization);
     }
 }
