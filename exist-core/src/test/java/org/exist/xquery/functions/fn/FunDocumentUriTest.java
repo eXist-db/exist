@@ -21,36 +21,29 @@
  */
 package org.exist.xquery.functions.fn;
 
+import com.evolvedbinary.j8fu.Either;
 import com.googlecode.junittoolbox.ParallelRunner;
-import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.EXistException;
+import org.exist.security.PermissionDeniedException;
+import org.exist.test.XQueryCompilationTest;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
-import org.junit.ClassRule;
+import org.exist.xquery.value.Sequence;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
 
-import static org.junit.Assert.assertEquals;
+import static org.exist.test.XQueryAssertions.assertXQErrorCode;
 
 /**
  * @author Dannes Wessels
  */
 @RunWith(ParallelRunner.class)
-public class FunDocumentUriTest {
-
-    @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(true, true, true);
-
+public class FunDocumentUriTest extends XQueryCompilationTest {
+    
     @Test
-    public void testFnFunDocumentUri() {
-
-        try {
-            final ResourceSet resourceSet = existEmbeddedServer.executeQuery(
-                    "declare context item := 'a'; document-uri()");
-
-        } catch (XMLDBException ex) {
-            XPathException cause = (XPathException) ex.getCause();
-            assertEquals("XPTY0004", cause.getErrorCode().getErrorQName().getLocalPart());
-        }
+    public void testFnFunDocumentUri() throws EXistException, PermissionDeniedException  {
+        final String query = "declare context item := 'a'; document-uri()";
+        final Either<XPathException, Sequence> result = executeQuery(query);
+        assertXQErrorCode(ErrorCodes.XPTY0004,  result.left().get());
     }
 }
