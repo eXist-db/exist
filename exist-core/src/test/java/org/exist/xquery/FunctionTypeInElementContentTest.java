@@ -30,8 +30,9 @@ import static org.exist.test.DiffMatcher.elemSource;
 import static org.exist.test.XQueryAssertions.*;
 
 /**
- * Ensure function types returned in element content throws at compile time and has location information
- * https://github.com/eXist-db/exist/issues/3474
+ * Ensure function types returned in element content throws at compile time and
+ * has location information.
+ * See issue :<a href="https://github.com/eXist-db/exist/issues/3474">#3474</a>.
  *
  * @author <a href="mailto:juri@existsolutions.com">Juri Leino</a>
  */
@@ -43,7 +44,7 @@ public class FunctionTypeInElementContentTest extends XQueryCompilationTest {
         assertXQResultSimilar(elemSource("<test/>"), executeQuery(query));
     }
 
-    // TODO: array content could be removed after https://github.com/eXist-db/exist/issues/3472 is fixed
+    // TODO(JL): array content could be removed after https://github.com/eXist-db/exist/issues/3472 is fixed
     @Test
     public void arrayConstructor() throws EXistException, PermissionDeniedException {
         final String query = "element test { array { () } }";
@@ -63,7 +64,7 @@ public class FunctionTypeInElementContentTest extends XQueryCompilationTest {
         assertXQStaticError(ErrorCodes.XQTY0105, 1, 16, error, compileQuery(query));
     }
 
-    // TODO: Does still throw without location info
+    // TODO(JL): Does still throw without location info
     @Test
     public void functionReference() throws EXistException, PermissionDeniedException {
         final String query = "element test { sum#0 }";
@@ -71,7 +72,7 @@ public class FunctionTypeInElementContentTest extends XQueryCompilationTest {
         assertXQStaticError(ErrorCodes.XQTY0105, 0, 0, error, compileQuery(query));
     }
 
-    // TODO: Does not throw at compile time
+    // TODO(JL): Does not throw at compile time
     @Test
     public void functionVariable() throws EXistException, PermissionDeniedException {
         final String query = "let $f := function () {} return element test { $f }";
@@ -79,7 +80,7 @@ public class FunctionTypeInElementContentTest extends XQueryCompilationTest {
         assertXQDynamicError(ErrorCodes.XQTY0105, 1, 49, error, executeQuery(query));
     }
 
-    // TODO: user defined function has its location offset to a weird location
+    // TODO(JL): user defined function has its location offset to a weird location
     @Test
     public void userDefinedFunction() throws EXistException, PermissionDeniedException {
         final String query = "element test { function () {} }";
@@ -110,11 +111,11 @@ public class FunctionTypeInElementContentTest extends XQueryCompilationTest {
         assertXQDynamicError(ErrorCodes.XQTY0105, 0, 0, error, executeQuery(query));
     }
 
+    // TODO(JL): add (sub-expression) location
     /**
      * This is an edge case, which would evaluate to empty sequence
      * but should arguably still throw.
      */
-    // TODO: add (sub-expression) location
     @Test
     public void sequenceOfMapsEdgeCase() throws EXistException, PermissionDeniedException {
         final String query = "element test { (map {})[2] }";
@@ -122,8 +123,8 @@ public class FunctionTypeInElementContentTest extends XQueryCompilationTest {
         assertXQStaticError(ErrorCodes.XQTY0105, 0, 0, error, compileQuery(query));
     }
 
-    // TODO: add (sub-expression) location
-    // TODO: this could throw at compile time
+    // TODO(JL): add (sub-expression) location
+    // TODO(JL): this could throw at compile time
     @Test
     public void arrayOfMaps() throws EXistException, PermissionDeniedException {
         final String query = "element test { [map {}] }";
@@ -131,8 +132,8 @@ public class FunctionTypeInElementContentTest extends XQueryCompilationTest {
         assertXQDynamicError(ErrorCodes.XQTY0105, 1, 16, error, executeQuery(query));
     };
 
-    // TODO: add (sub-expression) location
-    // TODO: This should throw at compile time, but does not
+    // TODO(JL): add (sub-expression) location
+    // TODO(JL): This should throw at compile time, but does not
     @Test
     public void mapConstructorInSubExpression() throws EXistException, PermissionDeniedException {
         final String query = "element test { \"a\", map {} }";
