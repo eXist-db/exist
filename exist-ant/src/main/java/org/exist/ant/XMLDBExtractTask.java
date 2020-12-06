@@ -284,7 +284,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
      * @throws IOException if an I/O error occurs
      */
     private void writeBinaryResource(final Resource res, Path dest) throws XMLDBException, IOException {
-        if (createdirectories == true) {
+        if (createdirectories) {
             final Path parentDir = dest.getParent();
             if (Files.notExists(parentDir)) {
                 Files.createDirectories(parentDir);
@@ -292,7 +292,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
         }
 
         //dest != null && ( !dest.exists() ||
-        if (dest != null || overwrite == true) {
+        if (dest != null || overwrite) {
             if (Files.isDirectory(dest)) {
                 final String fname = res.getId();
                 dest = dest.resolve(fname);
