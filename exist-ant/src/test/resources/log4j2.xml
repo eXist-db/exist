@@ -22,7 +22,7 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<Configuration>
     <Properties>
         <Property name="logs">${log4j:configParentLocation}/../../target/test-logs-${date:yyyyMMddHHmmssSSS}</Property>
         <Property name="rollover.max.size">10MB</Property>

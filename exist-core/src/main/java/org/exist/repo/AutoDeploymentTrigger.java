@@ -21,6 +21,16 @@
  */
 package org.exist.repo;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.storage.DBBroker;
+import org.exist.storage.StartupTrigger;
+import org.exist.storage.txn.Txn;
+import org.exist.util.FileUtils;
+import org.expath.pkg.repo.PackageException;
+import org.expath.pkg.repo.XarFileSource;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,16 +38,6 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.exist.storage.DBBroker;
-import org.exist.storage.StartupTrigger;
-import org.exist.storage.txn.Txn;
-import org.exist.util.FileUtils;
-import org.expath.pkg.repo.*;
-
-import javax.annotation.Nullable;
 
 /**
  * Startup trigger for automatic deployment of application packages. Scans the "autodeploy" directory

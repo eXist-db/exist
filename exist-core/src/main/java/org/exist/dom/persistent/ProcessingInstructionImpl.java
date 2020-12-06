@@ -29,7 +29,6 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
-import javax.xml.XMLConstants;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**

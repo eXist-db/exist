@@ -23,12 +23,8 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-
-import org.xmldb.api.base.XMLDBException;
-
 import org.exist.security.internal.aider.UserAider;
-
-import java.net.URISyntaxException;
+import org.xmldb.api.base.XMLDBException;
 
 
 /**

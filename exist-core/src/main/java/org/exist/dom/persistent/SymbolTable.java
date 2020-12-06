@@ -42,7 +42,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Iterator;
 
 /**
  * Maintains a global symbol table shared by a database instance. The symbol

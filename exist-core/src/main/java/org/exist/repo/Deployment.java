@@ -50,8 +50,8 @@ import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
-import org.expath.pkg.repo.*;
 import org.expath.pkg.repo.Package;
+import org.expath.pkg.repo.*;
 import org.expath.pkg.repo.deps.DependencyVersion;
 import org.expath.pkg.repo.tui.BatchUserInteraction;
 import org.w3c.dom.Element;
@@ -67,7 +67,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**

@@ -23,7 +23,7 @@ package org.exist.ant;
 
 import org.apache.tools.ant.Project;
 import org.exist.TestUtils;
-import org.junit.*;
+import org.junit.Test;
 
 import javax.annotation.Nullable;
 import java.net.URL;

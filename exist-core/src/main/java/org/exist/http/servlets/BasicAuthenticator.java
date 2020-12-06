@@ -21,12 +21,6 @@
  */
 package org.exist.http.servlets;
 
-import java.io.IOException;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,6 +29,11 @@ import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.xquery.XQueryContext;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

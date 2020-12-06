@@ -21,13 +21,12 @@
  */
 package org.exist.dom.persistent;
 
-import java.io.IOException;
-
-import org.exist.util.UUIDGenerator;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
+import org.exist.util.UUIDGenerator;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 
 /**
  * Class representing a locktoken. Introduced for webDAV locking.

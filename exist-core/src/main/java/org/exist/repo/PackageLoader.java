@@ -27,7 +27,6 @@ import org.expath.pkg.repo.deps.DependencyVersion;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.nio.file.Path;
 
 /**
  * Interface for resolving package dependencies. Implementations may load

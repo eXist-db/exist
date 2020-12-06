@@ -21,6 +21,8 @@
  */
 package org.exist.http.servlets;
 
+import javax.servlet.RequestDispatcher;
+import javax.servlet.http.Cookie;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -28,9 +30,6 @@ import java.nio.file.Path;
 import java.security.Principal;
 import java.util.Enumeration;
 import java.util.List;
-
-import javax.servlet.RequestDispatcher;
-import javax.servlet.http.Cookie;
 
 public interface RequestWrapper {
 

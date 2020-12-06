@@ -29,12 +29,7 @@ import org.exist.storage.DBBroker;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.AbstractSequence;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.MemoryNodeSet;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 
 import java.util.Iterator;

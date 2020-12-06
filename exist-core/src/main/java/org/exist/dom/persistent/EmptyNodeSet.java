@@ -21,14 +21,14 @@
  */
 package org.exist.dom.persistent;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Node;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public final class EmptyNodeSet extends AbstractNodeSet {
 

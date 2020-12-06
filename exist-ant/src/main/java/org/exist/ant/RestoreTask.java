@@ -25,7 +25,6 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.DirSet;
-
 import org.exist.xmldb.ConsoleRestoreServiceTaskListener;
 import org.exist.xmldb.EXistRestoreService;
 import org.exist.xmldb.RestoreServiceTaskListener;
