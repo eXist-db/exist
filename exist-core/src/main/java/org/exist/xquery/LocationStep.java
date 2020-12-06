@@ -312,7 +312,7 @@ public class LocationStep extends Step {
                 contextStepTest = cStep.getTest();
 
                 if ((contextStepTest.getType() == Type.ATTRIBUTE || contextStepTest.getType() == Type.TEXT) &&
-                        contextStepTest != stepTest) {
+                        !contextStepTest.equals(stepTest)) {
                     // return empty sequence
                     contextInfo.setStaticType(Type.EMPTY);
                     staticReturnType = Type.EMPTY;
@@ -598,7 +598,7 @@ public class LocationStep extends Step {
             final DocumentSet docs = getDocumentSet(contextSet);
             synchronized (context) {
                 if (currentSet == null || currentDocs == null || (
-                        !optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
+                        !optimized && !(docs.equals(currentDocs) || docs.equalDocs(currentDocs)))) {
                     final StructuralIndex index = context.getBroker().getStructuralIndex();
                     if (context.getProfiler().isEnabled()) {
                         context.getProfiler().message(
@@ -686,7 +686,7 @@ public class LocationStep extends Step {
                 // TODO : understand why this one is different from the other
                 // ones
                 if (currentSet == null || currentDocs == null || (
-                        !optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
+                        !optimized && !(docs.equals(currentDocs) || docs.equalDocs(currentDocs)))) {
                     final StructuralIndex index = context.getBroker().getStructuralIndex();
                     if (context.getProfiler().isEnabled()) {
                         context.getProfiler().message(
@@ -743,10 +743,9 @@ public class LocationStep extends Step {
         } else if (hasPreloadedData()) {
             final DocumentSet docs = getDocumentSet(contextSet);
             synchronized (context) {
-                // TODO : understand why this one is different from the other
-                // ones
+                // TODO : understand why this one is different from the other ones
                 if (currentSet == null || currentDocs == null || (
-                        !optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
+                        !optimized && !(docs.equals(currentDocs) || docs.equalDocs(currentDocs)))) {
                     final StructuralIndex index = context.getBroker().getStructuralIndex();
                     if (context.getProfiler().isEnabled()) {
                         context.getProfiler().message(
@@ -821,8 +820,7 @@ public class LocationStep extends Step {
         }
 
         final NodeSet contextSet = contextSequence.toNodeSet();
-        // TODO : understand this. I guess comments should be treated in a
-        // similar way ? -pb
+        // TODO : understand this. I guess comments should be treated in a similar way ? -pb
         if (test.getType() == Type.PROCESSING_INSTRUCTION) {
             final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis,
                     test, contextId, contextSet);
@@ -1147,8 +1145,8 @@ public class LocationStep extends Step {
         } else if (hasPreloadedData()) {
             final DocumentSet docs = getDocumentSet(contextSet);
             synchronized (context) {
-                if (currentSet == null || currentDocs == null ||
-                        (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
+                if (currentSet == null || currentDocs == null || (
+                        !optimized && !(docs.equals(currentDocs) || docs.equalDocs(currentDocs)))) {
                     final StructuralIndex index = context.getBroker().getStructuralIndex();
                     if (context.getProfiler().isEnabled()) {
                         context.getProfiler().message(
