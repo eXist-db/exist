@@ -41,7 +41,7 @@ import java.util.Iterator;
 
 /**
  * Processes all location path steps (like descendant::*, ancestor::XXX).
- *
+ * <p>
  * The results of the first evaluation of the expression are cached for the
  * lifetime of the object and only reloaded if the context sequence (as passed
  * to the {@link #eval(Sequence, Item)} method) has changed.
@@ -63,7 +63,7 @@ public class LocationStep extends Step {
     //private int parentDeps = Dependency.UNKNOWN_DEPENDENCY;
     private boolean preloadedData = false;
     protected boolean optimized = false;
-//    private boolean inUpdate = false;
+    //private boolean inUpdate = false;
     private boolean useDirectChildSelect = false;
     private boolean applyPredicate = true;
 
@@ -84,36 +84,36 @@ public class LocationStep extends Step {
      * Creates a new instance.
      *
      * @param context the XQuery context
-     * @param axis the axis of the location step
-     * @param test a node test on the axis
+     * @param axis    the axis of the location step
+     * @param test    a node test on the axis
      */
-    public LocationStep(final XQueryContext context, final  int axis, final NodeTest test) {
+    public LocationStep(final XQueryContext context, final int axis, final NodeTest test) {
         super(context, axis, test);
     }
 
     @Override
     public int getDependencies() {
-        int deps = Dependency.CONTEXT_SET;
+        int dependencies = Dependency.CONTEXT_SET;
 
         // self axis has an obvious dependency on the context item
         // likewise we depend on the context item if this is a single path step (outside a predicate)
-        if (!this.inPredicate &&
-                (this.axis == Constants.SELF_AXIS ||
+        if (!inPredicate &&
+                (axis == Constants.SELF_AXIS ||
                         (parent != null && parent.getSubExpressionCount() > 0 && parent.getSubExpression(0) == this))) {
-            deps = deps | Dependency.CONTEXT_ITEM;
+            dependencies = dependencies | Dependency.CONTEXT_ITEM;
         }
 
         // TODO : normally, we should call this one...
         // int deps = super.getDependencies(); ???
-        for (final Predicate pred : predicates) {
-            deps |= pred.getDependencies();
+        for (final Predicate predicate : predicates) {
+            dependencies |= predicate.getDependencies();
         }
 
         // TODO : should we remove the CONTEXT_ITEM dependency returned by the
         // predicates ? See the comment above.
         // consider nested predicates however...
 
-        return deps;
+        return dependencies;
     }
 
     /**
@@ -147,10 +147,10 @@ public class LocationStep extends Step {
      * @param nodes a <code>NodeSet</code> value
      */
     public void setPreloadedData(final DocumentSet docs, final NodeSet nodes) {
-        this.preloadedData = true;
-        this.currentDocs = docs;
-        this.currentSet = nodes;
-        this.optimized = true;
+        preloadedData = true;
+        currentDocs = docs;
+        currentSet = nodes;
+        optimized = true;
     }
 
     /**
@@ -165,12 +165,9 @@ public class LocationStep extends Step {
         if (contextSequence == null) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        if (predicates.size() == 0
-                || !applyPredicate
-                || (!(contextSequence instanceof VirtualNodeSet) && contextSequence
-                .isEmpty()))
-        // Nothing to apply
-        {
+        if (predicates.size() == 0 || !applyPredicate || (
+                !(contextSequence instanceof VirtualNodeSet) && contextSequence.isEmpty())) {
+            // Nothing to apply
             return contextSequence;
         }
         Sequence result;
@@ -183,9 +180,8 @@ public class LocationStep extends Step {
         //
         // If the predicate is known to return a node set, no special treatment
         // is required.
-        if (abbreviatedStep
-                && (pred.getExecutionMode() != Predicate.ExecutionMode.NODE || !contextSequence
-                .isPersistentSet())) {
+        if (abbreviatedStep && (
+                pred.getExecutionMode() != Predicate.ExecutionMode.NODE || !contextSequence.isPersistentSet())) {
             result = new ValueSequence();
             ((ValueSequence) result).keepUnOrdered(unordered);
             if (contextSequence.isPersistentSet()) {
@@ -222,9 +218,9 @@ public class LocationStep extends Step {
         for (final Iterator<Predicate> i = predicates.iterator(); i.hasNext()
                 && (result instanceof VirtualNodeSet || !result.isEmpty()); ) {
             // TODO : log and/or profile ?
-            final Predicate pred = i.next();
-            pred.setContextDocSet(getContextDocSet());
-            result = pred.evalPredicate(outerSequence, result, axis);
+            final Predicate predicate = i.next();
+            predicate.setContextDocSet(getContextDocSet());
+            result = predicate.evalPredicate(outerSequence, result, axis);
             // subsequent predicates operate on the result of the previous one
             outerSequence = null;
             context.setContextSequencePosition(0, null);
@@ -234,7 +230,7 @@ public class LocationStep extends Step {
 
     @Override
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
-        this.parent = contextInfo.getParent();
+        parent = contextInfo.getParent();
 
         unordered = (contextInfo.getFlags() & UNORDERED) > 0;
 
@@ -248,16 +244,18 @@ public class LocationStep extends Step {
         if ((contextInfo.getFlags() & USE_TREE_TRAVERSAL) > 0) {
             useDirectChildSelect = true;
         }
+
         // Mark ".", which is expanded as self::node() by the parser
         // even though it may *also* be relevant with atomic sequences
-        if (this.axis == Constants.SELF_AXIS
-                && this.test.getType() == Type.NODE) {
+        // JL: may be unnecessary since ContextItemExpression will add the DOT_TEST flag by itself
+        // JL: literal self::node() might still need this
+        if (axis == Constants.SELF_AXIS && test.getType() == Type.NODE) {
             contextInfo.addFlag(DOT_TEST);
         }
 
-        //Change axis from descendant-or-self to descendant for '//'
-        if (this.axis == Constants.DESCENDANT_SELF_AXIS && isAbbreviated()) {
-            this.axis = Constants.DESCENDANT_AXIS;
+        // Change axis from descendant-or-self to descendant for '//'
+        if (axis == Constants.DESCENDANT_SELF_AXIS && isAbbreviated()) {
+            axis = Constants.DESCENDANT_AXIS;
         }
 
         final Expression contextStep;
@@ -320,8 +318,8 @@ public class LocationStep extends Step {
                     staticReturnType = Type.EMPTY;
                 }
                 break;
-//		case Constants.PARENT_AXIS:
-//		case Constants.ATTRIBUTE_AXIS:
+//            case Constants.PARENT_AXIS:
+//		      case Constants.ATTRIBUTE_AXIS:
             default:
         }
 
@@ -385,7 +383,6 @@ public class LocationStep extends Step {
 
             try {
                 switch (axis) {
-
                     case Constants.DESCENDANT_AXIS:
                     case Constants.DESCENDANT_SELF_AXIS:
                         result = getDescendants(context, contextSequence);
@@ -486,16 +483,15 @@ public class LocationStep extends Step {
                 if (nodeTestType == null) {
                     nodeTestType = test.getType();
                 }
-                if (nodeTestType != Type.NODE
-                        && nodeTestType != Type.ELEMENT
-                        && nodeTestType != Type.PROCESSING_INSTRUCTION) {
+                if (nodeTestType != Type.NODE &&
+                        nodeTestType != Type.ELEMENT &&
+                        nodeTestType != Type.PROCESSING_INSTRUCTION) {
                     if (context.getProfiler().isEnabled()) {
                         context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                                 "OPTIMIZATION", "avoid useless computations");
                     }
                     return false;
                 }
-
         }
         return true;
     }
@@ -556,7 +552,7 @@ public class LocationStep extends Step {
                 } else {
                     final NewArrayNodeSet results = new NewArrayNodeSet();
                     for (final NodeProxy p : contextSet) {
-                        if(test.matches(p)) {
+                        if (test.matches(p)) {
                             results.add(p);
                         }
                     }
@@ -601,10 +597,8 @@ public class LocationStep extends Step {
         if (hasPreloadedData()) {
             final DocumentSet docs = getDocumentSet(contextSet);
             synchronized (context) {
-                if (currentSet == null
-                        || currentDocs == null
-                        || (!optimized && !(docs == currentDocs || docs
-                        .equalDocs(currentDocs)))) {
+                if (currentSet == null || currentDocs == null || (
+                        !optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
                     final StructuralIndex index = context.getBroker().getStructuralIndex();
                     if (context.getProfiler().isEnabled()) {
                         context.getProfiler().message(
@@ -691,10 +685,8 @@ public class LocationStep extends Step {
             synchronized (context) {
                 // TODO : understand why this one is different from the other
                 // ones
-                if (currentSet == null
-                        || currentDocs == null
-                        || (!optimized && !(docs == currentDocs || docs
-                        .equalDocs(currentDocs)))) {
+                if (currentSet == null || currentDocs == null || (
+                        !optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
                     final StructuralIndex index = context.getBroker().getStructuralIndex();
                     if (context.getProfiler().isEnabled()) {
                         context.getProfiler().message(
@@ -735,15 +727,14 @@ public class LocationStep extends Step {
     private Sequence getDescendants(final XQueryContext context, final Sequence contextSequence) throws XPathException {
         if (!contextSequence.isPersistentSet()) {
             final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
-            return nodes.getDescendants(axis == Constants.DESCENDANT_SELF_AXIS,
-                    test);
+            return nodes.getDescendants(axis == Constants.DESCENDANT_SELF_AXIS, test);
         }
 
         final NodeSet contextSet = contextSequence.toNodeSet();
         // TODO : understand this. I guess comments should be treated in a
         // similar way ? -pb
-        if ((!hasPreloadedData() && test.isWildcardTest())
-                || test.getType() == Type.PROCESSING_INSTRUCTION) {
+        if ((!hasPreloadedData() && test.isWildcardTest()) ||
+                test.getType() == Type.PROCESSING_INSTRUCTION) {
             // test is one out of *, text(), node() including
             // processing-instruction(targetname)
             final VirtualNodeSet vset = new VirtualNodeSet(context.getBroker(), axis, test, contextId, contextSet);
@@ -754,10 +745,8 @@ public class LocationStep extends Step {
             synchronized (context) {
                 // TODO : understand why this one is different from the other
                 // ones
-                if (currentSet == null
-                        || currentDocs == null
-                        || (!optimized && !(docs == currentDocs || docs
-                        .equalDocs(currentDocs)))) {
+                if (currentSet == null || currentDocs == null || (
+                        !optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
                     final StructuralIndex index = context.getBroker().getStructuralIndex();
                     if (context.getProfiler().isEnabled()) {
                         context.getProfiler().message(
@@ -774,11 +763,11 @@ public class LocationStep extends Step {
 
                 switch (axis) {
                     case Constants.DESCENDANT_SELF_AXIS:
-                        return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, true, contextId,
-                                true);
+                        return currentSet.selectAncestorDescendant(
+                                contextSet, NodeSet.DESCENDANT, true, contextId, true);
                     case Constants.DESCENDANT_AXIS:
-                        return currentSet.selectAncestorDescendant(contextSet, NodeSet.DESCENDANT, false, contextId,
-                                true);
+                        return currentSet.selectAncestorDescendant(
+                                contextSet, NodeSet.DESCENDANT, false, contextId, true);
                     default:
                         throw new IllegalArgumentException("Unsupported axis specified");
                 }
@@ -910,11 +899,9 @@ public class LocationStep extends Step {
     /**
      * Get the preceding or following axis nodes
      *
-     * @param context the xquery context
+     * @param context         the xquery context
      * @param contextSequence the context sequence
-     *
      * @return the nodes from the preceding or following axis
-     *
      * @throws XPathException if an error occurs
      */
     private Sequence getPrecedingOrFollowing(final XQueryContext context, final Sequence contextSequence)
@@ -1034,11 +1021,9 @@ public class LocationStep extends Step {
     /**
      * Get the ancestor axis nodes
      *
-     * @param context the xquery context
+     * @param context         the xquery context
      * @param contextSequence the context sequence
-     *
      * @return the ancestor nodes
-     *
      * @throws XPathException if an error occurs
      */
     protected Sequence getAncestors(final XQueryContext context, final Sequence contextSequence) throws XPathException {
@@ -1138,11 +1123,9 @@ public class LocationStep extends Step {
     /**
      * Get the parent axis nodes
      *
-     * @param context the xquery context
+     * @param context         the xquery context
      * @param contextSequence the context sequence
-     *
      * @return the parent nodes
-     *
      * @throws XPathException if an error occurs
      */
     protected Sequence getParents(final XQueryContext context, final Sequence contextSequence) throws XPathException {
@@ -1164,7 +1147,8 @@ public class LocationStep extends Step {
         } else if (hasPreloadedData()) {
             final DocumentSet docs = getDocumentSet(contextSet);
             synchronized (context) {
-                if (currentSet == null || currentDocs == null || (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
+                if (currentSet == null || currentDocs == null ||
+                        (!optimized && !(docs == currentDocs || docs.equalDocs(currentDocs)))) {
                     final StructuralIndex index = context.getBroker().getStructuralIndex();
                     if (context.getProfiler().isEnabled()) {
                         context.getProfiler().message(
@@ -1311,7 +1295,7 @@ public class LocationStep extends Step {
         boolean sibling = false;
 
         FollowingSiblingFilter(final NodeTest test, final NodeProxy start, final NodeSet result,
-                final int contextId, final int limit) {
+                               final int contextId, final int limit) {
             super(test, result, contextId, limit);
             this.start = start;
             this.level = start.getNodeId().getTreeLevel();
@@ -1363,7 +1347,7 @@ public class LocationStep extends Step {
         final NodeProxy referenceNode;
 
         PrecedingSiblingFilter(final NodeTest test, final NodeProxy start, final NodeProxy referenceNode,
-                final NodeSet result, final int contextId) {
+                               final NodeSet result, final int contextId) {
             super(test, result, contextId, -1);
             this.level = start.getNodeId().getTreeLevel();
             this.referenceNode = referenceNode;
@@ -1411,7 +1395,7 @@ public class LocationStep extends Step {
         boolean isAfter = false;
 
         FollowingFilter(final NodeTest test, final NodeProxy root, final NodeProxy referenceNode, final NodeSet result,
-                final int contextId, final int limit) {
+                        final int contextId, final int limit) {
             super(test, result, contextId, limit);
             this.root = root;
             this.referenceNode = referenceNode;
@@ -1460,7 +1444,7 @@ public class LocationStep extends Step {
         final NodeProxy referenceNode;
 
         PrecedingFilter(final NodeTest test, final NodeProxy root, final NodeProxy referenceNode, final NodeSet result,
-                final int contextId) {
+                        final int contextId) {
             super(test, result, contextId, -1);
             this.root = root;
             this.referenceNode = referenceNode;
