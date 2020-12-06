@@ -119,6 +119,11 @@
 
         <!-- needed just for the license-maven-plugin in this module! -->
         <project.parent.relativePath>.</project.parent.relativePath>
+        
+        <!-- Sonar cloud-->
+        <sonar.projectKey>eXist-db_exist</sonar.projectKey>
+        <sonar.organization>exist-db</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
     <dependencyManagement>
