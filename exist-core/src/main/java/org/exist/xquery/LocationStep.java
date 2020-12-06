@@ -260,42 +260,64 @@ public class LocationStep extends Step {
             this.axis = Constants.DESCENDANT_AXIS;
         }
 
+        final Expression contextStep;
+        final LocationStep cStep;
+        final NodeTest stepTest;
+        final NodeTest contextStepTest;
+
         // static analysis for empty-sequence
         switch (axis) {
             case Constants.SELF_AXIS:
-                if (getTest().getType() != Type.NODE) {
-                    final Expression contextStep = contextInfo.getContextStep();
-                    if (contextStep instanceof LocationStep) {
-                        final LocationStep cStep = (LocationStep) contextStep;
+                if (getTest().getType() == Type.NODE) {
+                    break;
+                }
 
-                        // WM: the following checks will only work on simple filters like //a[self::b], so we
-                        // have to make sure they are not applied to more complex expression types
-                        if (parent.getSubExpressionCount() == 1 && !Type.subTypeOf(getTest().getType(), cStep.getTest().getType())) {
-                            throw new XPathException(this,
-                                    ErrorCodes.XPST0005, "Got nothing from self::" + getTest() + ", because parent node kind " + Type.getTypeName(cStep.getTest().getType()));
-                        }
+                // WM: the following checks will only work on simple filters like //a[self::b], so we
+                // have to make sure they are not applied to more complex expression types
+                if (parent.getSubExpressionCount() > 1) {
+                    break;
+                }
 
-                        if (parent.getSubExpressionCount() == 1 && !(cStep.getTest().isWildcardTest() || getTest().isWildcardTest()) && !cStep.getTest().equals(getTest())) {
-                            throw new XPathException(this,
-                                    ErrorCodes.XPST0005, "Self::" + getTest() + " called on set of nodes which do not contain any nodes of this name.");
-                        }
-                    }
+                contextStep = contextInfo.getContextStep();
+                if (!(contextStep instanceof LocationStep)) {
+                    break;
+                }
+
+                cStep = (LocationStep) contextStep;
+                stepTest = getTest();
+                contextStepTest = cStep.getTest();
+
+                if (!Type.subTypeOf(stepTest.getType(), contextStepTest.getType())) {
+                    // return empty sequence
+                    contextInfo.setStaticType(Type.EMPTY);
+                    staticReturnType = Type.EMPTY;
+                    break;
+                }
+
+                if (!stepTest.isWildcardTest() &&
+                        !contextStepTest.isWildcardTest() &&
+                        !contextStepTest.equals(stepTest)) {
+                    // return empty sequence
+                    contextInfo.setStaticType(Type.EMPTY);
+                    staticReturnType = Type.EMPTY;
                 }
                 break;
-//		case Constants.DESCENDANT_AXIS:
+//		      case Constants.DESCENDANT_AXIS:
             case Constants.DESCENDANT_SELF_AXIS:
-                final Expression contextStep = contextInfo.getContextStep();
-                if (contextStep instanceof LocationStep) {
-                    final LocationStep cStep = (LocationStep) contextStep;
+                contextStep = contextInfo.getContextStep();
+                if (!(contextStep instanceof LocationStep)) {
+                    break;
+                }
 
-                    if ((
-                            cStep.getTest().getType() == Type.ATTRIBUTE ||
-                                    cStep.getTest().getType() == Type.TEXT
-                    )
-                            && cStep.getTest() != getTest()) {
-                        throw new XPathException(this,
-                                ErrorCodes.XPST0005, "Descendant-or-self::" + getTest() + " from an attribute gets nothing.");
-                    }
+                cStep = (LocationStep) contextStep;
+                stepTest = getTest();
+                contextStepTest = cStep.getTest();
+
+                if ((contextStepTest.getType() == Type.ATTRIBUTE || contextStepTest.getType() == Type.TEXT) &&
+                        contextStepTest != stepTest) {
+                    // return empty sequence
+                    contextInfo.setStaticType(Type.EMPTY);
+                    staticReturnType = Type.EMPTY;
                 }
                 break;
 //		case Constants.PARENT_AXIS:
