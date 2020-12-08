@@ -21,12 +21,12 @@
  */
 package org.exist.dom.persistent;
 
-import java.io.IOException;
-
 import org.exist.ResourceMetadata;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.w3c.dom.DocumentType;
+
+import java.io.IOException;
 
 /**
  * @deprecated Will be removed in eXist-db 6.0.0. Metadata methods

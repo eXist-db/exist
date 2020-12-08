@@ -33,8 +33,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 import org.w3c.dom.UserDataHandler;
 
-import javax.xml.XMLConstants;
-
 /**
  * TextImpl.java
  *

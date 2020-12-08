@@ -21,18 +21,6 @@
  */
 package org.exist.repo;
 
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.*;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
@@ -45,13 +33,21 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.expath.pkg.repo.FileSystemStorage;
-import org.expath.pkg.repo.FileSystemStorage.FileSystemResolver;
+import org.expath.pkg.repo.*;
 import org.expath.pkg.repo.Package;
-import org.expath.pkg.repo.Packages;
-import org.expath.pkg.repo.PackageException;
-import org.expath.pkg.repo.Repository;
-import org.expath.pkg.repo.URISpace;
+import org.expath.pkg.repo.FileSystemStorage.FileSystemResolver;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
 
 /**
  * A repository as viewed by eXist.

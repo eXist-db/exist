@@ -24,36 +24,25 @@ package org.exist.ant;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.PropertyHelper;
-
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.ResourceIterator;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XMLResource;
-
-import org.exist.source.BinarySource;
-import org.exist.source.FileSource;
-import org.exist.source.Source;
-import org.exist.source.StringSource;
-import org.exist.source.URLSource;
+import org.exist.source.*;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.*;
+import org.xmldb.api.modules.XMLResource;
 
-import java.io.*;
-
+import javax.xml.transform.OutputKeys;
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
 import java.net.URL;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
-import javax.xml.transform.OutputKeys;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

@@ -21,28 +21,27 @@
  */
 package org.exist.xqj;
 
-import org.exist.dom.memtree.*;
-import org.exist.xquery.value.*;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.NameTest;
-import org.exist.storage.DBBroker;
 import org.exist.dom.QName;
+import org.exist.dom.memtree.*;
+import org.exist.storage.DBBroker;
+import org.exist.xquery.NameTest;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.xquery.XQItemType;
 import javax.xml.xquery.XQException;
-
-import java.util.Properties;
+import javax.xml.xquery.XQItemType;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Properties;
 
 
 /**

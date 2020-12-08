@@ -24,18 +24,16 @@ package org.exist.ant;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
-
+import org.exist.security.Permission;
+import org.exist.security.internal.aider.UnixStylePermissionAider;
+import org.exist.util.SyntaxException;
+import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
-
-import org.exist.security.Permission;
-import org.exist.security.internal.aider.UnixStylePermissionAider;
-import org.exist.util.SyntaxException;
-import org.exist.xmldb.UserManagementService;
 
 import java.util.StringTokenizer;
 

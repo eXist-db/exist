@@ -21,24 +21,13 @@
  */
 package org.exist.http.servlets;
 
-import java.io.IOException;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.http.urlrewrite.XQueryURLRewrite;
 import org.exist.security.AuthenticationException;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.Principal;
-import java.util.Optional;
-
+import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
+import org.exist.security.XmldbPrincipal;
 import org.exist.security.internal.web.HttpAccount;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
@@ -46,8 +35,18 @@ import org.exist.util.DatabaseConfigurationException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
-import org.exist.security.SecurityManager;
-import org.exist.security.XmldbPrincipal;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.Principal;
+import java.util.Optional;
 
 /**
  *

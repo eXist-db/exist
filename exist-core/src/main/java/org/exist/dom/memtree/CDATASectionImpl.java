@@ -21,11 +21,10 @@
  */
 package org.exist.dom.memtree;
 
+import org.exist.xquery.value.Type;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Text;
-
-import org.exist.xquery.value.Type;
 
 
 /**

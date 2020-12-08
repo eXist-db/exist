@@ -21,10 +21,10 @@
  */
 package org.exist.dom.persistent;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentType;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>

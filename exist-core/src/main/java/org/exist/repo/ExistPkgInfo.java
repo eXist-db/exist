@@ -21,16 +21,17 @@
  */
 package org.exist.repo;
 
+import org.expath.pkg.repo.Package;
+import org.expath.pkg.repo.PackageException;
+import org.expath.pkg.repo.PackageInfo;
+import org.expath.pkg.repo.URISpace;
+
+import javax.xml.transform.stream.StreamSource;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import javax.xml.transform.stream.StreamSource;
-import org.expath.pkg.repo.Package;
-import org.expath.pkg.repo.PackageException;
-import org.expath.pkg.repo.PackageInfo;
-import org.expath.pkg.repo.URISpace;
 
 /**
  * The extended package info, dedicated to eXist.

@@ -21,6 +21,18 @@
  */
 package org.exist.repo;
 
+import org.expath.pkg.repo.DescriptorExtension;
+import org.expath.pkg.repo.FileSystemStorage.FileSystemResolver;
+import org.expath.pkg.repo.Package;
+import org.expath.pkg.repo.PackageException;
+import org.expath.pkg.repo.Repository;
+import org.expath.pkg.repo.Storage.NotExistException;
+import org.expath.pkg.repo.parser.XMLStreamHelper;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URI;
@@ -29,18 +41,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.transform.stream.StreamSource;
-
-import org.expath.pkg.repo.DescriptorExtension;
-import org.expath.pkg.repo.FileSystemStorage.FileSystemResolver;
-import org.expath.pkg.repo.Package;
-import org.expath.pkg.repo.PackageException;
-import org.expath.pkg.repo.Repository;
-import org.expath.pkg.repo.Storage.NotExistException;
-import org.expath.pkg.repo.parser.XMLStreamHelper;
 
 /**
  * Handle the exist.xml descriptor in an EXPath package.

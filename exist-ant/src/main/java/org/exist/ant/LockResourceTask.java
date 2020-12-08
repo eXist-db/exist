@@ -23,11 +23,9 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-
+import org.exist.security.Account;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
-
-import org.exist.security.Account;
 
 
 /**
