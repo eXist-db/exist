@@ -112,7 +112,7 @@ public class ModuleInfo extends BasicFunction {
 			"Returns a short description of the module identified by the namespace URI.",
 			new SequenceType[] { NAMESPACE_URI_PARAMETER },
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the description of the active function module identified by the namespace URI"),
-                        InspectModule.FNS_INSPECT_MODULE_URI
+                        InspectModule.FN_INSPECT_MODULE_URI
         );
 	
 	public final static FunctionSignature moduleInfoSig =
@@ -133,7 +133,7 @@ public class ModuleInfo extends BasicFunction {
                 new SequenceType[] { NAMESPACE_URI_PARAMETER },
                 new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, 
                 "the description of the active function module identified by the namespace URI"),
-                InspectModule.FNS_INSPECT_MODULE_URI
+                InspectModule.FN_INSPECT_MODULE_URI
         );
 	
 	private static final QName MODULE_QNAME = new QName("module", XMLConstants.NULL_NS_URI);

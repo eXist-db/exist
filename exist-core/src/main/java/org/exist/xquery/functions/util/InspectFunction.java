@@ -19,14 +19,22 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.xquery.functions.inspect;
+
+package org.exist.xquery.functions.util;
 
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.inspect.InspectFunctionHelper;
+import org.exist.xquery.value.FunctionReference;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 
-import static org.exist.xquery.FunctionDSL.*;
-import static org.exist.xquery.functions.inspect.InspectionModule.functionSignature;
+import static org.exist.xquery.FunctionDSL.param;
+import static org.exist.xquery.FunctionDSL.returns;
+import static org.exist.xquery.functions.util.UtilModule.functionSignature;
 
 public class InspectFunction extends BasicFunction {
 
@@ -34,11 +42,11 @@ public class InspectFunction extends BasicFunction {
     public static final FunctionSignature FN_INSPECT_FUNCTION = functionSignature(
             FN_INSPECT_FUNCTION_NAME,
             "Returns an XML fragment describing the function referenced by the passed function item.",
-            returns(Type.NODE,"the signature of the function"),
+            returns(Type.NODE, "the signature of the function"),
             param("function", Type.FUNCTION_REFERENCE, "The function item to inspect")
     );
 
-    public InspectFunction(final XQueryContext context,  final FunctionSignature signature) {
+    public InspectFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 

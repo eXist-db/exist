@@ -27,7 +27,6 @@ import org.exist.dom.QName;
 import org.exist.xquery.Module;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.fn.FunOnFunctions;
-import org.exist.xquery.functions.inspect.ModuleFunctions;
 import org.exist.xquery.value.*;
 
 import java.util.Iterator;
@@ -73,13 +72,13 @@ public class BuiltinFunctions extends BasicFunction {
 					"Returns a sequence of function items for each function in the current module.",
 					null,
 					new FunctionReturnSequenceType(Type.FUNCTION_REFERENCE, Cardinality.ZERO_OR_MORE, "sequence of function references"),
-					ModuleFunctions.FNS_MODULE_FUNCTIONS_CURRENT),
+					"Use inspect:module-functions#0 instead."),
 			new FunctionSignature(
 					new QName("list-functions", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 					"Returns a sequence of function items for each function in the specified module.",
 					new SequenceType[] { new FunctionParameterSequenceType("namespace-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The namespace URI of the function module") },
 					new FunctionReturnSequenceType(Type.FUNCTION_REFERENCE, Cardinality.ZERO_OR_MORE, "sequence of function references"),
-					ModuleFunctions.FNS_MODULE_FUNCTIONS_OTHER)
+					"Use inspect:module-functions-by-uri#1 instead.")
 	};
 
 	public BuiltinFunctions(final XQueryContext context, final FunctionSignature signature) {
