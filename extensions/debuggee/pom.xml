@@ -94,8 +94,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>-Dlog4j.configurationFile=${project.build.testOutputDirectory}/log4j2.xml</argLine>
                     <systemPropertyVariables>
+                        <java.locale.providers>JRE,CLDR,SPI</java.locale.providers>
+                        <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
                         <exist.jetty.standalone.webapp.dir>${project.build.testOutputDirectory}/standalone-webapp</exist.jetty.standalone.webapp.dir>
                     </systemPropertyVariables>
                 </configuration>

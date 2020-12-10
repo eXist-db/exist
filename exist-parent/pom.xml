@@ -652,13 +652,18 @@
                     <version>3.0.0-M4</version>
                     <configuration>
                         <forkCount>2C</forkCount>
-
                         <!--  Setting `reuseForks` to `true` greatly speeds up execution of the the test suite.
                               However it can make it hard to diagnose problems if tests leak state; If you experience
                               such a problem you may want to set it to `false` whilst debugging -->
                         <reuseForks>true</reuseForks>
-
-                        <argLine>-Dfile.encoding=${project.build.sourceEncoding} -Dlog4j.configurationFile=${project.build.testOutputDirectory}/log4j2.xml</argLine>
+                        <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
+                        <systemPropertyVariables>
+                            <user.country>UK</user.country>
+                            <user.language>en</user.language>
+                            <user.timezone>Europe/Berlin</user.timezone>
+                            <java.locale.providers>JRE,CLDR,SPI</java.locale.providers>
+                            <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
+                        </systemPropertyVariables>
                     </configuration>
                 </plugin>
                 <plugin>

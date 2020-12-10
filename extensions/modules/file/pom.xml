@@ -178,8 +178,14 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>-Dlog4j.configurationFile=${project.build.testOutputDirectory}/log4j2.xml</argLine>
+                    <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
+                    <!--
+                    <argLine>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=0.0.0.0:0 -Dfile.encoding=${project.build.sourceEncoding}</argLine>
+                                        <argLine>-XX:StartFlightRecording=maxsize=5g,disk=true,dumponexit=true,settings=default,filename=${project.build.directory}/test-data/ -Dfile.encoding=${project.build.sourceEncoding}</argLine>
+                    -->
                     <systemPropertyVariables>
+                        <jetty.home>${project.basedir}/../../../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
+                        <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
                         <exist.jetty.standalone.webapp.dir>${project.build.testOutputDirectory}/standalone-webapp</exist.jetty.standalone.webapp.dir>
                     </systemPropertyVariables>
                 </configuration>
