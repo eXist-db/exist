@@ -118,4 +118,9 @@ public class IPRangeServlet extends HttpServlet {
         }
     }
 
+    @Override
+    public String getServletInfo() {
+        return "IPrange";
+    }
+
 }

@@ -300,7 +300,11 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                     final ContextHandler contextHandler = (ContextHandler) handler;
                     logger.info("\t{}", contextHandler.getContextPath());
                 }
-                
+
+                ServiceLoader<Servlet> load = ServiceLoader.load(Servlet.class);
+                load.forEach(c -> System.out.println(c.getServletInfo()));
+
+
                 if (iprange != null) {
                     if (handler instanceof ServletContextHandler) {
                         final ServletContextHandler contextHandler = (ServletContextHandler) handler;
