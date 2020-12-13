@@ -74,6 +74,7 @@
             <configuration>
                 <services>
                     <param>javax.servlet.Servlet</param>
+                    <param>org.exist.http.servlets.ExistExtensionServlet</param>
                 </services>
             </configuration>
             <executions>

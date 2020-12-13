@@ -21,6 +21,32 @@
  */
 package org.exist.jetty;
 
+import net.jcip.annotations.GuardedBy;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.handler.HandlerWrapper;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.Jetty;
+import org.eclipse.jetty.util.MultiException;
+import org.eclipse.jetty.util.component.LifeCycle;
+import org.eclipse.jetty.xml.XmlConfiguration;
+import org.exist.SystemProperties;
+import org.exist.http.servlets.ExistExtensionServlet;
+import org.exist.start.Main;
+import org.exist.storage.BrokerPool;
+import org.exist.util.ConfigurationHelper;
+import org.exist.util.FileUtils;
+import org.exist.util.SingleInstanceConfiguration;
+import org.exist.validation.XmlLibraryChecker;
+import org.exist.xmldb.DatabaseImpl;
+import org.exist.xmldb.ShutdownListener;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Database;
+
+import javax.servlet.Servlet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
@@ -31,35 +57,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import javax.servlet.Servlet;
-
-import net.jcip.annotations.GuardedBy;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.HandlerWrapper;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.Jetty;
-import org.eclipse.jetty.util.MultiException;
-import org.eclipse.jetty.util.component.LifeCycle;
-import org.eclipse.jetty.xml.XmlConfiguration;
-
-import org.exist.SystemProperties;
-import org.exist.start.Main;
-import org.exist.storage.BrokerPool;
-import org.exist.util.ConfigurationHelper;
-import org.exist.util.FileUtils;
-import org.exist.util.SingleInstanceConfiguration;
-import org.exist.validation.XmlLibraryChecker;
-import org.exist.xmldb.DatabaseImpl;
-import org.exist.xmldb.ShutdownListener;
-
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Database;
 
 import static org.exist.util.ThreadUtils.newGlobalThread;
 
@@ -270,15 +267,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                     allPorts.append(networkConnector.getLocalPort());
                 }
             }
-
-            //TODO: use pluggable interface
-            
-            Class<?> iprange = null;
-            try {
-            	iprange = Class.forName("org.exist.security.realm.iprange.IPRangeServlet");
-            } catch (final NoClassDefFoundError | ClassNotFoundException e) {
-                logger.warn("Could not find IPRangeServlet extension. IPRange will be disabled!");
-			}
             
             //*************************************************************
             final List<URI> serverUris = getSeverURIs(server);
@@ -298,29 +286,24 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 
                 if (handler instanceof ContextHandler) {
                     final ContextHandler contextHandler = (ContextHandler) handler;
-                    logger.info("\t{}", contextHandler.getContextPath());
+                    logger.info("{}", contextHandler.getContextPath());
                 }
 
-                ServiceLoader<Servlet> load = ServiceLoader.load(Servlet.class);
-                load.forEach(c -> System.out.println(c.getServletInfo()));
+                if (handler instanceof ServletContextHandler) {
 
-
-                if (iprange != null) {
-                    if (handler instanceof ServletContextHandler) {
+                    ServiceLoader<ExistExtensionServlet> load = ServiceLoader.load(ExistExtensionServlet.class);
+                    load.forEach(existExtensionServlet ->
+                    {
                         final ServletContextHandler contextHandler = (ServletContextHandler) handler;
-                        contextHandler.addServlet(new ServletHolder((Class<? extends Servlet>) iprange), "/iprange");
-
-                        String suffix;
-                        if (contextHandler.getContextPath().endsWith("/")) {
-                            suffix = "iprange";
-                        } else {
-                            suffix = "/iprange";
-                        }
-
-                        logger.info("'" + contextHandler.getContextPath() + suffix + "'");
-                    }
+                        final String pathSpec = existExtensionServlet.getPathSpec();
+                        final Servlet servlet = (Servlet) existExtensionServlet;
+                        contextHandler.addServlet(new ServletHolder(servlet), pathSpec);
+                        logger.info("{}{} ({})",
+                                contextHandler.getContextPath(),
+                                pathSpec.replace("//", "/"),
+                                servlet.getServletInfo());
+                    });
                 }
-                //*************************************************************
             }
 
             logger.info("-----------------------------------------------------");
