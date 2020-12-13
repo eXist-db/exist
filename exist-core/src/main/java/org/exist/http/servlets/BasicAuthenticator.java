@@ -59,19 +59,20 @@ public class BasicAuthenticator implements Authenticator {
 		String credentials = request.getHeader("Authorization");
 		String username = null;
 		String password = null;
-                try {
-                    if (credentials != null) {
-							final byte[] c = Base64.decodeBase64(credentials.substring("Basic ".length()));
-                            final String s = new String(c, UTF_8);
-                            // LOG.debug("BASIC auth credentials: "+s);
-                            final int p = s.indexOf(':');
-                            username = p < 0 ? s : s.substring(0, p);
-                            password = p < 0 ? null : s.substring(p + 1);
-                    }
-                } catch(final IllegalArgumentException iae) {
-                    LOG.warn("Invalid BASIC authentication header received: " + iae.getMessage(), iae);
-                    credentials = null;
-                }
+
+		try {
+			if (credentials != null && credentials.startsWith("Basic")) {
+				final byte[] c = Base64.decodeBase64(credentials.substring("Basic ".length()));
+				final String s = new String(c, UTF_8);
+				// LOG.debug("BASIC auth credentials: "+s);
+				final int p = s.indexOf(':');
+				username = p < 0 ? s : s.substring(0, p);
+				password = p < 0 ? null : s.substring(p + 1);
+			}
+		} catch(final IllegalArgumentException iae) {
+			LOG.warn("Invalid BASIC authentication header received: " + iae.getMessage(), iae);
+			credentials = null;
+		}
 
 		// get the user from the session if possible
 		final HttpSession session = request.getSession(false);
