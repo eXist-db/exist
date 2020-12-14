@@ -21,7 +21,9 @@
  */
 package org.exist.http.servlets;
 
-public interface ExistExtensionServlet {
+import javax.servlet.Servlet;
+
+public interface ExistExtensionServlet extends Servlet {
 
     /**
      *  Get path for servlet

@@ -290,18 +290,16 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 }
 
                 if (handler instanceof ServletContextHandler) {
-
-                    ServiceLoader<ExistExtensionServlet> load = ServiceLoader.load(ExistExtensionServlet.class);
+                    final ServletContextHandler contextHandler = (ServletContextHandler) handler;
+                    final ServiceLoader<ExistExtensionServlet> load = ServiceLoader.load(ExistExtensionServlet.class);
                     load.forEach(existExtensionServlet ->
                     {
-                        final ServletContextHandler contextHandler = (ServletContextHandler) handler;
                         final String pathSpec = existExtensionServlet.getPathSpec();
-                        final Servlet servlet = (Servlet) existExtensionServlet;
-                        contextHandler.addServlet(new ServletHolder(servlet), pathSpec);
+                        contextHandler.addServlet(new ServletHolder(existExtensionServlet), pathSpec);
                         logger.info("{}{} ({})",
                                 contextHandler.getContextPath(),
-                                pathSpec.replace("//", "/"),
-                                servlet.getServletInfo());
+                                pathSpec,
+                                existExtensionServlet.getServletInfo());
                     });
                 }
             }
