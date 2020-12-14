@@ -46,7 +46,6 @@ import org.exist.xmldb.ShutdownListener;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 
-import javax.servlet.Servlet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
