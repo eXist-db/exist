@@ -141,7 +141,9 @@ public class XQueryTestRunner extends AbstractTestRunner {
 
             return new XQueryTestInfo(prefix, namespace, testFunctions);
 
-        } catch(final DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException e) {
+        } catch(final Throwable e) {
+            // DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException
+            e.printStackTrace();
             throw new InitializationError(e);
         }
     }
@@ -216,8 +218,10 @@ public class XQueryTestRunner extends AbstractTestRunner {
 
             executeQuery(query, externalVariableDeclarations);
 
-        } catch(final DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException e) {
+        } catch(final Throwable e) {
             //TODO(AR) what to do here?
+            // DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
