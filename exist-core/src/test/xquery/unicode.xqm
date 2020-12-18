@@ -72,6 +72,14 @@ function uni:sip-dom-persistent() {
 
 declare
     %test:assertEquals(172998)
+function uni:sip-dom-persistent() {
+    let $stored := xmldb:store("/db/" || $uni:COLLECTION_NAME, "sip.xml", $uni:SIP)
+    return
+        fn:string-to-codepoints(fn:doc($stored/text())/container/smp)
+};
+
+declare
+    %test:assertEquals(172998)
 function uni:sip-dom-memtree-transform() {
     let $transformed := uni:transform($uni:SIP)
     return
