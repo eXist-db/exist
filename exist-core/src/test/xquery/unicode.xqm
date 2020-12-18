@@ -72,7 +72,7 @@ function uni:sip-dom-persistent() {
 
 declare
     %test:assertEquals(172998)
-function uni:sip-dom-persistent() {
+function uni:sip-dom-persistent-text() {
     let $stored := xmldb:store("/db/" || $uni:COLLECTION_NAME, "sip.xml", $uni:SIP)
     return
         fn:string-to-codepoints(fn:doc($stored/text())/container/smp)
