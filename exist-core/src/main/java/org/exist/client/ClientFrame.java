@@ -1053,24 +1053,20 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             final String backuptarget = dialog.getBackupTarget();
             final boolean deduplicateBlobs = dialog.getDeduplicateBlobs();
 
-            // DWES add check here?
             final Path target = Paths.get(backuptarget).normalize();
             if (Files.exists(target)) {
                 final int response = JOptionPane.showConfirmDialog(this,
                         String.format("%s %s %s", Messages.getString("CreateBackupDialog.6a"), backuptarget, Messages.getString("CreateBackupDialog.6b")),
                         Messages.getString("CreateBackupDialog.6c"), JOptionPane.YES_NO_OPTION);
 
-                if (response == JOptionPane.CLOSED_OPTION) {
-                    // User clicked close window
-                    return;
-
-                } else if (response == JOptionPane.YES_OPTION) {
-                    // User wants directory to be removed
+                if (response == JOptionPane.YES_OPTION) {
+                    // User wants file/directory to be removed
                     deleteDirectory(target);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Backup aborted, backup has not deleted or overwitten");
+                    return;
                 }
-
             }
-
 
             try {
                 final Backup backup = new Backup(
