@@ -140,9 +140,10 @@ public class Backup {
     }
 
 
+    // Not used
     public static String decode(final String enco) {
         final StringBuilder out = new StringBuilder();
-        String temp = "";
+        String temp;
         char t;
 
         for (int y = 0; y < enco.length(); y++) {
