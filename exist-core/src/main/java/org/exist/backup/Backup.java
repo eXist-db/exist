@@ -391,7 +391,7 @@ public class Backup {
                         default:
                             // Abort
                             dialog.dispose();
-                            JOptionPane.showMessageDialog(null,"Backup aborted", "Abort", JOptionPane.WARNING_MESSAGE);
+                            JOptionPane.showMessageDialog(null,"Backup aborted.", "Abort", JOptionPane.WARNING_MESSAGE);
                             throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, msg);
                     }
 
