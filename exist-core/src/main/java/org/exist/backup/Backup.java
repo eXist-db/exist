@@ -213,7 +213,7 @@ public class Backup {
             attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", permission.getOwner().getName());
             attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", permission.getGroup().getName());
             attr.addAttribute(Namespaces.EXIST_NS, "mode", "mode", "CDATA", Integer.toOctalString(permission.getMode()));
-        } catch (final Exception e) {
+        } catch (final Exception ignored) {
 
         }
     }
@@ -266,7 +266,7 @@ public class Backup {
 
                         try {
                             wait(20);
-                        } catch (final InterruptedException e) {
+                        } catch (final InterruptedException ignored) {
                         }
                     }
                 }
@@ -384,17 +384,15 @@ public class Backup {
                     int n = JOptionPane.showOptionDialog(null, msg,"Backup Error",
                             JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
                             options, options[1]);
-                    switch(n) {
-                        case 0:
-                            // ignore one
-                            continue;
-                        default:
-                            // Abort
-                            dialog.dispose();
-                            JOptionPane.showMessageDialog(null,"Backup aborted.", "Abort", JOptionPane.WARNING_MESSAGE);
-                            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, msg);
+                    if (n == 0) {
+                        // ignore one
+                        continue;
                     }
 
+                    // Abort
+                    dialog.dispose();
+                    JOptionPane.showMessageDialog(null, "Backup aborted.", "Abort", JOptionPane.WARNING_MESSAGE);
+                    throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, msg);
                 }
 
                 final String name = resources[i];
