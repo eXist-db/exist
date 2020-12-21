@@ -1063,7 +1063,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     // User wants file/directory to be removed
                     deleteDirectory(target);
                 } else {
-                    JOptionPane.showMessageDialog(null, "Backup aborted, backup has not deleted or overwitten");
+                    JOptionPane.showMessageDialog(null, "Backup aborted, backup has not been deleted.");
                     return;
                 }
             }
