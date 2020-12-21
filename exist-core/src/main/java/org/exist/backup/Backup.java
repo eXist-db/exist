@@ -37,10 +37,7 @@ import org.exist.xquery.value.DateTimeValue;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.XMLResource;
 
 import javax.annotation.Nullable;
@@ -371,11 +368,33 @@ public class Backup {
                     //Skipping resources[i]
                     continue;
                 }
+
                 resource = current.getResource(resources[i]);
 
                 if (dialog != null) {
                     dialog.setResource(resources[i]);
                     dialog.setProgress(i);
+                }
+
+                // Avoid NPE
+                if (resource == null) {
+                    final String msg = "Resource " + resources[i] + " could not be found.";
+                    System.err.println(msg);
+                    Object[] options = {"Ignore", "Abort"};
+                    int n = JOptionPane.showOptionDialog(null, msg,"Backup Error",
+                            JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+                            options, options[1]);
+                    switch(n) {
+                        case 0:
+                            // ignore one
+                            continue;
+                        default:
+                            // Abort
+                            dialog.dispose();
+                            JOptionPane.showMessageDialog(null,"Backup aborted", "Abort", JOptionPane.WARNING_MESSAGE);
+                            throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, msg);
+                    }
+
                 }
 
                 final String name = resources[i];
