@@ -140,56 +140,6 @@ public class Backup {
     }
 
 
-    // Not used
-    public static String decode(final String enco) {
-        final StringBuilder out = new StringBuilder();
-        String temp;
-        char t;
-
-        for (int y = 0; y < enco.length(); y++) {
-            t = enco.charAt(y);
-
-            if (t != '&') {
-                out.append(t);
-            } else {
-                temp = enco.substring(y, y + 4);
-
-                switch (temp) {
-                    case "&22;":
-                        out.append('"');
-                        break;
-                    case "&26;":
-                        out.append('&');
-                        break;
-                    case "&2A;":
-                        out.append('*');
-                        break;
-                    case "&3A;":
-                        out.append(':');
-                        break;
-                    case "&3C;":
-                        out.append('<');
-                        break;
-                    case "&3E;":
-                        out.append(">");
-                        break;
-                    case "&3F;":
-                        out.append('?');
-                        break;
-                    case "&5C;":
-                        out.append('\\');
-                        break;
-                    case "&7C;":
-                        out.append('|');
-                        break;
-                    default:
-                        break;
-                }
-                y = y + 3;
-            }
-        }
-        return (out.toString());
-    }
 
     public static void main(final String[] args) {
         try {
@@ -380,19 +330,21 @@ public class Backup {
                 // Avoid NPE
                 if (resource == null) {
                     final String msg = "Resource " + resources[i] + " could not be found.";
-                    System.err.println(msg);
-                    Object[] options = {"Ignore", "Abort"};
-                    int n = JOptionPane.showOptionDialog(null, msg,"Backup Error",
-                            JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
-                            options, options[1]);
-                    if (n == 0) {
-                        // ignore one
-                        continue;
-                    }
 
-                    // Abort
-                    dialog.dispose();
-                    JOptionPane.showMessageDialog(null, "Backup aborted.", "Abort", JOptionPane.WARNING_MESSAGE);
+                    if(dialog != null) {
+                        Object[] options = {"Ignore", "Abort"};
+                        int n = JOptionPane.showOptionDialog(null, msg, "Backup Error",
+                                JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+                                options, options[1]);
+                        if (n == JOptionPane.YES_OPTION) {
+                            // ignore one
+                            continue;
+                        }
+
+                        // Abort
+                        dialog.dispose();
+                        JOptionPane.showMessageDialog(null, "Backup aborted.", "Abort", JOptionPane.WARNING_MESSAGE);
+                    }
                     throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, msg);
                 }
 
