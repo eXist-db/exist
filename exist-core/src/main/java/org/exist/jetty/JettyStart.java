@@ -276,7 +276,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             logger.info("-----------------------------------------------------");
             logger.info("Server has started, listening on:");
             for(final URI serverUri : serverUris) {
-                logger.info("\t{}", serverUri.resolve("/"));
+                logger.info("{}", serverUri.resolve("/"));
             }
 
             logger.info("Configured contexts:");
@@ -290,16 +290,22 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
                 if (handler instanceof ServletContextHandler) {
                     final ServletContextHandler contextHandler = (ServletContextHandler) handler;
-                    final ServiceLoader<ExistExtensionServlet> load = ServiceLoader.load(ExistExtensionServlet.class);
-                    load.forEach(existExtensionServlet ->
-                    {
+                    final ServiceLoader<ExistExtensionServlet> services = ServiceLoader.load(ExistExtensionServlet.class);
+
+                    for (ExistExtensionServlet existExtensionServlet : services) {
                         final String pathSpec = existExtensionServlet.getPathSpec();
+                        final String contextPath = contextHandler.getContextPath();
+
+                        // Avoid "//" as logged prefix
+                        final String normalizedPath = "/".equals(contextPath)
+                                ? pathSpec
+                                : contextPath + pathSpec;
+
+                        logger.info("{} ({})", normalizedPath, existExtensionServlet.getServletInfo());
+
+                        // Register servlet
                         contextHandler.addServlet(new ServletHolder(existExtensionServlet), pathSpec);
-                        logger.info("{}{} ({})",
-                                contextHandler.getContextPath(),
-                                pathSpec,
-                                existExtensionServlet.getServletInfo());
-                    });
+                    }
                 }
             }
 
