@@ -360,7 +360,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      */
     private void saveSymbols() throws EXistException {
         try(final VariableByteOutputStream os = new VariableByteOutputStream(8192);
-                final OutputStream fos =  Files.newOutputStream(getFile())) {
+                final OutputStream fos =  new BufferedOutputStream(Files.newOutputStream(getFile()))) {
             writeAll(os);
             fos.write(os.toByteArray());
         } catch(final FileNotFoundException e) {
@@ -422,7 +422,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
 
     private OutputStream getOutputStream() throws IOException {
         if(os == null) {
-            os = Files.newOutputStream(getFile(), StandardOpenOption.APPEND);
+            os = new BufferedOutputStream(Files.newOutputStream(getFile(), StandardOpenOption.APPEND));
         }
         return os;
     }

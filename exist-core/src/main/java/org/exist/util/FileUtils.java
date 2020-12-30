@@ -29,10 +29,7 @@ import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.util.crypto.digest.DigestOutputStream;
 import org.exist.util.crypto.digest.StreamableDigest;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
@@ -493,7 +490,7 @@ public class FileUtils {
      * @throws IOException if an IO error occurs
      */
     public static void copyWithDigest(final InputStream is, final Path dst, final StreamableDigest streamableDigest, final OpenOption... dstOptions) throws IOException {
-        try (final OutputStream os = new DigestOutputStream(Files.newOutputStream(dst, dstOptions), streamableDigest)) {
+        try (final OutputStream os = new DigestOutputStream(new BufferedOutputStream(Files.newOutputStream(dst, dstOptions)), streamableDigest)) {
 
             final byte[] buf = new byte[8192];
             int read;

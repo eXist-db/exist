@@ -32,6 +32,7 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 import javax.annotation.Nullable;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -242,7 +243,7 @@ public class RemoteRestoreService implements EXistRestoreService {
         restoreListener.startedZipForTransfer(FileUtils.sizeQuietly(dir));
         try {
             final Path zipFile = Files.createTempFile("remote-restore-service", "zip");
-            try (final OutputStream fos = Files.newOutputStream(zipFile);
+            try (final OutputStream fos = new BufferedOutputStream(Files.newOutputStream(zipFile));
                  final ZipOutputStream zos = new ZipOutputStream(fos)) {
                 Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
                     @Override

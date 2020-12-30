@@ -1222,7 +1222,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     resource = collection
                             .getResource(desc.getName().toString());
                     if (resource instanceof ExtendedResource) {
-                        try(final OutputStream os = Files.newOutputStream(file)) {
+                        try(final OutputStream os = new BufferedOutputStream(Files.newOutputStream(file))) {
                             ((ExtendedResource) resource).getContentIntoAStream(os);
                         }
                     } else {

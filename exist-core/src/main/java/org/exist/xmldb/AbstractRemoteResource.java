@@ -252,7 +252,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     @Override
     public void getContentIntoAFile(final Path localfile)
             throws XMLDBException {
-        try (final OutputStream os = Files.newOutputStream(localfile)) {
+        try (final OutputStream os = new BufferedOutputStream(Files.newOutputStream(localfile))) {
             getContentIntoAStream(os);
         } catch (final IOException ioe) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);

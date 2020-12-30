@@ -216,7 +216,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 
     @Override
     public void getContentIntoAFile(final Path tmpFile) throws XMLDBException {
-        try(final OutputStream bos = Files.newOutputStream(tmpFile)) {
+        try(final OutputStream bos = new BufferedOutputStream(Files.newOutputStream(tmpFile))) {
             getContentIntoAStream(bos);
         } catch(final IOException ioe) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "error while loading binary resource " + getId(), ioe);
