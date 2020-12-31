@@ -459,7 +459,7 @@ public class FileUtils {
      */
     public static void copyWithDigest(final Path src, final Path dst, final StreamableDigest streamableDigest,
             final OpenOption... dstOptions) throws IOException {
-        try (final InputStream is = Files.newInputStream(src, READ)) {
+        try (final InputStream is = new BufferedInputStream(Files.newInputStream(src, READ))) {
             copyWithDigest(is, dst, streamableDigest);
         }
     }
@@ -509,7 +509,7 @@ public class FileUtils {
      * @throws IOException if an IO error occurs
      */
     public static void digest(final Path path, final StreamableDigest streamableDigest) throws IOException {
-        try (final InputStream is = Files.newInputStream(path, READ)) {
+        try (final InputStream is = new BufferedInputStream(Files.newInputStream(path, READ))) {
             final byte[] buf = new byte[8192];
 
             int read;

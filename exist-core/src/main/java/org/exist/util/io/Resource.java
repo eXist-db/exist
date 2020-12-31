@@ -516,7 +516,7 @@ public class Resource extends File {
                         serializer.serialize(doc, w);
                     }
 
-                    try (final InputStream is = Files.newInputStream(tempFile)) {
+                    try (final InputStream is = new BufferedInputStream(Files.newInputStream(tempFile))) {
                         final Date created = new Date(doc.getCreated());
                         final Date lastModified = new Date(doc.getLastModified());
 

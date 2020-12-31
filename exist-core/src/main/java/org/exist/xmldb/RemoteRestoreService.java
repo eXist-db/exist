@@ -32,10 +32,7 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 import javax.annotation.Nullable;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
@@ -216,7 +213,7 @@ public class RemoteRestoreService implements EXistRestoreService {
 
             String fileName = null;
             final byte[] chunk = new byte[(int) Math.min(backupZipFileSize, MAX_UPLOAD_CHUNK)];
-            try (final InputStream is = Files.newInputStream(backupZipFile)) {
+            try (final InputStream is = new BufferedInputStream(Files.newInputStream(backupZipFile))) {
                 int len = -1;
                 while ((len = is.read(chunk)) > -1) {
                     final List<Object> params = new ArrayList<>(4);

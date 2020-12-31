@@ -59,6 +59,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.DirectoryStream;
@@ -148,7 +149,7 @@ public class Deployment {
         if (!Files.isReadable(repoFile)) {
             return null;
         }
-        try(final InputStream is = Files.newInputStream(repoFile)) {
+        try(final InputStream is = new BufferedInputStream(Files.newInputStream(repoFile))) {
             return DocUtils.parse(broker.getBrokerPool(), null, is);
         } catch (final XPathException | IOException e) {
             throw new PackageException("Failed to parse repo.xml: " + e.getMessage(), e);
@@ -815,7 +816,7 @@ public class Deployment {
                         }
                     } else {
                         final long size = Files.size(file);
-                        try(final InputStream is = Files.newInputStream(file)) {
+                        try(final InputStream is = new BufferedInputStream(Files.newInputStream(file))) {
                             final BinaryDocument doc =
                                     targetCollection.addBinaryResource(transaction, broker, name, is, mime.getName(), size);
 
@@ -836,7 +837,7 @@ public class Deployment {
     private void storeBinary(final DBBroker broker, final Txn transaction, final Collection targetCollection, final Path file, final MimeType mime, final XmldbURI name, final Optional<RequestedPerms> requestedPerms) throws
             IOException, EXistException, PermissionDeniedException, LockException, TriggerException {
         final long size = Files.size(file);
-        try (final InputStream is = Files.newInputStream(file)) {
+        try (final InputStream is = new BufferedInputStream(Files.newInputStream(file))) {
             final BinaryDocument doc =
                     targetCollection.addBinaryResource(transaction, broker, name, is, mime.getName(), size);
 

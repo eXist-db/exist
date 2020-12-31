@@ -378,7 +378,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      * @throws EXistException in response to eXist-db error
      */
     private synchronized void loadSymbols() throws EXistException {
-        try(final InputStream fis = Files.newInputStream(getFile())) {
+        try(final InputStream fis = new BufferedInputStream(Files.newInputStream(getFile()))) {
 
             final VariableByteInput is = new VariableByteInputStream(fis);
             final int magic = is.readFixedInt();

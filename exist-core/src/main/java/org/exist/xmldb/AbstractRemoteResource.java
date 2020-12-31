@@ -384,7 +384,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             try {
                 // First, the local content, then the remote one!!!!
                 if (file != null) {
-                    bis = Files.newInputStream(file);
+                    bis = new BufferedInputStream(Files.newInputStream(file));
                 } else if (inputSource != null) {
                     bis = inputSource.getByteStream();
                 } else if (obj != null) {
@@ -445,7 +445,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
         final InputStream retval;
         try {
             if (file != null) {
-                retval = Files.newInputStream(file);
+                retval = new BufferedInputStream(Files.newInputStream(file));
             } else if (inputSource != null) {
                 retval = inputSource.getByteStream();
             } else if (obj != null) {
