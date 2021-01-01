@@ -168,6 +168,8 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunNumber.signatures[1], FunNumber.class),
         new FunctionDef(FunOneOrMore.signature, FunOneOrMore.class),
         new FunctionDef(FnOuterMost.FNS_OUTERMOST, FnOuterMost.class),
+        new FunctionDef(FunPath.FS_PATH_0, FunPath.class),
+        new FunctionDef(FunPath.FS_PATH_1, FunPath.class),
         new FunctionDef(FunPosition.signature, FunPosition.class),
         new FunctionDef(FunQName.signature, FunQName.class),
         new FunctionDef(FunRemove.signature, FunRemove.class),
