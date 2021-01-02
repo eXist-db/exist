@@ -122,6 +122,8 @@ public class FunPath extends Function {
                 final Document ownerDocument = node.getOwnerDocument();
 
                 if (isRootNode && node.getNodeType() != Node.DOCUMENT_NODE) {
+                    // DW: strangely always a DocumentNode is returned, making
+                    // it effictively impossible to implement this function.
                     steps.add(XPATH_FUNCTIONS_ROOT);
                 } else if (node.getNodeType() == Node.DOCUMENT_NODE) {
                     // skip documentnode.. should not be xpathed
