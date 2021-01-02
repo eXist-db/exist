@@ -25,7 +25,6 @@ import org.exist.dom.memtree.DocumentImpl;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
@@ -38,7 +37,9 @@ import static org.exist.xquery.FunctionDSL.returnsOpt;
 import static org.exist.xquery.functions.fn.FnModule.functionSignature;
 
 /**
- * @author Dannes
+ * Implementation of fn:path
+ *
+ * @author Dannes Wessels
  */
 public class FunPath extends Function {
 
@@ -101,46 +102,41 @@ public class FunPath extends Function {
             return Sequence.EMPTY_SEQUENCE;
         }
 
+        // Fetch data
         final Item item = seq.itemAt(0);
         final NodeValue nodeValue = (NodeValue) item;
         Node node = nodeValue.getNode();
 
-        boolean inMemoryNode = nodeValue.getImplementationType()==NodeValue.IN_MEMORY_NODE;
-
-        // Document node
+        // Quick escape for Document node
         if (node.getNodeType() == Node.DOCUMENT_NODE) {
             return new StringValue("/");
         }
 
+        // Collect all steps
         ArrayDeque<String> steps = new ArrayDeque<>();
-        boolean isRootNode = false;
+
+        // Flag used to find the root node.
+        boolean isRootNode;
 
         try {
             do {
                 Node parentNode = getParent(node);
                 isRootNode = (parentNode == null);
 
-                final short parentNodeType = !isRootNode ? parentNode.getNodeType() : -1;
-                final short nodeType = node.getNodeType();
-                final Document ownerDocument = node.getOwnerDocument();
-
-                if (isRootNode && node.getNodeType() != Node.DOCUMENT_NODE) {
-                    // DW: strangely always a DocumentNode is returned, making
-                    // it effictively impossible to implement this function.
-                    steps.add(XPATH_FUNCTIONS_ROOT);
-                } else if (node.getNodeType() == Node.DOCUMENT_NODE) {
-                    // skip documentnode.. should not be xpathed
-                    if(node instanceof DocumentImpl){
-                        DocumentImpl di = (DocumentImpl) node;
-                        if(!di.isExplicitlyCreated()){
-                            steps.removeLast();
-                            steps.add(XPATH_FUNCTIONS_ROOT);
-                        }
+                if (node.getNodeType() == Node.DOCUMENT_NODE) {
+                    if (node instanceof DocumentImpl && !isNodeCreatedAsInMemDocument(node)) {
+                        // The last added element must be removed, as the spec
+                        // does not want to show root element info for constructed
+                        // elements, only for document {} constructed nodes.
+                        steps.removeLast();
+                        steps.add(XPATH_FUNCTIONS_ROOT);
                     }
+
                 } else {
                     steps.add(nodeToXPath(node));
                 }
 
+                // follow parent nodes
                 node = parentNode;
 
             } while (!isRootNode);
@@ -149,17 +145,35 @@ public class FunPath extends Function {
             throw new XPathException(this, ErrorCodes.ERROR, ex.getMessage());
         }
 
+        // Wrap up results
         StringBuilder buf = new StringBuilder();
         for (Iterator<String> step = steps.descendingIterator(); step.hasNext(); ) {
             buf.append(step.next());
         }
-
         Sequence result = new StringValue(buf.toString());
 
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().end(this, "", result);
         }
+
         return result;
+    }
+
+    /**
+     *  Workaround for https://github.com/eXist-db/exist/issues/1463.
+     *  With this trick it is possible to check the scenario where a
+     *  DocumentNode was be created by document {} or erroneously
+     *  by an element without a document.
+     *
+     * @param node The document node
+     * @return TRUE when the document is constructed via document {}.
+     */
+    private boolean isNodeCreatedAsInMemDocument(Node node){
+        if (node instanceof DocumentImpl) {
+            DocumentImpl di = (DocumentImpl) node;
+            return di.isExplicitlyCreated();
+        }
+        return false;
     }
 
     private String getNodeSibblingIndex(Node currentNode) {
