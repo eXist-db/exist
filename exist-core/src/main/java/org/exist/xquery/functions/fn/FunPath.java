@@ -21,13 +21,15 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.apache.xerces.dom.DocumentImpl;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
+import java.util.ArrayDeque;
+import java.util.Iterator;
 import java.util.Objects;
 
 import static org.exist.xquery.FunctionDSL.optParam;
@@ -39,18 +41,16 @@ import static org.exist.xquery.functions.fn.FnModule.functionSignature;
  */
 public class FunPath extends Function {
 
+    public static final String XPATH_FUNCTIONS_ROOT = "Q{http://www.w3.org/2005/xpath-functions}root()";
     private static final FunctionParameterSequenceType FS_PARAM_NODE = optParam("arg", Type.NODE, "The node.");
-
     private static final String FS_PATH = "path";
     private static final String FS_DESCRIPTION = "Returns a path expression that can be used to select the supplied node relative to the root of its containing document.";
     private static final String FS_RETURN_DESCRIPTION = "The path of the node";
-
     static final FunctionSignature FS_PATH_0 = functionSignature(
             FS_PATH,
             FS_DESCRIPTION,
             returnsOpt(Type.STRING, FS_RETURN_DESCRIPTION)
     );
-
     static final FunctionSignature FS_PATH_1 = functionSignature(
             FS_PATH,
             FS_DESCRIPTION,
@@ -109,29 +109,37 @@ public class FunPath extends Function {
             return new StringValue("/");
         }
 
-        final StringBuilder buf = new StringBuilder();
+        ArrayDeque<String> steps = new ArrayDeque<>();
+        boolean isRootNode = false;
 
         try {
-            // First hit
-            if (node.getParentNode() instanceof org.w3c.dom.Document) {
-                buf.append("Q{http://www.w3.org/2005/xpath-functions}root()");
-            } else {
-                buf.append(nodeToXPath(node));
-            }
+            do {
+                Node parentNode = getParent(node);
+                isRootNode = (parentNode == null);
 
-            // Iterate over tree
-            while ((node = getParent(node)) != null) {
-                if (node.getNodeType() == Node.ELEMENT_NODE) {
+                final short parentNodeType = !isRootNode ? parentNode.getNodeType() : -1;
+                final short nodeType = node.getNodeType();
+                final Document ownerDocument = node.getOwnerDocument();
 
-//                    if (node.getParentNode() instanceof org.w3c.dom.Document) {
-//                        buf.insert(0, "Q{http://www.w3.org/2005/xpath-functions}root()");
-//                    } else {
-                        buf.insert(0, nodeToXPath(node));
-//                    }
+                if (isRootNode && node.getNodeType() != Node.DOCUMENT_NODE) {
+                    steps.add(XPATH_FUNCTIONS_ROOT);
+                } else if (node.getNodeType() == Node.DOCUMENT_NODE) {
+//
+                } else {
+                    steps.add(nodeToXPath(node));
                 }
-            }
+
+                node = parentNode;
+
+            } while (!isRootNode);
+
         } catch (XPathException ex) {
             throw new XPathException(this, ErrorCodes.ERROR, ex.getMessage());
+        }
+
+        StringBuilder buf = new StringBuilder();
+        for (Iterator<String> step = steps.descendingIterator(); step.hasNext(); ) {
+            buf.append(step.next());
         }
 
         Sequence result = new StringValue(buf.toString());
@@ -142,13 +150,7 @@ public class FunPath extends Function {
         return result;
     }
 
-    private StringBuilder nodeToXPath(Node node) throws XPathException {
-        final StringBuilder xpath = new StringBuilder("/");
-        getFullNodeName(node, xpath);
-        return xpath;
-    }
-
-    private void appendNodeIndex(Node currentNode, StringBuilder xpath) {
+    private String getNodeIndex(Node currentNode) {
         int count = 1;
         Node previousSibbling = currentNode;
 
@@ -177,32 +179,31 @@ public class FunPath extends Function {
             }
         }
 
-        xpath.append('[').append(count).append(']');
-
+        return "[" + count + "]";
     }
 
-    private void getFullNodeName(final Node node, final StringBuilder xpath) throws XPathException {
+    private String nodeToXPath(final Node node) throws XPathException {
 
         switch (node.getNodeType()) {
             case Node.ATTRIBUTE_NODE:
-                xpath.append(getFullAttributeName(node));
-                break;
+                return getFullAttributeName(node);
+
             case Node.TEXT_NODE:
-                xpath.append("text()");
-                appendNodeIndex(node, xpath);
-                break;
+                return "/text()" + getNodeIndex(node);
+
             case Node.COMMENT_NODE:
-                xpath.append("comment()");
-                appendNodeIndex(node, xpath);
-                break;
+                return "/comment()" + getNodeIndex(node);
+
             case Node.PROCESSING_INSTRUCTION_NODE:
-                xpath.append("processing-instruction(").append(((ProcessingInstruction) node).getTarget()).append(")");
-                appendNodeIndex(node, xpath);
-                break;
+                final String target = ((ProcessingInstruction) node).getTarget();
+                return "/processing-instruction(" + target + ")" + getNodeIndex(node);
+
             case Node.ELEMENT_NODE:
-                xpath.append(getFullElementName(node));
-                appendNodeIndex(node, xpath);
-                break;
+                return getFullElementName(node) + getNodeIndex(node);
+
+            case Node.DOCUMENT_NODE:
+                return "###";
+
             default:
                 throw new XPathException(ErrorCodes.ERROR, "Unable to process node type " + node.getNodeType());
         }
@@ -210,30 +211,26 @@ public class FunPath extends Function {
 
     private String getFullElementName(final Node node) {
 
-//        if(node.getParentNode() instanceof org.w3c.dom.Document){
-//            return  "Q{http://www.w3.org/2005/xpath-functions}root()";
-//        }
-
         final String namespaceURI = node.getNamespaceURI();
         return namespaceURI == null
-                ? "Q{}" + node.getLocalName()
-                : "Q{" + namespaceURI + "}" + node.getLocalName();
+                ? "/Q{}" + node.getLocalName()
+                : "/Q{" + namespaceURI + "}" + node.getLocalName();
     }
 
     private String getFullAttributeName(final Node node) {
         final String namespaceURI = node.getNamespaceURI();
         return namespaceURI == null
-                ? "@" + node.getLocalName()
-                : "@Q{" + namespaceURI + "}" + node.getLocalName();
+                ? "/@" + node.getLocalName()
+                : "/@Q{" + namespaceURI + "}" + node.getLocalName();
     }
 
-    private Node getParent(final Node n) {
-        if (n == null) {
+    private Node getParent(final Node node) {
+        if (node == null) {
             return null;
-        } else if (n instanceof Attr) {
-            return ((Attr) n).getOwnerElement();
+        } else if (node instanceof Attr) {
+            return ((Attr) node).getOwnerElement();
         } else {
-            return n.getParentNode();
+            return node.getParentNode();
         }
     }
 }
