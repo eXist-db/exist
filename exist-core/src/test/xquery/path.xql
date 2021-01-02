@@ -74,21 +74,18 @@ declare
 (: in memory element tests as defined in spec :)
 
 declare
-  %test:pending("Bug in eXist-db")
   %test:assertEquals('Q{http://www.w3.org/2005/xpath-functions}root()')
   function path:root-node() {
     fn:path($path:ELEMENT_NODE)
 };
 
 declare
-  %test:pending("Bug in eXist-db")
   %test:assertEquals('Q{http://www.w3.org/2005/xpath-functions}root()/@Q{http://www.w3.org/XML/1998/namespace}id')
   function path:root-node-xml-id() {
     fn:path($path:ELEMENT_NODE/@xml:id)
 };
 
 declare
-  %test:pending("Bug in eXist-db")
   %test:assertEquals('Q{http://www.w3.org/2005/xpath-functions}root()/Q{}empnr[1]')
   function path:root-node-element() {
     fn:path($path:ELEMENT_NODE/empnr)
@@ -97,14 +94,12 @@ declare
 (: Additional tests :)
 
 declare
-  %test:pending("Bug in eXist-db")
   %test:assertEquals('Q{http://www.w3.org/2005/xpath-functions}root()/comment()[3]')
   function path:comments() {
     fn:path($path:COMMENTS//comment()[contains(.,"ollah")])
 };
 
 declare
-  %test:pending("Bug in eXist-db")
   %test:assertEquals('Q{http://www.w3.org/2005/xpath-functions}root()/processing-instruction(foo)[1]')
   function path:processing-instructions() {
     fn:path($path:PI//processing-instruction()[contains(.,"bar")])
@@ -125,3 +120,4 @@ declare
 function path:no-node-context() {
      util:eval-with-context("path()", (), false(), "a")
 };
+

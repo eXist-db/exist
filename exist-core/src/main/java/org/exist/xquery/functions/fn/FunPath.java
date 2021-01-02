@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.fn;
 
+import org.exist.dom.memtree.DocumentImpl;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Attr;
@@ -104,6 +105,8 @@ public class FunPath extends Function {
         final NodeValue nodeValue = (NodeValue) item;
         Node node = nodeValue.getNode();
 
+        boolean inMemoryNode = nodeValue.getImplementationType()==NodeValue.IN_MEMORY_NODE;
+
         // Document node
         if (node.getNodeType() == Node.DOCUMENT_NODE) {
             return new StringValue("/");
@@ -127,6 +130,13 @@ public class FunPath extends Function {
                     steps.add(XPATH_FUNCTIONS_ROOT);
                 } else if (node.getNodeType() == Node.DOCUMENT_NODE) {
                     // skip documentnode.. should not be xpathed
+                    if(node instanceof DocumentImpl){
+                        DocumentImpl di = (DocumentImpl) node;
+                        if(!di.isExplicitlyCreated()){
+                            steps.removeLast();
+                            steps.add(XPATH_FUNCTIONS_ROOT);
+                        }
+                    }
                 } else {
                     steps.add(nodeToXPath(node));
                 }

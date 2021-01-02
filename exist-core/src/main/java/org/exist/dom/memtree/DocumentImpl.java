@@ -302,6 +302,13 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         addChars(nodeNum, ch);
     }
 
+    /**
+     * @return TRUE when the Document is constructed via document {}.
+     */
+    public boolean isExplicitlyCreated(){
+        return explicitlyCreated;
+    }
+
     public int addAttribute(final int nodeNum, final QName qname, final String value, final int type) throws DOMException {
         if(nodeKind == null) {
             init();
