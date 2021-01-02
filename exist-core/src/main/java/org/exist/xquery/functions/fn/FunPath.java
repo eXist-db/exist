@@ -124,7 +124,7 @@ public class FunPath extends Function {
                 if (isRootNode && node.getNodeType() != Node.DOCUMENT_NODE) {
                     steps.add(XPATH_FUNCTIONS_ROOT);
                 } else if (node.getNodeType() == Node.DOCUMENT_NODE) {
-//
+                    // skip documentnode.. should not be xpathed
                 } else {
                     steps.add(nodeToXPath(node));
                 }
@@ -150,7 +150,7 @@ public class FunPath extends Function {
         return result;
     }
 
-    private String getNodeIndex(Node currentNode) {
+    private String getNodeSibblingIndex(Node currentNode) {
         int count = 1;
         Node previousSibbling = currentNode;
 
@@ -185,24 +185,21 @@ public class FunPath extends Function {
     private String nodeToXPath(final Node node) throws XPathException {
 
         switch (node.getNodeType()) {
+            case Node.ELEMENT_NODE:
+                return getFullElementName(node) + getNodeSibblingIndex(node);
+
             case Node.ATTRIBUTE_NODE:
                 return getFullAttributeName(node);
 
             case Node.TEXT_NODE:
-                return "/text()" + getNodeIndex(node);
+                return "/text()" + getNodeSibblingIndex(node);
 
             case Node.COMMENT_NODE:
-                return "/comment()" + getNodeIndex(node);
+                return "/comment()" + getNodeSibblingIndex(node);
 
             case Node.PROCESSING_INSTRUCTION_NODE:
                 final String target = ((ProcessingInstruction) node).getTarget();
-                return "/processing-instruction(" + target + ")" + getNodeIndex(node);
-
-            case Node.ELEMENT_NODE:
-                return getFullElementName(node) + getNodeIndex(node);
-
-            case Node.DOCUMENT_NODE:
-                return "###";
+                return "/processing-instruction(" + target + ")" + getNodeSibblingIndex(node);
 
             default:
                 throw new XPathException(ErrorCodes.ERROR, "Unable to process node type " + node.getNodeType());
@@ -210,7 +207,6 @@ public class FunPath extends Function {
     }
 
     private String getFullElementName(final Node node) {
-
         final String namespaceURI = node.getNamespaceURI();
         return namespaceURI == null
                 ? "/Q{}" + node.getLocalName()
