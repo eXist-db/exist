@@ -134,22 +134,11 @@ public class OneParamFunctions extends BasicFunction {
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null) {
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
-            }
-        }
-
-        // Result collector
-        Sequence result;
-
         // Fetch data
         final Sequence firstArgument = args[0];
 
         if (firstArgument.isEmpty()) {
-            result = Sequence.EMPTY_SEQUENCE;
+            return Sequence.EMPTY_SEQUENCE;
 
         } else {
             final NumericValue value = (NumericValue) firstArgument.itemAt(0).convertTo(Type.DOUBLE);
@@ -192,14 +181,9 @@ public class OneParamFunctions extends BasicFunction {
             } else {
                 throw new XPathException(this, ERROR, "Function " + functionName + " not found.");
             }
-            result = new DoubleValue(calcValue);
+            return new DoubleValue(calcValue);
         }
 
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().end(this, "", result);
-        }
-
-        return result;
     }
 
 }

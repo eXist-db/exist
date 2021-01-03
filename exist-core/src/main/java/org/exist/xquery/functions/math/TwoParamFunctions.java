@@ -68,19 +68,11 @@ public class TwoParamFunctions extends BasicFunction {
      * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null) {
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
-            }
-        }
 
-        Sequence result;
         double calcValue = 0;
         final String functionName = getSignature().getName().getLocalPart();
 
-        if(args[0].isEmpty()){
+        if (args[0].isEmpty()) {
             // Required for fn:pow
             return Sequence.EMPTY_SEQUENCE;
         }
@@ -100,12 +92,7 @@ public class TwoParamFunctions extends BasicFunction {
         } else {
             throw new XPathException(this, ERROR, "Function " + functionName + " not found.");
         }
-        result = new DoubleValue(calcValue);
 
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().end(this, "", result);
-        }
-
-        return result;
+        return new DoubleValue(calcValue);
     }
 }
