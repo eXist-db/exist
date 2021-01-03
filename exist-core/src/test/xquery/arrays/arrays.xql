@@ -405,16 +405,15 @@ function arr:remove2() {
 };
 
 declare
-    %test:assertEmpty
     %test:assertEquals("a", "b", "c", "d")
 function arr:remove3() {
-    array:remove(["a", "b", "c", "d"], ())
+    array:remove(["a", "b", "c", "d"], ())?*
 };
 
 declare
     %test:assertEquals("b", "d")
 function arr:remove4() {
-    array:remove(["a", "b", "c", "d", "e"], (1,3,5))
+    array:remove(["a", "b", "c", "d", "e"], (3,1,5))?*
 };
 
 declare

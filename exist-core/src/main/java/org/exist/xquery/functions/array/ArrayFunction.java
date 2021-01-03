@@ -348,6 +348,9 @@ public class ArrayFunction extends BasicFunction {
                         List<Integer> positions = new ArrayList<>();
                         for (int i = 0; i < args[1].getItemCount(); i++) {
                             final int position = ((IntegerValue) args[1].itemAt(i)).getInt();
+                            if (position < 1 || position > array.getSize()) {
+                                throw new XPathException(this, ErrorCodes.FOAY0001, "Index of item to remove (" + position + ") is out of bounds");
+                            }
                             positions.add(position - 1);
                         }
                         positions.sort(Comparator.reverseOrder());
@@ -355,9 +358,6 @@ public class ArrayFunction extends BasicFunction {
                         // Effectively iterate reverse over array, delete items
                         ArrayType resultArray = array;
                         for (int pos : positions) {
-                            if (pos < 1 || pos > array.getSize()) {
-                                throw new XPathException(this, ErrorCodes.FOAY0001, "Index of item to remove (" + pos + ") is out of bounds");
-                            }
                             resultArray = resultArray.remove(pos);
                         }
                         return resultArray;
