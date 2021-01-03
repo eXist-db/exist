@@ -30,6 +30,7 @@ import org.exist.util.FileUtils;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -186,7 +187,7 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
                         .filter(f -> !COLLECTION_DESCRIPTOR.equals(f.getFileName().toString()))) {
 
                 for (final Path d : ds.collect(Collectors.toList())) {
-                    try (final InputStream is = Files.newInputStream(d)) {
+                    try (final InputStream is = new BufferedInputStream(Files.newInputStream(d))) {
                         numberOfFiles += descriptorResourceCounter.count(is);
                     }
                 }

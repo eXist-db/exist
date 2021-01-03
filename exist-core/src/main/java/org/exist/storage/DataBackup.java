@@ -29,6 +29,7 @@ import org.exist.backup.RawDataBackup;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -104,7 +105,7 @@ public class DataBackup implements SystemTask {
         // Create the ZIP file
         LOG.debug("Archiving data files into: " + outFilename);
         
-        try(final ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(outFilename))) {
+        try(final ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(Files.newOutputStream(outFilename)))) {
             out.setLevel(Deflater.NO_COMPRESSION);
             final Callback cb = new Callback(out);
             broker.backupToArchive(cb);

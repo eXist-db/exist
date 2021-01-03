@@ -102,7 +102,7 @@ public class EmbeddedOutputStream extends OutputStream {
             // get a temporary file
             final TemporaryFileManager tempFileManager = TemporaryFileManager.getInstance();
             final Path tempFile = tempFileManager.getTemporaryFile();
-            final OutputStream osTemp = Files.newOutputStream(tempFile, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            final OutputStream osTemp = new BufferedOutputStream(Files.newOutputStream(tempFile, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE));
 
             // upload the content of the temp file to the db when it is closed, then return the temp file
             final RunnableE<IOException> uploadOnClose = () -> {

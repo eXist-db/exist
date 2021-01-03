@@ -21,10 +21,7 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -214,7 +211,7 @@ public class Sync extends BasicFunction {
             if (isRepoXML) {
                 processRepoDesc(targetFile, doc, sax, output);
             } else {
-				try(final Writer writer = new OutputStreamWriter(Files.newOutputStream(targetFile), StandardCharsets.UTF_8)) {
+				try(final Writer writer = new OutputStreamWriter(new BufferedOutputStream(Files.newOutputStream(targetFile)), StandardCharsets.UTF_8)) {
 					sax.setOutput(writer, DEFAULT_PROPERTIES);
 					Serializer serializer = context.getBroker().getSerializer();
 					serializer.reset();
@@ -245,7 +242,7 @@ public class Sync extends BasicFunction {
             final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             final Document original = builder.parse(targetFile.toFile());
 
-            try (final Writer writer = new OutputStreamWriter(Files.newOutputStream(targetFile), StandardCharsets.UTF_8)) {
+            try (final Writer writer = new OutputStreamWriter(new BufferedOutputStream(Files.newOutputStream(targetFile)), StandardCharsets.UTF_8)) {
                 sax.setOutput(writer, DEFAULT_PROPERTIES);
                 
                 final StreamSource stylesource = new StreamSource(Sync.class.getResourceAsStream("repo.xsl"));

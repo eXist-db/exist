@@ -36,6 +36,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -225,7 +226,7 @@ public class EntryFunctions extends BasicFunction {
                     mkdirs(destPath.getParent());
                     if(data.isPresent()) {
                         // store the resource
-                        try (final OutputStream os = Files.newOutputStream(destPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+                        try (final OutputStream os = new BufferedOutputStream(Files.newOutputStream(destPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))) {
                             ((BinaryValue)data.get()).streamBinaryTo(os);
                         } catch (final IOException e) {
                             throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the binary data: " + e.getMessage(), e);

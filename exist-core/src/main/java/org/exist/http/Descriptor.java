@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -97,10 +98,10 @@ public class Descriptor implements ErrorHandler {
                 if (!Files.isReadable(f)) {
                     LOG.warn("Giving up unable to read descriptor file from " + f);
                 } else {
-                    is = Files.newInputStream(f);
+                    is = new BufferedInputStream(Files.newInputStream(f));
                 }
             } else {
-                is = Files.newInputStream(f);
+                is = new BufferedInputStream(Files.newInputStream(f));
                 LOG.info("Reading Descriptor from file " + f);
             }
 

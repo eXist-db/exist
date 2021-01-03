@@ -21,10 +21,7 @@
  */
 package org.exist.backup;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -52,7 +49,7 @@ public class ZipWriter implements BackupWriter
 
     public ZipWriter(final Path zipFile, final String collection) throws IOException
     {
-        out         = new ZipOutputStream(Files.newOutputStream(zipFile));
+        out         = new ZipOutputStream(new BufferedOutputStream(Files.newOutputStream(zipFile)));
         currentPath = collection;
     }
 

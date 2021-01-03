@@ -24,6 +24,7 @@ package org.exist.backup;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -106,14 +107,14 @@ public class FileSystemWriter implements BackupWriter {
 
     @Override
     public OutputStream newEntry(final String name) throws IOException {
-        currentOut = Files.newOutputStream(currentDir.resolve(name));
+        currentOut = new BufferedOutputStream(Files.newOutputStream(currentDir.resolve(name)));
         dataWritten = true;
         return (currentOut);
     }
 
     @Override
     public OutputStream newBlobEntry(final String blobId) throws IOException {
-        currentOut = Files.newOutputStream(blobDir.resolve(blobId));
+        currentOut = new BufferedOutputStream(Files.newOutputStream(blobDir.resolve(blobId)));
         dataWritten = true;
         return currentOut;
     }
@@ -129,7 +130,7 @@ public class FileSystemWriter implements BackupWriter {
             throw (new IOException("Backup properties need to be set before any backup data is written"));
         }
         final Path propFile = rootDir.resolve("backup.properties");
-        try (final OutputStream os = Files.newOutputStream(propFile)) {
+        try (final OutputStream os = new BufferedOutputStream(Files.newOutputStream(propFile))) {
             properties.store(os, "Backup properties");
         }
     }

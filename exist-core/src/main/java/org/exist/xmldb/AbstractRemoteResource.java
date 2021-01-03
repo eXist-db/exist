@@ -252,7 +252,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     @Override
     public void getContentIntoAFile(final Path localfile)
             throws XMLDBException {
-        try (final OutputStream os = Files.newOutputStream(localfile)) {
+        try (final OutputStream os = new BufferedOutputStream(Files.newOutputStream(localfile))) {
             getContentIntoAStream(os);
         } catch (final IOException ioe) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
@@ -384,7 +384,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             try {
                 // First, the local content, then the remote one!!!!
                 if (file != null) {
-                    bis = Files.newInputStream(file);
+                    bis = new BufferedInputStream(Files.newInputStream(file));
                 } else if (inputSource != null) {
                     bis = inputSource.getByteStream();
                 } else if (obj != null) {
@@ -445,7 +445,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
         final InputStream retval;
         try {
             if (file != null) {
-                retval = Files.newInputStream(file);
+                retval = new BufferedInputStream(Files.newInputStream(file));
             } else if (inputSource != null) {
                 retval = inputSource.getByteStream();
             } else if (obj != null) {
