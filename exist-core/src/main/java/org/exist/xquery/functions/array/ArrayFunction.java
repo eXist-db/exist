@@ -356,7 +356,7 @@ public class ArrayFunction extends BasicFunction {
                         ArrayType resultArray = array;
                         for (int pos : positions) {
                             if (pos < 1 || pos > array.getSize()) {
-                                throw new XPathException(this, ErrorCodes.FOAY0001, "Index of item to remove (" + rpos + ") is out of bounds");
+                                throw new XPathException(this, ErrorCodes.FOAY0001, "Index of item to remove (" + pos + ") is out of bounds");
                             }
                             resultArray = resultArray.remove(pos);
                         }
