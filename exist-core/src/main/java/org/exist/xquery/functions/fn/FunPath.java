@@ -176,7 +176,7 @@ public class FunPath extends Function {
         return false;
     }
 
-    private String getNodeSibblingIndex(Node currentNode) {
+    private String getNodeSiblingIndex(Node currentNode) {
         int count = 1;
         Node previousSibbling = currentNode;
 
@@ -212,20 +212,20 @@ public class FunPath extends Function {
 
         switch (node.getNodeType()) {
             case Node.ELEMENT_NODE:
-                return getFullElementName(node) + getNodeSibblingIndex(node);
+                return getFullElementName(node) + getNodeSiblingIndex(node);
 
             case Node.ATTRIBUTE_NODE:
                 return getFullAttributeName(node);
 
             case Node.TEXT_NODE:
-                return "/text()" + getNodeSibblingIndex(node);
+                return "/text()" + getNodeSiblingIndex(node);
 
             case Node.COMMENT_NODE:
-                return "/comment()" + getNodeSibblingIndex(node);
+                return "/comment()" + getNodeSiblingIndex(node);
 
             case Node.PROCESSING_INSTRUCTION_NODE:
                 final String target = ((ProcessingInstruction) node).getTarget();
-                return "/processing-instruction(" + target + ")" + getNodeSibblingIndex(node);
+                return "/processing-instruction(" + target + ")" + getNodeSiblingIndex(node);
 
             default:
                 throw new XPathException(ErrorCodes.ERROR, "Unable to process node type " + node.getNodeType());
