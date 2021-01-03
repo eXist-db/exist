@@ -209,6 +209,10 @@ public class FunUnparsedText extends BasicFunction {
                 throw new XPathException(this, ErrorCodes.FOUT1170, "Could not find source for: " + uriParam);
             }
 
+            if (source.getInputStream()==null) {
+                throw new XPathException(this, ErrorCodes.FOUT1170, "Unable to retrieve bytestream from " + uriParam);
+            }
+
             if (source instanceof FileSource && !context.getBroker().getCurrentSubject().hasDbaRole()) {
                 throw new PermissionDeniedException("non-dba user not allowed to read from file system");
             }
