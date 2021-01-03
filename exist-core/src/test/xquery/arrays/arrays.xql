@@ -405,6 +405,19 @@ function arr:remove2() {
 };
 
 declare
+    %test:assertEmpty
+    %test:assertEquals("a", "b", "c", "d")
+function arr:remove3() {
+    array:remove(["a", "b", "c", "d"], ())
+};
+
+declare
+    %test:assertEquals("b", "d")
+function arr:remove4() {
+    array:remove(["a", "b", "c", "d", "e"], (1,3,5))
+};
+
+declare
     %test:assertEquals("d", "c", "b", "a")
 function arr:reverse1() {
     array:reverse(["a", "b", "c", "d"])?*
