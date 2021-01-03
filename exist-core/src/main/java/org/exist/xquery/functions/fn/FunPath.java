@@ -124,7 +124,7 @@ public class FunPath extends Function {
                 isRootNode = (parentNode == null);
 
                 if (node.getNodeType() == Node.DOCUMENT_NODE) {
-                    if (node instanceof DocumentImpl && !isNodeCreatedAsInMemDocument(node)) {
+                    if(!isNodeCreatedAsInMemDocument(node)) {
                         // The last added element must be removed, as the spec
                         // does not want to show root element info for constructed
                         // elements, only for document {} constructed nodes.
@@ -160,15 +160,15 @@ public class FunPath extends Function {
     }
 
     /**
-     *  Workaround for https://github.com/eXist-db/exist/issues/1463.
-     *  With this trick it is possible to check the scenario where a
-     *  DocumentNode was be created by document {} or erroneously
-     *  by an element without a document.
+     * Workaround for https://github.com/eXist-db/exist/issues/1463.
+     * With this trick it is possible to check the scenario where a
+     * DocumentNode was be created by document {} or erroneously
+     * by an element without a document.
      *
      * @param node The document node
      * @return TRUE when the document is constructed via document {}.
      */
-    private boolean isNodeCreatedAsInMemDocument(Node node){
+    private boolean isNodeCreatedAsInMemDocument(Node node) {
         if (node instanceof DocumentImpl) {
             DocumentImpl di = (DocumentImpl) node;
             return di.isExplicitlyCreated();
