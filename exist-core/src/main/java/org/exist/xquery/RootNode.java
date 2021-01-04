@@ -21,7 +21,6 @@
  */
 package org.exist.xquery;
 
-import org.exist.collections.ManagedLocks;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NewArrayNodeSet;
@@ -30,8 +29,6 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.storage.UpdateListener;
-import org.exist.storage.lock.ManagedDocumentLock;
-import org.exist.util.LockException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
@@ -67,7 +64,14 @@ public class RootNode extends Step {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
 
-        // first check if a context item is declared
+        // first, if we have been explicitly given a context item or context sequence, we can just use that
+        if (contextItem != null) {
+            return new ValueSequence(contextItem);
+        } else if (contextSequence != null && contextSequence != Sequence.EMPTY_SEQUENCE) {
+            return contextSequence;
+        }
+
+        // second, check if a context item is declared
         final ContextItemDeclaration decl = context.getContextItemDeclartion();
         if (decl != null) {
             final Sequence seq = decl.eval(null, null);
@@ -94,7 +98,30 @@ public class RootNode extends Step {
         // get statically known documents from the context
         DocumentSet ds = context.getStaticallyKnownDocuments();
         if (ds == null || ds.getDocumentCount() == 0) {return Sequence.EMPTY_SEQUENCE;}
-        
+
+        // fix for util:eval-with-context
+        if (contextSequence != null) {
+            if (!contextSequence.isEmpty()) {
+                final Item item = contextSequence.itemAt(0);
+                // context item must be a node
+                if (!Type.subTypeOf(item.getType(), Type.NODE)) {
+                    throw new XPathException(this, ErrorCodes.XPTY0020, "Context item is not a node");
+                }
+                final NodeValue node = (NodeValue)item;
+                // return fn:root(self::node()) treat as document-node()
+                if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                    return new NodeProxy(((NodeProxy)item).getOwnerDocument());
+                } else {
+                    if (node.getType() == Type.DOCUMENT) {
+                        return node;
+                    }
+                    return (org.exist.dom.memtree.DocumentImpl) node.getOwnerDocument();
+                }
+            } else {
+                return Sequence.EMPTY_SEQUENCE;
+            }
+        }
+
 //        // if the expression occurs in a nested context, we might have cached the
 //        // document set
 //        // TODO: disabled cache for now as it may cause concurrency issues

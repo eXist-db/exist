@@ -21,10 +21,10 @@
  */
 package org.exist.stax;
 
-import javax.xml.stream.XMLStreamConstants;
-
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
+
+import javax.xml.stream.XMLStreamConstants;
 
 public class StaXUtil {
 

@@ -57,7 +57,7 @@ public class Version {
     public Version() {
     }
     
-    public Version(String version_string) {
+    public Version(final String version_string) {
         parse(version_string);
     }
     
@@ -67,7 +67,7 @@ public class Version {
      *
      * @param version_string  Text representation of a version.
      */
-    public void parse(String version_string) {
+    public void parse(final String version_string) {
         _version = 0;
         _revision = 0;
         _subrevision = 0;
@@ -114,7 +114,7 @@ public class Version {
      *         Constants.EQUAL if its same version,
      *         Constants.SUPERIOR if it's newer version than other
      */
-    public int compare(Version other) {
+    public int compare(final Version other) {
         if (other == null) {throw new NullPointerException("other version is null");}
         if (this._version < other._version) {return INFERIOR;}
         if (this._version > other._version) {return SUPERIOR;}
@@ -132,7 +132,7 @@ public class Version {
      * @param low Lowest version, inclusive.
      * @return TRUE if Version is between high and low (inclusive), otherwise FALSE.
      */
-    public boolean isInRange(Version low, Version high) {
+    public boolean isInRange(final Version low, final Version high) {
         return (compare(low)>=0 && compare(high)<=0);
     }
 }

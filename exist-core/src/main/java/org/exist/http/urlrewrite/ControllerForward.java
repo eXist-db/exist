@@ -22,8 +22,8 @@
 
 package org.exist.http.urlrewrite;
 
-import org.w3c.dom.Element;
 import org.exist.xmldb.XmldbURI;
+import org.w3c.dom.Element;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

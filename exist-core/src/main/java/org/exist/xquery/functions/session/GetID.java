@@ -30,6 +30,7 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 
 /**
  * Returns the ID of the current session or an empty sequence
@@ -54,7 +55,7 @@ public class GetID extends StrictSessionFunction {
     public Sequence eval(final Sequence[] args, @Nonnull final SessionWrapper session) throws XPathException {
 
         return withValidSession(session, SessionWrapper::getId)
-                .filter(id -> id != null)
+                .filter(Objects::nonNull)
                 .map(id -> (Sequence)new StringValue(id))
                 .orElse(Sequence.EMPTY_SEQUENCE);
     }

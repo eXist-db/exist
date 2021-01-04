@@ -21,6 +21,7 @@
  */
 package org.exist.source;
 
+import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.Reader;
@@ -103,7 +104,7 @@ public class FileSource extends AbstractSource {
 
     @Override
     public InputStream getInputStream() throws IOException {
-        return Files.newInputStream(path);
+        return new BufferedInputStream(Files.newInputStream(path));
     }
 
     @Override
@@ -120,7 +121,7 @@ public class FileSource extends AbstractSource {
 
     private void checkEncoding() throws IOException {
         if (checkEncoding) {
-            try (final InputStream is = Files.newInputStream(path)) {
+            try (final InputStream is = new BufferedInputStream(Files.newInputStream(path))) {
                 final String checkedEnc = guessXQueryEncoding(is);
                 if (checkedEnc != null) {
                     encoding = Charset.forName(checkedEnc);
@@ -140,7 +141,7 @@ public class FileSource extends AbstractSource {
 
     @Override
     public QName isModule() throws IOException {
-        try (final InputStream is = Files.newInputStream(path)) {
+        try (final InputStream is = new BufferedInputStream(Files.newInputStream(path))) {
             return getModuleDecl(is);
         }
     }

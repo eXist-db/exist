@@ -21,6 +21,19 @@
  */
 package org.exist.repo;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.SystemProperties;
+import org.exist.start.Classpath;
+import org.exist.start.EXistClassLoader;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolService;
+import org.expath.pkg.repo.FileSystemStorage;
+import org.expath.pkg.repo.Package;
+import org.expath.pkg.repo.PackageException;
+import org.expath.pkg.repo.Packages;
+import org.expath.pkg.repo.deps.ProcessorDependency;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URI;
@@ -29,18 +42,6 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.exist.SystemProperties;
-import org.exist.start.Classpath;
-import org.exist.start.EXistClassLoader;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.BrokerPoolService;
-import org.exist.storage.BrokerPoolServiceException;
-import org.expath.pkg.repo.*;
-import org.expath.pkg.repo.Package;
-import org.expath.pkg.repo.deps.ProcessorDependency;
 
 /**
  * Helper class to construct classpath for expath modules containing

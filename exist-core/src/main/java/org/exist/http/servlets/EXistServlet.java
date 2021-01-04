@@ -43,10 +43,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.EOFException;
 import java.io.IOException;
-
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.Optional;
 
 /**
  * Implements the REST-style interface if eXist is running within a Servlet

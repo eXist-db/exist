@@ -48,7 +48,7 @@ function fnt:cleanup() {
     xmldb:remove("/db/fn-test")
 };
 
-declare 
+declare
     %test:args("NFC")
     %test:assertEquals(6, 6)
     %test:args("NFD")
@@ -126,3 +126,52 @@ function fnt:tokenize-onearg($str as xs:string) {
      tokenize($str)
 };
 
+declare
+    %test:assertError("err:XPDY0002")
+function fnt:document-uri0_noarg() {
+     document-uri()
+};
+
+declare
+    %test:assertError("err:XPDY0002")
+function fnt:document-uri0() {
+     document-uri(.)
+};
+
+declare
+    %test:assertEquals("/db/fn-test/test.xml")
+function fnt:document-uri0_context() {
+     root(collection('/db/fn-test')//book)/document-uri()
+};
+
+declare
+    %test:assertError("err:XPDY0002")
+function fnt:document-uri0_context_empty() {
+     root(collection('/db/fn-test')//bookies)/document-uri()
+};
+
+declare
+    %test:assertEquals("/db/fn-test/test.xml")
+function fnt:document-uri1() {
+     document-uri(root(collection('/db/fn-test')//book))
+};
+
+declare
+    %test:assertEmpty
+function fnt:document-uri1_empty() {
+     document-uri(root(collection('/db/fn-test')//bookies))
+};
+
+declare
+    %test:assertTrue
+function fnt:fn-document-uri-32() {
+     let $uri := "/db/fn-test/test.xml"
+     return
+         fn:contains(fn:doc($uri)/document-uri(), $uri)
+};
+
+declare
+    %test:assertError("err:XPTY0004")
+function fnt:document-uri0_no_node_context() {
+     util:eval-with-context("document-uri()", (), false(), "a")
+};

@@ -21,33 +21,6 @@
  */
 package org.exist.http;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.function.BiFunction;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerConfigurationException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -56,19 +29,16 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.debuggee.DebuggeeFactory;
-import org.exist.dom.persistent.*;
 import org.exist.dom.QName;
-import static java.lang.invoke.MethodType.methodType;
-import static org.exist.http.RESTServerParameter.*;
-
+import org.exist.dom.memtree.ElementImpl;
+import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.memtree.SAXAdapter;
+import org.exist.dom.persistent.*;
 import org.exist.http.servlets.EXistServlet;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.http.urlrewrite.XQueryURLRewrite;
-import org.exist.dom.memtree.ElementImpl;
-import org.exist.dom.memtree.NodeImpl;
-import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
@@ -93,15 +63,13 @@ import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheCon
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.util.serializer.XQuerySerializer;
-import org.exist.util.serializer.json.*;
+import org.exist.util.serializer.json.JSONNode;
+import org.exist.util.serializer.json.JSONObject;
+import org.exist.util.serializer.json.JSONSimpleProperty;
+import org.exist.util.serializer.json.JSONValue;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xqj.Marshaller;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.Constants;
-import org.exist.xquery.NameTest;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
@@ -116,6 +84,25 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerConfigurationException;
+import java.io.*;
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Field;
+import java.util.Properties;
+import java.util.*;
+import java.util.function.BiFunction;
+
+import static java.lang.invoke.MethodType.methodType;
+import static org.exist.http.RESTServerParameter.*;
 /**
  *
  * @author wolf

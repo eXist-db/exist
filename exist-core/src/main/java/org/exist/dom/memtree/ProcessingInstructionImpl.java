@@ -22,16 +22,15 @@
 package org.exist.dom.memtree;
 
 import org.exist.dom.QName;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Node;
-import org.w3c.dom.ProcessingInstruction;
-
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
+import org.w3c.dom.ProcessingInstruction;
 
 
 public class ProcessingInstructionImpl extends NodeImpl implements ProcessingInstruction {

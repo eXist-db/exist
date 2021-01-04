@@ -36,8 +36,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
 import javax.xml.XMLConstants;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 
 /**

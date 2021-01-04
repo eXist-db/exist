@@ -23,12 +23,8 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-
-import org.xmldb.api.base.XMLDBException;
-
 import org.exist.security.internal.aider.UserAider;
-
-import java.net.URISyntaxException;
+import org.xmldb.api.base.XMLDBException;
 
 
 /**
@@ -80,19 +76,19 @@ public class AddUserTask extends UserTask {
     }
 
 
-    public void setName( String name )
+    public void setName(final String name )
     {
         this.name = name;
     }
 
 
-    public void setPrimaryGroup( String primaryGroup )
+    public void setPrimaryGroup(final String primaryGroup )
     {
         this.primaryGroup = primaryGroup;
     }
 
 
-    public void setSecret( String secret )
+    public void setSecret(final String secret )
     {
         this.secret = secret;
     }

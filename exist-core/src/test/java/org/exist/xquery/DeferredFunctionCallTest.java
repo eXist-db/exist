@@ -102,7 +102,7 @@ public class DeferredFunctionCallTest {
         expect(mockContext.declareVariableBinding((LocalVariable)anyObject())).andReturn(null); 
         expect(mockFunctionSignature.getArgumentTypes()).andReturn(mockArgumentTypes); 
         
-        expect(mockExpression.eval(mockContextSequence, mockContextItem)).andReturn(Sequence.EMPTY_SEQUENCE);
+        expect(mockExpression.eval(null, null)).andReturn(Sequence.EMPTY_SEQUENCE);
 
         mockExpression.resetState(true);
 

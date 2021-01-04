@@ -23,7 +23,6 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-
 import org.xmldb.api.base.XMLDBException;
 
 
@@ -85,13 +84,13 @@ public class ListGroupsTask extends UserTask
     }
 
 
-    public void setOutputproperty( String outputproperty )
+    public void setOutputproperty(final String outputproperty )
     {
         this.outputproperty = outputproperty;
     }
 
 
-    public void setSeparator( String separator )
+    public void setSeparator(final String separator )
     {
         this.separator = separator;
     }

@@ -42,7 +42,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Iterator;
 
 /**
  * Maintains a global symbol table shared by a database instance. The symbol
@@ -361,7 +360,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      */
     private void saveSymbols() throws EXistException {
         try(final VariableByteOutputStream os = new VariableByteOutputStream(8192);
-                final OutputStream fos =  Files.newOutputStream(getFile())) {
+                final OutputStream fos =  new BufferedOutputStream(Files.newOutputStream(getFile()))) {
             writeAll(os);
             fos.write(os.toByteArray());
         } catch(final FileNotFoundException e) {
@@ -379,7 +378,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      * @throws EXistException in response to eXist-db error
      */
     private synchronized void loadSymbols() throws EXistException {
-        try(final InputStream fis = Files.newInputStream(getFile())) {
+        try(final InputStream fis = new BufferedInputStream(Files.newInputStream(getFile()))) {
 
             final VariableByteInput is = new VariableByteInputStream(fis);
             final int magic = is.readFixedInt();
@@ -423,7 +422,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
 
     private OutputStream getOutputStream() throws IOException {
         if(os == null) {
-            os = Files.newOutputStream(getFile(), StandardOpenOption.APPEND);
+            os = new BufferedOutputStream(Files.newOutputStream(getFile(), StandardOpenOption.APPEND));
         }
         return os;
     }

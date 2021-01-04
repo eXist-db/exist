@@ -228,11 +228,7 @@ public class XQueryPool implements BrokerPoolService {
 
         // the compiled query is no longer valid if one of the imported
         // modules may have changed
-        if (!compiledXQuery.isValid()) {
-            return false;
-        }
-
-        return true;
+        return compiledXQuery.isValid();
     }
 
     /**

@@ -23,7 +23,6 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
@@ -137,25 +136,25 @@ public class XMLDBListTask extends AbstractXMLDBTask
     }
 
 
-    public void setCollections( boolean collections )
+    public void setCollections(final boolean collections )
     {
         this.hasCollections = collections;
     }
 
 
-    public void setResources( boolean resources )
+    public void setResources(final boolean resources )
     {
         this.hasResources = resources;
     }
 
 
-    public void setSeparator( String separator )
+    public void setSeparator(final String separator )
     {
         this.separator = separator;
     }
 
 
-    public void setOutputproperty( String outputproperty )
+    public void setOutputproperty(final String outputproperty )
     {
         this.outputproperty = outputproperty;
     }

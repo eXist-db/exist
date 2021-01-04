@@ -709,7 +709,7 @@ public class RpcConnection implements RpcAPI {
                     serialize(broker, toProperties(parameters), saxSerializer -> saxSerializer.toSAX(document), writer);
                 }
             } else {
-                try (final OutputStream os = Files.newOutputStream(tempFile)) {
+                try (final OutputStream os = new BufferedOutputStream(Files.newOutputStream(tempFile))) {
                     broker.readBinaryResource(transaction, (BinaryDocument) document, os);
                 }
             }
@@ -1626,7 +1626,7 @@ public class RpcConnection implements RpcAPI {
             }
         }
 
-        try (final OutputStream os = Files.newOutputStream(tempFile, openOptions)) {
+        try (final OutputStream os = new BufferedOutputStream(Files.newOutputStream(tempFile, openOptions))) {
             if (compressed) {
                 final int uncompressedLen = Compressor.uncompress(chunk, os);
                 if (uncompressedLen != length) {
@@ -2229,7 +2229,9 @@ public class RpcConnection implements RpcAPI {
                 LOG.debug("retrieveFirstChunk with compression");
             }
 
-            try (final OutputStream os = compression ? new DeflaterOutputStream(Files.newOutputStream(tempFile)) : Files.newOutputStream(tempFile);
+            try (final OutputStream os = compression
+                    ? new DeflaterOutputStream(new BufferedOutputStream(Files.newOutputStream(tempFile)))
+                    : new BufferedOutputStream(Files.newOutputStream(tempFile));
                     final Writer writer = new OutputStreamWriter(os, getEncoding(parameters))) {
                 serialize(broker, toProperties(parameters), saxSerializer -> saxSerializer.toSAX(node), writer);
             }
@@ -2331,7 +2333,9 @@ public class RpcConnection implements RpcAPI {
                 LOG.debug("retrieveFirstChunk with compression");
             }
 
-            try (final OutputStream os = compression ? new DeflaterOutputStream(Files.newOutputStream(tempFile)) : Files.newOutputStream(tempFile);
+            try (final OutputStream os = compression
+                    ? new DeflaterOutputStream(new BufferedOutputStream(Files.newOutputStream(tempFile)))
+                    : new BufferedOutputStream(Files.newOutputStream(tempFile));
                     final Writer writer = new OutputStreamWriter(os, getEncoding(parameters))) {
                 if (Type.subTypeOf(item.getType(), Type.NODE)) {
                     final NodeValue nodeValue = (NodeValue) item;
@@ -2444,7 +2448,9 @@ public class RpcConnection implements RpcAPI {
                 LOG.debug("retrieveAllFirstChunk with compression");
             }
 
-            try (final OutputStream os = compression ? new DeflaterOutputStream(Files.newOutputStream(tempFile)) : Files.newOutputStream(tempFile);
+            try (final OutputStream os = compression
+                    ? new DeflaterOutputStream(new BufferedOutputStream(Files.newOutputStream(tempFile)))
+                    : new BufferedOutputStream(Files.newOutputStream(tempFile));
                  final Writer writer = new OutputStreamWriter(os, getEncoding(parameters))) {
                 handler.setOutput(writer, toProperties(parameters));
 
@@ -3408,7 +3414,7 @@ public class RpcConnection implements RpcAPI {
         final List<String> result = new ArrayList<>(2);
         final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
         final Path file = temporaryFileManager.getTemporaryFile();
-        try (final OutputStream os = Files.newOutputStream(file)) {
+        try (final OutputStream os = new BufferedOutputStream(Files.newOutputStream(file))) {
             os.write(getDocument(name, parameters));
         }
         result.add(FileUtils.fileName(file));

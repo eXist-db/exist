@@ -23,7 +23,6 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-
 import org.exist.backup.Backup;
 import org.exist.xmldb.XmldbURI;
 
@@ -78,7 +77,7 @@ public class BackupTask extends AbstractXMLDBTask
      *
      * @param dir the directory.
      */
-    public void setDir( String dir )
+    public void setDir(final String dir )
     {
         this.dir = dir;
     }

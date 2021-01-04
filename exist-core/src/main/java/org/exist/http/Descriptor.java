@@ -22,20 +22,6 @@
 
 package org.exist.http;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
@@ -46,11 +32,21 @@ import org.exist.util.SingleInstanceConfiguration;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
@@ -102,10 +98,10 @@ public class Descriptor implements ErrorHandler {
                 if (!Files.isReadable(f)) {
                     LOG.warn("Giving up unable to read descriptor file from " + f);
                 } else {
-                    is = Files.newInputStream(f);
+                    is = new BufferedInputStream(Files.newInputStream(f));
                 }
             } else {
-                is = Files.newInputStream(f);
+                is = new BufferedInputStream(Files.newInputStream(f));
                 LOG.info("Reading Descriptor from file " + f);
             }
 
@@ -293,7 +289,7 @@ public class Descriptor implements ErrorHandler {
                 path = path.replace('\\', '/');
 
                 //does the path match the <allow-source><xquery path=""/></allow-source> path
-                if ((s.equals(path)) || (path.indexOf(s) > -1)) {
+                if ((s.equals(path)) || (path.contains(s))) {
                     //yes, return true
                     return (true);
                 }

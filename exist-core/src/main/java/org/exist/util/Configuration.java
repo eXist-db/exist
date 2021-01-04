@@ -1475,10 +1475,10 @@ public class Configuration implements ErrorHandler
                 if( uri != null ) { // when uri attribute is filled in
 
                     // Substitute string, creating an uri from a local file
-                    if( uri.indexOf( "${WEBAPP_HOME}" ) != -1 ) {
+                    if(uri.contains("${WEBAPP_HOME}")) {
                         uri = uri.replaceAll( "\\$\\{WEBAPP_HOME\\}", webappHome.toUri().toString() );
                     }
-                    if( uri.indexOf( "${EXIST_HOME}" ) != -1 ) {
+                    if(uri.contains("${EXIST_HOME}")) {
                         uri = uri.replaceAll( "\\$\\{EXIST_HOME\\}", dbHome.toString() );
                     }
 

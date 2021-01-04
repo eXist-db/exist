@@ -50,8 +50,8 @@ import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
-import org.expath.pkg.repo.*;
 import org.expath.pkg.repo.Package;
+import org.expath.pkg.repo.*;
 import org.expath.pkg.repo.deps.DependencyVersion;
 import org.expath.pkg.repo.tui.BatchUserInteraction;
 import org.w3c.dom.Element;
@@ -59,6 +59,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.DirectoryStream;
@@ -67,7 +68,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -149,7 +149,7 @@ public class Deployment {
         if (!Files.isReadable(repoFile)) {
             return null;
         }
-        try(final InputStream is = Files.newInputStream(repoFile)) {
+        try(final InputStream is = new BufferedInputStream(Files.newInputStream(repoFile))) {
             return DocUtils.parse(broker.getBrokerPool(), null, is);
         } catch (final XPathException | IOException e) {
             throw new PackageException("Failed to parse repo.xml: " + e.getMessage(), e);
@@ -459,7 +459,7 @@ public class Deployment {
 
                 if (!errors.isEmpty()) {
                     throw new PackageException("Deployment incomplete, " + errors.size() + " issues found: " +
-                        errors.stream().collect(Collectors.joining("; ")));
+                            String.join("; ", errors));
                 }
                 return Optional.ofNullable(targetCollection.getCollectionPath());
             }
@@ -816,7 +816,7 @@ public class Deployment {
                         }
                     } else {
                         final long size = Files.size(file);
-                        try(final InputStream is = Files.newInputStream(file)) {
+                        try(final InputStream is = new BufferedInputStream(Files.newInputStream(file))) {
                             final BinaryDocument doc =
                                     targetCollection.addBinaryResource(transaction, broker, name, is, mime.getName(), size);
 
@@ -837,7 +837,7 @@ public class Deployment {
     private void storeBinary(final DBBroker broker, final Txn transaction, final Collection targetCollection, final Path file, final MimeType mime, final XmldbURI name, final Optional<RequestedPerms> requestedPerms) throws
             IOException, EXistException, PermissionDeniedException, LockException, TriggerException {
         final long size = Files.size(file);
-        try (final InputStream is = Files.newInputStream(file)) {
+        try (final InputStream is = new BufferedInputStream(Files.newInputStream(file))) {
             final BinaryDocument doc =
                     targetCollection.addBinaryResource(transaction, broker, name, is, mime.getName(), size);
 

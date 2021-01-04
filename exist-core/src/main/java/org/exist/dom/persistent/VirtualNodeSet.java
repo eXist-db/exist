@@ -24,8 +24,8 @@ package org.exist.dom.persistent;
 import org.exist.collections.Collection;
 import org.exist.indexing.StructuralIndex;
 import org.exist.numbering.NodeId;
-import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.dom.INodeIterator;
@@ -39,10 +39,10 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.IOException;
-import java.util.Iterator;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
+import java.util.Iterator;
 
 /**
  * This node set is called virtual because it is just a placeholder for

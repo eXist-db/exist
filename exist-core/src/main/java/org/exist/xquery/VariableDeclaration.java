@@ -217,7 +217,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 
     @Override
     public int returnsType() {
-        return expression.map(value -> value.returnsType()).orElse(Type.ITEM);
+        return expression.map(Expression::returnsType).orElse(Type.ITEM);
     }
 
     @Override

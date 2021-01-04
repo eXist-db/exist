@@ -19,33 +19,17 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.util.io;
+package org.exist.http.servlets;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import javax.servlet.Servlet;
 
-/**
- * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
- */
-public class ResourceRandomAccess extends RandomAccessFile {
+public interface ExistExtensionServlet extends Servlet {
 
-	private Resource resource;
-	
-	public ResourceRandomAccess(Resource resource, String mode) throws FileNotFoundException {
-		super(resource.	getFile().toFile(), mode);
-		
-		this.resource = resource;
-	}
+    /**
+     *  Get path for servlet
+     *
+     * @return Path of servlet
+     */
+    String getPathSpec();
 
-	public void close() throws IOException {
-		super.close();
-		
-		resource.freeFile();
-		
-		//XXX: xml upload back to db
-		
-		//XXX: locking?
-	}
 }

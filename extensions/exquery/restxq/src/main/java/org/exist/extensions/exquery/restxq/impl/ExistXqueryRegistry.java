@@ -307,7 +307,7 @@ public class ExistXqueryRegistry {
                 
                 final DocumentImpl dependantModule = broker.getResource(XmldbURI.create(dependant), Permission.READ);
                 
-                /**
+                /*
                  * This null check is needed, as a dependency module may have been renamed,
                  * and so is no longer accessible under its old URI.
                  *

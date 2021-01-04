@@ -23,19 +23,19 @@ package org.exist.http.urlrewrite;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.Namespaces;
 import org.exist.EXistException;
+import org.exist.Namespaces;
+import org.exist.dom.memtree.SAXAdapter;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
-import org.exist.dom.persistent.DocumentImpl;
+import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.thirdparty.net.sf.saxon.functions.regex.JDK15RegexTranslator;
 import org.exist.thirdparty.net.sf.saxon.functions.regex.RegexSyntaxException;
 import org.exist.thirdparty.net.sf.saxon.functions.regex.RegularExpression;
 import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.XmldbURI;
-import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock.LockMode;
-import org.exist.dom.memtree.SAXAdapter;
 import org.exist.xquery.Constants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -48,6 +48,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -242,7 +243,7 @@ public class RewriteConfig {
     }
 
     private Document parseConfig(final Path file) throws ParserConfigurationException, SAXException, IOException {
-        try (final InputStream is = Files.newInputStream(file)) {
+        try (final InputStream is = new BufferedInputStream(Files.newInputStream(file))) {
             final InputSource src = new InputSource(is);
             final XMLReaderPool parserPool = urlRewrite.getBrokerPool().getParserPool();
             XMLReader xr = null;

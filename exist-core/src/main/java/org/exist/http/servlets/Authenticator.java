@@ -21,12 +21,11 @@
  */
 package org.exist.http.servlets;
 
-import java.io.IOException;
+import org.exist.security.Subject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.exist.security.Subject;
+import java.io.IOException;
 
 /**
  * Interface for HTTP authentication methods.

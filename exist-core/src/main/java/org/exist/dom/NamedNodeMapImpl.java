@@ -21,9 +21,12 @@
  */
 package org.exist.dom;
 
-import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.QName.IllegalQNameException;
-import org.w3c.dom.*;
+import org.exist.dom.memtree.NodeImpl;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -55,6 +55,8 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import java.util.Objects;
+
 /**
  * Implements the fn:deep-equal library function.
  *
@@ -358,7 +360,7 @@ public class FunDeepEqual extends CollatingFunction {
     }
 
     private static boolean safeEquals(Object a, Object b) {
-        return a == null ? b == null : a.equals(b);
+        return Objects.equals(a, b);
     }
 
 }

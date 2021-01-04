@@ -37,9 +37,7 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.exist.xquery.FunctionDSL.optParam;
-import static org.exist.xquery.FunctionDSL.param;
-import static org.exist.xquery.FunctionDSL.params;
+import static org.exist.xquery.FunctionDSL.*;
 
 public class ExtTestErrorFunction extends JUnitIntegrationFunction {
 

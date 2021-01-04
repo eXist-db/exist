@@ -152,7 +152,7 @@ public class Main {
         main.invoke(null, method_params);
     }
 
-    public void run(String[] args) {
+    public void run(final String[] args) {
         try {
             runEx(args);
         } catch (final StartException e) {
@@ -188,7 +188,7 @@ public class Main {
                 _mode = "other";
             }
 
-            String[] nargs = new String[args.length - 1];
+            final String[] nargs = new String[args.length - 1];
             if (args.length > 1) {
                 System.arraycopy(args, 1, nargs, 0, args.length - 1);
             }
@@ -290,10 +290,8 @@ public class Main {
         Optional<String> value = Optional.ofNullable(System.getProperty(sysPropName));
         if (!value.isPresent()) {
             value = Optional.ofNullable(System.getenv().get(envVarName));
-            if (value.isPresent()) {
-                // if we managed to detect from environment, store it in a system property
-                System.setProperty(sysPropName, value.get());
-            }
+            // if we managed to detect from environment, store it in a system property
+            value.ifPresent(s -> System.setProperty(sysPropName, s));
         }
 
         if (_debug && value.isPresent()) {

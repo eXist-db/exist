@@ -21,14 +21,13 @@
  */
 package org.exist.dom.persistent;
 
+import org.exist.numbering.NodeId;
+
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
-
-import org.exist.numbering.NodeId;
 
 /**
  * Used to track matches throughout the query.

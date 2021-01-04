@@ -355,7 +355,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
                     @Override
                     public Node item(final int index) {
                         return Optional.ofNullable(underlying.item(index))
-                                .map(n -> exportInternalNode(n))
+                                .map(LocalXMLResource.this::exportInternalNode)
                                 .orElse(null);
                     }
 

@@ -42,11 +42,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 
 import javax.annotation.Nullable;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
@@ -196,7 +192,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
         final InputStream is;
         if(file != null) {
             try {
-                is = Files.newInputStream(file);
+                is = new BufferedInputStream(Files.newInputStream(file));
             } catch(final IOException e) {
                 // Cannot fire it :-(
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -216,7 +212,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 
     @Override
     public void getContentIntoAFile(final Path tmpFile) throws XMLDBException {
-        try(final OutputStream bos = Files.newOutputStream(tmpFile)) {
+        try(final OutputStream bos = new BufferedOutputStream(Files.newOutputStream(tmpFile))) {
             getContentIntoAStream(bos);
         } catch(final IOException ioe) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "error while loading binary resource " + getId(), ioe);

@@ -23,11 +23,9 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-
+import org.exist.security.Account;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
-
-import org.exist.security.Account;
 
 
 /**
@@ -75,19 +73,19 @@ public class ChownTask extends UserTask
     }
 
 
-    public void setName( String user )
+    public void setName(final String user )
     {
         this.name = user;
     }
 
 
-    public void setResource( String resource )
+    public void setResource(final String resource )
     {
         this.resource = resource;
     }
 
 
-    public void setGroup( String group )
+    public void setGroup(final String group )
     {
         this.group = group;
     }

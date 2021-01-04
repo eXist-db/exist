@@ -150,7 +150,7 @@ public class URLSource extends AbstractSource {
             }
             Reader reader = null;
             if (responseCode != HttpURLConnection.HTTP_NOT_FOUND) {
-                reader = new InputStreamReader(connection.getInputStream(), "UTF-8");
+                reader = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
             }
             connection = null;
             return reader;

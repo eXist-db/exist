@@ -30,6 +30,7 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 
 /**
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
@@ -230,7 +231,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
         if (other.getType() == Type.DAY_TIME_DURATION) {
             final DecimalValue a = new DecimalValue(secondsValueSigned());
             final DecimalValue b = new DecimalValue(((DayTimeDurationValue) other).secondsValueSigned());
-            return new DecimalValue(a.value.divide(b.value, 20, BigDecimal.ROUND_HALF_UP));
+            return new DecimalValue(a.value.divide(b.value, 20, RoundingMode.HALF_UP));
         }
         if (other instanceof NumericValue) {
             if (((NumericValue) other).isNaN()) {
@@ -248,7 +249,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
         final BigDecimal divisor = numberToBigDecimal(other, "Operand to div should be of xdt:dayTimeDuration or numeric type; got: ");
         final boolean isDivisorNegative = divisor.signum() < 0;
         final BigDecimal secondsValueSigned = secondsValueSigned();
-        final DayTimeDurationValue quotient = fromDecimalSeconds(secondsValueSigned.divide(divisor.abs(), Math.max(Math.max(3, secondsValueSigned.scale()), divisor.scale()), BigDecimal.ROUND_HALF_UP));
+        final DayTimeDurationValue quotient = fromDecimalSeconds(secondsValueSigned.divide(divisor.abs(), Math.max(Math.max(3, secondsValueSigned.scale()), divisor.scale()), RoundingMode.HALF_UP));
         if (isDivisorNegative) {
             return new DayTimeDurationValue(quotient.negate().getCanonicalDuration());
         }
