@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.functions.math;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -57,8 +55,6 @@ public class TwoParamFunctions extends BasicFunction {
             },
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the result")
     );
-    @SuppressWarnings("unused")
-    private static final Logger logger = LogManager.getLogger(TwoParamFunctions.class);
 
     public TwoParamFunctions(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
