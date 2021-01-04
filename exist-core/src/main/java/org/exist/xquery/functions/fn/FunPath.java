@@ -116,15 +116,15 @@ public class FunPath extends Function {
         ArrayDeque<String> steps = new ArrayDeque<>();
 
         // Flag used to find the root node.
-        boolean isRootNode;
+        boolean isToplevelNode;
 
         try {
             do {
                 Node parentNode = getParent(node);
-                isRootNode = (parentNode == null);
+                isToplevelNode = (parentNode == null);
 
                 if (node.getNodeType() == Node.DOCUMENT_NODE) {
-                    if(!isNodeCreatedAsInMemDocument(node)) {
+                    if(!isDocumentNodeCreatedAsInMemDocument(node)) {
                         // The last added element must be removed, as the spec
                         // does not want to show root element info for constructed
                         // elements, only for document {} constructed nodes.
@@ -139,7 +139,7 @@ public class FunPath extends Function {
                 // follow parent nodes
                 node = parentNode;
 
-            } while (!isRootNode);
+            } while (!isToplevelNode);
 
         } catch (XPathException ex) {
             throw new XPathException(this, ErrorCodes.ERROR, ex.getMessage());
@@ -168,7 +168,7 @@ public class FunPath extends Function {
      * @param node The document node
      * @return TRUE when the document is constructed via document {}.
      */
-    private boolean isNodeCreatedAsInMemDocument(Node node) {
+    private boolean isDocumentNodeCreatedAsInMemDocument(Node node) {
         if (node instanceof DocumentImpl) {
             DocumentImpl di = (DocumentImpl) node;
             return di.isExplicitlyCreated();
