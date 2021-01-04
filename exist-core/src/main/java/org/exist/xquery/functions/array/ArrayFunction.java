@@ -344,22 +344,25 @@ public class ArrayFunction extends BasicFunction {
                             return array;
                         }
 
-                        // Get and reverse sort parameters
-                        List<Integer> positions = new ArrayList<>();
-                        for (int i = 0; i < args[1].getItemCount(); i++) {
+                        final int arraySize = args[1].getItemCount();
+
+                        // Fetch and reverse sort parameters
+                        int[] positions = new int[arraySize];
+                        for (int i = 0; i < arraySize; i++) {
                             final int position = ((IntegerValue) args[1].itemAt(i)).getInt();
                             if (position < 1 || position > array.getSize()) {
                                 throw new XPathException(this, ErrorCodes.FOAY0001, "Index of item to remove (" + position + ") is out of bounds");
                             }
-                            positions.add(position - 1);
+                            positions[i] = position - 1;
                         }
-                        positions.sort(Comparator.reverseOrder());
+                        Arrays.sort(positions);
 
-                        // Effectively iterate reverse over array, delete items
+                        // Iterate reverse over array, delete items
                         ArrayType resultArray = array;
-                        for (int pos : positions) {
-                            resultArray = resultArray.remove(pos);
+                        for (int pos = arraySize - 1; pos >= 0; pos--) {
+                            resultArray = resultArray.remove(positions[pos]);
                         }
+
                         return resultArray;
 
                     case INSERT_BEFORE:
