@@ -53,6 +53,22 @@ declare variable $path:PI :=
         <?xml-stylesheet type="text/css" href="style.css"?>
     </div>;
 
+declare
+    %test:setUp
+function path:store() {
+    let $col := xmldb:create-collection("/db", "fn-path")
+    return
+        (
+            xmldb:store($col, "elements.xml", $path:ELEMENT_NODE),
+            xmldb:store($col, "comments.xml", $path:COMMENTS)
+        )
+};
+
+declare
+    %test:tearDown
+function path:cleanup() {
+    xmldb:remove("/db/fn-path")
+};
 
 (: in memory document node tests as defined in spec :)
 
@@ -140,5 +156,12 @@ declare
     %test:assertError("err:XPTY0004")
 function path:no-node-context() {
      util:eval-with-context("path()", (), false(), "a")
+};
+
+(: persistent documents :)
+declare
+  %test:assertEquals('/Q{}div[1]/comment()[3]')
+  function path:comments_persistent() {
+    fn:path(doc('/db/fn-path/comments.xml')//comment()[contains(.,"ollah")])
 };
 
