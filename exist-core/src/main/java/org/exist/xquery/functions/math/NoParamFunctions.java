@@ -26,7 +26,6 @@ import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DoubleValue;
@@ -65,15 +64,6 @@ public class NoParamFunctions extends BasicFunction {
          */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-    	if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null){
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
-            }
-        }
-        
-        
         Sequence result;
         final String functionName = getSignature().getName().getLocalPart();
         if(PI.equals(functionName)) {
@@ -82,12 +72,7 @@ public class NoParamFunctions extends BasicFunction {
         } else {
             throw new XPathException(this, "Function "+functionName+" not found.");
         }
-        
-        
-        if (context.getProfiler().isEnabled()){
-            context.getProfiler().end(this, "", result);
-        }
-        
+
         return result;
     }
     
