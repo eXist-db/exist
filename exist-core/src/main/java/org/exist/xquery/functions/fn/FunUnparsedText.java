@@ -37,8 +37,8 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import static org.exist.xquery.FunctionDSL.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.xquery.FunctionDSL.*;
 
 public class FunUnparsedText extends BasicFunction {
 
@@ -164,10 +164,18 @@ public class FunUnparsedText extends BasicFunction {
             final Source source = getSource(uriParam);
             final Charset charset = getCharset(encoding, source);
 
-            try (final BufferedReader reader = new BufferedReader(new InputStreamReader(source.getInputStream(), charset))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    result.add(new StringValue(line));
+            try (final InputStream inputStream = source.getInputStream()) {
+
+                // Nested try() as inputStream can be null
+                if (inputStream == null) {
+                    throw new XPathException(this, ErrorCodes.FOUT1170, "Unable to retrieve bytestream from " + uriParam);
+                }
+
+                try (final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, charset))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        result.add(new StringValue(line));
+                    }
                 }
             }
             return result;

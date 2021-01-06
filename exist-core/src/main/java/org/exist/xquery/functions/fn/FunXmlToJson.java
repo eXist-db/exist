@@ -178,8 +178,12 @@ public class FunXmlToJson extends BasicFunction {
                                 jsonGenerator.writeNull();
                                 break;
                             case "number":
-                                final double tempDouble = Double.parseDouble(tempString);
-                                jsonGenerator.writeNumber(tempDouble);
+                                try{
+                                    final double tempDouble = Double.parseDouble(tempString);
+                                    jsonGenerator.writeNumber(tempDouble);
+                                } catch (NumberFormatException ex){
+                                    throw new XPathException(ErrorCodes.FOJS0006, "Cannot convert '" + tempString + "' to a number.");
+                                }
                                 break;
                             case "string":
                                 if (elementValueIsEscaped == true) {
