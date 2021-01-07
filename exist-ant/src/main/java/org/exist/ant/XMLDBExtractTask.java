@@ -33,10 +33,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 import javax.xml.transform.OutputKeys;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Writer;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
@@ -297,7 +294,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                 dest = dest.resolve(fname);
             }
 
-            try(final OutputStream os = Files.newOutputStream(dest)) {
+            try(final OutputStream os = new BufferedOutputStream(Files.newOutputStream(dest))) {
                 ((ExtendedResource) res).getContentIntoAStream(os);
             }
 

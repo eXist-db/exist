@@ -28,10 +28,7 @@ import org.exist.xquery.*;
 import org.exist.xquery.functions.fn.FunData;
 import org.exist.xquery.value.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Functions on arrays, see http://www.w3.org/TR/xpath-functions-31/#array-functions.
@@ -342,11 +339,32 @@ public class ArrayFunction extends BasicFunction {
                         }
                         return array.subarray(start - 1, end);
                     case REMOVE:
-                        final int rpos = ((IntegerValue) args[1].itemAt(0)).getInt();
-                        if (rpos < 1 || rpos > array.getSize()) {
-                            throw new XPathException(this, ErrorCodes.FOAY0001, "Index of item to remove (" + rpos + ") is out of bounds");
+                        // Handle empty sequence
+                        if (args[1].isEmpty()) {
+                            return array;
                         }
-                        return array.remove(rpos - 1);
+
+                        final int arraySize = args[1].getItemCount();
+
+                        // Fetch and reverse sort parameters
+                        int[] positions = new int[arraySize];
+                        for (int i = 0; i < arraySize; i++) {
+                            final int position = ((IntegerValue) args[1].itemAt(i)).getInt();
+                            if (position < 1 || position > array.getSize()) {
+                                throw new XPathException(this, ErrorCodes.FOAY0001, "Index of item to remove (" + position + ") is out of bounds");
+                            }
+                            positions[i] = position - 1;
+                        }
+                        Arrays.sort(positions);
+
+                        // Iterate reverse over array, delete items
+                        ArrayType resultArray = array;
+                        for (int pos = arraySize - 1; pos >= 0; pos--) {
+                            resultArray = resultArray.remove(positions[pos]);
+                        }
+
+                        return resultArray;
+
                     case INSERT_BEFORE:
                         final int ipos = ((IntegerValue) args[1].itemAt(0)).getInt();
                         if (ipos < 1 || ipos > array.getSize() + 1) {

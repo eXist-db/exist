@@ -746,14 +746,6 @@ public class Configurator {
         }
     }
 
-    public static Configuration parse(final File file) throws ConfigurationException {
-        try {
-            return parse(new FileInputStream(file));
-        } catch (final FileNotFoundException e) {
-            throw new ConfigurationException(e);
-        }
-    }
-
     public static Configuration parse(final InputStream is) throws ConfigurationException {
         try {
             final SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();

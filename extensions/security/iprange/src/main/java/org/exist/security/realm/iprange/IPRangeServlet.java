@@ -23,6 +23,7 @@ package org.exist.security.realm.iprange;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.http.servlets.ExistExtensionServlet;
 import org.exist.security.AbstractRealm;
 import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
@@ -43,7 +44,7 @@ import java.io.PrintWriter;
  *
  * @author <a href="mailto:wshager@gmail.com">Wouter Hager</a>
  */
-public class IPRangeServlet extends HttpServlet {
+public class IPRangeServlet extends HttpServlet implements ExistExtensionServlet  {
 
     protected final static Logger LOG = LogManager.getLogger(IPRangeServlet.class);
     private static final long serialVersionUID = -568037449837549034L;
@@ -118,4 +119,13 @@ public class IPRangeServlet extends HttpServlet {
         }
     }
 
+    @Override
+    public String getServletInfo() {
+        return "IPrange filter";
+    }
+
+    @Override
+    public String getPathSpec() {
+        return "/iprange";
+    }
 }
