@@ -988,11 +988,12 @@ The BaseX Team. The original license statement is also included below.]]></pream
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>-Dfile.encoding=${project.build.sourceEncoding} -Dlog4j.configurationFile=${project.build.testOutputDirectory}/log4j2.xml</argLine>
+                    <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
                     <systemPropertyVariables>
-                        <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
                         <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
+                        <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
                         <exist.jetty.standalone.webapp.dir>${project.build.testOutputDirectory}/standalone-webapp</exist.jetty.standalone.webapp.dir>
+                        <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
                     </systemPropertyVariables>
 
                     <excludes>
@@ -1045,7 +1046,13 @@ The BaseX Team. The original license statement is also included below.]]></pream
                         <configuration>
                             <forkCount>1C</forkCount>
                             <reuseForks>false</reuseForks>
-
+                            <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
+                            <systemPropertyVariables>
+                                <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
+                                <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
+                                <exist.jetty.standalone.webapp.dir>${project.build.testOutputDirectory}/standalone-webapp</exist.jetty.standalone.webapp.dir>
+                                <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
+                            </systemPropertyVariables>
                             <excludes>
                                 <!-- NOTE: this test fails on AppVeyor Windows CI with Oracle JDK 11,
                                  but not on some other windows systems :-/ -->
