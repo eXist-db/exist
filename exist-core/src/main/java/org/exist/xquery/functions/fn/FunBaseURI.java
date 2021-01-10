@@ -160,10 +160,12 @@ public class FunBaseURI extends BasicFunction {
                 URI relativeURI = null;
                 URI baseURI = null;
                 try {
-                    final String uri = domNode.getBaseURI();
-                    if (uri != null) { 
-                        relativeURI = new URI(uri);
-                        baseURI = new URI(context.getBaseURI() + "/");
+                    if (domNode != null) {
+                        final String uri = domNode.getBaseURI();
+                        if (uri != null) {
+                            relativeURI = new URI(uri);
+                            baseURI = new URI(context.getBaseURI() + "/");
+                        }
                     }
                 } catch (final URISyntaxException e) {
                     throw new XPathException(e.getMessage());
