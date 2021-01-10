@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.fn;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -162,7 +163,7 @@ public class FunBaseURI extends BasicFunction {
                 try {
                     if (domNode != null) {
                         final String uri = domNode.getBaseURI();
-                        if (uri != null) {
+                        if (StringUtils.isNotBlank(uri)) {
                             relativeURI = new URI(uri);
                             baseURI = new URI(context.getBaseURI() + "/");
                         }
