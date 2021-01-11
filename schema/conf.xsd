@@ -101,6 +101,8 @@
                         <xs:attribute name="minDiskSpace" type="xs:string" default="128M"/>
                         <xs:attribute name="nodesBuffer" type="xs:integer" default="-1"/>
                         <xs:attribute name="pageSize" type="xs:integer" default="4096"/>
+                        <xs:attribute name="posix-chown-restricted" type="xs:boolean" default="true"/>
+                        <xs:attribute name="preserve-on-copy" type="xs:boolean" default="false"/>
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="lock-manager">
@@ -112,17 +114,13 @@
                                     <xs:attribute name="trace-stack-depth" type="xs:int" default="0"/>
                                 </xs:complexType>
                             </xs:element>
-                            <xs:element name="collection">
-                                <xs:complexType>
-                                    <xs:attribute name="multiple-writers" type="xs:boolean" default="false"/>
-                                </xs:complexType>
-                            </xs:element>
                             <xs:element name="document">
                                 <xs:complexType>
-                                    <xs:attribute name="multi-lock" type="xs:boolean" default="false"/>
+                                    <xs:attribute name="use-path-locks" type="xs:boolean" default="false"/>
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
+                        <xs:attribute name="paths-multi-writer" type="xs:boolean" default="false"/>
                         <xs:attribute name="upgrade-check" type="xs:boolean" default="false"/>
                         <xs:attribute name="warn-wait-on-read-for-write" type="xs:boolean" default="false"/>
                     </xs:complexType>
