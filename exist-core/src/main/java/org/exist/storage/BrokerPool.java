@@ -1494,50 +1494,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     }
 
     /**
-     * Schedules a cache synchronization for the database instance. If the database instance is idle,
-     * the cache synchronization will be run immediately. Otherwise, the task will be deferred
-     * until all running threads have returned.
-     *
-     * @param syncEvent One of {@link org.exist.storage.sync.Sync}
-     */
-    public void triggerSync(final Sync syncEvent) {
-        //TOUNDERSTAND (pb) : synchronized, so... "schedules" or, rather, "executes" ? "schedules" (WM)
-        final State s = status.getCurrentState();
-        if(s == State.SHUTDOWN || s == State.SHUTTING_DOWN) {
-            return;
-        }
-
-        LOG.debug("Triggering sync: " + syncEvent);
-        synchronized(this) {
-            //Are there available brokers ?
-            // TOUNDERSTAND (pb) : the trigger is ignored !
-            // WM: yes, it seems wrong!!
-//			if(inactiveBrokers.size() == 0)
-//				return;
-            //TODO : switch on syncEvent and throw an exception if it is inaccurate ?
-            //Is the database instance idle ?
-            if(inactiveBrokers.size() == brokersCount) {
-                //Borrow a broker
-                //TODO : this broker is *not* marked as active and may be reused by another process !
-                // No other brokers are running at this time, so there's no risk.
-                //TODO : use get() then release the broker ?
-                // No, might lead to a deadlock.
-                final DBBroker broker = inactiveBrokers.pop();
-                broker.prepare();
-                //Do the synchronization job
-                sync(broker, syncEvent);
-                inactiveBrokers.push(broker);
-                syncRequired = false;
-            } else {
-                //Put the synchronization job into the queue
-                //TODO : check that we don't replace high priority Sync.MAJOR_SYNC by a lesser priority sync !
-                this.syncEvent = syncEvent;
-                syncRequired = true;
-            }
-        }
-    }
-
-    /**
      * Schedules a system maintenance task for the database instance. If the database is idle,
      * the task will be run immediately. Otherwise, the task will be deferred
      * until all running threads have returned.
