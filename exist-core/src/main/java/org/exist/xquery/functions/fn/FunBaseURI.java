@@ -93,14 +93,7 @@ public class FunBaseURI extends BasicFunction {
      * org.exist.xquery.value.Sequence)
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES,
-                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);}
-        }
+
         Sequence result = null;
         NodeValue node = null;
         if (isCalledAs("static-base-uri")) {
@@ -169,7 +162,7 @@ public class FunBaseURI extends BasicFunction {
                         }
                     }
                 } catch (final URISyntaxException e) {
-                    throw new XPathException(e.getMessage());
+                    throw new XPathException(this, ErrorCodes.ERROR, e.getMessage());
                 }
                 if (relativeURI != null) {
                     if (!(("".equals(relativeURI.toString()) ||
@@ -185,8 +178,7 @@ public class FunBaseURI extends BasicFunction {
                 }
             }
         }
-        if (context.getProfiler().isEnabled())
-            {context.getProfiler().end(this, "", result);}
+
         return result;
     }
 }
