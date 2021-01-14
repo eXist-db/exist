@@ -65,8 +65,11 @@ import static java.lang.invoke.MethodType.methodType;
  * It control search procedure, activation and de-actication (including runtime).
  *
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
+ *
+ * @deprecated Should no longer be used.
  */
 @ConfigurationClass("plugin-manager")
+@Deprecated
 public class PluginsManagerImpl implements Configurable, BrokerPoolService, PluginsManager, LifeCycle {
 
     private static final Logger LOG = LogManager.getLogger(PluginsManagerImpl.class);
