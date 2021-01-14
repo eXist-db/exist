@@ -39,7 +39,7 @@ import org.exist.util.Configuration;
  * Interface for a class which provides
  * services to a BrokerPool instance
  *
- * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public interface BrokerPoolService {
 
@@ -69,6 +69,22 @@ public interface BrokerPoolService {
      */
     default void prepare(final BrokerPool brokerPool) throws BrokerPoolServiceException {
         //nothing to prepare
+    }
+
+    /**
+     * Start any part of this service that should happen before
+     * system (single-user) mode.
+     *
+     * As this point the database is not generally available
+     * and the only system broker is passed to this function
+     *
+     * @param systemBroker The system mode broker
+     * @param transaction The transaction for the system service
+     *
+     * @throws BrokerPoolServiceException if an error occurs when starting the pre-system service
+     */
+    default void startPreSystem(final DBBroker systemBroker, final Txn transaction) throws BrokerPoolServiceException {
+        // nothing to start
     }
 
     /**

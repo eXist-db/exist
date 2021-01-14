@@ -52,12 +52,12 @@ import java.util.List;
  *
  * This class should only be accessed from {@link BrokerPool}
  * and the order of method invocation (service state change)
- * is significant and must follow the order:
+ * is significant and must follow the startup order:
  *
  *      register -> configure -> prepare ->
- *          system -> pre-multi-user -> multi-user
+ *          pre-system -> system -> pre-multi-user -> multi-user
  *
- * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @NotThreadSafe
 class BrokerPoolServicesManager {
@@ -66,6 +66,7 @@ class BrokerPoolServicesManager {
         REGISTRATION,
         CONFIGURATION,
         PREPARATION,
+        PRE_SYSTEM,
         SYSTEM,
         PRE_MULTI_USER,
         MULTI_USER,
@@ -76,6 +77,7 @@ class BrokerPoolServicesManager {
     private enum ManagerEvent {
         CONFIGURE,
         PREPARE,
+        PREPARE_ENTER_SYSTEM_MODE,
         ENTER_SYSTEM_MODE,
         PREPARE_ENTER_MULTI_USER_MODE,
         ENTER_MULTI_USER_MODE,
@@ -86,13 +88,14 @@ class BrokerPoolServicesManager {
     @SuppressWarnings("unchecked")
     private FSM<ManagerState, ManagerEvent> states = new AtomicFSM<>(ManagerState.REGISTRATION, transitionTable(ManagerState.class, ManagerEvent.class)
             .when(ManagerState.REGISTRATION)
-                .on(ManagerEvent.CONFIGURE).switchTo(ManagerState.CONFIGURATION)
-                .on(ManagerEvent.PREPARE).switchTo(ManagerState.PREPARATION)
-                .on(ManagerEvent.ENTER_SYSTEM_MODE).switchTo(ManagerState.SYSTEM)
-                .on(ManagerEvent.PREPARE_ENTER_MULTI_USER_MODE).switchTo(ManagerState.PRE_MULTI_USER)
-                .on(ManagerEvent.ENTER_MULTI_USER_MODE).switchTo(ManagerState.MULTI_USER)
-                .on(ManagerEvent.STOP).switchTo(ManagerState.STOPPING)
-                .on(ManagerEvent.SHUTDOWN).switchTo(ManagerState.SHUTTING_DOWN)
+            .on(ManagerEvent.CONFIGURE).switchTo(ManagerState.CONFIGURATION)
+            .on(ManagerEvent.PREPARE).switchTo(ManagerState.PREPARATION)
+            .on(ManagerEvent.PREPARE_ENTER_SYSTEM_MODE).switchTo(ManagerState.PRE_SYSTEM)
+            .on(ManagerEvent.ENTER_SYSTEM_MODE).switchTo(ManagerState.SYSTEM)
+            .on(ManagerEvent.PREPARE_ENTER_MULTI_USER_MODE).switchTo(ManagerState.PRE_MULTI_USER)
+            .on(ManagerEvent.ENTER_MULTI_USER_MODE).switchTo(ManagerState.MULTI_USER)
+            .on(ManagerEvent.STOP).switchTo(ManagerState.STOPPING)
+            .on(ManagerEvent.SHUTDOWN).switchTo(ManagerState.SHUTTING_DOWN)
             .build()
     );
 
@@ -168,6 +171,31 @@ class BrokerPoolServicesManager {
                 LOG.trace("Preparing service: " + brokerPoolService.getClass().getSimpleName() + "...");
             }
             brokerPoolService.prepare(brokerPool);
+        }
+    }
+
+    /**
+     * Starts any services which should be started directly before
+     * the database enters system mode, but before any general system
+     * mode operations are performed.
+     *
+     * At this point the broker pool is in system (single user) mode
+     * and not generally available for access, only a single
+     * system broker is available, no system services have been started
+     *
+     * @param systemBroker The System Broker which is available for
+     *   services to use to access the database
+     * @param transaction The transaction for the system services
+     *
+     * @throws BrokerPoolServiceException if any service causes an error during starting the pre system mode
+     *
+     * @throws IllegalStateException Thrown if there is an attempt to start a service
+     * after any other service has entered the start pre-system mode.
+     */
+    void startPreSystemServices(final DBBroker systemBroker, final Txn transaction) throws BrokerPoolServiceException {
+        states.process(ManagerEvent.PREPARE_ENTER_SYSTEM_MODE);
+        for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
+            brokerPoolService.startPreSystem(systemBroker, transaction);
         }
     }
 

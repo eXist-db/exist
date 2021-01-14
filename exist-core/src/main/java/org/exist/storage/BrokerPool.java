@@ -569,6 +569,13 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                             journalManager.ifPresent(JournalManager::disableJournalling);
                         }
 
+                        try(final Txn transaction = transactionManager.beginTransaction()) {
+                            servicesManager.startPreSystemServices(systemBroker, transaction);
+                            transaction.commit();
+                        } catch(final BrokerPoolServiceException e) {
+                            throw new EXistException(e);
+                        }
+
                         //Run the recovery process
                         boolean recovered = false;
                         if(isRecoveryEnabled()) {

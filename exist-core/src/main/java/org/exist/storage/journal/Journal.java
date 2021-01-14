@@ -343,7 +343,11 @@ public final class Journal implements Closeable {
             if (currentFile > Short.MAX_VALUE) {
                 throw new JournalException("Journal can only support " + Short.MAX_VALUE + " log files");
             }
-            currentLsn = new Lsn((short)currentFile, channel.position() + currentBuffer.position() + 1);
+
+            // TODO(AR) this is needed as the journal is initialised by starting a transaction for loading the SymbolTable... before recovery! which is likely wrong!!! as Recovery Cannot run if the Journal file has been switched!
+            final long pos = channel != null ? channel.position() : 0;
+
+            currentLsn = new Lsn((short)currentFile, pos + currentBuffer.position() + 1);
         } catch (final IOException e) {
             throw new JournalException("Unable to create LSN for: " + entry.dump());
         }
