@@ -95,7 +95,7 @@ public class FunBaseURI extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
         Sequence result = null;
-        NodeValue node = null;
+        NodeValue nodeValue = null;
         if (isCalledAs("static-base-uri")) {
             if (context.isBaseURIDeclared()) {
                 result = context.getBaseURI();
@@ -110,44 +110,44 @@ public class FunBaseURI extends BasicFunction {
         } else {
             if (args.length == 0) {
                 if (contextSequence == null) {
-                    throw new XPathException(this, ErrorCodes.XPDY0002,
-                        "The context item is absent");
+                    throw new XPathException(this, ErrorCodes.XPDY0002, "The context item is absent");
                 }
                 if (contextSequence.isEmpty()) {
                     return Sequence.EMPTY_SEQUENCE;
                 }
                 final Item item = contextSequence.itemAt(0);
                 if (!Type.subTypeOf(item.getType(), Type.NODE)) {
-                    throw new XPathException(this, ErrorCodes.XPTY0004,
-                        "Context item is not a node");
+                    throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node");
                 }
-                node = (NodeValue) item;
+                nodeValue = (NodeValue) item;
+
             } else {
                 if (args[0].isEmpty()) {
                     result = Sequence.EMPTY_SEQUENCE;
                 } else {
-                    node = (NodeValue) args[0].itemAt(0);
+                    nodeValue = (NodeValue) args[0].itemAt(0);
                 }
             }
         }
-        if (result == null && node != null) {
+
+        if (result == null && nodeValue != null) {
             result = Sequence.EMPTY_SEQUENCE;
             // This is implemented to be a recursive ascent according to
             // section 2.5 in www.w3.org/TR/xpath-functions 
             // see memtree/ElementImpl and dom/ElementImpl. /ljo
-            final Node domNode = node.getNode();
+            final Node domNode = nodeValue.getNode();
             final short type = domNode.getNodeType();
             //A direct processing instruction constructor creates a processing instruction node 
             //whose target property is PITarget and whose content property is DirPIContents. 
             //The base-uri property of the node is empty. 
             //The parent property of the node is empty.
-            if (type != Node.DOCUMENT_NODE && type != Node.ATTRIBUTE_NODE && domNode.getParentNode() == null)
-                {
-                }
-            else if ((type == Node.PROCESSING_INSTRUCTION_NODE ||
-                type == Node.COMMENT_NODE) && (domNode.getParentNode() != null
-                && domNode.getParentNode().getNodeType() == Node.DOCUMENT_NODE)) {
-                //Nothing to do
+            if (type != Node.DOCUMENT_NODE && type != Node.ATTRIBUTE_NODE && domNode.getParentNode() == null) {
+                // Nothing to do
+            }
+            else if ( (type == Node.PROCESSING_INSTRUCTION_NODE || type == Node.COMMENT_NODE)
+                    && (domNode.getParentNode() != null && domNode.getParentNode().getNodeType() == Node.DOCUMENT_NODE)) {
+                // Nothing to do
+
             } else if (type == Node.ATTRIBUTE_NODE ||
                     type == Node.ELEMENT_NODE || type == Node.DOCUMENT_NODE ||
                     type == Node.PROCESSING_INSTRUCTION_NODE || type == Node.COMMENT_NODE) {
@@ -164,14 +164,16 @@ public class FunBaseURI extends BasicFunction {
                 } catch (final URISyntaxException e) {
                     throw new XPathException(this, ErrorCodes.ERROR, e.getMessage());
                 }
+
                 if (relativeURI != null) {
-                    if (!(("".equals(relativeURI.toString()) ||
-                            (type == Node.ATTRIBUTE_NODE && "/db".equals(relativeURI.toString()))))) {
+                    if (!("".equals(relativeURI.toString())
+                            || (type == Node.ATTRIBUTE_NODE && "/db".equals(relativeURI.toString())))) {
                         if (relativeURI.isAbsolute()) {
                             result = new AnyURIValue(relativeURI);
                         } else {
                             result = new AnyURIValue(baseURI.resolve(relativeURI));
                         }
+
                     } else {
                         result = new AnyURIValue(baseURI);
                     }
