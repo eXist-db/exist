@@ -187,8 +187,14 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         }
     }
 
+    @Override
+    @Deprecated
+    public void stop(final DBBroker broker) {
+	    stopSystem(broker);
+    }
+
 	@Override
-	public void stop(final DBBroker broker) {
+	public void stopSystem(final DBBroker broker) {
 		for (final Plug plugin : jacks.values()) {
 			try {
 				plugin.stop(broker);

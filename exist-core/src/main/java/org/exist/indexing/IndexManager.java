@@ -244,7 +244,7 @@ public class IndexManager implements BrokerPoolService {
      * @throws BrokerPoolServiceException in case of an error in the BrookerPoolService
      */
     @Override
-    public void stop(final DBBroker systemBroker) throws BrokerPoolServiceException {
+    public void stopSystem(final DBBroker systemBroker) throws BrokerPoolServiceException {
         for (final Iterator<Index> i = iterator(); i.hasNext(); ) {
             final Index index = i.next();
             try {

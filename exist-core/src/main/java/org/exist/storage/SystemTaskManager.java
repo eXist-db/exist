@@ -61,7 +61,7 @@ public class SystemTaskManager implements BrokerPoolService {
      */
     public void processTasks(final DBBroker systemBroker, final Txn transaction) {
         //dont run the task if we are shutting down
-        if (pool.isShuttingDown() || pool.isShutDown()) {
+        if (pool.isShuttingDownOrDown()) {
             return;
         }
 

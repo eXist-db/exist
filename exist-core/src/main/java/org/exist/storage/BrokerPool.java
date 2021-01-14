@@ -152,7 +152,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      * State of the BrokerPool instance
      */
     private enum State {
-        SHUTTING_DOWN,
+        SHUTTING_DOWN_MULTI_USER_MODE,
+        SHUTTING_DOWN_SYSTEM_MODE,
         SHUTDOWN,
         INITIALIZING,
         INITIALIZING_SYSTEM_MODE,
@@ -165,7 +166,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         INITIALIZE_SYSTEM_MODE,
         INITIALIZE_MULTI_USER_MODE,
         READY,
-        START_SHUTDOWN,
+
+        START_SHUTDOWN_MULTI_USER_MODE,
+        START_SHUTDOWN_SYSTEM_MODE,
         FINISHED_SHUTDOWN,
     }
 
@@ -176,8 +179,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     .when(State.INITIALIZING).on(Event.INITIALIZE_SYSTEM_MODE).switchTo(State.INITIALIZING_SYSTEM_MODE)
                     .when(State.INITIALIZING_SYSTEM_MODE).on(Event.INITIALIZE_MULTI_USER_MODE).switchTo(State.INITIALIZING_MULTI_USER_MODE)
                     .when(State.INITIALIZING_MULTI_USER_MODE).on(Event.READY).switchTo(State.OPERATIONAL)
-                    .when(State.OPERATIONAL).on(Event.START_SHUTDOWN).switchTo(State.SHUTTING_DOWN)
-                    .when(State.SHUTTING_DOWN).on(Event.FINISHED_SHUTDOWN).switchTo(State.SHUTDOWN)
+                    .when(State.OPERATIONAL).on(Event.START_SHUTDOWN_MULTI_USER_MODE).switchTo(State.SHUTTING_DOWN_MULTI_USER_MODE)
+                    .when(State.SHUTTING_DOWN_MULTI_USER_MODE).on(Event.START_SHUTDOWN_SYSTEM_MODE).switchTo(State.SHUTTING_DOWN_SYSTEM_MODE)
+                    .when(State.SHUTTING_DOWN_SYSTEM_MODE).on(Event.FINISHED_SHUTDOWN).switchTo(State.SHUTDOWN)
             .build()
     );
 
@@ -1509,7 +1513,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     //TOUNDERSTAND (pb) : synchronized, so... "schedules" or, rather, "executes" ?
     public void triggerSystemTask(final SystemTask task) {
         final State s = status.getCurrentState();
-        if(s == State.SHUTTING_DOWN) {
+        if(s == State.SHUTTING_DOWN_MULTI_USER_MODE || s == State.SHUTTING_DOWN_SYSTEM_MODE) {
             LOG.info("Skipping SystemTask: '" + task.getName() + "' as database is shutting down...");
             return;
         } else if(s == State.SHUTDOWN) {
@@ -1527,10 +1531,37 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         shutdown(false);
     }
 
+    /**
+     * Returns true if the BrokerPool is in the
+     * process of shutting down.
+     *
+     * @return true if the BrokerPool is shutting down.
+     */
     public boolean isShuttingDown() {
-        return status.getCurrentState() == State.SHUTTING_DOWN;
+        final State s = status.getCurrentState();
+        return s == State.SHUTTING_DOWN_MULTI_USER_MODE
+                || s == State.SHUTTING_DOWN_SYSTEM_MODE;
     }
 
+    /**
+     * Returns true if the BrokerPool is either in the
+     * process of shutting down, or has already shutdown.
+     *
+     * @return true if the BrokerPool is shutting down or
+     *     has shutdown.
+     */
+    public boolean isShuttingDownOrDown() {
+        final State s = status.getCurrentState();
+        return s == State.SHUTTING_DOWN_MULTI_USER_MODE
+                || s == State.SHUTTING_DOWN_SYSTEM_MODE
+                || s == State.SHUTDOWN;
+    }
+
+    /**
+     * Returns true of the BrokerPool is shutdown.
+     *
+     * @return true if the BrokerPool is shutdown.
+     */
     public boolean isShutDown() {
         return status.getCurrentState() == State.SHUTDOWN;
     }
@@ -1547,9 +1578,27 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     void shutdown(final boolean killed, final Consumer<String> shutdownInstanceConsumer) {
 
         try {
-            status.process(Event.START_SHUTDOWN);
+            status.process(Event.START_SHUTDOWN_MULTI_USER_MODE);
         } catch(final IllegalStateException e) {
             // we are not operational!
+            LOG.warn(e);
+            return;
+        }
+
+        // notify any BrokerPoolServices that we are about to shutdown
+        try {
+            // instruct database services that we are about to stop multi-user mode
+            servicesManager.stopMultiUserServices(this);
+        } catch(final BrokerPoolServicesManagerException e) {
+            for(final BrokerPoolServiceException bpse : e.getServiceExceptions()) {
+                LOG.error(bpse.getMessage(), bpse);
+            }
+        }
+
+        try {
+            status.process(Event.START_SHUTDOWN_SYSTEM_MODE);
+        } catch(final IllegalStateException e) {
+            // we are not in SHUTTING_DOWN_MULTI_USER_MODE!
             LOG.warn(e);
             return;
         }
@@ -1632,7 +1681,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
                         try {
                             // instruct all database services to stop
-                            servicesManager.stopServices(broker);
+                            servicesManager.stopSystemServices(broker);
                         } catch(final BrokerPoolServicesManagerException e) {
                            for(final BrokerPoolServiceException bpse : e.getServiceExceptions()) {
                                LOG.error(bpse.getMessage(), bpse);

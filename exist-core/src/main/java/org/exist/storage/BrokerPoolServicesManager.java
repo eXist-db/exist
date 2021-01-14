@@ -57,6 +57,11 @@ import java.util.List;
  *      register -> configure -> prepare ->
  *          pre-system -> system -> pre-multi-user -> multi-user
  *
+ * The shutdown order must likewise follow:
+ *
+ *      stop-multi-user -> stop-system -> shutdown
+ *
+ *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @NotThreadSafe
@@ -70,7 +75,8 @@ class BrokerPoolServicesManager {
         SYSTEM,
         PRE_MULTI_USER,
         MULTI_USER,
-        STOPPING,
+        STOPPING_MULTI_USER,
+        STOPPING_SYSTEM,
         SHUTTING_DOWN
     }
 
@@ -81,7 +87,8 @@ class BrokerPoolServicesManager {
         ENTER_SYSTEM_MODE,
         PREPARE_ENTER_MULTI_USER_MODE,
         ENTER_MULTI_USER_MODE,
-        STOP,
+        STOP_MULTI_USER_MODE,
+        STOP_SYSTEM_MODE,
         SHUTDOWN
     }
 
@@ -94,7 +101,8 @@ class BrokerPoolServicesManager {
             .on(ManagerEvent.ENTER_SYSTEM_MODE).switchTo(ManagerState.SYSTEM)
             .on(ManagerEvent.PREPARE_ENTER_MULTI_USER_MODE).switchTo(ManagerState.PRE_MULTI_USER)
             .on(ManagerEvent.ENTER_MULTI_USER_MODE).switchTo(ManagerState.MULTI_USER)
-            .on(ManagerEvent.STOP).switchTo(ManagerState.STOPPING)
+            .on(ManagerEvent.STOP_MULTI_USER_MODE).switchTo(ManagerState.STOPPING_MULTI_USER)
+            .on(ManagerEvent.STOP_SYSTEM_MODE).switchTo(ManagerState.STOPPING_SYSTEM)
             .on(ManagerEvent.SHUTDOWN).switchTo(ManagerState.SHUTTING_DOWN)
             .build()
     );
@@ -280,9 +288,48 @@ class BrokerPoolServicesManager {
     }
 
     /**
-     * Stops any services which were previously started.
+     * Stops any services which should be stopped before the database
+     * exits multi-user mode.
      *
-     * At this point the broker pool is likely back in system (single user) mode
+     * @param brokerPool The broker pool instance
+     *
+     * @throws BrokerPoolServiceException if any service causes an error when stopping
+     *
+     * @throws IllegalStateException Thrown if there is an attempt to stop a service
+     * before we have completed starting multi-user mode
+     */
+    void stopMultiUserServices(final BrokerPool brokerPool) throws BrokerPoolServicesManagerException {
+        states.process(ManagerEvent.STOP_MULTI_USER_MODE);
+
+        List<BrokerPoolServiceException> serviceExceptions = null;
+
+        // we stop in the reverse order to starting up
+        for(int i = brokerPoolServices.size() - 1; i >= 0; i--) {
+            final BrokerPoolService brokerPoolService = brokerPoolServices.get(i);
+            if(LOG.isTraceEnabled()) {
+                LOG.trace("Stopping multi-user service: " + brokerPoolService.getClass().getSimpleName() + "...");
+            }
+
+            try {
+                brokerPoolService.stopMultiUser(brokerPool);
+            } catch (final BrokerPoolServiceException e) {
+                if(serviceExceptions == null) {
+                    serviceExceptions = new ArrayList<>();
+                }
+                serviceExceptions.add(e);
+            }
+        }
+
+        if(serviceExceptions != null) {
+            throw new BrokerPoolServicesManagerException(serviceExceptions);
+        }
+    }
+
+    /**
+     * Stops any services which should be stopped before the database
+     * exits system mode.
+     *
+     * At this point the broker pool is back in system (single user) mode
      * and not generally available for access, only a single
      * system broker is available.
      *
@@ -292,10 +339,10 @@ class BrokerPoolServicesManager {
      * @throws BrokerPoolServiceException if any service causes an error when stopping
      *
      * @throws IllegalStateException Thrown if there is an attempt to stop a service
-     * before we have completed starting multi-user mode
+     * before we have completed stopping multi-user mode
      */
-    void stopServices(final DBBroker systemBroker) throws BrokerPoolServicesManagerException {
-        states.process(ManagerEvent.STOP);
+    void stopSystemServices(final DBBroker systemBroker) throws BrokerPoolServicesManagerException {
+        states.process(ManagerEvent.STOP_SYSTEM_MODE);
 
         List<BrokerPoolServiceException> serviceExceptions = null;
 
@@ -303,11 +350,11 @@ class BrokerPoolServicesManager {
         for(int i = brokerPoolServices.size() - 1; i >= 0; i--) {
             final BrokerPoolService brokerPoolService = brokerPoolServices.get(i);
             if(LOG.isTraceEnabled()) {
-                LOG.trace("Stopping service: " + brokerPoolService.getClass().getSimpleName() + "...");
+                LOG.trace("Stopping system service: " + brokerPoolService.getClass().getSimpleName() + "...");
             }
 
             try {
-                brokerPoolService.stop(systemBroker);
+                brokerPoolService.stopSystem(systemBroker);
             } catch (final BrokerPoolServiceException e) {
                 if(serviceExceptions == null) {
                     serviceExceptions = new ArrayList<>();

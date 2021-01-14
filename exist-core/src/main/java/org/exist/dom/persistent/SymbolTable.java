@@ -134,7 +134,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     }
 
     @Override
-    public void stop(final DBBroker systemBroker) throws BrokerPoolServiceException {
+    public void stopSystem(final DBBroker systemBroker) throws BrokerPoolServiceException {
         try {
             close();
         } catch (final IOException e) {
