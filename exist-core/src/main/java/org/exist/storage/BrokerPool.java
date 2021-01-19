@@ -521,6 +521,12 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
         this.startupTriggersManager = servicesManager.register(new StartupTriggersManager());
 
+        // this is just used for unit tests
+        final BrokerPoolService testBrokerPoolService = (BrokerPoolService) conf.getProperty("exist.testBrokerPoolService");
+        if (testBrokerPoolService != null) {
+            servicesManager.register(testBrokerPoolService);
+        }
+
         //configure the registered services
         try {
             servicesManager.configureServices(conf);
