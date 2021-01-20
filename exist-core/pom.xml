@@ -641,6 +641,7 @@
                                 <exclude>src/test/java/org/exist/storage/journal/JournalXmlTest.java</exclude>
                                 <exclude>src/test/java/org/exist/storage/journal/LsnTest.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/BrokerPoolService.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/BrokerPoolServiceTest.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/BrokerPoolServiceException.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/BrokerPoolServicesManager.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/BrokerPoolServicesManagerException.java</exclude>
@@ -779,6 +780,7 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/test/java/org/exist/storage/journal/JournalXmlTest.java</include>
                                 <include>src/test/java/org/exist/storage/journal/LsnTest.java</include>
                                 <include>src/main/java/org/exist/storage/BrokerPoolService.java</include>
+                                <include>src/test/java/org/exist/storage/BrokerPoolServiceTest.java</include>
                                 <include>src/main/java/org/exist/storage/BrokerPoolServiceException.java</include>
                                 <include>src/main/java/org/exist/storage/BrokerPoolServicesManager.java</include>
                                 <include>src/main/java/org/exist/storage/BrokerPoolServicesManagerException.java</include>
