@@ -270,12 +270,9 @@
                 - size:                                                                  
                     number of copies of the same query kept in the query-pool.           
                     Value "-1" effectively disables caching. Queries cannot be shared     
-                    by threads, each thread needs a private copy of a query.             
-                                                                                         
-                - timeout:                                                               
-                    amount of time that a query will be cached in the query-pool in milliseconds.
+                    by threads, each thread needs a private copy of a query.
             -->
-        <query-pool max-stack-size="64" size="128" timeout="120000"/>
+        <query-pool max-stack-size="64" size="128"/>
 
         <!--
             Settings for the journaling and recovery of the database. With 

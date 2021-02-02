@@ -65,9 +65,6 @@
                                     <xs:attribute name="max-stack-size" type="xs:integer"
                                         default="5"/>
                                     <xs:attribute name="size" type="xs:integer" default="128"/>
-                                    <xs:attribute name="timeout" type="xs:integer" default="120000"/>
-                                    <xs:attribute name="timeout-check-interval" type="xs:integer"
-                                        default="30000"/>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="recovery">
