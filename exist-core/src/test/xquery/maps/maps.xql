@@ -627,3 +627,110 @@ function mt:multi-merge() {
   	    map { "wolfgang": "de" }
   	))?*
 };
+
+(:
+  immutability tests for https://github.com/eXist-db/exist/issues/3724
+:)
+declare variable $mt:test-key-one := 1;
+declare variable $mt:test-key-two := 2;
+declare function mt:get-test-map () {
+    map {
+        $mt:test-key-one : true(),
+        $mt:test-key-two : true()
+    }
+};
+
+declare
+    %test:assertTrue
+function mt:immutable-put-after-put () {
+    let $extended := map:put(mt:get-test-map(), $mt:test-key-two, false())
+    let $expected := $extended?($mt:test-key-one)
+    let $result := map:put($extended, $mt:test-key-one, false())
+
+    return $expected eq $extended?($mt:test-key-one)
+};
+
+declare
+    %test:assertTrue
+function mt:immutable-remove-after-put () {
+    let $extended := map:put(mt:get-test-map(), $mt:test-key-two, false())
+    let $expected := $extended?($mt:test-key-one)
+    let $result := map:remove($extended, $mt:test-key-one)
+
+    return $expected eq $extended?($mt:test-key-one)
+};
+
+declare
+    %test:assertTrue
+function mt:immutable-merge-after-put () {
+    let $extended := map:put(mt:get-test-map(), $mt:test-key-two, false())
+    let $expected := $extended?($mt:test-key-one)
+    let $result := map:merge(($extended, map { $mt:test-key-one : false() }))
+
+    return $expected eq $extended?($mt:test-key-one)
+};
+
+declare
+    %test:assertTrue
+function mt:immutable-put-after-remove () {
+    let $removed := map:remove(mt:get-test-map(), $mt:test-key-two)
+    let $expected := $removed?($mt:test-key-one)
+
+    let $result := map:put($removed, $mt:test-key-one, false())
+
+    return $expected eq $removed?($mt:test-key-one)
+};
+
+declare
+    %test:assertTrue
+function mt:immutable-remove-after-remove () {
+    let $removed := map:remove(mt:get-test-map(), $mt:test-key-two)
+    let $expected := $removed?($mt:test-key-one)
+
+    let $result := map:put($removed, $mt:test-key-one, false())
+
+    return $expected eq $removed?($mt:test-key-one)
+};
+
+declare
+    %test:assertTrue
+function mt:immutable-merge-after-remove () {
+    let $removed := map:remove(mt:get-test-map(), $mt:test-key-two)
+    let $expected := $removed?($mt:test-key-one)
+    let $result := map:merge(($removed, map { $mt:test-key-one : false() }))
+
+    return $expected eq $removed?($mt:test-key-one)
+};
+
+declare
+    %test:assertTrue
+function mt:immutable-put-after-merge () {
+    let $merged := map:merge(mt:get-test-map())
+    let $expected := $merged?($mt:test-key-one)
+
+    let $result := map:put($merged, $mt:test-key-one, false())
+
+    return $expected eq $merged?($mt:test-key-one)
+};
+
+declare
+    %test:assertTrue
+function mt:immutable-remove-after-merge () {
+    let $merged := map:merge(mt:get-test-map())
+    let $expected := $merged?($mt:test-key-one)
+
+    let $result := map:remove($merged, $mt:test-key-one)
+
+    return $expected eq $merged?($mt:test-key-one)
+};
+
+declare
+    %test:assertTrue
+function mt:immutable-merge-after-merge () {
+    let $merged := map:merge(mt:get-test-map())
+    let $expected := $merged?($mt:test-key-one)
+
+    let $result := map:merge(($merged, map { $mt:test-key-one : false() }))
+
+    return $expected eq $merged?($mt:test-key-one)
+};
