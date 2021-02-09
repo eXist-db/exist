@@ -536,11 +536,13 @@ public class Type {
     public static int getSuperType(final int subtype) {
         if (subtype == ITEM || subtype == NODE) {
             return ITEM;
+        } else if (subtype == ANY_TYPE) {
+            return subtype;
         }
 
         final int supertype = superTypes[subtype];
         if (supertype == 0) {
-            LOG.warn("eXist does not define a super-type for the sub-type {}", getTypeName(subtype), new Throwable());
+            LOG.warn("eXist-db does not define a super-type for the sub-type {}", getTypeName(subtype), new Throwable());
             return ITEM;
         }
 

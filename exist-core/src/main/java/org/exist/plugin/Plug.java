@@ -32,7 +32,10 @@ import org.exist.config.Configurable;
  * 
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
+ * @deprecated Use {@link org.exist.storage.BrokerPoolService} instead which
+ * offers more fine grained events.
  */
+@Deprecated
 public interface Plug extends Configurable, LifeCycle {
 
 }

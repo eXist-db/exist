@@ -27,7 +27,10 @@ import org.exist.storage.txn.Txn;
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
+ * @deprecated Use {@link org.exist.storage.BrokerPoolService} instead which
+ * offers more fine grained events.
  */
+@Deprecated
 public interface LifeCycle {
 
 	public void start(DBBroker broker, final Txn transaction) throws EXistException;
