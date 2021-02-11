@@ -851,7 +851,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
 	            	        }
             			}
                 	} else {
-                		final Account account = new AccountImpl( realm, conf );
+                		final Account account = new AccountImpl(realm, conf);
                 		if (account.getGroups().length == 0) {
                 		    try {
                                 account.setPrimaryGroup(realm.getGroup(SecurityManager.UNKNOWN_GROUP));
