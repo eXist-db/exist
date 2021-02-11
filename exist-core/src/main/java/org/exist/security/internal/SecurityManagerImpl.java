@@ -855,6 +855,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
                 		if (account.getGroups().length == 0) {
                 		    try {
                                 account.setPrimaryGroup(realm.getGroup(SecurityManager.UNKNOWN_GROUP));
+                                LOG.warn("Account '" + account.getName() + "' has no groups, but every account must have at least 1 group. Assigned group: " + SecurityManager.UNKNOWN_GROUP);
                             } catch (final PermissionDeniedException e) {
                 		        throw new ConfigurationException("Account has no group, unable to default to " + SecurityManager.UNKNOWN_GROUP + ": " + e.getMessage(), e);
                             }
