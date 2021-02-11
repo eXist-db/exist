@@ -402,7 +402,7 @@ public class RestoreHandler extends DefaultHandler {
             name = atts.getValue("name");
         }
 
-        // exclude /db/system collection and sub-collections, as these have already been restored
+        // exclude the /db/system and /db/system/security collections and their sub-collections, as these have already been restored
         if ((XmldbURI.DB.equals(currentCollectionUri) && "system".equals(name))
                 || (XmldbURI.SYSTEM.equals(currentCollectionUri) && "security".equals(name))) {
             return;

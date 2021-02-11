@@ -349,7 +349,7 @@ public class XMLDBRestoreTest {
                         "    </resource>\n" +
                         "</collection>";
 
-        // account with no primary group!
+        // account with no such group!
         final String backupPasswordHash = Base64.encodeBase64String(ripemd160(username));
         final String backupPasswordDigest = MessageDigester.byteArrayToHex(ripemd160(username + ":exist:" + username));
         final String invalidUserDoc =

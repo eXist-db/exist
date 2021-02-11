@@ -81,10 +81,9 @@ import org.quartz.SimpleTrigger;
  * There's only one SecurityManager for each database instance, which
  * may be obtained by {@link BrokerPool#getSecurityManager()}.
  * 
- * Users and groups are stored in the system collection, in document
- * users.xml. While it is possible to edit this file by hand, it
- * may lead to unexpected results, since SecurityManager reads 
- * users.xml only during database startup and shutdown.
+ * Users and groups are stored per-realm within the
+ * system collection: /db/system/security. Each realm
+ * has its own sub-collection.
  */
 //<!-- Central user configuration. Editing this document will cause the security to reload and update its internal database. Please handle with care! -->
 @ConfigurationClass("security-manager")
