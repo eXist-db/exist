@@ -74,12 +74,20 @@ public class ExportMain {
             .description("export database contents while preserving as much data as possible")
             .defaultValue(false)
             .build();
+    private static final Argument<Boolean> noExportArg = optionArgument("--no-export")
+            .description("do not export the database contents, overrides argument --export")
+            .defaultValue(false)
+            .build();
     private static final Argument<Boolean> incrementalArg = optionArgument("-i", "--incremental")
             .description("create incremental backup (use with --export|-x)")
             .defaultValue(false)
             .build();
     private static final Argument<Boolean> zipArg = optionArgument("-z", "--zip")
             .description("write output to a ZIP instead of a file system directory")
+            .defaultValue(false)
+            .build();
+    private static final Argument<Boolean> noZipArg = optionArgument("--no-zip")
+            .description("do not zip the output, overrides argument --zip")
             .defaultValue(false)
             .build();
 
@@ -115,7 +123,7 @@ public class ExportMain {
     public static void main(final String[] args) {
         try {
             final ParsedArguments arguments = CommandLineParser
-                    .withArguments(noCheckArg, checkDocsArg, directAccessArg, exportArg, incrementalArg, zipArg)
+                    .withArguments(noCheckArg, checkDocsArg, directAccessArg, exportArg, noExportArg, incrementalArg, zipArg, noZipArg)
                     .andArguments(configArg, outputDirArg)
                     .andArguments(helpArg, verboseArg)
                     .parse(args);
@@ -134,9 +142,17 @@ public class ExportMain {
         final boolean noCheck = getBool(arguments, noCheckArg);
         final boolean checkDocs = getBool(arguments, checkDocsArg);
         final boolean direct = getBool(arguments, directAccessArg);
-        final boolean export = getBool(arguments, exportArg);
+        boolean export = getBool(arguments, exportArg);
+        final boolean noExport = getBool(arguments, noExportArg);
+        if (noExport) {
+            export = false;
+        }
         final boolean incremental = getBool(arguments, incrementalArg);
-        final boolean zip = getBool(arguments, zipArg);
+        boolean zip = getBool(arguments, zipArg);
+        final boolean noZip = getBool(arguments, noZipArg);
+        if (noZip) {
+            zip = false;
+        }
 
         final Optional<Path> dbConfig = getOpt(arguments, configArg).map(File::toPath);
         final Path exportTarget = arguments.get(outputDirArg).toPath();
