@@ -37,6 +37,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -71,6 +74,29 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
             // DoNothing(R)
         }
         return bd;
+    }
+
+    @Override
+    public List<BackupDescriptor> getChildBackupDescriptors() {
+        try {
+            try (final Stream<BackupDescriptor> entries = Files.list(descriptor.getParent())
+                    .filter(p -> Files.isDirectory(p) && Files.exists(p.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR)))
+                    .map(p -> p.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR))
+                    .map(p -> {
+                        try {
+                            return Optional.<BackupDescriptor>of(new FileSystemBackupDescriptor(root, p));
+                        } catch (final FileNotFoundException e) {
+                            // Do nothing
+                            return Optional.<BackupDescriptor>empty();
+                        }
+                    })
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)) {
+                return entries.collect(Collectors.toList());
+            }
+        } catch (final IOException e) {
+            return Collections.emptyList();
+        }
     }
 
     @Override

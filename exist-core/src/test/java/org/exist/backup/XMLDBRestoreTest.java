@@ -178,20 +178,59 @@ public class XMLDBRestoreTest {
         assertArrayEquals(new String[] { SecurityManager.UNKNOWN_GROUP }, account.getGroups());
     }
 
+    /**
+     * Restores users with groups from /db/system/security/exist
+     */
     @Test
-    public void restoreUserWithGroups() throws IOException, XMLDBException {
+    public void restoreUserWithGroupsFromExistRealm() throws IOException, XMLDBException {
+        final Path backupPath = tempFolder.newFolder().toPath();
+        final Path restorePath = backupPath.resolve("db").resolve("system").resolve("security").resolve("exist").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR);
+        restoreUserWithGroups(backupPath, restorePath, 8);
+    }
+
+    /**
+     * Restores users with groups from /db/system/security
+     */
+    @Test
+    public void restoreUserWithGroupsFromSecurityCollection() throws IOException, XMLDBException {
+        final Path backupPath = tempFolder.newFolder().toPath();
+        final Path restorePath = backupPath.resolve("db").resolve("system").resolve("security").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR);
+        restoreUserWithGroups(backupPath, restorePath, 9);
+    }
+
+    /**
+     * Restores users with groups from /db/system
+     */
+    @Test
+    public void restoreUserWithGroupsFromSystemCollection() throws IOException, XMLDBException {
+        final Path backupPath = tempFolder.newFolder().toPath();
+        final Path restorePath = backupPath.resolve("db").resolve("system").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR);
+        restoreUserWithGroups(backupPath, restorePath, 10);
+    }
+
+    /**
+     * Restores users with groups from /db
+     */
+    @Test
+    public void restoreUserWithGroupsFromDbCollection() throws IOException, XMLDBException {
+        final Path backupPath = tempFolder.newFolder().toPath();
+        final Path restorePath = backupPath.resolve("db").resolve(BackupDescriptor.COLLECTION_DESCRIPTOR);
+        restoreUserWithGroups(backupPath, restorePath, 11);
+    }
+
+    private void restoreUserWithGroups(final Path backupPath, final Path restorePath, final int expectedRestoredCount) throws IOException, XMLDBException {
         final String username = UUID.randomUUID().toString() + "-user";
         final String primaryGroup = username;  // personal group
         final String group1 =  UUID.randomUUID().toString() + "-group-1";
         final String group2 =  UUID.randomUUID().toString() + "-group-2";
         final String group3 =  UUID.randomUUID().toString() + "-group-3";
-        final Path contentsFile = createBackupWithUserInGroups(username, primaryGroup, group1, group2, group3);
         final TestRestoreListener listener = new TestRestoreListener();
         final XmldbURI rootUri = XmldbURI.create(getBaseUri()).append(XmldbURI.ROOT_COLLECTION_URI);
 
-        restoreBackup(rootUri, contentsFile, null, listener);
+        createBackupWithUserInGroups(backupPath, username, primaryGroup, group1, group2, group3);
+        restoreBackup(rootUri, restorePath, null, listener);
 
-        assertEquals(8, listener.restored.size());
+        assertEquals(expectedRestoredCount, listener.restored.size());
         assertEquals(0, listener.warnings.size());
         assertEquals(0, listener.errors.size());
 
@@ -394,13 +433,33 @@ public class XMLDBRestoreTest {
         return contentsFile;
     }
 
-    private static Path createBackupWithUserInGroups(final String username, final String... groupNames) throws IOException {
-        final Path backupDir = tempFolder.newFolder().toPath();
-        final Path existRealmCol = Files.createDirectories(backupDir.resolve("db").resolve("system").resolve("security").resolve("exist"));
+    private static void createBackupWithUserInGroups(final Path backupDir, final String username, final String... groupNames) throws IOException {
+        final Path dbCol = Files.createDirectories(backupDir.resolve("db"));
+        final Path systemCol = Files.createDirectories(dbCol.resolve("system"));
+        final Path securityCol = Files.createDirectories(systemCol.resolve("security"));
+        final Path existRealmCol = Files.createDirectories(securityCol.resolve("exist"));
         final Path groupsCol = Files.createDirectories(existRealmCol.resolve("groups"));
         final Path accountsCol = Files.createDirectories(existRealmCol.resolve("accounts"));
 
-        final String contents =
+        final String dbContents =
+                "<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db\" version=\"1\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2021-01-28T04:06:13.166Z\">\n" +
+                        "    <acl entries=\"0\" version=\"1\"/>\n" +
+                        "    <subcollection name=\"system\" filename=\"system\"/>\n" +
+                        "</collection>";
+
+        final String systemContents =
+                "<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db/system\" version=\"1\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2021-01-28T04:06:13.166Z\">\n" +
+                        "    <acl entries=\"0\" version=\"1\"/>\n" +
+                        "    <subcollection name=\"security\" filename=\"security\"/>\n" +
+                        "</collection>";
+
+        final String securityContents =
+                "<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db/system/security\" version=\"1\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2021-01-28T04:06:13.166Z\">\n" +
+                        "    <acl entries=\"0\" version=\"1\"/>\n" +
+                        "    <subcollection name=\"exist\" filename=\"exist\"/>\n" +
+                        "</collection>";
+
+        final String existRealmContents =
                 "<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db/system/security/exist\" version=\"1\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2021-01-28T04:06:13.166Z\">\n" +
                         "    <acl entries=\"0\" version=\"1\"/>\n" +
                         "    <subcollection name=\"accounts\" filename=\"accounts\"/>\n" +
@@ -446,7 +505,10 @@ public class XMLDBRestoreTest {
                         "<name>" + username + "</name>\n" +
                 "</account>\n");
 
-        final Path contentsFile = Files.write(existRealmCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), contents.getBytes(UTF_8));
+        final Path dbContentsFile = Files.write(dbCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), dbContents.getBytes(UTF_8));
+        final Path systemContentsFile = Files.write(systemCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), systemContents.getBytes(UTF_8));
+        final Path securityContentsFile = Files.write(securityCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), securityContents.getBytes(UTF_8));
+        final Path existRealmContentsFile = Files.write(existRealmCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), existRealmContents.getBytes(UTF_8));
         final Path groupsContentsFile = Files.write(groupsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), groupsContents.toString().getBytes(UTF_8));
         final Path accountsContentsFile = Files.write(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), accountsContents.getBytes(UTF_8));
 
@@ -463,8 +525,6 @@ public class XMLDBRestoreTest {
         }
 
         Files.write(accountsCol.resolve(username + ".xml"),  userDoc.toString().getBytes(UTF_8));
-
-        return contentsFile;
     }
 
     private static byte[] ripemd160(final String s) {
