@@ -112,7 +112,19 @@ public class XMLDBRestoreTest {
     }
 
     @Test
-    public void restoreIsBestEffortAttempt() throws IOException, XMLDBException {
+    public void restoreZipIsBestEffortAttempt() throws IOException, XMLDBException {
+        final Path zipFile = createZipBackupWithInvalidContent();
+        final TestRestoreListener listener = new TestRestoreListener();
+        final XmldbURI rootUri = XmldbURI.create(getBaseUri()).append(XmldbURI.ROOT_COLLECTION_URI);
+
+        restoreBackup(rootUri, zipFile, null, listener);
+
+        assertEquals(3, listener.restored.size());
+        assertEquals(1, listener.warnings.size());
+    }
+
+    @Test
+    public void restoreDirIsBestEffortAttempt() throws IOException, XMLDBException {
         final Path contentsFile = createBackupWithInvalidContent();
         final TestRestoreListener listener = new TestRestoreListener();
         final XmldbURI rootUri = XmldbURI.create(getBaseUri()).append(XmldbURI.ROOT_COLLECTION_URI);
@@ -124,7 +136,21 @@ public class XMLDBRestoreTest {
     }
 
     @Test
-    public void restoreBackupWithDifferentAdminPassword() throws IOException, XMLDBException {
+    public void restoreZipBackupWithDifferentAdminPassword() throws IOException, XMLDBException {
+        final String backupAdminPassword = UUID.randomUUID().toString();
+        final Path zipFile = createZipBackupWithDifferentAdminPassword(backupAdminPassword);
+        final TestRestoreListener listener = new TestRestoreListener();
+        final XmldbURI rootUri = XmldbURI.create(getBaseUri()).append(XmldbURI.ROOT_COLLECTION_URI);
+
+        restoreBackup(rootUri, zipFile, backupAdminPassword, listener);
+
+        assertEquals(3, listener.restored.size());
+        assertEquals(0, listener.warnings.size());
+        assertEquals(0, listener.errors.size());
+    }
+
+    @Test
+    public void restoreDirBackupWithDifferentAdminPassword() throws IOException, XMLDBException {
         final String backupAdminPassword = UUID.randomUUID().toString();
         final Path contentsFile = createBackupWithDifferentAdminPassword(backupAdminPassword);
         final TestRestoreListener listener = new TestRestoreListener();
@@ -255,25 +281,7 @@ public class XMLDBRestoreTest {
     private static Path createZipBackupWithValidContent() throws IOException {
         final Path dbContentsFile = createBackupWithValidContent();
         final Path dbDir = dbContentsFile.getParent();
-
-        final Path zipFile = File.createTempFile("backup", ".zip", tempFolder.getRoot()).toPath();
-        try (final ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(zipFile))) {
-            Files.walkFileTree(dbDir, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-                    final Path zipEntryPath = dbDir.relativize(file);
-                    final String zipEntryName = withUnixSep(zipEntryPath.toString());
-                    final ZipEntry zipEntry = new ZipEntry(zipEntryName);
-                    out.putNextEntry(zipEntry);
-                    Files.copy(file, out);
-                    out.closeEntry();
-
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        }
-
-        return zipFile;
+        return zipDirectory(dbDir);
     }
 
     private static Path createBackupWithValidContent() throws IOException {
@@ -315,6 +323,12 @@ public class XMLDBRestoreTest {
         return dbContentsFile;
     }
 
+    private static Path createZipBackupWithInvalidContent() throws IOException {
+        final Path dbContentsFile = createBackupWithInvalidContent();
+        final Path dbDir = dbContentsFile.getParent();
+        return zipDirectory(dbDir);
+    }
+
     private static Path createBackupWithInvalidContent() throws IOException {
         final Path backupDir = tempFolder.newFolder().toPath();
         final Path col1 = Files.createDirectories(backupDir.resolve("db").resolve("col1"));
@@ -343,6 +357,12 @@ public class XMLDBRestoreTest {
         Files.write(col1.resolve("doc3.xml"),  doc3.getBytes(UTF_8));
 
         return contentsFile;
+    }
+
+    private static Path createZipBackupWithDifferentAdminPassword(final String backupPassword) throws IOException {
+        final Path dbContentsFile = createBackupWithDifferentAdminPassword(backupPassword);
+        final Path dbDir = dbContentsFile.getParent();
+        return zipDirectory(dbDir);
     }
 
     private static Path createBackupWithDifferentAdminPassword(final String backupPassword) throws IOException {
@@ -539,6 +559,27 @@ public class XMLDBRestoreTest {
         final byte[] digest = new byte[digester.getDigestSize()];
         digester.doFinal(digest, 0);
         return digest;
+    }
+
+    private static Path zipDirectory(final Path dir) throws IOException {
+        final Path zipFile = File.createTempFile("backup", ".zip", tempFolder.getRoot()).toPath();
+        try (final ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(zipFile))) {
+            Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+                    final Path zipEntryPath = dir.relativize(file);
+                    final String zipEntryName = withUnixSep(zipEntryPath.toString());
+                    final ZipEntry zipEntry = new ZipEntry(zipEntryName);
+                    out.putNextEntry(zipEntry);
+                    Files.copy(file, out);
+                    out.closeEntry();
+
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        }
+
+        return zipFile;
     }
 
     private static class TestRestoreListener extends AbstractRestoreServiceTaskListener {
