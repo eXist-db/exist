@@ -30,6 +30,7 @@ import org.exist.security.SecurityManager;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.*;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -181,6 +182,7 @@ public class XMLDBRestoreTest {
     /**
      * Restores users with groups from /db/system/security/exist
      */
+    @Ignore("Not yet supported")
     @Test
     public void restoreUserWithGroupsFromExistRealm() throws IOException, XMLDBException {
         final Path backupPath = tempFolder.newFolder().toPath();
@@ -191,6 +193,7 @@ public class XMLDBRestoreTest {
     /**
      * Restores users with groups from /db/system/security
      */
+    @Ignore("Not yet supported")
     @Test
     public void restoreUserWithGroupsFromSecurityCollection() throws IOException, XMLDBException {
         final Path backupPath = tempFolder.newFolder().toPath();
@@ -201,6 +204,7 @@ public class XMLDBRestoreTest {
     /**
      * Restores users with groups from /db/system
      */
+    @Ignore("Not yet supported")
     @Test
     public void restoreUserWithGroupsFromSystemCollection() throws IOException, XMLDBException {
         final Path backupPath = tempFolder.newFolder().toPath();
