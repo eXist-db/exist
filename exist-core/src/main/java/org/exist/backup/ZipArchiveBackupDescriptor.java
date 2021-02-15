@@ -166,6 +166,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
                         try {
                             return Optional.<ZipArchiveBackupDescriptor>of(new ZipArchiveBackupDescriptor(archive, mtcDescriptor.group(1)));
                         } catch (final FileNotFoundException e) {
+                            LOG.warn(e.getMessage(), e);
                             return Optional.<ZipArchiveBackupDescriptor>empty();
                         }
                     } else {

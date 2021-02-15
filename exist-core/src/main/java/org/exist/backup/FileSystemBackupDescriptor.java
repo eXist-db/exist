@@ -87,6 +87,7 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
                             return Optional.<BackupDescriptor>of(new FileSystemBackupDescriptor(root, p));
                         } catch (final FileNotFoundException e) {
                             // Do nothing
+                            LOG.warn(e.getMessage(), e);
                             return Optional.<BackupDescriptor>empty();
                         }
                     })
