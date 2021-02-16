@@ -641,32 +641,42 @@ declare function mt:create-test-map() {
 };
 
 declare
-    %test:assertTrue
+    %test:assertEquals("true", "true")
 function mt:immutable-put-then-put() {
     let $extended := map:put(mt:create-test-map(), $mt:test-key-two, false())
     let $expected := $extended($mt:test-key-one)
     let $result := map:put($extended, $mt:test-key-one, false())
-    return $expected eq $extended($mt:test-key-one)
+    return
+        (
+            $expected eq $extended($mt:test-key-one),
+            $expected ne $result($mt:test-key-one)
+        )
 };
 
 declare
-    %test:assertTrue
+    %test:assertEquals("true", "true")
 function mt:immutable-put-then-remove() {
     let $extended := map:put(mt:create-test-map(), $mt:test-key-two, false())
     let $expected := $extended($mt:test-key-one)
     let $result := map:remove($extended, $mt:test-key-one)
-
-    return $expected eq $extended($mt:test-key-one)
+    return
+        (
+            $expected eq $extended($mt:test-key-one),
+            empty($result($mt:test-key-one))
+        )
 };
 
 declare
-    %test:assertTrue
+    %test:assertEquals("true", "true")
 function mt:immutable-put-then-merge() {
     let $extended := map:put(mt:create-test-map(), $mt:test-key-two, false())
     let $expected := $extended($mt:test-key-one)
     let $result := map:merge(($extended, map { $mt:test-key-one : false() }))
-
-    return $expected eq $extended($mt:test-key-one)
+    return
+        (
+            $expected eq $extended($mt:test-key-one),
+            $expected ne $result($mt:test-key-one)
+        )
 };
 
 declare
