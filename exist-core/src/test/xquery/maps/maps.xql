@@ -633,7 +633,7 @@ function mt:multi-merge() {
 :)
 declare variable $mt:test-key-one := 1;
 declare variable $mt:test-key-two := 2;
-declare function mt:get-test-map () {
+declare function mt:create-test-map() {
     map {
         $mt:test-key-one : true(),
         $mt:test-key-two : true()
@@ -642,8 +642,8 @@ declare function mt:get-test-map () {
 
 declare
     %test:assertTrue
-function mt:immutable-put-after-put () {
-    let $extended := map:put(mt:get-test-map(), $mt:test-key-two, false())
+function mt:immutable-put-then-put() {
+    let $extended := map:put(mt:create-test-map(), $mt:test-key-two, false())
     let $expected := $extended?($mt:test-key-one)
     let $result := map:put($extended, $mt:test-key-one, false())
 
@@ -652,8 +652,8 @@ function mt:immutable-put-after-put () {
 
 declare
     %test:assertTrue
-function mt:immutable-remove-after-put () {
-    let $extended := map:put(mt:get-test-map(), $mt:test-key-two, false())
+function mt:immutable-put-then-remove() {
+    let $extended := map:put(mt:create-test-map(), $mt:test-key-two, false())
     let $expected := $extended?($mt:test-key-one)
     let $result := map:remove($extended, $mt:test-key-one)
 
@@ -662,8 +662,8 @@ function mt:immutable-remove-after-put () {
 
 declare
     %test:assertTrue
-function mt:immutable-merge-after-put () {
-    let $extended := map:put(mt:get-test-map(), $mt:test-key-two, false())
+function mt:immutable-put-then-merge() {
+    let $extended := map:put(mt:create-test-map(), $mt:test-key-two, false())
     let $expected := $extended?($mt:test-key-one)
     let $result := map:merge(($extended, map { $mt:test-key-one : false() }))
 
@@ -672,8 +672,8 @@ function mt:immutable-merge-after-put () {
 
 declare
     %test:assertTrue
-function mt:immutable-put-after-remove () {
-    let $removed := map:remove(mt:get-test-map(), $mt:test-key-two)
+function mt:immutable-remove-then-put() {
+    let $removed := map:remove(mt:create-test-map(), $mt:test-key-two)
     let $expected := $removed?($mt:test-key-one)
 
     let $result := map:put($removed, $mt:test-key-one, false())
@@ -683,8 +683,8 @@ function mt:immutable-put-after-remove () {
 
 declare
     %test:assertTrue
-function mt:immutable-remove-after-remove () {
-    let $removed := map:remove(mt:get-test-map(), $mt:test-key-two)
+function mt:immutable-remove-then-remove() {
+    let $removed := map:remove(mt:create-test-map(), $mt:test-key-two)
     let $expected := $removed?($mt:test-key-one)
 
     let $result := map:put($removed, $mt:test-key-one, false())
@@ -694,8 +694,8 @@ function mt:immutable-remove-after-remove () {
 
 declare
     %test:assertTrue
-function mt:immutable-merge-after-remove () {
-    let $removed := map:remove(mt:get-test-map(), $mt:test-key-two)
+function mt:immutable-remove-then-merge() {
+    let $removed := map:remove(mt:create-test-map(), $mt:test-key-two)
     let $expected := $removed?($mt:test-key-one)
     let $result := map:merge(($removed, map { $mt:test-key-one : false() }))
 
@@ -704,8 +704,8 @@ function mt:immutable-merge-after-remove () {
 
 declare
     %test:assertTrue
-function mt:immutable-put-after-merge () {
-    let $merged := map:merge(mt:get-test-map())
+function mt:immutable-merge-then-put() {
+    let $merged := map:merge(mt:create-test-map())
     let $expected := $merged?($mt:test-key-one)
 
     let $result := map:put($merged, $mt:test-key-one, false())
@@ -715,8 +715,8 @@ function mt:immutable-put-after-merge () {
 
 declare
     %test:assertTrue
-function mt:immutable-remove-after-merge () {
-    let $merged := map:merge(mt:get-test-map())
+function mt:immutable-merge-then-remove() {
+    let $merged := map:merge(mt:create-test-map())
     let $expected := $merged?($mt:test-key-one)
 
     let $result := map:remove($merged, $mt:test-key-one)
@@ -726,8 +726,8 @@ function mt:immutable-remove-after-merge () {
 
 declare
     %test:assertTrue
-function mt:immutable-merge-after-merge () {
-    let $merged := map:merge(mt:get-test-map())
+function mt:immutable-merge-then-merge() {
+    let $merged := map:merge(mt:create-test-map())
     let $expected := $merged?($mt:test-key-one)
 
     let $result := map:merge(($merged, map { $mt:test-key-one : false() }))
