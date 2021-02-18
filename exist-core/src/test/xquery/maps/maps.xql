@@ -196,10 +196,24 @@ function mt:createWithSingleKey() {
         $map("Su")
 };
 
+(:~
+ : TODO(AR) implicit behaviour of map:merge according to XQ3.1 specification should be use-first not use-last
+:)
 declare
     %test:assertEquals("Saturday", "Caturday")
-function mt:overwriteKeyInNewMap() {
+function mt:merge-duplicate-keys-use-last-implicit-1() {
     let $specialWeek := map:merge(($mt:integerKeys, map { 7 : "Caturday" }))
+    return
+        ($mt:integerKeys(7), $specialWeek(7))
+};
+
+(:~
+ : TODO(AR) implicit behaviour of map:merge according to XQ3.1 specification should be use-first not use-last
+:)
+declare
+    %test:assertEquals("Saturday", "Saturday")
+function mt:merge-duplicate-keys-use-last-implicit-2() {
+    let $specialWeek := map:merge((map { 7 : "Caturday" }, $mt:integerKeys))
     return
         ($mt:integerKeys(7), $specialWeek(7))
 };
