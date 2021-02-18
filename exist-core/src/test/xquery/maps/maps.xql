@@ -695,10 +695,9 @@ declare
 function mt:immutable-remove-then-remove() {
     let $removed := map:remove(mt:create-test-map(), $mt:test-key-two)
     let $expected := $removed($mt:test-key-one)
-
-    let $result := map:put($removed, $mt:test-key-one, false())
-
-    return $expected eq $removed($mt:test-key-one)
+    let $result := map:remove($removed, $mt:test-key-one)
+    return
+        $expected eq $removed($mt:test-key-one),
 };
 
 declare
