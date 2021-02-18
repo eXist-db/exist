@@ -197,9 +197,17 @@ function mt:createWithSingleKey() {
 };
 
 declare
-    %test:assertEquals("Saturday", "Caturday")
-function mt:overwriteKeyInNewMap() {
+    %test:assertEquals("Saturday", "Saturday")
+function mt:merge-duplicate-keys-use-first-implicit-1() {
     let $specialWeek := map:merge(($mt:integerKeys, map { 7 : "Caturday" }))
+    return
+        ($mt:integerKeys(7), $specialWeek(7))
+};
+
+declare
+    %test:assertEquals("Saturday", "Caturday")
+function mt:merge-duplicate-keys-use-first-implicit-2() {
+    let $specialWeek := map:merge((map { 7 : "Caturday" }, $mt:integerKeys))
     return
         ($mt:integerKeys(7), $specialWeek(7))
 };
