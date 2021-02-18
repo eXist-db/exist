@@ -26,15 +26,18 @@ import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.functions.map.MapModule.functionSignatures;
 
 /**
  * Implements all functions of the map module.
  */
 public class MapFunction extends BasicFunction {
 
-    private static final QName QN_MERGE = new QName("merge", MapModule.NAMESPACE_URI, MapModule.PREFIX);
     private static final QName QN_SIZE = new QName("size", MapModule.NAMESPACE_URI, MapModule.PREFIX);
     private static final QName QN_ENTRY = new QName("entry", MapModule.NAMESPACE_URI, MapModule.PREFIX);
     private static final QName QN_GET = new QName("get", MapModule.NAMESPACE_URI, MapModule.PREFIX);
@@ -44,13 +47,22 @@ public class MapFunction extends BasicFunction {
     private static final QName QN_REMOVE = new QName("remove", MapModule.NAMESPACE_URI, MapModule.PREFIX);
     private static final QName QN_FOR_EACH = new QName("for-each", MapModule.NAMESPACE_URI, MapModule.PREFIX);
 
-    public final static FunctionSignature FNS_MERGE = new FunctionSignature(
-        QN_MERGE,
+    private static final FunctionParameterSequenceType FS_PARAM_MAPS = optManyParam("maps", Type.MAP, "Existing maps to merge to create a new map.");
+
+    private static final String FS_MERGE_NAME = "merge";
+    public final static FunctionSignature[] FS_MERGE = functionSignatures(
+        FS_MERGE_NAME,
         "Returns a map that combines the entries from a number of existing maps.",
-        new SequenceType[] {
-            new FunctionParameterSequenceType("maps", Type.MAP, Cardinality.ZERO_OR_MORE, "Existing maps to merge to create a new map.")
-        },
-        new SequenceType(Type.MAP, Cardinality.EXACTLY_ONE)
+        returns(Type.MAP, "A new map which is the result of merging the maps"),
+        arities(
+                arity(
+                        FS_PARAM_MAPS
+                ),
+                arity(
+                        FS_PARAM_MAPS,
+                        param("options", Type.MAP, "Can be used to control the way in which duplicate keys are handled.")
+                )
+        )
     );
 
     public final static FunctionSignature FNS_SIZE = new FunctionSignature(
@@ -145,8 +157,9 @@ public class MapFunction extends BasicFunction {
         super.analyze(contextInfo);
     }
 
+    @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        if (isCalledAs(QN_MERGE.getLocalPart())) {
+        if (isCalledAs(FS_MERGE_NAME)) {
             return merge(args);
         } else if (isCalledAs(QN_SIZE.getLocalPart())) {
             return size(args);
@@ -165,7 +178,7 @@ public class MapFunction extends BasicFunction {
         } else if (isCalledAs(QN_FOR_EACH.getLocalPart())) {
             return forEach(args);
         }
-        return null;
+        throw new XPathException(this, "No function: " + getName() + "#" + getSignature().getArgumentCount());
     }
 
     private Sequence remove(final Sequence[] args) throws XPathException {
@@ -215,20 +228,58 @@ public class MapFunction extends BasicFunction {
         return new IntegerValue(map.size(), Type.INTEGER);
     }
 
-    private Sequence merge(final Sequence[] args) {
-        if (args.length == 0 || args[0].getItemCount() == 0) {
+    private Sequence merge(final Sequence[] args) throws XPathException {
+        if (args[0].getItemCount() == 0) {
+            // map:merge(())
             return new MapType(this.context);
         }
 
-        final Sequence maps = args[0];
-        final AbstractMapType firstMap = (AbstractMapType) args[0].itemAt(0);
-        final List<AbstractMapType> others = new ArrayList<>(maps.getItemCount() - 1);
-        for (int i = 1; i < maps.getItemCount(); i ++) {
-            final AbstractMapType other = (AbstractMapType) maps.itemAt(i);
-            others.add(other);
+        final MergeDuplicates mergeDuplicates;
+        if (args.length == 2) {
+            final Sequence mapValue = ((MapType) args[1]).get(new StringValue("duplicates"));
+            if (mapValue != null) {
+                mergeDuplicates = MergeDuplicates.fromDuplicatesValue(mapValue.getStringValue());
+                if (mergeDuplicates == null) {
+                    throw new XPathException(this, ErrorCodes.FOJS0005, "value for duplicates key was not recognised: " + mapValue.getStringValue());
+                }
+            } else {
+                // TODO(AR) the XQ3.1 spec says that the default for fn:merge#2 should be USE_FIRST... this needs to be revised in a major release of eXist-db
+                mergeDuplicates = MergeDuplicates.USE_LAST;
+            }
+        } else {
+            // TODO(AR) the XQ3.1 spec says that the default for fn:merge#1 should be USE_FIRST... this needs to be revised in a major release of eXist-db
+            mergeDuplicates = MergeDuplicates.USE_LAST;
         }
 
-        return firstMap.merge(others);
+        if (mergeDuplicates == MergeDuplicates.REJECT) {
+            throw new XPathException(this, ErrorCodes.FOJS0005, "map { \"duplicates\": \"reject\" } is not yet implemented by eXist-db");
+        } else if (mergeDuplicates == MergeDuplicates.COMBINE) {
+            throw new XPathException(this, ErrorCodes.FOJS0005, "map { \"combine\": \"reject\" } is not yet implemented by eXist-db");
+        }
+
+        final Sequence maps = args[0];
+        final int totalMaps = maps.getItemCount();
+        final AbstractMapType head;
+        final List<AbstractMapType> tail = new ArrayList<>(totalMaps - 1);
+
+        if (mergeDuplicates == MergeDuplicates.USE_LAST) {
+            // head is the first map
+            head = (AbstractMapType) maps.itemAt(0);
+            for (int i = 1; i < totalMaps; i++) {
+                final AbstractMapType other = (AbstractMapType) maps.itemAt(i);
+                tail.add(other);
+            }
+
+        } else {
+            // head is the last map
+            head = (AbstractMapType) maps.itemAt(totalMaps - 1);
+            for (int i = totalMaps - 2; i >= 0; i--) {
+                final AbstractMapType other = (AbstractMapType) maps.itemAt(i);
+                tail.add(other);
+            }
+        }
+
+        return head.merge(tail);
     }
 
     private Sequence forEach(final Sequence[] args) throws XPathException {
@@ -241,6 +292,24 @@ public class MapFunction extends BasicFunction {
                 result.addAll(s);
             }
             return result;
+        }
+    }
+
+    private enum MergeDuplicates {
+        REJECT,
+        USE_FIRST,
+        USE_LAST,
+        USE_ANY,
+        COMBINE;
+
+        public static @Nullable MergeDuplicates fromDuplicatesValue(final String duplicatesValue) {
+            for (final MergeDuplicates mergeDuplicates : values()) {
+                if (mergeDuplicates.name().toLowerCase().replace('_', '-').equals(duplicatesValue)) {
+                    return mergeDuplicates;
+                }
+            }
+
+            return null;
         }
     }
 }

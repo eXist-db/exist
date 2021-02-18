@@ -219,6 +219,38 @@ function mt:merge-duplicate-keys-use-last-implicit-2() {
 };
 
 declare
+    %test:assertEquals("Saturday", "Saturday")
+function mt:merge-duplicate-keys-use-first-explicit-1() {
+    let $specialWeek := map:merge(($mt:integerKeys, map { 7 : "Caturday" }), map { "duplicates": "use-first" })
+    return
+        ($mt:integerKeys(7), $specialWeek(7))
+};
+
+declare
+    %test:assertEquals("Saturday", "Caturday")
+function mt:merge-duplicate-keys-use-first-explicit-2() {
+    let $specialWeek := map:merge((map { 7 : "Caturday" }, $mt:integerKeys), map { "duplicates": "use-first" })
+    return
+        ($mt:integerKeys(7), $specialWeek(7))
+};
+
+declare
+    %test:assertEquals("Saturday", "Caturday")
+function mt:merge-duplicate-keys-use-last-explicit-1() {
+    let $specialWeek := map:merge(($mt:integerKeys, map { 7 : "Caturday" }), map { "duplicates": "use-last" })
+    return
+        ($mt:integerKeys(7), $specialWeek(7))
+};
+
+declare
+    %test:assertEquals("Saturday", "Saturday")
+function mt:merge-duplicate-keys-use-last-explicit-2() {
+    let $specialWeek := map:merge((map { 7 : "Caturday" }, $mt:integerKeys), map { "duplicates": "use-last" })
+    return
+        ($mt:integerKeys(7), $specialWeek(7))
+};
+
+declare
     %test:assertEmpty
 function mt:mapEmptyValue() {
     let $map := $mt:mapOfSequences
