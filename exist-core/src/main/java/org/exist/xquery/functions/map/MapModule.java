@@ -21,8 +21,13 @@
  */
 package org.exist.xquery.functions.map;
 
+import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
+import org.exist.xquery.FunctionDSL;
 import org.exist.xquery.FunctionDef;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 
 import java.util.List;
 import java.util.Map;
@@ -38,7 +43,8 @@ public class MapModule extends AbstractInternalModule {
     public static final String PREFIX = "map";
 
     private static final FunctionDef[] functions = {
-            new FunctionDef(MapFunction.FNS_MERGE, MapFunction.class),
+            new FunctionDef(MapFunction.FS_MERGE[0], MapFunction.class),
+            new FunctionDef(MapFunction.FS_MERGE[1], MapFunction.class),
             new FunctionDef(MapFunction.FNS_SIZE, MapFunction.class),
             new FunctionDef(MapFunction.FNS_KEYS, MapFunction.class),
             new FunctionDef(MapFunction.FNS_CONTAINS, MapFunction.class),
@@ -67,5 +73,13 @@ public class MapModule extends AbstractInternalModule {
 
     public String getReleaseVersion() {
         return "eXist-2.0.x";
+    }
+
+    static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
+        return FunctionDSL.functionSignature(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, paramTypes);
+    }
+
+    static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
+        return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, variableParamTypes);
     }
 }
