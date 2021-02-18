@@ -858,8 +858,8 @@
                                     <mainClass>org.exist.start.Main</mainClass>
                                     <commandLineArguments>
                                         <commandLineArgument>org.exist.backup.ExportMain</commandLineArgument>
-                                        <commandLineArgument>-x</commandLineArgument>
-                                        <commandLineArgument>-z</commandLineArgument>
+                                        <commandLineArgument>--export</commandLineArgument>
+                                        <commandLineArgument>--zip</commandLineArgument>
                                     </commandLineArguments>
                                     <platforms>
                                         <platform>booter-unix</platform>
@@ -959,8 +959,8 @@
                                     <mainClass>org.exist.start.Main</mainClass>
                                     <commandLineArguments>
                                         <commandLineArgument>org.exist.backup.ExportMain</commandLineArgument>
-                                        <commandLineArgument>-x</commandLineArgument>
-                                        <commandLineArgument>-z</commandLineArgument>
+                                        <commandLineArgument>--export</commandLineArgument>
+                                        <commandLineArgument>--zip</commandLineArgument>
                                     </commandLineArguments>
                                     <platforms>
                                         <platform>booter-unix</platform>
