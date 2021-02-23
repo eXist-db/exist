@@ -37,7 +37,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.exist.test.XmlStringDiffMatcher.*;
+import static org.exist.test.XmlStringDiffMatcher.hasSimilarXml;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import org.xmldb.api.DatabaseManager;
@@ -95,7 +95,7 @@ public class PatchTest extends RESTTest {
         Request patch = Request.Patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                 .bodyByteArray(testData, ContentType.APPLICATION_OCTET_STREAM);
 
-        testRequest(patch, encodeBase64String(testData));
+        assertResponse(patch, encodeBase64String(testData));
     }
 
     @Test
@@ -105,7 +105,7 @@ public class PatchTest extends RESTTest {
         Request patch = Request.Patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                 .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
 
-        testRequest(patch, testData);
+        assertResponse(patch, testData);
     }
 
     @Test
@@ -115,7 +115,7 @@ public class PatchTest extends RESTTest {
         Request patch = Request.Patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                 .bodyByteArray(testData.getBytes(UTF_8));
 
-        testRequest(patch, testData);
+        assertResponse(patch, testData);
     }
 
     @Test
@@ -138,7 +138,7 @@ public class PatchTest extends RESTTest {
         assertMethodNotAllowed(patch);
     }
 
-    private void testRequest(Request method, String expectedData) throws IOException {
+    private void assertResponse(Request method, String expectedData) throws IOException {
         final HttpResponse response = method.execute().returnResponse();
         final Matcher<String> valueMatcher = hasSimilarXml(
                 "<request><method>PATCH</method><data>" + expectedData + "</data></request>");
