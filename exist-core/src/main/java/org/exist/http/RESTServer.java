@@ -2235,13 +2235,12 @@ public class RESTServer {
     }
 
     private boolean isExecutableType(final DocumentImpl resource) {
-        if (resource != null
-                && (MimeType.XQUERY_TYPE.getName().equals(resource.getMimeType()) // a xquery
-                || MimeType.XPROC_TYPE.getName().equals(resource.getMimeType()))//a xproc
-                ) {
-            return true;
-        } else {
-            return false;
-        }
+        return (
+            resource != null
+            && (
+                    MimeType.XQUERY_TYPE.getName().equals(resource.getMimeType()) // xquery
+                    || MimeType.XPROC_TYPE.getName().equals(resource.getMimeType()) // xproc
+            )
+        );
     }
 }
