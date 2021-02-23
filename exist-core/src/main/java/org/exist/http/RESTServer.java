@@ -1197,54 +1197,60 @@ public class RESTServer {
             return false;
         }
         final String xqueryType = MimeType.XQUERY_TYPE.getName();
-        final Collection collection = broker.getCollection(path);
-        if (collection == null) {
-            XmldbURI servletPath = path;
-            LockedDocument lockedDocument = null;
-            DocumentImpl resource = null;
-            // work up the url path to find an
-            // xquery resource
-            while (null == resource) {
-                // traverse up the path looking for xquery objects
 
-                lockedDocument = broker.getXMLResource(servletPath, LockMode.READ_LOCK);
-                resource = lockedDocument == null ? null : lockedDocument.getDocument();
-                if (null != resource
-                        && (resource.getResourceType() == DocumentImpl.BINARY_FILE
-                        && xqueryType.equals(resource.getMimeType()))) {
-                    break; // found a binary file with mime-type xquery or XML file with mime-type xproc
-                } else if (null != resource) {
-                    // not an xquery or xproc resource. This means we have a path
-                    // that cannot contain an xquery or xproc object even if we keep
-                    // moving up the path, so bail out now
-                    lockedDocument.close();
-                    lockedDocument = null;
-                    resource = null;
-                    break;
-                }
-                servletPath = servletPath.removeLastSegment();
-                if (servletPath == XmldbURI.EMPTY_URI) {
-                    break;
-                }
+        final Collection collection = broker.getCollection(path);
+        // a collection is not executable
+        if (collection != null) {
+            return false;
+        }
+
+        XmldbURI servletPath = path;
+        LockedDocument lockedDocument = null;
+        DocumentImpl resource = null;
+        // work up the url path to find an
+        // xquery resource
+        while (resource == null) {
+            // traverse up the path looking for xquery objects
+
+            lockedDocument = broker.getXMLResource(servletPath, LockMode.READ_LOCK);
+            resource = lockedDocument == null ? null : lockedDocument.getDocument();
+            if (resource != null
+                    && (resource.getResourceType() == DocumentImpl.BINARY_FILE
+                    && xqueryType.equals(resource.getMimeType()))) {
+                break; // found a binary file with mime-type xquery or XML file with mime-type xproc
+            } else if (resource != null) {
+                // not an xquery or xproc resource. This means we have a path
+                // that cannot contain an xquery or xproc object even if we keep
+                // moving up the path, so bail out now
+                lockedDocument.close();
+                lockedDocument = null;
+                resource = null;
+                break;
             }
-            // xquery binary file found
-            if (resource != null) {
-                // found an XQuery resource, fixup request values
-                final String pathInfo = path.trimFromBeginning(servletPath).toString();
-                final Properties outputProperties = new Properties(defaultOutputKeysProperties);
-                try {
-                    // Execute the XQuery
-                    executeXQuery(broker, transaction, resource, request, response,
-                            outputProperties, servletPath.toString(), pathInfo);
-                } catch (final XPathException e) {
-                    writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, "UTF-8", null, path.toString(), e);
-                } finally {
-                    lockedDocument.close();
-                }
-                return true;
+            servletPath = servletPath.removeLastSegment();
+            if (servletPath == XmldbURI.EMPTY_URI) {
+                break;
             }
         }
-        return false;
+
+        // no xquery binary file found
+        if (resource == null) {
+            return false;
+        }
+
+        // found an XQuery resource, fixup request values
+        final String pathInfo = path.trimFromBeginning(servletPath).toString();
+        final Properties outputProperties = new Properties(defaultOutputKeysProperties);
+        try {
+            // Execute the XQuery
+            executeXQuery(broker, transaction, resource, request, response,
+                    outputProperties, servletPath.toString(), pathInfo);
+        } catch (final XPathException e) {
+            writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, "UTF-8", null, path.toString(), e);
+        } finally {
+            lockedDocument.close();
+        }
+        return true;
     }
 
     private String getRequestContent(final HttpServletRequest request) throws IOException {
