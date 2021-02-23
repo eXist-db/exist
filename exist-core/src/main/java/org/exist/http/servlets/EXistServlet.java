@@ -25,10 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.http.BadRequestException;
-import org.exist.http.Descriptor;
-import org.exist.http.NotFoundException;
-import org.exist.http.RESTServer;
+import org.exist.http.*;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
@@ -152,6 +149,77 @@ public class EXistServlet extends AbstractExistHttpServlet {
                 throw t;
             }
 
+        } catch (final BadRequestException e) {
+            if (response.isCommitted()) {
+                throw new ServletException(e.getMessage(), e);
+            }
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+        } catch (final PermissionDeniedException e) {
+            // If the current user is the Default User and they do not have permission
+            // then send a challenge request to prompt the client for a username/password.
+            // Else return a FORBIDDEN Error
+            if (user.equals(getDefaultUser())) {
+                getAuthenticator().sendChallenge(request, response);
+            } else {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            }
+        } catch (final EXistException e) {
+            if (response.isCommitted()) {
+                throw new ServletException(e.getMessage(), e);
+            }
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+        } catch (final Throwable e) {
+            LOG.error(e);
+            throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
+        }
+    }
+
+    protected void doPatch(final HttpServletRequest request, final HttpServletResponse response)
+            throws ServletException, IOException {
+        // first, adjust the path
+        String path = adjustPath(request);
+
+        // second, perform descriptor actions
+        final Descriptor descriptor = Descriptor.getDescriptorSingleton();
+        if (descriptor != null) {
+            // TODO: figure out a way to log PATCH requests with
+            // HttpServletRequestWrapper and
+            // Descriptor.doLogRequestInReplayLog()
+
+            // map's the path if a mapping is specified in the descriptor
+            path = descriptor.mapPath(path);
+        }
+
+        // third, authenticate the user
+        final Subject user = authenticate(request, response);
+        if (user == null) {
+            // You now get a HTTP Authentication challenge if there is no user
+            return;
+        }
+
+        // fourth, process the request
+        try (final DBBroker broker = getPool().get(Optional.of(user));
+             final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
+
+            final XmldbURI dbpath = XmldbURI.createInternal(path);
+            try (final Collection collection = broker.getCollection(dbpath)) {
+                if (collection != null) {
+                    transaction.abort();
+                    response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "A PATCH request is not allowed against a plain collection path.");
+                    return;
+                }
+            }
+
+            try {
+                srvREST.doPatch(broker, transaction, dbpath, request, response);
+                transaction.commit();
+
+            } catch (final Throwable t) {
+                transaction.abort();
+                throw t;
+            }
+        } catch (final MethodNotAllowedException e) {
+            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, e.getMessage());
         } catch (final BadRequestException e) {
             if (response.isCommitted()) {
                 throw new ServletException(e.getMessage(), e);
@@ -504,5 +572,15 @@ public class EXistServlet extends AbstractExistHttpServlet {
                 ((HttpServletRequestWrapper) request).close();
             }
         }
+    }
+
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        final String method = req.getMethod();
+        if (method.equals("PATCH")) {
+            this.doPatch(req, resp);
+            return;
+        }
+        super.service(req, resp);
     }
 }

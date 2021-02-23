@@ -1109,6 +1109,35 @@ public class RESTServer {
         }
     }
 
+
+    /**
+     * Handles PATCH requests. Only XQuery modules are allowed as targets
+     * otherwise it is unclear how to handle the request and a method not allowed
+     * is returned.
+     *
+     * @param broker the database broker
+     * @param transaction the database transaction
+     * @param request the request
+     * @param response the response
+     * @param path the path of the request
+     *
+     * @throws BadRequestException if a bad request is made
+     * @throws PermissionDeniedException if the request has insufficient permissions
+     * @throws NotFoundException if the request resource cannot be found
+     * @throws IOException if an I/O error occurs
+     */
+    public void doPatch(final DBBroker broker, final Txn transaction, final XmldbURI path,
+                      final HttpServletRequest request, final HttpServletResponse response)
+            throws BadRequestException, PermissionDeniedException, IOException,
+            NotFoundException, MethodNotAllowedException {
+
+        if (checkForXQueryTarget(broker, transaction, path, request, response)) {
+            return;
+        }
+
+        throw new MethodNotAllowedException("No xquery found to handle patch request: " + path);
+    }
+
     public void doDelete(final DBBroker broker, final Txn transaction, final String path, final HttpServletRequest request, final HttpServletResponse response)
             throws PermissionDeniedException, NotFoundException, IOException, BadRequestException {
         final XmldbURI pathURI = XmldbURI.createInternal(path);
