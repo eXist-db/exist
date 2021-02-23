@@ -1191,8 +1191,7 @@ public class RESTServer {
 
     private boolean checkForXQueryTarget(final DBBroker broker, final Txn transaction,
         final XmldbURI path, final HttpServletRequest request,
-        final HttpServletResponse response) throws PermissionDeniedException,
-        NotFoundException, IOException, BadRequestException {
+        final HttpServletResponse response) throws PermissionDeniedException, IOException, BadRequestException {
         
         if (request.getAttribute(XQueryURLRewrite.RQ_ATTR) == null) {
             return false;
