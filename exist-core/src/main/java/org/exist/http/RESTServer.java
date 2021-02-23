@@ -103,13 +103,13 @@ import java.util.function.BiFunction;
 
 import static java.lang.invoke.MethodType.methodType;
 import static org.exist.http.RESTServerParameter.*;
+
 /**
  *
  * @author wolf
  * @author ljo
  * @author adam
  * @author gev
- *
  */
 public class RESTServer {
 
@@ -157,7 +157,7 @@ public class RESTServer {
     //EXQuery Request Module details
     private String xqueryContextExqueryRequestAttribute = null;
     private BiFunction<HttpServletRequest, FilterInputStreamCacheConfiguration, HttpRequest> cstrHttpServletRequestAdapter = null;
-    
+
     // Constructor
     public RESTServer(final BrokerPool pool, final String formEncoding,
                       final String containerEncoding, final boolean useDynamicContentType, final boolean safeMode, final EXistServlet.FeatureEnabled xquerySubmission, final EXistServlet.FeatureEnabled xupdateSubmission) {
@@ -168,7 +168,7 @@ public class RESTServer {
         this.sessionManager = new SessionManager();
         this.xquerySubmission = xquerySubmission;
         this.xupdateSubmission = xupdateSubmission;
-        
+
         //get (optiona) EXQuery Request Module details
         try {
             Class clazz = Class.forName("org.exist.extensions.exquery.modules.request.RequestModule");
@@ -176,7 +176,7 @@ public class RESTServer {
                 final Field fldExqRequestAttr = clazz.getDeclaredField("EXQ_REQUEST_ATTR");
                 if(fldExqRequestAttr != null) {
                     this.xqueryContextExqueryRequestAttribute = (String)fldExqRequestAttr.get(null);
-                    
+
                     if(this.xqueryContextExqueryRequestAttribute != null) {
                         clazz = Class.forName("org.exist.extensions.exquery.restxq.impl.adapters.HttpServletRequestAdapter");
                         if(clazz != null) {
@@ -190,7 +190,7 @@ public class RESTServer {
                                                     methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
                         }
                     }
-                    
+
                 }
             }
         } catch(final Throwable e) {
@@ -204,7 +204,7 @@ public class RESTServer {
             }
         }
     }
-    
+
     /**
      * Retrieves a parameter from the Query String of the request
      */
@@ -544,7 +544,7 @@ public class RESTServer {
             final HttpServletResponse response, final String path)
             throws BadRequestException, PermissionDeniedException,
             NotFoundException, IOException {
-        
+
         final XmldbURI pathUri = XmldbURI.createInternal(path);
         if (checkForXQueryTarget(broker, transaction, pathUri, request, response)) {
             return;
@@ -733,7 +733,7 @@ public class RESTServer {
                 final NamespaceExtractor nsExtractor = new NamespaceExtractor();
                 final ElementImpl root = parseXML(broker.getBrokerPool(), content, nsExtractor);
                 final String rootNS = root.getNamespaceURI();
-                
+
                 if (rootNS != null && rootNS.equals(Namespaces.EXIST_NS)) {
 
                     if (Query.xmlKey().equals(root.getLocalName())) {
@@ -841,7 +841,7 @@ public class RESTServer {
                             }
                         }
                     }
-                    
+
                     // execute query
                     if (query != null) {
 
@@ -1192,7 +1192,7 @@ public class RESTServer {
     private boolean checkForXQueryTarget(final DBBroker broker, final Txn transaction,
         final XmldbURI path, final HttpServletRequest request,
         final HttpServletResponse response) throws PermissionDeniedException, IOException, BadRequestException {
-        
+
         if (request.getAttribute(XQueryURLRewrite.RQ_ATTR) == null) {
             return false;
         }
@@ -1402,7 +1402,7 @@ public class RESTServer {
 
     private void declareNamespaces(final XQueryContext context,
         final List<Namespace> namespaces) throws XPathException {
-        
+
         if (namespaces == null) {
             return;
         }
@@ -1429,27 +1429,27 @@ public class RESTServer {
         context.setHttpContext(new XQueryContext.HttpContext(reqw, respw));
 
         //enable EXQuery Request Module (if present)
-        try { 
+        try {
             if(xqueryContextExqueryRequestAttribute != null && cstrHttpServletRequestAdapter != null) {
                 final HttpRequest exqueryRequestAdapter = cstrHttpServletRequestAdapter.apply(request, () -> (String)context.getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY));
 
                 if(exqueryRequestAdapter != null) {
                     context.setAttribute(xqueryContextExqueryRequestAttribute, exqueryRequestAdapter);
                 }
-            }     
+            }
         } catch(final Exception e) {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("EXQuery Request Module is not present: " + e.getMessage(), e);
             }
         }
-        
+
         if (variables != null) {
             declareExternalAndXQJVariables(context, variables);
         }
 
         return reqw;
     }
-    
+
     private void declareExternalAndXQJVariables(final XQueryContext context,
         final ElementImpl variables) throws XPathException {
 
@@ -2127,7 +2127,7 @@ public class RESTServer {
         final DBBroker broker, final Sequence results, final int howmany,
         final int start, final boolean typed, final Properties outputProperties,
         final boolean wrap, final long compilationTime, final long executionTime) throws BadRequestException {
-        
+
         // serialize the results to the response output stream
         outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
         try {
@@ -2174,7 +2174,7 @@ public class RESTServer {
         final DBBroker broker, final Txn transaction, final Sequence results, int howmany,
         int start, final Properties outputProperties, final boolean wrap, final long compilationTime, final long executionTime)
             throws BadRequestException {
-        
+
         // calculate number of results to return
         final int rlen = results.getItemCount();
         if (!results.isEmpty()) {
