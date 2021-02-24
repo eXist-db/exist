@@ -7,16 +7,20 @@ on:
     types: [opened, synchronize, reopened]
 jobs:
   build:
-    name: Build
-    runs-on: ubuntu-latest
+    name: Build (${{ matrix.os }} / OpenJDK ${{ matrix.jdk }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        jdk: ['8', '11']
+        os: [ubuntu-latest, windows-latest, macOS-latest]
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Set up JDK 11
+      - name: Set up JDK ${{ matrix.jdk }}
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: ${{ matrix.jdk }}
       - name: Cache SonarCloud packages
         uses: actions/cache@v1
         with:
