@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build (${{ matrix.os }} / OpenJDK ${{ matrix.jdk }})
+    name: Build and Test (${{ matrix.os }} / OpenJDK ${{ matrix.jdk }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
