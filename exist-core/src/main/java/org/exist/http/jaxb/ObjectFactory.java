@@ -58,7 +58,8 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Query }
-     * 
+     *
+     * @return the Query.
      */
     public Query createQuery() {
         return new Query();
@@ -66,7 +67,8 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Result }
-     * 
+     *
+     * @return the Result.
      */
     public Result createResult() {
         return new Result();
@@ -74,7 +76,8 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Sequence }
-     * 
+     *
+     * @return the Sequence.
      */
     public Sequence createSequence() {
         return new Sequence();
@@ -82,7 +85,8 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Query.Properties }
-     * 
+     *
+     * @return the Query.Properties.
      */
     public Query.Properties createQueryProperties() {
         return new Query.Properties();
@@ -90,7 +94,8 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Query.Variables }
-     * 
+     *
+     * @return the Query.Variables.
      */
     public Query.Variables createQueryVariables() {
         return new Query.Variables();
@@ -98,7 +103,8 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Query.Variables.Variable }
-     * 
+     *
+     * @return the Query.Variable.
      */
     public Query.Variables.Variable createQueryVariablesVariable() {
         return new Query.Variables.Variable();
@@ -106,7 +112,8 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Collection }
-     * 
+     *
+     * @return the Collection.
      */
     public Collection createCollection() {
         return new Collection();
@@ -114,7 +121,8 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Result.Value }
-     * 
+     *
+     * @return the Result.Value.
      */
     public Result.Value createResultValue() {
         return new Result.Value();
@@ -122,7 +130,8 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Sequence.Value }
-     * 
+     *
+     * @return the Sequence.Value.
      */
     public Sequence.Value createSequenceValue() {
         return new Sequence.Value();
@@ -130,7 +139,8 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Query.Properties.Property }
-     * 
+     *
+     * @return The Query.Property.
      */
     public Query.Properties.Property createQueryPropertiesProperty() {
         return new Query.Properties.Property();
@@ -138,7 +148,8 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Query.Variables.Variable.Qname }
-     * 
+     *
+     * @return the Query.Variable.Qname.
      */
     public Query.Variables.Variable.Qname createQueryVariablesVariableQname() {
         return new Query.Variables.Variable.Qname();
