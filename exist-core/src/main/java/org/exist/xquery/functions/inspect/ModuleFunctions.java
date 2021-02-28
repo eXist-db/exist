@@ -34,8 +34,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Iterator;
 
-import static org.exist.xquery.FunctionDSL.*;
-import static org.exist.xquery.functions.inspect.InspectionModule.*;
+import static org.exist.xquery.FunctionDSL.arities;
+import static org.exist.xquery.FunctionDSL.arity;
+import static org.exist.xquery.FunctionDSL.param;
+import static org.exist.xquery.FunctionDSL.returnsOptMany;
+import static org.exist.xquery.functions.inspect.InspectionModule.functionSignature;
+import static org.exist.xquery.functions.inspect.InspectionModule.functionSignatures;
 
 public class ModuleFunctions extends BasicFunction {
 

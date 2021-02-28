@@ -25,7 +25,8 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
-import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.FunctionDSL.param;
+import static org.exist.xquery.FunctionDSL.returns;
 import static org.exist.xquery.functions.inspect.InspectionModule.functionSignature;
 
 public class InspectFunction extends BasicFunction {
