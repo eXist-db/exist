@@ -49,7 +49,7 @@ import org.xmldb.api.modules.XMLResource;
 import static org.apache.commons.codec.binary.Base64.encodeBase64String;
 
 /**
- * test HTTP PATCH capabilities of ExistServlet
+ * Test HTTP PATCH capabilities of {@link org.exist.http.servlets.EXistServlet}
  */
 public class PatchTest extends RESTTest {
 
@@ -92,7 +92,7 @@ public class PatchTest extends RESTTest {
     public void patchBinary() throws IOException {
         final byte[] testData = "12345".getBytes(UTF_8);
 
-        Request patch = Request.Patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        final Request patch = Request.Patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                 .bodyByteArray(testData, ContentType.APPLICATION_OCTET_STREAM);
 
         assertResponse(patch, encodeBase64String(testData));
@@ -102,7 +102,7 @@ public class PatchTest extends RESTTest {
     public void patchXml() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
-        Request patch = Request.Patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        final Request patch = Request.Patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                 .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
 
         assertResponse(patch, testData);
@@ -112,7 +112,7 @@ public class PatchTest extends RESTTest {
     public void patchString() throws IOException {
         final String testData = "12345";
 
-        Request patch = Request.Patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        final Request patch = Request.Patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                 .bodyByteArray(testData.getBytes(UTF_8));
 
         assertResponse(patch, testData);
@@ -122,7 +122,7 @@ public class PatchTest extends RESTTest {
     public void patchCollectionNotAllowed() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
-        Request patch = Request.Patch(getCollectionRootUri())
+        final Request patch = Request.Patch(getCollectionRootUri())
                 .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
 
         assertMethodNotAllowed(patch);
@@ -132,13 +132,13 @@ public class PatchTest extends RESTTest {
     public void patchXmlResourceNotAllowed() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
-        Request patch = Request.Patch(getCollectionRootUri() + "/" + XML_FILENAME)
+        final Request patch = Request.Patch(getCollectionRootUri() + "/" + XML_FILENAME)
                 .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
 
         assertMethodNotAllowed(patch);
     }
 
-    private void assertResponse(Request method, String expectedData) throws IOException {
+    private void assertResponse(final Request method, String expectedData) throws IOException {
         final HttpResponse response = method.execute().returnResponse();
         final Matcher<String> valueMatcher = hasSimilarXml(
                 "<request><method>PATCH</method><data>" + expectedData + "</data></request>");
@@ -157,7 +157,7 @@ public class PatchTest extends RESTTest {
         assertEquals(code, response.getStatusLine().getStatusCode());
     }
 
-    private void assertMethodNotAllowed (Request req) throws IOException {
+    private void assertMethodNotAllowed (final Request req) throws IOException {
         final HttpResponse response = req.execute().returnResponse();
         assertHTTPStatusCode(HttpStatus.SC_METHOD_NOT_ALLOWED, response);
     }
