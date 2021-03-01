@@ -1211,7 +1211,6 @@ public class RESTServer {
         // xquery resource
         while (resource == null) {
             // traverse up the path looking for xquery objects
-
             lockedDocument = broker.getXMLResource(servletPath, LockMode.READ_LOCK);
             resource = lockedDocument == null ? null : lockedDocument.getDocument();
             if (resource != null
@@ -1223,19 +1222,13 @@ public class RESTServer {
                 // that cannot contain an xquery or xproc object even if we keep
                 // moving up the path, so bail out now
                 lockedDocument.close();
-                lockedDocument = null;
-                resource = null;
-                break;
+                return false;
             }
             servletPath = servletPath.removeLastSegment();
             if (servletPath == XmldbURI.EMPTY_URI) {
-                break;
+                // no resource and no path segments left
+                return false;
             }
-        }
-
-        // no xquery binary file found
-        if (resource == null) {
-            return false;
         }
 
         // found an XQuery resource, fixup request values
