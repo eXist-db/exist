@@ -211,14 +211,14 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * Loaded modules.
      *
-     * Map<NamespaceURI, Modules>
+     * The format of the map is: <code>Map&lt;NamespaceURI, Modules&gt;</code>.
      */
     protected Object2ObjectMap<String, Module[]> modules = new Object2ObjectOpenHashMap<>(8, Hash.VERY_FAST_LOAD_FACTOR);
 
     /**
      * Loaded modules, including ones bubbled up from imported modules.
      *
-     * Map<NamespaceURI, Modules>
+     * The format of the map is: <code>Map&lt;NamespaceURI, Modules&gt;</code>
      */
     private Object2ObjectMap<String, Module[]> allModules = new Object2ObjectOpenHashMap<>();
 
