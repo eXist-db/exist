@@ -32,4 +32,4 @@ jobs:
       - name: Maven Test
         run: mvn -V -B verify -Ptests
       - name: Maven Javadoc
-        Run: mvn -V -B javadoc:javadoc
+        run: mvn -V -B javadoc:javadoc
