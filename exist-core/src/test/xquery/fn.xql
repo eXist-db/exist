@@ -176,9 +176,3 @@ function fnt:document-uri0_no_node_context() {
      util:eval-with-context("document-uri()", (), false(), "a")
 };
 
-declare
-    %test:assertEmpty
-function fnt:base-uri-empty() {
-     (attribute anAttribute{"attribute value"})/fn:base-uri()
-};
-

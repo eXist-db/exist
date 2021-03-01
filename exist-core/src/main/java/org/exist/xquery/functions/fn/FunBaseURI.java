@@ -21,32 +21,17 @@
  */
 package org.exist.xquery.functions.fn;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.QName;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
+import org.w3c.dom.Node;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-
-import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.ErrorCodes;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.w3c.dom.Node;
 
 /**
  * @author wolf
@@ -135,51 +120,51 @@ public class FunBaseURI extends BasicFunction {
             // This is implemented to be a recursive ascent according to
             // section 2.5 in www.w3.org/TR/xpath-functions 
             // see memtree/ElementImpl and dom/ElementImpl. /ljo
-            final Node domNode = nodeValue.getNode();
-            final short type = domNode.getNodeType();
+            final Node node = nodeValue.getNode();
+            final short type = node.getNodeType();
             //A direct processing instruction constructor creates a processing instruction node 
             //whose target property is PITarget and whose content property is DirPIContents. 
             //The base-uri property of the node is empty. 
             //The parent property of the node is empty.
-            if (type != Node.DOCUMENT_NODE && type != Node.ATTRIBUTE_NODE && domNode.getParentNode() == null) {
-                // Nothing to do
+
+
+            // Namespace node does not exist in xquery
+            final short[] quickStops = { Node.ELEMENT_NODE, Node.ATTRIBUTE_NODE,
+                    Node.PROCESSING_INSTRUCTION_NODE, Node.COMMENT_NODE, Node.TEXT_NODE};
+
+            if (!ArrayUtils.contains(quickStops, type)) {
+                return Sequence.EMPTY_SEQUENCE;
             }
-            else if ( (type == Node.PROCESSING_INSTRUCTION_NODE || type == Node.COMMENT_NODE)
-                    && (domNode.getParentNode() != null && domNode.getParentNode().getNodeType() == Node.DOCUMENT_NODE)) {
-                // Nothing to do
 
-            } else if (type == Node.ATTRIBUTE_NODE ||
-                    type == Node.ELEMENT_NODE || type == Node.DOCUMENT_NODE ||
-                    type == Node.PROCESSING_INSTRUCTION_NODE || type == Node.COMMENT_NODE) {
-                URI relativeURI = null;
-                URI baseURI = null;
-                try {
-                    if (domNode != null) {
-                        final String uri = domNode.getBaseURI();
-                        if (StringUtils.isNotBlank(uri)) {
-                            relativeURI = new URI(uri);
-                            baseURI = new URI(context.getBaseURI() + "/");
-                        }
+
+            URI relativeURI = null;
+            URI baseURI = null;
+            try {
+                if (node != null) {
+                    final String uri = node.getBaseURI();
+                    if (StringUtils.isNotBlank(uri)) {
+                        relativeURI = new URI(uri);
+                        baseURI = new URI(context.getBaseURI() + "/");
                     }
-                } catch (final URISyntaxException e) {
-                    throw new XPathException(this, ErrorCodes.ERROR, e.getMessage());
                 }
+            } catch (final URISyntaxException e) {
+                throw new XPathException(this, ErrorCodes.ERROR, e.getMessage());
+            }
 
-                if (relativeURI != null) {
-                    if (!("".equals(relativeURI.toString())
-                            || (type == Node.ATTRIBUTE_NODE && "/db".equals(relativeURI.toString())))) {
-                        if (relativeURI.isAbsolute()) {
-                            result = new AnyURIValue(relativeURI);
-                        } else {
-                            result = new AnyURIValue(baseURI.resolve(relativeURI));
-                        }
-
+            if (relativeURI != null) {
+                if (!("".equals(relativeURI.toString()))) {
+                    if (relativeURI.isAbsolute()) {
+                        result = new AnyURIValue(relativeURI);
                     } else {
-                        result = new AnyURIValue(baseURI);
+                        result = new AnyURIValue(baseURI.resolve(relativeURI));
                     }
+
+                } else {
+                    result = new AnyURIValue(baseURI);
                 }
             }
         }
+
 
         return result;
     }
