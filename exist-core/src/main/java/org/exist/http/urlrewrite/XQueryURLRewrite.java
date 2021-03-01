@@ -107,8 +107,10 @@ public class XQueryURLRewrite extends HttpServlet {
     private static final String DRIVER = "org.exist.xmldb.DatabaseImpl";
     private static final Pattern NAME_REGEX = Pattern.compile("^.*/([^/]+)$", 0);
 
-    public static final String XQUERY_CONTROLLER_FILENAME = "controller.xql";
+    public static final String XQUERY_CONTROLLER_FILENAME = "controller.xq";
+    public static final String LEGACY_XQUERY_CONTROLLER_FILENAME = "controller.xql";
     public static final XmldbURI XQUERY_CONTROLLER_URI = XmldbURI.create(XQUERY_CONTROLLER_FILENAME);
+    public static final XmldbURI LEGACY_XQUERY_CONTROLLER_URI = XmldbURI.create(LEGACY_XQUERY_CONTROLLER_FILENAME);
 
     public static final String RQ_ATTR = "org.exist.forward";
     public static final String RQ_ATTR_REQUEST_URI = "org.exist.forward.request-uri";
@@ -763,21 +765,22 @@ public class XQueryURLRewrite extends HttpServlet {
     }
 
     /**
-     * Finds a `controller.xql` file within a Collection hierarchy.
+     * Finds a `controller.xq` (or legacy `controller.xql`)
+     * file within a Collection hierarchy.
      * Most specific collections are considered first.
      *
      * For example, given the collectionUri `/db/apps`
      * and the resourceUri /db/apps/myapp/data, the
      * order or search will be:
      *
-     * /db/apps/myapp/data/controller.xql
-     * /db/apps/myapp/controller.xql
-     * /db/apps/controller.xql
+     * /db/apps/myapp/data/controller.xq
+     * /db/apps/myapp/controller.xq
+     * /db/apps/controller.xq
      *
      * @param broker         The database broker
      * @param collectionUri  The root collection URI, below which we should not descend
      * @param resourceUri The path to the most specific document or collection for which we should find a controller
-     * @return The most relevant controller.xql document (with a READ_LOCK), or null if it could not be found.
+     * @return The most relevant controller.xq document (with a READ_LOCK), or null if it could not be found.
      */
     //@tailrec
     private @Nullable
@@ -788,12 +791,19 @@ public class XQueryURLRewrite extends HttpServlet {
 
         try (final Collection collection = broker.openCollection(resourceUri, LockMode.READ_LOCK)) {
             if (collection != null) {
-                final LockedDocument lockedDoc = collection.getDocumentWithLock(broker, XQUERY_CONTROLLER_URI, LockMode.READ_LOCK);
+                LockedDocument lockedDoc = collection.getDocumentWithLock(broker, XQUERY_CONTROLLER_URI, LockMode.READ_LOCK);
+
+                if (lockedDoc == null) {
+                    lockedDoc = collection.getDocumentWithLock(broker, LEGACY_XQUERY_CONTROLLER_URI, LockMode.READ_LOCK);
+                }
+
                 if (lockedDoc != null) {
                     // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
                     // collection lock will be released by the try-with-resources before the locked document is returned by this function
                     return lockedDoc;
                 }
+
+
             }
         } catch (final PermissionDeniedException e) {
             if (LOG.isDebugEnabled()) {
@@ -829,7 +839,12 @@ public class XQueryURLRewrite extends HttpServlet {
             if (!component.isEmpty()) {
                 subDir = subDir.resolve(component);
                 if (Files.isDirectory(subDir)) {
-                    final Path cf = subDir.resolve(XQUERY_CONTROLLER_FILENAME);
+                    Path cf = subDir.resolve(XQUERY_CONTROLLER_FILENAME);
+
+                    if (!Files.isReadable(cf)) {
+                        cf = subDir.resolve(LEGACY_XQUERY_CONTROLLER_FILENAME);
+                    }
+
                     if (Files.isReadable(cf)) {
                         controllerFile = cf;
                     }
@@ -840,7 +855,12 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 
         if (controllerFile == null) {
-            final Path cf = baseDir.resolve(XQUERY_CONTROLLER_FILENAME);
+            Path cf = baseDir.resolve(XQUERY_CONTROLLER_FILENAME);
+
+            if (!Files.isReadable(cf)) {
+                cf = subDir.resolve(LEGACY_XQUERY_CONTROLLER_FILENAME);
+            }
+
             if (Files.isReadable(cf)) {
                 controllerFile = cf;
             }
