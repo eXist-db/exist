@@ -30,6 +30,6 @@ jobs:
       - name: Maven Build
         run: mvn -V -B -DskipTests=true "-Dmaven.javadoc.skip=true" install
       - name: Maven Test
-        run: mvn -V -B verify -Ptests
+        run: mvn -V -B verify
       - name: Maven Javadoc
         run: mvn -V -B javadoc:javadoc
