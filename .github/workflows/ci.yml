@@ -2,7 +2,7 @@ name: CI
 on: [push, pull_request]
 jobs:
   build:
-    name: Build and Test (${{ matrix.os }} / OpenJDK ${{ matrix.jdk }})
+    name: (${{ matrix.os }} / JDK ${{ matrix.jdk }}) Build and Test
     strategy:
       fail-fast: true
       matrix:
@@ -35,7 +35,7 @@ jobs:
 #      - name: Maven Verify
 #        run: mvn -V -B verify
       - name: Maven Javadoc
-        run: mvn -V -B javadoc:javadoc
+        run: mvn -V -B -T 2C javadoc:javadoc
   deploy:
     name: Publish Docker Images
     runs-on: ubuntu-latest
@@ -51,7 +51,7 @@ jobs:
           java-version: 8
       # TODO: reuse artifacts from Build step
       - name: Maven Build
-        run: mvn -V -B clean package -DskipTests -Ddependency-check.skip=true -Ddocker=true
+        run: mvn -V -B -T 2C clean package -DskipTests -Ddependency-check.skip=true -Ddocker=true
       - name: Build and push latest images
         if: github.ref == 'refs/heads/develop'
         env:
