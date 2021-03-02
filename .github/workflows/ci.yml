@@ -1,11 +1,5 @@
 name: CI
-on:
-  push:
-    branches:
-      - develop
-      - master
-  pull_request:
-    types: [opened, synchronize, reopened]
+on: [push, pull_request]
 jobs:
   build:
     name: Build and Test (${{ matrix.os }} / OpenJDK ${{ matrix.jdk }})
