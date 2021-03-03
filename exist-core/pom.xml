@@ -680,6 +680,7 @@
                                 <exclude>src/test/java/org/exist/xquery/functions/xmldb/XMLDBAuthenticateTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/functions/util/Eval.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/value/BifurcanMapTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/value/AtomicValueComparator.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/value/ItemComparator.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/value/SequenceComparator.java</exclude>
@@ -820,6 +821,7 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/test/java/org/exist/xquery/functions/xmldb/XMLDBAuthenticateTest.java</include>
                                 <include>src/main/java/org/exist/xquery/functions/util/Eval.java</include>
                                 <include>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</include>
+                                <include>src/test/java/org/exist/xquery/value/BifurcanMapTest.java</include>
                                 <include>src/main/java/org/exist/xquery/value/AtomicValueComparator.java</include>
                                 <include>src/main/java/org/exist/xquery/value/ItemComparator.java</include>
                                 <include>src/main/java/org/exist/xquery/value/SequenceComparator.java</include>
