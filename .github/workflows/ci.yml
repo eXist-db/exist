@@ -30,7 +30,7 @@ jobs:
       - name: Maven Build
         run: mvn -V -B -DskipTests=true "-Dmaven.javadoc.skip=true" install
       - name: Maven Test
-        run: mvn -V -B test
+        run: mvn -V -B "-Dsurefire.useFile=false" -DtrimStackTrace=false test
       - name: Maven License Check
         run: mvn -V -B license:check
 # TODO(AR) test and license:check should be replaced by verify, but seems to cause an error on GitHub Actions
