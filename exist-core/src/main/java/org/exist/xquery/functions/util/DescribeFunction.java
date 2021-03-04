@@ -30,7 +30,6 @@ import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.*;
 import org.exist.xquery.Module;
-import org.exist.xquery.functions.inspect.InspectFunction;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
@@ -61,7 +60,7 @@ public class DescribeFunction extends Function {
 				new FunctionParameterSequenceType("function-name", Type.QNAME, Cardinality.EXACTLY_ONE, "The name of the function to get the signature of"),
 			},
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the signature of the function"),
-            InspectFunction.FN_INSPECT_FUNCTION);
+			"Use inspect:inspect-function#1 instead!");
 	
 	private final static QName ANNOTATION_QNAME = new QName("annotation", XMLConstants.NULL_NS_URI);
 	private final static QName ANNOTATION_VALUE_QNAME = new QName("value", XMLConstants.NULL_NS_URI);

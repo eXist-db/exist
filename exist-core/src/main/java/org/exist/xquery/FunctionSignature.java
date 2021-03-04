@@ -97,9 +97,9 @@ public class FunctionSignature {
         setDeprecated(deprecated);
     }
         
-    public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType, final FunctionSignature deprecatedBy) {
-        this(name, description, arguments, returnType, false, "Moved to the module: " + deprecatedBy.getName().getNamespaceURI() + ", you should now use '" + deprecatedBy.getName().getPrefix() + ":" + deprecatedBy.getName().getLocalPart() + "' instead!");
-    }
+//    public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType, final FunctionSignature deprecatedBy) {
+//        this(name, description, arguments, returnType, false, "Moved to the module: " + deprecatedBy.getName().getNamespaceURI() + ", you should now use '" + deprecatedBy.getName().getPrefix() + ":" + deprecatedBy.getName().getLocalPart() + "' instead!");
+//    }
 
     public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType, final boolean overloaded, final String deprecated) {
         this(name, description, arguments, returnType, overloaded);

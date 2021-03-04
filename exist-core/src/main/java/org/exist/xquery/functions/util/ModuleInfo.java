@@ -37,7 +37,6 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.inspect.InspectModule;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -112,7 +111,7 @@ public class ModuleInfo extends BasicFunction {
 			"Returns a short description of the module identified by the namespace URI.",
 			new SequenceType[] { NAMESPACE_URI_PARAMETER },
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the description of the active function module identified by the namespace URI"),
-                        InspectModule.FN_INSPECT_MODULE_URI
+				"Use inspect:inspect-module-uri#1 instead!"
         );
 	
 	public final static FunctionSignature moduleInfoSig =
@@ -133,7 +132,7 @@ public class ModuleInfo extends BasicFunction {
                 new SequenceType[] { NAMESPACE_URI_PARAMETER },
                 new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, 
                 "the description of the active function module identified by the namespace URI"),
-                InspectModule.FN_INSPECT_MODULE_URI
+					"Use inspect:inspect-module-uri#1 instead!"
         );
 	
 	private static final QName MODULE_QNAME = new QName("module", XMLConstants.NULL_NS_URI);
