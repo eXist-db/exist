@@ -10,7 +10,7 @@ jobs:
   build:
     name: Build and Test (${{ matrix.os }} / OpenJDK ${{ matrix.jdk }})
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         jdk: ['8', '11', '15']
         os: [ubuntu-latest, windows-latest, macOS-latest]
