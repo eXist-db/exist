@@ -68,10 +68,9 @@ public class MapResourceSet implements ResourceSet
     }
 
     /**
-     * Adds a resource to the container
+     * Adds a resource to the container.
      *
-     * @param resource The resource to be added to the object
-     * @param resource the resource to add.
+     * @param resource The resource to be added to the object.
      *
      * @throws XMLDBException if an error occurs whilst add the resource.
      */
