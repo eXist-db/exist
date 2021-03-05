@@ -35,27 +35,30 @@ import java.net.URI;
 import java.util.Iterator;
 
 import static org.exist.xquery.FunctionDSL.*;
-import static org.exist.xquery.functions.inspect.InspectionModule.functionSignature;
+import static org.exist.xquery.functions.inspect.InspectionModule.*;
 
 public class ModuleFunctions extends BasicFunction {
 
-    public static final FunctionSignature FNS_MODULE_FUNCTIONS_CURRENT = functionSignature(
-            "module-functions",
-            "Returns a sequence of function items pointing to each public function in the current module.",
-            returnsOptMany(Type.FUNCTION_REFERENCE, "Sequence of function items containing all public functions in the current module, " +
-                    "or the empty sequence if the module is not known in the current context."),
-            params()
+    private static final String FS_MODULE_FUNCTIONS_NAME = "module-functions";
+    public static final FunctionSignature[] FS_MODULE_FUNCTIONS = functionSignatures(
+            FS_MODULE_FUNCTIONS_NAME,
+            "Returns a sequence of function items pointing to each public" +
+                    "function in the module. If no $location is provided, then the" +
+                    "current (calling) module is inspected.",
+            returnsOptMany(Type.FUNCTION_REFERENCE, "Sequence of function" +
+                    "items containing all public functions in the module, or" +
+                    "the empty sequence if the module is not known in the" +
+                    "current context."),
+            arities(
+                    arity(),
+                    arity(
+                            param("location", Type.ANY_URI,
+                                    "The location URI of the module to be inspected.")
+                    )
+            )
     );
     
-    public final static FunctionSignature FNS_MODULE_FUNCTIONS_OTHER = functionSignature(
-            "module-functions",
-            "Returns a sequence of function items pointing to each public function in the specified module.",
-            returnsOptMany(Type.FUNCTION_REFERENCE, "Sequence of function items containing all public functions in the module, " +
-                    "or the empty sequence if the module is not known in the current context."),
-            param("location", Type.ANY_URI, "The location URI of the module to be loaded.")
-    );
-    
-    public final static FunctionSignature FNS_MODULE_FUNCTIONS_OTHER_URI = functionSignature(
+    public static final FunctionSignature FS_MODULE_FUNCTIONS_BY_URI = functionSignature(
             "module-functions-by-uri",
             "Returns a sequence of function items pointing to each public function in the specified module.",
             returnsOptMany(Type.FUNCTION_REFERENCE, "Sequence of function items containing all public functions in the module, "
@@ -77,7 +80,7 @@ public class ModuleFunctions extends BasicFunction {
 
             final AnyURIValue uri = ((AnyURIValue) args[0].itemAt(0));
 
-            if (isCalledAs("module-functions")) {
+            if (isCalledAs(FS_MODULE_FUNCTIONS_NAME)) {
                 try {
                     final URI locationUri = uri.toURI();
                     final Source source = SourceFactory.getSource(context.getBroker(), tempContext.getModuleLoadPath(), locationUri.toString(), false);
@@ -142,7 +145,7 @@ public class ModuleFunctions extends BasicFunction {
         return list;
     }
 
-    private void addFunctionRefsFromContext(final ValueSequence resultSeq) throws XPathException {
+    private void addFunctionRefsFromContext(final ValueSequence resultSeq) {
         for (final Iterator<UserDefinedFunction> i = context.localFunctions(); i.hasNext(); ) {
             final UserDefinedFunction f = i.next();
             final FunctionCall call =

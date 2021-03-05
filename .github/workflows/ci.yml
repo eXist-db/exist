@@ -27,9 +27,15 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
+# NOTE(AR) The `-T 2C` enables multi-threaded builds below, faster, but may need to be disabled when diagnosing problems 
       - name: Maven Build
-        run: mvn -V -B -DskipTests=true "-Dmaven.javadoc.skip=true" install
+        run: mvn -V -B -T 2C -DskipTests=true "-Dmaven.javadoc.skip=true" install
       - name: Maven Test
-        run: mvn -V -B verify -Ptests
+        run: mvn -V -B "-Dsurefire.useFile=false" -DtrimStackTrace=false test
+      - name: Maven License Check
+        run: mvn -V -B license:check
+# TODO(AR) test and license:check should be replaced by verify, but seems to cause an error on GitHub Actions
+#      - name: Maven Verify
+#        run: mvn -V -B verify
       - name: Maven Javadoc
         run: mvn -V -B javadoc:javadoc

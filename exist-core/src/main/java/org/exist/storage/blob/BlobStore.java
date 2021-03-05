@@ -167,7 +167,6 @@ public interface BlobStore extends Closeable {
      * @return the result of the {@code fnFile} function.
      *
      * @throws IOException if an error occurs whilst retrieving the BLOB file.
-     * @return the result of the {@code fnFile} function
      */
     <T> T with(final Txn transaction, final BlobId blobId, final Function<Path, T> fnFile) throws IOException;
 

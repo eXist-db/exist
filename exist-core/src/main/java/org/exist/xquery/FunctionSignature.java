@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.exist.Namespaces;
@@ -66,13 +67,13 @@ public class FunctionSignature {
 
     public FunctionSignature(final FunctionSignature other) {
         this.name = other.name;
-        this.arguments = other.arguments;
+        this.arguments = other.arguments != null ? Arrays.copyOf(other.arguments, other.arguments.length) : null;
         this.returnType = other.returnType;
-        this.annotations = other.annotations;
+        this.annotations = other.annotations != null ? Arrays.copyOf(other.annotations, other.annotations.length) : null;
         this.isOverloaded = other.isOverloaded;
         this.deprecated = other.deprecated;
         this.description = other.description;
-        this.metadata = other.metadata;
+        this.metadata = other.metadata != null ? new HashMap<>(other.metadata) : null;
     }
 
     public FunctionSignature(final QName name) {
@@ -96,9 +97,9 @@ public class FunctionSignature {
         setDeprecated(deprecated);
     }
         
-    public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType, final FunctionSignature deprecatedBy) {
-        this(name, description, arguments, returnType, false, "Moved to the module: " + deprecatedBy.getName().getNamespaceURI() + ", you should now use '" + deprecatedBy.getName().getPrefix() + ":" + deprecatedBy.getName().getLocalPart() + "' instead!");
-    }
+//    public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType, final FunctionSignature deprecatedBy) {
+//        this(name, description, arguments, returnType, false, "Moved to the module: " + deprecatedBy.getName().getNamespaceURI() + ", you should now use '" + deprecatedBy.getName().getPrefix() + ":" + deprecatedBy.getName().getLocalPart() + "' instead!");
+//    }
 
     public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType, final boolean overloaded, final String deprecated) {
         this(name, description, arguments, returnType, overloaded);
@@ -275,5 +276,21 @@ public class FunctionSignature {
         }
         
         return false;
+    }
+
+    /**
+     * Creates a new FunctionSignature with the same
+     * properties albeit a new name.
+     *
+     * @param newName the new name for the function signature.
+     * @return the new function signature.
+     */
+    public FunctionSignature rename(final QName newName) {
+        final SequenceType[] argumentsCopy = arguments != null ? Arrays.copyOf(arguments, arguments.length) : null;
+        final FunctionSignature newFunctionSignature = new FunctionSignature(newName, description, argumentsCopy, returnType, deprecated);
+        newFunctionSignature.annotations = annotations != null ? Arrays.copyOf(annotations, annotations.length) : null;
+        newFunctionSignature.isOverloaded = isOverloaded;
+        newFunctionSignature.metadata = metadata != null ? new HashMap<>(metadata) : null;
+        return newFunctionSignature;
     }
 }
