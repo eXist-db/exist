@@ -6,7 +6,7 @@
 
 ## eXist-db Native XML Database
 
-[![Build status](https://github.com/exist-db/exist/workflows/CI/badge.svg)](https://github.com/exist-db/exist/actions?query=workflow%3ACI)
+[![Build Status](https://github.com/eXist-db/exist/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/eXist-db/exist/actions/workflows/ci.yml)
 [![Build status](https://ci.appveyor.com/api/projects/status/ngpppvnnfu8ehjw3/branch/develop?svg=true)](https://ci.appveyor.com/project/eXistdbci/exist/branch/develop)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/ae1c8a7eb1164e919b0ac3c8588560c6)](https://www.codacy.com/gh/eXist-db/exist/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=eXist-db/exist&amp;utm_campaign=Badge_Grade)
 [![Java 8](https://img.shields.io/badge/java-8-blue.svg)](https://adoptopenjdk.net/)
