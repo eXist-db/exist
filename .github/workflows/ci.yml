@@ -51,7 +51,7 @@ jobs:
           java-version: 8
       # TODO: reuse artifacts from Build step
       - name: Maven Build
-        run: mvn -V -B -q -T 2C clean package -DskipTests -Ddependency-check.skip=true -Ddocker=true
+        run: mvn -V -B -q -T 2C -DskipTests -Ddependency-check.skip=true -Ddocker=true -P \!mac-dmg-on-mac,\!codesign-mac-dmg,\!mac-dmg-on-unix,\!installer clean package
       - name: Build and push latest images
         if: github.ref == 'refs/heads/develop'
         env:
