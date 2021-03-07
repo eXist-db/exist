@@ -29,6 +29,12 @@
   [ "$result" == '60,000 ms during shutdown' ]
 }
 
+# TODO(DP): see https://github.com/eXist-db/exist/issues/2987 
+#  modify MAX_CACHE via ARG and confirm result 
+
+# TODO(DP): see https://github.com/eXist-db/exist/issues/1771
+# upload xar with jar, and make see if it works
+
 @test "teardown modified image" {
   run docker stop ex-mod
   [ "$status" -eq 0 ]
