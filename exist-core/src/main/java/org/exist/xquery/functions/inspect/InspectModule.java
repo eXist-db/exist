@@ -32,7 +32,8 @@ import org.xml.sax.helpers.AttributesImpl;
 import javax.xml.XMLConstants;
 import java.util.Map;
 
-import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.FunctionDSL.param;
+import static org.exist.xquery.FunctionDSL.returnsOpt;
 import static org.exist.xquery.functions.inspect.InspectionModule.functionSignature;
 
 public class InspectModule extends BasicFunction {
