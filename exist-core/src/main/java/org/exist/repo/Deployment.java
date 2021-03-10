@@ -442,6 +442,8 @@ public class Deployment {
                 // install
                 final List<String> errors = scanDirectory(broker, transaction, packageDir, targetCollection, resources, true, false,
                         requestedPerms);
+                
+                storeRepoXML(broker, transaction, repoXML, targetCollection, requestedPerms);
 
                 // run the post-setup query if present
                 final Optional<ElementImpl> postSetup = findElement(repoXML, POST_SETUP_ELEMENT);
@@ -450,8 +452,6 @@ public class Deployment {
                 if(postSetupPath.isPresent()) {
                     runQuery(broker, targetCollection, packageDir, postSetupPath.get(), pkgName, QueryPurpose.POSTINSTALL);
                 }
-
-                storeRepoXML(broker, transaction, repoXML, targetCollection, requestedPerms);
 
                 // TODO: it should be safe to clean up the file system after a package
                 // has been deployed. Might be enabled after 2.0
