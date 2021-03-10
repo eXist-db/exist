@@ -362,7 +362,7 @@ public class Deployment {
                 runQuery(broker, null, packageDir, setupPath.get(), pkgName, QueryPurpose.SETUP);
                 return Optional.empty();
             } else {
-                // otherwise copy all child directories to the target collection
+                // otherwise create the target collection
                 XmldbURI targetCollection = null;
                 if (userTarget != null) {
                     try {
@@ -431,17 +431,23 @@ public class Deployment {
                     runQuery(broker, targetCollection, packageDir, preSetupPath.get(), pkgName, QueryPurpose.PREINSTALL);
                 }
 
-                // any required users and group should have been created by the pre-setup query.
-                // check for invalid users now.
+                // create the group specified in the permissions element if needed
+                // create the user specified in the permissions element if needed; assign it to the specified group
+                // TODO: if the user already exists, check and ensure the user is assigned to the specified group
                 if(requestedPerms.isPresent()) {
                     checkUserSettings(broker, requestedPerms.get());
                 }
 
                 final InMemoryNodeSet resources = findElements(repoXML,RESOURCES_ELEMENT);
 
-                // install
+                // store all package contents into database, using the user/group/mode in the permissions element. however:
+                // 1. repo.xml is excluded for now, since it may contain the default user's password in the clear
+                // 2. contents of directories identified in the path attribute of any <resource path=""/> element are stored as binary
                 final List<String> errors = scanDirectory(broker, transaction, packageDir, targetCollection, resources, true, false,
                         requestedPerms);
+                
+                // store repo.xml, filtering out the default user's password
+                storeRepoXML(broker, transaction, repoXML, targetCollection, requestedPerms);
 
                 // run the post-setup query if present
                 final Optional<ElementImpl> postSetup = findElement(repoXML, POST_SETUP_ELEMENT);
@@ -450,8 +456,6 @@ public class Deployment {
                 if(postSetupPath.isPresent()) {
                     runQuery(broker, targetCollection, packageDir, postSetupPath.get(), pkgName, QueryPurpose.POSTINSTALL);
                 }
-
-                storeRepoXML(broker, transaction, repoXML, targetCollection, requestedPerms);
 
                 // TODO: it should be safe to clean up the file system after a package
                 // has been deployed. Might be enabled after 2.0
