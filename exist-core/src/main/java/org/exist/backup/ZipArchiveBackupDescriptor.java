@@ -37,7 +37,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -147,6 +153,31 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
         }
 
         return bd;
+    }
+
+    @Override
+    public List<BackupDescriptor> getChildBackupDescriptors() {
+        final Pattern ptnDescriptor = Pattern.compile("(" + base + "/[^/]+/" + ")" + BackupDescriptor.COLLECTION_DESCRIPTOR);
+        final Matcher mtcDescriptor = ptnDescriptor.matcher("");
+        try (final Stream<BackupDescriptor> entries = archive.stream()
+                .map(zipEntry -> {
+                    mtcDescriptor.reset(zipEntry.getName());
+                    if (mtcDescriptor.matches()) {
+                        try {
+                            return Optional.<ZipArchiveBackupDescriptor>of(new ZipArchiveBackupDescriptor(archive, mtcDescriptor.group(1)));
+                        } catch (final FileNotFoundException e) {
+                            LOG.warn(e.getMessage(), e);
+                            return Optional.<ZipArchiveBackupDescriptor>empty();
+                        }
+                    } else {
+                        return Optional.<ZipArchiveBackupDescriptor>empty();
+                    }
+                })
+                .filter(Optional::isPresent)
+                .map(Optional::get)) {
+
+            return entries.collect(Collectors.toList());
+        }
     }
 
 

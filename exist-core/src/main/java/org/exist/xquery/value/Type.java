@@ -579,7 +579,7 @@ public class Type {
         //Don't introduce a shortcut (starting at getSuperType(type1) here
         //type2 might be a super-type of type1
         int t;
-        for (t = type1; t != ITEM; t = getSuperType(t)) {
+        for (t = type1; t != ITEM && t != ANY_TYPE; t = getSuperType(t)) {
             //Shortcut
             if (t == type2) {
                 return t;
@@ -587,12 +587,12 @@ public class Type {
             t1.add(t);
         }
         //Starting from type2's super type : the shortcut should have done its job
-        for (t = getSuperType(type2); t != ITEM; t = getSuperType(t)) {
+        for (t = getSuperType(type2); t != ITEM && t != ANY_TYPE; t = getSuperType(t)) {
             if (t1.contains(t)) {
                 return t;
             }
         }
-        return ITEM;
+        return t;
     }
 
     /**

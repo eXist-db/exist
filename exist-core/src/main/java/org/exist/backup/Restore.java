@@ -115,17 +115,23 @@ public class Restore {
             final BackupDescriptor bd = getBackupDescriptor(contents);
             descriptors.push(bd);
 
-            // check if the system collection is in the backup. This should be processed first
-            //TODO : find a way to make a corespondance with DBRoker's named constants
+            // check if the /db/system collection is in the backup. This must be processed before other /db collections
+            //TODO : find a way to make a correspondence with DBRoker's named constants
             final BackupDescriptor sysDescriptor = bd.getChildBackupDescriptor("system");
 
-            // check if the system/security collection is in the backup, this must be the first system collection processed
+            // check if the /db/system/security collection is in the backup, this must be processed before other /db/system collections
             if(sysDescriptor != null) {
                 descriptors.push(sysDescriptor);
                 
                 final BackupDescriptor secDescriptor = sysDescriptor.getChildBackupDescriptor("security");
-                if(secDescriptor != null) {
+                if (secDescriptor != null) {
                     descriptors.push(secDescriptor);
+
+                    // check if the /db/system/security/exist/groups collection is in the backup, this must be processed before other /db/system/security/** collections
+                    final BackupDescriptor existGroupsDescriptor = secDescriptor.getChildBackupDescriptor("exist/groups");
+                    if (existGroupsDescriptor != null) {
+                        descriptors.push(existGroupsDescriptor);
+                    }
                 }
             }
 

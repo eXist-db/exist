@@ -68,9 +68,7 @@ public class BackupDirectory {
 
     public Path createBackup(final boolean incremental, final boolean zip) {
         int counter = 0;
-        Path file;
-
-        do {
+        while (true) {
             final StringBuilder buf = new StringBuilder();
             buf.append(incremental ? PREFIX_INC_BACKUP_FILE : PREFIX_FULL_BACKUP_FILE);
             buf.append(dateFormat.format(new Date()));
@@ -79,12 +77,25 @@ public class BackupDirectory {
                 buf.append('_').append(counter);
             }
 
-            if (zip) {
-                buf.append(".zip");
+            // make sure a file/dir of the same basic name (i.e. without extension) does not exist
+            Path file = dir.resolve(buf.toString());
+            if (!Files.exists(file)) {
+
+                // is this a zip backup file?
+                if (!zip) {
+                    // no
+                    return file;
+
+                } else {
+                    // yes, so check that a file/dir of the same name as the desired zip file does not exist
+                    buf.append(".zip");
+                    file = dir.resolve(buf.toString());
+                    if (!Files.exists(file)) {
+                        return file;
+                    }
+                }
             }
-            file = dir.resolve(buf.toString());
-        } while (Files.exists(file));
-        return (file);
+        }
     }
 
 

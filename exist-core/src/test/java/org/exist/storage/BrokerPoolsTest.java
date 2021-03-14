@@ -68,7 +68,7 @@ public class BrokerPoolsTest {
         shutdownLatch.countDown();
 
         executorService.shutdown();
-        assertTrue(executorService.awaitTermination(4, TimeUnit.SECONDS));
+        assertTrue(executorService.awaitTermination(8, TimeUnit.SECONDS));
 
         for (final Future<Exception> shutdownTask: shutdownTasks) {
             assertNull(shutdownTask.get());

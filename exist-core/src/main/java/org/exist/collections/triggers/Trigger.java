@@ -41,7 +41,8 @@ import org.exist.storage.txn.Txn;
  * Triggers listen to events. Currently, there are five events to which triggers may be
  * attached:
  * 
- * <table border="0" summary="events triggers can be attached to">
+ * <table style="border: 0">
+ *  <caption>Events triggers can be attached to</caption>
  * 	<tr>
  * 		<td>{@link #STORE_DOCUMENT_EVENT}</td>
  * 		<td>Fired, if a new document is inserted into the collection.</td>

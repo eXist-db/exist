@@ -44,14 +44,14 @@ public class InspectionModule extends AbstractInternalModule {
 
     public final static FunctionDef[] functions = functionDefs(
         functionDefs(InspectFunction.class,
-                InspectFunction.SIGNATURE),
+                InspectFunction.FN_INSPECT_FUNCTION),
         functionDefs(InspectModule.class,
-                InspectModule.FNS_INSPECT_MODULE,
-                InspectModule.FNS_INSPECT_MODULE_URI),
+                InspectModule.FN_INSPECT_MODULE,
+                InspectModule.FN_INSPECT_MODULE_URI),
         functionDefs(ModuleFunctions.class,
-                ModuleFunctions.FNS_MODULE_FUNCTIONS_CURRENT,
-                ModuleFunctions.FNS_MODULE_FUNCTIONS_OTHER,
-                ModuleFunctions.FNS_MODULE_FUNCTIONS_OTHER_URI
+                ModuleFunctions.FS_MODULE_FUNCTIONS[0],
+                ModuleFunctions.FS_MODULE_FUNCTIONS[1],
+                ModuleFunctions.FS_MODULE_FUNCTIONS_BY_URI
         )
     );
 

@@ -280,8 +280,8 @@ public abstract class Paged implements AutoCloseable {
      * previously deleted page. This is required by btree page split operations to avoid 
      * concurrency conflicts within a transaction.
      *
-     * @param reuseDeleted true if deleted pages should be reused
      * @return a free page
+     *
      * @throws IOException if an I/O error occurs
      */
     protected final Page getFreePage(final boolean reuseDeleted) throws IOException {

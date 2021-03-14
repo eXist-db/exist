@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.exist.dom.QName;
 import org.exist.xquery.*;
-import org.exist.xquery.functions.inspect.InspectFunction;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 
@@ -35,10 +34,10 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 /**
  * Module function definitions for util module.
  *
- * @author <a href="mailto:adam.retter@googlemail.com">Wolfgang Meier (wolfgang@exist-db.org)
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author ljo
- * @author Andrzej Taramina (andrzej@chaeron.com)
- * @author Adam retter</a>
+ * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam retter</a>
  */
 public class UtilModule extends AbstractInternalModule {
 
@@ -56,7 +55,7 @@ public class UtilModule extends AbstractInternalModule {
             new FunctionDef(BuiltinFunctions.signatures[2], BuiltinFunctions.class),
             new FunctionDef(BuiltinFunctions.signatures[3], BuiltinFunctions.class),
             new FunctionDef(BuiltinFunctions.signatures[4], BuiltinFunctions.class),
-            new FunctionDef(InspectFunction.SIGNATURE_DEPRECATED, InspectFunction.class),
+            new FunctionDef(InspectFunction.FN_INSPECT_FUNCTION, InspectFunction.class),
             new FunctionDef(ModuleInfo.moduleDescriptionSig, ModuleInfo.class),
             new FunctionDef(ModuleInfo.registeredModuleSig, ModuleInfo.class),
             new FunctionDef(ModuleInfo.registeredModulesSig, ModuleInfo.class),
