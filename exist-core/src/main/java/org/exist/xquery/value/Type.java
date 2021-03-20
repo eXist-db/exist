@@ -40,7 +40,7 @@ import javax.annotation.Nullable;
  */
 public class Type {
 
-    public static final int NODE = -1;
+    public static final int NODE = 7;
     public final static int ELEMENT = 1;
     public final static int ATTRIBUTE = 2;
     public final static int TEXT = 3;
@@ -132,7 +132,7 @@ public class Type {
         // ITEM sub-types
         defineSubType(ITEM, ATOMIC);
         defineSubType(ITEM, FUNCTION_REFERENCE);
-        //defineSubType(ITEM, NODE);                // TODO(AR) this appears in the XDM 3.1, but uncommenting this breaks a lot of stuff in eXist-db
+        defineSubType(ITEM, NODE);
 
         // ATOMIC sub-types
         defineSubType(ATOMIC, ANY_URI);
