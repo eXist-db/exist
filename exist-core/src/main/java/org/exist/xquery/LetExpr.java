@@ -153,12 +153,15 @@ public class LetExpr extends BindingExpression {
                                 }
                             }
 
+                            if ((!value.isEmpty()) && sequenceType.getPrimaryType() == Type.ELEMENT && value.getItemType() == Type.ELEMENT) {
+                                final NodeValue nvItem = (NodeValue) value.itemAt(0);
+                                valueType.setNodeName(nvItem.getQName());
+                            }
+
                             throw new XPathException(
                                     this,
                                     ErrorCodes.XPTY0004,
-                                    "Invalid type for variable $" + varName + ". Expected " +
-                                    sequenceType.toString() + ", got " +
-                                    valueType.toString(), in);
+                                    String.format("Invalid type for variable $%s. Expected %s, got %s", varName, sequenceType.toString(), valueType.toString()), in);
                         }
                     }
                 }
