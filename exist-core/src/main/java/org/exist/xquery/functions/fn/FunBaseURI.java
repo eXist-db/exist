@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import java.net.URI;
@@ -131,6 +132,22 @@ public class FunBaseURI extends BasicFunction {
             // Namespace node does not exist in xquery
             final short[] quickStops = { Node.ELEMENT_NODE, Node.ATTRIBUTE_NODE,
                     Node.PROCESSING_INSTRUCTION_NODE, Node.COMMENT_NODE, Node.TEXT_NODE};
+            
+            if(type == Node.DOCUMENT_NODE){
+                final AnyURIValue baseURI = context.getBaseURI();
+
+                if(StringUtils.isBlank(baseURI.getStringValue())){
+                    final Document ownerDocument = nodeValue.getOwnerDocument();
+                    if(ownerDocument==null){
+                        return Sequence.EMPTY_SEQUENCE;
+                    } else {
+                        return new AnyURIValue(ownerDocument.getDocumentURI());
+                    }
+                } else {
+                    return context.getBaseURI();
+                }
+
+            }
 
             if (!ArrayUtils.contains(quickStops, type)) {
                 return Sequence.EMPTY_SEQUENCE;
