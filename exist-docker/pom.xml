@@ -198,10 +198,11 @@
                 <artifactId>docker-maven-plugin</artifactId>
                 <version>0.34.1</version>
                 <configuration>
-                <!--  <verbose>true</verbose>  -->
+                  <verbose>true</verbose>
                     <images>
                         <image>
                             <name>existdb/existdb:%v</name>
+                            <alias>exist-ci</alias>
                             <build>
                                 <tags>
                                     <tag>${docker.tag}</tag>

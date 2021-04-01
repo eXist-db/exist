@@ -372,3 +372,15 @@ function et:array-in-enclosed-expression-evaluates-to-map() {
         $err:column-number > 0
     }
 };
+
+declare
+    %test:assertTrue
+function et:element-type-error-reporting() {
+
+    try {
+        let $test as element(b)? := <a c="2"><d/></a> return $test
+    } catch * {
+            fn:ends-with($err:description, "Invalid type for variable $test. Expected element(b)?, got element(a)")
+    }
+
+};

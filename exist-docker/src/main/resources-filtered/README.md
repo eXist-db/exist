@@ -18,21 +18,22 @@ The images are based on Google Cloud Platform's ["Distroless" Docker Images](htt
 ### For building
 *   [maven](https://maven.apache.org/): `^3.6.0`
 *   [java](https://www.java.com/): `8`
+*   [bats](https://github.com/bats-core/bats-core): `^1.1.0` (for testing)
 
 ## How to use
 Pre-build images are available on [DockerHub](https://hub.docker.com/r/existdb/existdb/). 
 There are two continuously updated channels:
-*   `release` for the latest stable releases based on the [`master` branch](https://github.com/eXist-db/exist/tree/master)
-*   `latest` for last commit to the [`develop` branch](https://github.com/eXist-db/exist/tree/develop).
+*   `release` for the stable releases based on the [`master` branch](https://github.com/eXist-db/exist/tree/master)
+*   `latest` for the latest commit to the [`develop` branch](https://github.com/eXist-db/exist/tree/develop).
 
 To download the image run:
 ```bash
 docker pull existdb/existdb:latest
 ```
 
-once the download is complete, you can run the image
+Once the download is complete, you can run the image
 ```bash
-docker run -it -d -p 8080:8080 -p 8443:8443 --name exist existdb/existdb:latest
+docker run -dit -p 8080:8080 -p 8443:8443 --name exist existdb/existdb:latest
 ```
 
 ### What does this do?
@@ -68,7 +69,7 @@ docker exec exist java org.exist.start.Main client --no-gui --xpath "system:get-
 docker exec exist java -version
 ```
 
-Containers build from this image run a periodical health-check to make sure that eXist-db is operating normally. 
+Containers build from this image run periodical healthchecks to ensure that eXist-db is operating normally. 
 If `docker ps` reports `unhealthy` you can get a more detailed report with this command:  
 ```bash
 docker inspect --format='{{json .State.Health}}' exist
@@ -79,6 +80,7 @@ There is a slight modification to eXist's logger to ease access to the logs via:
 ```bash
 docker logs exist
 ```
+
 This works best when providing the `-t` flag when running an image.
 
 ## Use as base image
@@ -88,12 +90,12 @@ We'll take a quick look at three scenarios of increasing complexity, to demonstr
 ### A simple app image
 The simplest and straightforward case assumes that you have a `.xar` app inside a `build` folder on the same level as the `Dockerfile`. 
 To get an image of an eXist-db instance with your app installed and running, simply adopt the `docker cp ...` command to the appropriate `Dockerfile` syntax.
-```
+```docker
 FROM existdb/existdb:5.0.0
 
 COPY build/*.xar /exist/autodeploy
-
 ```
+
 You should see something like this:
 
 ```bash
@@ -113,7 +115,7 @@ The following example will install your app, but also modify the underlying eXis
 Instead of a local build directory, we'll download the `.xar` from the web, and copy a modified `conf.xml` from a `src/` directory along side your `Dockerfile`. 
 To execute any of the `docker exec …` style commands from this readme, we need to use `RUN`.
 
-```
+```docker
 FROM existdb/existdb
 
 # NOTE: this is for syntax demo purposes only
@@ -142,7 +144,7 @@ The following 2-stage build will download and install `ant` and `nodeJS` into a 
 The second stage (each `FROM` begins a stage) is just the simple example from above. 
 Such a setup ensures that non of your collaborators has to have `java` or `nodeJS` installed, and is great for fully automated builds and deployment.
 
-```
+```docker
 # START STAGE 1
 FROM openjdk:8-jdk-slim as builder
 
@@ -224,10 +226,28 @@ Change it via the [usermanager](http://localhost:8080/exist/apps/usermanager/ind
 
 ## Building the Image
 Building is integrated into maven via the [fabric8 plugin](https://dmp.fabric8.io): 
-To just build a docker image navigate inside the `exist-docker` folder and issue:
+To build a docker image from a local clone of exist:
 ```bash
-mvn -DskipTests clean package docker:build
+mvn -Pdocker -DskipTests -Ddependency-check.skip=true clean package
 ```
+
+`-P` activates the docker profile. The maven plugin provides for a number of usefull commands to work with containers, e.g.:
+
+```bash
+cd exist-docker
+mvn docker:push
+```
+
+For a full list see the plugin documentation. 
+
+### Testing
+There are unit tests for our images that run on CI using the [bats](https://github.com/bats-core/bats-core) framework. The test are located in `exist-docker/src/test/bats`.
+
+To execute them run:
+```bash
+bats exist-docker/src/test/bats/*.bats 
+```
+The tests use fixtures and are creating a modified image call `ex-mod`. By default they expect a name container `exist-ci` to be up and running. When running test locally you must ensure that no previous image `ex-mod` exists, and that `exist-ci` is running before starting the testsuite. 
 
 ### Available Arguments and Defaults
 eXist-db's cache size and maximum brokers can be configured at build time using the following syntax.
@@ -251,7 +271,7 @@ ARG MAX_BROKER=10
 Or modify eXist-db's configuration files via xslt scripts located at `exist-docker/src/main/xslt/`.
 For multi-stage builds e.g. [xmlstarlet](http://xmlstar.sourceforge.net) let's you modify the default config files from within the builder stage, 
 e.g.:
-```bash
+```docker
 # Config files are modified here
 RUN echo 'modifying conf files'\
 && cd $EXIST_HOME/etc \
