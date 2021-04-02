@@ -134,9 +134,9 @@ public class FunBaseURI extends BasicFunction {
                     Node.PROCESSING_INSTRUCTION_NODE, Node.COMMENT_NODE, Node.TEXT_NODE};
             
             if(type == Node.DOCUMENT_NODE){
-                final AnyURIValue baseURI = context.getBaseURI();
+                final AnyURIValue contextBaseURI = context.getBaseURI();
 
-                if(StringUtils.isBlank(baseURI.getStringValue())){
+                if(StringUtils.isBlank(contextBaseURI.getStringValue())){
                     final Document ownerDocument = nodeValue.getOwnerDocument();
                     if(ownerDocument==null){
                         return Sequence.EMPTY_SEQUENCE;
@@ -144,7 +144,7 @@ public class FunBaseURI extends BasicFunction {
                         return new AnyURIValue(ownerDocument.getDocumentURI());
                     }
                 } else {
-                    return context.getBaseURI();
+                    return contextBaseURI;
                 }
 
             }
