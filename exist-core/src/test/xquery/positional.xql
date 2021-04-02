@@ -105,3 +105,9 @@ declare
 function pf:multiple-positions() {
     (3,4)[1,2]
 };
+
+declare
+    %test:assertEmpty
+function pf:seven_char_predicate_test() {
+    (1)[()]
+};
