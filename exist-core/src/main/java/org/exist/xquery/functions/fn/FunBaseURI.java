@@ -29,6 +29,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import java.net.URI;
@@ -153,6 +154,11 @@ public class FunBaseURI extends BasicFunction {
                 return Sequence.EMPTY_SEQUENCE;
             }
 
+
+            if((node.getNodeType() == Node.COMMENT_NODE || node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE)
+              && nodeValue.getOwnerDocument().getDocumentElement()==null) {
+                return Sequence.EMPTY_SEQUENCE;
+            }
 
             URI relativeURI = null;
             URI baseURI = null;
