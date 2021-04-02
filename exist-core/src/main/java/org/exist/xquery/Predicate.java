@@ -22,26 +22,15 @@
 package org.exist.xquery;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
-import org.exist.dom.persistent.ContextItem;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.NewArrayNodeSet;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.VirtualNodeSet;
+import org.exist.dom.persistent.*;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NumericValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 import java.util.Set;
 import java.util.TreeSet;
 
-import static org.exist.xquery.Predicate.ExecutionMode.*;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
+import static org.exist.xquery.Predicate.ExecutionMode.*;
 
 /**
  * Handles predicate expressions.
@@ -194,15 +183,19 @@ public class Predicate extends PathExpr {
                         innerSeq = inner.eval(Dependency.dependsOn(inner.getDependencies(), Dependency.CONTEXT_ITEM)
                                 ? contextSequence : null);
                     }
-                    if (innerSeq.getCardinality().isSubCardinalityOrEqualOf(Cardinality.EXACTLY_ONE)) {
+
+                    if (innerSeq.isEmpty()) {
+                        result = Sequence.EMPTY_SEQUENCE;
+
+                    } else if (innerSeq.getCardinality().isSubCardinalityOrEqualOf(Cardinality.EXACTLY_ONE)) {
                         result = selectByPosition(outerSequence, contextSequence, mode, innerSeq);
+
                     } else {
                         throw new XPathException(this, ErrorCodes.FORG0006, "Effective boolean value is not defined for a sequence of two or more items starting with a " + Type.getTypeName(innerSeq.itemAt(0).getType()) + " value");
                     }
                     break;
                 default:
-                    throw new IllegalArgumentException(
-                            "Unsupported execution mode: '" + recomputedExecutionMode + "'");
+                    throw new IllegalArgumentException("Unsupported execution mode: '" + recomputedExecutionMode + "'");
             }
         }
         if (context.getProfiler().isEnabled()) {
