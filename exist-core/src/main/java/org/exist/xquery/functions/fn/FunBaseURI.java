@@ -29,7 +29,6 @@ import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import java.net.URI;
@@ -80,42 +79,43 @@ public class FunBaseURI extends BasicFunction {
      * org.exist.xquery.value.Sequence)
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        
+        if (isCalledAs("static-base-uri")) {
+            if (context.isBaseURIDeclared()) {
+                // use whatever value is defined, does not need to be absolute
+                return context.getBaseURI();
+
+            } else {
+                // Quick escape
+                return Sequence.EMPTY_SEQUENCE;
+            }
+        }
 
         Sequence result = null;
         NodeValue nodeValue = null;
-        if (isCalledAs("static-base-uri")) {
-            if (context.isBaseURIDeclared()) {
-                result = context.getBaseURI();
-                if (!((AnyURIValue) result).toURI().isAbsolute()) {
-//                    throw new XPathException(this, ErrorCodes.XPST0001, "");
-                    LOG.debug("URI is not absolute");
-                    result = Sequence.EMPTY_SEQUENCE;
-                }
-            } else {
-                result = Sequence.EMPTY_SEQUENCE;
-            }
-        } else {
-            if (args.length == 0) {
-                if (contextSequence == null) {
-                    throw new XPathException(this, ErrorCodes.XPDY0002, "The context item is absent");
-                }
-                if (contextSequence.isEmpty()) {
-                    return Sequence.EMPTY_SEQUENCE;
-                }
-                final Item item = contextSequence.itemAt(0);
-                if (!Type.subTypeOf(item.getType(), Type.NODE)) {
-                    throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node");
-                }
-                nodeValue = (NodeValue) item;
 
+        // Called as base-uri
+        if (args.length == 0) {
+            if (contextSequence == null) {
+                throw new XPathException(this, ErrorCodes.XPDY0002, "The context item is absent");
+            }
+            if (contextSequence.isEmpty()) {
+                return Sequence.EMPTY_SEQUENCE;
+            }
+            final Item item = contextSequence.itemAt(0);
+            if (!Type.subTypeOf(item.getType(), Type.NODE)) {
+                throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node");
+            }
+            nodeValue = (NodeValue) item;
+
+        } else {
+            if (args[0].isEmpty()) {
+                return Sequence.EMPTY_SEQUENCE;
             } else {
-                if (args[0].isEmpty()) {
-                    result = Sequence.EMPTY_SEQUENCE;
-                } else {
-                    nodeValue = (NodeValue) args[0].itemAt(0);
-                }
+                nodeValue = (NodeValue) args[0].itemAt(0);
             }
         }
+
 
         if (result == null && nodeValue != null) {
             result = Sequence.EMPTY_SEQUENCE;
@@ -129,17 +129,12 @@ public class FunBaseURI extends BasicFunction {
             //The base-uri property of the node is empty. 
             //The parent property of the node is empty.
 
-
-            // Namespace node does not exist in xquery
-            final short[] quickStops = { Node.ELEMENT_NODE, Node.ATTRIBUTE_NODE,
-                    Node.PROCESSING_INSTRUCTION_NODE, Node.COMMENT_NODE, Node.TEXT_NODE};
-            
-            if(type == Node.DOCUMENT_NODE){
+            if (type == Node.DOCUMENT_NODE) {
                 final AnyURIValue contextBaseURI = context.getBaseURI();
 
-                if(StringUtils.isBlank(contextBaseURI.getStringValue())){
+                if (StringUtils.isBlank(contextBaseURI.getStringValue())) {
                     final Document ownerDocument = nodeValue.getOwnerDocument();
-                    if(ownerDocument==null){
+                    if (ownerDocument == null) {
                         return Sequence.EMPTY_SEQUENCE;
                     } else {
                         return new AnyURIValue(ownerDocument.getDocumentURI());
@@ -150,25 +145,30 @@ public class FunBaseURI extends BasicFunction {
 
             }
 
+            // Namespace node does not exist in xquery
+            final short[] quickStops = {Node.ELEMENT_NODE, Node.ATTRIBUTE_NODE,
+                    Node.PROCESSING_INSTRUCTION_NODE, Node.COMMENT_NODE, Node.TEXT_NODE};
+
+            // Quick escape
             if (!ArrayUtils.contains(quickStops, type)) {
                 return Sequence.EMPTY_SEQUENCE;
             }
 
-
-            if((node.getNodeType() == Node.COMMENT_NODE || node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE)
-              && nodeValue.getOwnerDocument().getDocumentElement()==null) {
+            // Constructed Comment nodes/PIs /Attributes do not have a baseURI accoring tests
+            if ((node.getNodeType() == Node.COMMENT_NODE
+                    || node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
+                    || node.getNodeType() == Node.ATTRIBUTE_NODE)
+                    && nodeValue.getOwnerDocument().getDocumentElement() == null) {
                 return Sequence.EMPTY_SEQUENCE;
             }
 
             URI relativeURI = null;
-            URI baseURI = null;
+            URI contextBaseURI = null;
             try {
-                if (node != null) {
-                    final String uri = node.getBaseURI();
-                    if (StringUtils.isNotBlank(uri)) {
-                        relativeURI = new URI(uri);
-                        baseURI = new URI(context.getBaseURI() + "/");
-                    }
+                final String nodeBaseURI = node.getBaseURI();
+                if (StringUtils.isNotBlank(nodeBaseURI)) {
+                    relativeURI = new URI(nodeBaseURI);
+                    contextBaseURI = new URI(context.getBaseURI() + "/");
                 }
             } catch (final URISyntaxException e) {
                 throw new XPathException(this, ErrorCodes.ERROR, e.getMessage());
@@ -179,11 +179,11 @@ public class FunBaseURI extends BasicFunction {
                     if (relativeURI.isAbsolute()) {
                         result = new AnyURIValue(relativeURI);
                     } else {
-                        result = new AnyURIValue(baseURI.resolve(relativeURI));
+                        result = new AnyURIValue(contextBaseURI.resolve(relativeURI));
                     }
 
                 } else {
-                    result = new AnyURIValue(baseURI);
+                    result = new AnyURIValue(contextBaseURI);
                 }
             }
         }
