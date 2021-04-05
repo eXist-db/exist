@@ -107,17 +107,13 @@ public class FunBaseURI extends BasicFunction {
             }
             nodeValue = (NodeValue) item;
 
+
         } else {
             if (args[0].isEmpty()) {
                 return Sequence.EMPTY_SEQUENCE;
             } else {
                 nodeValue = (NodeValue) args[0].itemAt(0);
             }
-        }
-
-
-        if (nodeValue == null) {
-            throw new XPathException("NPE");
         }
 
         Sequence result = Sequence.EMPTY_SEQUENCE;
@@ -161,11 +157,12 @@ public class FunBaseURI extends BasicFunction {
                 URI nbURI = new URI(nodeBaseURI);
                 final boolean nbURIAbsolute = nbURI.isAbsolute();
 
-                // when xml:base is not an absolute URL and there is a contectURI
-                // join them
-                if(!nbURIAbsolute && hasContextBaseURI){
+                if(!nbURIAbsolute && hasContextBaseURI) {
+                    // when xml:base is not an absolute URL and there is a contextURI
+                    // join them
                     final URI newURI = contextBaseURI.toURI().resolve(nodeBaseURI);
                     result = new AnyURIValue(newURI);
+
                 } else {
                     // just take xml:base value
                     result = new AnyURIValue(nbURI);
