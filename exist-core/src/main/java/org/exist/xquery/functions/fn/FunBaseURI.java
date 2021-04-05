@@ -39,36 +39,35 @@ import java.net.URISyntaxException;
  */
 public class FunBaseURI extends BasicFunction {
 
-    protected static final Logger logger = LogManager.getLogger(FunBaseURI.class);
-
     public final static FunctionSignature[] signatures = {
-        new FunctionSignature(
-            new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
-            "Returns the value of the base URI property for the context item.",
-            null,
-            new FunctionReturnSequenceType(Type.ANY_URI,
-                Cardinality.ZERO_OR_ONE, "The base URI from the context item")
-        ),
-        new FunctionSignature(
-            new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
-            "Returns the value of the base URI property for $uri. " +
-            "If $uri is the empty sequence, the empty sequence is returned.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("uri", Type.NODE,
-                    Cardinality.ZERO_OR_ONE, "The URI")
-            },
-            new FunctionReturnSequenceType(Type.ANY_URI, 
-                Cardinality.ZERO_OR_ONE, "the base URI from $uri")
-        ),
-        new FunctionSignature(
-            new QName("static-base-uri", Function.BUILTIN_FUNCTION_NS),
-            "Returns the value of the base URI property from the static context. " +
-            "If the base-uri property is undefined, the empty sequence is returned.",
-            null,
-            new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE,
-                "The base URI from the static context")
-        )
+            new FunctionSignature(
+                    new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
+                    "Returns the value of the base URI property for the context item.",
+                    null,
+                    new FunctionReturnSequenceType(Type.ANY_URI,
+                            Cardinality.ZERO_OR_ONE, "The base URI from the context item")
+            ),
+            new FunctionSignature(
+                    new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
+                    "Returns the value of the base URI property for $uri. " +
+                            "If $uri is the empty sequence, the empty sequence is returned.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("uri", Type.NODE,
+                                    Cardinality.ZERO_OR_ONE, "The URI")
+                    },
+                    new FunctionReturnSequenceType(Type.ANY_URI,
+                            Cardinality.ZERO_OR_ONE, "the base URI from $uri")
+            ),
+            new FunctionSignature(
+                    new QName("static-base-uri", Function.BUILTIN_FUNCTION_NS),
+                    "Returns the value of the base URI property from the static context. " +
+                            "If the base-uri property is undefined, the empty sequence is returned.",
+                    null,
+                    new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE,
+                            "The base URI from the static context")
+            )
     };
+    protected static final Logger logger = LogManager.getLogger(FunBaseURI.class);
 
     public FunBaseURI(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -79,7 +78,7 @@ public class FunBaseURI extends BasicFunction {
      * org.exist.xquery.value.Sequence)
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        
+
         if (isCalledAs("static-base-uri")) {
             if (context.isBaseURIDeclared()) {
                 // use whatever value is defined, does not need to be absolute
@@ -91,7 +90,7 @@ public class FunBaseURI extends BasicFunction {
             }
         }
 
-        Sequence result = null;
+
         NodeValue nodeValue = null;
 
         // Called as base-uri
@@ -117,77 +116,69 @@ public class FunBaseURI extends BasicFunction {
         }
 
 
-        if (result == null && nodeValue != null) {
-            result = Sequence.EMPTY_SEQUENCE;
-            // This is implemented to be a recursive ascent according to
-            // section 2.5 in www.w3.org/TR/xpath-functions 
-            // see memtree/ElementImpl and dom/ElementImpl. /ljo
-            final Node node = nodeValue.getNode();
-            final short type = node.getNodeType();
-            //A direct processing instruction constructor creates a processing instruction node 
-            //whose target property is PITarget and whose content property is DirPIContents. 
-            //The base-uri property of the node is empty. 
-            //The parent property of the node is empty.
-
-            if (type == Node.DOCUMENT_NODE) {
-                final AnyURIValue contextBaseURI = context.getBaseURI();
-
-                if (StringUtils.isBlank(contextBaseURI.getStringValue())) {
-                    final Document ownerDocument = nodeValue.getOwnerDocument();
-                    if (ownerDocument == null) {
-                        return Sequence.EMPTY_SEQUENCE;
-                    } else {
-                        return new AnyURIValue(ownerDocument.getDocumentURI());
-                    }
-                } else {
-                    return contextBaseURI;
-                }
-
-            }
-
-            // Namespace node does not exist in xquery
-            final short[] quickStops = {Node.ELEMENT_NODE, Node.ATTRIBUTE_NODE,
-                    Node.PROCESSING_INSTRUCTION_NODE, Node.COMMENT_NODE, Node.TEXT_NODE};
-
-            // Quick escape
-            if (!ArrayUtils.contains(quickStops, type)) {
-                return Sequence.EMPTY_SEQUENCE;
-            }
-
-            // Constructed Comment nodes/PIs /Attributes do not have a baseURI accoring tests
-            if ((node.getNodeType() == Node.COMMENT_NODE
-                    || node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
-                    || node.getNodeType() == Node.ATTRIBUTE_NODE)
-                    && nodeValue.getOwnerDocument().getDocumentElement() == null) {
-                return Sequence.EMPTY_SEQUENCE;
-            }
-
-            URI relativeURI = null;
-            URI contextBaseURI = null;
-            try {
-                final String nodeBaseURI = node.getBaseURI();
-                if (StringUtils.isNotBlank(nodeBaseURI)) {
-                    relativeURI = new URI(nodeBaseURI);
-                    contextBaseURI = new URI(context.getBaseURI() + "/");
-                }
-            } catch (final URISyntaxException e) {
-                throw new XPathException(this, ErrorCodes.ERROR, e.getMessage());
-            }
-
-            if (relativeURI != null) {
-                if (!("".equals(relativeURI.toString()))) {
-                    if (relativeURI.isAbsolute()) {
-                        result = new AnyURIValue(relativeURI);
-                    } else {
-                        result = new AnyURIValue(contextBaseURI.resolve(relativeURI));
-                    }
-
-                } else {
-                    result = new AnyURIValue(contextBaseURI);
-                }
-            }
+        if (nodeValue == null) {
+            throw new XPathException("NPE");
         }
 
+        Sequence result = Sequence.EMPTY_SEQUENCE;
+
+        final Node node = nodeValue.getNode();
+        final short type = node.getNodeType();
+
+        // Namespace node does not exist in xquery, hence left out of array.
+        final short[] quickStops = {Node.ELEMENT_NODE, Node.ATTRIBUTE_NODE,
+                Node.PROCESSING_INSTRUCTION_NODE, Node.COMMENT_NODE, Node.TEXT_NODE,
+                Node.DOCUMENT_NODE};
+
+        // Quick escape
+        if (!ArrayUtils.contains(quickStops, type)) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+
+        // Constructed Comment nodes/PIs /Attributes do not have a baseURI accoring tests
+        if ((node.getNodeType() == Node.COMMENT_NODE
+                || node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
+                || node.getNodeType() == Node.ATTRIBUTE_NODE)
+                && nodeValue.getOwnerDocument().getDocumentElement() == null) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+
+        // null when no document
+        final Document ownerDocument = node.getOwnerDocument();
+        final String ownerDocumentURI = (ownerDocument==null) ? null : ownerDocument.getDocumentURI();
+
+        // "" when not set // check with isBaseURIDeclared()
+        final AnyURIValue contextBaseURI = context.getBaseURI();
+        final boolean hasContextBaseURI = context.isBaseURIDeclared();
+
+        // "" when not set, can be null
+        final String nodeBaseURI = node.getBaseURI();
+        final boolean hasNodeBaseURI = StringUtils.isNotBlank(nodeBaseURI);
+
+        try {
+            if(hasNodeBaseURI) {
+                // xml:base is defined
+                URI nbURI = new URI(nodeBaseURI);
+                final boolean nbURIAbsolute = nbURI.isAbsolute();
+
+                // when xml:base is not an absolute URL and there is a contectURI
+                // join them
+                if(!nbURIAbsolute && hasContextBaseURI){
+                    final URI newURI = contextBaseURI.toURI().resolve(nodeBaseURI);
+                    result = new AnyURIValue(newURI);
+                } else {
+                    // just take xml:base value
+                    result = new AnyURIValue(nbURI);
+                }
+
+            } else if (hasContextBaseURI){
+                // if there is no xml:base, take the root document, if present.
+                result = contextBaseURI;
+            }
+
+        } catch (URISyntaxException e) {
+            LOG.debug(e.getMessage());
+        }
 
         return result;
     }
