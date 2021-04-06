@@ -1977,7 +1977,12 @@ public class ElementImpl extends NamedNode implements Element {
                 if(nodeBaseURI.isEmpty()) {
                     baseURI = parentsBaseURI;
                 } else {
-                    baseURI = parentsBaseURI.append(baseURI);
+                    if(parentsBaseURI.toString().endsWith("/") || !parentsBaseURI.toString().contains("/")){
+                        baseURI = parentsBaseURI.append(baseURI);
+                    } else {
+                        // there is a filename, remove it
+                        baseURI = parentsBaseURI.removeLastSegment().append(baseURI);
+                    }
                 }
             }
         } else {
