@@ -73,7 +73,7 @@
     <repositories>
         <repository>
             <id>cql-java-repo</id>
-            <url>http://maven.indexdata.com</url>
+            <url>https://maven.indexdata.com</url>
         </repository>
     </repositories>
 
