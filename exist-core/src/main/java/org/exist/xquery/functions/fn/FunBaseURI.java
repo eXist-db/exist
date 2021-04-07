@@ -141,7 +141,7 @@ public class FunBaseURI extends BasicFunction {
 
         // null when no document
         final Document ownerDocument = node.getOwnerDocument();
-        final String ownerDocumentURI = (ownerDocument==null) ? null : ownerDocument.getDocumentURI();
+        final String ownerDocumentURI = (ownerDocument == null) ? null : ownerDocument.getDocumentURI();
 
         // "" when not set // check with isBaseURIDeclared()
         final AnyURIValue contextBaseURI = context.getBaseURI();
@@ -152,12 +152,12 @@ public class FunBaseURI extends BasicFunction {
         final boolean hasNodeBaseURI = StringUtils.isNotBlank(nodeBaseURI);
 
         try {
-            if(hasNodeBaseURI) {
+            if (hasNodeBaseURI) {
                 // xml:base is defined
                 URI nbURI = new URI(nodeBaseURI);
                 final boolean nbURIAbsolute = nbURI.isAbsolute();
 
-                if(!nbURIAbsolute && hasContextBaseURI) {
+                if (!nbURIAbsolute && hasContextBaseURI) {
                     // when xml:base is not an absolute URL and there is a contextURI
                     // join them
                     final URI newURI = contextBaseURI.toURI().resolve(nodeBaseURI);
@@ -168,7 +168,7 @@ public class FunBaseURI extends BasicFunction {
                     result = new AnyURIValue(nbURI);
                 }
 
-            } else if (hasContextBaseURI){
+            } else if (hasContextBaseURI) {
                 // if there is no xml:base, take the root document, if present.
                 result = contextBaseURI;
             }
