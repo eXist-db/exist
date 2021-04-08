@@ -25,7 +25,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
@@ -33,40 +32,44 @@ import org.w3c.dom.Node;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import static org.exist.xquery.FunctionDSL.optParam;
+import static org.exist.xquery.FunctionDSL.returnsOpt;
+import static org.exist.xquery.functions.fn.FnModule.functionSignature;
+
 /**
  * @author wolf
  */
 public class FunBaseURI extends BasicFunction {
 
-    public final static FunctionSignature[] signatures = {
-            new FunctionSignature(
-                    new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
-                    "Returns the value of the base URI property for the context item.",
-                    null,
-                    new FunctionReturnSequenceType(Type.ANY_URI,
-                            Cardinality.ZERO_OR_ONE, "The base URI from the context item")
-            ),
-            new FunctionSignature(
-                    new QName("base-uri", Function.BUILTIN_FUNCTION_NS),
-                    "Returns the value of the base URI property for $uri. " +
-                            "If $uri is the empty sequence, the empty sequence is returned.",
-                    new SequenceType[]{
-                            new FunctionParameterSequenceType("uri", Type.NODE,
-                                    Cardinality.ZERO_OR_ONE, "The URI")
-                    },
-                    new FunctionReturnSequenceType(Type.ANY_URI,
-                            Cardinality.ZERO_OR_ONE, "the base URI from $uri")
-            ),
-            new FunctionSignature(
-                    new QName("static-base-uri", Function.BUILTIN_FUNCTION_NS),
-                    "Returns the value of the base URI property from the static context. " +
-                            "If the base-uri property is undefined, the empty sequence is returned.",
-                    null,
-                    new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE,
-                            "The base URI from the static context")
-            )
-    };
+    public static final String FS_BASE_URI = "base-uri";
+    public static final String FS_STATIC_BASE_URI = "static-base-uri";
+    
     protected static final Logger logger = LogManager.getLogger(FunBaseURI.class);
+
+    static final FunctionSignature FS_BASE_URI_0 = functionSignature(
+            FS_BASE_URI,
+            "Returns the base URI of the context node. " +
+                    "It is equivalent to calling fn:base-uri(.).",
+            returnsOpt(Type.ANY_URI, "The base URI from the context node.")
+    );
+
+    static final FunctionSignature FS_STATIC_BASE_URI_0 = functionSignature(
+            FS_STATIC_BASE_URI,
+            "Returns the value of the static base URI property from the static context. " +
+                    "If the base-uri property is undefined, the empty sequence is returned.",
+            returnsOpt(Type.ANY_URI, "The base URI from the static context.")
+    );
+
+    private static final FunctionParameterSequenceType FS_PARAM_NODE
+            = optParam("arg", Type.NODE, "The node.");
+
+    static final FunctionSignature FS_BASE_URI_1 = functionSignature(
+            FS_BASE_URI,
+            "Returns the base URI of a node." +
+                    "If $arg is the empty sequence, the empty sequence is returned.",
+            returnsOpt(Type.ANY_URI, "The base URI from $arg."),
+            FS_PARAM_NODE
+    );
 
     public FunBaseURI(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
