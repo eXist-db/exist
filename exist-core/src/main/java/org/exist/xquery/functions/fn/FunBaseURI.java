@@ -81,7 +81,7 @@ public class FunBaseURI extends BasicFunction {
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-        if (isCalledAs("static-base-uri")) {
+        if (isCalledAs(FS_STATIC_BASE_URI)) {
             if (context.isBaseURIDeclared()) {
                 // use whatever value is defined, does not need to be absolute
                 return context.getBaseURI();
