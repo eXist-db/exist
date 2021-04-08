@@ -43,7 +43,7 @@ public class FunBaseURI extends BasicFunction {
 
     public static final String FS_BASE_URI = "base-uri";
     public static final String FS_STATIC_BASE_URI = "static-base-uri";
-    
+
     protected static final Logger logger = LogManager.getLogger(FunBaseURI.class);
 
     static final FunctionSignature FS_BASE_URI_0 = functionSignature(
