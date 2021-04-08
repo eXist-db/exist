@@ -28,7 +28,6 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import java.net.URI;
@@ -91,7 +90,7 @@ public class FunBaseURI extends BasicFunction {
         }
 
 
-        NodeValue nodeValue = null;
+        NodeValue nodeValue;
 
         // Called as base-uri
         if (args.length == 0) {
@@ -131,17 +130,13 @@ public class FunBaseURI extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        // Constructed Comment nodes/PIs /Attributes do not have a baseURI accoring tests
+        // Constructed Comment nodes/PIs/Attributes do not have a baseURI according tests
         if ((node.getNodeType() == Node.COMMENT_NODE
                 || node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
                 || node.getNodeType() == Node.ATTRIBUTE_NODE)
                 && nodeValue.getOwnerDocument().getDocumentElement() == null) {
             return Sequence.EMPTY_SEQUENCE;
         }
-
-        // null when no document
-        final Document ownerDocument = node.getOwnerDocument();
-        final String ownerDocumentURI = (ownerDocument == null) ? null : ownerDocument.getDocumentURI();
 
         // "" when not set // check with isBaseURIDeclared()
         final AnyURIValue contextBaseURI = context.getBaseURI();
