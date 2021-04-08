@@ -122,9 +122,9 @@ public class SequencedLongHashMapTest {
 			final int vv = v;
 			ct[vv]++;
 		}
-		assertEquals(ct[0], 10);
+		assertEquals(10, ct[0]);
 		for (int i = 1; i < 10; i++) {
-			assertEquals(ct[i], 1);
+			assertEquals(1, ct[i]);
 		}
 	}
 

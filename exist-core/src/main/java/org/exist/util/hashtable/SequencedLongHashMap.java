@@ -33,12 +33,10 @@ package org.exist.util.hashtable;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import net.jcip.annotations.NotThreadSafe;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 @NotThreadSafe
 public class SequencedLongHashMap<V> {
@@ -79,15 +77,6 @@ public class SequencedLongHashMap<V> {
     public @Nullable V get(final long key) {
         return map.get(key);
     }
-
-    /**
-     * Returns the first entry added to the map.
-     *
-     * @return the first entry
-     */
-//    public Entry<V> getFirstEntry() {
-//        return first;
-//    }
 
     /**
      * Remove the entry specified by key from the map.
