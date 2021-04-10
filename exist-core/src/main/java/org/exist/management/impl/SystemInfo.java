@@ -21,13 +21,10 @@
  */
 package org.exist.management.impl;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Locale;
 
 import org.exist.SystemProperties;
-
-import javax.management.ObjectName;
 
 /**
  * Class SystemInfo
@@ -66,12 +63,7 @@ public class SystemInfo implements SystemInfoMXBean {
 
     @Override
     public String getDefaultEncoding() {
-        try(final InputStreamReader isr = new InputStreamReader(System.in)) {
-            return isr.getEncoding();
-        } catch(final IOException ioe) {
-            ioe.printStackTrace();
-            return null;
-        }
+        return Charset.defaultCharset().name();
     }
 
     @Override

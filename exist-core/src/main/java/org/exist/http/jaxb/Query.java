@@ -502,7 +502,7 @@ public class Query {
          * Objects of the following type(s) are allowed in the list
          * {@link Query.Properties.Property }
          * 
-         * 
+         * @return the properties.
          */
         public List<Query.Properties.Property> getProperty() {
             if (property == null) {

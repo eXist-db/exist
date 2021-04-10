@@ -194,7 +194,11 @@ public class Predicate extends PathExpr {
                         innerSeq = inner.eval(Dependency.dependsOn(inner.getDependencies(), Dependency.CONTEXT_ITEM)
                                 ? contextSequence : null);
                     }
-                    if (innerSeq.getCardinality().isSubCardinalityOrEqualOf(Cardinality.EXACTLY_ONE)) {
+
+                    // We must check for empty sequences here to avoid an NPE
+                    if (innerSeq.isEmpty()) {
+                        result = Sequence.EMPTY_SEQUENCE;
+                    } else if (innerSeq.getCardinality().isSubCardinalityOrEqualOf(Cardinality.EXACTLY_ONE)) {
                         result = selectByPosition(outerSequence, contextSequence, mode, innerSeq);
                     } else {
                         throw new XPathException(this, ErrorCodes.FORG0006, "Effective boolean value is not defined for a sequence of two or more items starting with a " + Type.getTypeName(innerSeq.itemAt(0).getType()) + " value");

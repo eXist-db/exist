@@ -1189,19 +1189,6 @@ public class Configuration implements ErrorHandler
                 LOG.warn( e );
             }
         }
-
-        final String timeout = getConfigAttributeValue( queryPool, XQueryPool.TIMEOUT_ATTRIBUTE );
-
-        if( timeout != null ) {
-
-            try {
-                config.put( XQueryPool.PROPERTY_TIMEOUT, Long.valueOf(timeout) );
-                LOG.debug( XQueryPool.PROPERTY_TIMEOUT + ": " + config.get( XQueryPool.PROPERTY_TIMEOUT ) );
-            }
-            catch( final NumberFormatException e ) {
-                LOG.warn( e );
-            }
-        }
     }
     
     public static class StartupTriggerConfig {

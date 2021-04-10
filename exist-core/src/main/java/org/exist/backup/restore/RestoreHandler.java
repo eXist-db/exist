@@ -35,6 +35,7 @@ import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.ACLPermission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
+import org.exist.security.internal.RealmImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.LockManager;
@@ -402,9 +403,10 @@ public class RestoreHandler extends DefaultHandler {
             name = atts.getValue("name");
         }
 
-        // exclude /db/system collection and sub-collections, as these have already been restored
+        // exclude the /db/system, /db/system/security, /db/system/security/exist/groups collections and their sub-collections, as these have already been restored
         if ((XmldbURI.DB.equals(currentCollectionUri) && "system".equals(name))
-                || (XmldbURI.SYSTEM.equals(currentCollectionUri) && "security".equals(name))) {
+                || (XmldbURI.SYSTEM.equals(currentCollectionUri) && "security".equals(name))
+                || (XmldbURI.SYSTEM.append("security").append(RealmImpl.ID).equals(currentCollectionUri) && "groups".equals(name))) {
             return;
         }
 

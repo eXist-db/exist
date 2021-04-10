@@ -68,9 +68,8 @@ public class LogEntryTypes {
     /**
      * Create a new loggable for the given type.
      *
-     * @param broker The broker that will perform the operation
      * @param type The type of the loggable
-     * @param broker the database broker
+     * @param broker The broker that will perform the operation
      * @param transactionId the id of the current transaction
      *
      * @return The loggable for the type, or null if no loggable for the type is known

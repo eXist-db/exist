@@ -81,7 +81,18 @@ public class CollectionLocksTest {
      *
      * Default: Twice the (maximum) sleep time of the total number of threads involved in the test
      */
-    private static final int STRESS_DEADLOCK_TEST_TIMEOUT = (STRESS_DEADLOCK_THREAD_SLEEP * CONCURRENCY_LEVEL) * 2;
+    private static int STRESS_DEADLOCK_TEST_TIMEOUT = (STRESS_DEADLOCK_THREAD_SLEEP * CONCURRENCY_LEVEL) * 2;
+    /*
+       macOS on various CI platforms seems to generally be slower
+       than other OS, therefore we permit a longer time-out.
+     */
+    static {
+        final String ciEnv = System.getenv("CI");
+        if (ciEnv != null && ciEnv.equalsIgnoreCase("true") &&
+                System.getProperty("os.name").toLowerCase().contains("mac")) {
+            STRESS_DEADLOCK_TEST_TIMEOUT = (STRESS_DEADLOCK_THREAD_SLEEP * CONCURRENCY_LEVEL) * 4;
+        }
+    }
 
     /**
      * In the single writer tests, the maximum amount of time

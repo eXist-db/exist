@@ -1,0 +1,28 @@
+name: Test
+on: [push, pull_request]
+jobs:
+  test:
+    name: (JDK ${{ matrix.jdk }} / ${{ matrix.os }}) Test 
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        jdk: ['8', '11']
+        include:
+          - os: ubuntu-latest
+            jdk: '15'        
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK ${{ matrix.jdk }}
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.jdk }}
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Maven Test
+        run: mvn -V -B clean verify      

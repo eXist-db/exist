@@ -29,6 +29,7 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 
@@ -51,6 +52,8 @@ public interface BackupDescriptor {
     BackupDescriptor getChildBackupDescriptor(String describedItem);
 
     BackupDescriptor getBackupDescriptor(String describedItem);
+
+    List<BackupDescriptor> getChildBackupDescriptors();
 
     String getName();
 

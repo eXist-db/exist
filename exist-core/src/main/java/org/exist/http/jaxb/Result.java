@@ -132,7 +132,7 @@ public class Result {
      * Objects of the following type(s) are allowed in the list
      * {@link Result.Value }
      * 
-     * 
+     * @return the result value.
      */
     public List<Result.Value> getValue() {
         if (value == null) {
@@ -315,7 +315,7 @@ public class Result {
          * {@link Element }
          * {@link String }
          * 
-         * 
+         * @return the content.
          */
         public List<Object> getContent() {
             if (content == null) {

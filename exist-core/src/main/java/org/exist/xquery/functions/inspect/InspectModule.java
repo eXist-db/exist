@@ -32,31 +32,29 @@ import org.xml.sax.helpers.AttributesImpl;
 import javax.xml.XMLConstants;
 import java.util.Map;
 
+import static org.exist.xquery.FunctionDSL.param;
+import static org.exist.xquery.FunctionDSL.returnsOpt;
+import static org.exist.xquery.functions.inspect.InspectionModule.functionSignature;
+
 public class InspectModule extends BasicFunction {
 
-
-    public final static FunctionSignature FNS_INSPECT_MODULE = new FunctionSignature(
-            new QName("inspect-module", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
+    private static final String FN_INSPECT_MODULE_NAME = "inspect-module";
+    private static final FunctionReturnSequenceType RETURN_FRAGMENT = returnsOpt(Type.ELEMENT, "An XML fragment describing the module and all functions contained in it.");
+    static final FunctionSignature FN_INSPECT_MODULE = functionSignature(
+            FN_INSPECT_MODULE_NAME,
             "Compiles a library module from source (without importing it) and returns an XML fragment describing the " +
                     "module and the functions/variables contained in it.",
-            new SequenceType[]{
-                    new FunctionParameterSequenceType("location", Type.ANY_URI, Cardinality.EXACTLY_ONE,
-                            "The location URI of the module to inspect"),
-            },
-            new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.ZERO_OR_ONE,
-                    "An XML fragment describing the module and all functions contained in it.")
+            RETURN_FRAGMENT,
+            param("location", Type.ANY_URI, "The location URI of the module to inspect")
     );
 
-    public final static FunctionSignature FNS_INSPECT_MODULE_URI = new FunctionSignature(
-            new QName("inspect-module-uri", InspectionModule.NAMESPACE_URI, InspectionModule.PREFIX),
+    private static final String FN_INSPECT_MODULE_URI_NAME = "inspect-module-uri";
+    public static final FunctionSignature FN_INSPECT_MODULE_URI = functionSignature(
+            FN_INSPECT_MODULE_URI_NAME,
             "Returns an XML fragment describing the " +
                     "library module identified by the given namespace URI and the functions/variables contained in it.",
-            new SequenceType[]{
-                    new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE,
-                            "The namespace URI of the module to inspect"),
-            },
-            new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.ZERO_OR_ONE,
-                    "An XML fragment describing the module and all functions contained in it.")
+            RETURN_FRAGMENT,
+            param("uri", Type.ANY_URI, "The namespace URI of the module to inspect")
     );
 
 
@@ -73,7 +71,7 @@ public class InspectModule extends BasicFunction {
         final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
         tempContext.setModuleLoadPath(context.getModuleLoadPath());
         final Module[] modules;
-        if (isCalledAs("inspect-module")) {
+        if (isCalledAs(FN_INSPECT_MODULE_NAME)) {
             modules = tempContext.importModule(null, null, new AnyURIValue[] { (AnyURIValue) args[0].itemAt(0) });
         } else {
             modules = tempContext.importModule(args[0].getStringValue(), null, null);
@@ -102,7 +100,7 @@ public class InspectModule extends BasicFunction {
                 XQDocHelper.parse((ExternalModule) module);
             }
             if (module.getDescription() != null) {
-                builder.startElement(InspectFunction.DESCRIPTION_QNAME, null);
+                builder.startElement(InspectFunctionHelper.DESCRIPTION_QNAME, null);
                 builder.characters(module.getDescription());
                 builder.endElement();
             }
@@ -135,7 +133,7 @@ public class InspectModule extends BasicFunction {
                     if (!module.isInternalModule()) {
                         func = ((ExternalModule) module).getFunction(sig.getName(), sig.getArgumentCount(), null);
                     }
-                    InspectFunction.generateDocs(sig, func, builder);
+                    InspectFunctionHelper.generateDocs(sig, func, builder);
                 }
             }
             builder.endElement();

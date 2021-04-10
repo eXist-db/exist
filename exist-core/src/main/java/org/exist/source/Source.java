@@ -148,6 +148,8 @@ public interface Source {
      * the module prefix as local name and the module namespace as namespace URI.
      *
      * @return QName describing the module namespace, or null if the source is not a module.
+     *
+     * @throws IOException if an I/O error occurs.
      */
     @Nullable QName isModule() throws IOException;
 

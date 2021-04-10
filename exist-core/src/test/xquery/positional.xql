@@ -105,3 +105,29 @@ declare
 function pf:multiple-positions() {
     (3,4)[1,2]
 };
+
+declare
+    %test:assertError("err:FORG0006")
+function pf:implicit-position-sequence() {
+    (3,4)[(1,2)]
+};
+
+declare
+    %test:assertError("err:FORG0006")
+function pf:implicit-position-range() {
+    (3,4)[2 to 4]
+};
+
+(: https://github.com/eXist-db/exist/issues/3797 :)
+declare
+    %test:assertEmpty
+function pf:empty-sequence-in-predicate() {
+    (1)[()]
+};
+
+(: https://github.com/eXist-db/exist/issues/3797 :)
+declare
+    %test:assertEmpty
+function pf:predicate-evaluates-to-empty-sequence() {
+    (1)[()+1]
+};

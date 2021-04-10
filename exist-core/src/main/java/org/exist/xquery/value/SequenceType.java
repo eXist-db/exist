@@ -237,7 +237,9 @@ public class SequenceType {
 
         final String str;
         if (primaryType == Type.DOCUMENT && nodeName != null) {
-            str = "document-node(" + nodeName.getStringValue()  + ")";
+            str = "document-node(" + nodeName.getStringValue() + ")";
+        } else if (primaryType == Type.ELEMENT && nodeName != null) {
+            str = "element(" + nodeName.getStringValue() + ")";
         } else {
             str = Type.getTypeName(primaryType);
         }
