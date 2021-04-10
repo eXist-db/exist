@@ -23,8 +23,6 @@ package org.exist.xquery.functions.fn;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
@@ -43,8 +41,6 @@ public class FunBaseURI extends BasicFunction {
 
     public static final String FS_BASE_URI = "base-uri";
     public static final String FS_STATIC_BASE_URI = "static-base-uri";
-
-    protected static final Logger logger = LogManager.getLogger(FunBaseURI.class);
 
     static final FunctionSignature FS_BASE_URI_0 = functionSignature(
             FS_BASE_URI,
