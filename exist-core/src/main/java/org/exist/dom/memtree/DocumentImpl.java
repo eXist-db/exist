@@ -1473,7 +1473,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         if(docURI != null) {
             return docURI;
         } else {
-            if(context.isBaseURIDeclared()) {
+            if(context!=null && context.isBaseURIDeclared()) {
                 try {
                     return context.getBaseURI().getStringValue();
                 } catch(final XPathException e) {
