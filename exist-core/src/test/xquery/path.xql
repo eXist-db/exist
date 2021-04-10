@@ -160,6 +160,7 @@ function path:no-node-context() {
 
 (: persistent documents :)
 declare
+  %test:pending("Pending issue #1463")
   %test:assertEquals('/Q{}div[1]/comment()[3]')
   function path:comments_persistent() {
     fn:path(doc('/db/fn-path/comments.xml')//comment()[contains(.,"ollah")])
