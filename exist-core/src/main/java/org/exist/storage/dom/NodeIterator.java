@@ -98,7 +98,7 @@ public final class NodeIterator implements INodeIterator {
         try(final ManagedLock<ReentrantLock> domFileLock = lockManager.acquireBtreeReadLock(db.getLockName())) {
             db.setOwnerObject(broker);
             if (gotoNextPosition()) {
-                db.getPageBuffer().add(page);
+                db.addToBuffer(page);
                 final DOMFile.DOMFilePageHeader pageHeader = page.getPageHeader();
                 if (offset < pageHeader.getDataLength())
                     {return true;}
