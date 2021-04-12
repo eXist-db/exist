@@ -77,6 +77,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
         }
 
         if (!Files.isReadable(autodeployDir) && Files.isDirectory(autodeployDir)) {
+            LOG.warn("Unable to read autodeploy directory: " + autodeployDir);
             return;
         }
 
