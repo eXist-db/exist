@@ -649,6 +649,18 @@
                     <version>0.8.6</version>
                     <configuration>
                         <propertyName>jacocoArgLine</propertyName>
+                        <excludes>
+                            <exclude>**/DeclScanner.*</exclude>
+                            <exclude>**/DeclScannerTokenTypes.*</exclude>
+                            <exclude>**/XQueryLexer.*</exclude>
+                            <exclude>**/XQueryParser.*</exclude>
+                            <exclude>**/XQueryTokenTypes.*</exclude>
+                            <exclude>**/XQueryTreeParser.*</exclude>
+                            <exclude>**/XQueryTreeParserTokenTypes.*</exclude>
+                            <exclude>**/XQDocLexer.*</exclude>
+                            <exclude>**/XQDocParser.*</exclude>
+                            <exclude>**/XQDocParserTokenTypes.*</exclude>
+                        </excludes>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -897,6 +909,20 @@
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/DeclScanner.*</exclude>
+                                <exclude>**/DeclScannerTokenTypes.*</exclude>
+                                <exclude>**/XQueryLexer.*</exclude>
+                                <exclude>**/XQueryParser.*</exclude>
+                                <exclude>**/XQueryTokenTypes.*</exclude>
+                                <exclude>**/XQueryTreeParser.*</exclude>
+                                <exclude>**/XQueryTreeParserTokenTypes.*</exclude>
+                                <exclude>**/XQDocLexer.*</exclude>
+                                <exclude>**/XQDocParser.*</exclude>
+                                <exclude>**/XQDocParserTokenTypes.*</exclude>
+                            </excludes>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -917,6 +943,20 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/DeclScanner.*</exclude>
+                        <exclude>**/DeclScannerTokenTypes.*</exclude>
+                        <exclude>**/XQueryLexer.*</exclude>
+                        <exclude>**/XQueryParser.*</exclude>
+                        <exclude>**/XQueryTokenTypes.*</exclude>
+                        <exclude>**/XQueryTreeParser.*</exclude>
+                        <exclude>**/XQueryTreeParserTokenTypes.*</exclude>
+                        <exclude>**/XQDocLexer.*</exclude>
+                        <exclude>**/XQDocParser.*</exclude>
+                        <exclude>**/XQDocParserTokenTypes.*</exclude>
+                    </excludes>
+                </configuration>
                 <reportSets>
                     <reportSet>
                         <reports>
