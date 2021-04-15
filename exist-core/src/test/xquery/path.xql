@@ -166,3 +166,17 @@ declare
     fn:path(doc('/db/fn-path/comments.xml')//comment()[contains(.,"ollah")])
 };
 
+(: from xqts suite :)
+
+declare
+    %test:assertEmpty
+function path:path_empty_sequence() {
+     fn:path(())
+};
+
+declare
+    %test:assertEquals("Q{http://www.w3.org/2005/xpath-functions}root()")
+function path:parent_less_textnode() {
+     fn:path(text{"fred"})
+};
+
