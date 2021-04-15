@@ -397,21 +397,21 @@ public class ModuleUtils {
      * @param <T> the class of the object being stored
      * @return  A unique ID representing the Object
      */
-    public static <T> long storeObjectInContextMap(XQueryContext context, String contextMapName, T o) {
+    public static <T> long storeObjectInContextMap(final XQueryContext context, final String contextMapName, final T o) {
 
         try(final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(contextMapLocks.getLock(contextMapName), LockMode.WRITE_LOCK)) {
 
             // get the existing map from the context
             Map<Long, T> map = (Map<Long, T>)context.getAttribute(contextMapName);
 
-            if(map == null) {
+            if (map == null) {
                 // if there is no map, create a new one
                 map = new HashMap<>();
             }
 
             // get an id for the map
             long uid = 0;
-            while(uid == 0 || map.keySet().contains(uid)) {
+            while (uid == 0 || map.keySet().contains(uid)) {
                 uid = getUID();
             }
 
@@ -421,7 +421,7 @@ public class ModuleUtils {
             // store the map back in the context
             context.setAttribute(contextMapName, map);
 
-            return (uid);
+            return uid;
         }
     }
     

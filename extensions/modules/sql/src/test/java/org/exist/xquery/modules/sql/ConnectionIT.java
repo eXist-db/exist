@@ -152,6 +152,35 @@ public class ConnectionIT {
         }
     }
 
+    @Test
+    public void getConnectionFromPoolIsAutomaticallyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException {
+        // NOTE: pool-1 is configured in src/test/resources-filtered/conf.xml
+        final String query =
+                "import module namespace sql = \"http://exist-db.org/xquery/sql\";\n" +
+                "sql:get-connection-from-pool(\"pool-1\", \"" + h2Database.getUser() + "\", \"" + h2Database.getPassword() + "\")";
+
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final Source source = new StringSource(query);
+        try (final DBBroker broker = pool.getBroker();
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+
+            // execute query
+            final Tuple2<XQueryContext, Boolean> contextAndResult = withCompiledQuery(broker, source, compiledXQuery -> {
+                final Sequence result = executeQuery(broker, compiledXQuery);
+                return Tuple(compiledXQuery.getContext(), !result.isEmpty());
+            });
+
+            // check that the handle for the sql connection that was created is valid
+            assertTrue(contextAndResult._2);
+
+            // check the connections were closed
+            final int connectionsCount = ModuleUtils.readContextMap(contextAndResult._1, SQLModule.CONNECTIONS_CONTEXTVAR, Map::size);
+            assertEquals(0, connectionsCount);
+
+            transaction.commit();
+        }
+    }
+
     private Sequence executeQuery(final DBBroker broker, final CompiledXQuery compiledXQuery) throws PermissionDeniedException, XPathException {
         final BrokerPool pool = broker.getBrokerPool();
         final XQuery xqueryService = pool.getXQueryService();
