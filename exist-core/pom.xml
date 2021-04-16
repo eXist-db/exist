@@ -990,7 +990,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
+                    <argLine>@{jacocoArgLine} -Dfile.encoding=${project.build.sourceEncoding}</argLine>
                     <systemPropertyVariables>
                         <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
                         <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
