@@ -21,11 +21,14 @@
  */
 package org.exist.storage.cache;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.CacheManager;
 import org.exist.util.hashtable.SequencedLongHashMap;
+
+import java.util.Iterator;
 
 /**
  * A simple cache implementing a Last Recently Used policy. This
@@ -114,21 +117,23 @@ public class LRUCache<T extends Cacheable> implements Cache<T> {
 	@Override
 	public boolean flush() {
 		boolean flushed = false;
-		for(SequencedLongHashMap.Entry<T> next = map.getFirstEntry(); next != null; next = next.getNext()) {
-			final T cacheable = next.getValue();
-			if(cacheable.isDirty()) {
-				flushed = flushed | cacheable.sync(false);
-			}
-		}
+        final Iterator<T> iterator = map.valueIterator();
+        while (iterator.hasNext()) {
+            final T cacheable = iterator.next();
+            if(cacheable.isDirty()) {
+                flushed = flushed | cacheable.sync(false);
+            }
+        }
 		return flushed;
 	}
 
 	
     @Override
     public boolean hasDirtyItems() {
-        for(SequencedLongHashMap.Entry<T> next = map.getFirstEntry(); next != null; next = next.getNext()) {
-            final T cacheable = next.getValue();
-            if(cacheable.isDirty()) {
+        final Iterator<T> iterator = map.valueIterator();
+        while (iterator.hasNext()) {
+            final T cacheable = iterator.next();
+            if (cacheable.isDirty()) {
                 return true;
             }
         }
@@ -161,20 +166,21 @@ public class LRUCache<T extends Cacheable> implements Cache<T> {
 
 	protected void removeOne(final T item) {
         boolean removed = false;
-        SequencedLongHashMap.Entry<T> next = map.getFirstEntry();
+        Iterator<Long2ObjectMap.Entry<T>> iterator = map.fastEntrySetIterator();
         do {
+            final Long2ObjectMap.Entry<T> next = iterator.next();
             final T cached = next.getValue();
             if(cached.allowUnload() && cached.getKey() != item.getKey()) {
                 cached.sync(true);
-                map.remove(next.getKey());
+                map.remove(next.getLongKey());
                 removed = true;
             } else {
-                next = next.getNext();
-                if(next == null) {
+                if (!iterator.hasNext()) {
                     if(LOG.isDebugEnabled()) {
                         LOG.debug("Unable to remove entry");
                     }
-                    next = map.getFirstEntry();
+                    // reset the iterator to the beginning
+                    iterator = map.fastEntrySetIterator();      // TODO(AR) this can cause a never ending loop potentially!
                 }
             }
         } while(!removed);
@@ -200,10 +206,7 @@ public class LRUCache<T extends Cacheable> implements Cache<T> {
             shrink(newSize);
         } else {
             final SequencedLongHashMap<T> newMap = new SequencedLongHashMap<>(newSize * 2);
-            for(SequencedLongHashMap.Entry<T> next = map.getFirstEntry(); next != null; next = next.getNext()) {
-                final T cacheable = next.getValue();
-                newMap.put(cacheable.getKey(), cacheable);
-            }
+            newMap.putAll(map);
             max = newSize;
             map = newMap;
             accounting.reset();

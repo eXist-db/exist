@@ -726,7 +726,10 @@ public class LockManager {
      * @param btreeFileName The name of the .dbx file.
      *
      * @return true if the Btree is locked.
+     *
+     * @deprecated Just a place holder until we can make the BTree reader/writer safe
      */
+    @Deprecated
     public boolean isBtreeLocked(final String btreeFileName) {
         final ReentrantLock lock = getBTreeLock(btreeFileName);
         return lock.isLocked();
@@ -738,10 +741,7 @@ public class LockManager {
      * @param btreeFileName The name of the .dbx file.
      *
      * @return true if the Btree is locked for writes.
-     *
-     * @deprecated Just a place holder until we can make the BTree reader/writer safe
      */
-    @Deprecated
     public boolean isBtreeLockedForWrite(final String btreeFileName) {
         return isBtreeLocked(btreeFileName);
     }

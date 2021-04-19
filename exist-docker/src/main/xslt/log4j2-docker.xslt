@@ -27,7 +27,7 @@
     
     <xsl:output method="xml" indent="yes" omit-xml-declaration="no"/>
 
-    <xsl:template match="Root[@level eq 'info']">
+    <xsl:template match="Root[@level eq 'info']|Logger[@name eq 'org.exist.repo']">
         <xsl:copy>
             <xsl:apply-templates select="node()|@*"/>
             <AppenderRef ref="STDOUT"/>
