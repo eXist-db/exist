@@ -83,9 +83,9 @@ public class RangeIndexConfigField {
                 Class customClass = Class.forName(custom);
                 typeConverter = (org.exist.indexing.range.conversion.TypeConverter) customClass.newInstance();
             } catch (ClassNotFoundException e) {
-                RangeIndex.LOG.warn("Class for custom-type not found: " + custom);
+                RangeIndex.LOG.warn("Class for custom-type not found: {}", custom);
             } catch (InstantiationException | IllegalAccessException e) {
-                RangeIndex.LOG.warn("Failed to initialize custom-type: " + custom, e);
+                RangeIndex.LOG.warn("Failed to initialize custom-type: {}", custom, e);
             }
         }
         String nested = elem.getAttribute("nested");

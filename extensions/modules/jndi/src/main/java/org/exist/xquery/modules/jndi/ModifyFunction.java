@@ -102,7 +102,7 @@ public class ModifyFunction extends BasicFunction
 				DirContext ctx = (DirContext)JNDIModule.retrieveJNDIContext( context, ctxID );
 				
 				if( ctx == null ) {
-					logger.error( "jndi:modify() - Invalid JNDI context handle provided: " + ctxID );
+					logger.error("jndi:modify() - Invalid JNDI context handle provided: {}", ctxID);
 				} else {	
 					ModificationItem[] items = parseAttributes( args[ 2 ] );
 					
@@ -112,7 +112,7 @@ public class ModifyFunction extends BasicFunction
 				}
 			}
 			catch( NamingException ne ) {
-				logger.error( "jndi:modify() Modify failed for dn [" + dn + "]: ", ne );
+				logger.error("jndi:modify() Modify failed for dn [{}]: ", dn, ne);
 				throw( new XPathException( this, "jndi:modify() Modify failed for dn [" + dn + "]: " + ne ) );
 			}
 		}
@@ -163,7 +163,7 @@ public class ModifyFunction extends BasicFunction
 						}
 						
 						if( opCode == 0 ) {
-							logger.error( "jndi:modify() - Invalid operation code: [" + op + "]" );
+							logger.error("jndi:modify() - Invalid operation code: [{}]", op);
 							throw( new XPathException( this, "jndi:modify() - Invalid operation code: [" + op + "]" ) );
 						}
 						

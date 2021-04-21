@@ -94,8 +94,8 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
     }
     
     private void loadRegistry(final Path fRegistry) {
-        
-        log.info("Loading RESTXQ registry from: " + fRegistry.toAbsolutePath().toString());
+
+        log.info("Loading RESTXQ registry from: {}", fRegistry.toAbsolutePath().toString());
 
         try(final LineNumberReader reader = new LineNumberReader(Files.newBufferedReader(fRegistry));
                 final DBBroker broker = getBrokerPool().getBroker()) {
@@ -104,7 +104,7 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
             String line = reader.readLine();
             final String versionStr = line.substring(line.indexOf(VERSION_LABEL) + VERSION_LABEL.length() + LABEL_SEP.length());
             if(REGISTRY_FILE_VERSION != Integer.parseInt(versionStr)) {
-                log.error("Unable to load RESTXQ registry file: " + fRegistry.toAbsolutePath().toString() + ". Expected version: " + REGISTRY_FILE_VERSION + " but saw version: " + versionStr);
+                log.error("Unable to load RESTXQ registry file: {}. Expected version: " + REGISTRY_FILE_VERSION + " but saw version: {}", fRegistry.toAbsolutePath().toString(), versionStr);
             } else {
                 while((line = reader.readLine()) != null) {
                     final String xqueryLocation = line.substring(0, line.indexOf(FIELD_SEP));
@@ -146,7 +146,7 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
             log.error("Could not save RESTXQ Registry to disk!");
         } else {
             final Path tmpNewRegistry = optTmpNewRegistry.get();
-            log.info("Preparing new RESTXQ registry on disk: " + tmpNewRegistry.toAbsolutePath().toString());
+            log.info("Preparing new RESTXQ registry on disk: {}", tmpNewRegistry.toAbsolutePath().toString());
 
             try {
                 try (final PrintWriter writer = new PrintWriter(Files.newBufferedWriter(tmpNewRegistry, StandardOpenOption.TRUNCATE_EXISTING))) {
@@ -184,7 +184,7 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
                     final Path localTmpNewRegistry = Files.copy(tmpNewRegistry, registry.getParent().resolve(tmpNewRegistry.getFileName()));
                     Files.move(localTmpNewRegistry, registry, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
 
-                    log.info("Replaced RESTXQ registry: " + FileUtils.fileName(tmpNewRegistry) + " -> " + FileUtils.fileName(registry));
+                    log.info("Replaced RESTXQ registry: {} -> {}", FileUtils.fileName(tmpNewRegistry), FileUtils.fileName(registry));
                 } else {
                     throw new IOException("Unable to retrieve existing RESTXQ registry");
                 }

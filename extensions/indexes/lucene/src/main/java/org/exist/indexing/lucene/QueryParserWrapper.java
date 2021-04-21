@@ -73,7 +73,7 @@ public abstract class QueryParserWrapper {
                 Thread.currentThread().interrupt();
             }
 
-            LOG.warn("Failed to instantiate lucene query parser wrapper class: " + className, e);
+            LOG.warn("Failed to instantiate lucene query parser wrapper class: {}", className, e);
         }
         return null;
     }

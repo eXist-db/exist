@@ -76,7 +76,7 @@ public class IPRangeServlet extends HttpServlet implements ExistExtensionServlet
             ipAddress = request.getRemoteAddr();
         }
 
-        LOG.info("Detected IPaddress " + ipAddress);
+        LOG.info("Detected IPaddress {}", ipAddress);
 
         String jsonResponse = "{\"fail\":\"IP range not authenticated\"}";
 
@@ -85,11 +85,11 @@ public class IPRangeServlet extends HttpServlet implements ExistExtensionServlet
             final Subject user = securityManager.authenticate(ipAddress, ipAddress);
 
             if (user != null) {
-                LOG.info("IPRangeServlet user " + user.getUsername() + " found");
+                LOG.info("IPRangeServlet user {} found", user.getUsername());
 
                 // Security check
                 if (user.hasDbaRole()) {
-                    LOG.error("User " + user.getUsername() + " has DBA rights, will not be authorized");
+                    LOG.error("User {} has DBA rights, will not be authorized", user.getUsername());
                     return;
                 }
 

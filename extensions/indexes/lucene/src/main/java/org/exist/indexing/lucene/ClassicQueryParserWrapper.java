@@ -73,7 +73,7 @@ public class ClassicQueryParserWrapper extends QueryParserWrapper {
                 Thread.currentThread().interrupt();
             }
 
-            LOG.warn("Failed to instantiate lucene query parser class: " + className + ": " + e.getMessage(), e);
+            LOG.warn("Failed to instantiate lucene query parser class: {}: {}", className, e.getMessage(), e);
         }
     }
 

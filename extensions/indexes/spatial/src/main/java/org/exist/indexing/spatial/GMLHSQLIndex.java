@@ -74,12 +74,12 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
             try {
                 max_docs_in_context_to_refine_query = Integer.parseInt(param);
             } catch (NumberFormatException e) {
-                LOG.error("Invalid value for 'max_docs_in_context_to_refine_query', using default:" + max_docs_in_context_to_refine_query, e);
+                LOG.error("Invalid value for 'max_docs_in_context_to_refine_query', using default:{}", max_docs_in_context_to_refine_query, e);
             }
         }
 
         if (LOG.isDebugEnabled())
-            LOG.debug("max_docs_in_context_to_refine_query = " + max_docs_in_context_to_refine_query);
+            LOG.debug("max_docs_in_context_to_refine_query = {}", max_docs_in_context_to_refine_query);
     }
 
     @Override
@@ -108,7 +108,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
                 stmt.close();
                 conn.close();
                 if (LOG.isDebugEnabled())
-                    LOG.debug("GML index: " + getDataDir() + "/" + db_file_name_prefix + " closed");
+                    LOG.debug("GML index: {}/{} closed", getDataDir(), db_file_name_prefix);
             }
         } catch (SQLException e) {
             throw new DBException(e.getMessage());
@@ -143,7 +143,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
                 int nodeCount = stmt.executeUpdate("DELETE FROM " + GMLHSQLIndex.TABLE_NAME + ";");
                 stmt.close();
                 if (LOG.isDebugEnabled())
-                    LOG.debug("GML index: " + getDataDir() + "/" + db_file_name_prefix + ". " + nodeCount + " nodes removed");
+                    LOG.debug("GML index: {}/{}. {} nodes removed", getDataDir(), db_file_name_prefix, nodeCount);
             }
         } catch (SQLException e) {
             throw new DBException(e.getMessage());
@@ -201,14 +201,14 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
         //Get a connection to the DB... and keep it
         this.conn = DriverManager.getConnection("jdbc:hsqldb:" + getDataDir() + "/" + db_file_name_prefix + ";sql.enforce_size=false" /* + ";shutdown=true" */, "sa", "");
         if (LOG.isDebugEnabled())
-            LOG.debug("Connected to GML index: " + getDataDir() + "/" + db_file_name_prefix);
+            LOG.debug("Connected to GML index: {}/{}", getDataDir(), db_file_name_prefix);
         ResultSet rs = null;
         try {
             rs = this.conn.getMetaData().getTables(null, null, TABLE_NAME, new String[] { "TABLE" });
             rs.last();
             if (rs.getRow() == 1) {
                 if (LOG.isDebugEnabled())
-                    LOG.debug("Opened GML index: " + getDataDir() + "/" + db_file_name_prefix);
+                    LOG.debug("Opened GML index: {}/{}", getDataDir(), db_file_name_prefix);
             //Create the data structure if it doesn't exist
             } else if (rs.getRow() == 0) {
                 Statement stmt = conn.createStatement();
@@ -260,8 +260,8 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
                 stmt.executeUpdate("CREATE INDEX EPSG4326_CENTROID_Y ON " + TABLE_NAME + " (EPSG4326_CENTROID_Y);");
                 //AREA ?
                 stmt.close();
-                if (LOG.isDebugEnabled()) 
-                    LOG.debug("Created GML index: " + getDataDir() + "/" + db_file_name_prefix);
+                if (LOG.isDebugEnabled())
+                    LOG.debug("Created GML index: {}/{}", getDataDir(), db_file_name_prefix);
             } else {
                 throw new SQLException("2 tables with the same name ?"); 
             }

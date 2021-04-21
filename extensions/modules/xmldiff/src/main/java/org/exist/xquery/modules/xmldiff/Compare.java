@@ -127,7 +127,7 @@ public class Compare extends Function {
 				.build();
             boolean identical = !diff.hasDifferences();
             if (!identical) {
-                logger.warn("Diff result: " + diff.toString());
+				logger.warn("Diff result: {}", diff.toString());
             }
             result = new BooleanValue(identical);
         } catch (Exception e) {

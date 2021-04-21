@@ -118,7 +118,7 @@ public class Execute extends BasicFunction {
             }
         }
         if (LOG.isDebugEnabled())
-            LOG.debug("Creating process " + cmdArgs.get(0));
+            LOG.debug("Creating process {}", cmdArgs.get(0));
 
         ProcessBuilder pb = new ProcessBuilder(cmdArgs);
         pb.redirectErrorStream(true);

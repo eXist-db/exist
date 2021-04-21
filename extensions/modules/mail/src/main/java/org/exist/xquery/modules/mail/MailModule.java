@@ -214,7 +214,7 @@ public class MailModule extends AbstractInternalModule {
                     // close the store
                     store.close();
                 }  catch(MessagingException me) {
-                    LOG.warn("Unable to close Mail Store: " + me.getMessage(), me);
+                    LOG.warn("Unable to close Mail Store: {}", me.getMessage(), me);
                 }
             }
         });
@@ -301,7 +301,7 @@ public class MailModule extends AbstractInternalModule {
                 try {
                     folder.close(false);
                 } catch(MessagingException me) {
-                    LOG.warn( "Unable to close Mail Folder: " + me.getMessage(), me);
+                    LOG.warn("Unable to close Mail Folder: {}", me.getMessage(), me);
                 }
             }
         });

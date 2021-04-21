@@ -294,7 +294,7 @@ public class SendEmailFunction extends BasicFunction
         }
 
         //Message Sent Succesfully
-        LOG.info("send-email() message sent using Sendmail " + new Date());
+        LOG.info("send-email() message sent using Sendmail {}", new Date());
 
         return true;
     }
@@ -388,7 +388,7 @@ public class SendEmailFunction extends BasicFunction
         }
 
         //Message(s) Sent Succesfully
-        LOG.info("send-email() message(s) sent using SMTP " + new Date());
+        LOG.info("send-email() message(s) sent using SMTP {}", new Date());
 
         return sendMailResults;
     }
@@ -422,7 +422,7 @@ public class SendEmailFunction extends BasicFunction
             }
             if(!smtpResult.substring(0, 3).equals("250"))
             {
-                LOG.error("Error - SMTP MAIL FROM failed: " + smtpResult);
+                LOG.error("Error - SMTP MAIL FROM failed: {}", smtpResult);
                 return false;
             }
 
@@ -446,7 +446,7 @@ public class SendEmailFunction extends BasicFunction
                 smtpResult = smtpIn.readLine();
                 if(!smtpResult.substring(0, 3).equals("250"))
                 {
-                    LOG.error("Error - SMTP RCPT TO failed: " + smtpResult);
+                    LOG.error("Error - SMTP RCPT TO failed: {}", smtpResult);
                 }
             }
 
@@ -459,7 +459,7 @@ public class SendEmailFunction extends BasicFunction
             smtpResult = smtpIn.readLine();
             if(!smtpResult.substring(0, 3).equals("354"))
             {
-                LOG.error("Error - SMTP DATA failed: " + smtpResult);
+                LOG.error("Error - SMTP DATA failed: {}", smtpResult);
                 return false;
             }
 
@@ -470,7 +470,7 @@ public class SendEmailFunction extends BasicFunction
             smtpResult = smtpIn.readLine();
             if(!smtpResult.substring(0, 3).equals("250"))
             {
-                LOG.error("Error - Message not accepted: " + smtpResult);
+                LOG.error("Error - Message not accepted: {}", smtpResult);
                 return false;
             }
         }

@@ -92,13 +92,13 @@ public class RenameFunction extends BasicFunction
 				DirContext ctx = (DirContext)JNDIModule.retrieveJNDIContext( context, ctxID );
 				
 				if( ctx == null ) {
-					logger.error( "jndi:rename() - Invalid JNDI context handle provided: " + ctxID );
+					logger.error("jndi:rename() - Invalid JNDI context handle provided: {}", ctxID);
 				} else {	
 					ctx.rename( dn, newDN );
 				}
 			}
 			catch( NamingException ne ) {
-				logger.error( "jndi:rename() Rename failed for dn [" + dn + "], new dn [" + newDN + "]: ", ne );
+				logger.error("jndi:rename() Rename failed for dn [{}], new dn [{}]: ", dn, newDN, ne);
 				throw( new XPathException( this, "jndi:rename() Rename failed for dn [" + dn + "], new dn [" + newDN + "]: " + ne ) );
 			}
 		}

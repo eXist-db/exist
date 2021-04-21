@@ -296,7 +296,7 @@ public class ExistDocument extends ExistResource {
     public LockToken getCurrentLock() {
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Get current lock " + xmldbUri);
+            LOG.debug("Get current lock {}", xmldbUri);
         }
 
         try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
@@ -305,7 +305,7 @@ public class ExistDocument extends ExistResource {
             final DocumentImpl document = lockedDocument.getDocument();
 
             if (document == null) {
-                LOG.debug("No resource found for path: " + xmldbUri);
+                LOG.debug("No resource found for path: {}", xmldbUri);
                 return null;
             }
 
@@ -314,7 +314,7 @@ public class ExistDocument extends ExistResource {
             if (lock == null) {
 
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Document " + xmldbUri + " does not contain userlock");
+                    LOG.debug("Document {} does not contain userlock", xmldbUri);
                 }
                 return null;
             }
@@ -361,7 +361,7 @@ public class ExistDocument extends ExistResource {
             DocumentAlreadyLockedException, EXistException {
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("create lock " + xmldbUri);
+            LOG.debug("create lock {}", xmldbUri);
         }
 
         // Try to get document
@@ -449,7 +449,7 @@ public class ExistDocument extends ExistResource {
     void unlock() throws PermissionDeniedException, DocumentNotLockedException, EXistException {
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("unlock " + xmldbUri);
+            LOG.debug("unlock {}", xmldbUri);
         }
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
@@ -588,7 +588,7 @@ public class ExistDocument extends ExistResource {
 
         } finally {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Finished " + mode);
+                LOG.debug("Finished {}", mode);
             }
         }
     }

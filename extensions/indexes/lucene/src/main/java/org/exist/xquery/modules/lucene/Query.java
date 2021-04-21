@@ -226,7 +226,7 @@ public class Query extends Function implements Optimizable {
         } catch (IOException | org.apache.lucene.queryparser.classic.ParseException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
-        LOG.trace("Lucene query took " + (System.currentTimeMillis() - start));
+        LOG.trace("Lucene query took {}", System.currentTimeMillis() - start);
         if( context.getProfiler().traceFunctions() ) {
             context.getProfiler().traceIndexUsage( context, "lucene", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
         }

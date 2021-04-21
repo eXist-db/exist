@@ -103,7 +103,7 @@ class RestXqServiceImpl extends AbstractRestXqService {
                             binaryValue.close();
                         }
                     } catch (final IOException ioe) {
-                        LOG.error("Unable to close binary value: " + ioe.getMessage(), ioe);
+                        LOG.error("Unable to close binary value: {}", ioe.getMessage(), ioe);
                     }
                 }
             }

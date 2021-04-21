@@ -66,7 +66,7 @@ public class MiltonWebDAVServlet extends MiltonServlet {
         if (miltonVersion == null) {
             LOG.error("Unable to determine Milton version");
         } else {
-            LOG.info("Detected Milton WebDAV Server library version: " + miltonVersion);
+            LOG.info("Detected Milton WebDAV Server library version: {}", miltonVersion);
         }
 
         // Initialize Milton

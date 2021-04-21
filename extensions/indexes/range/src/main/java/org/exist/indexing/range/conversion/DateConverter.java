@@ -73,7 +73,7 @@ public class DateConverter implements TypeConverter {
             return new LongField(fieldName, dl, LongField.TYPE_NOT_STORED);
         } catch (Exception e) {
             // wrong type: ignore
-            LOG.debug("Invalid date format: " + content, e);
+            LOG.debug("Invalid date format: {}", content, e);
         }
         return null;
     }

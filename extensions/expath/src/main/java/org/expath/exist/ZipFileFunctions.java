@@ -211,7 +211,7 @@ public class ZipFileFunctions extends BasicFunction {
                         builder.addAttribute(new QName("name", null, null), zipEntry.toString());
                         builder.endElement();
                     } else {
-                        logger.debug("file: " + zipEntry.getName());
+                        logger.debug("file: {}", zipEntry.getName());
                         builder.startElement(new QName("entry", ZipModule.NAMESPACE_URI, ZipModule.PREFIX), null);
                         builder.addAttribute(new QName("name", null, null), zipEntry.toString());
                         builder.endElement();
@@ -235,7 +235,7 @@ public class ZipFileFunctions extends BasicFunction {
 
     private Sequence createZip(Element zipFile) {
         Node child = zipFile.getFirstChild();
-        logger.debug("processing zipFile: " + zipFile.getAttribute("href"));
+        logger.debug("processing zipFile: {}", zipFile.getAttribute("href"));
         // if this IS the zip:entry, then the src attribute will tell us where to write the output file.
         // if it has no src
         while (child != null) {
@@ -245,10 +245,10 @@ public class ZipFileFunctions extends BasicFunction {
                 // I need to be able to handle a dir element because that's in the SPEC
                 String s = e.getLocalName();
                 if (s.equals("entry")) {// process the entry by finding the content, serializing according to the attributes, and streaming into the new zip file
-                    logger.debug("zip:entry name: " + e.getAttribute("name") + " src: " + e.getAttribute("src"));
+                    logger.debug("zip:entry name: {} src: {}", e.getAttribute("name"), e.getAttribute("src"));
 
                 } else if (s.equals("dir")) {
-                    logger.debug("zip:entry contains dir: " + e.getAttribute("name") + " src: " + e.getAttribute("src"));
+                    logger.debug("zip:entry contains dir: {} src: {}", e.getAttribute("name"), e.getAttribute("src"));
 
                 }
             }

@@ -148,16 +148,16 @@ public class GetConnectionFunction extends BasicFunction {
             // store the Connection and return the uid handle of the Connection
             return (new IntegerValue(SQLModule.storeConnection(context, con)));
         } catch (IllegalAccessException iae) {
-            logger.error("sql:get-connection() Illegal Access to database driver class: " + dbDriver, iae);
+            logger.error("sql:get-connection() Illegal Access to database driver class: {}", dbDriver, iae);
             throw (new XPathException(this, "sql:get-connection() Illegal Access to database driver class: " + dbDriver, iae));
         } catch (ClassNotFoundException cnfe) {
-            logger.error("sql:get-connection() Cannot find database driver class: " + dbDriver, cnfe);
+            logger.error("sql:get-connection() Cannot find database driver class: {}", dbDriver, cnfe);
             throw (new XPathException(this, "sql:get-connection() Cannot find database driver class: " + dbDriver, cnfe));
         } catch (InstantiationException ie) {
-            logger.error("sql:get-connection() Cannot instantiate database driver class: " + dbDriver, ie);
+            logger.error("sql:get-connection() Cannot instantiate database driver class: {}", dbDriver, ie);
             throw (new XPathException(this, "sql:get-connection() Cannot instantiate database driver class: " + dbDriver, ie));
         } catch (SQLException sqle) {
-            logger.error("sql:get-connection() Cannot connect to database: " + dbURL, sqle);
+            logger.error("sql:get-connection() Cannot connect to database: {}", dbURL, sqle);
             throw (new XPathException(this, "sql:get-connection() Cannot connect to database: " + dbURL, sqle));
         }
     }

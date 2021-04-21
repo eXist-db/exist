@@ -378,8 +378,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                 }
             }
             if (LOG.isDebugEnabled()) {
-                LOG.debug(rs.getRow() + " eligible geometries, " + result.getItemCount() + "selected" +
-                    (spatialOp == SpatialOperator.DISJOINT ? "(" + disjointPostFiltered + " post filtered)" : ""));
+                LOG.debug("{} eligible geometries, {}selected{}", rs.getRow(), result.getItemCount(), spatialOp == SpatialOperator.DISJOINT ? "(" + disjointPostFiltered + " post filtered)" : "");
             }
             return result;
         } finally {
@@ -476,7 +475,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Refine query on documents is " + (refine_query_on_doc ? "enabled." : "disabled."));
+            LOG.debug("Refine query on documents is {}", refine_query_on_doc ? "enabled." : "disabled.");
         }
 
         PreparedStatement ps = conn.prepareStatement(
@@ -663,44 +662,44 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             while (rs.next()) {
                 Geometry original_geometry = wkbReader.read(rs.getBytes("WKB"));
                 if (!original_geometry.equals(wktReader.read(rs.getString("WKT")))) {
-                    LOG.info("Inconsistent WKT : " + rs.getString("WKT"));
+                    LOG.info("Inconsistent WKT : {}", rs.getString("WKT"));
                     return false;
                 }
                 Geometry EPSG4326_geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));
                 if (!EPSG4326_geometry.equals(wktReader.read(rs.getString("EPSG4326_WKT")))) {
-                    LOG.info("Inconsistent WKT : " + rs.getString("EPSG4326_WKT"));
+                    LOG.info("Inconsistent WKT : {}", rs.getString("EPSG4326_WKT"));
                     return false;
                 }
                 if (!original_geometry.getGeometryType().equals(rs.getString("GEOMETRY_TYPE"))) {
-                    LOG.info("Inconsistent geometry type: " + rs.getDouble("GEOMETRY_TYPE"));
+                    LOG.info("Inconsistent geometry type: {}", rs.getDouble("GEOMETRY_TYPE"));
                     return false;
                 }
                 if (original_geometry.getEnvelopeInternal().getMinX() != rs.getDouble("MINX")) {
-                    LOG.info("Inconsistent MinX: " + rs.getDouble("MINX"));
+                    LOG.info("Inconsistent MinX: {}", rs.getDouble("MINX"));
                     return false;
                 }
                 if (original_geometry.getEnvelopeInternal().getMaxX() != rs.getDouble("MAXX")) {
-                    LOG.info("Inconsistent MaxX: " + rs.getDouble("MAXX"));
+                    LOG.info("Inconsistent MaxX: {}", rs.getDouble("MAXX"));
                     return false;
                 }
                 if (original_geometry.getEnvelopeInternal().getMinY() != rs.getDouble("MINY")) {
-                    LOG.info("Inconsistent MinY: " + rs.getDouble("MINY"));
+                    LOG.info("Inconsistent MinY: {}", rs.getDouble("MINY"));
                     return false;
                 }
                 if (original_geometry.getEnvelopeInternal().getMaxY() != rs.getDouble("MAXY")) {
-                    LOG.info("Inconsistent MaxY: " + rs.getDouble("MAXY"));
+                    LOG.info("Inconsistent MaxY: {}", rs.getDouble("MAXY"));
                     return false;
                 }
                 if (original_geometry.getCentroid().getCoordinate().x != rs.getDouble("CENTROID_X")) {
-                    LOG.info("Inconsistent X for centroid : " + rs.getDouble("CENTROID_X"));
+                    LOG.info("Inconsistent X for centroid : {}", rs.getDouble("CENTROID_X"));
                     return false;
                 }
                 if (original_geometry.getCentroid().getCoordinate().y != rs.getDouble("CENTROID_Y")) {
-                    LOG.info("Inconsistent Y for centroid : " + rs.getDouble("CENTROID_Y"));
+                    LOG.info("Inconsistent Y for centroid : {}", rs.getDouble("CENTROID_Y"));
                     return false;
                 }
                 if (original_geometry.getArea() != rs.getDouble("AREA")) {
-                    LOG.info("Inconsistent area: " + rs.getDouble("AREA"));
+                    LOG.info("Inconsistent area: {}", rs.getDouble("AREA"));
                     return false;
                 }
                 String srsName = rs.getString("SRS_NAME");
@@ -716,43 +715,43 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                     throw ee;
                 }
                 if (EPSG4326_geometry.getEnvelopeInternal().getMinX() != rs.getDouble("EPSG4326_MINX")) {
-                    LOG.info("Inconsistent MinX: " + rs.getDouble("EPSG4326_MINX"));
+                    LOG.info("Inconsistent MinX: {}", rs.getDouble("EPSG4326_MINX"));
                     return false;
                 }
                 if (EPSG4326_geometry.getEnvelopeInternal().getMaxX() != rs.getDouble("EPSG4326_MAXX")) {
-                    LOG.info("Inconsistent MaxX: " + rs.getDouble("EPSG4326_MAXX"));
+                    LOG.info("Inconsistent MaxX: {}", rs.getDouble("EPSG4326_MAXX"));
                     return false;
                 }
                 if (EPSG4326_geometry.getEnvelopeInternal().getMinY() != rs.getDouble("EPSG4326_MINY")) {
-                    LOG.info("Inconsistent MinY: " + rs.getDouble("EPSG4326_MINY"));
+                    LOG.info("Inconsistent MinY: {}", rs.getDouble("EPSG4326_MINY"));
                     return false;
                 }
                 if (EPSG4326_geometry.getEnvelopeInternal().getMaxY() != rs.getDouble("EPSG4326_MAXY")) {
-                    LOG.info("Inconsistent MaxY: " + rs.getDouble("EPSG4326_MAXY"));
+                    LOG.info("Inconsistent MaxY: {}", rs.getDouble("EPSG4326_MAXY"));
                     return false;
                 }
                 if (EPSG4326_geometry.getCentroid().getCoordinate().x != rs.getDouble("EPSG4326_CENTROID_X")) {
-                    LOG.info("Inconsistent X for centroid : " + rs.getDouble("EPSG4326_CENTROID_X"));
+                    LOG.info("Inconsistent X for centroid : {}", rs.getDouble("EPSG4326_CENTROID_X"));
                     return false;
                 }
                 if (EPSG4326_geometry.getCentroid().getCoordinate().y != rs.getDouble("EPSG4326_CENTROID_Y")) {
-                    LOG.info("Inconsistent Y for centroid : " + rs.getDouble("EPSG4326_CENTROID_Y"));
+                    LOG.info("Inconsistent Y for centroid : {}", rs.getDouble("EPSG4326_CENTROID_Y"));
                     return false;
                 }
                 if (EPSG4326_geometry.getArea() != rs.getDouble("EPSG4326_AREA")) {
-                    LOG.info("Inconsistent area: " + rs.getDouble("EPSG4326_AREA"));
+                    LOG.info("Inconsistent area: {}", rs.getDouble("EPSG4326_AREA"));
                     return false;
                 }
                 if (original_geometry.isEmpty() == rs.getBoolean("IS_CLOSED")) {
-                    LOG.info("Inconsistent area: " + rs.getBoolean("IS_CLOSED"));
+                    LOG.info("Inconsistent area: {}", rs.getBoolean("IS_CLOSED"));
                     return false;
                 }
                 if (original_geometry.isSimple() != rs.getBoolean("IS_SIMPLE")) {
-                    LOG.info("Inconsistent area: " + rs.getBoolean("IS_SIMPLE"));
+                    LOG.info("Inconsistent area: {}", rs.getBoolean("IS_SIMPLE"));
                     return false;
                 }
                 if (original_geometry.isValid() != rs.getBoolean("IS_VALID")) {
-                    LOG.info("Inconsistent area: " + rs.getBoolean("IS_VALID"));
+                    LOG.info("Inconsistent area: {}", rs.getBoolean("IS_VALID"));
                     return false;
                 }
 
@@ -767,22 +766,18 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                 NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0);
                 IStoredNode node = broker.objectWith(new NodeProxy(doc, nodeId));
                 if (node == null) {
-                    LOG.info("Node " + nodeId + "doesn't exist");
+                    LOG.info("Node {}doesn't exist", nodeId);
                     return false;
                 }
                 if (!AbstractGMLJDBCIndexWorker.GML_NS.equals(node.getNamespaceURI())) {
-                    LOG.info("GML indexed node (" + node.getNodeId()+ ") is in the '" + 
-                            node.getNamespaceURI() + "' namespace. '" + 
-                            AbstractGMLJDBCIndexWorker.GML_NS + "' was expected !");
+                    LOG.info("GML indexed node ({}) is in the '{}' namespace. '" + AbstractGMLJDBCIndexWorker.GML_NS + "' was expected !", node.getNodeId(), node.getNamespaceURI());
                     return false;
                 }
                 if (!original_geometry.getGeometryType().equals(node.getLocalName())) {
                     if ("Box".equals(node.getLocalName()) && "Polygon".equals(original_geometry.getGeometryType())) {
-                        LOG.debug("GML indexed node (" + node.getNodeId() + ") is a gml:Box indexed as a polygon");
+                        LOG.debug("GML indexed node ({}) is a gml:Box indexed as a polygon", node.getNodeId());
                     } else {
-                        LOG.info("GML indexed node (" + node.getNodeId() + ") has '" + 
-                            node.getLocalName() + "' as its local name. '" + 
-                            original_geometry.getGeometryType() + "' was expected !");
+                        LOG.info("GML indexed node ({}) has '{}' as its local name. '{}' was expected !", node.getNodeId(), node.getLocalName(), original_geometry.getGeometryType());
                         return false;
                     }
                 }

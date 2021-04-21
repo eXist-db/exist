@@ -227,8 +227,7 @@ public class FieldLookup extends Function implements Optimizable {
         } catch (IOException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
-        LOG.info("preselect for " + Arrays.toString(keys) + " on " + contextSequence.getItemCount() + "returned " + preselectResult.getItemCount() +
-                " and took " + (System.currentTimeMillis() - start));
+        LOG.info("preselect for {} on {}returned {} and took {}", Arrays.toString(keys), contextSequence.getItemCount(), preselectResult.getItemCount(), System.currentTimeMillis() - start);
         if( context.getProfiler().traceFunctions() ) {
             context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
         }

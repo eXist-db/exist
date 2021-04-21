@@ -348,7 +348,7 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             } else if(value instanceof AtomicValue) {
                 convertedValue = value.convertTo(existDestinationType);
             } else {
-                LOG.warn("Could not convert parameter '" + argumentName + "' from '" + typedValue.getType().name() + "' to '" + destinationType.name() + "'.");
+                LOG.warn("Could not convert parameter '{}' from '{}' to '{}'.", argumentName, typedValue.getType().name(), destinationType.name());
                 convertedValue = value;
             }
             

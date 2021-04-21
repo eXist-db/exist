@@ -295,7 +295,7 @@ public class Deploy extends BasicFunction {
                     pkgURL += "&version=" + URLEncoder.encode(version.getVersion(), "UTF-8");
                 }
             }
-            LOG.info("Retrieving package from " + pkgURL);
+            LOG.info("Retrieving package from {}", pkgURL);
             final HttpURLConnection connection = (HttpURLConnection) new URL(pkgURL).openConnection();
             connection.setConnectTimeout(15 * 1000);
             connection.setReadTimeout(15 * 1000);

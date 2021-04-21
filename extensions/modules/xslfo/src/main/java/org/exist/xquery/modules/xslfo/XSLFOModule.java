@@ -84,7 +84,7 @@ public class XSLFOModule extends AbstractInternalModule {
                     Class<ProcessorAdapter> clazzAdapter = (Class<ProcessorAdapter>)Class.forName(processorAdapter);
                     adapter = clazzAdapter.newInstance();
                 } catch (ClassNotFoundException | IllegalAccessException | InstantiationException cnfe) {
-                    logger.error("Unable to instantiate FO Processor Adapter:" + cnfe.getMessage(), cnfe);
+                    logger.error("Unable to instantiate FO Processor Adapter:{}", cnfe.getMessage(), cnfe);
                 }
             }
         }

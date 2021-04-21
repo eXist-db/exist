@@ -73,7 +73,7 @@ public class PlainTextIndexConfig {
         // Get QName and text from descriptor
         if (!doc.getLocalName().contentEquals("doc")) {
             // throw exception
-            LuceneIndexWorker.LOG.error("Expected <doc> got <" + descriptor.getNode().getLocalName() + ">");
+            LuceneIndexWorker.LOG.error("Expected <doc> got <{}>", descriptor.getNode().getLocalName());
             return false;
         }
         
@@ -96,7 +96,7 @@ public class PlainTextIndexConfig {
 
             String childname = child.getLocalName();
             if (!"field".equals(childname)) {
-                LuceneIndexWorker.LOG.error("Expected <field> got <" + childname + ">");
+                LuceneIndexWorker.LOG.error("Expected <field> got <{}>", childname);
 
             } else {
                 // field element found

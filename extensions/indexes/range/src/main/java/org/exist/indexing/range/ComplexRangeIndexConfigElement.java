@@ -71,7 +71,7 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
                 } else if (FILTER_ELEMENT.equals(child.getLocalName())) {
                     analyzer.addFilter((Element) child);
                 } else {
-                    LOG.warn("Invalid element encountered for range index configuration: " + child.getLocalName());
+                    LOG.warn("Invalid element encountered for range index configuration: {}", child.getLocalName());
                 }
             }
         }

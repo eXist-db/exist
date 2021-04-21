@@ -142,12 +142,12 @@ public class SerializeToFile extends BasicFunction {
             final Path file = FileModuleHelper.getFile(inputPath);
 
             if(Files.isDirectory(file)) {
-                logger.debug("Cannot serialize file. Output file is a directory: " + file.toAbsolutePath().toString());
+                logger.debug("Cannot serialize file. Output file is a directory: {}", file.toAbsolutePath().toString());
                 return BooleanValue.FALSE;
             }
 
         if(Files.exists(file) && !Files.isWritable(file)) {
-                logger.debug("Cannot serialize file. Cannot write to file " + file.toAbsolutePath().toString() );
+            logger.debug("Cannot serialize file. Cannot write to file {}", file.toAbsolutePath().toString());
                 return BooleanValue.FALSE;
             }
 

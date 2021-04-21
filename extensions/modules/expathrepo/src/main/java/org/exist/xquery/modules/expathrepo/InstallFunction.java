@@ -106,7 +106,7 @@ public class InstallFunction extends BasicFunction {
 				    try(final LockedDocument lockedDoc = getBinaryDoc(pkgOrPath);
                             final Txn transaction = context.getBroker().continueOrBeginTransaction()) {
 					    final DocumentImpl doc = lockedDoc.getDocument();
-                        LOG.debug("Installing file: " + doc.getURI());
+                        LOG.debug("Installing file: {}", doc.getURI());
                         pkg = parent_repo.installPackage(new BinaryDocumentXarSource(context.getBroker().getBrokerPool(), transaction, (BinaryDocument)doc), force, interact);
 					    repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
 
