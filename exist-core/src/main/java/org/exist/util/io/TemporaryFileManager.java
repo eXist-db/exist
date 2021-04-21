@@ -110,6 +110,13 @@ public class TemporaryFileManager {
     }
 
     public final Path getTemporaryFile() throws IOException {
+
+        // Be sure that the temp directory exists, create otherwise. #3826
+        if (!Files.exists(tmpFolder)) {
+            LOG.debug("Recreating {}", tmpFolder.toAbsolutePath());
+            Files.createDirectories(tmpFolder);
+        }
+
         final Path tempFile = Files.createTempFile(tmpFolder, FILE_PREFIX + '-', ".tmp");
 
         /*
