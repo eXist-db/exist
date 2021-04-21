@@ -414,7 +414,8 @@ public abstract class Serializer implements XMLReader {
 			if (doc == null)
 				{throw new SAXException("document " + systemId + " not found in database");}
 			else
-				{LOG.debug("serializing " + doc.getFileURI());}
+				{
+					LOG.debug("serializing {}", doc.getFileURI());}
 
 			toSAX(doc);
 		} catch (final PermissionDeniedException e) {
@@ -776,8 +777,7 @@ public abstract class Serializer implements XMLReader {
             receiver = oldReceiver;
             factory.get().setURIResolver(null);
         }
-        LOG.debug(
-                "compiling stylesheet took " + (System.currentTimeMillis() - start));
+		LOG.debug("compiling stylesheet took {}", System.currentTimeMillis() - start);
         if(templates != null) {
         	xslHandler = factory.get().newTransformerHandler(templates);
         }
@@ -927,7 +927,7 @@ public abstract class Serializer implements XMLReader {
 		for(int i = --start; i < start + count; i++) {
 			final Item item = seq.itemAt(i);
                         if (item == null) {
-                            LOG.debug("item " + i + " not found");
+							LOG.debug("item {} not found", i);
                             continue;
                         }
                         
@@ -1156,7 +1156,7 @@ public abstract class Serializer implements XMLReader {
         try {
             receiver.characters(item.getStringValue());
         } catch (final XPathException e) {
-            LOG.error("XPath error trying to retrieve attribute value. " + e.getMessage(), e);
+			LOG.error("XPath error trying to retrieve attribute value. {}", e.getMessage(), e);
         }
     }
 
@@ -1252,7 +1252,7 @@ public abstract class Serializer implements XMLReader {
 
 		@Override
 		public Source resolve(String href, String base) throws TransformerException {
-			LOG.debug("resolving stylesheet ref " + href);
+			LOG.debug("resolving stylesheet ref {}", href);
 			if (href.indexOf(':') != Constants.STRING_NOT_FOUND)
 				// href is an URL pointing to an external resource
 				{return null;}
@@ -1272,7 +1272,7 @@ public abstract class Serializer implements XMLReader {
 
 		@Override
         public void warning(TransformerException exception) throws TransformerException {
-            LOG.warn("Warning while applying stylesheet: " + exception.getMessage(), exception);
+			LOG.warn("Warning while applying stylesheet: {}", exception.getMessage(), exception);
         }
 
 		@Override

@@ -129,13 +129,13 @@ public class MimeTable {
     public MimeTable(final Path path) {
         if (Files.isReadable(path)) {
             try {
-                LOG.info("Loading mime table from file: " + path.toAbsolutePath().toString());
+                LOG.info("Loading mime table from file: {}", path.toAbsolutePath().toString());
                 try(final InputStream is = Files.newInputStream(path)) {
                     loadMimeTypes(is);
                 }
                 this.src = path.toUri().toString();
             } catch (final ParserConfigurationException | SAXException | IOException e) {
-                LOG.error(FILE_LOAD_FAILED_ERR + path.toAbsolutePath().toString(), e);
+                LOG.error(FILE_LOAD_FAILED_ERR + "{}", path.toAbsolutePath().toString(), e);
             }
         }
     }
@@ -250,7 +250,7 @@ public class MimeTable {
     
     private void load(final InputStream stream, final String src) {
         boolean loaded = false;
-        LOG.info("Loading mime table from stream: " + src);
+        LOG.info("Loading mime table from stream: {}", src);
         try {
         	loadMimeTypes(stream);
         	this.src=src;

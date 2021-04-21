@@ -738,7 +738,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                 //Nothing to bind
 
                 //TODO : check the specs : unbinding an NS which is not already bound may be disallowed.
-                LOG.warn("Unbinding unbound prefix '" + prefix + "'");
+                LOG.warn("Unbinding unbound prefix '{}'", prefix);
             } else {
                 //Bind it
                 staticNamespaces.put(prefix, uri);
@@ -1129,7 +1129,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                         }
                     }
                 } catch (final PermissionDeniedException | LockException e) {
-                    LOG.warn("Permission denied to read resource " + staticDocumentPath + ". Skipping it.");
+                    LOG.warn("Permission denied to read resource {}. Skipping it.", staticDocumentPath);
                 }
             }
         }
@@ -1356,7 +1356,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             try {
                 Modification.checkFragmentation(this, modifiedDocuments);
             } catch (final LockException | EXistException e) {
-                LOG.warn("Error while checking modified documents: " + e.getMessage(), e);
+                LOG.warn("Error while checking modified documents: {}", e.getMessage(), e);
             }
             modifiedDocuments = null;
         }
@@ -1548,7 +1548,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                 if (!module.isInternalModule()) {
                     if (!((ExternalModule) module).moduleIsValid(getBroker())) {
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("Module with URI " + module.getNamespaceURI() + " has changed and needs to be reloaded");
+                            LOG.debug("Module with URI {} has changed and needs to be reloaded", module.getNamespaceURI());
                         }
                         return false;
                     }
@@ -1599,7 +1599,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             for (final Module module : modules) {
                 if (moduleClass.equals(module.getClass().getName())) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("module " + namespaceURI + " is already present");
+                        LOG.debug("module {} is already present", namespaceURI);
                     }
                     return module;
                 }
@@ -1618,17 +1618,17 @@ public class XQueryContext implements BinaryValueManager, Context {
             final Class<?> mClass = Class.forName(moduleClass, false, existClassLoader);
 
             if (!(Module.class.isAssignableFrom(mClass))) {
-                LOG.info("failed to load module. " + moduleClass + " is not an instance of org.exist.xquery.Module.");
+                LOG.info("failed to load module. {} is not an instance of org.exist.xquery.Module.", moduleClass);
                 return null;
             }
             //instantiateModule( namespaceURI, (Class<Module>)mClass );
             // INOTE: expathrepo
             module = instantiateModule(namespaceURI, (Class<Module>) mClass, (Map<String, Map<String, List<? extends Object>>>) getBroker().getConfiguration().getProperty(PROPERTY_MODULE_PARAMETERS));
             if (LOG.isDebugEnabled()) {
-                LOG.debug("module " + module.getNamespaceURI() + " loaded successfully.");
+                LOG.debug("module {} loaded successfully.", module.getNamespaceURI());
             }
         } catch (final ClassNotFoundException e) {
-            LOG.warn("module class " + moduleClass + " not found. Skipping...");
+            LOG.warn("module class {} not found. Skipping...", moduleClass);
         }
         return module;
     }
@@ -1649,7 +1649,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
 
             if (namespaceURI != null && !module.getNamespaceURI().equals(namespaceURI)) {
-                LOG.warn("the module declares a different namespace URI. Expected: " + namespaceURI + " found: " + module.getNamespaceURI());
+                LOG.warn("the module declares a different namespace URI. Expected: {} found: {}", namespaceURI, module.getNamespaceURI());
                 return null;
             }
 
@@ -1664,7 +1664,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                 ((InternalModule) module).prepare(this);
             }
         } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | XPathException e) {
-            LOG.warn("error while instantiating module class " + mClazz.getName(), e);
+            LOG.warn("error while instantiating module class {}", mClazz.getName(), e);
         }
 
         return module;
@@ -2025,7 +2025,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                 try {
                     return getBroker().getBrokerPool().getSecurityManager().authenticate(user.toString(), password);
                 } catch (final AuthenticationException e) {
-                    LOG.error("User can not be authenticated: " + user.toString());
+                    LOG.error("User can not be authenticated: {}", user.toString());
                 }
             } else {
                 final Optional<SessionWrapper> maybeSession = Optional.ofNullable(getHttpContext())
@@ -2400,7 +2400,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         if (isNotEmpty(modules)) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Module " + namespaceURI + " already present.");
+                LOG.debug("Module {} already present.", namespaceURI);
             }
             // Set locally to remember the dependency in case it was inherited.
             setModules(namespaceURI, modules);
@@ -2587,7 +2587,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     private @Nullable ExternalModule compileModule(final String prefix, String namespaceURI, final String location,
             final Source source) throws XPathException {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Loading module from " + location);
+            LOG.debug("Loading module from {}", location);
         }
 
         try (final Reader reader = source.getReader()) {
@@ -2950,7 +2950,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             if (targetDoc == null) {
                 throw new XPathException("Internal error: failed to store temporary doc fragment");
             }
-            LOG.warn("Stored: " + targetDoc.getDocId() + ": " + targetDoc.getURI(), new Throwable());
+            LOG.warn("Stored: {}: {}", targetDoc.getDocId(), targetDoc.getURI(), new Throwable());
             return targetDoc;
         } catch (final EXistException | LockException | PermissionDeniedException e) {
             throw new XPathException(TEMP_STORE_ERROR, e);
@@ -3041,7 +3041,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                         declareNamespace(foundModule.getDefaultPrefix(), foundModule.getNamespaceURI());
 
                     } catch (final XPathException e) {
-                        LOG.warn("Internal error while loading default modules: " + e.getMessage(), e);
+                        LOG.warn("Internal error while loading default modules: {}", e.getMessage(), e);
                     }
                 }
             }
@@ -3145,7 +3145,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
 
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Setting serialization property from pragma: " + pair[0] + " = " + pair[1]);
+                LOG.debug("Setting serialization property from pragma: {} = {}", pair[0], pair[1]);
             }
 
             properties.setProperty(pair[0], pair[1]);
@@ -3199,7 +3199,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                         destroyable.add(bv);
                     }
                 } catch (final IOException e) {
-                    LOG.warn("Unable to close binary reference on exiting enclosed expression: " + e.getMessage(), e);
+                    LOG.warn("Unable to close binary reference on exiting enclosed expression: {}", e.getMessage(), e);
                 }
             }
 
@@ -3245,7 +3245,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                             removable.add(bv);
                         }
                     } catch (final IOException e) {
-                        LOG.error("Unable to close binary value: " + e.getMessage(), e);
+                        LOG.error("Unable to close binary value: {}", e.getMessage(), e);
                     }
                 }
 
@@ -3356,7 +3356,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             try {
                 cleanupTask.cleanup(this, predicate);
             } catch (final Throwable t) {
-                LOG.error("Cleaning up XQueryContext: Ignoring: " + t.getMessage(), t);
+                LOG.error("Cleaning up XQueryContext: Ignoring: {}", t.getMessage(), t);
             }
         }
         // now it is safe to clear the cleanup tasks list as we know they have run

@@ -187,7 +187,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
                 broker.saveCollection(transaction, systemCollection);
             }
         } catch (final Exception e) {
-            LOG.error("Setting /db/system permissions failed: " + e.getMessage(), e);
+            LOG.error("Setting /db/system permissions failed: {}", e.getMessage(), e);
         }
 
         try {
@@ -204,7 +204,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             }
         } catch (final Exception e) {
             e.printStackTrace();
-            LOG.error("Loading security configuration failed: " + e.getMessage(), e);
+            LOG.error("Loading security configuration failed: {}", e.getMessage(), e);
         }
 
         final Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
@@ -291,7 +291,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Account for '" + name + "' not found!");
+            LOG.debug("Account for '{}' not found!", name);
         }
         return null;
     }
@@ -352,7 +352,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     @Override
     public Subject authenticate(final String username, final Object credentials) throws AuthenticationException {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Authentication try for '" + username + "'.");
+            LOG.debug("Authentication try for '{}'.", username);
         }
 
         if (username == null) {
@@ -405,7 +405,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
                 final Subject subject = realm.authenticate(username, credentials);
 
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Authenticated by '" + realm.getId() + "' as '" + subject + "'.");
+                    LOG.debug("Authenticated by '{}' as '{}'.", realm.getId(), subject);
                 }
 
                 if (events != null) {
@@ -416,7 +416,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
             } catch(final AuthenticationException e) {
                 if(e.getType() != AuthenticationException.ACCOUNT_NOT_FOUND) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Realm '" + realm.getId() + "' threw exception for account '" + username + "'. [" + e.getMessage() + "]");
+                        LOG.debug("Realm '{}' threw exception for account '{}'. [{}]", realm.getId(), username, e.getMessage());
                     }
                     throw e;
                 }
@@ -424,7 +424,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Account '"+username+"' not found, throw error");
+            LOG.debug("Account '{}' not found, throw error", username);
         }
 
         throw new AuthenticationException(
@@ -855,7 +855,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
                 		if (account.getGroups().length == 0) {
                 		    try {
                                 account.setPrimaryGroup(realm.getGroup(SecurityManager.UNKNOWN_GROUP));
-                                LOG.warn("Account '" + account.getName() + "' has no groups, but every account must have at least 1 group. Assigned group: " + SecurityManager.UNKNOWN_GROUP);
+                                LOG.warn("Account '{}' has no groups, but every account must have at least 1 group. Assigned group: " + SecurityManager.UNKNOWN_GROUP, account.getName());
                             } catch (final PermissionDeniedException e) {
                 		        throw new ConfigurationException("Account has no group, unable to default to " + SecurityManager.UNKNOWN_GROUP + ": " + e.getMessage(), e);
                             }
@@ -865,7 +865,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
                 	}
                 } else {
                     //this can't be! log any way
-                    LOG.error("Account '" + name + "' already exists in realm: '" + realmId + "', but received notification that a new one was created.");
+                    LOG.error("Account '{}' already exists in realm: '{}', but received notification that a new one was created.", name, realmId);
                 }
             
             } else if(isGroup) {
@@ -879,7 +879,7 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
                     realm.registerGroup(group);
                 } else {
                     //this can't be! log any way
-                    LOG.error("Group '" + name + "' already exists in realm: '" + realmId + "', but received notification that a new one was created.");
+                    LOG.error("Group '{}' already exists in realm: '{}', but received notification that a new one was created.", name, realmId);
                 }
                             
             }

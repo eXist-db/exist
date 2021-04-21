@@ -77,7 +77,7 @@ public class DeadlockTest {
                 for (int i = 0; i < resources; i++) {
                     final XMLResource document = (XMLResource) collection.createResource(Thread.currentThread().getName() + "_" + i, "XMLResource");
                     document.setContent(DOCUMENT_CONTENT);
-                    LOG.debug("Storing document " + document.getId());
+                    LOG.debug("Storing document {}", document.getId());
                     collection.storeResource(document);
                 }
             } catch (final Exception e) {

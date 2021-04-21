@@ -94,9 +94,8 @@ public class IndexStatistics extends AbstractIndex implements RawBackupSupport {
                 dataGuide.read(chan, getBrokerPool().getSymbols());
 
                 if (LOG.isDebugEnabled())
-                    {LOG.debug("Reading " + FileUtils.fileName(dataFile) + " took " +
-                        (System.currentTimeMillis() - start) + "ms. Size of " +
-                        "the graph: " + dataGuide.getSize());}
+                    {
+                        LOG.debug("Reading {} took {}ms. Size of the graph: {}", FileUtils.fileName(dataFile), System.currentTimeMillis() - start, dataGuide.getSize());}
             } catch (final IOException e) {
                 LOG.error(e.getMessage(), e);
                 throw new DatabaseConfigurationException("Error while loading " +

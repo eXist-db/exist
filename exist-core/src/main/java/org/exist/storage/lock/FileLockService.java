@@ -76,7 +76,7 @@ public class FileLockService implements BrokerPoolService {
         if(!Files.exists(dataDir)) {
             try {
                 //TODO : shall we force the creation ? use a parameter to decide ?
-                LOG.info("Data directory '" + dataDir.toAbsolutePath().toString() + "' does not exist. Creating one ...");
+                LOG.info("Data directory '{}' does not exist. Creating one ...", dataDir.toAbsolutePath().toString());
                 Files.createDirectories(dataDir);
             } catch(final SecurityException | IOException e) {
                 throw new BrokerPoolServiceException("Cannot create data directory '" + dataDir.toAbsolutePath().toString() + "'", e);
@@ -87,7 +87,7 @@ public class FileLockService implements BrokerPoolService {
         configuration.setProperty(confDirPropName, dataDir);
 
         if(!Files.isWritable(dataDir)) {
-            LOG.warn("Cannot write to data directory: " + dataDir.toAbsolutePath().toString());
+            LOG.warn("Cannot write to data directory: {}", dataDir.toAbsolutePath().toString());
             writable = false;
         } else {
             writable = true;

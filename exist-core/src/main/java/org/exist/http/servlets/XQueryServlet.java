@@ -147,7 +147,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         if(encoding == null) {
             encoding = DEFAULT_ENCODING;
         }
-        getLog().info("encoding = " + encoding);
+        getLog().info("encoding = {}", encoding);
 
         contentType = config.getInitParameter("content-type");
         if(contentType == null) {
@@ -310,7 +310,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 				}
                 
 			} catch (final AuthenticationException e) {
-				getLog().error("User can not be authenticated ("+username+").");
+                getLog().error("User can not be authenticated ({}).", username);
 			}
         }
         

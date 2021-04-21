@@ -87,7 +87,7 @@ public class DataBackup implements SystemTask {
             }
         }
 
-        LOG.debug("Setting backup data directory: " + dest);
+        LOG.debug("Setting backup data directory: {}", dest);
     }
 
     @Override
@@ -103,7 +103,7 @@ public class DataBackup implements SystemTask {
         this.lastBackup = Optional.of(outFilename);
         
         // Create the ZIP file
-        LOG.debug("Archiving data files into: " + outFilename);
+        LOG.debug("Archiving data files into: {}", outFilename);
         
         try(final ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(Files.newOutputStream(outFilename)))) {
             out.setLevel(Deflater.NO_COMPRESSION);
@@ -111,7 +111,7 @@ public class DataBackup implements SystemTask {
             broker.backupToArchive(cb);
             // close the zip file
 		} catch (final IOException e) {
-			LOG.error("An IO error occurred while backing up data files: " + e.getMessage(), e);
+            LOG.error("An IO error occurred while backing up data files: {}", e.getMessage(), e);
 		}
 	}
 

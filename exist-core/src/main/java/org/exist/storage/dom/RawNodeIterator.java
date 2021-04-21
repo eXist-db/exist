@@ -139,7 +139,7 @@ public class RawNodeIterator implements IRawNodeIterator {
                 short valueLength = ByteConversion.byteToShort(page.data, offset);
                 offset += DOMFile.LENGTH_DATA_LENGTH;
                 if (valueLength < 0) {
-                    LOG.error("Got negative length" + valueLength + " at offset " + offset + "!!!");
+                    LOG.error("Got negative length{} at offset {}!!!", valueLength, offset);
                     LOG.debug(db.debugPageContents(page));
                     //TODO : throw an exception right now ?
                 }
@@ -157,8 +157,7 @@ public class RawNodeIterator implements IRawNodeIterator {
                         final byte[] odata = db.getOverflowValue(overflow);
                         nextValue = new Value(odata);
                     } catch(final Exception e) {
-                        LOG.error("Exception while loading overflow value: " + e.getMessage() +
-                            "; originating page: " + page.page.getPageInfo());
+                        LOG.error("Exception while loading overflow value: {}; originating page: {}", e.getMessage(), page.page.getPageInfo());
                     }
                     // normal node
                 } else {
@@ -166,19 +165,14 @@ public class RawNodeIterator implements IRawNodeIterator {
                         nextValue = new Value(page.data, offset, valueLength);
                         offset += valueLength;
                     } catch(final Exception e) {
-                        LOG.error("Error while deserializing node: " + e.getMessage(), e);
-                        LOG.error("Reading from offset: " + offset + "; len = " + valueLength);
+                        LOG.error("Error while deserializing node: {}", e.getMessage(), e);
+                        LOG.error("Reading from offset: {}; len = {}", offset, valueLength);
                         LOG.debug(db.debugPageContents(page));
                         throw new RuntimeException(e);
                     }
                 }
                 if (nextValue == null) {
-                    LOG.error("illegal node on page " + page.getPageNum() +
-                        "; tupleID = " + ItemId.getId(lastTupleID) +
-                        "; next = " + page.getPageHeader().getNextDataPage() +
-                        "; prev = " + page.getPageHeader().getPreviousDataPage() +
-                        "; offset = " + (offset - valueLength) +
-                        "; len = " + page.getPageHeader().getDataLength());
+                    LOG.error("illegal node on page {}; tupleID = {}; next = {}; prev = {}; offset = {}; len = {}", page.getPageNum(), ItemId.getId(lastTupleID), page.getPageHeader().getNextDataPage(), page.getPageHeader().getPreviousDataPage(), offset - valueLength, page.getPageHeader().getDataLength());
                     //TODO : throw exception here ? -pb
                     return null;
                 }
@@ -192,7 +186,7 @@ public class RawNodeIterator implements IRawNodeIterator {
             } while (nextValue == null);
             return nextValue;
         } catch (final LockException e) {
-            LOG.error("Failed to acquire read lock on " + FileUtils.fileName(db.getFile()));
+            LOG.error("Failed to acquire read lock on {}", FileUtils.fileName(db.getFile()));
             //TODO : throw exception here ? -pb
             return null;
         }

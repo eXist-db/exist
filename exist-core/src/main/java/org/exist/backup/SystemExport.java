@@ -180,7 +180,7 @@ public class SystemExport {
 
             if (incremental) {
                 prevBackup = directory.lastBackupFile();
-                LOG.info("Creating incremental backup. Prev backup: " + ((prevBackup == null) ? "none" : prevBackup.getSymbolicPath()));
+                LOG.info("Creating incremental backup. Prev backup: {}", (prevBackup == null) ? "none" : prevBackup.getSymbolicPath());
             }
 
             final Properties properties = new Properties();
@@ -206,7 +206,7 @@ public class SystemExport {
                                 ++seqNr;
                             }
                         } catch (final NumberFormatException e) {
-                            LOG.warn("Bad sequence number in backup descriptor: " + prevBackup.getName());
+                            LOG.warn("Bad sequence number in backup descriptor: {}", prevBackup.getName());
                         }
                     }
                 }
@@ -261,7 +261,7 @@ public class SystemExport {
             callback.error("EXPORT: " + message, e);
         }
 
-        LOG.error("EXPORT: " + message, e);
+        LOG.error("EXPORT: {}", message, e);
     }
 
 
@@ -459,7 +459,7 @@ public class SystemExport {
                 try {
                     prevBackup.parse(broker.getBrokerPool().getParserPool(), check);
                 } catch (final Exception e) {
-                    LOG.error("Caught exception while trying to parse previous backup descriptor: " + prevBackup.getSymbolicPath(), e);
+                    LOG.error("Caught exception while trying to parse previous backup descriptor: {}", prevBackup.getSymbolicPath(), e);
                 }
             }
 

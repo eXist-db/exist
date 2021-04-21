@@ -86,7 +86,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
             throw new BrokerPoolServiceException("Unable to access EXPath repository", e);
         }
 
-        LOG.info("Using directory " + expathDir.toAbsolutePath().toString() + " for expath package repository");
+        LOG.info("Using directory {} for expath package repository", expathDir.toAbsolutePath().toString());
 
         try {
             final FileSystemStorage storage = new FileSystemStorage(expathDir);
@@ -240,7 +240,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
                             streamSource.getReader().close();
                         }
                     } catch (final IOException e) {
-                        LOG.warn("Unable to close pkg source: " + e.getMessage(), e);
+                        LOG.warn("Unable to close pkg source: {}", e.getMessage(), e);
                     }
                 }
             }
@@ -293,7 +293,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
         }).orElse(Paths.get(System.getProperty("java.io.tmpdir")).resolve(EXPATH_REPO_DIR));
 
         if (Files.isReadable(repo_dir)) {
-            LOG.info("Found old expathrepo directory. Moving to new default location: " + newRepo.toAbsolutePath().toString());
+            LOG.info("Found old expathrepo directory. Moving to new default location: {}", newRepo.toAbsolutePath().toString());
             try {
                 Files.move(repo_dir, newRepo, StandardCopyOption.ATOMIC_MOVE);
             } catch (final IOException e) {

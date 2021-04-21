@@ -96,13 +96,13 @@ public class Descriptor implements ErrorHandler {
             if (!Files.isReadable(f)) {
                 f = f.getParent().resolve("etc").resolve(file);
                 if (!Files.isReadable(f)) {
-                    LOG.warn("Giving up unable to read descriptor file from " + f);
+                    LOG.warn("Giving up unable to read descriptor file from {}", f);
                 } else {
                     is = new BufferedInputStream(Files.newInputStream(f));
                 }
             } else {
                 is = new BufferedInputStream(Files.newInputStream(f));
-                LOG.info("Reading Descriptor from file " + f);
+                LOG.info("Reading Descriptor from file {}", f);
             }
 
             if (is == null) {
@@ -110,9 +110,9 @@ public class Descriptor implements ErrorHandler {
                 // try to read the Descriptor from a file within the classpath
                 is = Descriptor.class.getResourceAsStream(file);
                 if (is != null) {
-                    LOG.info("Reading Descriptor from classloader in " + this.getClass().getPackage());
+                    LOG.info("Reading Descriptor from classloader in {}", this.getClass().getPackage());
                 } else {
-                    LOG.warn("Giving up unable to read descriptor.xml file from classloader in " + this.getClass().getPackage());
+                    LOG.warn("Giving up unable to read descriptor.xml file from classloader in {}", this.getClass().getPackage());
                     return;
                 }
             }
@@ -376,7 +376,7 @@ public class Descriptor implements ErrorHandler {
             //flush the buffer to file
             bufWriteReplayLog.flush();
         } catch (final IOException ioe) {
-            LOG.warn("Could not write request replay log: " + ioe);
+            LOG.warn("Could not write request replay log: {}", ioe);
             return;
         }
     }
@@ -396,7 +396,7 @@ public class Descriptor implements ErrorHandler {
      */
     @Override
     public void error(SAXParseException exception) throws SAXException {
-        LOG.error("Error occurred while reading descriptor file [line: " + exception.getLineNumber() + "]:" + exception.getMessage(), exception);
+        LOG.error("Error occurred while reading descriptor file [line: {}]:{}", exception.getLineNumber(), exception.getMessage(), exception);
     }
 
     /**
@@ -404,7 +404,7 @@ public class Descriptor implements ErrorHandler {
      */
     @Override
     public void fatalError(SAXParseException exception) throws SAXException {
-        LOG.error("Error occurred while reading descriptor file [line: " + exception.getLineNumber() + "]:" + exception.getMessage(), exception);
+        LOG.error("Error occurred while reading descriptor file [line: {}]:{}", exception.getLineNumber(), exception.getMessage(), exception);
     }
 
     /**
@@ -412,7 +412,7 @@ public class Descriptor implements ErrorHandler {
      */
     @Override
     public void warning(SAXParseException exception) throws SAXException {
-        LOG.error("error occurred while reading descriptor file [line: " + exception.getLineNumber() + "]:" + exception.getMessage(), exception);
+        LOG.error("error occurred while reading descriptor file [line: {}]:{}", exception.getLineNumber(), exception.getMessage(), exception);
     }
 
 }

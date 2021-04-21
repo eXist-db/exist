@@ -170,13 +170,13 @@ public abstract class AbstractRealm implements Realm, Configurable {
                             if (account.getGroups().length == 0) {
                                 try {
                                     account.setPrimaryGroup(getGroup(SecurityManager.UNKNOWN_GROUP));
-                                    LOG.warn("Account '" + account.getName() + "' has no groups, but every account must have at least 1 group. Assigned group: " + SecurityManager.UNKNOWN_GROUP);
+                                    LOG.warn("Account '{}' has no groups, but every account must have at least 1 group. Assigned group: " + SecurityManager.UNKNOWN_GROUP, account.getName());
                                 } catch (final PermissionDeniedException e) {
                                     throw new ConfigurationException("Account has no group, unable to default to " + SecurityManager.UNKNOWN_GROUP + ": " + e.getMessage(), e);
                                 }
                             }
                         } catch (Throwable e) {
-                            LOG.error("Account object can't be built from '" + doc.getFileURI() + "'", e);
+                            LOG.error("Account object can't be built from '{}'", doc.getFileURI(), e);
                             return;
                         }
 
@@ -191,7 +191,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
                             if (account.getGroups().length == 0) {
                                 try {
                                     account.setPrimaryGroup(getGroup(SecurityManager.UNKNOWN_GROUP));
-                                    LOG.warn("Account '" + account.getName() + "' has no groups, but every account must have at least 1 group. Assigned group: " + SecurityManager.UNKNOWN_GROUP);
+                                    LOG.warn("Account '{}' has no groups, but every account must have at least 1 group. Assigned group: " + SecurityManager.UNKNOWN_GROUP, account.getName());
                                 } catch (final PermissionDeniedException e) {
                                     throw new ConfigurationException("Account has no group, unable to default to " + SecurityManager.UNKNOWN_GROUP + ": " + e.getMessage(), e);
                                 }

@@ -61,7 +61,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
     public InputSource resolveEntity(String publicId, String systemId)
             throws SAXException, IOException {
 
-        LOG.debug("publicId=" + publicId + " systemId=" + systemId);
+        LOG.debug("publicId={} systemId={}", publicId, systemId);
 
         return resolveInputSource(brokerPool, systemId);
     }
@@ -72,7 +72,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
     public InputSource getExternalSubset(String name, String baseURI)
             throws SAXException, IOException {
 
-        LOG.debug("name=" + name + " baseURI=" + baseURI);
+        LOG.debug("name={} baseURI={}", name, baseURI);
 
         return resolveInputSource(brokerPool, baseURI);
     }
@@ -80,7 +80,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
     public InputSource resolveEntity(String name, String publicId,
             String baseURI, String systemId) throws SAXException, IOException {
 
-        LOG.debug("name=" + name + " publicId=" + publicId + " baseURI=" + baseURI + " systemId=" + systemId);
+        LOG.debug("name={} publicId={} baseURI={} systemId={}", name, publicId, baseURI, systemId);
 
         return resolveInputSource(brokerPool, systemId);
     }
@@ -90,7 +90,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
     /* ================================================ */
     public Source resolve(String href, String base) throws TransformerException {
 
-        LOG.debug("href=" + href + " base=" + base);
+        LOG.debug("href={} base={}", href, base);
 
         if(base!=null){
         	String sep = "/"; 
@@ -112,7 +112,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
     /* ============== */
     private InputSource resolveInputSource(BrokerPool bPool, String path) throws IOException {
 
-        LOG.debug("Resolving " + path);
+        LOG.debug("Resolving {}", path);
 
         final InputSource inputsource = new InputSource();
 
@@ -135,7 +135,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
 
     private StreamSource resolveStreamSource(BrokerPool bPool, String path) throws TransformerException {
 
-        LOG.debug("Resolving "+path);
+        LOG.debug("Resolving {}", path);
         
         final StreamSource streamsource = new StreamSource();
 

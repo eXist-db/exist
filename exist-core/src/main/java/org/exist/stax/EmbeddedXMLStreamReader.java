@@ -238,7 +238,7 @@ public class EmbeddedXMLStreamReader implements IEmbeddedXMLStreamReader, Extend
     private void verifyOriginNodeId() throws XMLStreamException {
         if(!nodeId.equals(origin.getNodeId())) {
             // Node got moved, we had the wrong address.  Resync iterator by nodeid.
-            LOG.warn("Expected node id " + origin.getNodeId() + ", got " + nodeId + "; resyncing address");
+            LOG.warn("Expected node id {}, got {}; resyncing address", origin.getNodeId(), nodeId);
             origin.setInternalAddress(StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
             final boolean reportAttributesBackup = reportAttributes;
             DocumentImpl documentBackup = document;

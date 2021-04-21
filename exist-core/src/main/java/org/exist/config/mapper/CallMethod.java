@@ -87,7 +87,7 @@ public class CallMethod {
                 }
             }
         }
-        Configurator.LOG.error("'callMethod' element '" + name + "' method can not be found, skip instance creation.");
+        Configurator.LOG.error("'callMethod' element '{}' method can not be found, skip instance creation.", name);
 
         return false;
     }

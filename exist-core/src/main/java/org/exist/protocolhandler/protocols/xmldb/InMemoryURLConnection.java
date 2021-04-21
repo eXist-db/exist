@@ -58,7 +58,7 @@ public class InMemoryURLConnection extends URLConnection {
     @Override
     public void connect() {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("connect: "+url);
+            LOG.debug("connect: {}", url);
         }
     }
 

@@ -140,7 +140,7 @@ public class XQuery {
             // dumping huge queries to the log
             if(LOG.isDebugEnabled()){
                 if (context.getExpressionCount() < 150) {
-                    LOG.debug("Query diagnostics:\n" + ExpressionDumper.dump(expr));
+                    LOG.debug("Query diagnostics:\n{}", ExpressionDumper.dump(expr));
                 } else {
                     LOG.debug("Query diagnostics:\n" + "[skipped: more than 150 expressions]");
                 }
@@ -148,12 +148,12 @@ public class XQuery {
             
             if (LOG.isDebugEnabled()) {
             	final NumberFormat nf = NumberFormat.getNumberInstance();
-            	LOG.debug("Compilation took "  +  nf.format(System.currentTimeMillis() - start) + " ms");
+                LOG.debug("Compilation took {} ms", nf.format(System.currentTimeMillis() - start));
             }
             
             return expr;
         } catch(final RecognitionException e) {
-            LOG.debug("Error compiling query: " + e.getMessage(), e);
+            LOG.debug("Error compiling query: {}", e.getMessage(), e);
             String msg = e.getMessage();
             if (msg.endsWith(", found 'null'")) {
                 msg = msg.substring(0, msg.length() - ", found 'null'".length());
@@ -162,13 +162,13 @@ public class XQuery {
         } catch(final TokenStreamException e) {
             final String es = e.toString();
             if(es.matches("^line \\d+:\\d+:.+")) {
-                LOG.debug("Error compiling query: " + e.getMessage(), e);
+                LOG.debug("Error compiling query: {}", e.getMessage(), e);
                 final int line = Integer.parseInt(es.substring(5, es.indexOf(':')));
                 final String tmpColumn = es.substring(es.indexOf(':') + 1);
                 final int column = Integer.parseInt(tmpColumn.substring(0, tmpColumn.indexOf(':')));
                 throw new StaticXQueryException(line, column, e.getMessage(), e);
             } else {
-                LOG.debug("Error compiling query: " + e.getMessage(), e);
+                LOG.debug("Error compiling query: {}", e.getMessage(), e);
                 throw new StaticXQueryException(e.getMessage(), e);
             }
             
@@ -261,7 +261,7 @@ public class XQuery {
                 final Sequence result = expression.eval(contextSequence);
                 if(LOG.isDebugEnabled()) {
                     final NumberFormat nf = NumberFormat.getNumberInstance();
-                    LOG.debug("Execution took "  +  nf.format(System.currentTimeMillis() - start) + " ms");
+                    LOG.debug("Execution took {} ms", nf.format(System.currentTimeMillis() - start));
                 }
 
                 if(outputProperties != null) {

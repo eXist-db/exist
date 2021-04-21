@@ -119,7 +119,7 @@ public final class Signatures {
                 return Node.CDATA_SECTION_NODE;
         }
         //TODO : thorw exception here -pb
-        LOG.error("Unknown node type : " + type);
+        LOG.error("Unknown node type : {}", type);
         return -1;
     }
     

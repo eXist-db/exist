@@ -150,7 +150,7 @@ public class EnclosedExpr extends PathExpr {
                     receiver.characters(buf);
                 }
             } catch (final SAXException e) {
-                LOG.warn("SAXException during serialization: " + e.getMessage(), e);
+                LOG.warn("SAXException during serialization: {}", e.getMessage(), e);
                 throw new XPathException(this, e);
             }
         } finally {

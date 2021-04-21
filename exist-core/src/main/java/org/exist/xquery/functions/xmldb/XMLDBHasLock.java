@@ -91,7 +91,7 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
 				}
                 return lockUser == null ? Sequence.EMPTY_SEQUENCE : new StringValue(lockUser);
 			} else {
-                logger.error("Unable to locate resource " + args[1].getStringValue());
+				logger.error("Unable to locate resource {}", args[1].getStringValue());
 			    throw new XPathException(this, "Unable to locate resource " + args[1].getStringValue());
 			}
 		} catch (final XMLDBException e) {

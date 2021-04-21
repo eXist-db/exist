@@ -83,17 +83,17 @@ public class AsUser extends Function {
             user = sm.authenticate(username, password.getStringValue());
         } catch(final AuthenticationException e) {
             final XPathException exception = new XPathException(this, "Authentication failed", e);
-            logger.error("Authentication failed for [" + username + "] because of [" + e.getMessage() + "].", exception);
+            logger.error("Authentication failed for [{}] because of [{}].", username, e.getMessage(), exception);
             throw exception;
         }
 
-        logger.info("Setting the effective user to: [" + username + "]");
+        logger.info("Setting the effective user to: [{}]", username);
         try {
             broker.pushSubject(user);
             return getArgument(2).eval(contextSequence, contextItem);
         } finally {
             broker.popSubject();
-            logger.info("Returned the effective user to: [" + broker.getCurrentSubject() + "]");
+            logger.info("Returned the effective user to: [{}]", broker.getCurrentSubject());
         }
     }
 

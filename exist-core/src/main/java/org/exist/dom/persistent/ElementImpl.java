@@ -457,7 +457,7 @@ public class ElementImpl extends NamedNode implements Element {
             childId = getNodeId().newChild();
         } else {
             if(prevNode.getNodeId() == null) {
-                LOG.warn(getQName() + " : " + prevNode.getNodeName());
+                LOG.warn("{} : {}", getQName(), prevNode.getNodeName());
             }
             childId = prevNode.getNodeId().nextSibling();
         }
@@ -582,7 +582,7 @@ public class ElementImpl extends NamedNode implements Element {
             indexes.reindex(transaction, reindexRoot, ReindexMode.STORE);
             broker.flush();
         } catch(final EXistException e) {
-            LOG.warn("Exception while appending child node: " + e.getMessage(), e);
+            LOG.warn("Exception while appending child node: {}", e.getMessage(), e);
         }
     }
 
@@ -607,7 +607,7 @@ public class ElementImpl extends NamedNode implements Element {
             if(followingId != null && next.equals(followingId)) {
                 next = newNodeId.insertNode(followingId);
                 if(LOG.isDebugEnabled()) {
-                    LOG.debug("Node ID collision on " + followingId + ". Using " + next + " instead.");
+                    LOG.debug("Node ID collision on {}. Using {} instead.", followingId, next);
                 }
             }
             newNodeId = next;
@@ -755,7 +755,7 @@ public class ElementImpl extends NamedNode implements Element {
                     throw new DOMException(DOMException.INVALID_MODIFICATION_ERR, "Unknown node type: " + child.getNodeType() + " " + child.getNodeName());
             }
         } catch(final EXistException e) {
-            LOG.warn("Exception while appending node: " + e.getMessage(), e);
+            LOG.warn("Exception while appending node: {}", e.getMessage(), e);
         }
 
         return null;
@@ -816,7 +816,7 @@ public class ElementImpl extends NamedNode implements Element {
                     map.setNamedItem(next);
                 }
             } catch(final EXistException | IOException e) {
-                LOG.warn("Exception while retrieving attributes: " + e.getMessage());
+                LOG.warn("Exception while retrieving attributes: {}", e.getMessage());
             }
         }
         if(declaresNamespacePrefixes()) {
@@ -838,7 +838,7 @@ public class ElementImpl extends NamedNode implements Element {
             iterator.next();
             return findAttribute(qname, iterator, this);
         } catch(final EXistException | IOException e) {
-            LOG.warn("Exception while retrieving attributes: " + e.getMessage());
+            LOG.warn("Exception while retrieving attributes: {}", e.getMessage());
         }
         return null;
     }
@@ -864,7 +864,7 @@ public class ElementImpl extends NamedNode implements Element {
             iterator.next();
             return findAttribute(qname, iterator, this);
         } catch(final EXistException | IOException e) {
-            LOG.warn("Exception while retrieving attributes: " + e.getMessage());
+            LOG.warn("Exception while retrieving attributes: {}", e.getMessage());
         }
         return null;
     }
@@ -975,7 +975,7 @@ public class ElementImpl extends NamedNode implements Element {
                 }
             }
         } catch(final IOException | XMLStreamException | EXistException e) {
-            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+            LOG.warn("Internal error while reading child nodes: {}", e.getMessage(), e);
         }
     }
 
@@ -1029,7 +1029,7 @@ public class ElementImpl extends NamedNode implements Element {
                 }
             }
         } catch(final EXistException | IOException e) {
-            LOG.warn("Exception while retrieving child node: " + e.getMessage(), e);
+            LOG.warn("Exception while retrieving child node: {}", e.getMessage(), e);
         }
         return null;
     }
@@ -1097,7 +1097,7 @@ public class ElementImpl extends NamedNode implements Element {
         try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
             return broker.getNodeValue(this, false);
         } catch(final EXistException e) {
-            LOG.warn("Exception while reading node value: " + e.getMessage(), e);
+            LOG.warn("Exception while reading node value: {}", e.getMessage(), e);
         }
         return "";
     }
@@ -1451,7 +1451,7 @@ public class ElementImpl extends NamedNode implements Element {
         } catch(final TransactionException e) {
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, e.getMessage());
         } catch(final EXistException e) {
-            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+            LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
         }
         return null;
     }
@@ -1503,7 +1503,7 @@ public class ElementImpl extends NamedNode implements Element {
             indexes.reindex(transaction, reindexRoot, ReindexMode.STORE);
             broker.flush();
         } catch(final EXistException e) {
-            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+            LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
         }
     }
 
@@ -1550,7 +1550,7 @@ public class ElementImpl extends NamedNode implements Element {
             indexes.reindex(transaction, reindexRoot, ReindexMode.STORE);
             broker.flush();
         } catch(final EXistException e) {
-            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+            LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
         }
     }
 
@@ -1610,7 +1610,7 @@ public class ElementImpl extends NamedNode implements Element {
             broker.getValueIndex().reindex(valueReindexRoot);
             broker.flush();
         } catch(final EXistException e) {
-            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+            LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
         }
     }
 
@@ -1686,7 +1686,7 @@ public class ElementImpl extends NamedNode implements Element {
             valueIndex.reindex(valueReindexRoot);
             broker.flush();
         } catch(final EXistException e) {
-            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+            LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
         }
         return newNode;
     }
@@ -1729,7 +1729,7 @@ public class ElementImpl extends NamedNode implements Element {
                 indexes.reindex(transaction, reindexRoot, ReindexMode.STORE);
             }
         } catch(final EXistException e) {
-            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+            LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
         }
         return oldNode;
     }
@@ -1793,7 +1793,7 @@ public class ElementImpl extends NamedNode implements Element {
             indexes.reindex(transaction, reindexRoot,
                     ReindexMode.STORE);
         } catch (final EXistException e) {
-            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+            LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
         }
     }
 
@@ -1870,7 +1870,7 @@ public class ElementImpl extends NamedNode implements Element {
             indexes.reindex(transaction, reindexRoot, ReindexMode.STORE);
             broker.flush();
         } catch(final EXistException e) {
-            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+            LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
         }
         //return oldChild;	// method is spec'd to return the old child, even though that's probably useless in this case
         return newNode; //returning the newNode is more sensible than returning the oldNode

@@ -277,7 +277,7 @@ public class FunctionCall extends Function {
                 while(returnSeq instanceof DeferredFunctionCall &&
                     functionDef.getSignature().equals(((DeferredFunctionCall)returnSeq).getSignature())) {
                     if (LOG.isTraceEnabled()) {
-                        LOG.trace("Executing function: " + functionDef.getSignature());
+                        LOG.trace("Executing function: {}", functionDef.getSignature());
                     }
                     returnSeq = ((DeferredFunctionCall) returnSeq).execute();
                 }

@@ -161,7 +161,7 @@ public class FnExport extends BasicFunction {
         @Override
         public void startCollection(String path) throws TerminatedException {
             if (builder == null) {
-                SystemExport.LOG.info("Collection " + path);
+                SystemExport.LOG.info("Collection {}", path);
             } else {
                 builder.startElement(COLLECTION_ELEMENT, null);
                 builder.characters(path);
@@ -172,7 +172,7 @@ public class FnExport extends BasicFunction {
         @Override
         public void startDocument(String name, int current, int count) throws TerminatedException {
             if (builder == null) {
-                SystemExport.LOG.info("Document " + name);
+                SystemExport.LOG.info("Document {}", name);
             } else {
                 builder.startElement(RESOURCE_ELEMENT, null);
                 builder.characters(name);

@@ -104,8 +104,7 @@ public class XQueryPool implements BrokerPoolService {
                 .maximumSize(maxPoolSize)
                 .build();
 
-        LOG.info("QueryPool: " + "size = " + nf.format(maxPoolSize) + "; "
-                + "maxQueryStackSize = " + nf.format(maxQueryStackSize));
+        LOG.info("QueryPool: size = {}; maxQueryStackSize = {}", nf.format(maxPoolSize), nf.format(maxQueryStackSize));
     }
 
     /**
@@ -164,7 +163,7 @@ public class XQueryPool implements BrokerPoolService {
 
             if (!isCompiledQueryValid(broker, source, firstCompiledXQuery)) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug(source.pathOrShortIdentifier() + " is invalid, removing from XQuery Pool...");
+                    LOG.debug("{} is invalid, removing from XQuery Pool...", source.pathOrShortIdentifier());
                 }
 
                 // query is invalid, returning null will remove the entry from the cache

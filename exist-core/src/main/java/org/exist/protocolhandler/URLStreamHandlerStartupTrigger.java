@@ -85,7 +85,7 @@ public class URLStreamHandlerStartupTrigger implements StartupTrigger {
                     if (!currentSystemProperty.contains(EXIST_PROTOCOL_HANDLER)) {
                         // eXist handler is not setup yet
                         currentSystemProperty = currentSystemProperty + "|" + EXIST_PROTOCOL_HANDLER;
-                        LOG.info("Setting " + JAVA_PROTOCOL_HANDLER_PKGS + " to " + currentSystemProperty);
+                        LOG.info("Setting " + JAVA_PROTOCOL_HANDLER_PKGS + " to {}", currentSystemProperty);
                         System.setProperty(JAVA_PROTOCOL_HANDLER_PKGS, currentSystemProperty);
                     } else {
                         LOG.info("System property " + JAVA_PROTOCOL_HANDLER_PKGS + " has not been updated.");

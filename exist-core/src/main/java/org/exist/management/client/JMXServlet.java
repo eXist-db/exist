@@ -107,7 +107,7 @@ public class JMXServlet extends HttpServlet {
 
         } else if (hasSecretToken(request, getToken())) {
             // Correct token is provided
-            LOG.debug("Correct token provided by " + request.getRemoteHost());
+            LOG.debug("Correct token provided by {}", request.getRemoteHost());
 
         } else {
             // Check if user is already authorized, e.g. via MONEX allow user too

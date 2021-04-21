@@ -45,14 +45,14 @@ public class DebuggeeFactory {
             try {
                 final Class<?> clazz = Class.forName(className);
                 if (!Debuggee.class.isAssignableFrom(clazz)) {
-                    LOG.warn("Class " + className + " does not implement interface Debuggee. Using fallback.");
+                    LOG.warn("Class {} does not implement interface Debuggee. Using fallback.", className);
                 } else {
                     instance = (Debuggee) clazz.newInstance();
                 }
             } catch (final ClassNotFoundException e) {
-                LOG.warn("Class not found for debuggee: " + className);
+                LOG.warn("Class not found for debuggee: {}", className);
             } catch (final IllegalAccessException | InstantiationException e) {
-                LOG.warn("Failed to instantiate class for debuggee: " + className);
+                LOG.warn("Failed to instantiate class for debuggee: {}", className);
             }
             if (instance == null)
                 {instance = new DummyDebuggee();}

@@ -95,7 +95,7 @@ public class Expand extends BasicFunction {
                 if (pair == null) {
                     throw new XPathException(this, "Found invalid serialization option: " + content);
                 }
-                logger.debug("Setting serialization property: " + pair[0] + " = " + pair[1]);
+                logger.debug("Setting serialization property: {} = {}", pair[0], pair[1]);
                 serializeOptions.setProperty(pair[0], pair[1]);
             }
         } else

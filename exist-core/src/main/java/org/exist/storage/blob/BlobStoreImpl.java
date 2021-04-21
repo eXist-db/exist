@@ -495,7 +495,7 @@ public class BlobStoreImpl implements BlobStore {
                 channel = null;
             } catch (final IOException e) {
                 // non-critical error
-                LOG.error("Error whilst closing blob.dbx: " + e.getMessage(), e);
+                LOG.error("Error whilst closing blob.dbx: {}", e.getMessage(), e);
             }
         }
     }
@@ -1533,10 +1533,10 @@ public class BlobStoreImpl implements BlobStore {
              * either as a part of crash recovery or compaction
              */
             if (!vacuumQueue.offer(request, VACUUM_ENQUEUE_TIMEOUT, TimeUnit.MILLISECONDS)) {
-                LOG.error("Timeout, could not not enqueue for vacuum: " + request);
+                LOG.error("Timeout, could not not enqueue for vacuum: {}", request);
             }
         } catch (final InterruptedException e) {
-            LOG.error("Interrupted, could not not enqueue for vacuum: " + request, e);
+            LOG.error("Interrupted, could not not enqueue for vacuum: {}", request, e);
             Thread.currentThread().interrupt();  // restore interrupted status!
             return;
         }
@@ -1585,11 +1585,11 @@ public class BlobStoreImpl implements BlobStore {
                 }
             } catch (final InterruptedException e) {
                 // Restore the interrupted status
-                LOG.error("PersistentWriter Shutting down due to interrupt: " + e.getMessage());
+                LOG.error("PersistentWriter Shutting down due to interrupt: {}", e.getMessage());
                 Thread.currentThread().interrupt();
                 abnormalShutdownCallback.run();
             } catch (final IOException e) {
-                LOG.error("PersistentWriter Shutting down, received: " + e.getMessage(), e);
+                LOG.error("PersistentWriter Shutting down, received: {}", e.getMessage(), e);
                 abnormalShutdownCallback.run();
             }
         }
@@ -1649,10 +1649,10 @@ public class BlobStoreImpl implements BlobStore {
 
                         try {
                             if (!vacuumQueue.offer(request, VACUUM_ENQUEUE_TIMEOUT, TimeUnit.MILLISECONDS)) {
-                                LOG.error("Timeout, could not not enqueue for vacuum: " + request);
+                                LOG.error("Timeout, could not not enqueue for vacuum: {}", request);
                             }
                         } catch (final InterruptedException e) {
-                            LOG.error("Interrupted, could not not enqueue for vacuum: " + request, e);
+                            LOG.error("Interrupted, could not not enqueue for vacuum: {}", request, e);
                             Thread.currentThread().interrupt();  // restore interrupted status!
                             throw e;
                         }
@@ -1732,7 +1732,7 @@ public class BlobStoreImpl implements BlobStore {
                             deleteBlob(blobDir, blobId, true);
                         } catch (final IOException ioe) {
                             // non-critical error
-                            LOG.error("Unable to delete blob file: " + bytesToHex(blobId.getId()), ioe);
+                            LOG.error("Unable to delete blob file: {}", bytesToHex(blobId.getId()), ioe);
                         }
 
                         // remove from shared map

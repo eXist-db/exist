@@ -71,7 +71,7 @@ public class GetUploadedFile extends StrictRequestFunction {
         final List<Path> files = request.getFileUploadParam(uploadParamName);
         if (files == null || files.isEmpty()) {
             if (logger.isDebugEnabled()) {
-                logger.debug("File param not found: " + uploadParamName);
+                logger.debug("File param not found: {}", uploadParamName);
             }
             return Sequence.EMPTY_SEQUENCE;
         }

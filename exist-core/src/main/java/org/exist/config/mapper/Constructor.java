@@ -63,16 +63,13 @@ public class Constructor {
 
         final String url = newClazz.mapper();
         if (url == null) {
-            Configurator.LOG.error("Field must have 'ConfigurationFieldClassMask' annotation or " +
-                    "registered mapping instruction for class '" + newClazz.name() + "' [" + conf.getName() + "], " +
-                    "skip instance creation.");
+            Configurator.LOG.error("Field must have 'ConfigurationFieldClassMask' annotation or registered mapping instruction for class '{}' [{}], skip instance creation.", newClazz.name(), conf.getName());
             return null;
         }
 
         try (final InputStream is = instance.getClass().getClassLoader().getResourceAsStream(url)) {
             if (is == null) {
-                Configurator.LOG.error("Registered mapping instruction for class '" + newClazz.name() + "' " +
-                        "missing resource '" + url + "', skip instance creation.");
+                Configurator.LOG.error("Registered mapping instruction for class '{}' missing resource '{}', skip instance creation.", newClazz.name(), url);
                 return null;
             }
 
@@ -162,8 +159,7 @@ public class Constructor {
             }
             return null;
         } catch (final IOException e) {
-            Configurator.LOG.error("Registered mapping instruction for class '" + newClazz.name() + "' " +
-                    "missing resource '" + url + "', skip instance creation.");
+            Configurator.LOG.error("Registered mapping instruction for class '{}' missing resource '{}', skip instance creation.", newClazz.name(), url);
             return null;
         }
     }

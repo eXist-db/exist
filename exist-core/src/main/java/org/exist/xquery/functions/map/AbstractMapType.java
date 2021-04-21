@@ -131,7 +131,7 @@ public abstract class AbstractMapType extends FunctionReference
         try {
             return ValueComparison.compareAtomic(collator, k1, k2, Constants.StringTruncationOperator.NONE, Constants.Comparison.EQ);
         } catch (final XPathException e) {
-            LOG.warn("Unable to compare with collation '" + collator + "', will fallback to non-collation comparision. Error: " + e.getMessage(), e);
+            LOG.warn("Unable to compare with collation '{}', will fallback to non-collation comparision. Error: {}", collator, e.getMessage(), e);
         }
 
         // fallback

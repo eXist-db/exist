@@ -216,7 +216,7 @@ public class Configurator {
         
         final Class<?> clazz = instance.getClass();
         if (!clazz.isAnnotationPresent(ConfigurationClass.class)) {
-            LOG.warn("Instance '" + instance + "' is missing annotation '@org.exist.config.annotation.ConfigurationClass'");
+            LOG.warn("Instance '{}' is missing annotation '@org.exist.config.annotation.ConfigurationClass'", instance);
             return null;
             //XXX: throw new ConfigurationException("Instance '"+instance+"' don't have annotaion 'ConfigurationClass'");
         }
@@ -224,7 +224,7 @@ public class Configurator {
         final String configName = clazz.getAnnotation(ConfigurationClass.class).value();
         final Configuration config = configuration.getConfiguration(configName);
         if (config == null) {
-            LOG.warn("No configuration [" + configName + "] found for [" + clazz.getName() + "]");
+            LOG.warn("No configuration [{}] found for [{}]", configName, clazz.getName());
             return null;
             //XXX: throw new ConfigurationException("No configuration [" + configName + "]");
         }
@@ -276,7 +276,7 @@ public class Configurator {
         for (final String property : properties) {
             final AField annotatedField = annotatedFields.findByAnnotationValue(property);
             if (annotatedField == null) {
-                LOG.warn("Unused property " + property + " @" + configuration.getName());
+                LOG.warn("Unused property {} @{}", property, configuration.getName());
                 continue;
             }
             
@@ -437,7 +437,7 @@ public class Configurator {
                             } else if (obj instanceof Reference) {
 
                                 if (!referenceBy.isPresent()) {
-                                    LOG.error("illegal design '"+configuration.getName()+"' ["+field+"]");
+                                    LOG.error("illegal design '{}' [{}]", configuration.getName(), field);
                                     list.remove(i);
                                     continue;
                                 } else {
@@ -451,13 +451,13 @@ public class Configurator {
                                                     .orElse(true));
 
                                     if(applicableConfs.size() == confs.size()) {
-                                        LOG.debug("Configuration was removed, will attempt to replace object [" + obj + "].");
+                                        LOG.debug("Configuration was removed, will attempt to replace object [{}].", obj);
                                         final Field referee = getFieldRecursive(Optional.of(list.get(i).getClass()), referenceBy.get());
                                         if(referee != null) {
                                             referee.setAccessible(true);
                                             removed.put((String) referee.get(list.remove(i)), i);
                                         } else {
-                                            LOG.error("Could not lookup referenced field: " + referenceBy.get() + " against: " + list.get(i).getClass().getName());
+                                            LOG.error("Could not lookup referenced field: {} against: {}", referenceBy.get(), list.get(i).getClass().getName());
                                             list.remove(i);
                                         }
                                     } else {
@@ -476,7 +476,7 @@ public class Configurator {
                                 }
                                 if(list.size() > i) {
                                     if (LOG.isDebugEnabled()) {
-                                        LOG.debug("No configured instance of [" + obj + "], will attempt to replace object...");
+                                        LOG.debug("No configured instance of [{}], will attempt to replace object...", obj);
                                     }
 
                                     final Field referee = getFieldRecursive(Optional.of(list.get(i).getClass()), referenceBy.get());
@@ -484,7 +484,7 @@ public class Configurator {
                                         referee.setAccessible(true);
                                         removed.put((String) referee.get(list.remove(i)), i);
                                     } else {
-                                        LOG.error("Could not lookup referenced field: " + referenceBy.get() + " against: " + list.get(i).getClass().getName());
+                                        LOG.error("Could not lookup referenced field: {} against: {}", referenceBy.get(), list.get(i).getClass().getName());
                                         list.remove(i);
                                     }
                                 }
@@ -496,7 +496,7 @@ public class Configurator {
                             final List<Configuration> applicableConfs = filter(confs, conf -> !final_current_conf.equals(conf, referenceBy));
 
                             if(applicableConfs.size() == confs.size()) {
-                                LOG.debug("Configuration was removed, will attempt to replace [" + obj + "].");
+                                LOG.debug("Configuration was removed, will attempt to replace [{}].", obj);
                                 if(list.size() > i) {
                                     Configurable old = ((Configurable) list.remove(i));
                                     String key = old.getConfiguration().getProperty(referenceBy.orElse(Configuration.ID));
@@ -524,7 +524,7 @@ public class Configurator {
                                             updateFn.get().accept(value);
                                             continue;
                                         } catch(final ReflectiveOperationException e) {
-                                            LOG.warn("Could not update " + instance.getClass().getName() + " for configuration '" + conf.getName() + "' referenceBy '" + referenceBy.get() + "' for value '" + value + "'", e);
+                                            LOG.warn("Could not update {} for configuration '{}' referenceBy '{}' for value '{}'", instance.getClass().getName(), conf.getName(), referenceBy.get(), value, e);
                                         }
                                     }
                                 }
@@ -544,7 +544,7 @@ public class Configurator {
                                                     updateFn.get().accept(value);
                                                     continue;
                                                 } catch (final ReflectiveOperationException e) {
-                                                    LOG.warn("Could not update " + instance.getClass().getName() + " for configuration '" + conf.getName() + "' for value '" + value + "'", e);
+                                                    LOG.warn("Could not update {} for configuration '{}' for value '{}'", instance.getClass().getName(), conf.getName(), value, e);
                                                 }
                                             }
                                         }
@@ -565,7 +565,7 @@ public class Configurator {
                                         list.add(obj);
                                     }
                                 } else {
-                                    LOG.error("Field '" + field.getName() + "' must have '@org.exist.config.annotation.ConfigurationFieldClassMask' annotation [" + conf.getName() + "], skipping instance creation.");
+                                    LOG.error("Field '{}' must have '@org.exist.config.annotation.ConfigurationFieldClassMask' annotation [{}], skipping instance creation.", field.getName(), conf.getName());
                                 }
                                 
                                 continue;
@@ -655,7 +655,7 @@ public class Configurator {
             final Class<?> clazz = Class.forName(clazzName);
             configurable =  create(conf, instance, clazz);
         } catch (final ClassNotFoundException cnfe) {
-            LOG.error("Class [" + clazzName + "] not found, skip instance creation.");
+            LOG.error("Class [{}] not found, skip instance creation.", clazzName);
             configurable = null;
         }
         return configurable;
@@ -684,7 +684,7 @@ public class Configurator {
                 }
 
                 if(LOG.isDebugEnabled()) {
-                    LOG.debug("Unable to invoke Constructor on Configurable instance '" + e.getMessage() + "', so creating new Constructor...");
+                    LOG.debug("Unable to invoke Constructor on Configurable instance '{}', so creating new Constructor...", e.getMessage());
                 }
 
                 try {
@@ -700,8 +700,7 @@ public class Configurator {
                         interrupted = true;
                     }
 
-                    LOG.warn("Instantiation exception on " + clazz
-                            + " creation '" + ee.getMessage() + "', skipping instance creation.");
+                    LOG.warn("Instantiation exception on {} creation '{}', skipping instance creation.", clazz, ee.getMessage());
                     LOG.debug(e.getMessage(), ee);
                 }
             }
@@ -733,8 +732,7 @@ public class Configurator {
             return obj;
 
         } catch (final EXistException ee) {
-            LOG.warn("Database exception on " + clazz
-                    + " startup '" + ee.getMessage() + "', skipping instance creation.");
+            LOG.warn("Database exception on {} startup '{}', skipping instance creation.", clazz, ee.getMessage());
             LOG.debug(ee.getMessage(), ee);
 
             return null;
@@ -845,7 +843,7 @@ public class Configurator {
         
         final Field field = annotatedField.getField();
         if (field == null) {
-            LOG.error("Reference field '" + referenceBy + "' can't be found for class '" + clazz + "'");
+            LOG.error("Reference field '{}' can't be found for class '{}'", referenceBy, clazz);
             //TODO : throw eception ? -pb
             return;
         }
@@ -1018,7 +1016,7 @@ public class Configurator {
                     } else {
                         value = extractFieldValue(field, instance);
                         if (value == null) {
-                            LOG.error("field '" + field.getName() + "' has unsupported type [" + typeName + "] - skipped");
+                            LOG.error("field '{}' has unsupported type [{}] - skipped", field.getName(), typeName);
                             //TODO : throw exception ? -pb
                         }
                     }
@@ -1291,7 +1289,7 @@ public class Configurator {
         FullXmldbURI fullURI = null;
         final BrokerPool pool = broker.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
-        LOG.info("Storing configuration " + collection.getURI() + "/" + uri);
+        LOG.info("Storing configuration {}/{}", collection.getURI(), uri);
 
         try {
             broker.pushSubject(pool.getSecurityManager().getSystemSubject());

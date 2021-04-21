@@ -117,7 +117,7 @@ public class ModuleFunctions extends BasicFunction {
 
                 if (e.getErrorCode().equals(ErrorCodes.XQST0059)) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Failed to import module: " + args[0].getStringValue() + ": " + e.getMessage(), e);
+                        LOG.debug("Failed to import module: {}: {}", args[0].getStringValue(), e.getMessage(), e);
                     }
                     modules = null;
 

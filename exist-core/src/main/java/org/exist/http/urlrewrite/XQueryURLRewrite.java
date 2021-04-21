@@ -197,14 +197,14 @@ public class XQueryURLRewrite extends HttpServlet {
                 modifiedRequest.setPaths(staticRewrite.resolve(modifiedRequest), staticRewrite.getPrefix());
 
                 if (LOG.isTraceEnabled()) {
-                    LOG.trace("Forwarding to target: " + staticRewrite.getTarget());
+                    LOG.trace("Forwarding to target: {}", staticRewrite.getTarget());
                 }
 
                 staticRewrite.doRewrite(modifiedRequest, response);
 
             } else {
                 if (LOG.isTraceEnabled()) {
-                    LOG.trace("Processing request URI: " + request.getRequestURI());
+                    LOG.trace("Processing request URI: {}", request.getRequestURI());
                 }
 
                 if (staticRewrite != null) {
@@ -218,7 +218,7 @@ public class XQueryURLRewrite extends HttpServlet {
                         user);
 
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Checked cache for URI: " + modifiedRequest.getRequestURI() + " original: " + request.getRequestURI());
+                    LOG.debug("Checked cache for URI: {} original: {}", modifiedRequest.getRequestURI(), request.getRequestURI());
                 }
 
                 // no: create a new model and view configuration
@@ -310,7 +310,7 @@ public class XQueryURLRewrite extends HttpServlet {
                         }
 
                         if (modelView.useCache()) {
-                            LOG.debug("Caching request to " + request.getRequestURI());
+                            LOG.debug("Caching request to {}", request.getRequestURI());
                             urlCache.put(modifiedRequest.getHeader("Host") + request.getRequestURI(), modelView);
                         }
                     }
@@ -321,7 +321,7 @@ public class XQueryURLRewrite extends HttpServlet {
 
                 }
                 if (LOG.isTraceEnabled()) {
-                    LOG.trace("URLRewrite took " + (System.currentTimeMillis() - start) + "ms.");
+                    LOG.trace("URLRewrite took {}ms.", System.currentTimeMillis() - start);
                 }
                 final HttpServletResponse wrappedResponse =
                         new CachingResponseWrapper(response, modelView.hasViews() || modelView.hasErrorHandlers());
@@ -362,7 +362,7 @@ public class XQueryURLRewrite extends HttpServlet {
                 }
             }
         } catch (final Throwable e) {
-            LOG.error("Error while processing " + request.getRequestURI() + ": " + e.getMessage(), e);
+            LOG.error("Error while processing {}: {}", request.getRequestURI(), e.getMessage(), e);
             throw new ServletException("An error occurred while processing request to " + request.getRequestURI() + ": "
                     + e.getMessage(), e);
 
@@ -481,7 +481,7 @@ public class XQueryURLRewrite extends HttpServlet {
             }
 
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Using cached entry for " + url);
+                LOG.debug("Using cached entry for {}", url);
             }
             return model;
         }
@@ -512,7 +512,7 @@ public class XQueryURLRewrite extends HttpServlet {
                 modifiedRequest.setPaths(uri, action.getPrefix());
 
                 if (LOG.isTraceEnabled()) {
-                    LOG.trace("Forwarding to : " + action.toString() + " url: " + action.getURI());
+                    LOG.trace("Forwarding to : {} url: {}", action.toString(), action.getURI());
                 }
                 request = modifiedRequest;
             }
@@ -600,7 +600,7 @@ public class XQueryURLRewrite extends HttpServlet {
                     defaultUser = user;
                 }
             } catch (final AuthenticationException e) {
-                LOG.error("User can not be authenticated (" + username + "), using default user.");
+                LOG.error("User can not be authenticated ({}), using default user.", username);
             }
         }
         authenticator = new BasicAuthenticator(pool);
@@ -679,7 +679,7 @@ public class XQueryURLRewrite extends HttpServlet {
 
     String adjustPathForSourceLookup(final String basePath, String path) {
         if (LOG.isTraceEnabled()) {
-            LOG.trace("request path=" + path);
+            LOG.trace("request path={}", path);
         }
 
         if (basePath.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX) && path.startsWith(basePath.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, ""))) {
@@ -694,14 +694,14 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 
         if (LOG.isTraceEnabled()) {
-            LOG.trace("adjusted request path=" + path);
+            LOG.trace("adjusted request path={}", path);
         }
         return path;
     }
 
     private SourceInfo findSource(final HttpServletRequest request, final DBBroker broker, final String basePath) {
         if (LOG.isTraceEnabled()) {
-            LOG.trace("basePath=" + basePath);
+            LOG.trace("basePath={}", basePath);
         }
 
         final String requestURI = request.getRequestURI();
@@ -711,12 +711,12 @@ public class XQueryURLRewrite extends HttpServlet {
 
         if (basePath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
             if (LOG.isTraceEnabled()) {
-                LOG.trace("Looking for " + XQUERY_CONTROLLER_FILENAME + " in the database, starting from: " + basePath);
+                LOG.trace("Looking for " + XQUERY_CONTROLLER_FILENAME + " in the database, starting from: {}", basePath);
             }
             return findSourceFromDb(broker, basePath, path, components);
         } else {
             if (LOG.isTraceEnabled()) {
-                LOG.trace("Looking for " + XQUERY_CONTROLLER_FILENAME + " in the filesystem, starting from: " + basePath);
+                LOG.trace("Looking for " + XQUERY_CONTROLLER_FILENAME + " in the filesystem, starting from: {}", basePath);
             }
             return findSourceFromFs(basePath, components);
         }
@@ -735,19 +735,19 @@ public class XQueryURLRewrite extends HttpServlet {
             lockedControllerDoc = findDbControllerXql(broker, locationUri, resourceUri);
 
             if (lockedControllerDoc == null) {
-                LOG.warn("XQueryURLRewrite controller could not be found for path: " + path);
+                LOG.warn("XQueryURLRewrite controller could not be found for path: {}", path);
                 return null;
             }
 
             final DocumentImpl controllerDoc = lockedControllerDoc.getDocument();
 
             if (LOG.isTraceEnabled()) {
-                LOG.trace("Found controller file: " + controllerDoc.getURI());
+                LOG.trace("Found controller file: {}", controllerDoc.getURI());
             }
 
             if (controllerDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
                     !"application/xquery".equals(controllerDoc.getMimeType())) {
-                LOG.warn("XQuery resource: " + query + " is not an XQuery or declares a wrong mime-type");
+                LOG.warn("XQuery resource: {} is not an XQuery or declares a wrong mime-type", query);
                 return null;
             }
 
@@ -755,7 +755,7 @@ public class XQueryURLRewrite extends HttpServlet {
             return new SourceInfo(new DBSource(broker, (BinaryDocument) controllerDoc, true), "xmldb:exist://" + controllerPath, controllerPath.substring(locationUri.getCollectionPath().length()));
 
         } catch (final URISyntaxException e) {
-            LOG.warn("Bad URI for base path: " + e.getMessage(), e);
+            LOG.warn("Bad URI for base path: {}", e.getMessage(), e);
             return null;
         } finally {
             if (lockedControllerDoc != null) {
@@ -807,12 +807,12 @@ public class XQueryURLRewrite extends HttpServlet {
             }
         } catch (final PermissionDeniedException e) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Permission denied while scanning for XQueryURLRewrite controllers: " + e.getMessage(), e);
+                LOG.debug("Permission denied while scanning for XQueryURLRewrite controllers: {}", e.getMessage(), e);
             }
             return null;
         } catch (final LockException e) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("LockException while scanning for XQueryURLRewrite controllers: " + e.getMessage(), e);
+                LOG.debug("LockException while scanning for XQueryURLRewrite controllers: {}", e.getMessage(), e);
             }
             return null;
         }
@@ -872,7 +872,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 
         if (LOG.isTraceEnabled()) {
-            LOG.trace("Found controller file: " + controllerFile.toAbsolutePath());
+            LOG.trace("Found controller file: {}", controllerFile.toAbsolutePath());
         }
 
         final String parentPath = controllerFile.getParent().toAbsolutePath().toString();
@@ -958,7 +958,7 @@ public class XQueryURLRewrite extends HttpServlet {
         request.setAttribute("$exist:resource", resource);
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("\nexist:path = " + path + "\nexist:resource = " + resource + "\nexist:controller = " + sourceInfo.controllerPath);
+            LOG.debug("\nexist:path = {}\nexist:resource = {}\nexist:controller = {}", path, resource, sourceInfo.controllerPath);
         }
     }
 
@@ -1156,7 +1156,7 @@ public class XQueryURLRewrite extends HttpServlet {
                 return null;
             }
             if (path.length() < sp.length()) {
-                LOG.error("Internal error: servletPath = " + sp + " is longer than path = " + path);
+                LOG.error("Internal error: servletPath = {} is longer than path = {}", sp, path);
                 return null;
             }
             return path.length() == sp.length() ? null : path.substring(sp.length());

@@ -210,7 +210,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             DatabaseManager.registerDatabase(xmldb);
 
         } catch (final Exception e) {
-            logger.error("configuration error: " + e.getMessage(), e);
+            logger.error("configuration error: {}", e.getMessage(), e);
             e.printStackTrace();
             return;
         }
@@ -453,7 +453,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                     logger.debug("BrokerPoolsAndJetty.ShutdownHook hook registered");
                 } catch (final IllegalArgumentException | IllegalStateException e) {
                     // Hook already registered, or Shutdown in progress
-                    logger.error("Unable to add BrokerPoolsAndJetty.ShutdownHook hook: " + e.getMessage(), e);
+                    logger.error("Unable to add BrokerPoolsAndJetty.ShutdownHook hook: {}", e.getMessage(), e);
                     throw e;
                 }
 
@@ -528,7 +528,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 logger.debug("BrokerPoolsAndJetty.ShutdownHook hook unregistered");
             } catch (final IllegalStateException e) {
                 // Shutdown in progress
-                logger.warn("Unable to remove BrokerPoolsAndJetty.ShutdownHook hook: " + e.getMessage());
+                logger.warn("Unable to remove BrokerPoolsAndJetty.ShutdownHook hook: {}", e.getMessage());
             }
         });
         

@@ -133,7 +133,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
                     //TODO: use xmldbURI
                     collection = getLocalCollection(context, internalCol.getURI().toString());
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Loaded collection " + collection.getName());
+                        logger.debug("Loaded collection {}", collection.getName());
                     }
                 } catch (final XMLDBException e) {
                     throw new XPathException(this, "Failed to access collection: " + internalCol.getURI(), e);

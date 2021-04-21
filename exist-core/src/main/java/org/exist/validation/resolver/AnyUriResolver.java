@@ -61,11 +61,11 @@ public class AnyUriResolver implements XMLEntityResolver {
         if(docPath.startsWith("/")){
             docPath="xmldb:exist://"+docPath;
         }
-        LOG.debug("Specified path="+path);
+        LOG.debug("Specified path={}", path);
         
         if(path.lastIndexOf('/')!=-1){
             parentURI=path.substring(0, path.lastIndexOf('/'));
-            LOG.debug("parentURI="+parentURI);
+            LOG.debug("parentURI={}", parentURI);
         } else {
             parentURI="";
         }
@@ -83,7 +83,7 @@ public class AnyUriResolver implements XMLEntityResolver {
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Resolving XMLResourceIdentifier: " + getXriDetails(xri));
+            LOG.debug("Resolving XMLResourceIdentifier: {}", getXriDetails(xri));
         }
 
         String resourcePath = null;
@@ -101,7 +101,7 @@ public class AnyUriResolver implements XMLEntityResolver {
         }
         xri.setBaseSystemId(docPath);
 
-        LOG.debug("resourcePath='" + resourcePath + "'");
+        LOG.debug("resourcePath='{}'", resourcePath);
 
         // prevent NPE
         if (resourcePath == null) {
@@ -126,7 +126,7 @@ public class AnyUriResolver implements XMLEntityResolver {
                 baseSystemId, is, "UTF-8");
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("XMLInputSource: " + getXisDetails(xis));
+            LOG.debug("XMLInputSource: {}", getXisDetails(xis));
         }
 
         return xis;

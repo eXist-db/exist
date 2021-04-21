@@ -181,7 +181,7 @@ public class RpcConnection implements RpcAPI {
             return null;
         });
 
-        LOG.info("collection " + collUri + " has been created");
+        LOG.info("collection {} has been created", collUri);
         return true;
     }
 
@@ -208,7 +208,7 @@ public class RpcConnection implements RpcAPI {
             return null;
         });
 
-        LOG.info("Configured '" + collUri + "'");
+        LOG.info("Configured '{}'", collUri);
         return true;
     }
 
@@ -254,7 +254,7 @@ public class RpcConnection implements RpcAPI {
             final Sequence result = xquery.execute(broker, compiled, contextSet, outputProperties);
             // pass last modified date to the HTTP response
             HTTPUtils.addLastModifiedHeader(result, compiled.getContext());
-            LOG.info("query took " + (System.currentTimeMillis() - start) + "ms.");
+            LOG.info("query took {}ms.", System.currentTimeMillis() - start);
             return new QueryResult(result, outputProperties);
         } catch (final XPathException e) {
             return new QueryResult(e);
@@ -330,7 +330,7 @@ public class RpcConnection implements RpcAPI {
         if (variableDecls != null) {
             for (final Map.Entry<String, Object> entry : variableDecls.entrySet()) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("declaring " + entry.getKey() + " = " + entry.getValue());
+                    LOG.debug("declaring {} = {}", entry.getKey(), entry.getValue());
                 }
                 context.declareVariable(entry.getKey(), entry.getValue());
             }
@@ -398,7 +398,7 @@ public class RpcConnection implements RpcAPI {
                         + ": '" + content + "'");
             }
             if(LOG.isDebugEnabled()) {
-                LOG.debug("Setting serialization property from pragma: " + pair[0] + " = " + pair[1]);
+                LOG.debug("Setting serialization property from pragma: {} = {}", pair[0], pair[1]);
             }
             parameters.put(pair[0], pair[1]);
         }
@@ -409,7 +409,7 @@ public class RpcConnection implements RpcAPI {
         final Charset charset = Optional.ofNullable(encoding).map(Charset::forName).orElse(DEFAULT_ENCODING);
         final String xpathString = new String(xpath, charset);
         if(LOG.isDebugEnabled()) {
-            LOG.debug("query: " + xpathString);
+            LOG.debug("query: {}", xpathString);
         }
         return executeQuery(xpathString, parameters);
     }
@@ -1371,7 +1371,7 @@ public class RpcConnection implements RpcAPI {
                     // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
                     collection.close();
                     if(LOG.isDebugEnabled()) {
-                        LOG.debug("parsing " + docUri + " took " + (System.currentTimeMillis() - startTime) + "ms.");
+                        LOG.debug("parsing {} took {}ms.", docUri, System.currentTimeMillis() - startTime);
                     }
                     return true;
                 }
@@ -1566,7 +1566,7 @@ public class RpcConnection implements RpcAPI {
                 }
 
                 if(LOG.isDebugEnabled()) {
-                    LOG.debug("Storing binary resource to collection " + collection.getURI());
+                    LOG.debug("Storing binary resource to collection {}", collection.getURI());
                 }
 
                 final DocumentImpl doc = collection.addBinaryResource(transaction, broker, docUri.lastSegment(), data, mimeType);
@@ -1606,7 +1606,7 @@ public class RpcConnection implements RpcAPI {
             fileName = Integer.toString(handle);
         } else {
             if(LOG.isDebugEnabled()) {
-                LOG.debug("Appending to file " + fileName);
+                LOG.debug("Appending to file {}", fileName);
             }
 
             // fileName was specified so this is an append
@@ -1827,7 +1827,7 @@ public class RpcConnection implements RpcAPI {
 
         Sequence resultSeq = queryResult.result;
         if (LOG.isDebugEnabled()) {
-            LOG.debug("found " + resultSeq.getItemCount());
+            LOG.debug("found {}", resultSeq.getItemCount());
         }
 
         if (sortBy.isPresent()) {
@@ -1948,7 +1948,7 @@ public class RpcConnection implements RpcAPI {
 
         Sequence resultSeq = queryResult.result;
         if (LOG.isDebugEnabled()) {
-            LOG.debug("found " + resultSeq.getItemCount());
+            LOG.debug("found {}", resultSeq.getItemCount());
         }
 
         if (sortBy.isPresent()) {
@@ -2014,7 +2014,7 @@ public class RpcConnection implements RpcAPI {
             result.put("docUri", "temp_xquery/" + item.hashCode());
             result.put("nodeId", String.valueOf(ni.getNodeNumber()));
         } else {
-            LOG.error("Omitting from results, unsure how to process: " + item.getClass());
+            LOG.error("Omitting from results, unsure how to process: {}", item.getClass());
             result = null;
         }
 
@@ -2092,7 +2092,7 @@ public class RpcConnection implements RpcAPI {
     public boolean releaseQueryResult(final int handle) {
         factory.resultSets.remove(handle);
         if(LOG.isDebugEnabled()) {
-            LOG.debug("removed query result with handle " + handle);
+            LOG.debug("removed query result with handle {}", handle);
         }
         return true;
     }
@@ -2101,7 +2101,7 @@ public class RpcConnection implements RpcAPI {
     public boolean releaseQueryResult(final int handle, final int hash) {
         factory.resultSets.remove(handle, hash);
         if(LOG.isDebugEnabled()) {
-            LOG.debug("removed query result with handle " + handle);
+            LOG.debug("removed query result with handle {}", handle);
         }
         return true;
     }
@@ -2150,7 +2150,7 @@ public class RpcConnection implements RpcAPI {
                 // keep a write lock in the transaction
                 transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(collection.getURI()));
                 if(LOG.isDebugEnabled()) {
-                    LOG.debug("removing collection " + collURI);
+                    LOG.debug("removing collection {}", collURI);
                 }
                 return broker.removeCollection(transaction, collection);
             });
@@ -3150,7 +3150,7 @@ public class RpcConnection implements RpcAPI {
         final byte buffer[] = new byte[len];
         try (final RandomAccessFile os = new RandomAccessFile(file.toFile(), "r")) {
             if(LOG.isDebugEnabled()) {
-                LOG.debug("Read from: " + start + " to: " + (start + len));
+                LOG.debug("Read from: {} to: {}", start, start + len);
             }
             os.seek(start);
             os.read(buffer);
@@ -3247,7 +3247,7 @@ public class RpcConnection implements RpcAPI {
         withDb((broker, transaction) -> {
             broker.reindexCollection(transaction, collUri);
             if(LOG.isDebugEnabled()) {
-                LOG.debug("collection " + collUri + " and sub-collections reindexed");
+                LOG.debug("collection {} and sub-collections reindexed", collUri);
             }
             return null;
         });
@@ -3259,7 +3259,7 @@ public class RpcConnection implements RpcAPI {
             try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.create(docUri), LockMode.READ_LOCK)) {
                 broker.reindexXMLResource(transaction, lockedDoc.getDocument(), DBBroker.IndexMode.STORE);
                 if(LOG.isDebugEnabled()) {
-                    LOG.debug("document " + docUri + " reindexed");
+                    LOG.debug("document {} reindexed", docUri);
                 }
                 return null;
             }

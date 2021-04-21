@@ -69,7 +69,7 @@ public abstract class XSLTErrorsListener<E extends Exception> implements ErrorLi
   }
 
   public void warning(TransformerException except) throws TransformerException {
-    LOG.warn("XSL transform reports warning: " + except.getMessage(), except);
+      LOG.warn("XSL transform reports warning: {}", except.getMessage(), except);
     errorCode = WARNING;
     exception = except;
     if (stopOnWarn) {
@@ -78,7 +78,7 @@ public abstract class XSLTErrorsListener<E extends Exception> implements ErrorLi
   }
 
   public void error(TransformerException except) throws TransformerException {
-    LOG.warn("XSL transform reports recoverable error: " + except.getMessage(), except);
+      LOG.warn("XSL transform reports recoverable error: {}", except.getMessage(), except);
     errorCode = ERROR;
     exception = except;
     if (stopOnError) {
@@ -87,7 +87,7 @@ public abstract class XSLTErrorsListener<E extends Exception> implements ErrorLi
   }
 
   public void fatalError(TransformerException except) throws TransformerException {
-    LOG.warn("XSL transform reports fatal error: " + except.getMessage(), except);
+      LOG.warn("XSL transform reports fatal error: {}", except.getMessage(), except);
     errorCode = FATAL;
     exception = except;
     throw except;

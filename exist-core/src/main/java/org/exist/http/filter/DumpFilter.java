@@ -80,13 +80,12 @@ public class DumpFilter implements Filter {
         }
 
         LOG.info("== START ====================================");
-        LOG.info("Request Received at " +
-                (new Timestamp(System.currentTimeMillis())));
+        LOG.info("Request Received at {}", new Timestamp(System.currentTimeMillis()));
         LOG.info("=============================================");
-        LOG.info(" characterEncoding=" + request.getCharacterEncoding());
-        LOG.info("     contentLength=" + request.getContentLength());
-        LOG.info("       contentType=" + request.getContentType());
-        LOG.info("            locale=" + request.getLocale());
+        LOG.info(" characterEncoding={}", request.getCharacterEncoding());
+        LOG.info("     contentLength={}", request.getContentLength());
+        LOG.info("       contentType={}", request.getContentType());
+        LOG.info("            locale={}", request.getLocale());
         StringBuffer buffer = new StringBuffer();
         buffer.append("           locales=");
         final Enumeration locales = request.getLocales();
@@ -113,40 +112,38 @@ public class DumpFilter implements Filter {
             }
             LOG.info(buffer.toString());
         }
-        LOG.info("          protocol=" + request.getProtocol());
-        LOG.info("        remoteAddr=" + request.getRemoteAddr());
-        LOG.info("        remoteHost=" + request.getRemoteHost());
-        LOG.info("            scheme=" + request.getScheme());
-        LOG.info("        serverName=" + request.getServerName());
-        LOG.info("        serverPort=" + request.getServerPort());
-        LOG.info("          isSecure=" + request.isSecure());
+        LOG.info("          protocol={}", request.getProtocol());
+        LOG.info("        remoteAddr={}", request.getRemoteAddr());
+        LOG.info("        remoteHost={}", request.getRemoteHost());
+        LOG.info("            scheme={}", request.getScheme());
+        LOG.info("        serverName={}", request.getServerName());
+        LOG.info("        serverPort={}", request.getServerPort());
+        LOG.info("          isSecure={}", request.isSecure());
 
         // Render the HTTP servlet request properties
         if (request instanceof HttpServletRequest) {
             LOG.info("---------------------------------------------");
             final HttpServletRequest hrequest = (HttpServletRequest) request;
-            LOG.info("       contextPath=" + hrequest.getContextPath());
+            LOG.info("       contextPath={}", hrequest.getContextPath());
             Cookie cookies[] = hrequest.getCookies();
             if (cookies == null)
                 {cookies = new Cookie[0];}
             for (Cookie cookie : cookies) {
-                LOG.info("            cookie=" + cookie.getName() +
-                        "=" + cookie.getValue());
+                LOG.info("            cookie={}={}", cookie.getName(), cookie.getValue());
             }
             names = hrequest.getHeaderNames();
             while (names.hasMoreElements()) {
                 final String name = (String) names.nextElement();
                 final String value = hrequest.getHeader(name);
-                LOG.info("            header=" + name + "=" + value);
+                LOG.info("            header={}={}", name, value);
             }
-            LOG.info("            method=" + hrequest.getMethod());
-            LOG.info("          pathInfo=" + hrequest.getPathInfo());
-            LOG.info("       queryString=" + hrequest.getQueryString());
-            LOG.info("        remoteUser=" + hrequest.getRemoteUser());
-            LOG.info("requestedSessionId=" +
-                    hrequest.getRequestedSessionId());
-            LOG.info("        requestURI=" + hrequest.getRequestURI());
-            LOG.info("       servletPath=" + hrequest.getServletPath());
+            LOG.info("            method={}", hrequest.getMethod());
+            LOG.info("          pathInfo={}", hrequest.getPathInfo());
+            LOG.info("       queryString={}", hrequest.getQueryString());
+            LOG.info("        remoteUser={}", hrequest.getRemoteUser());
+            LOG.info("requestedSessionId={}", hrequest.getRequestedSessionId());
+            LOG.info("        requestURI={}", hrequest.getRequestURI());
+            LOG.info("       servletPath={}", hrequest.getServletPath());
         }
         LOG.info("== END ======================================");
 

@@ -190,7 +190,7 @@ public class Deployment {
             final Packages packages = repo.get().getParentRepo().getPackages(name);
 
             if (packages != null && (!enforceDeps || pkgVersion.equals(packages.latest().getVersion()))) {
-                LOG.info("Application package " + name + " already installed. Skipping.");
+                LOG.info("Application package {} already installed. Skipping.", name);
                 final Package pkg = packages.latest();
                 return Optional.of(getTargetCollection(broker, pkg, getPackageDir(pkg)));
             }
@@ -218,10 +218,10 @@ public class Deployment {
                     if (processor != null && processor.equals(PROCESSOR_NAME) && version != null) {
                         checkProcessorVersion(version);
                     } else if (pkgName != null) {
-                        LOG.info("Package " + name + " depends on " + pkgName);
+                        LOG.info("Package {} depends on {}", name, pkgName);
                         boolean isInstalled = false;
                         if (repo.get().getParentRepo().getPackages(pkgName) != null) {
-                            LOG.debug("Package " + pkgName + " already installed");
+                            LOG.debug("Package {} already installed", pkgName);
                             Packages pkgs = repo.get().getParentRepo().getPackages(pkgName);
                             // check if installed package matches required version
                             if (pkgs != null) {
@@ -231,7 +231,7 @@ public class Deployment {
                                     if (depVersion.isCompatible(latest.getVersion())) {
                                         isInstalled = true;
                                     } else {
-                                        LOG.debug("Package " + pkgName + " needs to be upgraded");
+                                        LOG.debug("Package {} needs to be upgraded", pkgName);
                                         if (enforceDeps) {
                                             throw new PackageException("Package requires version " + version.toString() +
                                                 " of package " + pkgName +
@@ -242,7 +242,7 @@ public class Deployment {
                                     isInstalled = true;
                                 }
                                 if (isInstalled) {
-                                    LOG.debug("Package " + pkgName + " already installed");
+                                    LOG.debug("Package {} already installed", pkgName);
                                 }
                             }
                         }
@@ -252,8 +252,7 @@ public class Deployment {
                                 installAndDeploy(broker, transaction, depFile, loader);
                             } else {
                                 if (enforceDeps) {
-                                    LOG.warn("Missing dependency: package " + pkgName + " could not be resolved. This error " +
-                                            "is not fatal, but the package may not work as expected");
+                                    LOG.warn("Missing dependency: package {} could not be resolved. This error is not fatal, but the package may not work as expected", pkgName);
                                 } else {
                                     throw new PackageException("Missing dependency: package " + pkgName + " could not be resolved.");
                                 }
@@ -266,7 +265,7 @@ public class Deployment {
             }
 
             // installing the xar into the expath repo
-            LOG.info("Installing package " + xar.getURI());
+            LOG.info("Installing package {}", xar.getURI());
             final UserInteractionStrategy interact = new BatchUserInteraction();
             final org.expath.pkg.repo.Package pkg = repo.get().getParentRepo().installPackage(xar, true, interact);
             final ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
@@ -279,7 +278,7 @@ public class Deployment {
             broker.getBrokerPool().reportStatus("Installing app: " + pkg.getAbbrev());
             repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
 
-            LOG.info("Deploying package " + pkgName);
+            LOG.info("Deploying package {}", pkgName);
             return deploy(broker, transaction, pkgName, repo, null);
         }
 
@@ -382,7 +381,7 @@ public class Deployment {
                             throw new PackageException("Bad collection URI for <target> element: " + targetPath.get(), e);
                         }
                     } else {
-                        LOG.warn("EXPath Package '" + pkgName + "' does not contain a <target> in its repo.xml, no files will be deployed to /apps");
+                        LOG.warn("EXPath Package '{}' does not contain a <target> in its repo.xml, no files will be deployed to /apps", pkgName);
                     }
                 }
                 if (targetCollection == null) {
@@ -509,7 +508,7 @@ public class Deployment {
                     try {
                         Files.deleteIfExists(path);
                     } catch(final IOException ioe) {
-                        LOG.warn("Cleanup: failed to delete file " + path.toAbsolutePath().toString() + " in package " + pkgName);
+                        LOG.warn("Cleanup: failed to delete file {} in package {}", path.toAbsolutePath().toString(), pkgName);
                     }
                 });
             } catch (final IOException ioe) {
@@ -670,7 +669,7 @@ public class Deployment {
             throws PackageException, IOException, XPathException {
         final Path xquery = tempDir.resolve(fileName);
         if (!Files.isReadable(xquery)) {
-            LOG.warn("The XQuery resource specified in the " + purpose.getPurposeString() + " was not found for EXPath Package: '" + pkgName + "'");
+            LOG.warn("The XQuery resource specified in the {} was not found for EXPath Package: '{}'", purpose.getPurposeString(), pkgName);
             return Sequence.EMPTY_SEQUENCE;
         }
         final XQuery xqs = broker.getBrokerPool().getXQueryService();
@@ -888,7 +887,7 @@ public class Deployment {
                     other.setMode(permStr);
                     return other.getMode();
                 } catch (final PermissionDeniedException | SyntaxException e) {
-                    LOG.warn("Unable to set permissions string: " + permStr + ". Falling back to default.");
+                    LOG.warn("Unable to set permissions string: {}. Falling back to default.", permStr);
                     return permission.getMode();
                 }
             }).fold(l -> l, r -> r);

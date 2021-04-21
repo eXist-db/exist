@@ -139,14 +139,14 @@ public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
                 final SecurityManager sm = BrokerPool.getInstance().getSecurityManager();
                 user = sm.authenticate(userName, password);
             } catch (final AuthenticationException | EXistException e) {
-                logger.error("Unable to authenticate user: " + userName + " " + getLocation(), e);
+                logger.error("Unable to authenticate user: {} {}", userName, getLocation(), e);
                 return BooleanValue.FALSE;
             }
 
             final Collection root = XMLDBAbstractCollectionManipulator.getCollection(context, uri, Optional.of(userName), Optional.of(password));
 
             if (root == null) {
-                logger.error("Unable to authenticate user: target collection " + uri + " does not exist " + getLocation());
+                logger.error("Unable to authenticate user: target collection {} does not exist {}", uri, getLocation());
                 return BooleanValue.FALSE;
             }
 
@@ -160,7 +160,7 @@ public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
 
             return BooleanValue.TRUE;
         } catch (final XMLDBException e) {
-            logger.error(getLocation() + " : " + e.getMessage(), e);
+            logger.error("{} : {}", getLocation(), e.getMessage(), e);
             return BooleanValue.FALSE;
         }
     }

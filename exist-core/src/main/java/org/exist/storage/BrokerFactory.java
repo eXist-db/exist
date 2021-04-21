@@ -82,7 +82,7 @@ public class BrokerFactory {
 
         if (LOG.isTraceEnabled()) {
             final long end = System.currentTimeMillis();
-            LOG.trace("Constructed DBBroker in: " + (end - start) + " ms");
+            LOG.trace("Constructed DBBroker in: {} ms", end - start);
         }
 
         return broker;

@@ -57,27 +57,27 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 
     @Override
     public long update(final String commands) throws XMLDBException {
-        LOG.debug("processing xupdate:\n" + commands);
+        LOG.debug("processing xupdate:\n{}", commands);
         final List<Object> params = new ArrayList<>();
         final byte[] xupdateData = commands.getBytes(UTF_8);
 
         params.add(parent.getPath());
         params.add(xupdateData);
         final int mods = (int) parent.execute("xupdate", params);
-        LOG.debug("processed " + mods + " modifications");
+        LOG.debug("processed {} modifications", mods);
         return mods;
     }
 
     @Override
     public long updateResource(final String id, final String commands) throws XMLDBException {
-        LOG.debug("processing xupdate:\n" + commands);
+        LOG.debug("processing xupdate:\n{}", commands);
         final List<Object> params = new ArrayList<>();
         final byte[] xupdateData = commands.getBytes(UTF_8);
         //TODO : use dedicated function in XmldbURI
         params.add(parent.getPath() + "/" + id);
         params.add(xupdateData);
         final int mods = (int) parent.execute("xupdateResource", params);
-        LOG.debug("processed " + mods + " modifications");
+        LOG.debug("processed {} modifications", mods);
         return mods;
     }
 

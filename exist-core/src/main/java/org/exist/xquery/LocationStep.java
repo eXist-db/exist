@@ -1227,9 +1227,7 @@ public class LocationStep extends Step {
                 @Override
                 public void debug() {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("UpdateListener: Line: "
-                                + LocationStep.this.toString() + "; id: "
-                                + LocationStep.this.getExpressionId());
+                        LOG.debug("UpdateListener: Line: {}; id: {}", LocationStep.this.toString(), LocationStep.this.getExpressionId());
                     }
                 }
             };

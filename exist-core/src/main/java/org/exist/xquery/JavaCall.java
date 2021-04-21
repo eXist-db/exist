@@ -69,7 +69,7 @@ public class JavaCall extends Function {
 		namespaceURI = namespaceURI.substring("java:".length());
 
 		try {
-			LOG.debug("Trying to find class " + namespaceURI);
+			LOG.debug("Trying to find class {}", namespaceURI);
 			
 			myClass = Class.forName(namespaceURI);
 		} catch (final ClassNotFoundException e) {
@@ -95,7 +95,7 @@ public class JavaCall extends Function {
 				}
 			}
 			name = buf.toString();
-			LOG.debug("converted method name to " + name);
+			LOG.debug("converted method name to {}", name);
 		}
 	}
 
@@ -126,7 +126,7 @@ public class JavaCall extends Function {
                 if (Modifier.isPublic(constructor.getModifiers())) {
                     final Class<?> paramTypes[] = constructor.getParameterTypes();
                     if (paramTypes.length == argCount) {
-                        LOG.debug("Found constructor " + constructor.toString());
+						LOG.debug("Found constructor {}", constructor.toString());
                         candidateMethods.add(constructor);
                     }
                 }
@@ -145,12 +145,12 @@ public class JavaCall extends Function {
                     final Class<?> paramTypes[] = method.getParameterTypes();
                     if (Modifier.isStatic(method.getModifiers())) {
                         if (paramTypes.length == argCount) {
-                            LOG.debug("Found static method " + method.toString());
+							LOG.debug("Found static method {}", method.toString());
                             candidateMethods.add(method);
                         }
                     } else {
                         if (paramTypes.length == argCount - 1) {
-                            LOG.debug("Found method " + method.toString());
+							LOG.debug("Found method {}", method.toString());
                             candidateMethods.add(method);
                         }
                     }

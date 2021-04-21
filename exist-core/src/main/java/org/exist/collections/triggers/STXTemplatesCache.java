@@ -92,9 +92,9 @@ public class STXTemplatesCache {
             if (cachedTemplate != null && lastModified > cachedTemplate.getLastUpdated()) {
                 // template has been modified since the version in the cache
                 cachedTemplate = null;  // invalidate the cached template
-                LOG.trace("Invalidating cached STX Template '" + stylesheetUri.toString() + "' as it is outdated.");
+                LOG.trace("Invalidating cached STX Template '{}' as it is outdated.", stylesheetUri.toString());
             } else {
-                LOG.trace("Retrieved STX Template '" + stylesheetUri.toString() + "' from cache.");
+                LOG.trace("Retrieved STX Template '{}' from cache.", stylesheetUri.toString());
             }
 
             if(cachedTemplate == null) {
@@ -102,7 +102,7 @@ public class STXTemplatesCache {
                 final Templates compiled = compileTemplate(broker, stylesheet);
                 cachedTemplate = new CachedTemplate(compiled, lastModified);
                 cache.put(stylesheetUri, cachedTemplate);
-                LOG.trace("Compiled and cached STX Template '" + stylesheetUri.toString() + "'.");
+                LOG.trace("Compiled and cached STX Template '{}'.", stylesheetUri.toString());
             }
 
             return cachedTemplate.templates;

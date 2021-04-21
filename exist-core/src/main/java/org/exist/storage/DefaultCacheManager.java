@@ -137,10 +137,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
             if( totalMem > maxCache ) {
                 totalMem = maxCache;
 
-                LOG.warn( "The cacheSize=\"" + cacheSize +
-                        "\" setting in conf.xml is too large. Java has only " + ( max / 1024 ) + "k available. Cache manager will not use more than " + ( totalMem / 1024L ) + "k " +
-                        "to avoid memory issues which may lead to database corruptions."
-                );
+                LOG.warn("The cacheSize=\"{}\" setting in conf.xml is too large. Java has only {}k available. Cache manager will not use more than {}k to avoid memory issues which may lead to database corruptions.", cacheSize, max / 1024, totalMem / 1024L);
             }
         } else {
             LOG.warn( "Checking of Max Cache Size disabled by user, this could cause memory issues which may lead to database corruptions if you don't have enough memory allocated to your JVM!" );
@@ -152,10 +149,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
         this.maxCacheSize   = (int)( totalPageCount * MAX_MEM_USE );
         final NumberFormat nf     = NumberFormat.getNumberInstance();
 
-        LOG.info( "Cache settings: " + nf.format( totalMem / 1024L ) + "k; totalPages: " + nf.format( totalPageCount ) +
-                "; maxCacheSize: " + nf.format( maxCacheSize ) +
-                "; cacheShrinkThreshold: " + nf.format( shrinkThreshold )
-        );
+        LOG.info("Cache settings: {}k; totalPages: {}; maxCacheSize: {}; cacheShrinkThreshold: {}", nf.format(totalMem / 1024L), nf.format(totalPageCount), nf.format(maxCacheSize), nf.format(shrinkThreshold));
 
         registerMBean();
     }
@@ -225,7 +219,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
 
                 if( LOG.isDebugEnabled() ) {
                     final NumberFormat nf = NumberFormat.getNumberInstance();
-                    LOG.debug( "Growing cache " + cache.getName() + " (a " + cache.getClass().getName() + ") from " + nf.format( cache.getBuffers() ) + " to " + nf.format( newCacheSize ) );
+                    LOG.debug("Growing cache {} (a {}) from {} to {}", cache.getName(), cache.getClass().getName(), nf.format(cache.getBuffers()), nf.format(newCacheSize));
                 }
                 currentPageCount -= cache.getBuffers();
 
@@ -265,7 +259,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
 
                         if (LOG.isDebugEnabled()) {
                             final NumberFormat nf = NumberFormat.getNumberInstance();
-                            LOG.debug("Shrinking cache: " + cache.getName() + " (a " + cache.getClass().getName() + ") to " + nf.format(cache.getBuffers()));
+                            LOG.debug("Shrinking cache: {} (a {}) to {}", cache.getName(), cache.getClass().getName(), nf.format(cache.getBuffers()));
                         }
                         currentPageCount -= cache.getBuffers();
                         cache.resize(getDefaultInitialSize());
@@ -294,7 +288,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
 
                 if (LOG.isDebugEnabled()) {
                     final NumberFormat nf = NumberFormat.getNumberInstance();
-                    LOG.debug("Shrinking cache: " + cache.getName() + " (a " + cache.getClass().getName() + ") to " + nf.format(newSize));
+                    LOG.debug("Shrinking cache: {} (a {}) to {}", cache.getName(), cache.getClass().getName(), nf.format(newSize));
                 }
                 currentPageCount -= cache.getBuffers();
                 cache.resize(newSize);

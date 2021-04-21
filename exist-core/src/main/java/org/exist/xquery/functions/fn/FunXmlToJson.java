@@ -136,7 +136,7 @@ public class FunXmlToJson extends BasicFunction {
                                 jsonGenerator.writeFieldName(elementKeyValue);
                             } else if (mapkeyArrayList.lastIndexOf(elementKeyValue) > mapkeyArrayList.lastIndexOf(stackSeparator)) {
                                 //key found, before separator, error double key use in same map
-                                logger.error("fn:xml-to-json(): FOJS0006: Invalid XML representation of JSON. Found map with double key use. Offending key in double quotes: \"" + elementKeyValue + "\"");
+                                logger.error("fn:xml-to-json(): FOJS0006: Invalid XML representation of JSON. Found map with double key use. Offending key in double quotes: \"{}\"", elementKeyValue);
                                 throw new XPathException(ErrorCodes.FOJS0006, "Invalid XML representation of JSON. Found map with double key use. Offending key in error logs.");
                             }
                         }
@@ -238,7 +238,7 @@ public class FunXmlToJson extends BasicFunction {
                 }
             }
         } catch (JsonParseException e) {
-            logger.error("fn:xml-to-json(): FOJS0007: Bad JSON escape sequence. XML claims string is escaped. String does not parse as valid JSON string. Offending string in double quotes : \"" + escapedJsonString + "\"");
+            logger.error("fn:xml-to-json(): FOJS0007: Bad JSON escape sequence. XML claims string is escaped. String does not parse as valid JSON string. Offending string in double quotes : \"{}\"", escapedJsonString);
             throw new XPathException(ErrorCodes.FOJS0007, "Bad JSON escape sequence. XML claims string is escaped. String does not parse as valid JSON string. Offending string in error logs.");
         }
         unescapedJsonString = unescapedJsonStringBuilder.toString();

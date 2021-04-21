@@ -100,7 +100,7 @@ public class JnlpServlet extends HttpServlet {
 
             final String requestURI = request.getRequestURI();
             final String filename = stripFilename(request.getPathInfo());
-            LOGGER.debug("Requested URI=" + requestURI);
+            LOGGER.debug("Requested URI={}", requestURI);
 
             if (requestURI.endsWith(".jnlp")) {
                 jw.writeJnlpXML(jf, request, response);

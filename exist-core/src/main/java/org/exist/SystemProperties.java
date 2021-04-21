@@ -54,7 +54,7 @@ public class SystemProperties {
                 properties.load(is);
             }
         } catch (final IOException ioe) {
-            LOG.error("Unable to load system.properties from class loader: " +  ioe.getMessage(), ioe);
+            LOG.error("Unable to load system.properties from class loader: {}", ioe.getMessage(), ioe);
         }
         return properties;
     }

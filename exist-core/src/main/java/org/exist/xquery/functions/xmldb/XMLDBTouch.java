@@ -99,7 +99,7 @@ public class XMLDBTouch extends XMLDBAbstractCollectionManipulator {
             return BooleanValue.TRUE;
 
         } catch(final XMLDBException e) {
-            logger.error("Failed to set modification time of: " + args[0].getStringValue() + "/" + args[1].getStringValue());
+            logger.error("Failed to set modification time of: {}/{}", args[0].getStringValue(), args[1].getStringValue());
             throw new XPathException(this, "Failed to set modification time: " + e.getMessage(), e);
         }
     }

@@ -234,7 +234,7 @@ public class NodePath implements Comparable<NodePath> {
             if (prefix != null) {
                 namespaceURI = namespaces.get(prefix);
                 if (namespaceURI == null) {
-                    LOG.error("No namespace URI defined for prefix: " + prefix);
+                    LOG.error("No namespace URI defined for prefix: {}", prefix);
                     //TODO : throw exception ? -pb
                     prefix = null;
                     namespaceURI = "";
@@ -249,7 +249,7 @@ public class NodePath implements Comparable<NodePath> {
             } else {
                 qn = new QName(localName, namespaceURI, prefix);
             }
-            LOG.debug("URI = " + qn.getNamespaceURI());
+            LOG.debug("URI = {}", qn.getNamespaceURI());
             addComponent(qn);
         } catch (final QName.IllegalQNameException e) {
             throw new IllegalArgumentException(e);

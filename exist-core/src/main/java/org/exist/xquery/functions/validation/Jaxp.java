@@ -223,12 +223,12 @@ public class Jaxp extends BasicFunction {
 
                 if (singleUrl.endsWith("/")) {
                     // Search grammar in collection specified by URL. Just one collection is used.
-                    LOG.debug("Search for grammar in " + singleUrl);
+                    LOG.debug("Search for grammar in {}", singleUrl);
                     entityResolver = new SearchResourceResolver(catalogUrls[0], brokerPool);
                     setXmlReaderEnitityResolver(xmlReader, entityResolver);
 
                 } else if (singleUrl.endsWith(".xml")) {
-                    LOG.debug("Using catalogs " + getStrings(catalogUrls));
+                    LOG.debug("Using catalogs {}", getStrings(catalogUrls));
                     entityResolver = new eXistXMLCatalogResolver();
                     ((eXistXMLCatalogResolver) entityResolver).setCatalogList(catalogUrls);
                     setXmlReaderEnitityResolver(xmlReader, entityResolver);

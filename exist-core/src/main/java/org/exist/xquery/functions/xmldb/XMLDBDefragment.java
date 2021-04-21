@@ -105,7 +105,7 @@ public class XMLDBDefragment extends BasicFunction {
             }
             
         } catch (final LockException | EXistException e) {
-            logger.error("An error occurred while defragmenting documents: " + e.getMessage());
+            logger.error("An error occurred while defragmenting documents: {}", e.getMessage());
             throw new XPathException(this, "An error occurred while defragmenting documents: " + e.getMessage(), e);
         }
         return Sequence.EMPTY_SEQUENCE;

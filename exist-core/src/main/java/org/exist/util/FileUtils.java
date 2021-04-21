@@ -157,7 +157,7 @@ public class FileUtils {
             }
             return true;
         } catch (final IOException ioe) {
-            LOG.error("Unable to delete: " + path.toAbsolutePath().toString(), ioe);
+            LOG.error("Unable to delete: {}", path.toAbsolutePath().toString(), ioe);
             return false;
         }
     }
@@ -249,7 +249,7 @@ public class FileUtils {
                 return dirSizeVisitor.totalSize();
             }
         } catch(final IOException ioe) {
-            LOG.error("Unable to determine size of: " + path.toString(), ioe);
+            LOG.error("Unable to determine size of: {}", path.toString(), ioe);
             return -1;
         }
     }
@@ -323,7 +323,7 @@ public class FileUtils {
             }
             return true;
         } catch (final IOException ioe) {
-            LOG.error("Unable to mkdirs: " + dir.toAbsolutePath().toString(), ioe);
+            LOG.error("Unable to mkdirs: {}", dir.toAbsolutePath().toString(), ioe);
             return false;
         }
     }

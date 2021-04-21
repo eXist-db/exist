@@ -53,7 +53,7 @@ public class QueryResultCache {
                     final AbstractCachedResult qr = (AbstractCachedResult)value;
                     qr.free();  // must free associated resources
                     if(LOG.isDebugEnabled()) {
-                        LOG.debug("Removing cached result set: " + new Date(qr.getTimestamp()).toString());
+                        LOG.debug("Removing cached result set: {}", new Date(qr.getTimestamp()).toString());
                     }
                 }).build();
     }

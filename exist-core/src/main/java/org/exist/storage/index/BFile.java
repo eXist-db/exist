@@ -155,7 +155,7 @@ public class BFile extends BTree {
             open(fileVersion);
         } else {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Creating data file: " + FileUtils.fileName(getFile()));
+                LOG.debug("Creating data file: {}", FileUtils.fileName(getFile()));
             }
             create();
         }
@@ -228,17 +228,13 @@ public class BFile extends BTree {
                     throw new IOException("tid " + tid + " not found on page " + pnum);
                 }
                 if (offset + 4 > data.length) {
-                    LOG.error("found invalid pointer in file " + FileUtils.fileName(getFile()) +
-                            " for page" + page.getPageInfo() + " : " +
-                            "tid = " + tid + "; offset = " + offset);
+                    LOG.error("found invalid pointer in file {} for page{} : tid = {}; offset = {}", FileUtils.fileName(getFile()), page.getPageInfo(), tid, offset);
                     return UNKNOWN_ADDRESS;
                 }
                 final int l = ByteConversion.byteToInt(data, offset);
                 //TOUNDERSTAND : unless l can be negative, we should never get there -pb
                 if (offset + 4 + l > data.length) {
-                    LOG.error("found invalid data record in file " + FileUtils.fileName(getFile()) +
-                            " for page" + page.getPageInfo() + " : " +
-                            "length = " + data.length + "; required = " + (offset + 4 + l));
+                    LOG.error("found invalid data record in file {} for page{} : length = {}; required = {}", FileUtils.fileName(getFile()), page.getPageInfo(), data.length, offset + 4 + l);
                     return UNKNOWN_ADDRESS;
                 }
                 final byte[] newData = new byte[l + valueLen];
@@ -315,7 +311,7 @@ public class BFile extends BTree {
         try {
             final RemoveCallback cb = new RemoveCallback(); 
             remove(transaction, query, cb);
-            LOG.debug("Found " + cb.count + " items to remove.");
+            LOG.debug("Found {} items to remove.", cb.count);
             if (cb.count == 0) {
                 return;
             }
@@ -428,7 +424,7 @@ public class BFile extends BTree {
             final DataPage page = getDataPage(pnum);
             return get(page, p);
         } catch (final BTreeException e) {
-            LOG.error("An exception occurred while trying to retrieve key " + key + ": " + e.getMessage(), e);
+            LOG.error("An exception occurred while trying to retrieve key {}: {}", key, e.getMessage(), e);
         } catch (final IOException e) {
             LOG.error(e.getMessage(), e);
         }
@@ -456,7 +452,7 @@ public class BFile extends BTree {
                     return getAsStream(page, p);
             }
         } catch (final BTreeException e) {
-        	LOG.error("An exception occurred while trying to retrieve key " + key + ": " + e.getMessage(), e);
+            LOG.error("An exception occurred while trying to retrieve key {}: {}", key, e.getMessage(), e);
         }
         return null;
     }
@@ -524,16 +520,12 @@ public class BFile extends BTree {
         final int offset = page.findValuePosition(tid);
         final byte[] data = page.getData();
         if (offset < 0 || offset > data.length) {
-            LOG.error("wrong pointer (tid: " + tid + page.getPageInfo()
-                    + ") in file " + FileUtils.fileName(getFile()) + "; offset = "
-                    + offset);
+            LOG.error("wrong pointer (tid: {}{}) in file {}; offset = {}", tid, page.getPageInfo(), FileUtils.fileName(getFile()), offset);
             return null;
         }
         final int l = ByteConversion.byteToInt(data, offset);
         if (l + 6 > data.length) {
-            LOG.error(FileUtils.fileName(getFile()) + " wrong data length in page "
-                    + page.getPageNum() + ": expected=" + (l + 6) + "; found="
-                    + data.length);
+            LOG.error("{} wrong data length in page {}: expected={}; found={}", FileUtils.fileName(getFile()), page.getPageNum(), l + 6, data.length);
             return null;
         }
         dataCache.add(page.getFirstPage());
@@ -551,7 +543,7 @@ public class BFile extends BTree {
         if (wp == null) {
             final Page page = getPage(pos);
             if (page == null) {
-                LOG.debug("page " + pos + " not found!");
+                LOG.debug("page {} not found!", pos);
                 return null;
             }
             final byte[] data = page.read();
@@ -575,7 +567,7 @@ public class BFile extends BTree {
         if (wp == null) {
             final Page page = getPage(pos);
             if (page == null) {
-                LOG.debug("page " + pos + " not found!");
+                LOG.debug("page {} not found!", pos);
                 return null;
             }
             final byte[] data = page.read();
@@ -740,7 +732,7 @@ public class BFile extends BTree {
         final int offset = page.findValuePosition(tid);
         final byte[] data = page.getData();
         if (offset > data.length || offset < 0) {
-            LOG.error("wrong pointer (tid: " + tid + ", " + page.getPageInfo() + ")");
+            LOG.error("wrong pointer (tid: {}, {})", tid, page.getPageInfo());
             return;
         }
         final int l = ByteConversion.byteToInt(data, offset);
@@ -828,8 +820,7 @@ public class BFile extends BTree {
                 page = getDataPage(free.getPage());
                 // check if this is really a data page
                 if (page.getPageHeader().getStatus() != BFile.RECORD) {
-                    LOG.warn("page " + page.getPageNum()
-                            + " is not a data page; removing it");
+                    LOG.warn("page {} is not a data page; removing it", page.getPageNum());
                     fileHeader.removeFreeSpace(free);
                     continue;
                 }
@@ -837,14 +828,14 @@ public class BFile extends BTree {
                 final int realSpace = fileHeader.getWorkSize() - page.getPageHeader().getDataLength();
                 if (realSpace < 6 + vlen) {
                     // not correct: adjust and continue
-                    LOG.warn("Wrong data length in list of free pages: adjusting to " + realSpace);
+                    LOG.warn("Wrong data length in list of free pages: adjusting to {}", realSpace);
                     free.setFree(realSpace);
                     continue;
                 }
             }
             tid = page.getNextTID();
             if (tid < 0) {
-                LOG.info("removing page " + page.getPageNum() + " from free pages");
+                LOG.info("removing page {} from free pages", page.getPageNum());
                 fileHeader.removeFreeSpace(free);
             }
         }
@@ -1017,7 +1008,7 @@ public class BFile extends BTree {
                 storeValueHelper(loggable, loggable.tid, loggable.value, page);
             }
         } catch (final IOException e) {
-            LOG.warn("An IOException occurred during redo: " + e.getMessage());
+            LOG.warn("An IOException occurred during redo: {}", e.getMessage());
         }
     }
 
@@ -1026,7 +1017,7 @@ public class BFile extends BTree {
             final SinglePage page = (SinglePage) getDataPage(loggable.page, true);
             removeValueHelper(null, loggable.tid, page);
         } catch (final IOException e) {
-            LOG.warn("An IOException occurred during redo: " + e.getMessage(), e);
+            LOG.warn("An IOException occurred during redo: {}", e.getMessage(), e);
         }
     }
 
@@ -1041,7 +1032,7 @@ public class BFile extends BTree {
             dataCache.remove(page);
             page.delete();
         } catch (final IOException e) {
-            LOG.warn("An IOException occurred during redo: " + e.getMessage(), e);
+            LOG.warn("An IOException occurred during redo: {}", e.getMessage(), e);
         }
     }
 
@@ -1051,7 +1042,7 @@ public class BFile extends BTree {
             if (wp == null) {
                 final Page page = getPage(loggable.page);
                 if (page == null) {
-                    LOG.warn("page " + loggable.page + " not found!");
+                    LOG.warn("page {} not found!", loggable.page);
                     return;
                 }
                 final byte[] data = page.read();
@@ -1065,7 +1056,7 @@ public class BFile extends BTree {
                 removeValueHelper(loggable, loggable.tid, wp);
             }
         } catch (final IOException e) {
-            LOG.warn("An IOException occurred during redo: " + e.getMessage(), e);
+            LOG.warn("An IOException occurred during redo: {}", e.getMessage(), e);
         }
     }
 
@@ -1075,7 +1066,7 @@ public class BFile extends BTree {
             final FixedByteArray data = new FixedByteArray(loggable.oldData);
             storeValueHelper(null, loggable.tid, data, page);
         } catch (final IOException e) {
-            LOG.warn("An IOException occurred during undo: " + e.getMessage(), e);
+            LOG.warn("An IOException occurred during undo: {}", e.getMessage(), e);
         }
     }
     
@@ -1085,7 +1076,7 @@ public class BFile extends BTree {
             if (wp == null) {
                 final Page page = getPage(loggable.page);
                 if (page == null) {
-                    LOG.warn("page " + loggable.page + " not found!");
+                    LOG.warn("page {} not found!", loggable.page);
                     return;
                 }
                 final byte[] data = page.read();
@@ -1100,7 +1091,7 @@ public class BFile extends BTree {
                 wp.delete();
             }
         } catch (final IOException e) {
-            LOG.warn("An IOException occurred during redo: " + e.getMessage(), e);
+            LOG.warn("An IOException occurred during redo: {}", e.getMessage(), e);
         }
     }
 
@@ -1135,7 +1126,7 @@ public class BFile extends BTree {
             }
             dataCache.add(firstPage);
         } catch (final IOException e) {
-            LOG.warn("An IOException occurred during redo: " + e.getMessage(), e);
+            LOG.warn("An IOException occurred during redo: {}", e.getMessage(), e);
         }
     }
 
@@ -1145,7 +1136,7 @@ public class BFile extends BTree {
             dataCache.remove(page);
             page.delete();
         } catch (final IOException e) {
-            LOG.warn("An IOException occurred during redo: " + e.getMessage(), e);
+            LOG.warn("An IOException occurred during redo: {}", e.getMessage(), e);
         }
     }
 
@@ -1159,7 +1150,7 @@ public class BFile extends BTree {
                 page.setDirty(true);
                 dataCache.add(page);
             } catch (final IOException e) {
-                LOG.warn("An IOException occurred during redo: " + e.getMessage(), e);
+                LOG.warn("An IOException occurred during redo: {}", e.getMessage(), e);
             }
         }
     }
@@ -1178,7 +1169,7 @@ public class BFile extends BTree {
                 dataCache.add(page);
             }
         } catch (final IOException e) {
-            LOG.warn("An IOException occurred during redo: " + e.getMessage(), e);
+            LOG.warn("An IOException occurred during redo: {}", e.getMessage(), e);
         }
     }
 
@@ -1194,7 +1185,7 @@ public class BFile extends BTree {
                 dataCache.add(page);
             }
         } catch (final IOException e) {
-            LOG.warn("An IOException occurred during redo: " + e.getMessage(), e);
+            LOG.warn("An IOException occurred during redo: {}", e.getMessage(), e);
         }
     }
 
@@ -1206,7 +1197,7 @@ public class BFile extends BTree {
             page.setDirty(true);
             dataCache.add(page);
         } catch (final IOException e) {
-            LOG.warn("An IOException occurred during redo: " + e.getMessage(), e);
+            LOG.warn("An IOException occurred during redo: {}", e.getMessage(), e);
         }
     }
 
@@ -1218,7 +1209,7 @@ public class BFile extends BTree {
                 try {
                     System.arraycopy(loggable.data, 0, page.getData(), 0, loggable.size);
                 } catch (final ArrayIndexOutOfBoundsException e) {
-                    LOG.warn(loggable.data.length + "; " + page.getData().length + "; " + ph.getDataLength() + "; " + loggable.size);
+                    LOG.warn("{}; {}; {}; {}", loggable.data.length, page.getData().length, ph.getDataLength(), loggable.size);
                     throw e;
                 }
                 ph.setDataLength(loggable.size);
@@ -1236,7 +1227,7 @@ public class BFile extends BTree {
                 }
             }
         } catch (final IOException e) {
-            LOG.warn("An IOException occurred during redo: " + e.getMessage(), e);
+            LOG.warn("An IOException occurred during redo: {}", e.getMessage(), e);
         }
     }
 
@@ -1254,7 +1245,7 @@ public class BFile extends BTree {
                 dataCache.add(page, 2);
             }
         } catch (final IOException e) {
-            LOG.warn("An IOException occurred during redo: " + e.getMessage(), e);
+            LOG.warn("An IOException occurred during redo: {}", e.getMessage(), e);
         }
     }
 
@@ -1268,7 +1259,7 @@ public class BFile extends BTree {
             page.setDirty(true);
             dataCache.add(page);
         } catch (final IOException e) {
-            LOG.warn("An IOException occurred during undo: " + e.getMessage(), e);
+            LOG.warn("An IOException occurred during undo: {}", e.getMessage(), e);
         }
     }
 
@@ -1278,7 +1269,7 @@ public class BFile extends BTree {
             if (wp == null) {
                 final Page page = getPage(loggable.pageNum);
                 if (page == null) {
-                    LOG.warn("page " + loggable.pageNum + " not found!");
+                    LOG.warn("page {} not found!", loggable.pageNum);
                     return;
                 }
                 final byte[] data = page.read();
@@ -1292,7 +1283,7 @@ public class BFile extends BTree {
                 wp.delete();
             }
         } catch (final IOException e) {
-            LOG.warn("An IOException occurred during redo: " + e.getMessage(), e);
+            LOG.warn("An IOException occurred during redo: {}", e.getMessage(), e);
         }
     }
 
@@ -1321,9 +1312,7 @@ public class BFile extends BTree {
         try {
             value.copyTo(page.data, len);
         } catch (final RuntimeException e) {
-            LOG.error(FileUtils.fileName(getFile()) + ": storage error in page: " + page.getPageNum() +
-                    "; len: " + len + " ; value: " + value.size() + "; max: " + fileHeader.getWorkSize() +
-                    "; status: " + page.ph.getStatus());
+            LOG.error("{}: storage error in page: {}; len: {} ; value: {}; max: {}; status: {}", FileUtils.fileName(getFile()), page.getPageNum(), len, value.size(), fileHeader.getWorkSize(), page.ph.getStatus());
             LOG.debug(page.printContents());
             throw e;
         }
@@ -1345,7 +1334,7 @@ public class BFile extends BTree {
     private void removeValueHelper(final Loggable loggable, final short tid, final SinglePage page) throws IOException {
         final int offset = page.findValuePosition(tid);
         if (offset < 0) {
-            LOG.warn("TID: " + tid + " not found on page: " + page.getPageNum());
+            LOG.warn("TID: {} not found on page: {}", tid, page.getPageNum());
             return;
         }
         final int l = ByteConversion.byteToInt(page.data, offset);
@@ -1408,7 +1397,7 @@ public class BFile extends BTree {
             dataCache.add(dp);
             return dp;
         } catch (final IOException e) {
-            LOG.warn("An IOException occurred during redo: " + e.getMessage(), e);
+            LOG.warn("An IOException occurred during redo: {}", e.getMessage(), e);
         }
         return null;
     }
@@ -1451,7 +1440,7 @@ public class BFile extends BTree {
         }
 
         public void debugFreeList() {
-        	LOG.debug(FileUtils.fileName(getFile()) + ": " + freeList.toString());
+            LOG.debug("{}: {}", FileUtils.fileName(getFile()), freeList.toString());
         }
 
         @Override
@@ -1644,8 +1633,7 @@ public class BFile extends BTree {
                     }
                     return true;
                 } catch (final IOException e) {
-                    LOG.error("IO exception occurred while saving page "
-                            + getPageNum());
+                    LOG.error("IO exception occurred while saving page {}", getPageNum());
                 }
             }
             return false;
@@ -1987,9 +1975,7 @@ public class BFile extends BTree {
                 } while (next > 0);
                 data = os.toByteArray();
                 if (data.length != firstPage.getPageHeader().getDataLength()) {
-                    LOG.warn(FileUtils.fileName(getFile()) + " read=" + data.length
-                            + "; expected="
-                            + firstPage.getPageHeader().getDataLength());
+                    LOG.warn("{} read={}; expected={}", FileUtils.fileName(getFile()), data.length, firstPage.getPageHeader().getDataLength());
                 }
                 return data;
             }
@@ -2513,7 +2499,7 @@ public class BFile extends BTree {
                     .getStatus() == MULTI_PAGE)) {
                 final IOException e = new IOException("not a data-page: "
                         + p.getPageHeader().getStatus());
-                LOG.debug("not a data-page: " + p.getPageInfo(), e);
+                LOG.debug("not a data-page: {}", p.getPageInfo(), e);
                 throw e;
             }
             this.data = data;
@@ -2540,12 +2526,12 @@ public class BFile extends BTree {
             for(short pos = 0; pos < dlen; ) {
                 final short tid = ByteConversion.byteToShort(data, pos);
                 if (tid < 0) {
-                    LOG.error("Invalid tid found: " + tid + "; ignoring rest of page ...");
+                    LOG.error("Invalid tid found: {}; ignoring rest of page ...", tid);
                     ph.setDataLength(pos);
                     return;
                 }
                 if(tid >= offsets.length) {
-                    LOG.error("Problematic tid found: " + tid + "; trying to recover ...");
+                    LOG.error("Problematic tid found: {}; trying to recover ...", tid);
                     final short[] t = new short[tid + 1];
                     Arrays.fill(t, (short)-1);
                     System.arraycopy(offsets, 0, t, 0, offsets.length);
@@ -2607,8 +2593,7 @@ public class BFile extends BTree {
         @Override
         public void setOffset(final short tid, final int offset) {
             if (offsets == null) {
-                LOG.warn("page: " + page.getPageNum() + " file: " + FileUtils.fileName(getFile()) + " status: " +
-                    getPageHeader().getStatus());
+                LOG.warn("page: {} file: {} status: {}", page.getPageNum(), FileUtils.fileName(getFile()), getPageHeader().getStatus());
                 throw new RuntimeException("page offsets not initialized");
             }
             offsets[tid] = (short)offset;

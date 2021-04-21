@@ -97,7 +97,7 @@ public abstract class DOMTransaction<T> {
             file.setCurrentDocument(document);
             return start();
         } catch(final LockException e) {
-            LOG.error("Failed to acquire read lock on " + FileUtils.fileName(file.getFile()), e);
+            LOG.error("Failed to acquire read lock on {}", FileUtils.fileName(file.getFile()), e);
             return null;
         } catch(final ReadOnlyException e) {
             LOG.error(e.getMessage(), e);

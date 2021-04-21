@@ -142,7 +142,7 @@ public class XSLTServlet extends HttpServlet {
                     }
 
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Taking XSLT input from request attribute " + sourceAttrib);
+                        LOG.debug("Taking XSLT input from request attribute {}", sourceAttrib);
                     }
 
                 } else {

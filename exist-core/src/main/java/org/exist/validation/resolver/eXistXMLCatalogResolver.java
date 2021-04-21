@@ -65,7 +65,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
 
     eXistXMLCatalogResolver(java.lang.String[] catalogs, boolean preferPublic) {
         super(catalogs, preferPublic);
-        LOG.debug("Initializing using catalogs, preferPublic=" + preferPublic);
+        LOG.debug("Initializing using catalogs, preferPublic={}", preferPublic);
     }
 
     private final static Logger LOG = LogManager.getLogger(eXistXMLCatalogResolver.class);
@@ -94,16 +94,16 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
      * @see org.apache.xerces.util.XMLCatalogResolver#resolveEntity(String, String)
      */
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-        LOG.debug("Resolving publicId='" + publicId + "', systemId='" + systemId + "'");
+        LOG.debug("Resolving publicId='{}', systemId='{}'", publicId, systemId);
         InputSource retValue = super.resolveEntity(publicId, systemId);
 
         if (retValue == null) {
             retValue = resolveEntityFallback(publicId, systemId);
         }
 
-        LOG.debug("Resolved " + (retValue != null));
+        LOG.debug("Resolved {}", retValue != null);
         if (retValue != null) {
-            LOG.debug("PublicId='" + retValue.getPublicId() + "' SystemId=" + retValue.getSystemId());
+            LOG.debug("PublicId='{}' SystemId={}", retValue.getPublicId(), retValue.getSystemId());
         }
         return retValue;
     }
@@ -137,13 +137,12 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
      * @see org.apache.xerces.util.XMLCatalogResolver#resolveResource(String, String, String, String, String)
      */
     public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
-        LOG.debug("Resolving type='" + type + "', namespaceURI='" + namespaceURI + "', publicId='" + publicId + "', systemId='" + systemId + "', baseURI='" + baseURI + "'");
+        LOG.debug("Resolving type='{}', namespaceURI='{}', publicId='{}', systemId='{}', baseURI='{}'", type, namespaceURI, publicId, systemId, baseURI);
         final LSInput retValue = super.resolveResource(type, namespaceURI, publicId, systemId, baseURI);
 
-        LOG.debug("Resolved " + (retValue != null));
+        LOG.debug("Resolved {}", retValue != null);
         if (retValue != null) {
-            LOG.debug("PublicId='" + retValue.getPublicId() + "' SystemId='"
-                    + retValue.getSystemId() + "' BaseURI='" + retValue.getBaseURI() + "'");
+            LOG.debug("PublicId='{}' SystemId='{}' BaseURI='{}'", retValue.getPublicId(), retValue.getSystemId(), retValue.getBaseURI());
         }
 
         return retValue;
@@ -153,13 +152,12 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
      * @see org.apache.xerces.util.XMLCatalogResolver#resolveEntity(String, String, String, String)
      */
     public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
-        LOG.debug("Resolving name='" + name + "', publicId='" + publicId + "', baseURI='" + baseURI + "', systemId='" + systemId + "'");
+        LOG.debug("Resolving name='{}', publicId='{}', baseURI='{}', systemId='{}'", name, publicId, baseURI, systemId);
         final InputSource retValue = super.resolveEntity(name, publicId, baseURI, systemId);
 
-        LOG.debug("Resolved " + (retValue != null));
+        LOG.debug("Resolved {}", retValue != null);
         if (retValue != null) {
-            LOG.debug("PublicId='" + retValue.getPublicId() + "' SystemId='"
-                    + retValue.getSystemId() + "'");
+            LOG.debug("PublicId='{}' SystemId='{}'", retValue.getPublicId(), retValue.getSystemId());
         }
 
         return retValue;
@@ -178,13 +176,13 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Resolving XMLResourceIdentifier: " + getXriDetails(xri));
+            LOG.debug("Resolving XMLResourceIdentifier: {}", getXriDetails(xri));
         }
 
         final String retValue = super.resolveIdentifier(xri);
-        LOG.debug("Resolved " + (retValue != null));
+        LOG.debug("Resolved {}", retValue != null);
         if (retValue != null) {
-            LOG.debug("Identifier='" + retValue + "'");
+            LOG.debug("Identifier='{}'", retValue);
         }
         return retValue;
     }
@@ -201,15 +199,14 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Resolving XMLResourceIdentifier: " + getXriDetails(xri));
+            LOG.debug("Resolving XMLResourceIdentifier: {}", getXriDetails(xri));
         }
         final XMLInputSource retValue = super.resolveEntity(xri);
 
 
-        LOG.debug("Resolved " + (retValue != null));
+        LOG.debug("Resolved {}", retValue != null);
         if (retValue != null) {
-            LOG.debug("PublicId='" + retValue.getPublicId() + "' SystemId='"
-                    + retValue.getSystemId() + "' BaseSystemId=" + retValue.getBaseSystemId());
+            LOG.debug("PublicId='{}' SystemId='{}' BaseSystemId={}", retValue.getPublicId(), retValue.getSystemId(), retValue.getBaseSystemId());
         }
 
         return retValue;
@@ -219,7 +216,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
      * @see org.apache.xerces.util.XMLCatalogResolver#getExternalSubset(String, String)
      */
     public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
-        LOG.debug("name='" + name + "' baseURI='" + baseURI + "'");
+        LOG.debug("name='{}' baseURI='{}'", name, baseURI);
         return super.getExternalSubset(name, baseURI);
     }
 

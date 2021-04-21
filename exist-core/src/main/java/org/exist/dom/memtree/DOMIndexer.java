@@ -249,7 +249,7 @@ public class DOMIndexer {
             }
 
             default: {
-                LOG.debug("Skipped indexing of in-memory node of type " + doc.nodeKind[nodeNr]);
+                LOG.debug("Skipped indexing of in-memory node of type {}", doc.nodeKind[nodeNr]);
             }
         }
     }

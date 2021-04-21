@@ -131,7 +131,7 @@ public class Delete extends Modification {
 
                     } else if (parent.getNodeType() != Node.ELEMENT_NODE) {
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("parent = " + parent.getNodeType() + "; " + parent.getNodeName());
+                            LOG.debug("parent = {}; {}", parent.getNodeType(), parent.getNodeName());
                         }
                         //transact.abort(transaction);
                         throw new XPathException(this,

@@ -161,10 +161,10 @@ public class CollectionConfiguration {
                     final Element elem = (Element) node;
                     final String mode = elem.getAttribute(VALIDATION_MODE_ATTR);
                     if (mode == null) {
-                        LOG.debug("Unable to determine validation mode in " + srcCollectionURI);
+                        LOG.debug("Unable to determine validation mode in {}", srcCollectionURI);
                         validationMode = XMLReaderObjectFactory.VALIDATION_SETTING.UNKNOWN;
                     } else {
-                        LOG.debug(srcCollectionURI + " : Validation mode=" + mode);
+                        LOG.debug("{} : Validation mode={}", srcCollectionURI, mode);
                         validationMode = XMLReaderObjectFactory.convertValidationMode(mode);
                     }
 
@@ -243,7 +243,7 @@ public class CollectionConfiguration {
             if (testOnly) {
                 throw new CollectionConfigurationException(e.getMessage(), e);
             } else {
-                LOG.warn("Trigger class not found: " + e.getMessage(), e);
+                LOG.warn("Trigger class not found: {}", e.getMessage(), e);
             }
         }
     }

@@ -111,10 +111,10 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
                     )
                     .orElse(Optional.ofNullable(config.getServletContext().getRealPath("/")).map(Paths::get));
 
-            getLog().info("EXistServlet: exist.home=" + dbHome.map(Path::toString).orElse("null"));
+            getLog().info("EXistServlet: exist.home={}", dbHome.map(Path::toString).orElse("null"));
 
             final Path cf = dbHome.map(h -> h.resolve(confFile)).orElse(Paths.get(confFile));
-            getLog().info("Reading configuration from " + cf.toAbsolutePath().toString());
+            getLog().info("Reading configuration from {}", cf.toAbsolutePath().toString());
             if (!Files.isReadable(cf)) {
                 throw new ServletException("Configuration file " + confFile + " not found or not readable");
             }
@@ -184,9 +184,9 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
             }
 
             if (getDefaultUser() != null) {
-                getLog().info("Using default user " + getDefaultUsername() + " for all unauthorized requests.");
+                getLog().info("Using default user {} for all unauthorized requests.", getDefaultUsername());
             } else {
-                getLog().error("Default user " + getDefaultUsername() + " cannot be found.  A BASIC AUTH challenge will be the default.");
+                getLog().error("Default user {} cannot be found.  A BASIC AUTH challenge will be the default.", getDefaultUsername());
             }
         } else {
             getLog().info("No default user.  All requires must be authorized or will result in a BASIC AUTH challenge.");
@@ -230,8 +230,8 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
 	
 	            final String username = ((XmldbPrincipal) principal).getName();
 	            final String password = ((XmldbPrincipal) principal).getPassword();
-	
-	            getLog().info("Validating Principle: " + username);
+
+                getLog().info("Validating Principle: {}", username);
 	            try {
 	                return getPool().getSecurityManager().authenticate(username, password);
 	            } catch (final AuthenticationException e) {

@@ -103,12 +103,11 @@ public class RecoveryManager {
                         // record, we compare the LSN stored in it with the current LSN.
                         if (checkpoint.getStoredLsn().equals(checkpoint.getLsn())) {
                             checkpointFound = true;
-                            LOG.debug("Database is in clean state. Last checkpoint: " +
-                                    checkpoint.getDateString());
+                            LOG.debug("Database is in clean state. Last checkpoint: {}", checkpoint.getDateString());
                         }
                     }
                 } catch (final LogException e) {
-                    LOG.info("Reading last journal log entry failed: " + e.getMessage() + ". Will scan the log...");
+                    LOG.info("Reading last journal log entry failed: {}. Will scan the log...", e.getMessage());
                     // if an exception occurs at this point, the journal file is probably incomplete,
                     // which indicates a db crash
                     checkpointFound = false;
@@ -142,14 +141,14 @@ public class RecoveryManager {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Caught exception while reading log", e);
                         }
-                        LOG.warn("Last readable journal log entry lsn: " + lastLsn);
+                        LOG.warn("Last readable journal log entry lsn: {}", lastLsn);
                     }
 
                     // if the last checkpoint record is not the last record in the file
                     // we need a recovery.
                     if ((lastCheckpoint == null || !lastCheckpoint.getLsn().equals(lastLsn)) &&
                             txnsStarted.size() > 0) {
-                        LOG.info("Dirty transactions: " + txnsStarted.size());
+                        LOG.info("Dirty transactions: {}", txnsStarted.size());
                         // starting recovery: reposition the log reader to the last checkpoint
                         if (lastCheckpoint == null) {
                             reader.positionFirst();
@@ -175,7 +174,7 @@ public class RecoveryManager {
                                 doRecovery(txnsStarted.size(), last, reader, lastLsn);
 
                             } catch (final IOException e) {
-                                LOG.error("Error whilst closing the Blob Store after recovery: " + e.getMessage(), e);
+                                LOG.error("Error whilst closing the Blob Store after recovery: {}", e.getMessage(), e);
                             }
                         } catch (final LogException e) {
                             // if restartOnError == true, we try to bring up the database even if there
@@ -254,7 +253,8 @@ public class RecoveryManager {
 
             // ------- REDO ---------
             if (LOG.isInfoEnabled())
-                {LOG.info("First pass: redoing " + txnCount + " transactions...");}
+                {
+                    LOG.info("First pass: redoing {} transactions...", txnCount);}
             final ProgressBar progress = new ProgressBar("Redo ", FileUtils.sizeQuietly(last));
             Loggable next = null;
             int redoCnt = 0;
@@ -284,16 +284,17 @@ public class RecoveryManager {
                 LOG.error("Exception caught while redoing transactions. Aborting recovery to avoid possible damage. " +
                     "Before starting again, make sure to run a check via the emergency export tool.", e);
                 if (next != null)
-                    {LOG.info("Log entry that caused the exception: " + next.dump());}
+                    {
+                        LOG.info("Log entry that caused the exception: {}", next.dump());}
                 throw new LogException("Recovery aborted. ");
             } finally {
-                LOG.info("Redo processed " + redoCnt + " out of " + txnCount + " transactions.");
+                LOG.info("Redo processed {} out of {} transactions.", redoCnt, txnCount);
             }
 
             // ------- UNDO ---------
             if (LOG.isInfoEnabled())
-                {LOG.info("Second pass: undoing dirty transactions. Uncommitted transactions: " +
-                        runningTxns.size());}
+                {
+                    LOG.info("Second pass: undoing dirty transactions. Uncommitted transactions: {}", runningTxns.size());}
             // see if there are uncommitted transactions pending
             if (runningTxns.size() > 0) {
                 // do a reverse scan of the log, undoing all uncommitted transactions
@@ -320,11 +321,10 @@ public class RecoveryManager {
                         }
                     }
                 } catch (final Exception e) {
-                    LOG.warn("Exception caught while undoing dirty transactions. Remaining transactions " +
-                            "to be undone: " + runningTxns.size() + ". Aborting recovery to avoid possible damage. " +
-                            "Before starting again, make sure to run a check via the emergency export tool.", e);
+                    LOG.warn("Exception caught while undoing dirty transactions. Remaining transactions to be undone: {}. Aborting recovery to avoid possible damage. Before starting again, make sure to run a check via the emergency export tool.", runningTxns.size(), e);
                     if (next != null)
-                        {LOG.warn("Log entry that caused the exception: " + next.dump());}
+                        {
+                            LOG.warn("Log entry that caused the exception: {}", next.dump());}
                     throw new LogException("Recovery aborted", e);
                 }
             }
