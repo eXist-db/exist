@@ -106,7 +106,7 @@ public class TemporaryFileManager {
          */
         tmpFolder.toFile().deleteOnExit();
 
-        LOG.info("Temporary folder is: " + tmpFolder.toAbsolutePath().toString());
+        LOG.info("Temporary folder is: {}", tmpFolder.toAbsolutePath().toString());
     }
 
     public final Path getTemporaryFile() throws IOException {
@@ -132,13 +132,12 @@ public class TemporaryFileManager {
         try {
             if (Files.deleteIfExists(tempFile)) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Deleted temporary file: " + tempFile.toAbsolutePath().toString());
+                    LOG.debug("Deleted temporary file: {}", tempFile.toAbsolutePath().toString());
                 }
             }
         } catch (final IOException e) {
             // this can often occur on Microsoft Windows (especially if the file was memory mapped!) :-/
-            LOG.warn("Unable to delete temporary file: " + tempFile.toAbsolutePath().toString() + " due to: "
-                    + e.getMessage());
+            LOG.warn("Unable to delete temporary file: {} due to: {}", tempFile.toAbsolutePath().toString(), e.getMessage());
         }
     }
 
@@ -158,7 +157,7 @@ public class TemporaryFileManager {
                     FileUtils.deleteQuietly(dir);
                 } else {
                     // there is a lock file present, we must determine if it is locked (by another eXist-db instance)
-                    try (FileChannel otherLockChannel = FileChannel.open(lockPath, StandardOpenOption.WRITE)) {
+                    try (final FileChannel otherLockChannel = FileChannel.open(lockPath, StandardOpenOption.WRITE)) {
                         if (otherLockChannel.tryLock() != null) {
                             // not locked... so we now have the lock
 
