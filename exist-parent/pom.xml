@@ -455,7 +455,7 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.13.1</version>
+                <version>4.13.2</version>
                 <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
                 <exclusions>
                     <exclusion>
