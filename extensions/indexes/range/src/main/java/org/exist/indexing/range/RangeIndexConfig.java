@@ -135,9 +135,9 @@ public class RangeIndexConfig {
                     }
 
                     if(uri != null) {
-                        LOG.error("Invalid range index configuration ({}): {}", uri, e.getMessage());
+                        LOG.error("Invalid range index configuration (" + uri + "): " + e.getMessage());
                     } else {
-                        LOG.error("Invalid range index configuration: {}", e.getMessage());
+                        LOG.error("Invalid range index configuration: " + e.getMessage());
                     }
                 }
             }
