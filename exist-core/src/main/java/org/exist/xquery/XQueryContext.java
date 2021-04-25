@@ -3333,7 +3333,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         @Override
         public void debug() {
             if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("XQueryContext: %s document update listeners", listeners.get().size()));
+                LOG.debug("XQueryContext: {} document update listeners", listeners.get().size());
             }
 
             listeners.get().forEach(UpdateListener::debug);

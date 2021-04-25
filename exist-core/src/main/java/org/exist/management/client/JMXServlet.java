@@ -203,13 +203,13 @@ public class JMXServlet extends HttpServlet {
             dataDir = Paths.get(jmxDataDir).normalize();
         }
         if (!Files.isDirectory(dataDir) || !Files.isWritable(dataDir)) {
-            LOG.error("Cannot access directory " + WEBINF_DATA_DIR);
+            LOG.error("Cannot access directory {}", WEBINF_DATA_DIR);
         }
 
         // Setup token and tokenfile
         obtainTokenFileReference();
 
-        LOG.info(String.format("JMXservlet token: %s", getToken()));
+        LOG.info("JMXservlet token: {}", getToken());
 
     }
 
@@ -221,7 +221,7 @@ public class JMXServlet extends HttpServlet {
         try {
             localhostAddresses.add(InetAddress.getLocalHost().getHostAddress());
         } catch (UnknownHostException ex) {
-            LOG.warn(String.format("Unable to get HostAddress for localhost: %s", ex.getMessage()));
+            LOG.warn("Unable to get HostAddress for localhost: {}", ex.getMessage());
         }
 
         // The configured Localhost addresses
@@ -230,7 +230,7 @@ public class JMXServlet extends HttpServlet {
                 localhostAddresses.add(address.getHostAddress());
             }
         } catch (UnknownHostException ex) {
-            LOG.warn(String.format("Unable to retrieve ipaddresses for localhost: %s", ex.getMessage()));
+            LOG.warn("Unable to retrieve ipaddresses for localhost: {}", ex.getMessage());
         }
 
         if (localhostAddresses.isEmpty()) {
@@ -266,7 +266,7 @@ public class JMXServlet extends HttpServlet {
 
         if (tokenFile == null) {
             tokenFile = dataDir.resolve(TOKEN_FILE);
-            LOG.info(String.format("Token file:  %s", tokenFile.toAbsolutePath().toAbsolutePath()));
+            LOG.info("Token file:  {}", tokenFile.toAbsolutePath().toAbsolutePath());
         }
     }
 
@@ -308,7 +308,7 @@ public class JMXServlet extends HttpServlet {
                 LOG.error(ex.getMessage());
             }
 
-            LOG.debug(String.format("Token written to file %s", tokenFile.toAbsolutePath().toString()));
+            LOG.debug("Token written to file {}", tokenFile.toAbsolutePath().toString());
 
         }
 

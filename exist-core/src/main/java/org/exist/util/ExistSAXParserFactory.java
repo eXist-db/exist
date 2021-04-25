@@ -117,7 +117,7 @@ public class ExistSAXParserFactory {
         if (factory == null) {
             factory = SAXParserFactory.newInstance();
             if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("Using default SAXParserFactory '%s'", factory.getClass().getCanonicalName()));
+                LOG.debug("Using default SAXParserFactory '{}'", factory.getClass().getCanonicalName());
             }
         }
 

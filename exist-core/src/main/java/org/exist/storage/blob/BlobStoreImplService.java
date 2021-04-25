@@ -96,7 +96,7 @@ public class BlobStoreImplService implements BlobStoreService, BrokerPoolService
             try {
                 this.blobStore.close();
             } catch (final IOException e) {
-                LOG.error("Clean shutdown of Blob Store failed: {}", e);
+                LOG.error("Clean shutdown of Blob Store failed: {}", e.getMessage(), e);
             }
         }
     }

@@ -128,7 +128,7 @@ public class DatabaseResources {
         final String collection = params.get(COLLECTION);
         
         if(logger.isDebugEnabled()) {
-            logger.debug(String.format("collection=%s namespace=%s publicId=%s catalogPath=%s", collection, namespace, publicId, catalogPath));
+            logger.debug("collection={} namespace={} publicId={} catalogPath={}", collection, namespace, publicId, catalogPath);
         }
 
         Sequence result= null;

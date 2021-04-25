@@ -73,7 +73,7 @@ public class JnlpServlet extends HttpServlet {
             LOGGER.error(txt);
             throw new ServletException(txt);
         } else {
-            LOGGER.debug(String.format("jars location=%s", libDir.get().normalize().toAbsolutePath().toString()));
+            LOGGER.debug("jars location={}", libDir.get().normalize().toAbsolutePath().toString());
             jf = new JnlpJarFiles(libDir.get().normalize());
         }
     }

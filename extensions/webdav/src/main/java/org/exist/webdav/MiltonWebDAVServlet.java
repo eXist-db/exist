@@ -84,6 +84,6 @@ public class MiltonWebDAVServlet extends MiltonServlet {
         // Pass value to Milton
         httpManager.setEnableExpectContinue(enableExpectContinue);
 
-        LOG.debug(String.format("Set 'Enable Expect Continue' to %s", enableExpectContinue));
+        LOG.debug("Set 'Enable Expect Continue' to {}", enableExpectContinue);
     }
 }
