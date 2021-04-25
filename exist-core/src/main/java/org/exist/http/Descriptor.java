@@ -376,7 +376,7 @@ public class Descriptor implements ErrorHandler {
             //flush the buffer to file
             bufWriteReplayLog.flush();
         } catch (final IOException ioe) {
-            LOG.warn("Could not write request replay log: {}", ioe);
+            LOG.warn("Could not write request replay log: {}", ioe.getMessage(), ioe);
             return;
         }
     }
