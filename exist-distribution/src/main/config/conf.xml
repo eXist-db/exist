@@ -743,19 +743,15 @@
     <parser>
 
         <xml>
-
             <features>
-
-                <!-- NOTE: the following feature flags should likely be set in production to ensure a secure environment -->
-
                 <!--
+                    NOTE: the following feature flags should likely be set in
+                    production to ensure a secure environment
+                -->
                 <feature name="http://xml.org/sax/features/external-general-entities" value="false"/>
                 <feature name="http://xml.org/sax/features/external-parameter-entities" value="false"/>
                 <feature name="http://javax.xml.XMLConstants/feature/secure-processing" value="true"/>
-                -->
-
             </features>
-
         </xml>
 
         <!-- html-to-xml class="org.ccil.cowan.tagsoup.Parser"/ -->
