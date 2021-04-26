@@ -74,7 +74,7 @@ public class ExistDocument extends ExistResource {
     public ExistDocument(XmldbURI uri, BrokerPool pool) {
 
         if (LOG.isTraceEnabled()) {
-            LOG.trace(String.format("New document object for %s", uri));
+            LOG.trace("New document object for {}", uri);
         }
 
         brokerPool = pool;
@@ -192,7 +192,7 @@ public class ExistDocument extends ExistResource {
 
         } finally {
             if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("Stream stopped, duration %s msec.", System.currentTimeMillis() - startTime));
+                LOG.debug("Stream stopped, duration {} msec.", System.currentTimeMillis() - startTime);
             }
         }
 
@@ -231,7 +231,7 @@ public class ExistDocument extends ExistResource {
     void delete() {
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Deleting %s", xmldbUri));
+            LOG.debug("Deleting {}", xmldbUri);
         }
 
         // Need to split path into collection and document name
@@ -254,7 +254,7 @@ public class ExistDocument extends ExistResource {
             // Open document if possible, else abort
             try(final LockedDocument lockedResource = collection.getDocumentWithLock(broker, docName, LockMode.WRITE_LOCK)) {
                 if (lockedResource == null) {
-                    LOG.debug(String.format("No resource found for path: %s", xmldbUri));
+                    LOG.debug("No resource found for path: {}", xmldbUri);
                     txnManager.abort(txn);
                     return;
                 }
@@ -296,7 +296,7 @@ public class ExistDocument extends ExistResource {
     public LockToken getCurrentLock() {
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Get current lock " + xmldbUri);
+            LOG.debug("Get current lock {}", xmldbUri);
         }
 
         try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
@@ -305,7 +305,7 @@ public class ExistDocument extends ExistResource {
             final DocumentImpl document = lockedDocument.getDocument();
 
             if (document == null) {
-                LOG.debug("No resource found for path: " + xmldbUri);
+                LOG.debug("No resource found for path: {}", xmldbUri);
                 return null;
             }
 
@@ -314,7 +314,7 @@ public class ExistDocument extends ExistResource {
             if (lock == null) {
 
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Document " + xmldbUri + " does not contain userlock");
+                    LOG.debug("Document {} does not contain userlock", xmldbUri);
                 }
                 return null;
             }
@@ -361,7 +361,7 @@ public class ExistDocument extends ExistResource {
             DocumentAlreadyLockedException, EXistException {
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("create lock " + xmldbUri);
+            LOG.debug("create lock {}", xmldbUri);
         }
 
         // Try to get document
@@ -372,7 +372,7 @@ public class ExistDocument extends ExistResource {
             if (document == null) {
 
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug(String.format("No resource found for path: %s", xmldbUri));
+                    LOG.debug("No resource found for path: {}", xmldbUri);
                 }
                 //return null; // throw exception?
                 throw new EXistException("No resource found.");
@@ -392,7 +392,7 @@ public class ExistDocument extends ExistResource {
                     && !userLock.getName().equals(subject.getName())
                     && !subject.hasDbaRole()) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug(String.format("Resource is locked by user %s.", userLock.getName()));
+                    LOG.debug("Resource is locked by user {}.", userLock.getName());
                 }
                 throw new PermissionDeniedException(userLock.getName());
             }
@@ -449,7 +449,7 @@ public class ExistDocument extends ExistResource {
     void unlock() throws PermissionDeniedException, DocumentNotLockedException, EXistException {
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("unlock " + xmldbUri);
+            LOG.debug("unlock {}", xmldbUri);
         }
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
@@ -471,13 +471,13 @@ public class ExistDocument extends ExistResource {
 
             // Check if Resource is already locked.
             if (lock == null) {
-                LOG.debug(String.format("Resource %s is not locked.", xmldbUri));
+                LOG.debug("Resource {} is not locked.", xmldbUri);
                 throw new DocumentNotLockedException("" + xmldbUri);
             }
 
             // Check if Resource is from subject
             if (!lock.getName().equals(subject.getName()) && !subject.hasDbaRole()) {
-                LOG.debug(String.format("Resource lock is from user %s", lock.getName()));
+                LOG.debug("Resource lock is from user {}", lock.getName());
                 throw new PermissionDeniedException(lock.getName());
             }
 
@@ -509,7 +509,7 @@ public class ExistDocument extends ExistResource {
     void resourceCopyMove(XmldbURI destCollectionUri, String newName, Mode mode) throws EXistException {
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("%s %s to %s named %s", mode, xmldbUri, destCollectionUri, newName));
+            LOG.debug("{} {} to {} named {}", String.valueOf(mode), xmldbUri, destCollectionUri, newName);
         }
 
         XmldbURI newNameUri = null;
@@ -544,7 +544,7 @@ public class ExistDocument extends ExistResource {
             // Open document if possible, else abort
             srcDocument = srcCollection.getDocument(broker, srdDocumentUri);
             if (srcDocument == null) {
-                LOG.debug(String.format("No resource found for path: %s", xmldbUri));
+                LOG.debug("No resource found for path: {}", xmldbUri);
                 txnManager.abort(txn);
                 return;
             }
@@ -552,7 +552,7 @@ public class ExistDocument extends ExistResource {
             // Open collection if possible, else abort
             try (final Collection destCollection = broker.openCollection(destCollectionUri, LockMode.WRITE_LOCK)) {
                 if (destCollection == null) {
-                    LOG.debug(String.format("Destination collection %s does not exist.", xmldbUri));
+                    LOG.debug("Destination collection {} does not exist.", xmldbUri);
                     txnManager.abort(txn);
                     return;
                 }
@@ -571,7 +571,7 @@ public class ExistDocument extends ExistResource {
                 txnManager.commit(txn);
 
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug(String.format("Document %sd successfully", mode));
+                    LOG.debug("Document {}d successfully", mode);
                 }
             }
         } catch (LockException e) {
@@ -588,7 +588,7 @@ public class ExistDocument extends ExistResource {
 
         } finally {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Finished " + mode);
+                LOG.debug("Finished {}", mode);
             }
         }
     }
@@ -597,7 +597,7 @@ public class ExistDocument extends ExistResource {
             DocumentAlreadyLockedException, EXistException, DocumentNotLockedException {
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("refresh lock %s  lock=%s", xmldbUri, token));
+            LOG.debug("refresh lock {}  lock={}", xmldbUri, token);
         }
 
         if (token == null) {
@@ -614,7 +614,7 @@ public class ExistDocument extends ExistResource {
             final DocumentImpl document = lockedDocument.getDocument();
             if (document == null) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug(String.format("No resource found for path: %s", xmldbUri));
+                    LOG.debug("No resource found for path: {}", xmldbUri);
                 }
                 //return null; // throw exception?
                 throw new EXistException("No resource found.");
@@ -635,7 +635,7 @@ public class ExistDocument extends ExistResource {
             if (userLock.getName() != null && !userLock.getName().equals(subject.getName())
                     && !subject.hasDbaRole()) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug(String.format("Resource is locked by %s", userLock.getName()));
+                    LOG.debug("Resource is locked by {}", userLock.getName());
                 }
                 throw new PermissionDeniedException(userLock.getName());
             }

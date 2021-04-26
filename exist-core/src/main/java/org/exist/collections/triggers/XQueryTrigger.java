@@ -206,7 +206,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
  		}
  		
  		//no query to execute
- 		LOG.error("XQuery Trigger for: '" + parent.getURI() + "' is missing its XQuery parameter");
+		LOG.error("XQuery Trigger for: '{}' is missing its XQuery parameter", parent.getURI());
 	}
 	
 	/**

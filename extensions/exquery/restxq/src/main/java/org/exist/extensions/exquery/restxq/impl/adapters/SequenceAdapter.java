@@ -72,7 +72,7 @@ public class SequenceAdapter implements Sequence<Item> {
                     try {
                          iterator = sequence.iterate();
                     } catch(final XPathException xpe) {
-                        LOG.error("Unable to extract the underlying Sequence Iterator: " + xpe.getMessage() + ". Falling back to EMPTY_ITERATOR", xpe);
+                        LOG.error("Unable to extract the underlying Sequence Iterator: {}. Falling back to EMPTY_ITERATOR", xpe.getMessage(), xpe);
                         
                         iterator = SequenceIterator.EMPTY_ITERATOR;
                     }

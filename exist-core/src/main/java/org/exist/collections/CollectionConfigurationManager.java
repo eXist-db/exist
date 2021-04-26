@@ -119,7 +119,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
             if (conf != null) {
                 configurationDocumentName = conf.getDocName();
                 if (configurationDocumentName != null) {
-                    LOG.warn("Replacing current configuration file '" + configurationDocumentName + "'");
+                    LOG.warn("Replacing current configuration file '{}'", configurationDocumentName);
                 }
             }
             if (configurationDocumentName == null) {
@@ -239,7 +239,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
             final XmldbURI childName = i.next();
             final Collection child = broker.getCollection(path.appendInternal(childName));
             if (child == null) {
-                LOG.error("Collection is registered but could not be loaded: " + childName);
+                LOG.error("Collection is registered but could not be loaded: {}", childName);
             }
             loadAllConfigurations(broker, child);
         }
@@ -253,12 +253,12 @@ public class CollectionConfigurationManager implements BrokerPoolService {
                 if (confDoc.getFileURI().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
 
                     if (confDoc instanceof BinaryDocument) {
-                        LOG.warn("Found a possible Collection configuration document: " + confDoc.getURI() + ", however it is a Binary document! A user may have stored the document as a Binary document by mistake. Skipping...");
+                        LOG.warn("Found a possible Collection configuration document: {}, however it is a Binary document! A user may have stored the document as a Binary document by mistake. Skipping...", confDoc.getURI());
                         continue;
                     }
 
                     if (LOG.isTraceEnabled()) {
-                        LOG.trace("Reading collection configuration from '" + confDoc.getURI() + "'");
+                        LOG.trace("Reading collection configuration from '{}'", confDoc.getURI());
                     }
 
                     final CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool());
@@ -325,7 +325,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
         try(final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(lock, LockMode.WRITE_LOCK)) {
 
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Invalidating collection " + collectionPath + " and subcollections");
+                LOG.debug("Invalidating collection {} and subcollections", collectionPath);
             }
 
             CollectionURI uri = new CollectionURI(collectionPath.getRawCollectionPath());
@@ -352,7 +352,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
 
         try(final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(lock, LockMode.WRITE_LOCK)) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Invalidating collection " + collectionPath);
+                LOG.debug("Invalidating collection {}", collectionPath);
             }
 
             configurations.remove(new CollectionURI(collectionPath.getRawCollectionPath()));
@@ -419,7 +419,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
 
                 // Configure the root collection
                 addConfiguration(txn, broker, collection, configuration);
-                LOG.info("Configured '" + collection.getURI() + "'");
+                LOG.info("Configured '{}'", collection.getURI());
             }
 
             transact.commit(txn);

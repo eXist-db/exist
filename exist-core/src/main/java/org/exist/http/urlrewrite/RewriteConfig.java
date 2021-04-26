@@ -167,7 +167,7 @@ public class RewriteConfig {
 
     private void configure(final String controllerConfig) throws ServletException {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Loading XQueryURLRewrite configuration from " + controllerConfig);
+            LOG.debug("Loading XQueryURLRewrite configuration from {}", controllerConfig);
         }
 
         if (controllerConfig.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {

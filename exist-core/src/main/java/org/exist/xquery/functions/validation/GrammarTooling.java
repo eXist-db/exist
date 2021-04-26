@@ -146,12 +146,12 @@ public class GrammarTooling extends BasicFunction  {
             final Sequence result = new ValueSequence();
             
             final int before = countTotalNumberOfGrammar(grammarpool);
-            LOG.debug("Clearing "+before+" grammars");
+            LOG.debug("Clearing {} grammars", before);
             
             clearGrammarPool(grammarpool);
             
             final int after = countTotalNumberOfGrammar(grammarpool);
-            LOG.debug("Remained "+after+" grammars");
+            LOG.debug("Remained {} grammars", after);
             
             final int delta=before-after;
             
@@ -190,8 +190,8 @@ public class GrammarTooling extends BasicFunction  {
                 if(url.startsWith("/")){
                     url="xmldb:exist://"+url;
                 }
-               
-                LOG.debug("Parsing "+url);
+
+                LOG.debug("Parsing {}", url);
                 
                 // parse XSD grammar
                 try {
@@ -216,7 +216,7 @@ public class GrammarTooling extends BasicFunction  {
                 
             }
 
-            LOG.debug("Successfully parsed "+allGrammars.size()+" grammars.");
+            LOG.debug("Successfully parsed {} grammars.", allGrammars.size());
             
             // Send all XSD grammars to grammarpool
             Grammar[] grammars = new Grammar[allGrammars.size()];

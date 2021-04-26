@@ -203,7 +203,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
                 if(acc != null) {
                     set.add(acc);
                 } else {
-                    LOG.warn("Unable to resolve reference to group manager '" + ref.getName() + "' for group '" + getName() + "'");
+                    LOG.warn("Unable to resolve reference to group manager '{}' for group '{}'", ref.getName(), getName());
                 }
             }
         }

@@ -140,8 +140,7 @@ public class FunDoc extends Function {
 
                 @Override
                 public void debug() {
-                    logger.debug("UpdateListener: Line: " + getLine() +
-                        ": " + FunDoc.this.toString());
+                    logger.debug("UpdateListener: Line: {}: {}", getLine(), FunDoc.this.toString());
                 }
             };
             context.registerUpdateListener(listener);

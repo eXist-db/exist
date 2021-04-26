@@ -64,12 +64,12 @@ public class SortIndex extends AbstractIndex implements RawBackupSupport {
     @Override
     public void open() throws DatabaseConfigurationException {
         final Path file = getDataDir().resolve(FILE_NAME);
-        LOG.debug("Creating '" + FileUtils.fileName(file) + "'...");
+        LOG.debug("Creating '{}'...", FileUtils.fileName(file));
         try {
             btree = new BTreeStore(pool, SORT_INDEX_ID, FILE_FORMAT_VERSION_ID, false,
                     file, pool.getCacheManager());
         } catch (final DBException e) {
-            LOG.error("Failed to initialize structural index: " + e.getMessage(), e);
+            LOG.error("Failed to initialize structural index: {}", e.getMessage(), e);
             throw new DatabaseConfigurationException(e.getMessage(), e);
         }
     }
@@ -88,7 +88,7 @@ public class SortIndex extends AbstractIndex implements RawBackupSupport {
         try(final ManagedLock<ReentrantLock> btreeLock = lockManager.acquireBtreeWriteLock(btree.getLockName())) {
             btree.flush();
         } catch (final LockException e) {
-            LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(btree.getFile()) + "'", e);
+            LOG.warn("Failed to acquire lock for '{}'", FileUtils.fileName(btree.getFile()), e);
             //TODO : throw an exception ? -pb
         } catch (final DBException e) {
             LOG.error(e.getMessage(), e);

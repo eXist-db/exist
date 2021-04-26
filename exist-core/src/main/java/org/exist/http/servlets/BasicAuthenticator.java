@@ -70,7 +70,7 @@ public class BasicAuthenticator implements Authenticator {
 				password = p < 0 ? null : s.substring(p + 1);
 			}
 		} catch(final IllegalArgumentException iae) {
-			LOG.warn("Invalid BASIC authentication header received: " + iae.getMessage(), iae);
+			LOG.warn("Invalid BASIC authentication header received: {}", iae.getMessage(), iae);
 			credentials = null;
 		}
 

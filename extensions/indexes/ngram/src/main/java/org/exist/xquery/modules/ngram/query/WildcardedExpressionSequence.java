@@ -97,11 +97,11 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
         // TODO: Should probably return nodes the satisfying the size constraint when wildcards are present
 
         if (expressions.size() != 1 || !(expressions.get(0) instanceof EvaluatableExpression)) { // Should not happen.
-            LOG.error("Expression " + toString() + " could not be evaluated");
+            LOG.error("Expression {} could not be evaluated", toString());
             throw new XPathException("Could not evaluate wildcarded query.");
         }
 
-        LOG.trace("Evaluating expression " + toString());
+        LOG.trace("Evaluating expression {}", toString());
         NodeSet result = ((EvaluatableExpression) expressions.get(0)).eval(index, docs, qnames, nodeSet, axis,
             expressionId);
 

@@ -670,7 +670,7 @@ public class MutableCollection implements Collection {
                     }
                 } else {
                     if(LOG.isDebugEnabled()) {
-                        LOG.debug("Document " + name + " not found!");
+                        LOG.debug("Document {} not found!", name);
                     }
                 }
 
@@ -941,7 +941,7 @@ public class MutableCollection implements Collection {
                     doc.setCollection(collection);
 
                     if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID) {
-                        LOG.error("Document must have ID. [" + doc + "]");
+                        LOG.error("Document must have ID. [{}]", doc);
                         throw new EXistException("Document must have ID.");
                     }
 
@@ -1234,7 +1234,7 @@ public class MutableCollection implements Collection {
             */
 
             if(LOG.isDebugEnabled()) {
-                LOG.debug("storing document " + document.getDocId() + " ...");
+                LOG.debug("storing document {} ...", document.getDocId());
             }
 
             //Sanity check
@@ -1443,14 +1443,14 @@ public class MutableCollection implements Collection {
                 }
 
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Scanning document " + getURI().append(name));
+                    LOG.debug("Scanning document {}", getURI().append(name));
                 }
 
                 validator.accept(info);
                 // new document is valid: remove old document
                 if (oldDoc != null) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("removing old document " + oldDoc.getFileURI());
+                        LOG.debug("removing old document {}", oldDoc.getFileURI());
                     }
                     updateModificationTime(document);
 
@@ -1477,7 +1477,7 @@ public class MutableCollection implements Collection {
                     }
 
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("removed old document " + oldDoc.getFileURI());
+                        LOG.debug("removed old document {}", oldDoc.getFileURI());
                     }
                 } else {
                     addDocument(transaction, broker, document);
@@ -1569,8 +1569,8 @@ public class MutableCollection implements Collection {
         if(oldDoc != null) {   
             
             /* update document */
-            
-            LOG.debug("Found old doc " + oldDoc.getDocId());
+
+            LOG.debug("Found old doc {}", oldDoc.getDocId());
             
             // check if the document is locked by another user
             final Account lockUser = oldDoc.getUserLock();
@@ -1711,7 +1711,7 @@ public class MutableCollection implements Collection {
 
             if (oldDoc != null) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("removing old document db entry" + oldDoc.getFileURI());
+                    LOG.debug("removing old document db entry{}", oldDoc.getFileURI());
                 }
 
                 if (!broker.preserveOnCopy(preserve)) {

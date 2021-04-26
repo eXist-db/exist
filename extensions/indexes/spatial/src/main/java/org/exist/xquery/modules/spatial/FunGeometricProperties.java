@@ -319,7 +319,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                 } else if (isCalledAs("isValid")) {
                     propertyName = "IS_VALID";
                 } else {
-                    logger.error("Unknown spatial property: " + mySignature.getName().getLocalPart());
+                    logger.error("Unknown spatial property: {}", mySignature.getName().getLocalPart());
                     throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalPart());
                 }
                 NodeValue geometryNode = (NodeValue)nodes.itemAt(0);
@@ -388,7 +388,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                     } else if (isCalledAs("isValid")) {
                         result = new BooleanValue(geometry.isValid());
                     } else {
-                        logger.error("Unknown spatial property: " + mySignature.getName().getLocalPart());
+                        logger.error("Unknown spatial property: {}", mySignature.getName().getLocalPart());
                         throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalPart());
                     }
                 }

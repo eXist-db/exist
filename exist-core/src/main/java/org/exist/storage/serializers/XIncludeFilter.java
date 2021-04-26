@@ -275,7 +275,7 @@ public class XIncludeFilter implements Receiver {
         }
 
         // parse the href attribute
-        LOG.debug("found href=\"" + href + "\"");
+        LOG.debug("found href=\"{}\"", href);
         //String xpointer = null;
         //String docName = href;
 
@@ -444,7 +444,7 @@ public class XIncludeFilter implements Receiver {
                     compiled.getContext().updateContext(context);
                     context.getWatchDog().reset();
                 }
-                LOG.info("xpointer query: " + ExpressionDumper.dump((Expression) compiled));
+                LOG.info("xpointer query: {}", ExpressionDumper.dump((Expression) compiled));
                 Sequence contextSeq = null;
                 if (memtreeDoc != null) {
                     contextSeq = memtreeDoc;
@@ -455,7 +455,7 @@ public class XIncludeFilter implements Receiver {
 
                     if (Type.subTypeOf(seq.getItemType(), Type.NODE)) {
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("xpointer found: " + seq.getItemCount());
+                            LOG.debug("xpointer found: {}", seq.getItemCount());
                         }
 
                         NodeValue node;
@@ -582,7 +582,7 @@ public class XIncludeFilter implements Receiver {
             try {
                 param = URLDecoder.decode(param, "UTF-8");
                 value = URLDecoder.decode(value, "UTF-8");
-                LOG.debug("parameter: " + param + " = " + value);
+                LOG.debug("parameter: {} = {}", param, value);
                 parameters.put(param, value);
             } catch (final UnsupportedEncodingException e) {
                 LOG.warn(e.getMessage(), e);

@@ -357,7 +357,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     @Override
     public void removeCollection(Collection collection, DBBroker broker, boolean reindex) throws PermissionDeniedException {
         if (LOG.isDebugEnabled())
-            LOG.debug("Removing collection " + collection.getURI());
+            LOG.debug("Removing collection {}", collection.getURI());
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
@@ -369,14 +369,14 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 writer.deleteDocuments(dt);
             }
         } catch (IOException | PermissionDeniedException | LockException e) {
-            LOG.error("Error while removing lucene index: " + e.getMessage(), e);
+            LOG.error("Error while removing lucene index: {}", e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
             if (reindex) {
                 try {
                     index.sync();
                 } catch (DBException e) {
-                    LOG.warn("Exception during reindex: " + e.getMessage(), e);
+                    LOG.warn("Exception during reindex: {}", e.getMessage(), e);
                 }
             }
             mode = ReindexMode.STORE;
@@ -394,7 +394,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
             writer.deleteDocuments(dt);
         } catch (IOException e) {
-            LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
+            LOG.warn("Error while removing lucene index: {}", e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
             mode = ReindexMode.STORE;
@@ -425,7 +425,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 writer.deleteDocuments(iq);
             }
         } catch (IOException e) {
-            LOG.warn("Error while deleting lucene index entries: " + e.getMessage(), e);
+            LOG.warn("Error while deleting lucene index entries: {}", e.getMessage(), e);
         } finally {
             nodesToRemove = null;
             index.releaseWriter(writer);
@@ -507,7 +507,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 writer.addDocument(doc, analyzer);
             }
         } catch (IOException e) {
-            LOG.warn("An exception was caught while indexing document: " + e.getMessage(), e);
+            LOG.warn("An exception was caught while indexing document: {}", e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
             nodesToWrite = new ArrayList<>();
@@ -911,7 +911,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer.forceMerge(1, true);
             writer.commit();
         } catch (IOException e) {
-            LOG.warn("An exception was caught while optimizing the lucene index: " + e.getMessage(), e);
+            LOG.warn("An exception was caught while optimizing the lucene index: {}", e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
         }
@@ -949,7 +949,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             return scanIndexByQName(qnames, docs, nodes, start, end, max);
         } catch (IOException e) {
-            LOG.warn("Failed to scan index: " + e.getMessage(), e);
+            LOG.warn("Failed to scan index: {}", e.getMessage(), e);
             return new Occurrences[0];
         }
     }
@@ -964,7 +964,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 return map.values().toArray(occur);
             });
         } catch (IOException e) {
-            LOG.warn("Failed to scan index: " + e.getMessage(), e);
+            LOG.warn("Failed to scan index: {}", e.getMessage(), e);
             return new Occurrences[0];
         }
     }

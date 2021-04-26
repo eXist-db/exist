@@ -57,7 +57,7 @@ public class SessionManager {
         final Caffeine<Object, Object> cacheBuilder = Caffeine.newBuilder()
                 .expireAfterAccess(TIMEOUT, TimeUnit.MILLISECONDS);
         if(LOG.isDebugEnabled()) {
-            cacheBuilder.removalListener((key, value, cause) -> LOG.debug("Removing cached query result for session: " + key));
+            cacheBuilder.removalListener((key, value, cause) -> LOG.debug("Removing cached query result for session: {}", key));
         }
         cache = cacheBuilder.build();
     }

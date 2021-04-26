@@ -166,7 +166,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
             changeStatus(taskstatus);
             taskstatus.setStatusChangeTime();
             taskstatus.setReason(existException.toString());
-            LOG.warn("Failed to trigger db sanity check: " + existException.getMessage(), existException);
+            LOG.warn("Failed to trigger db sanity check: {}", existException.getMessage(), existException);
         }
     }
 

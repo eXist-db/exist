@@ -100,7 +100,7 @@ public class StylesheetResolverAndCompiler implements Stylesheet {
         final DocumentImpl doc = lockedDocument.getDocument();
         if (templates == null || doc.getLastModified() > lastModified) {
           if (LOG.isDebugEnabled()) {
-            LOG.debug("compiling stylesheet " + doc.getURI());
+            LOG.debug("compiling stylesheet {}", doc.getURI());
           }
           templates = compileTemplates(broker, doc, errorListener);
           lastModified = doc.getLastModified();
@@ -113,7 +113,7 @@ public class StylesheetResolverAndCompiler implements Stylesheet {
       long modified = connection.getLastModified();
       if (templates == null || modified > lastModified || modified == 0) {
         if (LOG.isDebugEnabled()) {
-          LOG.debug("compiling stylesheet " + url);
+          LOG.debug("compiling stylesheet {}", url);
         }
         try (final InputStream is = connection.getInputStream()) {
           templates = factory(broker.getBrokerPool(), errorListener).newTemplates(new StreamSource(is));

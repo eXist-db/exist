@@ -94,7 +94,7 @@ public class CreateFunction extends BasicFunction
 				DirContext ctx = (DirContext)JNDIModule.retrieveJNDIContext( context, ctxID );
 				
 				if( ctx == null ) {
-					logger.error( "jndi:create() - Invalid JNDI context handle provided: " + ctxID );
+					logger.error("jndi:create() - Invalid JNDI context handle provided: {}", ctxID);
 				} else {	
 					BasicAttributes attributes = JNDIModule.parseAttributes( args[ 2 ] );
 					
@@ -106,7 +106,7 @@ public class CreateFunction extends BasicFunction
 				}
 			}
 			catch( NamingException ne ) {
-				logger.error( "jndi:create() Create failed for dn [" + dn + "]: ", ne );
+				logger.error("jndi:create() Create failed for dn [{}]: ", dn, ne);
 				throw( new XPathException( this, "jndi:create() Create failed for dn [" + dn + "]: " + ne ) );
 			}
 		}

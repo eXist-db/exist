@@ -110,7 +110,7 @@ public class Compile extends BasicFunction {
 		  return new EmptySequence();
 		}
 		context.pushNamespaceContext();
-		logger.debug("eval: " + expr);
+		logger.debug("eval: {}", expr);
 		// TODO(pkaminsk2): why replicate XQuery.compile here?
 		
 		String error = null;

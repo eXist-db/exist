@@ -137,7 +137,7 @@ public class MessageFunctions extends BasicFunction {
                     try {
                         message = folder.getMessage(msgNum); // get the requested message number
                     } catch (IndexOutOfBoundsException iex) {
-                        logger.info("There is no message number " + msgNum);
+                        logger.info("There is no message number {}", msgNum);
                         continue;
                     }
 

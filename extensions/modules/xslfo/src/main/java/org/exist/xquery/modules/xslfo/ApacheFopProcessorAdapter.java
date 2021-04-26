@@ -145,7 +145,7 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
                         try {
                             foUserAgent.setTargetResolution(Integer.parseInt(value));
                         } catch (final NumberFormatException nfe) {
-                            LOG.warn("Unable to set DPI to: " + value);
+                            LOG.warn("Unable to set DPI to: {}", value);
                         }
                         break;
                 }

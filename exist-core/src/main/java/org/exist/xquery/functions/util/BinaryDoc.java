@@ -161,10 +161,10 @@ public class BinaryDoc extends BasicFunction {
             logger.error("Invalid resource URI", e);
             throw new XPathException(this, "Invalid resource uri", e);
         } catch (final PermissionDeniedException e) {
-            logger.error(path + ": permission denied to read resource", e);
+            logger.error("{}: permission denied to read resource", path, e);
             throw new XPathException(this, path + ": permission denied to read resource");
         } catch (final IOException | TransactionException e) {
-            logger.error(path + ": I/O error while reading resource", e);
+            logger.error("{}: I/O error while reading resource", path, e);
             throw new XPathException(this, path + ": I/O error while reading resource", e);
         }
     }

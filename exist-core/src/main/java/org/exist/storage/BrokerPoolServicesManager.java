@@ -131,7 +131,7 @@ class BrokerPoolServicesManager {
 
         brokerPoolServices.add(brokerPoolService);
         if(LOG.isTraceEnabled()) {
-            LOG.trace("Registered service: " + brokerPoolService.getClass().getSimpleName() + "...");
+            LOG.trace("Registered service: {}...", brokerPoolService.getClass().getSimpleName());
         }
         return brokerPoolService;
     }
@@ -153,7 +153,7 @@ class BrokerPoolServicesManager {
 
         for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
             if(LOG.isTraceEnabled()) {
-                LOG.trace("Configuring service: " + brokerPoolService.getClass().getSimpleName() + "...");
+                LOG.trace("Configuring service: {}...", brokerPoolService.getClass().getSimpleName());
             }
             brokerPoolService.configure(configuration);
         }
@@ -176,7 +176,7 @@ class BrokerPoolServicesManager {
 
         for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
             if(LOG.isTraceEnabled()) {
-                LOG.trace("Preparing service: " + brokerPoolService.getClass().getSimpleName() + "...");
+                LOG.trace("Preparing service: {}...", brokerPoolService.getClass().getSimpleName());
             }
             brokerPoolService.prepare(brokerPool);
         }
@@ -230,7 +230,7 @@ class BrokerPoolServicesManager {
 
         for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
             if(LOG.isTraceEnabled()) {
-                LOG.trace("Notifying service: " + brokerPoolService.getClass().getSimpleName() + " of start system...");
+                LOG.trace("Notifying service: {} of start system...", brokerPoolService.getClass().getSimpleName());
             }
             brokerPoolService.startSystem(systemBroker, transaction);
         }
@@ -259,7 +259,7 @@ class BrokerPoolServicesManager {
 
         for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
             if(LOG.isTraceEnabled()) {
-                LOG.trace("Notifying service: " + brokerPoolService.getClass().getSimpleName() + " of start pre-multi-user...");
+                LOG.trace("Notifying service: {} of start pre-multi-user...", brokerPoolService.getClass().getSimpleName());
             }
             brokerPoolService.startPreMultiUserSystem(systemBroker, transaction);
         }
@@ -281,7 +281,7 @@ class BrokerPoolServicesManager {
 
         for(final BrokerPoolService brokerPoolService : brokerPoolServices) {
             if(LOG.isTraceEnabled()) {
-                LOG.trace("Notifying service: " + brokerPoolService.getClass().getSimpleName() + " of start multi-user...");
+                LOG.trace("Notifying service: {} of start multi-user...", brokerPoolService.getClass().getSimpleName());
             }
             brokerPoolService.startMultiUser(brokerPool);
         }
@@ -307,7 +307,7 @@ class BrokerPoolServicesManager {
         for(int i = brokerPoolServices.size() - 1; i >= 0; i--) {
             final BrokerPoolService brokerPoolService = brokerPoolServices.get(i);
             if(LOG.isTraceEnabled()) {
-                LOG.trace("Stopping multi-user service: " + brokerPoolService.getClass().getSimpleName() + "...");
+                LOG.trace("Stopping multi-user service: {}...", brokerPoolService.getClass().getSimpleName());
             }
 
             try {
@@ -350,7 +350,7 @@ class BrokerPoolServicesManager {
         for(int i = brokerPoolServices.size() - 1; i >= 0; i--) {
             final BrokerPoolService brokerPoolService = brokerPoolServices.get(i);
             if(LOG.isTraceEnabled()) {
-                LOG.trace("Stopping system service: " + brokerPoolService.getClass().getSimpleName() + "...");
+                LOG.trace("Stopping system service: {}...", brokerPoolService.getClass().getSimpleName());
             }
 
             try {
@@ -381,7 +381,7 @@ class BrokerPoolServicesManager {
         for(int i = brokerPoolServices.size() - 1; i >= 0; i--) {
             final BrokerPoolService brokerPoolService = brokerPoolServices.get(i);
             if(LOG.isTraceEnabled()) {
-                LOG.trace("Shutting down service: " + brokerPoolService.getClass().getSimpleName() + "...");
+                LOG.trace("Shutting down service: {}...", brokerPoolService.getClass().getSimpleName());
             }
             brokerPoolService.shutdown();
         }

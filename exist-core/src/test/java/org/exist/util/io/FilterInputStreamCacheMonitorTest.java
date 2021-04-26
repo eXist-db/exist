@@ -60,9 +60,7 @@ public class FilterInputStreamCacheMonitorTest {
         final FilterInputStreamCacheMonitor monitor = FilterInputStreamCacheMonitor.getInstance();
         int activeCount = monitor.getActive().size();
         if (activeCount != 0) {
-            LOG.warn("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "."
-                    +  System.getProperty("line.separator") + monitor.dump()
-                    +  "It is likely that a previous test or process within the same JVM is leaking file handles! This should be investigated...");
+            LOG.warn("FilterInputStreamCacheMonitor should have no active binaries, but found: {}.{}{}It is likely that a previous test or process within the same JVM is leaking file handles! This should be investigated...", activeCount, System.getProperty("line.separator"), monitor.dump());
         }
         monitor.clear();
 

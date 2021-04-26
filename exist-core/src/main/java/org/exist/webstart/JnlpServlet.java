@@ -73,7 +73,7 @@ public class JnlpServlet extends HttpServlet {
             LOGGER.error(txt);
             throw new ServletException(txt);
         } else {
-            LOGGER.debug(String.format("jars location=%s", libDir.get().normalize().toAbsolutePath().toString()));
+            LOGGER.debug("jars location={}", libDir.get().normalize().toAbsolutePath().toString());
             jf = new JnlpJarFiles(libDir.get().normalize());
         }
     }
@@ -100,7 +100,7 @@ public class JnlpServlet extends HttpServlet {
 
             final String requestURI = request.getRequestURI();
             final String filename = stripFilename(request.getPathInfo());
-            LOGGER.debug("Requested URI=" + requestURI);
+            LOGGER.debug("Requested URI={}", requestURI);
 
             if (requestURI.endsWith(".jnlp")) {
                 jw.writeJnlpXML(jf, request, response);

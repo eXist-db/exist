@@ -78,7 +78,7 @@ public class XMLDBRemove extends XMLDBAbstractCollectionManipulator {
 			try {
 				final Resource resource = collection.getResource(doc);
 				if (resource == null) {
-                    logger.error("Resource " + doc + " not found");
+					logger.error("Resource {} not found", doc);
                     throw new XPathException(this, "Resource " + doc + " not found");
                 }
 				collection.removeResource(resource);
@@ -92,7 +92,7 @@ public class XMLDBRemove extends XMLDBAbstractCollectionManipulator {
 					collection.getService("CollectionManagementService", "1.0");
 				service.removeCollection(collection.getName());
 			} catch (final XMLDBException e) {
-                logger.error("Cannot remove collection: " + e.getMessage());
+				logger.error("Cannot remove collection: {}", e.getMessage());
                 throw new XPathException(this, "Cannot remove collection: " + e.getMessage(), e);
 			}
 		}

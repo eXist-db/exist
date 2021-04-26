@@ -111,7 +111,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
     protected Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
             throws XPathException {
         final Path baseDir = Paths.get(args[1].getStringValue()).normalize();
-        logger.debug("Loading files from directory: " + baseDir.toAbsolutePath().toString());
+        logger.debug("Loading files from directory: {}", baseDir.toAbsolutePath().toString());
 
         final Sequence patternsSeq = args[2];
         final int patternsLen = patternsSeq.getItemCount();
@@ -204,7 +204,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
                 //TODO : use dedicated function in XmldbURI
                 stored.add(new StringValue(col.getName() + "/" + resource.getId()));
             } catch (final XMLDBException e) {
-                logger.error("Could not store file " + file.toAbsolutePath() + ": " + e.getMessage());
+                logger.error("Could not store file {}: {}", file.toAbsolutePath(), e.getMessage());
             }
         }
 

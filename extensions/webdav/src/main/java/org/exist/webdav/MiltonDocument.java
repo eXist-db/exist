@@ -96,7 +96,7 @@ public class MiltonDocument extends MiltonResource
         }
 
         if (LOG.isTraceEnabled()) {
-            LOG.trace(String.format("DOCUMENT:%s", uri.toString()));
+            LOG.trace("DOCUMENT:{}", uri.toString());
         }
 
         resourceXmldbUri = uri;
@@ -245,8 +245,7 @@ public class MiltonDocument extends MiltonResource
                 // or when set by a system property
 
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug(String.format("Serializing XML to /dev/null to determine size (%s) MacFinder=%s",
-                            resourceXmldbUri, isMacFinder));
+                    LOG.debug("Serializing XML to /dev/null to determine size ({}) MacFinder={}", resourceXmldbUri, isMacFinder);
                 }
 
                 // Stream document to '/dev/null' and count bytes
@@ -275,7 +274,7 @@ public class MiltonDocument extends MiltonResource
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Size=%s (%s)", size, resourceXmldbUri));
+            LOG.debug("Size={} ({})", size, resourceXmldbUri);
         }
         return size;
 
@@ -313,7 +312,7 @@ public class MiltonDocument extends MiltonResource
         org.exist.dom.persistent.LockToken inputToken = convertToken(timeout, lockInfo);
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Lock: %s", resourceXmldbUri));
+            LOG.debug("Lock: {}", resourceXmldbUri);
         }
 
         LockResult lr = null;
@@ -350,7 +349,7 @@ public class MiltonDocument extends MiltonResource
     public LockResult refreshLock(String token) throws NotAuthorizedException, PreConditionFailedException {
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Refresh: %s token=%s", resourceXmldbUri, token));
+            LOG.debug("Refresh: {} token={}", resourceXmldbUri, token);
         }
 
         LockResult lr = null;
@@ -382,7 +381,7 @@ public class MiltonDocument extends MiltonResource
     public void unlock(String tokenId) throws NotAuthorizedException, PreConditionFailedException {
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Unlock: %s", resourceXmldbUri));
+            LOG.debug("Unlock: {}", resourceXmldbUri);
         }
 
         try {
@@ -402,7 +401,7 @@ public class MiltonDocument extends MiltonResource
     public LockToken getCurrentLock() {
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("getCurrentLock: %s", resourceXmldbUri));
+            LOG.debug("getCurrentLock: {}", resourceXmldbUri);
         }
 
         org.exist.dom.persistent.LockToken existLT = existDocument.getCurrentLock();
@@ -423,7 +422,7 @@ public class MiltonDocument extends MiltonResource
     public void moveTo(CollectionResource rDest, String newName) throws ConflictException {
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("moveTo: %s newName=%s", resourceXmldbUri, newName));
+            LOG.debug("moveTo: {} newName={}", resourceXmldbUri, newName);
         }
 
         XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
@@ -444,7 +443,7 @@ public class MiltonDocument extends MiltonResource
     public void copyTo(CollectionResource rDest, String newName) {
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("copyTo: %s newName=%s", resourceXmldbUri, newName));
+            LOG.debug("copyTo: {} newName={}", resourceXmldbUri, newName);
         }
 
         XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();

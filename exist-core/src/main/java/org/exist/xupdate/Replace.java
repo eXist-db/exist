@@ -82,7 +82,7 @@ public class Replace extends Modification {
             ElementImpl parent;
             for (final StoredNode node : ql) {
                 if (node == null) {
-                    LOG.warn("select " + selectStmt + " returned empty node set");
+                    LOG.warn("select {} returned empty node set", selectStmt);
                     continue;
                 }
                 final DocumentImpl doc = node.getOwnerDocument();

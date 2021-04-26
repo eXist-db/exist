@@ -84,7 +84,7 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 			try {
 				final Resource resource = collection.getResource(doc.toString());
 				if (resource == null) {
-                    logger.error("Resource " + doc + " not found");
+					logger.error("Resource {} not found", doc);
 
 					throw new XPathException(this, "Resource " + doc + " not found");
                 }
@@ -113,7 +113,7 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
                         XmldbURI.xmldbUriFor(newName));
 
 			} catch (final XMLDBException e) {
-                logger.error("Cannot rename collection: " + e.getMessage());
+				logger.error("Cannot rename collection: {}", e.getMessage());
 
 				throw new XPathException(this, "Cannot rename collection: " + e.getMessage(), e);
                 

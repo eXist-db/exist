@@ -74,10 +74,9 @@ public class SyncTask implements SystemTask {
         // fixme! - Shouldn't it be data dir AND journal dir we check
         // rather than EXIST_HOME? /ljo
         dataDir = (Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
-        LOG.info("Using DATA_DIR: " + dataDir.toAbsolutePath().toString() + ". Minimal disk space required for database " +
-                 "to continue operations: " + (diskSpaceMin / 1024 / 1024) + "mb");
+        LOG.info("Using DATA_DIR: {}. Minimal disk space required for database to continue operations: {}mb", dataDir.toAbsolutePath().toString(), diskSpaceMin / 1024 / 1024);
         final long space = FileUtils.measureFileStore(dataDir, FileStore::getUsableSpace);
-        LOG.info("Usable space on partition containing DATA_DIR: " + dataDir.toAbsolutePath().toString() + ": " + (space / 1024 / 1024) + "mb");
+        LOG.info("Usable space on partition containing DATA_DIR: {}: {}mb", dataDir.toAbsolutePath().toString(), space / 1024 / 1024);
     }
 
     @Override
@@ -85,8 +84,7 @@ public class SyncTask implements SystemTask {
         final BrokerPool pool = broker.getBrokerPool();
         final Tuple2<Boolean, Long> availableSpace = checkDiskSpace();
         if (!availableSpace._1) {
-            LOG.fatal("Partition containing DATA_DIR: " + dataDir.toAbsolutePath().toString() + " is running out of disk space [minimum: " + diskSpaceMin + " free: " + availableSpace._2 + "]. " +
-                    "Switching eXist-db into read-only mode to prevent data loss!");
+            LOG.fatal("Partition containing DATA_DIR: {} is running out of disk space [minimum: {} free: {}]. Switching eXist-db into read-only mode to prevent data loss!", dataDir.toAbsolutePath().toString(), diskSpaceMin, availableSpace._2);
             pool.setReadOnly();
         }
 

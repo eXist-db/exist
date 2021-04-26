@@ -86,7 +86,7 @@ public class ConfigurationHelper {
     		if(broker != null) {
     			final Optional<Path> existHome = broker.getConfiguration().getExistHome().map(Path::normalize);
                 if(existHome.isPresent()) {
-                    LOG.debug("Got eXist home from broker: " + existHome);
+                    LOG.debug("Got eXist home from broker: {}", existHome);
                     return existHome;
                 }
     		}
@@ -130,7 +130,7 @@ public class ConfigurationHelper {
                 Path existHome;
                 if ("jar".equals(configUrl.getProtocol())) {
                     existHome = Paths.get(new URI(configUrl.getPath())).getParent().getParent().normalize();
-                    LOG.warn(config + " file was found on the classpath, but inside a Jar file! Derived EXIST_HOME from Jar's parent folder: {}", existHome);
+                    LOG.warn("{} file was found on the classpath, but inside a Jar file! Derived EXIST_HOME from Jar's parent folder: {}", config, existHome);
                 } else {
                     existHome = Paths.get(configUrl.toURI()).getParent();
                     if (FileUtils.fileName(existHome).equals("etc")) {

@@ -74,7 +74,7 @@ public class Update extends Modification {
             final NotificationService notifier = broker.getBrokerPool().getNotificationService();
             for (final StoredNode node : ql) {
                 if (node == null) {
-                    LOG.warn("select " + selectStmt + " returned empty node");
+                    LOG.warn("select {} returned empty node", selectStmt);
                     continue;
                 }
                 final DocumentImpl doc = node.getOwnerDocument();
@@ -101,8 +101,7 @@ public class Update extends Modification {
                     case Node.ATTRIBUTE_NODE:
                         final ElementImpl attrParent = (ElementImpl) ((Attr) node).getOwnerElement();
                         if (attrParent == null) {
-                            LOG.warn("parent node not found for "
-                                    + node.getNodeId());
+                            LOG.warn("parent node not found for {}", node.getNodeId());
                             break;
                         }
                         final AttrImpl attr = (AttrImpl) node;

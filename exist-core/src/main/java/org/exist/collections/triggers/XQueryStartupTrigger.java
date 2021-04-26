@@ -109,11 +109,11 @@ public class XQueryStartupTrigger implements StartupTrigger {
 
         try(final Collection collection = broker.openCollection(uri, LockMode.READ_LOCK)) {
             if (collection == null) {
-                LOG.debug(String.format("Collection '%s' not found.", AUTOSTART_COLLECTION));
+                LOG.debug("Collection {}' not found.", AUTOSTART_COLLECTION);
                 createAutostartCollection(broker);
 
             } else {
-                LOG.debug(String.format("Scanning collection '%s'.", AUTOSTART_COLLECTION));
+                LOG.debug("Scanning collection '{}'.", AUTOSTART_COLLECTION);
 
                 if (isPermissionsOK(collection)) {
 
@@ -128,23 +128,23 @@ public class XQueryStartupTrigger implements StartupTrigger {
                                 paths.add(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + docPath);
 
                             } else {
-                                LOG.error(String.format("Skipped document '%s', not an xquery script.", docPath));
+                                LOG.error("Skipped document '{}', not an xquery script.", docPath);
                             }
 
                         } else {
-                            LOG.error(String.format("Document %s should be owned by DBA, mode %s, mimetype %s",
-                                    docPath, Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM, REQUIRED_MIMETYPE));
+                            LOG.error("Document {} should be owned by DBA, mode {}, mimetype {}",
+                                    docPath, Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM, REQUIRED_MIMETYPE);
                         }
                     }
 
                 } else {
-                    LOG.error(String.format("Collection %s should be owned by SYSTEM/DBA, mode %s.", AUTOSTART_COLLECTION,
-                            Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM));
+                    LOG.error("Collection {} should be owned by SYSTEM/DBA, mode {}.", AUTOSTART_COLLECTION,
+                            Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
                 }
 
             }
 
-            LOG.debug(String.format("Found %s XQuery scripts in '%s'.", paths.size(), AUTOSTART_COLLECTION));
+            LOG.debug("Found {} XQuery scripts in '{}'.", paths.size(), AUTOSTART_COLLECTION);
 
         } catch (PermissionDeniedException ex) {
             LOG.error(ex.getMessage());
@@ -221,7 +221,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
                             }
 
                         } else {
-                            LOG.error(String.format("Path '%s' should start with a '/'", value));
+                            LOG.error("Path '{}' should start with a '/'", value);
                         }
                     }
                 }
@@ -229,7 +229,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
 
         }
 
-        LOG.debug(String.format("Found %s 'xquery' entries.", paths.size()));
+        LOG.debug("Found {} 'xquery' entries.", paths.size());
 
         return paths;
     }
@@ -248,7 +248,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
             Source source = SourceFactory.getSource(broker, null, path, false);
 
             if (source == null) {
-                LOG.info(String.format("No XQuery found at '%s'", path));
+                LOG.info("No XQuery found at '{}'", path);
 
             } else {
                 // Setup xquery service
@@ -262,7 +262,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
                 // Compile query
                 CompiledXQuery compiledQuery = service.compile(broker, context, source);
 
-                LOG.info(String.format("Starting XQuery at '%s'", path));
+                LOG.info("Starting XQuery at '{}'", path);
 
                 // Finish preparation
                 context.prepareForExecution();
@@ -271,13 +271,13 @@ public class XQueryStartupTrigger implements StartupTrigger {
                 Sequence result = service.execute(broker, compiledQuery, null);
 
                 // Log results
-                LOG.info(String.format("Result XQuery: '%s'", result.getStringValue()));
+                LOG.info("Result XQuery: '{}'", result.getStringValue());
 
             }
 
         } catch (Throwable t) {
             // Dirty, catch it all
-            LOG.error(String.format("An error occurred during preparation/execution of the XQuery script %s: %s", path, t.getMessage()), t);
+            LOG.error("An error occurred during preparation/execution of the XQuery script {}: {}", path, t.getMessage(), t);
 
         } finally {
             if (context != null) {
@@ -293,7 +293,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
      */
     private void createAutostartCollection(DBBroker broker) {
 
-        LOG.info(String.format("Creating %s", AUTOSTART_COLLECTION));
+        LOG.info("Creating {}", AUTOSTART_COLLECTION);
 
         final TransactionManager txnManager = broker.getBrokerPool().getTransactionManager();
         try(final Txn txn = txnManager.beginTransaction()) {

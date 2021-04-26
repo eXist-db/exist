@@ -81,7 +81,7 @@ public class GetScheduledJobs extends BasicFunction {
             builder.startElement(new QName("jobs", NAMESPACE_URI, PREFIX), null);
 
             final BrokerPool brokerPool = context.getBroker().getBrokerPool();
-            logger.trace("brokerPool = " + brokerPool.toString());
+            logger.trace("brokerPool = {}", brokerPool.toString());
 
             if (brokerPool != null) {
                 final org.exist.scheduler.Scheduler existScheduler = brokerPool.getScheduler();

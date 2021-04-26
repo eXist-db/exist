@@ -217,7 +217,7 @@ public class RootNode extends Step {
 
                 @Override
                 public void debug() {
-                    LOG.debug("UpdateListener: Line: " + RootNode.this.toString());                	
+                    LOG.debug("UpdateListener: Line: {}", RootNode.this.toString());
                 }
             };
             context.registerUpdateListener(listener);

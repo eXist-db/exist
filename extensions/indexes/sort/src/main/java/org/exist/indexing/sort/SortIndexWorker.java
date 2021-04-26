@@ -192,7 +192,7 @@ public class SortIndexWorker implements IndexWorker {
             }
 
         } catch (final BTreeException | EXistException | LockException | TerminatedException | IOException e) {
-            SortIndex.LOG.debug("Exception caught while reading sort index: " + e.getMessage(), e);
+            SortIndex.LOG.debug("Exception caught while reading sort index: {}", e.getMessage(), e);
         }
     }
 

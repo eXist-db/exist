@@ -43,7 +43,7 @@ public class AgentFactory {
             try {
                 final Class<?> clazz = Class.forName(className);
                 if (!Agent.class.isAssignableFrom(clazz)) {
-                    LOG.warn("Class " + className + " does not implement interface Agent. Using fallback.");
+                    LOG.warn("Class {} does not implement interface Agent. Using fallback.", className);
                 } else {
                     final MethodHandles.Lookup lookup = MethodHandles.publicLookup();
 
@@ -52,19 +52,19 @@ public class AgentFactory {
                         final MethodHandle mhConstructor = lookup.findConstructor(clazz, methodType(void.class));
                         instance = (Agent) mhConstructor.invoke();
                     } catch (final NoSuchMethodException | IllegalAccessException e) {
-                        LOG.warn("No default constructor found for Agent: " + className + ". Will try singleton pattern...");
+                        LOG.warn("No default constructor found for Agent: {}. Will try singleton pattern...", className);
 
                         // 2. try for singleton with static getInstance()
                         try {
                             final MethodHandle methodHandle = lookup.findStatic(clazz, "getInstance", methodType(Agent.class));
                             instance = (Agent) methodHandle.invokeExact();
                         } catch (final NoSuchMethodException | IllegalAccessException e2) {
-                            LOG.warn("No singleton pattern found for Agent: " + className);
+                            LOG.warn("No singleton pattern found for Agent: {}", className);
                         }
                     }
                 }
             } catch (final Throwable e) {
-                LOG.error("Unable to instantiate JMX agent: " + className + ". JMX will be unavailable!", e);
+                LOG.error("Unable to instantiate JMX agent: {}. JMX will be unavailable!", className, e);
             }
 
             if (instance == null) {

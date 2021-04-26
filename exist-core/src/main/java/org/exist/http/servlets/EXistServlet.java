@@ -263,7 +263,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug(" In: " + path);
+            LOG.debug(" In: {}", path);
         }
 
         // path contains both required and superficial escapes,
@@ -286,7 +286,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         // path now is in proper canonical encoded form
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Out: " + path);
+            LOG.debug("Out: {}", path);
         }
 
         return path;

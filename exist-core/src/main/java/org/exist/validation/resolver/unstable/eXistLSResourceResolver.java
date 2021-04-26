@@ -48,9 +48,7 @@ public class eXistLSResourceResolver implements LSResourceResolver {
     public LSInput resolveResource(String type, String namespaceURI,
             String publicId, String systemId, String baseURI) {
 
-        LOG.debug("type=" + type + " namespaceURI=" + namespaceURI
-                + " publicId=" + publicId + " systemId=" + systemId
-                + " baseURI=" + baseURI);
+        LOG.debug("type={} namespaceURI={} publicId={} systemId={} baseURI={}", type, namespaceURI, publicId, systemId, baseURI);
 
         LSInput lsInput = new eXistLSInput();
 

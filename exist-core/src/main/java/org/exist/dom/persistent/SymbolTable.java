@@ -531,7 +531,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
             for (final String symbol : symbolsByName.keySet()) {
                 final int id = symbolsByName.getInt(symbol);
                 if (id < 0) {
-                    LOG.error("Symbol Table: symbolTypeId=" + getSymbolType() + ", symbol='" + symbol + "', id=" + id);
+                    LOG.error("Symbol Table: symbolTypeId={}, symbol='{}', id={}", getSymbolType(), symbol, id);
                     //TODO : raise exception ? -pb
                 }
                 writeEntry(id, symbol, os);

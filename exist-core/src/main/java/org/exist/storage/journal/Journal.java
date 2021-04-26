@@ -262,7 +262,7 @@ public final class Journal implements Closeable {
 
         this.syncOnCommit = pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SYNC_ON_COMMIT, DEFAULT_SYNC_ON_COMMIT);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("SyncOnCommit = " + syncOnCommit);
+            LOG.debug("SyncOnCommit = {}", syncOnCommit);
         }
 
         final Optional<Path> logDir = Optional.ofNullable((Path) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_JOURNAL_DIR));
@@ -277,7 +277,7 @@ public final class Journal implements Closeable {
 
             if (!Files.exists(f)) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Output directory for journal files does not exist. Creating " + f.toAbsolutePath().toString());
+                    LOG.debug("Output directory for journal files does not exist. Creating {}", f.toAbsolutePath().toString());
                 }
 
                 try {
@@ -295,7 +295,7 @@ public final class Journal implements Closeable {
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Using directory for the journal: " + dir.toAbsolutePath().toString());
+            LOG.debug("Using directory for the journal: {}", dir.toAbsolutePath().toString());
         }
 
         this.journalSizeMin = 1024 * 1024 * pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SIZE_MIN, DEFAULT_MIN_SIZE);
@@ -419,7 +419,7 @@ public final class Journal implements Closeable {
                 lastSyncLsn = currentLsn;
             }
         } catch (final IOException e) {
-            LOG.error("Could not sync Journal to disk: " + e.getMessage(), e);
+            LOG.error("Could not sync Journal to disk: {}", e.getMessage(), e);
         }
 
         try {
@@ -487,7 +487,7 @@ public final class Journal implements Closeable {
                 try {
                     switchFiles();
                 } catch (final LogException e) {
-                    LOG.warn("Failed to create new journal: " + e.getMessage(), e);
+                    LOG.warn("Failed to create new journal: {}", e.getMessage(), e);
                 }
 
                 final Thread removeThread = newInstanceThread(pool, "remove-journal", removeRunnable);
@@ -512,9 +512,9 @@ public final class Journal implements Closeable {
         if (Files.exists(fsJournalDir)) {
             try (final Stream<Path> backupFiles = Files.list(fsJournalDir)) {
                 backupFiles.forEach(p -> {
-                    LOG.info("Checkpoint deleting: " + p.toAbsolutePath().toString());
+                    LOG.info("Checkpoint deleting: {}", p.toAbsolutePath().toString());
                     if (!FileUtils.deleteQuietly(p)) {
-                        LOG.fatal("Cannot delete file '" + p.toAbsolutePath().toString() + "' from backup journal.");
+                        LOG.fatal("Cannot delete file '{}' from backup journal.", p.toAbsolutePath().toString());
                     }
                 });
             } catch (final IOException ioe) {
@@ -535,13 +535,13 @@ public final class Journal implements Closeable {
         final Path file = dir.resolve(fname);
         if (Files.exists(file)) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Journal file " + file.toAbsolutePath() + " already exists. Moving it to a backup file.");
+                LOG.debug("Journal file {} already exists. Moving it to a backup file.", file.toAbsolutePath());
             }
 
             try {
                 final Path renamed = Files.move(file, file.resolveSibling(FileUtils.fileName(file) + BAK_FILE_SUFFIX), StandardCopyOption.ATOMIC_MOVE);
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Old Journal file renamed from '" + file.toAbsolutePath().toString() + "' to '" + renamed.toAbsolutePath().toString() + "'");
+                    LOG.debug("Old Journal file renamed from '{}' to '{}'", file.toAbsolutePath().toString(), renamed.toAbsolutePath().toString());
                 }
             } catch (final IOException ioe) {
                 LOG.warn(ioe); //TODO(AR) should probably be an LogException but wasn't previously!
@@ -549,7 +549,7 @@ public final class Journal implements Closeable {
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Creating new journal: " + file.toAbsolutePath().toString());
+            LOG.debug("Creating new journal: {}", file.toAbsolutePath().toString());
         }
 
         synchronized (latch) {
@@ -671,7 +671,7 @@ public final class Journal implements Closeable {
                 try {
                     writeToLog(new Checkpoint(txnId));
                 } catch (final JournalException e) {
-                    LOG.error("An error occurred whilst writing a checkpoint to the Journal: " + e.getMessage(), e);
+                    LOG.error("An error occurred whilst writing a checkpoint to the Journal: {}", e.getMessage(), e);
                 }
             }
             flushBuffer();
@@ -680,7 +680,7 @@ public final class Journal implements Closeable {
         try {
             channel.close();
         } catch (final IOException e) {
-            LOG.error("Unable to close Journal file: " + e.getMessage(), e);
+            LOG.error("Unable to close Journal file: {}", e.getMessage(), e);
         }
         channel = null;
         fileLock.release();
@@ -725,7 +725,7 @@ public final class Journal implements Closeable {
                     channel.close();
                 }
             } catch (final IOException e) {
-                LOG.warn("Exception while closing journal file: " + e.getMessage(), e);
+                LOG.warn("Exception while closing journal file: {}", e.getMessage(), e);
             }
             FileUtils.deleteQuietly(path);
         }

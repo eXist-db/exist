@@ -95,7 +95,7 @@ public class SortedNodeSet extends AbstractNodeSet {
                 LOG.debug(parser.getErrorMessage());
             }
             final AST ast = parser.getAST();
-            LOG.debug("generated AST: " + ast.toStringTree());
+            LOG.debug("generated AST: {}", ast.toStringTree());
             final PathExpr expr = new PathExpr(context);
             treeParser.xpath(ast, expr);
             if(treeParser.foundErrors()) {
@@ -112,8 +112,7 @@ public class SortedNodeSet extends AbstractNodeSet {
         } catch(final EXistException | XPathException e) {
             LOG.debug("Exception during sort", e); //TODO : throw exception ! -pb
         }
-        LOG.debug("sort-expression found " + list.size() + " in "
-            + (System.currentTimeMillis() - start) + "ms.");
+        LOG.debug("sort-expression found {} in {}ms.", list.size(), System.currentTimeMillis() - start);
     }
 
     public void addAll(final NodeList other) {

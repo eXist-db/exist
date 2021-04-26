@@ -315,7 +315,7 @@ public class ScheduleFunctions extends BasicFunction
                 job = jobClass.newInstance();
 
                 if( !( job instanceof UserJavaJob ) ) {
-                    LOG.error( "Cannot Schedule job. Class " + resource + " is not an instance of org.exist.scheduler.UserJavaJob" );
+                    LOG.error("Cannot Schedule job. Class {} is not an instance of org.exist.scheduler.UserJavaJob", resource);
                     return( BooleanValue.FALSE );
                 }
                 ( ( UserJavaJob )job ).setName( jobName );

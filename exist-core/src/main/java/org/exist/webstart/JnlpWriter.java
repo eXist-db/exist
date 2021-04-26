@@ -237,7 +237,7 @@ public class JnlpWriter {
     void sendJar(JnlpJarFiles jnlpFiles, String filename,
             HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-        LOGGER.debug("Send jar file " + filename);
+        LOGGER.debug("Send jar file {}", filename);
 
         final Path localFile = jnlpFiles.getJarFile(filename);
         if (localFile == null || !Files.exists(localFile)) {
@@ -246,7 +246,7 @@ public class JnlpWriter {
         }
 
 
-        LOGGER.debug("Actual file " + localFile.toAbsolutePath());
+        LOGGER.debug("Actual file {}", localFile.toAbsolutePath());
 
         if (FileUtils.fileName(localFile).endsWith(".jar")) {
             //response.setHeader(CONTENT_ENCODING, JAR_MIME_TYPE);
@@ -269,7 +269,7 @@ public class JnlpWriter {
     }
 
     void sendImage(JnlpJarFiles jf, String filename, HttpServletResponse response) throws IOException {
-        LOGGER.debug("Send image " + filename);
+        LOGGER.debug("Send image {}", filename);
 
         String type = getImageMimeType(filename);
       

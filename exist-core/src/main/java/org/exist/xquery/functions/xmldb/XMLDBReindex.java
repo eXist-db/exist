@@ -81,14 +81,14 @@ public class XMLDBReindex extends XMLDBAbstractCollectionManipulator {
         throws XPathException {
         // Check for DBA user
         if (!context.getSubject().hasDbaRole()) {
-            logger.error("Permission denied, user '" + context.getSubject().getName() + "' must be a DBA to reindex the database");
+            logger.error("Permission denied, user '{}' must be a DBA to reindex the database", context.getSubject().getName());
             return BooleanValue.FALSE;
         }
 
         // Check if collection does exist
         
         if (collection == null) {
-            logger.error("Collection " + args[0].getStringValue() + " does not exist.");
+            logger.error("Collection {} does not exist.", args[0].getStringValue());
             return BooleanValue.FALSE;
         }
 

@@ -152,7 +152,7 @@ public class RangeSequence extends AbstractSequence {
         try {
             return ((IntegerValue) end.minus(start)).getLong() + 1;
         } catch (final XPathException e) {
-            LOG.warn("Unexpected exception when processing result of range expression: " + e.getMessage(), e);
+            LOG.warn("Unexpected exception when processing result of range expression: {}", e.getMessage(), e);
             return 0;
         }
     }

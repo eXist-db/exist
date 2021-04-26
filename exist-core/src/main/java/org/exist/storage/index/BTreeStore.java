@@ -38,7 +38,7 @@ public class BTreeStore extends BTree {
             open(fileVersion);
         } else {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Creating data file: " + FileUtils.fileName(getFile()));
+                LOG.debug("Creating data file: {}", FileUtils.fileName(getFile()));
             }
             create((short)-1);
         }

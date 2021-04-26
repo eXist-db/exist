@@ -132,7 +132,7 @@ public class CreateOrderIndex extends BasicFunction {
 
 
             if (LOG.isDebugEnabled() && ++c % logChunk == 0) {
-                LOG.debug("Storing item " + c + " out of " + len + " to sort index.");
+                LOG.debug("Storing item {} out of {} to sort index.", c, len);
             }
 
             if (call != null) {

@@ -116,7 +116,7 @@ public class Scan extends BasicFunction {
                     XmldbURI resourceURI = XmldbURI.xmldbUriFor(uri);
                     try (final Collection collection = context.getBroker().openCollection(resourceURI.removeLastSegment(), LockMode.READ_LOCK)) {
                         if (collection == null) {
-                            LOG.warn("collection not found: " + resourceURI.getCollectionPath());
+                            LOG.warn("collection not found: {}", resourceURI.getCollectionPath());
                             return Sequence.EMPTY_SEQUENCE;
                         }
 

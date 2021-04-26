@@ -185,7 +185,7 @@ public class FileLock {
         }
 
         if(Files.exists(lockFile)) {
-            LOG.info("Deleting lock file: " + lockFile.toAbsolutePath().toString());
+            LOG.info("Deleting lock file: {}", lockFile.toAbsolutePath().toString());
             FileUtils.deleteQuietly(lockFile);
         }
     }

@@ -277,7 +277,7 @@ public class ModuleUtils {
                 }
 
                 if(LOG.isDebugEnabled()) {
-                    LOG.debug("Converting HTML to XML using: " + reader.getClass().getName());
+                    LOG.debug("Converting HTML to XML using: {}", reader.getClass().getName());
                 }
 
                 final SAXAdapter adapter = new SAXAdapter();

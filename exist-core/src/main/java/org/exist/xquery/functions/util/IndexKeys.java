@@ -148,7 +148,7 @@ public class IndexKeys extends BasicFunction {
                 if (indexWorker instanceof OrderedValuesIndex) {
                     hints.put(OrderedValuesIndex.START_VALUE, args[1].getStringValue());
                 } else {
-                    logger.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedValuesIndex. Start value '" + args[1] + "' ignored.");
+                    logger.warn("{} isn't an instance of org.exist.indexing.OrderedValuesIndex. Start value '{}' ignored.", indexWorker.getClass().getName(), args[1]);
                 }
                 if (qnames != null) {
                     final List<QName> qnameList = new ArrayList<>(qnames.getItemCount());
@@ -213,7 +213,7 @@ public class IndexKeys extends BasicFunction {
                 }
             }
         }
-    	logger.debug("Returning: " + result.getItemCount());
+        logger.debug("Returning: {}", result.getItemCount());
         return result;
     }
 

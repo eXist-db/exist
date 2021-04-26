@@ -179,7 +179,7 @@ public class SQLModule extends AbstractInternalModule {
                     // close the Connection
                     con.close();
                 } catch (SQLException se) {
-                    LOG.warn("Unable to close JDBC Connection: " + se.getMessage(), se);
+                    LOG.warn("Unable to close JDBC Connection: {}", se.getMessage(), se);
                 }
             }
         });
@@ -211,7 +211,7 @@ public class SQLModule extends AbstractInternalModule {
                     // close the PreparedStatement
                     stmt.getStmt().close();
                 } catch (SQLException se) {
-                    LOG.warn("Unable to close JDBC PreparedStatement: " + se.getMessage(), se);
+                    LOG.warn("Unable to close JDBC PreparedStatement: {}", se.getMessage(), se);
                 }
             }
         });

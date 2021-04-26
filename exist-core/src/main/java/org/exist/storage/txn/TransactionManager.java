@@ -320,7 +320,7 @@ public class TransactionManager implements BrokerPoolService {
         transactions.remove(txn.getId());
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Committed transaction: " + txn.getId());
+            LOG.debug("Committed transaction: {}", txn.getId());
         }
     }
 
@@ -387,7 +387,7 @@ public class TransactionManager implements BrokerPoolService {
                 journalManager.get().journalGroup(new TxnAbort(txn.getId()));
             } catch (final JournalException e) {
                 //TODO(AR) should revise the API in future to throw TransactionException
-                LOG.error("Failed to write abort record to journal: " + e.getMessage(), e);
+                LOG.error("Failed to write abort record to journal: {}", e.getMessage(), e);
             }
         }
 
@@ -397,7 +397,7 @@ public class TransactionManager implements BrokerPoolService {
         transactions.remove(txn.getId());
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Aborted transaction: " + txn.getId());
+            LOG.debug("Aborted transaction: {}", txn.getId());
         }
     }
 
@@ -486,7 +486,7 @@ public class TransactionManager implements BrokerPoolService {
             broker.reindexCollection(transaction, XmldbURI.ROOT_COLLECTION_URI);
             commit(transaction);
         } catch (final PermissionDeniedException | LockException | TransactionException e) {
-            LOG.error("Exception during reindex: " + e.getMessage(), e);
+            LOG.error("Exception during reindex: {}", e.getMessage(), e);
         } finally {
         	broker.popSubject();
         }
@@ -523,7 +523,7 @@ public class TransactionManager implements BrokerPoolService {
                     transactions.clear();
 
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Shutting down transaction manager. Uncommitted transactions: " + transactions.size());
+                        LOG.debug("Shutting down transaction manager. Uncommitted transactions: {}", transactions.size());
                     }
 
                     // done... exit CAS loop!
@@ -541,7 +541,7 @@ public class TransactionManager implements BrokerPoolService {
         final Integer uncommittedCount = transactions.reduce(1000,
                 (txnId, txnCounter) -> {
                     if (txnCounter.getCount() > 0) {
-                        LOG.warn("Found an uncommitted transaction with id " + txnId + ". Pending operations: " + txnCounter.getCount());
+                        LOG.warn("Found an uncommitted transaction with id {}. Pending operations: {}", txnId, txnCounter.getCount());
                         return 1;
                     } else {
                         return 0;
@@ -599,7 +599,7 @@ public class TransactionManager implements BrokerPoolService {
                 }
             }
         } catch (final EXistException e) {
-            LOG.error("Unable to process system tasks: " + e.getMessage(), e);
+            LOG.error("Unable to process system tasks: {}", e.getMessage(), e);
         }
     }
 

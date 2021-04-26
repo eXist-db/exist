@@ -162,7 +162,7 @@ public class FnImport extends BasicFunction {
         @Override
         public void createdCollection(final String collection) {
 			if (builder == null) {
-				SystemImport.LOG.info("Create collection "+collection);
+				SystemImport.LOG.info("Create collection {}", collection);
 			} else {
 	            builder.startElement(COLLECTION_ELEMENT, null);
 	            builder.characters(collection);
@@ -173,7 +173,7 @@ public class FnImport extends BasicFunction {
         @Override
         public void restoredResource(final String resource) {
 			if (builder == null) {
-				SystemImport.LOG.info("Restore resource "+resource);
+				SystemImport.LOG.info("Restore resource {}", resource);
 			} else {
 	            builder.startElement(RESOURCE_ELEMENT, null);
 	            builder.characters(resource);

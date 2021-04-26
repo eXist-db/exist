@@ -95,9 +95,9 @@ public class PathFilter implements Filter {
         final String queryString = httpServletRequest.getQueryString();
         final String requestURI = httpServletRequest.getRequestURI();
 
-        LOG.info("requestURI = [" + requestURI + "]");
-        LOG.info("queryString = [" + queryString + "]");
-        LOG.info("method = [" + httpServletRequest.getMethod() + "]");
+        LOG.info("requestURI = [{}]", requestURI);
+        LOG.info("queryString = [{}]", queryString);
+        LOG.info("method = [{}]", httpServletRequest.getMethod());
 
         if ((queryString != null && queryString.contains("_query=")) && filterNames.contains(TEST_GET_QUERY)) {
             LOG.info(TEST_GET_QUERY + " met");
@@ -188,7 +188,7 @@ public class PathFilter implements Filter {
                 final String name = (String) initParams.nextElement();
                 final String value = filterConfig.getInitParameter(name);
 
-                LOG.info("Parameter [" + name + "][" + value + "]");
+                LOG.info("Parameter [{}][{}]", name, value);
 
                 if (name.startsWith("exclude")) {
                     denys.add(value);

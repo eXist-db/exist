@@ -204,7 +204,7 @@ public class Collations {
                                     break;
 
                                 default:
-                                    logger.warn("Unrecognized Collation parameter: " + kw);
+                                    logger.warn("Unrecognized Collation parameter: {}", kw);
                                     break;
                             }
                         }
@@ -676,7 +676,7 @@ public class Collations {
                 return Collator.ReorderCodes.DIGIT;
 
             default:
-                logger.warn("eXist-db does not support the collation reorderCode: " + reorderCode);
+                logger.warn("eXist-db does not support the collation reorderCode: {}", reorderCode);
                 return -1;
         }
     }

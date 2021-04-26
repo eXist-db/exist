@@ -94,7 +94,7 @@ public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
 		long modifications = 0;
 		try {
 			final XUpdateQueryService service = (XUpdateQueryService)c.getService("XUpdateQueryService", "1.0");
-			logger.debug("Processing XUpdate request: " + xupdate);
+			logger.debug("Processing XUpdate request: {}", xupdate);
 			modifications = service.update(xupdate);
 		} catch(final XMLDBException e) {
 			throw new XPathException(this, "Exception while processing xupdate: " + e.getMessage(), e);

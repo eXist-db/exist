@@ -65,7 +65,7 @@ public class HTTPUtils {
 //							+ doc.getLastModified());
 				}
 			}
-			LOG.debug("mostRecentDocumentTime: " + mostRecentDocumentTime);
+			LOG.debug("mostRecentDocumentTime: {}", mostRecentDocumentTime);
 
 			if (mostRecentDocumentTime > 0) {
 

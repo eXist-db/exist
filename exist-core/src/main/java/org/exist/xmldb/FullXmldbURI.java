@@ -268,7 +268,7 @@ public class FullXmldbURI extends XmldbURI {
         final URI contextURI;
         //Adds a final slash if necessary
         if (!currentContext.endsWith("/")) {
-            LOG.info("Added a final '/' to '" + currentContext + "'");
+            LOG.info("Added a final '/' to '{}'", currentContext);
             contextURI = URI.create(currentContext + "/");
         } else {
             contextURI = URI.create(currentContext);
@@ -290,7 +290,7 @@ public class FullXmldbURI extends XmldbURI {
 
         // Add a final slash if necessary
         if (!currentContext.endsWith("/")) {
-            LOG.info("Added a final '/' to '" + currentContext + "'");
+            LOG.info("Added a final '/' to '{}'", currentContext);
             currentContext += "/";
         }
 
@@ -312,7 +312,7 @@ public class FullXmldbURI extends XmldbURI {
 
         // Add a final slash if necessary
         if (!currentContext.endsWith("/")) {
-            LOG.info("Added a final '/' to '" + currentContext + "'");
+            LOG.info("Added a final '/' to '{}'", currentContext);
             currentContext += "/";
         }
 

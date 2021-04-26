@@ -54,7 +54,7 @@ public class ExistSAXParserFactory {
         } catch (final ClassNotFoundException ex) {
             // quick escape
             if (LOG.isDebugEnabled()) {
-                LOG.debug(className + ": " + ex.getMessage(), ex);
+                LOG.debug("{}: {}", className, ex.getMessage(), ex);
             }
             return null;
         }
@@ -66,7 +66,7 @@ public class ExistSAXParserFactory {
         } catch (final SecurityException | NoSuchMethodException ex) {
             // quick escape
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Method " + className + ".newInstance not found.", ex);
+                LOG.debug("Method {}.newInstance not found.", className, ex);
             }
             return null;
         }
@@ -79,14 +79,14 @@ public class ExistSAXParserFactory {
         } catch (final IllegalAccessException | InvocationTargetException ex) {
             // quick escape
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Could not invoke method " + className + ".newInstance.", ex);
+                LOG.debug("Could not invoke method {}.newInstance.", className, ex);
             }
             return null;
         }
 
         if (!(result instanceof SAXParserFactory)) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Could not create instance of SAXParserFactory: " + result.toString());
+                LOG.debug("Could not create instance of SAXParserFactory: {}", result.toString());
             }
             return null;
         }
@@ -117,7 +117,7 @@ public class ExistSAXParserFactory {
         if (factory == null) {
             factory = SAXParserFactory.newInstance();
             if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("Using default SAXParserFactory '%s'", factory.getClass().getCanonicalName()));
+                LOG.debug("Using default SAXParserFactory '{}'", factory.getClass().getCanonicalName());
             }
         }
 

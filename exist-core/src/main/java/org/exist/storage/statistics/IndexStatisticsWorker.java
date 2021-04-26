@@ -265,7 +265,7 @@ public class IndexStatisticsWorker implements IndexWorker {
                     updateDocument(broker, doc);
                 }
             } catch (final Exception e) {
-                IndexStatistics.LOG.warn("An error occurred while regenerating index statistics: " + e.getMessage(), e);
+                IndexStatistics.LOG.warn("An error occurred while regenerating index statistics: {}", e.getMessage(), e);
             }
             return true;
         }

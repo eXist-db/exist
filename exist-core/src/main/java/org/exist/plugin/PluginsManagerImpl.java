@@ -124,7 +124,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
                 }
 
     		} catch (final TriggerException | PermissionDeniedException | IOException | LockException e) {
-    			LOG.warn("Loading PluginsManager configuration failed: " + e.getMessage());
+                LOG.warn("Loading PluginsManager configuration failed: {}", e.getMessage());
             }
 
             final Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);

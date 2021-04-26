@@ -195,7 +195,7 @@ public class BTree extends Paged implements Lockable {
             try {
                 createRootNode(null);
             } catch (final IOException e) {
-                LOG.warn("Can not create database file " + getFile().toAbsolutePath().toString(), e);
+                LOG.warn("Can not create database file {}", getFile().toAbsolutePath().toString(), e);
                 return false;
             }
             fileHeader.setFixedKeyLen(fixedKeyLen);
@@ -459,7 +459,7 @@ public class BTree extends Paged implements Lockable {
             cache.add(node, increment);
             return node;
         } catch (final IOException e) {
-            LOG.error("Failed to get BTree node on page " + pageNum, e);
+            LOG.error("Failed to get BTree node on page {}", pageNum, e);
             return null;
         }
     }
@@ -518,7 +518,7 @@ public class BTree extends Paged implements Lockable {
      */
     public void dump(final Writer writer) throws IOException, BTreeException {
         final BTreeNode root = getRootNode();
-        LOG.debug("ROOT = " + root.page.getPageNum());
+        LOG.debug("ROOT = {}", root.page.getPageNum());
         root.dump(writer);
     }
 
@@ -625,7 +625,7 @@ public class BTree extends Paged implements Lockable {
         }
         pagePointers.removeAll(nextPages);
         if (pagePointers.size() > 1) {
-            LOG.error("Found multiple start pages: [" + pagePointers.stream().map(l -> Long.toString(l)).collect(Collectors.joining(", ")) + "]");
+            LOG.error("Found multiple start pages: [{}]", pagePointers.stream().map(l -> Long.toString(l)).collect(Collectors.joining(", ")));
             throw new DBException("More than one start page found for btree: " + FileUtils.fileName(getFile()));
         }
         if (removeBranches) {
@@ -801,7 +801,7 @@ public class BTree extends Paged implements Lockable {
         try {
             removeValue(null, loggable.key);
         } catch (final BTreeException | IOException e) {
-            LOG.error("Failed to undo: " + loggable.dump(), e);
+            LOG.error("Failed to undo: {}", loggable.dump(), e);
         }
     }
 
@@ -809,8 +809,7 @@ public class BTree extends Paged implements Lockable {
         final BTreeNode node = getBTreeNode(loggable.pageNum);
         if (!node.page.getPageHeader().getLsn().equals(Lsn.LSN_INVALID) && requiresRedo(loggable, node.page)) {
             if (loggable.idx > node.ptrs.length) {
-                LOG.warn(node.page.getPageInfo() +
-                        "; loggable.idx = " + loggable.idx + "; node.ptrs.length = " + node.ptrs.length);
+                LOG.warn("{}; loggable.idx = {}; node.ptrs.length = {}", node.page.getPageInfo(), loggable.idx, node.ptrs.length);
                 final StringWriter writer = new StringWriter();
                 try {
                     dump(writer);
@@ -831,7 +830,7 @@ public class BTree extends Paged implements Lockable {
         try {
             addValue(null, loggable.key, loggable.oldPointer);
         } catch (final BTreeException | IOException e) {
-            LOG.error("Failed to undo: " + loggable.dump(), e);
+            LOG.error("Failed to undo: {}", loggable.dump(), e);
         }
     }
 
@@ -849,7 +848,7 @@ public class BTree extends Paged implements Lockable {
         try {
             addValue(null, loggable.oldValue, loggable.oldPointer);
         } catch (final BTreeException | IOException e) {
-            LOG.error("Failed to undo: " + loggable.dump(), e);
+            LOG.error("Failed to undo: {}", loggable.dump(), e);
         }
     }
 
@@ -1020,7 +1019,7 @@ public class BTree extends Paged implements Lockable {
                     }
                     return true;
                 } catch (final IOException e) {
-                    LOG.error("IO error while writing page: " + page.getPageNum(), e);
+                    LOG.error("IO error while writing page: {}", page.getPageNum(), e);
                 }
             }
             return false;
@@ -1257,7 +1256,7 @@ public class BTree extends Paged implements Lockable {
                         keys[i] = new Value(t);
                     } catch (final Exception e) {
                         e.printStackTrace();
-                        LOG.error("prefixLen = " + prefixLen + "; i = " + i + "; nKeys = " + nKeys);
+                        LOG.error("prefixLen = {}; i = {}; nKeys = {}", prefixLen, i, nKeys);
                         throw new IOException(e.getMessage());
                     }
                 } else {
@@ -1592,7 +1591,7 @@ public class BTree extends Paged implements Lockable {
                 cache.add(parent);
                 setRootNode(parent);
                 if(rNode.mustSplit()) {
-                    LOG.debug(FileUtils.fileName(getFile()) + " right node requires second split: " + rNode.getDataLen());
+                    LOG.debug("{} right node requires second split: {}", FileUtils.fileName(getFile()), rNode.getDataLen());
                     rNode.split(transaction);
                 }
                 cache.add(rNode);
@@ -1625,7 +1624,7 @@ public class BTree extends Paged implements Lockable {
                 }
                 rNode.recalculateDataLen();
                 if(rNode.mustSplit()) {
-                    LOG.debug(FileUtils.fileName(getFile()) + " right node requires second split: " + rNode.getDataLen());
+                    LOG.debug("{} right node requires second split: {}", FileUtils.fileName(getFile()), rNode.getDataLen());
                     rNode.split(transaction);
                 }
                 cache.add(rNode);
@@ -1633,7 +1632,7 @@ public class BTree extends Paged implements Lockable {
             }
             cache.add(this);
             if (mustSplit()) {
-                LOG.debug(FileUtils.fileName(getFile()) + "left node requires second split: " + getDataLen());
+                LOG.debug("{}left node requires second split: {}", FileUtils.fileName(getFile()), getDataLen());
                 split(transaction);
             }
         }
@@ -2525,7 +2524,7 @@ public class BTree extends Paged implements Lockable {
             try {
                 System.arraycopy(keys, idx + 1, keys, idx, nKeys - idx - 1);
             } catch (ArrayIndexOutOfBoundsException e) {
-                LOG.error("keys: " + nKeys + " idx: " + idx);
+                LOG.error("keys: {} idx: {}", nKeys, idx);
             }
             pageHeader.setValueCount((short) --nKeys);
             saved = false;

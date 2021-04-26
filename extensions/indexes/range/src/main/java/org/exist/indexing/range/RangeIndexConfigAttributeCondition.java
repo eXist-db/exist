@@ -221,7 +221,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         try {
             return Double.parseDouble(value);
         } catch (NumberFormatException e)  {
-            RangeIndex.LOG.debug("Non-numeric value encountered for numeric condition on @'" + this.attributeName + "': " + value);
+            RangeIndex.LOG.debug("Non-numeric value encountered for numeric condition on @'{}': {}", this.attributeName, value);
             return new Double(0);
         }
     }
@@ -335,7 +335,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
 
 
             } catch (XPathException e) {
-                RangeIndex.LOG.error("Value conversion error when testing predicate for condition, value: " + testValue.toString());
+                RangeIndex.LOG.error("Value conversion error when testing predicate for condition, value: {}", testValue.toString());
                 RangeIndex.LOG.error(e);
             }
 

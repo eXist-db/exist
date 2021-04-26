@@ -86,7 +86,7 @@ public class QueryResult extends AbstractCachedResult {
                 try {
                     ((BinaryValue) result).close();
                 } catch (final IOException ioe) {
-                    LOG.warn("Unable to cleanup BinaryValue: " + result.hashCode(), ioe);
+                    LOG.warn("Unable to cleanup BinaryValue: {}", result.hashCode(), ioe);
                 }
             }
 

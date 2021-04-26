@@ -197,7 +197,7 @@ public class ExecuteFunction extends BasicFunction {
             return resultAsElement(makeNodeFromColumnName, executeResult, stmt);
 
         } catch (final SQLException sqle) {
-            LOG.error("sql:execute() Caught SQLException \"" + sqle.getMessage() + "\" for SQL: \"" + sql + "\"", sqle);
+            LOG.error("sql:execute() Caught SQLException \"{}\" for SQL: \"{}\"", sqle.getMessage(), sql, sqle);
             return sqlExceptionAsElement(sqle, sql, parametersElement);
 
         } finally {
@@ -206,7 +206,7 @@ public class ExecuteFunction extends BasicFunction {
                 try {
                     stmt.close();
                 } catch (final SQLException se) {
-                    LOG.warn("Unable to close JDBC PreparedStatement: " + se.getMessage(), se);
+                    LOG.warn("Unable to close JDBC PreparedStatement: {}", se.getMessage(), se);
                 }
             }
 
@@ -419,7 +419,7 @@ public class ExecuteFunction extends BasicFunction {
                     try {
                         rs.close();
                     } catch (final SQLException se) {
-                        LOG.warn("Unable to close JDBC RecordSet: " + se.getMessage(), se);
+                        LOG.warn("Unable to close JDBC RecordSet: {}", se.getMessage(), se);
                     }
                 }
             }
@@ -457,7 +457,7 @@ public class ExecuteFunction extends BasicFunction {
                 sqle.printStackTrace(ps);
                 builder.characters(bufStackTrace.toString(UTF_8));
             } catch (final IOException e) {
-                LOG.warn("Unable to get stack-trace of JDBC SQLException: " + e.getMessage(), e);
+                LOG.warn("Unable to get stack-trace of JDBC SQLException: {}", e.getMessage(), e);
             }
             builder.endElement();
 

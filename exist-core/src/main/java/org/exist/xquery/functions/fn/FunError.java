@@ -138,7 +138,7 @@ public class FunError extends BasicFunction {
         }
 
         if (LOG.isTraceEnabled()) {
-            logger.trace(errorDesc + ": " + errorCode.toString());
+            logger.trace("{}: {}", errorDesc, errorCode.toString());
         }
 
         throw new XPathException(this, errorCode, errorDesc, errorVal);

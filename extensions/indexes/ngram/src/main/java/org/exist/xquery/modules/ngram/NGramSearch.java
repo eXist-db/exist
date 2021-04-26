@@ -288,7 +288,7 @@ public class NGramSearch extends Function implements Optimizable {
             	else
             parsedQuery = new FixedString(this, query);
 
-        LOG.debug("Parsed Query: " + parsedQuery);
+        LOG.debug("Parsed Query: {}", parsedQuery);
         NodeSet result = parsedQuery.eval(index, docs, qnames, nodeSet, axis, this
                 .getExpressionId());
 
@@ -311,7 +311,7 @@ public class NGramSearch extends Function implements Optimizable {
     private EvaluatableExpression parseQuery(final String query) throws XPathException {
         List<String> queryTokens = tokenizeQuery(query);
 
-        LOG.trace("Tokenized query: " + queryTokens);
+        LOG.trace("Tokenized query: {}", queryTokens);
 
         if (queryTokens.isEmpty())
             return new EmptyExpression();
@@ -491,7 +491,7 @@ public class NGramSearch extends Function implements Optimizable {
             return new EmptyNodeSet();
 
         String firstNgramm = ngrams[0];
-        LOG.trace("First NGRAM: " + firstNgramm);
+        LOG.trace("First NGRAM: {}", firstNgramm);
         NodeSet result = index.search(getExpressionId(), docs, qnames, firstNgramm, firstNgramm, context, nodeSet, axis);
 
         for (int i = 1; i < ngrams.length; i++) {
@@ -514,7 +514,7 @@ public class NGramSearch extends Function implements Optimizable {
                 }
                 buf.append(ngram);
                 filledNgram = buf.toString();
-                LOG.debug("Filled: " + filledNgram);
+                LOG.debug("Filled: {}", filledNgram);
             }
 
             NodeSet nodes = index.search(getExpressionId(), docs, qnames, filledNgram, ngram, context, nodeSet, axis);

@@ -340,7 +340,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
 
                 final DocumentImpl document = lockedDocument == null ? null : lockedDocument.getDocument();
                 if (document == null) {
-                    LOG.warn("Resource " + idURI + " not found");
+                    LOG.warn("Resource {} not found", idURI);
                     return null;
                 }
 
@@ -563,7 +563,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
     public void storeResource(final Resource resource, final Date a, final Date b) throws XMLDBException {
         if(resource.getResourceType().equals(XMLResource.RESOURCE_TYPE)) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("storing document " + resource.getId());
+                LOG.debug("storing document {}", resource.getId());
             }
             ((LocalXMLResource)resource).datecreated = a;
             ((LocalXMLResource)resource).datemodified = b;
@@ -571,7 +571,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
 
         } else if(resource.getResourceType().equals(BinaryResource.RESOURCE_TYPE)) {
             if(LOG.isDebugEnabled()) {
-                LOG.debug("storing binary resource " + resource.getId());
+                LOG.debug("storing binary resource {}", resource.getId());
             }
             ((LocalBinaryResource)resource).datecreated = a;
             ((LocalBinaryResource)resource).datemodified = b;
@@ -736,7 +736,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
             } else {
                 final XMLReader htmlReader = readerInst.right().get();
                 if(LOG.isDebugEnabled()) {
-                    LOG.debug("Converting HTML to XML using: " + htmlReader.getClass().getName());
+                    LOG.debug("Converting HTML to XML using: {}", htmlReader.getClass().getName());
                 }
                 return htmlReader;
             }

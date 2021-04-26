@@ -445,7 +445,7 @@ public class NativeBroker extends DBBroker {
         for(final byte i : ALL_STORAGE_FILES) {
             final Paged paged = getStorage(i);
             if(paged == null) {
-                LOG.warn("Storage file is null: " + i);
+                LOG.warn("Storage file is null: {}", i);
                 continue;
             }
 
@@ -727,7 +727,7 @@ public class NativeBroker extends DBBroker {
                     }
                 }
             } catch(final CollectionConfigurationException cce) {
-                LOG.error("Could not load initial collection configuration for /db: " + cce.getMessage(), cce);
+                LOG.error("Could not load initial collection configuration for /db: {}", cce.getMessage(), cce);
             }
 
             return new Tuple2<>(true, rootCollection);
@@ -3689,7 +3689,7 @@ public class NativeBroker extends DBBroker {
                 try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
                     collectionsDb.flush();
                 } catch(final LockException e) {
-                    LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
+                    LOG.error("Failed to acquire lock on {}", FileUtils.fileName(collectionsDb.getFile()), e);
                 }
                 notifySync();
                 pool.getIndexManager().sync();

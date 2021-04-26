@@ -80,7 +80,7 @@ public class XMLDBRegisterDatabase extends BasicFunction {
 					: "false");
 			DatabaseManager.registerDatabase(database);
 		} catch (final Exception e) {
-			logger.error("failed to initiate XMLDB database driver: " + driverName);
+			logger.error("failed to initiate XMLDB database driver: {}", driverName);
             return BooleanValue.FALSE;
 		}
 		return BooleanValue.TRUE;

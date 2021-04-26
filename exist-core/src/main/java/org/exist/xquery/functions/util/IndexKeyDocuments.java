@@ -101,7 +101,8 @@ public class IndexKeyDocuments extends BasicFunction {
 	        	if (indexWorker instanceof OrderedValuesIndex)
 	        		{hints.put(OrderedValuesIndex.START_VALUE, args[1]);}
 	        	else
-	        		{logger.warn(indexWorker.getClass().getName() + " isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '" + args[1] + "' ignored." );}
+	        		{
+						logger.warn("{} isn't an instance of org.exist.indexing.OrderedIndexWorker. Start value '{}' ignored.", indexWorker.getClass().getName(), args[1]);}
 	        	final Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
 		        if (occur.length == 0)
 		        	{result= Sequence.EMPTY_SEQUENCE;}

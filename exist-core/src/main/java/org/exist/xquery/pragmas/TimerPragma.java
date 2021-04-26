@@ -63,9 +63,11 @@ public class TimerPragma extends Pragma {
         final long elapsed = System.currentTimeMillis() - start;
         if (log.isTraceEnabled()) {
             if (verbose)
-                {log.trace("Elapsed: " + elapsed + "ms. for expression:\n" + ExpressionDumper.dump(expression));}
+                {
+                    log.trace("Elapsed: {}ms. for expression:\n{}", elapsed, ExpressionDumper.dump(expression));}
             else
-                {log.trace("Elapsed: " + elapsed + "ms.");}
+                {
+                    log.trace("Elapsed: {}ms.", elapsed);}
         }
     }
 

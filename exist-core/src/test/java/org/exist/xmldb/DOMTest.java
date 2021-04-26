@@ -243,14 +243,7 @@ public class DOMTest {
 		}
 
 		public void characters(char[] ch, int start, int length) {
-			LOG.trace(
-				"SAXHandler.characters("
-					+ new String(ch)
-					+ ", "
-					+ start
-					+ ", "
-					+ length
-					+ ")");
+			LOG.trace("SAXHandler.characters({}, {}, {})", new String(ch), start, length);
 		}
 
 		public void endDocument() {
@@ -261,47 +254,27 @@ public class DOMTest {
 			String namespaceURI,
 			String localName,
 			String qName) {
-			LOG.trace(
-				"SAXHandler.endElement("
-					+ namespaceURI
-					+ ", "
-					+ localName
-					+ ", "
-					+ qName
-					+ ")");
+			LOG.trace("SAXHandler.endElement({}, {}, {})", namespaceURI, localName, qName);
 		}
 
 		public void endPrefixMapping(String prefix) {
-			LOG.trace("SAXHandler.endPrefixMapping(" + prefix + ")");
+			LOG.trace("SAXHandler.endPrefixMapping({})", prefix);
 		}
 
 		public void ignorableWhitespace(char[] ch, int start, int length) {
-			LOG.trace(
-				"SAXHandler.ignorableWhitespace("
-					+ new String(ch)
-					+ ", "
-					+ start
-					+ ", "
-					+ length
-					+ ")");
+			LOG.trace("SAXHandler.ignorableWhitespace({}, {}, {})", new String(ch), start, length);
 		}
 
 		public void processingInstruction(String target, String data) {
-			LOG.trace(
-				"SAXHandler.processingInstruction("
-					+ target
-					+ ", "
-					+ data
-					+ ")");
+			LOG.trace("SAXHandler.processingInstruction({}, {})", target, data);
 		}
 
 		public void setDocumentLocator(Locator locator) {
-			LOG.trace(
-				"SAXHandler.setDocumentLocator(" + locator + ")");
+			LOG.trace("SAXHandler.setDocumentLocator({})", locator);
 		}
 
 		public void skippedEntity(String name) {
-			LOG.trace("SAXHandler.skippedEntity(" + name + ")");
+			LOG.trace("SAXHandler.skippedEntity({})", name);
 		}
 
 		public void startDocument() {
@@ -313,21 +286,11 @@ public class DOMTest {
 			String localName,
 			String qName,
 			Attributes atts) {
-			LOG.trace(
-				"SAXHandler.startElement("
-					+ namespaceURI
-					+ ", "
-					+ localName
-					+ ", "
-					+ qName
-					+ ","
-					+ atts
-					+ ")");
+			LOG.trace("SAXHandler.startElement({}, {}, {},{})", namespaceURI, localName, qName, atts);
 		}
 
 		public void startPrefixMapping(String prefix, String xuri) {
-			LOG.trace(
-				"SAXHandler.startPrefixMapping(" + prefix + ", " + xuri + ")");
+			LOG.trace("SAXHandler.startPrefixMapping({}, {})", prefix, xuri);
 		}
 
 	}

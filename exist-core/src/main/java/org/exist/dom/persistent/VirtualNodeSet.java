@@ -436,8 +436,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
             for(int i = 0; i < node.getChildCount(); i++) {
                 final IStoredNode child = iter.next();
                 if(child == null) {
-                    LOG.debug("CHILD == NULL; doc = " +
-                        ((DocumentImpl) node.getOwnerDocument()).getURI());
+                    LOG.debug("CHILD == NULL; doc = {}", ((DocumentImpl) node.getOwnerDocument()).getURI());
                     //TODO : throw exception ? -pb
                     return;
                 }

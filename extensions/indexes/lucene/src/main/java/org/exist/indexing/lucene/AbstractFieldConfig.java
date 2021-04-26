@@ -142,7 +142,7 @@ public abstract class AbstractFieldConfig {
         try {
             return xquery.compile(broker, context, code);
         } catch (XPathException | PermissionDeniedException e) {
-            LOG.error("Failed to compile expression: " + code + ": " + e.getMessage(), e);
+            LOG.error("Failed to compile expression: {}: {}", code, e.getMessage(), e);
             isValid = false;
             return null;
         }

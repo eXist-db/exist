@@ -142,7 +142,7 @@ class WindowsServiceManager implements ServiceManager {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            LOG.error("Could not install service: " + e.getMessage(), e);
+            LOG.error("Could not install service: {}", e.getMessage(), e);
             throw new ServiceManagerException("Could not install service: " + e.getMessage(), e);
         }
     }
@@ -159,7 +159,7 @@ class WindowsServiceManager implements ServiceManager {
         try {
             return getState() != WindowsServiceState.UNINSTALLED;
         } catch (final ServiceManagerException e) {
-            LOG.error("Could not determine if service is installed: " + e.getMessage(), e);
+            LOG.error("Could not determine if service is installed: {}", e.getMessage(), e);
             return false;
         }
     }
@@ -185,7 +185,7 @@ class WindowsServiceManager implements ServiceManager {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            LOG.error("Could not uninstall service: " + e.getMessage(), e);
+            LOG.error("Could not uninstall service: {}", e.getMessage(), e);
             throw new ServiceManagerException("Could not uninstall service: " + e.getMessage(), e);
         }
     }
@@ -216,7 +216,7 @@ class WindowsServiceManager implements ServiceManager {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            LOG.error("Could not start service: " + e.getMessage(), e);
+            LOG.error("Could not start service: {}", e.getMessage(), e);
             throw new ServiceManagerException("Could not start service: " + e.getMessage(), e);
         }
     }
@@ -226,7 +226,7 @@ class WindowsServiceManager implements ServiceManager {
         try {
             return getState() == WindowsServiceState.RUNNING;
         } catch (final ServiceManagerException e) {
-            LOG.error("Could not determine if service is running: " + e.getMessage(), e);
+            LOG.error("Could not determine if service is running: {}", e.getMessage(), e);
             return false;
         }
     }
@@ -257,7 +257,7 @@ class WindowsServiceManager implements ServiceManager {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            LOG.error("Could not stop service: " + e.getMessage(), e);
+            LOG.error("Could not stop service: {}", e.getMessage(), e);
             throw new ServiceManagerException("Could not stop service: " + e.getMessage(), e);
         }
     }

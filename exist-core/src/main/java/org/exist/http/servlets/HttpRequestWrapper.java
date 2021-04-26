@@ -133,7 +133,7 @@ public class HttpRequestWrapper implements RequestWrapper {
             isFormDataParsed = false;
         }
 
-        LOG.debug("Retrieved " + params.size() + " parameters.");
+        LOG.debug("Retrieved {} parameters.", params.size());
     }
 
     @Override

@@ -200,7 +200,7 @@ public class RESTServer {
             }
 
             if(LOG.isDebugEnabled()) {
-                LOG.debug("EXQuery Request Module is not present: " + e.getMessage(), e);
+                LOG.debug("EXQuery Request Module is not present: {}", e.getMessage(), e);
             }
         }
     }
@@ -278,7 +278,7 @@ public class RESTServer {
             final int sessionId = Integer.parseInt(option);
             sessionManager.release(sessionId);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Released session " + sessionId);
+                LOG.debug("Released session {}", sessionId);
             }
             response.setStatus(HttpServletResponse.SC_OK);
             return;
@@ -364,8 +364,8 @@ public class RESTServer {
         } else {
             outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
         }
-        LOG.debug("stylesheet = " + stylesheet);
-        LOG.debug("query = " + query);
+        LOG.debug("stylesheet = {}", stylesheet);
+        LOG.debug("query = {}", query);
         String encoding;
         if ((encoding = getParameter(request, Encoding)) != null) {
             outputProperties.setProperty(OutputKeys.ENCODING, encoding);
@@ -829,7 +829,7 @@ public class RESTServer {
                                             final Element property = (Element) node;
                                             final String key = property.getAttribute("name");
                                             final String value = property.getAttribute("value");
-                                            LOG.debug(key + " = " + value);
+                                            LOG.debug("{} = {}", key, value);
 
                                             if (key != null && value != null) {
                                                 outputProperties.setProperty(key, value);
@@ -865,7 +865,7 @@ public class RESTServer {
 
                 } else if (rootNS != null && rootNS.equals(XUpdateProcessor.XUPDATE_NS)) {
                     if(LOG.isDebugEnabled()) {
-                        LOG.debug("Got xupdate request: " + content);
+                        LOG.debug("Got xupdate request: {}", content);
                     }
 
                     if(xupdateSubmission == EXistServlet.FeatureEnabled.FALSE) {
@@ -923,7 +923,7 @@ public class RESTServer {
                 if (e.getException() != null) {
                     cause = e.getException();
                 }
-                LOG.debug("SAX exception while parsing request: " + cause.getMessage(), cause);
+                LOG.debug("SAX exception while parsing request: {}", cause.getMessage(), cause);
                 throw new BadRequestException("SAX exception while parsing request: " + cause.getMessage());
 
             } catch (final ParserConfigurationException e) {
@@ -1149,7 +1149,7 @@ public class RESTServer {
             try(final Collection collection = broker.openCollection(pathURI, LockMode.WRITE_LOCK)) {
                 if (collection != null) {
                     // remove the collection
-                    LOG.debug("removing collection " + path);
+                    LOG.debug("removing collection {}", path);
 
                     broker.removeCollection(transaction, collection);
 
@@ -1167,7 +1167,7 @@ public class RESTServer {
 
                             // remove the document
                             if(LOG.isDebugEnabled()) {
-                                LOG.debug("removing document " + path);
+                                LOG.debug("removing document {}", path);
                             }
 
                             if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
@@ -1367,7 +1367,7 @@ public class RESTServer {
                 final long executionTime = System.currentTimeMillis() - executeStart;
 
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Found " + resultSequence.getItemCount() + " in " + executionTime + "ms.");
+                    LOG.debug("Found {} in {}ms.", resultSequence.getItemCount(), executionTime);
                 }
 
                 if (cache) {
@@ -1432,7 +1432,7 @@ public class RESTServer {
             }
         } catch(final Exception e) {
             if(LOG.isDebugEnabled()) {
-                LOG.debug("EXQuery Request Module is not present: " + e.getMessage(), e);
+                LOG.debug("EXQuery Request Module is not present: {}", e.getMessage(), e);
             }
         }
 
@@ -1729,7 +1729,7 @@ public class RESTServer {
                 }
             }
         } catch (final IllegalArgumentException iae) {
-            LOG.warn("Illegal If-Modified-Since HTTP Header sent on request, ignoring. " + iae.getMessage(), iae);
+            LOG.warn("Illegal If-Modified-Since HTTP Header sent on request, ignoring. {}", iae.getMessage(), iae);
         }
 
         if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
@@ -1789,7 +1789,7 @@ public class RESTServer {
                         }
 
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("media-type: " + asMimeType);
+                            LOG.debug("media-type: {}", asMimeType);
                         }
 
                         response.setContentType(asMimeType + "; charset=" + encoding);
@@ -2066,8 +2066,7 @@ public class RESTServer {
 
         } catch (final SAXException e) {
             // should never happen
-            LOG.warn("Error while serializing collection contents: "
-                    + e.getMessage(), e);
+            LOG.warn("Error while serializing collection contents: {}", e.getMessage(), e);
         } finally {
             if (serializer != null) {
                 SerializerPool.getInstance().returnObject(serializer);

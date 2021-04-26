@@ -323,7 +323,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         final int  indexType = Optimize.getQNameIndexType( context, contextSequence, contextQName );
 
         if( LOG.isTraceEnabled() ) {
-            LOG.trace( "Using QName index on type " + Type.getTypeName( indexType ) );
+            LOG.trace("Using QName index on type {}", Type.getTypeName(indexType));
         }
 
         final Sequence rightSeq = getRight().eval( contextSequence );
@@ -343,7 +343,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             if( truncation != StringTruncationOperator.NONE ) {
 
                 if( !Type.subTypeOf( key.getType(), Type.STRING ) ) {
-                    LOG.info( "Truncated key. Converted from " + Type.getTypeName( key.getType() ) + " to xs:string" );
+                    LOG.info("Truncated key. Converted from {} to xs:string", Type.getTypeName(key.getType()));
 
                     //truncation is only possible on strings
                     key = key.convertTo( Type.STRING );
@@ -360,7 +360,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 catch( final XPathException xpe ) {
 
                     if( LOG.isTraceEnabled() ) {
-                        LOG.trace( "Cannot convert key: " + Type.getTypeName( key.getType() ) + " to required index type: " + Type.getTypeName( indexType ) );
+                        LOG.trace("Cannot convert key: {} to required index type: {}", Type.getTypeName(key.getType()), Type.getTypeName(indexType));
                     }
 
                     throw( new XPathException( this, "Cannot convert key to required index type" ) );
@@ -371,7 +371,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             if( key instanceof Indexable ) {
 
                 if( LOG.isTraceEnabled() ) {
-                    LOG.trace( "Using QName range index for key: " + key.getStringValue() );
+                    LOG.trace("Using QName range index for key: {}", key.getStringValue());
                 }
 
                 NodeSet  temp;
@@ -722,7 +722,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         if( indexType != Type.ITEM ) {
 
             if( LOG.isTraceEnabled() ) {
-                LOG.trace( "found an index of type: " + Type.getTypeName( indexType ) );
+                LOG.trace("found an index of type: {}", Type.getTypeName(indexType));
             }
 
             boolean indexScan = false;
@@ -776,7 +776,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 if( truncation != StringTruncationOperator.NONE ) {
 
                     if( !Type.subTypeOf( key.getType(), Type.STRING ) ) {
-                        LOG.info( "Truncated key. Converted from " + Type.getTypeName( key.getType() ) + " to xs:string" );
+                        LOG.info("Truncated key. Converted from {} to xs:string", Type.getTypeName(key.getType()));
 
                         //truncation is only possible on strings
                         key = key.convertTo( Type.STRING );
@@ -799,7 +799,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                         }
 
                         if( LOG.isTraceEnabled() ) {
-                            LOG.trace( "Cannot convert key: " + Type.getTypeName( key.getType() ) + " to required index type: " + Type.getTypeName( indexType ) );
+                            LOG.trace("Cannot convert key: {} to required index type: {}", Type.getTypeName(key.getType()), Type.getTypeName(indexType));
                         }
 
                         return( nodeSetCompare( nodes, contextSequence ) );
@@ -810,7 +810,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 if( key instanceof Indexable ) {
 
                     if( LOG.isTraceEnabled() ) {
-                        LOG.trace( "Checking if range index can be used for key: " + key.getStringValue() );
+                        LOG.trace("Checking if range index can be used for key: {}", key.getStringValue());
                     }
 
                     final Collator collator = ( ( collationArg != null ) ? getCollator( contextSequence ) : null );
@@ -820,7 +820,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                         if( truncation == StringTruncationOperator.NONE ) {
 
                             if( LOG.isTraceEnabled() ) {
-                                LOG.trace( "Using range index for key: " + key.getStringValue() );
+                                LOG.trace("Using range index for key: {}", key.getStringValue());
                             }
 
                             //key without truncation, find key
@@ -850,7 +850,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                             }
 
                             if( LOG.isTraceEnabled() ) {
-                                LOG.trace( "Using range index for key: " + key.getStringValue() );
+                                LOG.trace("Using range index for key: {}", key.getStringValue());
                             }
 
                             try {
@@ -886,7 +886,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                         }
 
                         if( LOG.isTraceEnabled() ) {
-                            LOG.trace( "Cannot use range index: key is of type: " + Type.getTypeName( key.getType() ) + ") whereas index is of type '" + Type.getTypeName( indexType ) );
+                            LOG.trace("Cannot use range index: key is of type: {}) whereas index is of type '{}", Type.getTypeName(key.getType()), Type.getTypeName(indexType));
                         }
 
                         return( nodeSetCompare( nodes, contextSequence ) );
@@ -899,7 +899,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     }
 
                     if( LOG.isTraceEnabled() ) {
-                        LOG.trace( "Cannot use key which is of type '" + key.getClass().getName() );
+                        LOG.trace("Cannot use key which is of type '{}", key.getClass().getName());
                     }
 
                     return( nodeSetCompare( nodes, contextSequence ) );
@@ -914,7 +914,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         } else {
 
             if( LOG.isTraceEnabled() ) {
-                LOG.trace( "No suitable index found for key: " + rightSeq.getStringValue() );
+                LOG.trace("No suitable index found for key: {}", rightSeq.getStringValue());
             }
 
             //no range index defined on the nodes in this sequence, so fallback to nodeSetCompare
@@ -958,7 +958,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             default: {
 
                 // We should never get here!
-                LOG.error( "Invalid truncation type: " + truncation );
+                LOG.error("Invalid truncation type: {}", truncation);
                 throw( new XPathException( this, "Invalid truncation type: " + truncation ) );
             }
         }
@@ -1293,7 +1293,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 idxflags.indexOnQName = false;
 
                 if( LOG.isTraceEnabled() ) {
-                    LOG.trace( "cannot use index on QName: " + contextQName + ". Collection " + collection.getURI() + " does not define an index" );
+                    LOG.trace("cannot use index on QName: {}. Collection {} does not define an index", contextQName, collection.getURI());
                 }
             }
 

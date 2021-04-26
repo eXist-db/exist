@@ -155,7 +155,7 @@ public class GClockCache<T extends Cacheable> implements Cache<T> {
 			}
 		}
 		if(LOG.isTraceEnabled()) {
-            LOG.trace(written + " pages written to disk");
+			LOG.trace("{} pages written to disk", written);
         }
 		return flushed;
 	}
@@ -190,7 +190,7 @@ public class GClockCache<T extends Cacheable> implements Cache<T> {
 				old = items[bucket];
 				if (old != null) {
 				    if(LOG.isTraceEnabled()) {
-                        LOG.trace(name + " replacing " + old.getKey() + " for " + item.getKey());
+						LOG.trace("{} replacing {} for {}", name, old.getKey(), item.getKey());
                     }
 					map.remove(old.getKey());
 					old.sync(true);

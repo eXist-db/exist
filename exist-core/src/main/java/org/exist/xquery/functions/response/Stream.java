@@ -80,7 +80,7 @@ public class Stream extends StrictResponseFunction {
                 throw new XPathException(this, "Found invalid serialization option: " + content);
             }
             if (LOG.isDebugEnabled()) {
-                logger.debug("Setting serialization property: " + pair[0] + " = " + pair[1]);
+                logger.debug("Setting serialization property: {} = {}", pair[0], pair[1]);
             }
             serializeOptions.setProperty(pair[0], pair[1]);
         }

@@ -77,9 +77,9 @@ public class SystemTaskManager implements BrokerPoolService {
                         final SystemTask task = waitingSystemTasks.pop();
 
                         if (pool.isShuttingDown()) {
-                            LOG.info("Skipping SystemTask: '" + task.getName() + "' as database is shutting down...");
+                            LOG.info("Skipping SystemTask: '{}' as database is shutting down...", task.getName());
                         } else if (pool.isShutDown()) {
-                            LOG.warn("Unable to execute SystemTask: '" + task.getName() + "' as database is shut down!");
+                            LOG.warn("Unable to execute SystemTask: '{}' as database is shut down!", task.getName());
                         } else {
                             if (task.afterCheckpoint()) {
                                 pool.sync(systemBroker, Sync.MAJOR);
@@ -88,7 +88,7 @@ public class SystemTaskManager implements BrokerPoolService {
                         }
                     }
                 } catch (final Exception e) {
-                    LOG.error("System maintenance task reported error: " + e.getMessage(), e);
+                    LOG.error("System maintenance task reported error: {}", e.getMessage(), e);
                 }
             }
         }
@@ -96,7 +96,7 @@ public class SystemTaskManager implements BrokerPoolService {
 
     private void runSystemTask(final SystemTask task, final DBBroker broker, final Txn transaction) throws EXistException {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Running system maintenance task: " + task.getClass().getName());
+            LOG.debug("Running system maintenance task: {}", task.getClass().getName());
         }
 
         task.execute(broker, transaction);

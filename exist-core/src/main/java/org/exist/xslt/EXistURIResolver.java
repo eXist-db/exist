@@ -58,7 +58,7 @@ public class EXistURIResolver implements URIResolver {
     this.db = db;
     this.basePath = normalize(docPath);
     if (LOG.isDebugEnabled()) {
-      LOG.debug("EXistURIResolver base path set to " + basePath);
+      LOG.debug("EXistURIResolver base path set to {}", basePath);
     }
   }
 
@@ -152,7 +152,7 @@ public class EXistURIResolver implements URIResolver {
       }
     }
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Resolving path " + href + " with base " + base + " to " + path);
+      LOG.debug("Resolving path {} with base {} to {}", href, base, path);
       // + " (URI = " + uri.toASCIIString() + ")");
     }
 
@@ -182,7 +182,7 @@ public class EXistURIResolver implements URIResolver {
     try {
       doc = broker.getResource(uri, Permission.READ);
       if (doc == null) {
-        LOG.error("Document " + path + " not found");
+        LOG.error("Document {} not found", path);
         throw new TransformerException("Resource " + path + " not found in database.");
       }
 

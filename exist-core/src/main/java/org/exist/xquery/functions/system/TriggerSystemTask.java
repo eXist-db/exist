@@ -82,7 +82,7 @@ public class TriggerSystemTask extends BasicFunction {
 
             final SystemTask task = (SystemTask) taskObject;
             task.configure(context.getBroker().getConfiguration(), properties);
-            LOG.info("Triggering SystemTask: " + className);
+            LOG.info("Triggering SystemTask: {}", className);
             context.getBroker().getBrokerPool().triggerSystemTask(task);
 
         } catch (final ClassNotFoundException e) {
@@ -116,7 +116,7 @@ public class TriggerSystemTask extends BasicFunction {
 					final Element elem = (Element)child;
 					final String name = elem.getAttribute("name");
 					final String value = elem.getAttribute("value");
-					logger.trace("parseParameters: name[" + name + "] value[" + value + "]");
+                    logger.trace("parseParameters: name[{}] value[{}]", name, value);
 					if(name == null || value == null)
 						{throw new XPathException(this, "Name or value attribute missing for stylesheet parameter");}
 					properties.setProperty(name, value);

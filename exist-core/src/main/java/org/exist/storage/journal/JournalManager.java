@@ -70,7 +70,7 @@ public class JournalManager implements BrokerPoolService {
                 .orElse(configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR));
         this.groupCommits = configuration.getProperty(BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT, false);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("GroupCommits = " + groupCommits);
+            LOG.debug("GroupCommits = {}", groupCommits);
         }
     }
 

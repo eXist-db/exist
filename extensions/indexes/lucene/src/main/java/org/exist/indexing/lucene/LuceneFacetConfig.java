@@ -123,10 +123,9 @@ public class LuceneFacetConfig extends AbstractFieldConfig {
         try {
             doBuild(broker, document, nodeId, luceneDoc, text);
         } catch (PermissionDeniedException e) {
-            LOG.warn("Permission denied while evaluating expression for facet '" + dimension + "': " + expression, e);
+            LOG.warn("Permission denied while evaluating expression for facet '{}': {}", dimension, expression, e);
         } catch (XPathException e) {
-            LOG.warn("XPath error while evaluating expression for facet '" + dimension + "': " + expression +
-                    ": " + e.getMessage(), e);
+            LOG.warn("XPath error while evaluating expression for facet '{}': {}: {}", dimension, expression, e.getMessage(), e);
         }
     }
 }

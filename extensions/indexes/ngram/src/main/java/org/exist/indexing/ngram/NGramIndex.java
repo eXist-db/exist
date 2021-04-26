@@ -78,7 +78,7 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
                 e.getMessage());
         }
         if (LOG.isDebugEnabled())
-            LOG.debug("Created NGram index: " + dataFile.toAbsolutePath().toString());
+            LOG.debug("Created NGram index: {}", dataFile.toAbsolutePath().toString());
     }
 
     @Override

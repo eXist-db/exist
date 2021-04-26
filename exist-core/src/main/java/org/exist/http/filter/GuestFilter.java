@@ -71,34 +71,34 @@ public class GuestFilter implements Filter {
 
         final HttpSession session = httpServletRequest.getSession(false);
         if (session != null) {
-            LOG.info("session: " + session.toString());
+            LOG.info("session: {}", session.toString());
             final Enumeration enumeration = session.getAttributeNames();
 
             while (enumeration.hasMoreElements()) {
                 final String key = (String) enumeration.nextElement();
                 final Object value = session.getAttribute(key);
-                LOG.info("session attribute [" + key + "][" + value.toString() + "]");
+                LOG.info("session attribute [{}][{}]", key, value.toString());
                 if (key.equalsIgnoreCase("_eXist_xmldb_user")) {
                     username = ((org.exist.security.internal.SubjectImpl)value).getUsername();
-                    LOG.info("username [" + username + "]");
+                    LOG.info("username [{}]", username);
                 }
             }
         } else {
             LOG.info("No valid session");
         }
 
-        LOG.info("username [" + username + "]");
-        LOG.info("requestURI [" + requestURI + "]");
+        LOG.info("username [{}]", username);
+        LOG.info("requestURI [{}]", requestURI);
 
         if (requestURI.contains("/webdav/")) {
             if (username != null && username.equalsIgnoreCase("guest")) {
-                LOG.info("Permission denied to : " + requestURI);
+                LOG.info("Permission denied to : {}", requestURI);
                 httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             } else if (!httpServletRequest.isSecure()) {
                 final String serverName = httpServletRequest.getServerName();
                 final String path = httpServletRequest.getRequestURI();
                 final String newpath = "https://" + serverName + ":" + sslPort + path;
-                LOG.info("Redirecting to SSL: " + newpath);
+                LOG.info("Redirecting to SSL: {}", newpath);
                 httpServletResponse.sendRedirect(newpath);
             } else if (httpServletRequest.isSecure()) {
                 LOG.info("Request is appropriate");
@@ -129,7 +129,7 @@ public class GuestFilter implements Filter {
                 final String name = (String) initParams.nextElement();
                 String value = filterConfig.getInitParameter(name);
 
-                LOG.info("Parameter [" + name + "][" + value + "]");
+                LOG.info("Parameter [{}][{}]", name, value);
 
                 if (name.equalsIgnoreCase("sslport")) {
                     sslPort = value;

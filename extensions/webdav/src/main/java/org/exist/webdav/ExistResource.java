@@ -125,7 +125,7 @@ public abstract class ExistResource {
             subject = securityManager.authenticate(username, password);
 
         } catch (AuthenticationException e) {
-            LOG.info(String.format("User %s could not be authenticated. %s", username, e.getMessage()));
+            LOG.info("User {} could not be authenticated. {}", username, e.getMessage());
         }
         return subject;
     }

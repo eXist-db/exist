@@ -271,7 +271,7 @@ public class AnalyzerConfig {
         } catch (final NoSuchMethodException e) {
             final String message = String.format("Could not find matching analyzer class constructor %s: %s", className, e.getMessage());
             if (warnOnError) {
-                LOG.warn(message + ". Will retry...");
+                LOG.warn("{}. Will retry...", message);
             } else {
                 LOG.error(message, e);
             }
@@ -283,7 +283,7 @@ public class AnalyzerConfig {
 
             final String message = String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage());
             if (warnOnError) {
-                LOG.warn(message + ". Will retry...");
+                LOG.warn("{}. Will retry...", message);
             } else {
                 LOG.error(message, e);
             }

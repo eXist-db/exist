@@ -102,7 +102,7 @@ public class ModuleCall extends URLRewrite {
 
             final Sequence result = call.eval(contextSequence);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Found: " + result.getItemCount());
+                LOG.debug("Found: {}", result.getItemCount());
             }
             request.setAttribute(XQueryURLRewrite.RQ_ATTR_RESULT, result);
 

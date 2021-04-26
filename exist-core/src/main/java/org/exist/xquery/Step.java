@@ -64,7 +64,7 @@ public abstract class Step extends AbstractExpression {
     public void insertPredicate(Expression previous, Expression predicate) {
         final int idx = predicates.indexOf(previous);
         if (idx < 0) {
-            LOG.warn("Old predicate not found: " + ExpressionDumper.dump(previous) + "; in: " + ExpressionDumper.dump(this));
+            LOG.warn("Old predicate not found: {}; in: {}", ExpressionDumper.dump(previous), ExpressionDumper.dump(this));
             return;
         }
         predicates.add(idx + 1, (Predicate) predicate);

@@ -136,8 +136,8 @@ public class NativeSerializer extends Serializer {
     	if (generateDocEvent) {receiver.endDocument();}
 
     	if (LOG.isDebugEnabled())
-			{LOG.debug("serializing document " + doc.getDocId() + " (" + doc.getURI() + ")"
-	    			+ " to SAX took " + (System.currentTimeMillis() - start) + " msec");}
+			{
+                LOG.debug("serializing document {} ({}) to SAX took {} msec", doc.getDocId(), doc.getURI(), System.currentTimeMillis() - start);}
 
     }
     
@@ -329,8 +329,7 @@ public class NativeSerializer extends Serializer {
                 			"text".equals(this.outputProperties.getProperty("output-method"))) {
                 		receiver.characters(node.getNodeValue());                	
                 	} else {
-                		LOG.warn("Error SENR0001: attribute '" + node.getQName() + "' has no parent element. " +
-                				"While serializing document " + doc.getURI());
+                        LOG.warn("Error SENR0001: attribute '{}' has no parent element. While serializing document {}", node.getQName(), doc.getURI());
                 		throw new SAXException("Error SENR0001: attribute '" + node.getQName() + "' has no parent element");
                 	}
                 }

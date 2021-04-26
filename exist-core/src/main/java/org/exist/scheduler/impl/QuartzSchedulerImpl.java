@@ -140,9 +140,9 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
         if (Files.isReadable(f)) {
             try (final InputStream is = Files.newInputStream(f)) {
                 properties.load(is);
-                LOG.info("Successfully loaded Quartz Scheduler properties from: " + f.normalize().toAbsolutePath());
+                LOG.info("Successfully loaded Quartz Scheduler properties from: {}", f.normalize().toAbsolutePath());
             } catch (final IOException e) {
-                LOG.warn("Could not load Quartz Scheduler properties, will use defaults. " + e.getMessage(), e);
+                LOG.warn("Could not load Quartz Scheduler properties, will use defaults. {}", e.getMessage(), e);
                 properties.putAll(defaultQuartzProperties);
             }
         } else {
@@ -170,7 +170,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
             setupConfiguredJobs();
             getScheduler().start();
         } catch(final SchedulerException se) {
-            LOG.error("Unable to start the Scheduler: " + se.getMessage(), se);
+            LOG.error("Unable to start the Scheduler: {}", se.getMessage(), se);
         }
     }
 
@@ -187,7 +187,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
         try {
             getScheduler().shutdown(waitForJobsToComplete);
         } catch(final SchedulerException se) {
-            LOG.warn("Unable to shutdown the Scheduler:" + se.getMessage(), se);
+            LOG.warn("Unable to shutdown the Scheduler:{}", se.getMessage(), se);
         }
     }
 
@@ -196,7 +196,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
         try {
             return getScheduler().isShutdown();
         } catch(final SchedulerException se) {
-            LOG.warn("Unable to determine the status of the Scheduler: " + se.getMessage(), se);
+            LOG.warn("Unable to determine the status of the Scheduler: {}", se.getMessage(), se);
         }
         return false;
     }
@@ -295,7 +295,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
             getScheduler().scheduleJob(jobDetail, trigger);
         } catch(final SchedulerException se) {
             //Failed to schedule Job
-            LOG.error("Failed to schedule periodic job '" + job.getName() + "': " + se.getMessage(), se);
+            LOG.error("Failed to schedule periodic job '{}': {}", job.getName(), se.getMessage(), se);
             return false ;
         }
         //Successfully scheduled Job
@@ -359,7 +359,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
             getScheduler().scheduleJob(jobDetail, trigger);
         } catch(final SchedulerException se) {
             //Failed to schedule Job
-            LOG.error("Failed to schedule cron job '" + job.getName() + "': " + se.getMessage(), se);
+            LOG.error("Failed to schedule cron job '{}': {}", job.getName(), se.getMessage(), se);
             return false;
         }
         //Successfully scheduled Job
@@ -380,7 +380,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
         try {
             deletedJob = getScheduler().deleteJob(new JobKey(jobName, jobGroup));
         } catch(final SchedulerException se) {
-            LOG.error("Failed to delete job '" + jobName + "': " + se.getMessage(), se);
+            LOG.error("Failed to delete job '{}': {}", jobName, se.getMessage(), se);
         }
         return deletedJob;
     }
@@ -399,7 +399,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
             getScheduler().pauseJob(new JobKey(jobName, jobGroup));
             return true;
         } catch(final SchedulerException se) {
-            LOG.error( "Failed to pause job '" + jobName + "': " + se.getMessage(), se);
+            LOG.error("Failed to pause job '{}': {}", jobName, se.getMessage(), se);
         }
         return false;
     }
@@ -418,7 +418,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
             getScheduler().resumeJob(new JobKey(jobName, jobGroup));
             return true;
         } catch(final SchedulerException se) {
-            LOG.error("Failed to resume job '" + jobName + "': " + se.getMessage(), se);
+            LOG.error("Failed to resume job '{}': {}", jobName, se.getMessage(), se);
         }
         return false;
     }
@@ -434,7 +434,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
         try {
             jobNames.addAll(getScheduler().getJobGroupNames());
         } catch(final SchedulerException se) {
-            LOG.error( "Failed to get job group names: " + se.getMessage(), se );
+            LOG.error("Failed to get job group names: {}", se.getMessage(), se);
         }
         return jobNames;
     }
@@ -457,7 +457,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
                 }
             }
         } catch(final SchedulerException se) {
-            LOG.error("Failed to get scheduled jobs: " + se.getMessage(), se);
+            LOG.error("Failed to get scheduled jobs: {}", se.getMessage(), se);
         }
         return scheduledJobs;
     }
@@ -480,7 +480,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
             result = new ScheduledJobInfo[jobs.size()];
             jobs.toArray(result);
         } catch(final SchedulerException se) {
-            LOG.error("Failed to get executing jobs: " + se.getMessage(), se);
+            LOG.error("Failed to get executing jobs: {}", se.getMessage(), se);
         }
         return result;
     }
@@ -513,7 +513,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
                         }
                         
                     } catch(final SchedulerException e) {
-                        LOG.error("Unable to set job name: " + e.getMessage(), e);
+                        LOG.error("Unable to set job name: {}", e.getMessage(), e);
                     }
                 }
                 
@@ -539,13 +539,13 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
                                 job.setName(jobConfig.getJobName());
                             }
                         } else {
-                            LOG.error("Startup job " + jobConfig.getJobName() +"  must extend org.exist.scheduler.StartupJob");
+                            LOG.error("Startup job {}  must extend org.exist.scheduler.StartupJob", jobConfig.getJobName());
                             // throw exception? will be handled nicely
                         }
                     }
                     
                 } catch(final Exception e) { // Throwable?
-                    LOG.error("Unable to schedule '" + jobConfig.getType() + "' job " + jobConfig.getResourceName() + ": " + e.getMessage(), e);
+                    LOG.error("Unable to schedule '{}' job {}: {}", jobConfig.getType(), jobConfig.getResourceName(), e.getMessage(), e);
                 }
             }
             

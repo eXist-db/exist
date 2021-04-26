@@ -278,7 +278,7 @@ public class DOMStreamer {
                 break;
             default:
                 //TODO : what kind of default here ? -pb
-                LOG.error("Unknown node type: " + node.getNodeType());
+                LOG.error("Unknown node type: {}", node.getNodeType());
                 break;
         }
     }

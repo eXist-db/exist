@@ -204,7 +204,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 
         final int indexType = Optimize.getQNameIndexType(context, contextSequence, contextQName);
         if (LOG.isTraceEnabled()) {
-            LOG.trace("Using QName index on type " + Type.getTypeName(indexType));
+            LOG.trace("Using QName index on type {}", Type.getTypeName(indexType));
         }
 
         final int flags;
@@ -408,7 +408,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         // get the type of a possible index
         final int indexType = nodes.getIndexType();
         if (LOG.isTraceEnabled()) {
-            LOG.trace("found an index of type: " + Type.getTypeName(indexType));
+            LOG.trace("found an index of type: {}", Type.getTypeName(indexType));
         }
         if (Type.subTypeOf(indexType, Type.STRING)) {
             boolean indexScan = false;
@@ -446,7 +446,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
                         context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using value index '" + index.toString() + "'", "Regex: " + pattern);
                     }
                     if (LOG.isTraceEnabled()) {
-                        LOG.trace("Using range index for fn:matches expression: " + pattern);
+                        LOG.trace("Using range index for fn:matches expression: {}", pattern);
                     }
                     if (indexScan) {
                         result = index.matchAll(context.getWatchDog(), docs, nodes, NodeSet.ANCESTOR, pattern, DBBroker.MATCH_REGEXP, flags, caseSensitive);
@@ -471,7 +471,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
 
     private Sequence evalFallback(final NodeSet nodes, final String pattern, final int flags, final int indexType) throws XPathException {
         if (LOG.isTraceEnabled()) {
-            LOG.trace("fn:matches: can't use existing range index of type " + Type.getTypeName(indexType) + ". Need a string index.");
+            LOG.trace("fn:matches: can't use existing range index of type {}. Need a string index.", Type.getTypeName(indexType));
         }
         final Sequence result = new ExtArrayNodeSet();
         for (final NodeProxy node : nodes) {
