@@ -10,7 +10,7 @@ jobs:
         jdk: ['8', '11']
         include:
           - os: ubuntu-latest
-            jdk: '15'        
+            jdk: '16'
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
