@@ -280,8 +280,8 @@ public abstract class Paged implements AutoCloseable {
      * previously deleted page. This is required by btree page split operations to avoid 
      * concurrency conflicts within a transaction.
      *
-     * @param reuseDeleted true if deleted pages should be reused
      * @return a free page
+     *
      * @throws IOException if an I/O error occurs
      */
     protected final Page getFreePage(final boolean reuseDeleted) throws IOException {
@@ -418,8 +418,7 @@ public abstract class Paged implements AutoCloseable {
                 raf = new RandomAccessFile(file.toFile(), "r");
             }
         } catch (final IOException e) {
-            LOG.warn("An exception occurred while opening database file " +
-                file.toAbsolutePath().toString() + ": " + e.getMessage(), e);
+            LOG.warn("An exception occurred while opening database file {}: {}", file.toAbsolutePath().toString(), e.getMessage(), e);
         }
     }
 
@@ -537,7 +536,7 @@ public abstract class Paged implements AutoCloseable {
         if (data.length != pageHeader.dataLen) {
             //TODO : where to get this 64 from ?
             if (pageHeader.dataLen != getPageSize() - 64) {
-                LOG.warn("ouch: " + fileHeader.workSize + " != " + data.length);
+                LOG.warn("ouch: {} != {}", fileHeader.workSize, data.length);
             }
             pageHeader.dataLen = data.length;
         }
@@ -957,7 +956,7 @@ public abstract class Paged implements AutoCloseable {
                 raf.read(workData);
                 return workData;
             } catch(final Exception e) {
-                LOG.warn("error while reading page: " + getPageInfo(), e);
+                LOG.warn("error while reading page: {}", getPageInfo(), e);
                 throw new IOException(e.getMessage());
             }
         }
@@ -1015,7 +1014,7 @@ public abstract class Paged implements AutoCloseable {
             }
             final byte[] data = new byte[fileHeader.pageSize];
             raf.read(data);
-            LOG.debug("Contents of page " + pageNum + ": " + hexDump(data));
+            LOG.debug("Contents of page {}: {}", pageNum, hexDump(data));
         }
     }
 

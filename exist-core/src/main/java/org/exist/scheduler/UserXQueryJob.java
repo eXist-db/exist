@@ -166,7 +166,7 @@ public class UserXQueryJob extends UserJob {
                 }
             }
 
-            LOG.warn("XQuery User Job not found: " + xqueryResource + ", job not scheduled");
+            LOG.warn("XQuery User Job not found: {}, job not scheduled", xqueryResource);
         } catch(final EXistException ee) {
             abort("Could not get DBBroker!");
         } catch(final PermissionDeniedException pde) {

@@ -121,7 +121,7 @@ public class ExistWebServer extends ExternalResource {
                 final String absTemporaryStorage = temporaryStorage.get().toAbsolutePath().toString();
                 System.setProperty(CONFIG_PROP_FILES, absTemporaryStorage);
                 System.setProperty(CONFIG_PROP_JOURNAL_DIR, absTemporaryStorage);
-                LOG.info("Using temporary storage location: " + absTemporaryStorage);
+                LOG.info("Using temporary storage location: {}", absTemporaryStorage);
             }
 
             if(useRandomPort) {

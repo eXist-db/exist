@@ -92,7 +92,7 @@ public class URLSource extends AbstractSource {
             }
             return connection.getLastModified();
         } catch (final IOException e) {
-            LOG.warn("URL '" + url + "' could not be opened: " + e.getMessage());
+            LOG.warn("URL '{}' could not be opened: {}", url, e.getMessage());
             return 0;
         }
     }
@@ -150,12 +150,12 @@ public class URLSource extends AbstractSource {
             }
             Reader reader = null;
             if (responseCode != HttpURLConnection.HTTP_NOT_FOUND) {
-                reader = new InputStreamReader(connection.getInputStream(), "UTF-8");
+                reader = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
             }
             connection = null;
             return reader;
         } catch (final IOException e) {
-            LOG.warn("URL '" + url + "' could not be opened: " + e.getMessage());
+            LOG.warn("URL '{}' could not be opened: {}", url, e.getMessage());
             throw e;
         }
     }
@@ -178,11 +178,11 @@ public class URLSource extends AbstractSource {
             return is;
 
         } catch (final ConnectException e) {
-            LOG.warn("Unable to connect to URL '" + url + "': " + e.getMessage());
+            LOG.warn("Unable to connect to URL '{}': {}", url, e.getMessage());
             throw e;
 
         } catch (final IOException e) {
-            LOG.warn("URL '" + url + "' could not be opened: " + e.getMessage());
+            LOG.warn("URL '{}' could not be opened: {}", url, e.getMessage());
             throw e;
         }
     }
@@ -201,7 +201,7 @@ public class URLSource extends AbstractSource {
             connection = null;
             return content;
         } catch (final IOException e) {
-            LOG.warn("URL '" + url + "' could not be opened: " + e.getMessage());
+            LOG.warn("URL '{}' could not be opened: {}", url, e.getMessage());
             return null;
         }
     }

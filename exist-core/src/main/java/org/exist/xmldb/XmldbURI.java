@@ -679,7 +679,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
                     new URI(newURIString + parts[i]);
                     newURIString.append(parts[i]);
                 } catch (final URISyntaxException e) {
-                    LOG.info("Trying to escape : ''" + parts[i] + "' in '" + pseudoURI + "' !");
+                    LOG.info("Trying to escape : ''{}' in '{}' !", parts[i], pseudoURI);
                     newURIString.append(URIUtils.encodeForURI(parts[i]));
                 }
             }
@@ -771,7 +771,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
 
         //Adds a final slash if necessary
         if (!collectionPath.endsWith("/")) {
-            LOG.info("Added a final '/' to '" + collectionPath + "'");
+            LOG.info("Added a final '/' to '{}'", collectionPath);
             collectionPathURI = URI.create(collectionPath + "/");
         } else {
             collectionPathURI = URI.create(collectionPath);
@@ -834,7 +834,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
 
         //Adds a final slash if necessary
         if (!collectionPath.endsWith("/")) {
-            LOG.info("Added a final '/' to '" + collectionPath + "'");
+            LOG.info("Added a final '/' to '{}'", collectionPath);
             collectionPathURI = URI.create(collectionPath + "/");
         } else {
             collectionPathURI = URI.create(collectionPath);
@@ -955,7 +955,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
 
         //Kind of relative path : against all conventions ! -pb
         if (currentPath.startsWith("/")) {
-            LOG.warn("Initial '/' for relative path '" + currentPath + "'");
+            LOG.warn("Initial '/' for relative path '{}'", currentPath);
         }
 
         //OK : let's process this so-called relative path

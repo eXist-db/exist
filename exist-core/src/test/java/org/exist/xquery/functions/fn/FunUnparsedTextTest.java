@@ -149,4 +149,23 @@ public class FunUnparsedTextTest {
             assertTrue(result.itemAt(0).toJavaObject(Boolean.class).booleanValue());
         }
     }
+
+    @Test(expected = XPathException.class)
+    public void unparsedTextLines_noDataStream() throws XPathException, EXistException, PermissionDeniedException {
+        final BrokerPool pool = BrokerPool.getInstance();
+
+        final String text = "hello, the time is: " + System.currentTimeMillis();
+        final String textUri = "http://from-dynamic-context/doc1";
+        final String query = "fn:unparsed-text-lines('" + textUri + "')";
+
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            final XQueryContext context = new XQueryContext(pool);
+            context.addDynamicallyAvailableTextResource(textUri, UTF_8,
+                    (broker2, transaction, uri, charset) -> new InputStreamReader(null, charset));
+
+            final XQuery xqueryService = pool.getXQueryService();
+            final CompiledXQuery compiled = xqueryService.compile(broker, context, query);
+            final Sequence result = xqueryService.execute(broker, compiled, null);
+        }
+    }
 }

@@ -75,7 +75,7 @@ public class SetCurrentUser extends UserSwitchingBasicFunction {
         try {
             user = security.authenticate(userName, passwd);
         } catch (final AuthenticationException e) {
-            logger.warn("Could not validate user " + userName + " [" + e.getMessage() + "]");
+            logger.warn("Could not validate user {} [{}]", userName, e.getMessage());
             return BooleanValue.FALSE;
         }
 

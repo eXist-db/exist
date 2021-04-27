@@ -445,7 +445,7 @@ public class NativeBroker extends DBBroker {
         for(final byte i : ALL_STORAGE_FILES) {
             final Paged paged = getStorage(i);
             if(paged == null) {
-                LOG.warn("Storage file is null: " + i);
+                LOG.warn("Storage file is null: {}", i);
                 continue;
             }
 
@@ -727,7 +727,7 @@ public class NativeBroker extends DBBroker {
                     }
                 }
             } catch(final CollectionConfigurationException cce) {
-                LOG.error("Could not load initial collection configuration for /db: " + cce.getMessage(), cce);
+                LOG.error("Could not load initial collection configuration for /db: {}", cce.getMessage(), cce);
             }
 
             return new Tuple2<>(true, rootCollection);
@@ -3142,7 +3142,12 @@ public class NativeBroker extends DBBroker {
             }.run();
             ByteArrayPool.releaseByteArray(data);
         } catch(final Exception e) {
-            final Value oldVal = domDb.get(node.getInternalAddress());
+            final Value oldVal = new DOMTransaction<Value>(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
+                @Override
+                public Value start() {
+                    return domDb.get(node.getInternalAddress());
+                }
+            }.run();
 
             //TODO what can we do about abstracting this out?
             final IStoredNode old = StoredNode.deserialize(oldVal.data(),
@@ -3526,9 +3531,9 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public String getNodeValue(final IStoredNode node, final boolean addWhitespace) {
-        return (String) new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
+        return new DOMTransaction<String>(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
             @Override
-            public Object start() {
+            public String start() {
                 return domDb.getNodeValue(NativeBroker.this, node, addWhitespace);
             }
         }.run();
@@ -3536,9 +3541,9 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public IStoredNode objectWith(final Document doc, final NodeId nodeId) {
-        return (IStoredNode<?>) new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
+        return new DOMTransaction<IStoredNode<?>>(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
             @Override
-            public Object start() {
+            public IStoredNode<?> start() {
                 final Value val = domDb.get(NativeBroker.this, new NodeProxy((DocumentImpl) doc, nodeId));
                 if(val == null) {
                     if(LOG.isDebugEnabled()) {
@@ -3559,9 +3564,9 @@ public class NativeBroker extends DBBroker {
         if(!StorageAddress.hasAddress(p.getInternalAddress())) {
             return objectWith(p.getOwnerDocument(), p.getNodeId());
         }
-        return (IStoredNode<?>) new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
+        return new DOMTransaction<IStoredNode<?>>(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
             @Override
-            public Object start() {
+            public IStoredNode<?> start() {
                 // DocumentImpl sets the nodeId to DOCUMENT_NODE when it's trying to find its top-level
                 // children (for which it doesn't persist the actual node ids), so ignore that.  Nobody else
                 // should be passing DOCUMENT_NODE into here.
@@ -3684,7 +3689,7 @@ public class NativeBroker extends DBBroker {
                 try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
                     collectionsDb.flush();
                 } catch(final LockException e) {
-                    LOG.error("Failed to acquire lock on " + FileUtils.fileName(collectionsDb.getFile()), e);
+                    LOG.error("Failed to acquire lock on {}", FileUtils.fileName(collectionsDb.getFile()), e);
                 }
                 notifySync();
                 pool.getIndexManager().sync();
@@ -3711,8 +3716,23 @@ public class NativeBroker extends DBBroker {
         try {
             flush();
             sync(Sync.MAJOR);
-            domDb.close();
-            collectionsDb.close();
+
+            new DOMTransaction(NativeBroker.this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
+                @Override
+                public Object start() {
+                    try {
+                        domDb.close();
+                    } catch(final DBException e) {
+                        LOG.error(e.getMessage(), e);
+                    }
+                    return null;
+                }
+            }.run();
+
+            try(final ManagedLock<ReentrantLock> collectionsDbLock = lockManager.acquireBtreeWriteLock(collectionsDb.getLockName())) {
+                collectionsDb.close();
+            }
+
             notifyClose();
         } catch(final Exception e) {
             LOG.error(e.getMessage(), e);

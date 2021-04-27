@@ -31,10 +31,7 @@ import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -145,12 +142,12 @@ public class SerializeToFile extends BasicFunction {
             final Path file = FileModuleHelper.getFile(inputPath);
 
             if(Files.isDirectory(file)) {
-                logger.debug("Cannot serialize file. Output file is a directory: " + file.toAbsolutePath().toString());
+                logger.debug("Cannot serialize file. Output file is a directory: {}", file.toAbsolutePath().toString());
                 return BooleanValue.FALSE;
             }
 
         if(Files.exists(file) && !Files.isWritable(file)) {
-                logger.debug("Cannot serialize file. Cannot write to file " + file.toAbsolutePath().toString() );
+            logger.debug("Cannot serialize file. Cannot write to file {}", file.toAbsolutePath().toString());
                 return BooleanValue.FALSE;
             }
 
@@ -207,7 +204,7 @@ public class SerializeToFile extends BasicFunction {
                 : new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING};
 
 
-        try (final OutputStream os = Files.newOutputStream(file, ops);
+        try (final OutputStream os = new BufferedOutputStream(Files.newOutputStream(file, ops));
                 final Writer writer = new OutputStreamWriter(os, Charset.forName(outputProperties.getProperty(OutputKeys.ENCODING)))) {
 
             serializer.setProperties(outputProperties);
@@ -229,7 +226,7 @@ public class SerializeToFile extends BasicFunction {
         StandardOpenOption ops[] = doAppend ? new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.APPEND}
                 : new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING};
 
-        try(final OutputStream os = Files.newOutputStream(file, ops)) {
+        try(final OutputStream os = new BufferedOutputStream(Files.newOutputStream(file, ops))) {
             binary.streamBinaryTo(os);
         } catch(final IOException ioe) {
             throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the binary data: " + ioe.getMessage(), ioe);

@@ -84,7 +84,7 @@ public class BlobStoreImplService implements BlobStoreService, BrokerPoolService
     public void startSystem(final DBBroker systemBroker, final Txn transaction) throws BrokerPoolServiceException {
         try {
             this.blobStore.open();
-            LOG.info("Opened de-duplicating Blob Store v" + BlobStoreImpl.BLOB_STORE_VERSION + ". metadata=" + dataDir.relativize(persistentFile) + ", store=" + dataDir.relativize(blobDir) + "/");
+            LOG.info("Opened de-duplicating Blob Store v" + BlobStoreImpl.BLOB_STORE_VERSION + ". metadata={}, store={}/", dataDir.relativize(persistentFile), dataDir.relativize(blobDir));
         } catch (final IOException e) {
             throw new BrokerPoolServiceException(e);
         }
@@ -96,7 +96,7 @@ public class BlobStoreImplService implements BlobStoreService, BrokerPoolService
             try {
                 this.blobStore.close();
             } catch (final IOException e) {
-                LOG.error("Clean shutdown of Blob Store failed: " + e);
+                LOG.error("Clean shutdown of Blob Store failed: {}", e.getMessage(), e);
             }
         }
     }

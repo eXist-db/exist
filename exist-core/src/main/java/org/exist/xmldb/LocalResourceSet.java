@@ -103,7 +103,7 @@ public class LocalResourceSet extends AbstractLocal implements ResourceSet {
             try {
                 ((BinaryValue) resource).close();
             } catch(final IOException ioe) {
-                LOG.warn("Unable to cleanup BinaryValue: " + resource.hashCode(), ioe);
+                LOG.warn("Unable to cleanup BinaryValue: {}", resource.hashCode(), ioe);
             }
         });
 

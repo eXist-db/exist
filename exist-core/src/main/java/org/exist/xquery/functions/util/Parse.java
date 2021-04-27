@@ -107,7 +107,7 @@ public class Parse extends BasicFunction {
             xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             xr.parse(src);
         } catch (final SAXException e) {
-            logger.debug("Error while parsing XML: " + e.getMessage(), e);
+            logger.debug("Error while parsing XML: {}", e.getMessage(), e);
         } catch (final IOException e) {
             throw new XPathException(this, ErrorCodes.EXXQDY0002, "Error while parsing XML: " + e.getMessage(), args[0], e);
         } finally {

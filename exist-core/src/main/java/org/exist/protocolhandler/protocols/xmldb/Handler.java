@@ -102,7 +102,7 @@ public class Handler extends URLStreamHandler {
             super.parseURL(url, spec, start, limit);
             
         } else {
-            LOG.error("Expected 'xmldb:'-like URL, found "+spec);
+            LOG.error("Expected 'xmldb:'-like URL, found {}", spec);
             super.parseURL(url, spec, start, limit);
         }
     }

@@ -232,7 +232,7 @@ public class RedirectorServlet extends AbstractExistHttpServlet {
             if (servletName != null && servletName.length() > 0) {
                 dispatcher = getServletContext().getNamedDispatcher(servletName);
             } else {
-                LOG.debug("Dispatching to " + path);
+                LOG.debug("Dispatching to {}", path);
                 dispatcher = getServletContext().getRequestDispatcher(path);
                 if (dispatcher == null) {
                     dispatcher = request.getRequestDispatcher(path);

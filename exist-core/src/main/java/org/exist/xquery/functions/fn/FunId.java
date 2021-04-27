@@ -106,11 +106,11 @@ public class FunId extends Function {
                 // searched for the id
                 final Sequence nodes = getArgument(1).eval(contextSequence);
                 if (nodes.isEmpty()) {
-                    logger.error(ErrorCodes.XPDY0002 + " No node or context item for fn:id");
+                    logger.error("{} No node or context item for fn:id", ErrorCodes.XPDY0002);
                     throw new XPathException(this, ErrorCodes.XPDY0002, "XPDY0002: no node or context item for fn:id", nodes);
                 }
                 if (!Type.subTypeOf(nodes.itemAt(0).getType(), Type.NODE)) {
-                    logger.error(ErrorCodes.XPTY0004 + " fn:id() argument is not a node");
+                    logger.error("{} fn:id() argument is not a node", ErrorCodes.XPTY0004);
                 	throw new XPathException(this, ErrorCodes.XPTY0004, "XPTY0004: fn:id() argument is not a node", nodes);
                 }
                 NodeValue node = (NodeValue)nodes.itemAt(0);
@@ -126,10 +126,10 @@ public class FunId extends Function {
                 }
                 contextSequence = node;
             } else if (contextSequence == null) {
-                logger.error(ErrorCodes.XPDY0002 +  " No context item specified");
+                logger.error("{} No context item specified", ErrorCodes.XPDY0002);
                 throw new XPathException(this, ErrorCodes.XPDY0002, "No context item specified");
            } else if(!Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
-                logger.error(ErrorCodes.XPTY0004 + " Context item is not a node");
+                logger.error("{} Context item is not a node", ErrorCodes.XPTY0004);
     			throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node", contextSequence);
     		} else {
     			if (contextSequence.isPersistentSet())

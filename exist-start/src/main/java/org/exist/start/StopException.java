@@ -22,7 +22,7 @@
 package org.exist.start;
 
 public class StopException extends Exception {
-    public StopException(String message, Throwable cause) {
+    public StopException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

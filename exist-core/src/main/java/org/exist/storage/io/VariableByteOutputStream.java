@@ -52,7 +52,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * each int value that is written to the output stream that is
  * less than 2,097,151.
  *
- * @author <a href="mailto:adam@evolvedbinary.com>Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class VariableByteOutputStream extends OutputStream {
 

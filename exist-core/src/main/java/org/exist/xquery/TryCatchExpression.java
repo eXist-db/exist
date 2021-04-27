@@ -401,8 +401,7 @@ public class TryCatchExpression extends AbstractExpression {
 
             final String[] data = extractLocalName(xpe.getMessage());
             final ErrorCode errorCode = new ErrorCode(data[0], data[1]);
-            LOG.debug("Parsed string '" + xpe.getMessage() + "' for Errorcode. "
-                    + "Qname='" + data[0] + "' message='" + data[1] + "'");
+            LOG.debug("Parsed string '{}' for Errorcode. Qname='{}' message='{}'", xpe.getMessage(), data[0], data[1]);
             return errorCode;
 
         }

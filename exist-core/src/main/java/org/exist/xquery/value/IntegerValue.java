@@ -29,6 +29,7 @@ import org.exist.xquery.XPathException;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.function.IntSupplier;
 
 /**
@@ -380,7 +381,7 @@ public class IntegerValue extends NumericValue {
             final BigDecimal d = new BigDecimal(value);
             final BigDecimal od = new BigDecimal(((IntegerValue) other).value);
             final int scale = Math.max(18, Math.max(d.scale(), od.scale()));
-            return new DecimalValue(d.divide(od, scale, BigDecimal.ROUND_HALF_DOWN));
+            return new DecimalValue(d.divide(od, scale, RoundingMode.HALF_DOWN));
         } else {
             //TODO : review type promotion
             return ((ComputableValue) convertTo(other.getType())).div(other);

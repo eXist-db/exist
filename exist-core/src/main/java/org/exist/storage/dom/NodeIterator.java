@@ -98,7 +98,7 @@ public final class NodeIterator implements INodeIterator {
         try(final ManagedLock<ReentrantLock> domFileLock = lockManager.acquireBtreeReadLock(db.getLockName())) {
             db.setOwnerObject(broker);
             if (gotoNextPosition()) {
-                db.getPageBuffer().add(page);
+                db.addToBuffer(page);
                 final DOMFile.DOMFilePageHeader pageHeader = page.getPageHeader();
                 if (offset < pageHeader.getDataLength())
                     {return true;}
@@ -109,7 +109,7 @@ public final class NodeIterator implements INodeIterator {
                     {return true;}
             }
         } catch (final LockException e) {
-            LOG.warn("Failed to acquire read lock on " + FileUtils.fileName(db.getFile()));
+            LOG.warn("Failed to acquire read lock on {}", FileUtils.fileName(db.getFile()));
             //TODO : throw exception here ? -pb
             return false;
         } catch (final BTreeException | IOException e) {
@@ -164,7 +164,7 @@ public final class NodeIterator implements INodeIterator {
                     short vlen = ByteConversion.byteToShort(page.data, offset);
                     offset += DOMFile.LENGTH_DATA_LENGTH;
                     if (vlen < 0) {
-                        LOG.error("Got negative length" + vlen + " at offset " + offset + "!!!");
+                        LOG.error("Got negative length{} at offset {}!!!", vlen, offset);
                         if (LOG.isDebugEnabled()) {
                             LOG.debug(db.debugPageContents(page));
                         }
@@ -185,8 +185,7 @@ public final class NodeIterator implements INodeIterator {
                             nextNode = StoredNode.deserialize(overflowValue, 0, overflowValue.length,
                                 doc, useNodePool);
                         } catch(final Exception e) {
-                            LOG.warn("Exception while loading overflow value: " + e.getMessage() +
-                                "; originating page: " + page.page.getPageInfo());
+                            LOG.warn("Exception while loading overflow value: {}; originating page: {}", e.getMessage(), page.page.getPageInfo());
                             //TODO : rethrow exception ? -pb
                         }
                     //Normal node
@@ -195,8 +194,8 @@ public final class NodeIterator implements INodeIterator {
                             nextNode = StoredNode.deserialize(page.data, offset, vlen, doc, useNodePool);
                             offset += vlen;
                         } catch(final Exception e) {
-                            LOG.error("Error while deserializing node: " + e.getMessage(), e);
-                            LOG.error("Reading from offset: " + offset + "; len = " + vlen);
+                            LOG.error("Error while deserializing node: {}", e.getMessage(), e);
+                            LOG.error("Reading from offset: {}; len = {}", offset, vlen);
                             if (LOG.isDebugEnabled()) {
                                 LOG.debug(db.debugPageContents(page));
                             }
@@ -204,12 +203,7 @@ public final class NodeIterator implements INodeIterator {
                         }
                     }
                     if (nextNode == null) {
-                        LOG.error("illegal node on page " + page.getPageNum() +
-                            "; tid = " + ItemId.getId(lastTupleID) +
-                            "; next = " + page.getPageHeader().getNextDataPage() +
-                            "; prev = " + page.getPageHeader().getPreviousDataPage() +
-                            "; offset = " + (offset - vlen) +
-                            "; len = " + page.getPageHeader().getDataLength());
+                        LOG.error("illegal node on page {}; tid = {}; next = {}; prev = {}; offset = {}; len = {}", page.getPageNum(), ItemId.getId(lastTupleID), page.getPageHeader().getNextDataPage(), page.getPageHeader().getPreviousDataPage(), offset - vlen, page.getPageHeader().getDataLength());
                         if (LOG.isDebugEnabled()) {
                             LOG.debug(db.debugPageContents(page));
                         }
@@ -227,7 +221,7 @@ public final class NodeIterator implements INodeIterator {
             }
             return nextNode;
         } catch (final LockException e) {
-            LOG.warn("Failed to acquire read lock on " + FileUtils.fileName(db.getFile()));
+            LOG.warn("Failed to acquire read lock on {}", FileUtils.fileName(db.getFile()));
             //TODO : throw exception here ? -pb
             return null;
         } catch (final BTreeException | IOException e) {

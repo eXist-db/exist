@@ -66,7 +66,7 @@ public class MiltonWebDAVServlet extends MiltonServlet {
         if (miltonVersion == null) {
             LOG.error("Unable to determine Milton version");
         } else {
-            LOG.info("Detected Milton WebDAV Server library version: " + miltonVersion);
+            LOG.info("Detected Milton WebDAV Server library version: {}", miltonVersion);
         }
 
         // Initialize Milton
@@ -84,6 +84,6 @@ public class MiltonWebDAVServlet extends MiltonServlet {
         // Pass value to Milton
         httpManager.setEnableExpectContinue(enableExpectContinue);
 
-        LOG.debug(String.format("Set 'Enable Expect Continue' to %s", enableExpectContinue));
+        LOG.debug("Set 'Enable Expect Continue' to {}", enableExpectContinue);
     }
 }

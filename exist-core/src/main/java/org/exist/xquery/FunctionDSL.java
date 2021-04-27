@@ -25,7 +25,6 @@ package org.exist.xquery;
 import org.exist.dom.QName;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 import java.util.Arrays;
@@ -181,23 +180,23 @@ public class FunctionDSL {
         );
     }
 
-    /**
-     * Deprecates a function signature
-     *
-     * @param fsDeprecates The new functionSignature which deprecates <code>functionSignature</code>
-     * @param functionSignature The functionSignature to deprecate
-     *
-     * @return The function signature object
-     */
-    public static FunctionSignature deprecated(final FunctionSignature fsDeprecates, final FunctionSignature functionSignature) {
-        return new FunctionSignature(
-                functionSignature.getName(),
-                functionSignature.getDescription(),
-                functionSignature.getArgumentTypes(),
-                functionSignature.getReturnType(),
-                fsDeprecates
-        );
-    }
+//    /**
+//     * Deprecates a function signature
+//     *
+//     * @param fsDeprecates The new functionSignature which deprecates <code>functionSignature</code>
+//     * @param functionSignature The functionSignature to deprecate
+//     *
+//     * @return The function signature object
+//     */
+//    public static FunctionSignature deprecated(final FunctionSignature fsDeprecates, final FunctionSignature functionSignature) {
+//        return new FunctionSignature(
+//                functionSignature.getName(),
+//                functionSignature.getDescription(),
+//                functionSignature.getArgumentTypes(),
+//                functionSignature.getReturnType(),
+//                fsDeprecates
+//        );
+//    }
 
     /**
      * Creates multiple Function signatures for functions that have multiple arity definitions

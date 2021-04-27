@@ -31,6 +31,7 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 
 /**
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
@@ -172,7 +173,7 @@ public class DurationValue extends ComputableValue {
 
         // segment to be replaced:
         final BigDecimal secondsValue = secondsValue();
-        final BigDecimal m = secondsValue.divide(SIXTY_DECIMAL, 0, BigDecimal.ROUND_DOWN);
+        final BigDecimal m = secondsValue.divide(SIXTY_DECIMAL, 0, RoundingMode.DOWN);
         seconds = nullIfZero(secondsValue.subtract(SIXTY_DECIMAL.multiply(m)));
         r = m.toBigInteger().divideAndRemainder(SIXTY);
 

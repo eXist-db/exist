@@ -170,9 +170,6 @@ public class Accounting {
     }
     
     public void stats() {
-        LOG.debug("hits: " + hits 
-                + "; misses: " + misses 
-                + "; thrashing: " + getThrashing() 
-                + "; thrashing period: " + checkPeriod);
+        LOG.debug("hits: {}; misses: {}; thrashing: {}; thrashing period: {}", hits, misses, getThrashing(), checkPeriod);
     }
 }

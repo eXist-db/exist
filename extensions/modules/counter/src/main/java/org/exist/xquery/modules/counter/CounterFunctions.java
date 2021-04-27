@@ -108,7 +108,7 @@ public class CounterFunctions extends BasicFunction {
         final Path counterDir = (Path) context.getBroker().getConfiguration()
                                                         .getProperty(BrokerPool.PROPERTY_DATA_DIR);
 
-        logger.debug("Counters directory: "+counterDir);
+        logger.debug("Counters directory: {}", counterDir);
 
         // Get reference to counters object
         try {
@@ -117,7 +117,7 @@ public class CounterFunctions extends BasicFunction {
             }
 
         } catch (EXistException ex) {
-            logger.error("Unable to initialize counters. "+ex.getMessage(), ex);
+            logger.error("Unable to initialize counters. {}", ex.getMessage(), ex);
         }
 		
     }

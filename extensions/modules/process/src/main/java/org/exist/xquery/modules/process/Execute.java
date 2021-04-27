@@ -35,6 +35,7 @@ import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -117,7 +118,7 @@ public class Execute extends BasicFunction {
             }
         }
         if (LOG.isDebugEnabled())
-            LOG.debug("Creating process " + cmdArgs.get(0));
+            LOG.debug("Creating process {}", cmdArgs.get(0));
 
         ProcessBuilder pb = new ProcessBuilder(cmdArgs);
         pb.redirectErrorStream(true);
@@ -130,7 +131,7 @@ public class Execute extends BasicFunction {
         try {
             Process process = pb.start();
             if (stdin != null) {
-                try(final Writer writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), "UTF-8"))) {
+                try(final Writer writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), StandardCharsets.UTF_8))) {
                     for (final String line : stdin) {
                         writer.write(line);
                     }
@@ -191,7 +192,7 @@ public class Execute extends BasicFunction {
     }
 
     private List<String> readOutput(Process process) throws XPathException {
-        try(final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8"))) {
+        try(final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
             List<String> output = new ArrayList<>(31);
 
             String line;

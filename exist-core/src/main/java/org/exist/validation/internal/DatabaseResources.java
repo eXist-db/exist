@@ -105,8 +105,8 @@ public class DatabaseResources {
             final SequenceIterator i = sequence.iterate();
             if(i.hasNext()){
                 result= i.nextItem().getStringValue();
-                
-                logger.debug("Single query result: '"+result+"'.");
+
+                logger.debug("Single query result: '{}'.", result);
                 
             } else {
                 logger.debug("No query result.");
@@ -128,7 +128,7 @@ public class DatabaseResources {
         final String collection = params.get(COLLECTION);
         
         if(logger.isDebugEnabled()) {
-            logger.debug(String.format("collection=%s namespace=%s publicId=%s catalogPath=%s", collection, namespace, publicId, catalogPath));
+            logger.debug("collection={} namespace={} publicId={} catalogPath={}", collection, namespace, publicId, catalogPath);
         }
 
         Sequence result= null;
@@ -183,7 +183,7 @@ public class DatabaseResources {
     public String findXSD(String collection, String targetNamespace, Subject user){
         
         if(logger.isDebugEnabled()) {
-            logger.debug("Find schema with namespace '"+targetNamespace+"' in '"+collection+"'.");
+            logger.debug("Find schema with namespace '{}' in '{}'.", targetNamespace, collection);
         }
         
         final Map<String,String> params = new HashMap<>();
@@ -198,7 +198,7 @@ public class DatabaseResources {
     public String findCatalogWithDTD(String collection, String publicId, Subject user){
         
         if(logger.isDebugEnabled()) {
-            logger.debug("Find DTD with public '"+publicId+"' in '"+collection+"'.");
+            logger.debug("Find DTD with public '{}' in '{}'.", publicId, collection);
         }
         
         final Map<String,String> params = new HashMap<>();

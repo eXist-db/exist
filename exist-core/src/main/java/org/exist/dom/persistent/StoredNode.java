@@ -37,9 +37,9 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
-import java.io.IOException;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
 
 /**
  * The base class for all persistent DOM nodes in the database.
@@ -163,7 +163,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
             case Node.CDATA_SECTION_NODE:
                 return CDATASectionImpl.deserialize(data, start, len, doc, pooled);
             default:
-                LOG.error("Unknown node type: " + type);
+                LOG.error("Unknown node type: {}", type);
                 Thread.dumpStack();
                 return null;
         }
@@ -181,7 +181,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
             case Node.DOCUMENT_TYPE_NODE:
                 return QName.DOCTYPE_QNAME;
             default:
-                LOG.error("Unknown node type: " + getNodeType());
+                LOG.error("Unknown node type: {}", getNodeType());
                 return null;
         }
     }
@@ -280,7 +280,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
             try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
                 return broker.objectWith(ownerDocument, siblingId);
             } catch(final EXistException e) {
-                LOG.error("Internal error while reading previous sibling node: " + e.getMessage(), e);
+                LOG.error("Internal error while reading previous sibling node: {}", e.getMessage(), e);
                 //TODO : throw exception -pb
             }
         }
@@ -312,7 +312,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
                     }
                 }
             } catch(final IOException | XMLStreamException | EXistException e) {
-                LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
+                LOG.error("Internal error while reading child nodes: {}", e.getMessage(), e);
                 //TODO : throw exception -pb
             }
             return null;
@@ -339,7 +339,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
             try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
                 return broker.objectWith(ownerDocument, siblingId);
             } catch(final EXistException e) {
-                LOG.error("Internal error while reading next sibling node: " + e.getMessage(), e);
+                LOG.error("Internal error while reading next sibling node: {}", e.getMessage(), e);
                 //TODO : throw exception -pb
             }
         }
@@ -367,7 +367,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
                     }
                 }
             } catch(final IOException | XMLStreamException | EXistException e) {
-                LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
+                LOG.error("Internal error while reading child nodes: {}", e.getMessage(), e);
                 //TODO : throw exception -pb
             }
             return null;
@@ -410,7 +410,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
 
             return reader.getPreviousNode();
         } catch(final IOException | XMLStreamException | EXistException e) {
-            LOG.error("Internal error while reading child nodes: " + e.getMessage(), e);
+            LOG.error("Internal error while reading child nodes: {}", e.getMessage(), e);
             //TODO : throw exception -pb
         }
         return null;
@@ -487,7 +487,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
             iterator.next();
             return accept(iterator, visitor);
         } catch(final EXistException | IOException e) {
-            LOG.error("Exception while reading node: " + e.getMessage(), e);
+            LOG.error("Exception while reading node: {}", e.getMessage(), e);
             //TODO : throw exception -pb
         }
         return false;

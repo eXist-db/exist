@@ -21,10 +21,9 @@
  */
 package org.exist.http.servlets;
 
-import java.util.Enumeration;
-
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
+import java.util.Enumeration;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>

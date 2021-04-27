@@ -32,12 +32,12 @@ public class BufferStats {
 	public final static int DATA = 1;
 
 	//private int type = 0;
-	private int size = 0;
-	private int used = 0;
-	private int pageFails = 0;
-	private int pageHits = 0;
+	private final int size;
+	private final int used;
+	private final int pageHits;
+	private final int pageFails;
 
-	public BufferStats(int size, int used, int hits, int fails) {
+	public BufferStats(final int size, final int used, final int hits, final int fails) {
 		this.size = size;
 		this.used = used;
 		this.pageHits = hits;

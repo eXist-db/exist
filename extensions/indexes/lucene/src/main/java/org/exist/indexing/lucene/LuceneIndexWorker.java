@@ -314,7 +314,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
             writer.deleteDocuments(dt);
         } catch (IOException e) {
-            LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
+            LOG.warn("Error while removing lucene index: {}", e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
             mode = ReindexMode.STORE;
@@ -329,7 +329,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             Term dt = new Term(FIELD_DOC_URI, uri);
             writer.deleteDocuments(dt);
         } catch (IOException e) {
-            LOG.warn("Error while removing lucene index: " + e.getMessage(), e);
+            LOG.warn("Error while removing lucene index: {}", e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
             mode = ReindexMode.STORE;
@@ -339,7 +339,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     @Override
     public void removeCollection(Collection collection, DBBroker broker, boolean reindex) {
         if (LOG.isDebugEnabled())
-            LOG.debug("Removing collection " + collection.getURI());
+            LOG.debug("Removing collection {}", collection.getURI());
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
@@ -351,14 +351,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 writer.deleteDocuments(dt);
             }
         } catch (IOException | PermissionDeniedException | LockException e) {
-            LOG.error("Error while removing lucene index: " + e.getMessage(), e);
+            LOG.error("Error while removing lucene index: {}", e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
             if (reindex) {
                 try {
                     index.sync();
                 } catch (DBException e) {
-                    LOG.warn("Exception during reindex: " + e.getMessage(), e);
+                    LOG.warn("Exception during reindex: {}", e.getMessage(), e);
                 }
             }
             mode = ReindexMode.STORE;
@@ -399,7 +399,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 writer.deleteDocuments(q);
             }
         } catch (IOException e) {
-            LOG.warn("Error while deleting lucene index entries: " + e.getMessage(), e);
+            LOG.warn("Error while deleting lucene index entries: {}", e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
             nodesToRemove = null;
@@ -590,7 +590,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             boolean returnAncestor = axis == NodeSet.ANCESTOR;
             LuceneConfig config = getLuceneConfig(context.getBroker(), docs);
             Analyzer analyzer = getQueryAnalyzer(config, field, null, options);
-            LOG.debug("Using analyzer " + analyzer + " for " + queryString);
+            LOG.debug("Using analyzer {} for {}", analyzer, queryString);
             QueryParserWrapper parser = getQueryParser(field, analyzer, docs);
             options.configureParser(parser.getConfiguration());
             Query query = parser.parse(queryString);
@@ -618,7 +618,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         // Verify input
         if (!descriptor.getNode().getLocalName().contentEquals("doc")) {
             // throw exception
-            LOG.error("Expected <doc> got <" + descriptor.getNode().getLocalName() + ">");
+            LOG.error("Expected <doc> got <{}>", descriptor.getNode().getLocalName());
             return;
         }
 
@@ -679,7 +679,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             
             writer.addDocument(pendingDoc);
         } catch (IOException e) {
-            LOG.warn("An exception was caught while indexing document: " + e.getMessage(), e);
+            LOG.warn("An exception was caught while indexing document: {}", e.getMessage(), e);
 
         } finally {
             index.releaseWriter(writer);
@@ -1166,7 +1166,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             return scanIndexByQName(qnames, docs, nodes, start, end, max);
         } catch (IOException e) {
-            LOG.warn("Failed to scan index occurrences: " + e.getMessage(), e);
+            LOG.warn("Failed to scan index occurrences: {}", e.getMessage(), e);
             return new Occurrences[0];
         }
     }
@@ -1187,7 +1187,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             return scanIndexByField(field, docs, null, start, end, max);
         } catch (IOException e) {
-            LOG.warn("Failed to scan index occurrences: " + e.getMessage(), e);
+            LOG.warn("Failed to scan index occurrences: {}", e.getMessage(), e);
             return new Occurrences[0];
         }
     }
@@ -1431,7 +1431,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 		        }
 	        }
         } catch (final IOException e) {
-            LOG.warn("An exception was caught while indexing document: " + e.getMessage(), e);
+            LOG.warn("An exception was caught while indexing document: {}", e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
             nodesToWrite = new ArrayList<>();
@@ -1450,7 +1450,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer.forceMerge(1, true);
             writer.commit();
         } catch (IOException e) {
-            LOG.warn("An exception was caught while optimizing the lucene index: " + e.getMessage(), e);
+            LOG.warn("An exception was caught while optimizing the lucene index: {}", e.getMessage(), e);
         } finally {
             index.releaseWriter(writer);
         }

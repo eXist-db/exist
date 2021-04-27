@@ -21,33 +21,6 @@
  */
 package org.exist.http;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.function.BiFunction;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerConfigurationException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -56,19 +29,16 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.debuggee.DebuggeeFactory;
-import org.exist.dom.persistent.*;
 import org.exist.dom.QName;
-import static java.lang.invoke.MethodType.methodType;
-import static org.exist.http.RESTServerParameter.*;
-
+import org.exist.dom.memtree.ElementImpl;
+import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.memtree.SAXAdapter;
+import org.exist.dom.persistent.*;
 import org.exist.http.servlets.EXistServlet;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.http.urlrewrite.XQueryURLRewrite;
-import org.exist.dom.memtree.ElementImpl;
-import org.exist.dom.memtree.NodeImpl;
-import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
@@ -93,15 +63,13 @@ import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheCon
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.util.serializer.XQuerySerializer;
-import org.exist.util.serializer.json.*;
+import org.exist.util.serializer.json.JSONNode;
+import org.exist.util.serializer.json.JSONObject;
+import org.exist.util.serializer.json.JSONSimpleProperty;
+import org.exist.util.serializer.json.JSONValue;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xqj.Marshaller;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.Constants;
-import org.exist.xquery.NameTest;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
@@ -116,13 +84,32 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerConfigurationException;
+import java.io.*;
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Field;
+import java.util.Properties;
+import java.util.*;
+import java.util.function.BiFunction;
+
+import static java.lang.invoke.MethodType.methodType;
+import static org.exist.http.RESTServerParameter.*;
+
 /**
  *
  * @author wolf
  * @author ljo
  * @author adam
  * @author gev
- *
  */
 public class RESTServer {
 
@@ -170,7 +157,7 @@ public class RESTServer {
     //EXQuery Request Module details
     private String xqueryContextExqueryRequestAttribute = null;
     private BiFunction<HttpServletRequest, FilterInputStreamCacheConfiguration, HttpRequest> cstrHttpServletRequestAdapter = null;
-    
+
     // Constructor
     public RESTServer(final BrokerPool pool, final String formEncoding,
                       final String containerEncoding, final boolean useDynamicContentType, final boolean safeMode, final EXistServlet.FeatureEnabled xquerySubmission, final EXistServlet.FeatureEnabled xupdateSubmission) {
@@ -181,7 +168,7 @@ public class RESTServer {
         this.sessionManager = new SessionManager();
         this.xquerySubmission = xquerySubmission;
         this.xupdateSubmission = xupdateSubmission;
-        
+
         //get (optiona) EXQuery Request Module details
         try {
             Class clazz = Class.forName("org.exist.extensions.exquery.modules.request.RequestModule");
@@ -189,7 +176,7 @@ public class RESTServer {
                 final Field fldExqRequestAttr = clazz.getDeclaredField("EXQ_REQUEST_ATTR");
                 if(fldExqRequestAttr != null) {
                     this.xqueryContextExqueryRequestAttribute = (String)fldExqRequestAttr.get(null);
-                    
+
                     if(this.xqueryContextExqueryRequestAttribute != null) {
                         clazz = Class.forName("org.exist.extensions.exquery.restxq.impl.adapters.HttpServletRequestAdapter");
                         if(clazz != null) {
@@ -203,7 +190,7 @@ public class RESTServer {
                                                     methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
                         }
                     }
-                    
+
                 }
             }
         } catch(final Throwable e) {
@@ -213,11 +200,11 @@ public class RESTServer {
             }
 
             if(LOG.isDebugEnabled()) {
-                LOG.debug("EXQuery Request Module is not present: " + e.getMessage(), e);
+                LOG.debug("EXQuery Request Module is not present: {}", e.getMessage(), e);
             }
         }
     }
-    
+
     /**
      * Retrieves a parameter from the Query String of the request
      */
@@ -291,7 +278,7 @@ public class RESTServer {
             final int sessionId = Integer.parseInt(option);
             sessionManager.release(sessionId);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Released session " + sessionId);
+                LOG.debug("Released session {}", sessionId);
             }
             response.setStatus(HttpServletResponse.SC_OK);
             return;
@@ -377,8 +364,8 @@ public class RESTServer {
         } else {
             outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
         }
-        LOG.debug("stylesheet = " + stylesheet);
-        LOG.debug("query = " + query);
+        LOG.debug("stylesheet = {}", stylesheet);
+        LOG.debug("query = {}", query);
         String encoding;
         if ((encoding = getParameter(request, Encoding)) != null) {
             outputProperties.setProperty(OutputKeys.ENCODING, encoding);
@@ -557,7 +544,7 @@ public class RESTServer {
             final HttpServletResponse response, final String path)
             throws BadRequestException, PermissionDeniedException,
             NotFoundException, IOException {
-        
+
         final XmldbURI pathUri = XmldbURI.createInternal(path);
         if (checkForXQueryTarget(broker, transaction, pathUri, request, response)) {
             return;
@@ -746,7 +733,7 @@ public class RESTServer {
                 final NamespaceExtractor nsExtractor = new NamespaceExtractor();
                 final ElementImpl root = parseXML(broker.getBrokerPool(), content, nsExtractor);
                 final String rootNS = root.getNamespaceURI();
-                
+
                 if (rootNS != null && rootNS.equals(Namespaces.EXIST_NS)) {
 
                     if (Query.xmlKey().equals(root.getLocalName())) {
@@ -842,7 +829,7 @@ public class RESTServer {
                                             final Element property = (Element) node;
                                             final String key = property.getAttribute("name");
                                             final String value = property.getAttribute("value");
-                                            LOG.debug(key + " = " + value);
+                                            LOG.debug("{} = {}", key, value);
 
                                             if (key != null && value != null) {
                                                 outputProperties.setProperty(key, value);
@@ -854,7 +841,7 @@ public class RESTServer {
                             }
                         }
                     }
-                    
+
                     // execute query
                     if (query != null) {
 
@@ -878,7 +865,7 @@ public class RESTServer {
 
                 } else if (rootNS != null && rootNS.equals(XUpdateProcessor.XUPDATE_NS)) {
                     if(LOG.isDebugEnabled()) {
-                        LOG.debug("Got xupdate request: " + content);
+                        LOG.debug("Got xupdate request: {}", content);
                     }
 
                     if(xupdateSubmission == EXistServlet.FeatureEnabled.FALSE) {
@@ -936,7 +923,7 @@ public class RESTServer {
                 if (e.getException() != null) {
                     cause = e.getException();
                 }
-                LOG.debug("SAX exception while parsing request: " + cause.getMessage(), cause);
+                LOG.debug("SAX exception while parsing request: {}", cause.getMessage(), cause);
                 throw new BadRequestException("SAX exception while parsing request: " + cause.getMessage());
 
             } catch (final ParserConfigurationException e) {
@@ -1122,6 +1109,35 @@ public class RESTServer {
         }
     }
 
+
+    /**
+     * Handles PATCH requests. Only XQuery modules are allowed as targets
+     * otherwise it is unclear how to handle the request and a method not allowed
+     * is returned.
+     *
+     * @param broker the database broker
+     * @param transaction the database transaction
+     * @param request the request
+     * @param response the response
+     * @param path the path of the request
+     *
+     * @throws BadRequestException if a bad request is made
+     * @throws PermissionDeniedException if the request has insufficient permissions
+     * @throws NotFoundException if the request resource cannot be found
+     * @throws IOException if an I/O error occurs
+     */
+    public void doPatch(final DBBroker broker, final Txn transaction, final XmldbURI path,
+                      final HttpServletRequest request, final HttpServletResponse response)
+            throws BadRequestException, PermissionDeniedException, IOException,
+            NotFoundException, MethodNotAllowedException {
+
+        if (checkForXQueryTarget(broker, transaction, path, request, response)) {
+            return;
+        }
+
+        throw new MethodNotAllowedException("No xquery found to handle patch request: " + path);
+    }
+
     public void doDelete(final DBBroker broker, final Txn transaction, final String path, final HttpServletRequest request, final HttpServletResponse response)
             throws PermissionDeniedException, NotFoundException, IOException, BadRequestException {
         final XmldbURI pathURI = XmldbURI.createInternal(path);
@@ -1133,7 +1149,7 @@ public class RESTServer {
             try(final Collection collection = broker.openCollection(pathURI, LockMode.WRITE_LOCK)) {
                 if (collection != null) {
                     // remove the collection
-                    LOG.debug("removing collection " + path);
+                    LOG.debug("removing collection {}", path);
 
                     broker.removeCollection(transaction, collection);
 
@@ -1151,7 +1167,7 @@ public class RESTServer {
 
                             // remove the document
                             if(LOG.isDebugEnabled()) {
-                                LOG.debug("removing document " + path);
+                                LOG.debug("removing document {}", path);
                             }
 
                             if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
@@ -1175,61 +1191,59 @@ public class RESTServer {
 
     private boolean checkForXQueryTarget(final DBBroker broker, final Txn transaction,
         final XmldbURI path, final HttpServletRequest request,
-        final HttpServletResponse response) throws PermissionDeniedException,
-        NotFoundException, IOException, BadRequestException {
-        
+        final HttpServletResponse response) throws PermissionDeniedException, IOException, BadRequestException {
+
         if (request.getAttribute(XQueryURLRewrite.RQ_ATTR) == null) {
             return false;
         }
         final String xqueryType = MimeType.XQUERY_TYPE.getName();
-        final Collection collection = broker.getCollection(path);
-        if (collection == null) {
-            XmldbURI servletPath = path;
-            LockedDocument lockedDocument = null;
-            DocumentImpl resource = null;
-            // work up the url path to find an
-            // xquery resource
-            while (null == resource) {
-                // traverse up the path looking for xquery objects
 
-                lockedDocument = broker.getXMLResource(servletPath, LockMode.READ_LOCK);
-                resource = lockedDocument == null ? null : lockedDocument.getDocument();
-                if (null != resource
-                        && (resource.getResourceType() == DocumentImpl.BINARY_FILE
-                        && xqueryType.equals(resource.getMimeType()))) {
-                    break; // found a binary file with mime-type xquery or XML file with mime-type xproc
-                } else if (null != resource) {
-                    // not an xquery or xproc resource. This means we have a path
-                    // that cannot contain an xquery or xproc object even if we keep
-                    // moving up the path, so bail out now
-                    lockedDocument.close();
-                    lockedDocument = null;
-                    resource = null;
-                    break;
-                }
-                servletPath = servletPath.removeLastSegment();
-                if (servletPath == XmldbURI.EMPTY_URI) {
-                    break;
-                }
+        final Collection collection = broker.getCollection(path);
+        // a collection is not executable
+        if (collection != null) {
+            return false;
+        }
+
+        XmldbURI servletPath = path;
+        LockedDocument lockedDocument = null;
+        DocumentImpl resource = null;
+        // work up the url path to find an
+        // xquery resource
+        while (resource == null) {
+            // traverse up the path looking for xquery objects
+            lockedDocument = broker.getXMLResource(servletPath, LockMode.READ_LOCK);
+            resource = lockedDocument == null ? null : lockedDocument.getDocument();
+            if (resource != null
+                    && (resource.getResourceType() == DocumentImpl.BINARY_FILE
+                    && xqueryType.equals(resource.getMimeType()))) {
+                break; // found a binary file with mime-type xquery or XML file with mime-type xproc
+            } else if (resource != null) {
+                // not an xquery or xproc resource. This means we have a path
+                // that cannot contain an xquery or xproc object even if we keep
+                // moving up the path, so bail out now
+                lockedDocument.close();
+                return false;
             }
-            // xquery binary file found
-            if (resource != null) {
-                // found an XQuery resource, fixup request values
-                final String pathInfo = path.trimFromBeginning(servletPath).toString();
-                final Properties outputProperties = new Properties(defaultOutputKeysProperties);
-                try {
-                    // Execute the XQuery
-                    executeXQuery(broker, transaction, resource, request, response,
-                            outputProperties, servletPath.toString(), pathInfo);
-                } catch (final XPathException e) {
-                    writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, "UTF-8", null, path.toString(), e);
-                } finally {
-                    lockedDocument.close();
-                }
-                return true;
+            servletPath = servletPath.removeLastSegment();
+            if (servletPath == XmldbURI.EMPTY_URI) {
+                // no resource and no path segments left
+                return false;
             }
         }
-        return false;
+
+        // found an XQuery resource, fixup request values
+        final String pathInfo = path.trimFromBeginning(servletPath).toString();
+        final Properties outputProperties = new Properties(defaultOutputKeysProperties);
+        try {
+            // Execute the XQuery
+            executeXQuery(broker, transaction, resource, request, response,
+                    outputProperties, servletPath.toString(), pathInfo);
+        } catch (final XPathException e) {
+            writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, "UTF-8", null, path.toString(), e);
+        } finally {
+            lockedDocument.close();
+        }
+        return true;
     }
 
     private String getRequestContent(final HttpServletRequest request) throws IOException {
@@ -1353,7 +1367,7 @@ public class RESTServer {
                 final long executionTime = System.currentTimeMillis() - executeStart;
 
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Found " + resultSequence.getItemCount() + " in " + executionTime + "ms.");
+                    LOG.debug("Found {} in {}ms.", resultSequence.getItemCount(), executionTime);
                 }
 
                 if (cache) {
@@ -1381,7 +1395,7 @@ public class RESTServer {
 
     private void declareNamespaces(final XQueryContext context,
         final List<Namespace> namespaces) throws XPathException {
-        
+
         if (namespaces == null) {
             return;
         }
@@ -1408,27 +1422,27 @@ public class RESTServer {
         context.setHttpContext(new XQueryContext.HttpContext(reqw, respw));
 
         //enable EXQuery Request Module (if present)
-        try { 
+        try {
             if(xqueryContextExqueryRequestAttribute != null && cstrHttpServletRequestAdapter != null) {
                 final HttpRequest exqueryRequestAdapter = cstrHttpServletRequestAdapter.apply(request, () -> (String)context.getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY));
 
                 if(exqueryRequestAdapter != null) {
                     context.setAttribute(xqueryContextExqueryRequestAttribute, exqueryRequestAdapter);
                 }
-            }     
+            }
         } catch(final Exception e) {
             if(LOG.isDebugEnabled()) {
-                LOG.debug("EXQuery Request Module is not present: " + e.getMessage(), e);
+                LOG.debug("EXQuery Request Module is not present: {}", e.getMessage(), e);
             }
         }
-        
+
         if (variables != null) {
             declareExternalAndXQJVariables(context, variables);
         }
 
         return reqw;
     }
-    
+
     private void declareExternalAndXQJVariables(final XQueryContext context,
         final ElementImpl variables) throws XPathException {
 
@@ -1715,7 +1729,7 @@ public class RESTServer {
                 }
             }
         } catch (final IllegalArgumentException iae) {
-            LOG.warn("Illegal If-Modified-Since HTTP Header sent on request, ignoring. " + iae.getMessage(), iae);
+            LOG.warn("Illegal If-Modified-Since HTTP Header sent on request, ignoring. {}", iae.getMessage(), iae);
         }
 
         if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
@@ -1775,7 +1789,7 @@ public class RESTServer {
                         }
 
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("media-type: " + asMimeType);
+                            LOG.debug("media-type: {}", asMimeType);
                         }
 
                         response.setContentType(asMimeType + "; charset=" + encoding);
@@ -2052,8 +2066,7 @@ public class RESTServer {
 
         } catch (final SAXException e) {
             // should never happen
-            LOG.warn("Error while serializing collection contents: "
-                    + e.getMessage(), e);
+            LOG.warn("Error while serializing collection contents: {}", e.getMessage(), e);
         } finally {
             if (serializer != null) {
                 SerializerPool.getInstance().returnObject(serializer);
@@ -2106,7 +2119,7 @@ public class RESTServer {
         final DBBroker broker, final Sequence results, final int howmany,
         final int start, final boolean typed, final Properties outputProperties,
         final boolean wrap, final long compilationTime, final long executionTime) throws BadRequestException {
-        
+
         // serialize the results to the response output stream
         outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
         try {
@@ -2153,7 +2166,7 @@ public class RESTServer {
         final DBBroker broker, final Txn transaction, final Sequence results, int howmany,
         int start, final Properties outputProperties, final boolean wrap, final long compilationTime, final long executionTime)
             throws BadRequestException {
-        
+
         // calculate number of results to return
         final int rlen = results.getItemCount();
         if (!results.isEmpty()) {
@@ -2219,13 +2232,12 @@ public class RESTServer {
     }
 
     private boolean isExecutableType(final DocumentImpl resource) {
-        if (resource != null
-                && (MimeType.XQUERY_TYPE.getName().equals(resource.getMimeType()) // a xquery
-                || MimeType.XPROC_TYPE.getName().equals(resource.getMimeType()))//a xproc
-                ) {
-            return true;
-        } else {
-            return false;
-        }
+        return (
+            resource != null
+            && (
+                    MimeType.XQUERY_TYPE.getName().equals(resource.getMimeType()) // xquery
+                    || MimeType.XPROC_TYPE.getName().equals(resource.getMimeType()) // xproc
+            )
+        );
     }
 }

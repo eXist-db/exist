@@ -23,6 +23,7 @@ package org.exist.xslt;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
@@ -88,25 +89,20 @@ public class TransformerFactoryAllocator {
             try {
                 factory = (SAXTransformerFactory) Class.forName(transformerFactoryClassName).newInstance();
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Set transformer factory: " + transformerFactoryClassName);
+                    LOG.debug("Set transformer factory: {}", transformerFactoryClassName);
                 }
                 final Hashtable<String, Object> attributes = (Hashtable<String, Object>) pool.getConfiguration().getProperty(PROPERTY_TRANSFORMER_ATTRIBUTES);
-                final Enumeration<String> attrNames = attributes.keys();
-                while (attrNames.hasMoreElements()) {
-                    final String name = attrNames.nextElement();
+                final Iterator<String> iterator = attributes.keySet().iterator();
+                while (iterator.hasNext()) {
+                    final String name = iterator.next();
                     final Object value = attributes.get(name);
                     try {
                         factory.setAttribute(name, value);
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("Set transformer attribute: " + ", " +
-                                    "name: " + name + ", value: " + value);
+                            LOG.debug("Set transformer attribute: , name: {}, value: {}", name, value);
                         }
                     } catch (final IllegalArgumentException iae) {
-                        LOG.warn("Unable to set attribute for TransformerFactory: '" +
-                                transformerFactoryClassName +
-                                "', name: " + name +
-                                ", value: " + value +
-                                ", exception: " + iae.getMessage());
+                        LOG.warn("Unable to set attribute for TransformerFactory: '{}', name: {}, value: {}, exception: {}", transformerFactoryClassName, name, value, iae.getMessage());
                     }
                 }
                 try {
@@ -116,7 +112,7 @@ public class TransformerFactoryAllocator {
                 }
             } catch (final ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Error found loading the requested TrAX Transformer Factory '" + transformerFactoryClassName + "'. Using default TrAX Transformer Factory instead: " + e);
+                    LOG.debug("Error found loading the requested TrAX Transformer Factory '{}'. Using default TrAX Transformer Factory instead: {}", transformerFactoryClassName, e);
                 }
                 //Fallback to system default
                 factory = (SAXTransformerFactory) TransformerFactory.newInstance();

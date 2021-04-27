@@ -23,11 +23,9 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-
+import org.exist.security.Account;
 import org.exist.security.internal.Password;
 import org.xmldb.api.base.XMLDBException;
-
-import org.exist.security.Account;
 
 
 /**
@@ -84,13 +82,13 @@ public class UserPasswordTask extends UserTask
     }
 
 
-    public void setName( String name )
+    public void setName(final String name )
     {
         this.name = name;
     }
 
 
-    public void setSecret( String secret )
+    public void setSecret(final String secret )
     {
         this.secret = secret;
     }

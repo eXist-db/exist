@@ -84,7 +84,7 @@ public class AppRestoreUtils {
                             paths.add(app.path);
                         }
                     } catch (PackageException e) {
-                        LOG.warn("Invalid semver in expath repository for " + app.name, e);
+                        LOG.warn("Invalid semver in expath repository for {}", app.name, e);
                     }
                 }
             }
@@ -142,21 +142,21 @@ public class AppRestoreUtils {
                                 final String version = attributes.getValue("version");
                                 final String name = attributes.getValue("name");
                                 if (StringUtils.isEmpty(version) || StringUtils.isEmpty(name)) {
-                                    LOG.warn("Invalid package descriptor for " + app.getSymbolicPath());
+                                    LOG.warn("Invalid package descriptor for {}", app.getSymbolicPath());
                                     return;
                                 }
                                 try {
                                     final AppDetail detail = new AppDetail(app.getSymbolicPath(), name, Semver.parse(version));
                                     result.add(detail);
                                 } catch (PackageException e) {
-                                    LOG.warn("Invalid semver found while parsing " + app.getSymbolicPath());
+                                    LOG.warn("Invalid semver found while parsing {}", app.getSymbolicPath());
                                 }
                             }
                         }
                     });
                     reader.parse(is);
                 } catch (IOException | SAXException e) {
-                    LOG.warn("Parse exception while parsing " + app.getSymbolicPath("expath-pkg.xml", false));
+                    LOG.warn("Parse exception while parsing {}", app.getSymbolicPath("expath-pkg.xml", false));
                 } finally {
                     if (reader != null) {
                         parserPool.returnXMLReader(reader);
@@ -178,7 +178,7 @@ public class AppRestoreUtils {
                 }
             });
         } catch (IOException | SAXException e) {
-            LOG.warn("SAX error while parsing backup descriptor " + apps.getSymbolicPath(), e);
+            LOG.warn("SAX error while parsing backup descriptor {}", apps.getSymbolicPath(), e);
         }
         return collections;
     }

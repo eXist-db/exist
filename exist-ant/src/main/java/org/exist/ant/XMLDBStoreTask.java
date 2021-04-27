@@ -25,22 +25,19 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
-
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.XMLDBException;
-
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
 import java.io.File;
-
 import java.util.ArrayList;
 
 
@@ -135,7 +132,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
                 log("Storing " + srcFile.getName());
 
                 MimeType mime = getMimeTable().getContentTypeFor(srcFile.getName());
-                String baseMimeType;
+                final String baseMimeType;
 
                 if (forceMimeType != null) {
                     baseMimeType = forceMimeType;
@@ -278,7 +275,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
                             }
 
                             MimeType currentMime = getMimeTable().getContentTypeFor(file.getName());
-                            String currentBaseMimeType;
+                            final String currentBaseMimeType;
 
                             if (forceMimeType != null) {
                                 currentBaseMimeType = forceMimeType;

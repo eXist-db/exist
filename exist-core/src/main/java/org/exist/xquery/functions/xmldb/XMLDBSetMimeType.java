@@ -112,7 +112,7 @@ public class XMLDBSetMimeType extends BasicFunction {
         if (currentMimeType == null) {
             // stored resource has no mime-type (unexpected situation)
             // fall back to document name
-            logger.debug("Resource '" + pathUri + "' has no mime-type, retrieve from document name.");
+            logger.debug("Resource '{}' has no mime-type, retrieve from document name.", pathUri);
             currentMimeType = mimeTable.getContentTypeFor(pathUri);
             
             // if extension based lookup still fails
@@ -173,7 +173,7 @@ public class XMLDBSetMimeType extends BasicFunction {
             pathUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(pathUri);
             
         } catch (final XPathException ex) {
-            logger.debug("Unable to convert path " + pathUri);
+            logger.debug("Unable to convert path {}", pathUri);
             return returnValue;
         }
 

@@ -235,7 +235,7 @@ public class LuceneConfig {
                     parser = QueryParserWrapper.create(queryParser, field, analyzer);
                 }
             } catch (ClassNotFoundException e) {
-                LOG.warn("Failed to instantiate lucene query parser class: " + queryParser, e);
+                LOG.warn("Failed to instantiate lucene query parser class: {}", queryParser, e);
             }
         }
         if (parser == null) {
@@ -361,7 +361,7 @@ public class LuceneConfig {
                     }
                     
                 } catch (DatabaseConfigurationException e) {
-					LOG.warn("Invalid lucene configuration element: " + e.getMessage());
+                    LOG.warn("Invalid lucene configuration element: {}", e.getMessage());
 				}
             }
         }

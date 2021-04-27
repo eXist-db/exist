@@ -91,11 +91,11 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             try {
                 bufferSize = Double.parseDouble(bufferSizeParam);
             } catch (NumberFormatException e) {
-                LOG.warn("Invalid buffer size setting for lucene index: " + bufferSizeParam, e);
+                LOG.warn("Invalid buffer size setting for lucene index: {}", bufferSizeParam, e);
             }
 
         if (LOG.isDebugEnabled())
-            LOG.debug("Using buffer size: " + bufferSize);
+            LOG.debug("Using buffer size: {}", bufferSize);
         
         NodeList nl = config.getElementsByTagName("analyzer");
         if (nl.getLength() > 0) {
@@ -106,7 +106,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         if (defaultAnalyzer == null)
             defaultAnalyzer = new StandardAnalyzer(LUCENE_VERSION_IN_USE);
         if (LOG.isDebugEnabled())
-            LOG.debug("Using default analyzer: " + defaultAnalyzer.getClass().getName());
+            LOG.debug("Using default analyzer: {}", defaultAnalyzer.getClass().getName());
     }
 
     @Override
@@ -114,7 +114,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         Path dir = getDataDir().resolve(getDirName());
         Path taxoDir = dir.resolve(TAXONOMY_DIR_NAME);
         if (LOG.isDebugEnabled())
-            LOG.debug("Opening Lucene index directory: " + dir.toAbsolutePath().toString());
+            LOG.debug("Opening Lucene index directory: {}", dir.toAbsolutePath().toString());
 
         IndexWriter writer = null;
         try {
@@ -181,7 +181,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         close();
         Path dir = getDataDir().resolve(getDirName());
         try {
-            Files.list(dir).forEach(path -> FileUtils.deleteQuietly(path));
+            Files.list(dir).forEach(FileUtils::deleteQuietly);
         } catch (Exception e) {
             // never abort at this point, so recovery can continue
             LOG.warn(e.getMessage(), e);
@@ -236,9 +236,9 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             }
             needsCommit = false;
         } catch(CorruptIndexException cie) {
-            LOG.error("Detected corrupt Lucence index on writer release and commit: " + cie.getMessage(), cie);
+            LOG.error("Detected corrupt Lucence index on writer release and commit: {}", cie.getMessage(), cie);
         } catch(IOException ioe) {
-            LOG.error("Detected Lucence index issue on writer release and commit: " + ioe.getMessage(), ioe);
+            LOG.error("Detected Lucence index issue on writer release and commit: {}", ioe.getMessage(), ioe);
         }
     }
 

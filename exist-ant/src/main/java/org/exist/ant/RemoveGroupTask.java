@@ -23,10 +23,8 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-
-import org.xmldb.api.base.XMLDBException;
-
 import org.exist.security.Group;
+import org.xmldb.api.base.XMLDBException;
 
 
 /**
@@ -71,7 +69,7 @@ public class RemoveGroupTask extends UserTask
     }
 
 
-    public void setName( String name )
+    public void setName(final String name )
     {
         this.name = name;
     }

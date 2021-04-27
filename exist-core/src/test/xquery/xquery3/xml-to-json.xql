@@ -56,7 +56,7 @@ function xtj:xml-to-json-boolean($arg1) {
 
 declare
     %test:arg('arg1', '')
-    %test:assertError('NumberFormatException')
+    %test:assertError('FOJS0006')
     %test:arg('arg1', '0')
     %test:assertEquals('0.0')
     %test:arg('arg1', '1')

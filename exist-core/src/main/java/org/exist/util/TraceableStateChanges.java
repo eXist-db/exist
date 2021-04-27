@@ -79,7 +79,13 @@ public class TraceableStateChanges<S, C> {
 
         for (int i = 0; i < stateChangeTrace.size(); i++) {
             final TraceableStateChange<S, C> traceableStateChange = stateChangeTrace.get(i);
-            logger.trace(String.format("%d: %s: %s(%s) from: %s(%s)", i + 1, traceableStateChange.getId(), traceableStateChange.getChange(), traceableStateChange.describeState(), traceableStateChange.getThread(), Stacktrace.asString(traceableStateChange.getTrace())));
+            logger.trace("{}: {}: {}({}) from: {}({})",
+                    i + 1,
+                    traceableStateChange.getId(),
+                    traceableStateChange.getChange(),
+                    traceableStateChange.describeState(),
+                    traceableStateChange.getThread(),
+                    Stacktrace.asString(traceableStateChange.getTrace()));
         }
     }
 }

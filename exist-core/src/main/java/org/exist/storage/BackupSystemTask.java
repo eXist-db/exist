@@ -107,7 +107,7 @@ public class BackupSystemTask implements SystemTask {
             collName = "xmldb:exist://" + collName;
         }
         collection = XmldbURI.create(collName);
-        LOG.debug("Collection to backup: " + collection.toString() + ". User: " + user);
+        LOG.debug("Collection to backup: {}. User: {}", collection.toString(), user);
 
         deduplicateBlobs = Boolean.parseBoolean(properties.getProperty("deduplucate-blobs", "false"));
 
@@ -128,7 +128,8 @@ public class BackupSystemTask implements SystemTask {
 
         // check for max zip files
         final String filesMaxStr = properties.getProperty("zip-files-max");
-        if (LOG.isDebugEnabled()) {LOG.debug("zip-files-max: " + filesMaxStr);}
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("zip-files-max: {}", filesMaxStr);}
         if (null != filesMaxStr) {
             try {
                 zipFilesMax = Integer.parseInt(filesMaxStr);
@@ -174,7 +175,7 @@ public class BackupSystemTask implements SystemTask {
             try {
                 result = Files.getLastModifiedTime(path1).compareTo(Files.getLastModifiedTime(path2));
             } catch (IOException e) {
-                LOG.error("Cannot compare files by timestamp: " + path1 + ", " + path2, e);
+                LOG.error("Cannot compare files by timestamp: {}, {}", path1, path2, e);
             }
 
             return result;
@@ -183,7 +184,7 @@ public class BackupSystemTask implements SystemTask {
 		if (numberOfEntriesToBeDeleted > 0) {
 			entriesPaths.stream().sorted(timestampComparator).limit(numberOfEntriesToBeDeleted).forEach(path -> {
 	            if (LOG.isDebugEnabled()) {
-	                LOG.debug("Purging backup : " + FileUtils.fileName(path));
+                    LOG.debug("Purging backup : {}", FileUtils.fileName(path));
 	            }
 	            
 	            FileUtils.deleteQuietly(path);

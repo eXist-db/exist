@@ -410,7 +410,7 @@ public class Transform extends BasicFunction {
                 if (pair == null) {
                     throw new XPathException(this, "Found invalid serialization option: " + content);
                 }
-                logger.info("Setting serialization property: " + pair[0] + " = " + pair[1]);
+                logger.info("Setting serialization property: {} = {}", pair[0], pair[1]);
                 serializationProps.setProperty(pair[0], pair[1]);
             }
         }

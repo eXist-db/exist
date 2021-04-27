@@ -146,7 +146,7 @@ public class Shared {
             if (item instanceof NodeProxy) {
                 final NodeProxy np = (NodeProxy) item;
                 final String url = "xmldb:exist://" + np.getOwnerDocument().getBaseURI();
-                LOG.debug("Document detected, adding URL " + url);
+                LOG.debug("Document detected, adding URL {}", url);
                 streamSource.setSystemId(url);
             }
 
@@ -171,12 +171,12 @@ public class Shared {
             if (item instanceof Base64BinaryDocument) {
                 final Base64BinaryDocument b64doc = (Base64BinaryDocument) item;
                 final String url = "xmldb:exist://" + b64doc.getUrl();
-                LOG.debug("Base64BinaryDocument detected, adding URL " + url);
+                LOG.debug("Base64BinaryDocument detected, adding URL {}", url);
                 streamSource.setSystemId(url);
             }
 
         } else {
-            LOG.error("Wrong item type " + Type.getTypeName(item.getType()));
+            LOG.error("Wrong item type {}", Type.getTypeName(item.getType()));
             throw new XPathException("wrong item type " + Type.getTypeName(item.getType()));
         }
 
@@ -235,7 +235,7 @@ public class Shared {
             if (item instanceof NodeProxy) {
                 final NodeProxy np = (NodeProxy) item;
                 url = np.getOwnerDocument().getBaseURI();
-                LOG.debug("Document detected, adding URL " + url);
+                LOG.debug("Document detected, adding URL {}", url);
             }
 
         }
@@ -391,9 +391,7 @@ public class Shared {
         try {
             is.close();
         } catch (final Exception ex){
-            LOG.error("Problem while closing inputstream. ("
-                    + getDetails(source) + ") "
-                    + ex.getMessage(), ex);
+            LOG.error("Problem while closing inputstream. ({}) {}", getDetails(source), ex.getMessage(), ex);
         }
 
     }
@@ -416,9 +414,7 @@ public class Shared {
         try {
             is.close();
         } catch (final Exception ex) {
-            LOG.error("Problem while closing inputstream. (" 
-                    + getDetails(source) + ") "
-                    + ex.getMessage(), ex);
+            LOG.error("Problem while closing inputstream. ({}) {}", getDetails(source), ex.getMessage(), ex);
         }
 
     }

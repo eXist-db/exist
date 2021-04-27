@@ -116,7 +116,7 @@ public class LocalXUpdateQueryService extends AbstractLocalService implements XU
                 }
 
                 if(LOG.isDebugEnabled()) {
-                    LOG.debug("xupdate took " + (System.currentTimeMillis() - start) + "ms.");
+                    LOG.debug("xupdate took {}ms.", System.currentTimeMillis() - start);
                 }
 
                 return mods;

@@ -22,7 +22,7 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<project name="BaseTaskTest" xmlns:xdb="http://exist-db.org/ant">
+<project name="BaseTaskTest">
 
     <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant"/>
 

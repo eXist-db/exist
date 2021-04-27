@@ -138,7 +138,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
             try {
                 broker.getBrokerPool().getSecurityManager().processParameter(broker, document);
             } catch (final ConfigurationException e) {
-                LOG.error("Configuration can't be processed [" + document.getURI() + "]", e);
+                LOG.error("Configuration can't be processed [{}]", document.getURI(), e);
                 //TODO : raise exception ? -pb
             }
         }
@@ -163,7 +163,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
                 broker.getBrokerPool().getSecurityManager()
                 .processParameterBeforeSave(broker, document);
             } catch (final ConfigurationException e) {
-                LOG.error("Configuration can't be processed [" + document.getURI() + "]", e);
+                LOG.error("Configuration can't be processed [{}]", document.getURI(), e);
                 //TODO : raise exception ? -pb
             }
         }
@@ -183,7 +183,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
             try {
                 broker.getBrokerPool().getSecurityManager().processParameter(broker, document);
             } catch (final ConfigurationException e) {
-                LOG.error("Configuration can't be processed [" + document.getURI() + "]", e);
+                LOG.error("Configuration can't be processed [{}]", document.getURI(), e);
                 //TODO : raise exception ? -pb
             }
         }

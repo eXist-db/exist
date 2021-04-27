@@ -52,11 +52,10 @@ public class ChainOfReceiversFactory {
                         last = listener;
                     }
                 } else {
-                    LOG.error("Failed to instantiate class " + listenerClass.getName() +
-                            ": it is not a subclass of ChainOfReceivers");
+                    LOG.error("Failed to instantiate class {}: it is not a subclass of ChainOfReceivers", listenerClass.getName());
                 }
             } catch (final Exception e) {
-                LOG.error("An exception was caught while trying to instantiate a chain of receivers: " + e.getMessage(), e);
+                LOG.error("An exception was caught while trying to instantiate a chain of receivers: {}", e.getMessage(), e);
             }
         }
     }

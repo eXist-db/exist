@@ -87,7 +87,6 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -153,7 +152,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      * State of the BrokerPool instance
      */
     private enum State {
-        SHUTTING_DOWN,
+        SHUTTING_DOWN_MULTI_USER_MODE,
+        SHUTTING_DOWN_SYSTEM_MODE,
         SHUTDOWN,
         INITIALIZING,
         INITIALIZING_SYSTEM_MODE,
@@ -166,7 +166,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         INITIALIZE_SYSTEM_MODE,
         INITIALIZE_MULTI_USER_MODE,
         READY,
-        START_SHUTDOWN,
+
+        START_SHUTDOWN_MULTI_USER_MODE,
+        START_SHUTDOWN_SYSTEM_MODE,
         FINISHED_SHUTDOWN,
     }
 
@@ -177,8 +179,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     .when(State.INITIALIZING).on(Event.INITIALIZE_SYSTEM_MODE).switchTo(State.INITIALIZING_SYSTEM_MODE)
                     .when(State.INITIALIZING_SYSTEM_MODE).on(Event.INITIALIZE_MULTI_USER_MODE).switchTo(State.INITIALIZING_MULTI_USER_MODE)
                     .when(State.INITIALIZING_MULTI_USER_MODE).on(Event.READY).switchTo(State.OPERATIONAL)
-                    .when(State.OPERATIONAL).on(Event.START_SHUTDOWN).switchTo(State.SHUTTING_DOWN)
-                    .when(State.SHUTTING_DOWN).on(Event.FINISHED_SHUTDOWN).switchTo(State.SHUTDOWN)
+                    .when(State.OPERATIONAL).on(Event.START_SHUTDOWN_MULTI_USER_MODE).switchTo(State.SHUTTING_DOWN_MULTI_USER_MODE)
+                    .when(State.SHUTTING_DOWN_MULTI_USER_MODE).on(Event.START_SHUTDOWN_SYSTEM_MODE).switchTo(State.SHUTTING_DOWN_SYSTEM_MODE)
+                    .when(State.SHUTTING_DOWN_SYSTEM_MODE).on(Event.FINISHED_SHUTDOWN).switchTo(State.SHUTDOWN)
             .build()
     );
 
@@ -408,17 +411,17 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.instanceThreadGroup = new ThreadGroup(nameInstanceThreadGroup(instanceName));
 
         this.maxShutdownWait = conf.getProperty(BrokerPool.PROPERTY_SHUTDOWN_DELAY, DEFAULT_MAX_SHUTDOWN_WAIT);
-        LOG.info("database instance '" + instanceName + "' will wait  " + nf.format(this.maxShutdownWait) + " ms during shutdown");
+        LOG.info("database instance '{}' will wait  {} ms during shutdown", instanceName, nf.format(this.maxShutdownWait));
 
         this.recoveryEnabled = conf.getProperty(PROPERTY_RECOVERY_ENABLED, true);
-        LOG.info("database instance '" + instanceName + "' is enabled for recovery : " + this.recoveryEnabled);
+        LOG.info("database instance '{}' is enabled for recovery : {}", instanceName, this.recoveryEnabled);
 
         this.minBrokers = conf.getProperty(PROPERTY_MIN_CONNECTIONS, minBrokers);
         this.maxBrokers = conf.getProperty(PROPERTY_MAX_CONNECTIONS, maxBrokers);
-        LOG.info("database instance '" + instanceName + "' will have between " + nf.format(this.minBrokers) + " and " + nf.format(this.maxBrokers) + " brokers");
+        LOG.info("database instance '{}' will have between {} and {} brokers", instanceName, nf.format(this.minBrokers), nf.format(this.maxBrokers));
 
         this.majorSyncPeriod = conf.getProperty(PROPERTY_SYNC_PERIOD, DEFAULT_SYNCH_PERIOD);
-        LOG.info("database instance '" + instanceName + "' will be synchronized every " + nf.format(/*this.*/majorSyncPeriod) + " ms");
+        LOG.info("database instance '{}' will be synchronized every {} ms", instanceName, nf.format(/*this.*/majorSyncPeriod));
 
         // convert from bytes to megabytes: 1024 * 1024
         this.diskSpaceMin = 1024L * 1024L * conf.getProperty(BrokerPool.DISK_SPACE_MIN_PROPERTY, DEFAULT_DISK_SPACE_MIN);
@@ -471,7 +474,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         status.process(Event.INITIALIZE);
 
         if(LOG.isDebugEnabled()) {
-            LOG.debug("initializing database instance '" + instanceName + "'...");
+            LOG.debug("initializing database instance '{}'...", instanceName);
         }
 
         // register core broker pool services
@@ -495,7 +498,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.notificationService = servicesManager.register(new NotificationService());
 
         this.journalManager = recoveryEnabled ? Optional.of(new JournalManager()) : Optional.empty();
-        journalManager.ifPresent(manager -> servicesManager.register(manager));
+        journalManager.ifPresent(servicesManager::register);
 
         final SystemTaskManager systemTaskManager = servicesManager.register(new SystemTaskManager(this));
         this.transactionManager = servicesManager.register(new TransactionManager(this, journalManager, systemTaskManager));
@@ -505,7 +508,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.symbols = servicesManager.register(new SymbolTable());
 
         this.expathRepo = Optional.ofNullable(new ExistRepository());
-        expathRepo.ifPresent(existRepository -> servicesManager.register(existRepository));
+        expathRepo.ifPresent(servicesManager::register);
         servicesManager.register(new ClasspathHelper());
 
         this.indexManager = servicesManager.register(new IndexManager(this));
@@ -517,6 +520,12 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.collectionConfigurationManager = servicesManager.register(new CollectionConfigurationManager(this));
 
         this.startupTriggersManager = servicesManager.register(new StartupTriggersManager());
+
+        // this is just used for unit tests
+        final BrokerPoolService testBrokerPoolService = (BrokerPoolService) conf.getProperty("exist.testBrokerPoolService");
+        if (testBrokerPoolService != null) {
+            servicesManager.register(testBrokerPoolService);
+        }
 
         //configure the registered services
         try {
@@ -530,7 +539,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         final long maxMem = rt.maxMemory();
         final long minFree = maxMem / 5;
         reservedMem = cacheManager.getTotalMem() + collectionCache.getMaxCacheSize() + minFree;
-        LOG.debug("Reserved memory: " + reservedMem + "; max: " + maxMem + "; min: " + minFree);
+        LOG.debug("Reserved memory: {}; max: {}; min: {}", reservedMem, maxMem, minFree);
 
         //prepare the registered services, before entering system (single-user) mode
         try {
@@ -568,6 +577,13 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
                         if(isReadOnly()) {
                             journalManager.ifPresent(JournalManager::disableJournalling);
+                        }
+
+                        try(final Txn transaction = transactionManager.beginTransaction()) {
+                            servicesManager.startPreSystemServices(systemBroker, transaction);
+                            transaction.commit();
+                        } catch(final BrokerPoolServiceException e) {
+                            throw new EXistException(e);
                         }
 
                         //Run the recovery process
@@ -621,7 +637,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                                 try {
                                     systemBroker.repair();
                                 } catch(final PermissionDeniedException e) {
-                                    LOG.warn("Error during recovery: " + e.getMessage(), e);
+                                    LOG.warn("Error during recovery: {}", e.getMessage(), e);
                                 }
                             }
 
@@ -688,7 +704,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     AgentFactory.getInstance().initDBInstance(this);
 
                     if(LOG.isDebugEnabled()) {
-                        LOG.debug("database instance '" + instanceName + "' initialized");
+                        LOG.debug("database instance '{}' initialized", instanceName);
                     }
 
                     servicesManager.startMultiUserServices(this);
@@ -786,7 +802,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     public boolean runRecovery(final DBBroker broker) throws EXistException {
         final boolean forceRestart = conf.getProperty(PROPERTY_RECOVERY_FORCE_RESTART, false);
         if(LOG.isDebugEnabled()) {
-            LOG.debug("ForceRestart = " + forceRestart);
+            LOG.debug("ForceRestart = {}", forceRestart);
         }
         if(journalManager.isPresent()) {
             final RecoveryManager recovery = new RecoveryManager(broker, journalManager.get(), forceRestart);
@@ -970,8 +986,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             if(!readOnly) {
                 final long freeSpace = FileUtils.measureFileStore(dataLock.getFile(), FileStore::getUsableSpace);
                 if (freeSpace != -1 && freeSpace < diskSpaceMin) {
-                    LOG.fatal("Partition containing DATA_DIR: " + dataLock.getFile().toAbsolutePath().toString() + " is running out of disk space [minimum: " + diskSpaceMin + " free: " + freeSpace + "]. " +
-                            "Switching eXist-db into read-only mode to prevent data loss!");
+                    LOG.fatal("Partition containing DATA_DIR: {} is running out of disk space [minimum: {} free: {}]. Switching eXist-db into read-only mode to prevent data loss!", dataLock.getFile().toAbsolutePath().toString(), diskSpaceMin, freeSpace);
                     setReadOnly();
                 }
             }
@@ -1111,7 +1126,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         brokersCount++;
         broker.setId(broker.getClass().getName() + '_' + instanceName + "_" + brokersCount);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Created broker '" + broker.getId() + " for database instance '" + instanceName + "'");
+            LOG.debug("Created broker '{} for database instance '{}'", broker.getId(), instanceName);
         }
         return broker;
     }
@@ -1252,7 +1267,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             activeBrokers.put(Thread.currentThread(), broker);
 
             if(LOG.isTraceEnabled()) {
-                LOG.trace("+++ " + Thread.currentThread() + Stacktrace.top(Thread.currentThread().getStackTrace(), Stacktrace.DEFAULT_STACK_TOP));
+                LOG.trace("+++ {}{}", Thread.currentThread(), Stacktrace.top(Thread.currentThread().getStackTrace(), Stacktrace.DEFAULT_STACK_TOP));
             }
 
             if(watchdog.isPresent()) {
@@ -1310,13 +1325,13 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             //Broker is no more used : inactivate it
             for(final DBBroker inactiveBroker : inactiveBrokers) {
                 if(broker == inactiveBroker) {
-                    LOG.error("Broker " + broker.getId() + " is already in the inactive list!!!");
+                    LOG.error("Broker {} is already in the inactive list!!!", broker.getId());
                     return;
                 }
             }
 
             if(activeBrokers.remove(Thread.currentThread()) == null) {
-                LOG.error("release() has been called from the wrong thread for broker " + broker.getId());
+                LOG.error("release() has been called from the wrong thread for broker {}", broker.getId());
                 // Cleanup the state of activeBrokers
                 for(final Entry<Thread, DBBroker> activeBroker : activeBrokers.entrySet()) {
                     if(activeBroker.getValue() == broker) {
@@ -1329,7 +1344,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 }
             } else {
                 if(LOG.isTraceEnabled()) {
-                    LOG.trace("--- " + Thread.currentThread() + Stacktrace.top(Thread.currentThread().getStackTrace(), Stacktrace.DEFAULT_STACK_TOP));
+                    LOG.trace("--- {}{}", Thread.currentThread(), Stacktrace.top(Thread.currentThread().getStackTrace(), Stacktrace.DEFAULT_STACK_TOP));
                 }
             }
             
@@ -1337,7 +1352,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
             //guard to ensure that the broker has popped all its subjects
             if(lastUser == null || broker.getCurrentSubject() != null) {
-                LOG.warn("Broker " + broker.getId() + " was returned with extraneous Subjects, cleaning...", new IllegalStateException("DBBroker pushSubject/popSubject mismatch").fillInStackTrace());
+                LOG.warn("Broker {} was returned with extraneous Subjects, cleaning...", broker.getId(), new IllegalStateException("DBBroker pushSubject/popSubject mismatch").fillInStackTrace());
                 if(LOG.isTraceEnabled()) {
                     broker.traceSubjectChanges();
                 }
@@ -1494,50 +1509,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     }
 
     /**
-     * Schedules a cache synchronization for the database instance. If the database instance is idle,
-     * the cache synchronization will be run immediately. Otherwise, the task will be deferred
-     * until all running threads have returned.
-     *
-     * @param syncEvent One of {@link org.exist.storage.sync.Sync}
-     */
-    public void triggerSync(final Sync syncEvent) {
-        //TOUNDERSTAND (pb) : synchronized, so... "schedules" or, rather, "executes" ? "schedules" (WM)
-        final State s = status.getCurrentState();
-        if(s == State.SHUTDOWN || s == State.SHUTTING_DOWN) {
-            return;
-        }
-
-        LOG.debug("Triggering sync: " + syncEvent);
-        synchronized(this) {
-            //Are there available brokers ?
-            // TOUNDERSTAND (pb) : the trigger is ignored !
-            // WM: yes, it seems wrong!!
-//			if(inactiveBrokers.size() == 0)
-//				return;
-            //TODO : switch on syncEvent and throw an exception if it is inaccurate ?
-            //Is the database instance idle ?
-            if(inactiveBrokers.size() == brokersCount) {
-                //Borrow a broker
-                //TODO : this broker is *not* marked as active and may be reused by another process !
-                // No other brokers are running at this time, so there's no risk.
-                //TODO : use get() then release the broker ?
-                // No, might lead to a deadlock.
-                final DBBroker broker = inactiveBrokers.pop();
-                broker.prepare();
-                //Do the synchronization job
-                sync(broker, syncEvent);
-                inactiveBrokers.push(broker);
-                syncRequired = false;
-            } else {
-                //Put the synchronization job into the queue
-                //TODO : check that we don't replace high priority Sync.MAJOR_SYNC by a lesser priority sync !
-                this.syncEvent = syncEvent;
-                syncRequired = true;
-            }
-        }
-    }
-
-    /**
      * Schedules a system maintenance task for the database instance. If the database is idle,
      * the task will be run immediately. Otherwise, the task will be deferred
      * until all running threads have returned.
@@ -1547,11 +1518,11 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     //TOUNDERSTAND (pb) : synchronized, so... "schedules" or, rather, "executes" ?
     public void triggerSystemTask(final SystemTask task) {
         final State s = status.getCurrentState();
-        if(s == State.SHUTTING_DOWN) {
-            LOG.info("Skipping SystemTask: '" + task.getName() + "' as database is shutting down...");
+        if(s == State.SHUTTING_DOWN_MULTI_USER_MODE || s == State.SHUTTING_DOWN_SYSTEM_MODE) {
+            LOG.info("Skipping SystemTask: '{}' as database is shutting down...", task.getName());
             return;
         } else if(s == State.SHUTDOWN) {
-            LOG.warn("Unable to execute SystemTask: '" + task.getName() + "' as database is shut down!");
+            LOG.warn("Unable to execute SystemTask: '{}' as database is shut down!", task.getName());
             return;
         }
 
@@ -1565,10 +1536,37 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         shutdown(false);
     }
 
+    /**
+     * Returns true if the BrokerPool is in the
+     * process of shutting down.
+     *
+     * @return true if the BrokerPool is shutting down.
+     */
     public boolean isShuttingDown() {
-        return status.getCurrentState() == State.SHUTTING_DOWN;
+        final State s = status.getCurrentState();
+        return s == State.SHUTTING_DOWN_MULTI_USER_MODE
+                || s == State.SHUTTING_DOWN_SYSTEM_MODE;
     }
 
+    /**
+     * Returns true if the BrokerPool is either in the
+     * process of shutting down, or has already shutdown.
+     *
+     * @return true if the BrokerPool is shutting down or
+     *     has shutdown.
+     */
+    public boolean isShuttingDownOrDown() {
+        final State s = status.getCurrentState();
+        return s == State.SHUTTING_DOWN_MULTI_USER_MODE
+                || s == State.SHUTTING_DOWN_SYSTEM_MODE
+                || s == State.SHUTDOWN;
+    }
+
+    /**
+     * Returns true of the BrokerPool is shutdown.
+     *
+     * @return true if the BrokerPool is shutdown.
+     */
     public boolean isShutDown() {
         return status.getCurrentState() == State.SHUTDOWN;
     }
@@ -1585,9 +1583,27 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     void shutdown(final boolean killed, final Consumer<String> shutdownInstanceConsumer) {
 
         try {
-            status.process(Event.START_SHUTDOWN);
+            status.process(Event.START_SHUTDOWN_MULTI_USER_MODE);
         } catch(final IllegalStateException e) {
             // we are not operational!
+            LOG.warn(e);
+            return;
+        }
+
+        // notify any BrokerPoolServices that we are about to shutdown
+        try {
+            // instruct database services that we are about to stop multi-user mode
+            servicesManager.stopMultiUserServices(this);
+        } catch(final BrokerPoolServicesManagerException e) {
+            for(final BrokerPoolServiceException bpse : e.getServiceExceptions()) {
+                LOG.error(bpse.getMessage(), bpse);
+            }
+        }
+
+        try {
+            status.process(Event.START_SHUTDOWN_SYSTEM_MODE);
+        } catch(final IllegalStateException e) {
+            // we are not in SHUTTING_DOWN_MULTI_USER_MODE!
             LOG.warn(e);
             return;
         }
@@ -1626,7 +1642,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     //Are there active brokers ?
                     if (activeBrokers.size() > 0) {
                         printSystemInfo();
-                        LOG.info("Waiting " + maxShutdownWait + "ms for remaining threads to shut down...");
+                        LOG.info("Waiting {}ms for remaining threads to shut down...", maxShutdownWait);
                         while (activeBrokers.size() > 0) {
                             try {
                                 //Wait until they become inactive...
@@ -1670,7 +1686,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
                         try {
                             // instruct all database services to stop
-                            servicesManager.stopServices(broker);
+                            servicesManager.stopSystemServices(broker);
                         } catch(final BrokerPoolServicesManagerException e) {
                            for(final BrokerPoolServiceException bpse : e.getServiceExceptions()) {
                                LOG.error(bpse.getMessage(), bpse);
@@ -1764,7 +1780,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 cleanThreadLocalsForThread(thread);
             } catch (final EXistException ex) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.warn("Could not clear ThreadLocals for thread: " + thread.getName());
+                    LOG.warn("Could not clear ThreadLocals for thread: {}", thread.getName());
                 }
             }
         }

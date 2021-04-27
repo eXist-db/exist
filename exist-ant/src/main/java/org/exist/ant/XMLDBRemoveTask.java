@@ -23,7 +23,6 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -105,7 +104,7 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask
      *
      * @param collection the collection
      */
-    public void setCollection( String collection )
+    public void setCollection(final String collection )
     {
         this.collection = collection;
     }
@@ -116,7 +115,7 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask
      *
      * @param resource the resource.
      */
-    public void setResource( String resource )
+    public void setResource(final String resource )
     {
         this.resource = resource;
     }

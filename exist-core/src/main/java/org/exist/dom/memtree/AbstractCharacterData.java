@@ -21,7 +21,6 @@
  */
 package org.exist.dom.memtree;
 
-import org.exist.util.CharArrayPool;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;

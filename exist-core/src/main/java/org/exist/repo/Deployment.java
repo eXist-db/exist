@@ -50,8 +50,8 @@ import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
-import org.expath.pkg.repo.*;
 import org.expath.pkg.repo.Package;
+import org.expath.pkg.repo.*;
 import org.expath.pkg.repo.deps.DependencyVersion;
 import org.expath.pkg.repo.tui.BatchUserInteraction;
 import org.w3c.dom.Element;
@@ -59,6 +59,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.DirectoryStream;
@@ -67,7 +68,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -149,7 +149,7 @@ public class Deployment {
         if (!Files.isReadable(repoFile)) {
             return null;
         }
-        try(final InputStream is = Files.newInputStream(repoFile)) {
+        try(final InputStream is = new BufferedInputStream(Files.newInputStream(repoFile))) {
             return DocUtils.parse(broker.getBrokerPool(), null, is);
         } catch (final XPathException | IOException e) {
             throw new PackageException("Failed to parse repo.xml: " + e.getMessage(), e);
@@ -190,7 +190,7 @@ public class Deployment {
             final Packages packages = repo.get().getParentRepo().getPackages(name);
 
             if (packages != null && (!enforceDeps || pkgVersion.equals(packages.latest().getVersion()))) {
-                LOG.info("Application package " + name + " already installed. Skipping.");
+                LOG.info("Application package {} already installed. Skipping.", name);
                 final Package pkg = packages.latest();
                 return Optional.of(getTargetCollection(broker, pkg, getPackageDir(pkg)));
             }
@@ -218,10 +218,10 @@ public class Deployment {
                     if (processor != null && processor.equals(PROCESSOR_NAME) && version != null) {
                         checkProcessorVersion(version);
                     } else if (pkgName != null) {
-                        LOG.info("Package " + name + " depends on " + pkgName);
+                        LOG.info("Package {} depends on {}", name, pkgName);
                         boolean isInstalled = false;
                         if (repo.get().getParentRepo().getPackages(pkgName) != null) {
-                            LOG.debug("Package " + pkgName + " already installed");
+                            LOG.debug("Package {} already installed", pkgName);
                             Packages pkgs = repo.get().getParentRepo().getPackages(pkgName);
                             // check if installed package matches required version
                             if (pkgs != null) {
@@ -231,7 +231,7 @@ public class Deployment {
                                     if (depVersion.isCompatible(latest.getVersion())) {
                                         isInstalled = true;
                                     } else {
-                                        LOG.debug("Package " + pkgName + " needs to be upgraded");
+                                        LOG.debug("Package {} needs to be upgraded", pkgName);
                                         if (enforceDeps) {
                                             throw new PackageException("Package requires version " + version.toString() +
                                                 " of package " + pkgName +
@@ -242,7 +242,7 @@ public class Deployment {
                                     isInstalled = true;
                                 }
                                 if (isInstalled) {
-                                    LOG.debug("Package " + pkgName + " already installed");
+                                    LOG.debug("Package {} already installed", pkgName);
                                 }
                             }
                         }
@@ -252,8 +252,7 @@ public class Deployment {
                                 installAndDeploy(broker, transaction, depFile, loader);
                             } else {
                                 if (enforceDeps) {
-                                    LOG.warn("Missing dependency: package " + pkgName + " could not be resolved. This error " +
-                                            "is not fatal, but the package may not work as expected");
+                                    LOG.warn("Missing dependency: package {} could not be resolved. This error is not fatal, but the package may not work as expected", pkgName);
                                 } else {
                                     throw new PackageException("Missing dependency: package " + pkgName + " could not be resolved.");
                                 }
@@ -266,7 +265,7 @@ public class Deployment {
             }
 
             // installing the xar into the expath repo
-            LOG.info("Installing package " + xar.getURI());
+            LOG.info("Installing package {}", xar.getURI());
             final UserInteractionStrategy interact = new BatchUserInteraction();
             final org.expath.pkg.repo.Package pkg = repo.get().getParentRepo().installPackage(xar, true, interact);
             final ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
@@ -279,7 +278,7 @@ public class Deployment {
             broker.getBrokerPool().reportStatus("Installing app: " + pkg.getAbbrev());
             repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
 
-            LOG.info("Deploying package " + pkgName);
+            LOG.info("Deploying package {}", pkgName);
             return deploy(broker, transaction, pkgName, repo, null);
         }
 
@@ -362,7 +361,7 @@ public class Deployment {
                 runQuery(broker, null, packageDir, setupPath.get(), pkgName, QueryPurpose.SETUP);
                 return Optional.empty();
             } else {
-                // otherwise copy all child directories to the target collection
+                // otherwise create the target collection
                 XmldbURI targetCollection = null;
                 if (userTarget != null) {
                     try {
@@ -382,7 +381,7 @@ public class Deployment {
                             throw new PackageException("Bad collection URI for <target> element: " + targetPath.get(), e);
                         }
                     } else {
-                        LOG.warn("EXPath Package '" + pkgName + "' does not contain a <target> in its repo.xml, no files will be deployed to /apps");
+                        LOG.warn("EXPath Package '{}' does not contain a <target> in its repo.xml, no files will be deployed to /apps", pkgName);
                     }
                 }
                 if (targetCollection == null) {
@@ -431,17 +430,23 @@ public class Deployment {
                     runQuery(broker, targetCollection, packageDir, preSetupPath.get(), pkgName, QueryPurpose.PREINSTALL);
                 }
 
-                // any required users and group should have been created by the pre-setup query.
-                // check for invalid users now.
+                // create the group specified in the permissions element if needed
+                // create the user specified in the permissions element if needed; assign it to the specified group
+                // TODO: if the user already exists, check and ensure the user is assigned to the specified group
                 if(requestedPerms.isPresent()) {
                     checkUserSettings(broker, requestedPerms.get());
                 }
 
                 final InMemoryNodeSet resources = findElements(repoXML,RESOURCES_ELEMENT);
 
-                // install
+                // store all package contents into database, using the user/group/mode in the permissions element. however:
+                // 1. repo.xml is excluded for now, since it may contain the default user's password in the clear
+                // 2. contents of directories identified in the path attribute of any <resource path=""/> element are stored as binary
                 final List<String> errors = scanDirectory(broker, transaction, packageDir, targetCollection, resources, true, false,
                         requestedPerms);
+                
+                // store repo.xml, filtering out the default user's password
+                storeRepoXML(broker, transaction, repoXML, targetCollection, requestedPerms);
 
                 // run the post-setup query if present
                 final Optional<ElementImpl> postSetup = findElement(repoXML, POST_SETUP_ELEMENT);
@@ -451,15 +456,13 @@ public class Deployment {
                     runQuery(broker, targetCollection, packageDir, postSetupPath.get(), pkgName, QueryPurpose.POSTINSTALL);
                 }
 
-                storeRepoXML(broker, transaction, repoXML, targetCollection, requestedPerms);
-
                 // TODO: it should be safe to clean up the file system after a package
                 // has been deployed. Might be enabled after 2.0
                 //cleanup(pkgName, repo);
 
                 if (!errors.isEmpty()) {
                     throw new PackageException("Deployment incomplete, " + errors.size() + " issues found: " +
-                        errors.stream().collect(Collectors.joining("; ")));
+                            String.join("; ", errors));
                 }
                 return Optional.ofNullable(targetCollection.getCollectionPath());
             }
@@ -505,7 +508,7 @@ public class Deployment {
                     try {
                         Files.deleteIfExists(path);
                     } catch(final IOException ioe) {
-                        LOG.warn("Cleanup: failed to delete file " + path.toAbsolutePath().toString() + " in package " + pkgName);
+                        LOG.warn("Cleanup: failed to delete file {} in package {}", path.toAbsolutePath().toString(), pkgName);
                     }
                 });
             } catch (final IOException ioe) {
@@ -666,7 +669,7 @@ public class Deployment {
             throws PackageException, IOException, XPathException {
         final Path xquery = tempDir.resolve(fileName);
         if (!Files.isReadable(xquery)) {
-            LOG.warn("The XQuery resource specified in the " + purpose.getPurposeString() + " was not found for EXPath Package: '" + pkgName + "'");
+            LOG.warn("The XQuery resource specified in the {} was not found for EXPath Package: '{}'", purpose.getPurposeString(), pkgName);
             return Sequence.EMPTY_SEQUENCE;
         }
         final XQuery xqs = broker.getBrokerPool().getXQueryService();
@@ -816,7 +819,7 @@ public class Deployment {
                         }
                     } else {
                         final long size = Files.size(file);
-                        try(final InputStream is = Files.newInputStream(file)) {
+                        try(final InputStream is = new BufferedInputStream(Files.newInputStream(file))) {
                             final BinaryDocument doc =
                                     targetCollection.addBinaryResource(transaction, broker, name, is, mime.getName(), size);
 
@@ -837,7 +840,7 @@ public class Deployment {
     private void storeBinary(final DBBroker broker, final Txn transaction, final Collection targetCollection, final Path file, final MimeType mime, final XmldbURI name, final Optional<RequestedPerms> requestedPerms) throws
             IOException, EXistException, PermissionDeniedException, LockException, TriggerException {
         final long size = Files.size(file);
-        try (final InputStream is = Files.newInputStream(file)) {
+        try (final InputStream is = new BufferedInputStream(Files.newInputStream(file))) {
             final BinaryDocument doc =
                     targetCollection.addBinaryResource(transaction, broker, name, is, mime.getName(), size);
 
@@ -884,7 +887,7 @@ public class Deployment {
                     other.setMode(permStr);
                     return other.getMode();
                 } catch (final PermissionDeniedException | SyntaxException e) {
-                    LOG.warn("Unable to set permissions string: " + permStr + ". Falling back to default.");
+                    LOG.warn("Unable to set permissions string: {}. Falling back to default.", permStr);
                     return permission.getMode();
                 }
             }).fold(l -> l, r -> r);

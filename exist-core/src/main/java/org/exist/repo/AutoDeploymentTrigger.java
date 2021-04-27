@@ -21,6 +21,16 @@
  */
 package org.exist.repo;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.storage.DBBroker;
+import org.exist.storage.StartupTrigger;
+import org.exist.storage.txn.Txn;
+import org.exist.util.FileUtils;
+import org.expath.pkg.repo.PackageException;
+import org.expath.pkg.repo.XarFileSource;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,16 +38,6 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.exist.storage.DBBroker;
-import org.exist.storage.StartupTrigger;
-import org.exist.storage.txn.Txn;
-import org.exist.util.FileUtils;
-import org.expath.pkg.repo.*;
-
-import javax.annotation.Nullable;
 
 /**
  * Startup trigger for automatic deployment of application packages. Scans the "autodeploy" directory
@@ -77,6 +77,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
         }
 
         if (!Files.isReadable(autodeployDir) && Files.isDirectory(autodeployDir)) {
+            LOG.warn("Unable to read autodeploy directory: {}", autodeployDir);
             return;
         }
 
@@ -86,7 +87,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
                     .sorted(Comparator.comparing(Path::getFileName))
                     .collect(Collectors.toList());
 
-            LOG.info("Scanning autodeploy directory. Found " + xars.size() + " app packages.");
+            LOG.info("Scanning autodeploy directory. Found {} app packages.", xars.size());
 
             final Deployment deployment = new Deployment();
 
@@ -98,10 +99,10 @@ public class AutoDeploymentTrigger implements StartupTrigger {
                     if(name.isPresent()) {
                         packages.put(name.get(), xar);
                     } else {
-                        LOG.error("No descriptor name for: " + xar.toAbsolutePath().toString());
+                        LOG.error("No descriptor name for: {}", xar.toAbsolutePath().toString());
                     }
                 } catch (final IOException | PackageException e) {
-                    LOG.error("Caught exception while reading app package " + xar.toAbsolutePath().toString(), e);
+                    LOG.error("Caught exception while reading app package {}", xar.toAbsolutePath().toString(), e);
                 }
             }
 
@@ -118,7 +119,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
                 try {
                     deployment.installAndDeploy(sysBroker, transaction, new XarFileSource(xar), loader, false);
                 } catch (final PackageException | IOException e) {
-                    LOG.error("Exception during deployment of app " + FileUtils.fileName(xar) + ": " + e.getMessage(), e);
+                    LOG.error("Exception during deployment of app {}: {}", FileUtils.fileName(xar), e.getMessage(), e);
                     sysBroker.getBrokerPool().reportStatus("An error occurred during app deployment: " + e.getMessage());
                 }
             }

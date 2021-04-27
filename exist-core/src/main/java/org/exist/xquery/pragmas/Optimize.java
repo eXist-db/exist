@@ -117,7 +117,8 @@ public class Optimize extends Pragma {
             for (int current = 0; current < optimizables.length; current++) {
                 NodeSet selection = optimizables[current].preSelect(contextSequence, current > 0);
                 if (LOG.isTraceEnabled())
-                    {LOG.trace("exist:optimize: pre-selection: " + selection.getLength());}
+                    {
+                        LOG.trace("exist:optimize: pre-selection: {}", selection.getLength());}
                 // determine the set of potential ancestors for which the predicate has to
                 // be re-evaluated to filter out wrong matches
                 if (selection.isEmpty())
@@ -140,8 +141,8 @@ public class Optimize extends Pragma {
                             selection.getDocumentSet(), selection, contextId);
                     }
                     if (LOG.isTraceEnabled()) {
-                        LOG.trace("Ancestor selection took " + (System.currentTimeMillis() - start));
-                        LOG.trace("Found: " + ancestors.getLength());
+                        LOG.trace("Ancestor selection took {}", System.currentTimeMillis() - start);
+                        LOG.trace("Found: {}", ancestors.getLength());
                     }
                 }
                 result = ancestors;
@@ -152,7 +153,8 @@ public class Optimize extends Pragma {
             } else {
                 contextStep.setPreloadedData(result.getDocumentSet(), result);
                 if (LOG.isTraceEnabled())
-                    {LOG.trace("exist:optimize: context after optimize: " + result.getLength());}
+                    {
+                        LOG.trace("exist:optimize: context after optimize: {}", result.getLength());}
                 final long start = System.currentTimeMillis();
                 if (originalContext != null)
                     {contextSequence = originalContext.filterDocuments(result);}
@@ -160,8 +162,8 @@ public class Optimize extends Pragma {
                     {contextSequence = null;}
                 final Sequence seq = innerExpr.eval(contextSequence);
                 if (LOG.isTraceEnabled())
-                    {LOG.trace("exist:optimize: inner expr took " + (System.currentTimeMillis() - start) +
-                        "; found: "+ seq.getItemCount());}
+                    {
+                        LOG.trace("exist:optimize: inner expr took {}; found: {}", System.currentTimeMillis() - start, seq.getItemCount());}
                 return seq;
             }
         } else {
@@ -212,7 +214,8 @@ public class Optimize extends Pragma {
 
             public void visitGeneralComparison(GeneralComparison comparison) {
                 if (LOG.isTraceEnabled())
-                    {LOG.trace("exist:optimize: found optimizable: " + comparison.getClass().getName());}
+                    {
+                        LOG.trace("exist:optimize: found optimizable: {}", comparison.getClass().getName());}
                 addOptimizable(comparison);
             }
 
@@ -223,7 +226,8 @@ public class Optimize extends Pragma {
             public void visitBuiltinFunction(Function function) {
                 if (function instanceof Optimizable) {
                     if (LOG.isTraceEnabled())
-                        {LOG.trace("exist:optimize: found optimizable function: " + function.getClass().getName());}
+                        {
+                            LOG.trace("exist:optimize: found optimizable function: {}", function.getClass().getName());}
                     addOptimizable((Optimizable) function);
                 }
             }
@@ -233,8 +237,8 @@ public class Optimize extends Pragma {
         if (contextStep != null && contextStep.getTest().isWildcardTest())
             {contextStep = null;}
         if (LOG.isTraceEnabled()) {
-            LOG.trace("exist:optimize: context step: " + contextStep);
-            LOG.trace("exist:optimize: context var: " + contextVar);
+            LOG.trace("exist:optimize: context step: {}", contextStep);
+            LOG.trace("exist:optimize: context var: {}", contextVar);
         }
     }
 
@@ -288,8 +292,8 @@ public class Optimize extends Pragma {
             if (config == null) {
                 // no index found for this collection
                 if (LOG.isTraceEnabled())
-                    {LOG.trace("Cannot optimize: collection " + collection.getURI() + " does not define an index " +
-                        "on " + qname);}
+                    {
+                        LOG.trace("Cannot optimize: collection {} does not define an index on {}", collection.getURI(), qname);}
                 // if enfoceIndexUse == "always", continue to check other collections
                 // for indexes. It is sufficient if one collection defines an index
                 if (enforceIndexUse == null || !"always".equals(enforceIndexUse))
@@ -306,8 +310,8 @@ public class Optimize extends Pragma {
                     // found an index with a bad type. cannot optimize.
                     // TODO: should this continue checking other collections?
                     if (LOG.isTraceEnabled())
-                        {LOG.trace("Cannot optimize: collection " + collection.getURI() + " does not define an index " +
-                            "with the required type " + Type.getTypeName(type) + " on " + qname);}
+                        {
+                            LOG.trace("Cannot optimize: collection {} does not define an index with the required type {} on {}", collection.getURI(), Type.getTypeName(type), qname);}
                     return Type.ITEM;   // found a collection with a different type
                 }
             }

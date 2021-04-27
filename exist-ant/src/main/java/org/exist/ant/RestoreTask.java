@@ -25,7 +25,6 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.DirSet;
-
 import org.exist.xmldb.ConsoleRestoreServiceTaskListener;
 import org.exist.xmldb.EXistRestoreService;
 import org.exist.xmldb.RestoreServiceTaskListener;
@@ -169,19 +168,19 @@ public class RestoreTask extends AbstractXMLDBTask
      *
      * @param dir the directory
      */
-    public void setDir( File dir )
+    public void setDir(final File dir )
     {
         this.dir = dir.toPath();
     }
 
 
-    public void setFile( File file )
+    public void setFile(final File file )
     {
         this.zipFile = file.toPath();
     }
 
 
-    public void setRestorePassword( String pass )
+    public void setRestorePassword(final String pass )
     {
         this.restorePassword = pass;
     }

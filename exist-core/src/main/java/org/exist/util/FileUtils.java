@@ -29,10 +29,7 @@ import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.util.crypto.digest.DigestOutputStream;
 import org.exist.util.crypto.digest.StreamableDigest;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
@@ -160,7 +157,7 @@ public class FileUtils {
             }
             return true;
         } catch (final IOException ioe) {
-            LOG.error("Unable to delete: " + path.toAbsolutePath().toString(), ioe);
+            LOG.error("Unable to delete: {}", path.toAbsolutePath().toString(), ioe);
             return false;
         }
     }
@@ -252,7 +249,7 @@ public class FileUtils {
                 return dirSizeVisitor.totalSize();
             }
         } catch(final IOException ioe) {
-            LOG.error("Unable to determine size of: " + path.toString(), ioe);
+            LOG.error("Unable to determine size of: {}", path.toString(), ioe);
             return -1;
         }
     }
@@ -326,7 +323,7 @@ public class FileUtils {
             }
             return true;
         } catch (final IOException ioe) {
-            LOG.error("Unable to mkdirs: " + dir.toAbsolutePath().toString(), ioe);
+            LOG.error("Unable to mkdirs: {}", dir.toAbsolutePath().toString(), ioe);
             return false;
         }
     }
@@ -462,7 +459,7 @@ public class FileUtils {
      */
     public static void copyWithDigest(final Path src, final Path dst, final StreamableDigest streamableDigest,
             final OpenOption... dstOptions) throws IOException {
-        try (final InputStream is = Files.newInputStream(src, READ)) {
+        try (final InputStream is = new BufferedInputStream(Files.newInputStream(src, READ))) {
             copyWithDigest(is, dst, streamableDigest);
         }
     }
@@ -493,7 +490,7 @@ public class FileUtils {
      * @throws IOException if an IO error occurs
      */
     public static void copyWithDigest(final InputStream is, final Path dst, final StreamableDigest streamableDigest, final OpenOption... dstOptions) throws IOException {
-        try (final OutputStream os = new DigestOutputStream(Files.newOutputStream(dst, dstOptions), streamableDigest)) {
+        try (final OutputStream os = new DigestOutputStream(new BufferedOutputStream(Files.newOutputStream(dst, dstOptions)), streamableDigest)) {
 
             final byte[] buf = new byte[8192];
             int read;
@@ -512,7 +509,7 @@ public class FileUtils {
      * @throws IOException if an IO error occurs
      */
     public static void digest(final Path path, final StreamableDigest streamableDigest) throws IOException {
-        try (final InputStream is = Files.newInputStream(path, READ)) {
+        try (final InputStream is = new BufferedInputStream(Files.newInputStream(path, READ))) {
             final byte[] buf = new byte[8192];
 
             int read;

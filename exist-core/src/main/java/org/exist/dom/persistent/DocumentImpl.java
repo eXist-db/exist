@@ -25,20 +25,15 @@ import com.evolvedbinary.j8fu.tuple.Tuple2;
 import net.jcip.annotations.NotThreadSafe;
 import org.exist.EXistException;
 import org.exist.Resource;
+import org.exist.collections.Collection;
 import org.exist.collections.LockedCollection;
 import org.exist.dom.QName;
 import org.exist.dom.QName.IllegalQNameException;
-import org.exist.collections.Collection;
-import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.memtree.DocumentFragmentImpl;
 import org.exist.numbering.NodeId;
-import org.exist.security.*;
 import org.exist.security.SecurityManager;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.storage.ElementValue;
-import org.exist.storage.NodePath;
-import org.exist.storage.StorageAddress;
+import org.exist.security.*;
+import org.exist.storage.*;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.EnsureContainerLocked;
@@ -47,22 +42,11 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.MimeType;
 import org.exist.util.XMLString;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.*;
+import org.exist.xquery.Constants;
+import org.exist.xquery.Expression;
+import org.exist.xquery.NameTest;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.Attr;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.Comment;
-import org.w3c.dom.DOMConfiguration;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.DocumentType;
-import org.w3c.dom.Element;
-import org.w3c.dom.EntityReference;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.ProcessingInstruction;
-import org.w3c.dom.Text;
+import org.w3c.dom.*;
 
 import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
@@ -662,7 +646,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         try(final DBBroker broker = pool.getBroker()) {
             return broker.objectWith(this, nodeId);
         } catch(final EXistException e) {
-            LOG.warn("Error occurred while retrieving node: " + e.getMessage(), e);
+            LOG.warn("Error occurred while retrieving node: {}", e.getMessage(), e);
         }
         return null;
     }
@@ -680,7 +664,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         try(final DBBroker broker = pool.getBroker()) {
             return broker.objectWith(p);
         } catch(final Exception e) {
-            LOG.warn("Error occurred while retrieving node: " + e.getMessage(), e);
+            LOG.warn("Error occurred while retrieving node: {}", e.getMessage(), e);
         }
         return null;
     }
@@ -861,7 +845,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
                 broker.insertNodeAfter(transaction, previousNode, newNode);
             }
         } catch(final EXistException e) {
-            LOG.warn("Exception while updating child node: " + e.getMessage(), e);
+            LOG.warn("Exception while updating child node: {}", e.getMessage(), e);
             //TODO : thow exception ?
         }
         return newNode;
@@ -876,7 +860,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         try(final DBBroker broker = pool.getBroker()) {
             return broker.objectWith(new NodeProxy(this, NodeId.DOCUMENT_NODE, childAddress[0]));
         } catch(final EXistException e) {
-            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+            LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
             //TODO : throw exception ?
         }
         return null;
@@ -916,7 +900,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
                 list.add(child);
             }
         } catch(final EXistException e) {
-            LOG.warn("Exception while retrieving child nodes: " + e.getMessage(), e);
+            LOG.warn("Exception while retrieving child nodes: {}", e.getMessage(), e);
         }
         return list;
     }
@@ -976,7 +960,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
                     new NameTest(Type.ELEMENT, qname), false, docs, contextSet, Expression.NO_CONTEXT_ID);
 
         } catch(final Exception e) {
-            LOG.warn("Exception while finding elements: " + e.getMessage(), e);
+            LOG.warn("Exception while finding elements: {}", e.getMessage(), e);
         }
         return NodeSet.EMPTY_SET;
     }
@@ -1273,7 +1257,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             return broker.getStructuralIndex().scanByType(ElementValue.ELEMENT, Constants.DESCENDANT_SELF_AXIS,
                     new NameTest(Type.ELEMENT, qname), false, docs, contextSet, Expression.NO_CONTEXT_ID);
         } catch(final Exception e) {
-            LOG.error("Exception while finding elements: " + e.getMessage(), e);
+            LOG.error("Exception while finding elements: {}", e.getMessage(), e);
             //TODO : throw exception ?
         }
         return NodeSet.EMPTY_SET;

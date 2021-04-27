@@ -21,6 +21,19 @@
  */
 package org.exist.repo;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.SystemProperties;
+import org.exist.start.Classpath;
+import org.exist.start.EXistClassLoader;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolService;
+import org.expath.pkg.repo.FileSystemStorage;
+import org.expath.pkg.repo.Package;
+import org.expath.pkg.repo.PackageException;
+import org.expath.pkg.repo.Packages;
+import org.expath.pkg.repo.deps.ProcessorDependency;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URI;
@@ -29,18 +42,6 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.exist.SystemProperties;
-import org.exist.start.Classpath;
-import org.exist.start.EXistClassLoader;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.BrokerPoolService;
-import org.exist.storage.BrokerPoolServiceException;
-import org.expath.pkg.repo.*;
-import org.expath.pkg.repo.Package;
-import org.expath.pkg.repo.deps.ProcessorDependency;
 
 /**
  * Helper class to construct classpath for expath modules containing
@@ -66,8 +67,7 @@ public class ClasspathHelper implements BrokerPoolService {
         if (!(loader instanceof EXistClassLoader))
             {return;}
         if (!isCompatible(pkg)) {
-            LOG.warn("Package " + pkg.getName() + " is not compatible with this version of eXist. " +
-                "To avoid conflicts, Java libraries shipping with this package are not loaded.");
+            LOG.warn("Package {} is not compatible with this version of eXist. To avoid conflicts, Java libraries shipping with this package are not loaded.", pkg.getName());
             return;
         }
         final FileSystemStorage.FileSystemResolver resolver = (FileSystemStorage.FileSystemResolver) pkg.getResolver();
@@ -77,7 +77,7 @@ public class ClasspathHelper implements BrokerPoolService {
             scanPackageDir(cp, packageDir);
             ((EXistClassLoader)loader).addURLs(cp);
         } catch (final IOException e) {
-            LOG.warn("An error occurred while updating classpath for package " + pkg.getName(), e);
+            LOG.warn("An error occurred while updating classpath for package {}", pkg.getName(), e);
         }
     }
 
@@ -88,15 +88,14 @@ public class ClasspathHelper implements BrokerPoolService {
             for (final Packages pkgs : repo.get().getParentRepo().listPackages()) {
                 final Package pkg = pkgs.latest();
                 if (!isCompatible(pkg)) {
-                    LOG.warn("Package " + pkg.getName() + " is not compatible with this version of eXist. " +
-                            "To avoid conflicts, Java libraries shipping with this package are not loaded.");
+                    LOG.warn("Package {} is not compatible with this version of eXist. To avoid conflicts, Java libraries shipping with this package are not loaded.", pkg.getName());
                 } else {
                     try {
                         final FileSystemStorage.FileSystemResolver resolver = (FileSystemStorage.FileSystemResolver) pkg.getResolver();
                         final Path packageDir = resolver.resolveResourceAsFile(".");
                         scanPackageDir(classpath, packageDir);
                     } catch (final IOException e) {
-                        LOG.warn("An error occurred while updating classpath for package " + pkg.getName(), e);
+                        LOG.warn("An error occurred while updating classpath for package {}", pkg.getName(), e);
                     }
                 }
             }

@@ -30,12 +30,16 @@ import org.exist.util.FileUtils;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -70,6 +74,30 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
             // DoNothing(R)
         }
         return bd;
+    }
+
+    @Override
+    public List<BackupDescriptor> getChildBackupDescriptors() {
+        try {
+            try (final Stream<BackupDescriptor> entries = Files.list(descriptor.getParent())
+                    .filter(p -> Files.isDirectory(p) && Files.exists(p.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR)))
+                    .map(p -> p.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR))
+                    .map(p -> {
+                        try {
+                            return Optional.<BackupDescriptor>of(new FileSystemBackupDescriptor(root, p));
+                        } catch (final FileNotFoundException e) {
+                            // Do nothing
+                            LOG.warn(e.getMessage(), e);
+                            return Optional.<BackupDescriptor>empty();
+                        }
+                    })
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)) {
+                return entries.collect(Collectors.toList());
+            }
+        } catch (final IOException e) {
+            return Collections.emptyList();
+        }
     }
 
     @Override
@@ -186,7 +214,7 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
                         .filter(f -> !COLLECTION_DESCRIPTOR.equals(f.getFileName().toString()))) {
 
                 for (final Path d : ds.collect(Collectors.toList())) {
-                    try (final InputStream is = Files.newInputStream(d)) {
+                    try (final InputStream is = new BufferedInputStream(Files.newInputStream(d))) {
                         numberOfFiles += descriptorResourceCounter.count(is);
                     }
                 }

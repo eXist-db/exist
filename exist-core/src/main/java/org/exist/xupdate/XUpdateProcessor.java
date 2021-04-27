@@ -497,7 +497,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 					}
 					final Sequence seq = processQuery(select);
 					if (LOG.isDebugEnabled()) {
-						LOG.debug("Found " + seq.getItemCount() + " items for value-of");
+						LOG.debug("Found {} items for value-of", seq.getItemCount());
 					}
 					Item item;
 					try {
@@ -700,7 +700,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				final Element last = stack.peek();
 				if (last == null) {
 					if (LOG.isDebugEnabled()) {
-						LOG.debug("appending text to fragment: " + text.getData());
+						LOG.debug("appending text to fragment: {}", text.getData());
 					}
 					contents.add(text);
 				} else {
@@ -728,12 +728,14 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	private void createVariable(String name, String select)
 		throws SAXException {
 		if (LOG.isDebugEnabled())
-			{LOG.debug("creating variable " + name + " as " + select);}
+			{
+				LOG.debug("creating variable {} as {}", name, select);}
 		
 		final Sequence result = processQuery(select);
 		
 		if (LOG.isDebugEnabled())
-			{LOG.debug("found " + result.getItemCount() + " for variable " + name);}
+			{
+				LOG.debug("found {} for variable {}", result.getItemCount(), name);}
 		
 		variables.put(name, result);
 	}
@@ -767,7 +769,8 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			final AST ast = parser.getAST();
 			
 			if (LOG.isDebugEnabled())
-				{LOG.debug("generated AST: " + ast.toStringTree());}
+				{
+					LOG.debug("generated AST: {}", ast.toStringTree());}
 
 			final PathExpr expr = new PathExpr(context);
 			treeParser.xpath(ast, expr);

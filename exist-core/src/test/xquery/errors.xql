@@ -325,14 +325,62 @@ function et:issue3473c() {
     }
 };
 
-(: https://github.com/eXist-db/exist/issues/3474 :)
+(:~
+ : function type item returned in element content in sequence at runtime
+ : related to https://github.com/eXist-db/exist/issues/3474
+ :)
 declare
-    %test:pending("to be addressed in another PR")
-    %test:assertEquals(333)
-function et:issue3474() {
+    %test:assertTrue
+    %test:pending("location info still missing")
+function et:subexpression-in-enclosed-expression-evaluates-to-map() {
     try {
-        element foo { map { "x": "y" } }
-    } catch * {
-        $err:line-number
+        element test { 1, map {} }
     }
+    catch err:XQTY0105 {
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
+    }
+};
+
+declare
+    %test:assertTrue
+    %test:pending("location info still missing")
+function et:enclosed-expression-evaluates-to-map() {
+    try {
+        element test { ( "a", map {} )[2] }
+    }
+    catch err:XQTY0105 {
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
+    }
+};
+
+declare
+    %test:assertTrue
+function et:array-in-enclosed-expression-evaluates-to-map() {
+    try {
+        element test { [map {}] }
+    }
+    catch err:XQTY0105 {
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
+    }
+};
+
+declare
+    %test:assertTrue
+function et:element-type-error-reporting() {
+
+    try {
+        let $test as element(b)? := <a c="2"><d/></a> return $test
+    } catch * {
+            fn:ends-with($err:description, "Invalid type for variable $test. Expected element(b)?, got element(a)")
+    }
+
 };

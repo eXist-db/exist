@@ -118,14 +118,14 @@ public class ExistResourceFactory implements ResourceFactory {
             }
 
             if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("host='%s' path='%s'", host, path));
+                LOG.debug("host='{}' path='{}'", host, path);
             }
 
             // Create uri inside database
             xmldbUri = XmldbURI.xmldbUriFor(path);
 
         } catch (URISyntaxException e) {
-            LOG.error(String.format("Unable to convert path '%s'into a XmldbURI representation.", path));
+            LOG.error("Unable to convert path '{}}' into a XmldbURI representation.", path);
             return null;
         }
 
@@ -147,12 +147,12 @@ public class ExistResourceFactory implements ResourceFactory {
 
             case NOT_EXISTING:
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug(String.format("Resource does not exist: '%s'", xmldbUri));
+                    LOG.debug("Resource does not exist: '{}'", xmldbUri);
                 }
                 return null;
 
             default:
-                LOG.error(String.format("Unkown resource type for %s", xmldbUri));
+                LOG.error("Unkown resource type for {}", xmldbUri);
                 return null;
         }
     }
@@ -183,7 +183,7 @@ public class ExistResourceFactory implements ResourceFactory {
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
                 final Collection collection = broker.openCollection(xmldbUri, LockMode.READ_LOCK)) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("Path: %s", xmldbUri.toString()));
+                LOG.debug("Path: {}", xmldbUri);
             }
 
             // First check if resource is a collection
@@ -202,13 +202,13 @@ public class ExistResourceFactory implements ResourceFactory {
                 }
             }
         } catch (final Exception ex) {
-            LOG.error(String.format("Error determining nature of resource %s", xmldbUri.toString()), ex);
+            LOG.error("Error determining nature of resource {}", xmldbUri.toString(), ex);
             type = ResourceType.NOT_EXISTING;
 
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Resource type=%s", type.toString()));
+            LOG.debug("Resource type={}", type.toString());
         }
 
         return type;

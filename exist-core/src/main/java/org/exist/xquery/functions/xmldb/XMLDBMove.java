@@ -87,7 +87,7 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
             try {
                 final Resource resource = collection.getResource(doc.toString());
                 if (resource == null) {
-                    logger.error( "Resource " + doc + " not found");
+                    logger.error("Resource {} not found", doc);
                     throw new XPathException(this, "Resource " + doc + " not found");
                 }
                 final EXistCollectionManagementService service = (EXistCollectionManagementService) collection.getService("CollectionManagementService", "1.0");

@@ -138,7 +138,7 @@ public class XmlLibraryChecker {
             message.append(getClassName(sax.toString()));
             message.append(" ");
         }
-        logger.debug("Detected SAXParserFactory classes: " + message.toString());
+        logger.debug("Detected SAXParserFactory classes: {}", message.toString());
 
         
         message = new StringBuilder();
@@ -162,7 +162,7 @@ public class XmlLibraryChecker {
             message.append(getClassName(xsl.toString()));
             message.append(" ");
         }
-        logger.debug("Detected TransformerFactory classes: " + message.toString());
+        logger.debug("Detected TransformerFactory classes: {}", message.toString());
 
         
         message = new StringBuilder();
@@ -186,12 +186,12 @@ public class XmlLibraryChecker {
 			invalidVersionFound	= true;
         }
 
-		logger.info( "Using parser " + determineActualParserClass() );
-		logger.info( "Using transformer " + determineActualTransformerClass() );
+        logger.info("Using parser {}", determineActualParserClass());
+        logger.info("Using transformer {}", determineActualTransformerClass());
 		
 		if(invalidVersionFound) {
-			logger.warn("Using parser " + determineActualParserClass());
-            logger.warn( "Using transformer " + determineActualTransformerClass() );
+            logger.warn("Using parser {}", determineActualParserClass());
+            logger.warn("Using transformer {}", determineActualTransformerClass());
 		}
     }
 

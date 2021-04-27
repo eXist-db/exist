@@ -29,12 +29,10 @@ import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.CommentImpl;
-import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.ProcessingInstructionImpl;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.persistent.TextImpl;
+import org.exist.dom.persistent.*;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
@@ -45,7 +43,10 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
 import javax.xml.XMLConstants;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Helper class to make a in-memory document fragment persistent. The class
@@ -248,7 +249,7 @@ public class DOMIndexer {
             }
 
             default: {
-                LOG.debug("Skipped indexing of in-memory node of type " + doc.nodeKind[nodeNr]);
+                LOG.debug("Skipped indexing of in-memory node of type {}", doc.nodeKind[nodeNr]);
             }
         }
     }

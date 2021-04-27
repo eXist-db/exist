@@ -146,7 +146,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         this.controller = controller;
         Map<String, GMLIndexConfig> map = null;
         for(int i = 0; i < configNodes.getLength(); i++) {
-            Node node = configNodes.item(i);
+            final Node node = configNodes.item(i);
             if (node.getNodeType() == Node.ELEMENT_NODE &&
                     INDEX_ELEMENT.equals(node.getLocalName())) { 
                 map = new TreeMap<>();
@@ -164,7 +164,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         if (document != null) {
             IndexSpec idxConf = document.getCollection().getIndexConfiguration(getBroker());
             if (idxConf != null) {
-                Map collectionConfig = (Map) idxConf.getCustomIndexSpec(AbstractGMLJDBCIndex.ID);
+                final Map collectionConfig = (Map) idxConf.getCustomIndexSpec(AbstractGMLJDBCIndex.ID);
                 if (collectionConfig != null) {
                     isDocumentGMLAware = true;
                     if (collectionConfig.get(AbstractGMLJDBCIndex.ID) != null)
@@ -270,7 +270,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             }
             conn.commit();
         } catch (SQLException e) {
-            LOG.error("Document: " + currentDoc + " NodeID: " + currentNodeId, e);
+            LOG.error("Document: {} NodeID: {}", currentDoc, currentNodeId, e);
             try {
                 if (conn != null)
                     conn.rollback();
@@ -343,7 +343,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
                 try {
                     if (!saveGeometryNode(srsGeometry.getGeometry(), srsGeometry.getSRSName(),
                             currentDoc, nodeId, ps)) {
-                        LOG.error("Unable to save geometry for node: " + nodeId);
+                        LOG.error("Unable to save geometry for node: {}", nodeId);
                     }
                 } finally {
                     //Help the garbage collector
@@ -365,10 +365,10 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         try {
             boolean removed = removeDocumentNode(currentDoc, currentNodeId, conn);
             if (!removed) {
-                LOG.error("No data dropped for node " + currentNodeId.toString() + " from GML index");
+                LOG.error("No data dropped for node {} from GML index", currentNodeId.toString());
             } else {
                 if (LOG.isDebugEnabled())
-                    LOG.debug("Dropped data for node " + currentNodeId.toString() + " from GML index");
+                    LOG.debug("Dropped data for node {} from GML index", currentNodeId.toString());
             }
         } finally {
             currentNodeId = null;
@@ -377,10 +377,10 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 
     private void removeDocument(Connection conn) throws SQLException {
         if (LOG.isDebugEnabled())
-            LOG.debug("Dropping GML index for document " + currentDoc.getURI());
+            LOG.debug("Dropping GML index for document {}", currentDoc.getURI());
         int nodeCount = removeDocument(currentDoc, conn);
         if (LOG.isDebugEnabled())
-            LOG.debug("Dropped " + nodeCount + " nodes from GML index");
+            LOG.debug("Dropped {} nodes from GML index", nodeCount);
     }
 
     @Override
@@ -398,10 +398,10 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         try {
             conn = acquireConnection();
             if (LOG.isDebugEnabled())
-                LOG.debug("Dropping GML index for collection " + collection.getURI());
+                LOG.debug("Dropping GML index for collection {}", collection.getURI());
             int nodeCount = removeCollection(collection, conn);
             if (LOG.isDebugEnabled())
-                LOG.debug("Dropped " + nodeCount + " nodes from GML index");
+                LOG.debug("Dropped {} nodes from GML index", nodeCount);
         } catch (SQLException e) {
             LOG.error(e);
         } finally {
@@ -514,10 +514,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         try {
             conn = acquireConnection();
             return checkIndex(broker, conn);
-        } catch (SQLException e) {
-            LOG.error(e);
-            return false;
-        } catch (SpatialIndexException e) {
+        } catch (final SQLException | SpatialIndexException e) {
             LOG.error(e);
             return false;
         } finally {
@@ -674,7 +671,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
                     transform = CRS.findMathTransform(CRS.decode(sourceCRS), CRS.decode(targetCRS), useLenientMode);
                 }
                 transformations.put(sourceCRS + "_" + targetCRS, transform);
-                LOG.debug("Instantiated transformation from '" + sourceCRS + "' to '" + targetCRS + "'");
+                LOG.debug("Instantiated transformation from '{}' to '{}'", sourceCRS, targetCRS);
             } catch (FactoryException e) {
                 LOG.error(e);
             }
@@ -801,7 +798,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
                     }
                 }
             } catch (Exception e) {
-                LOG.error("Unable to collect geometry for node: " + currentNodeId + ". Indexing will be skipped");
+                LOG.error("Unable to collect geometry for node: {}. Indexing will be skipped", currentNodeId);
             } finally {
                 streamedGeometry = null;
             }
@@ -816,7 +813,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             //topology check done by the Geotools SAX parser.
             //It would be nice to have static classes extending Geometry to report such geometries
             if (geometry == null) {
-                LOG.error("Collected null geometry for node: " + currentNodeId + ". Indexing will be skipped");
+                LOG.error("Collected null geometry for node: {}. Indexing will be skipped", currentNodeId);
             }
         }
     }

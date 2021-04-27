@@ -81,7 +81,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 		{return new StringValue(newCollection.getName());}
 
 	} catch (final XMLDBException e) {
-	    logger.error("Unable to create new collection " + collectionName, e);
+        logger.error("Unable to create new collection {}", collectionName, e);
 	    throw new XPathException(this, "failed to create new collection " + collectionName + ": " + e.getMessage(), e);
 	}
     }

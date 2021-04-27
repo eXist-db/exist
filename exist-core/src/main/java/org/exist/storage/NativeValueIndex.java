@@ -182,7 +182,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         if (nativeFile == null) {
             //use inheritance
             final Path file = dataDir.resolve(getFileName());
-            LOG.debug("Creating '" + FileUtils.fileName(file) + "'...");
+            LOG.debug("Creating '{}'...", FileUtils.fileName(file));
             nativeFile = new BFile(broker.getBrokerPool(), id, FILE_FORMAT_VERSION_ID, false, file,
                     broker.getBrokerPool().getCacheManager(), cacheGrowth,
                     cacheValueThresHold);
@@ -349,7 +349,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         try(final ManagedLock<ReentrantLock> bfileLock = lockManager.acquireBtreeWriteLock(dbValues.getLockName())) {
             dbValues.flush();
         } catch (final LockException e) {
-            LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+            LOG.warn("Failed to acquire lock for '{}'", FileUtils.fileName(dbValues.getFile()), e);
             //TODO : throw an exception ? -pb
         } catch (final DBException e) {
             LOG.error(e.getMessage(), e);
@@ -402,7 +402,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 os.write(nodeIdsData);
 
             } catch (final IOException e) {
-                LOG.warn("IO error while writing range index: " + e.getMessage(), e);
+                LOG.warn("IO error while writing range index: {}", e.getMessage(), e);
                 //TODO : throw exception?
             }
 
@@ -410,13 +410,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 final Value v = dbKeyFn.apply(key);
 
                 if (dbValues.append(v, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                    LOG.warn("Could not append index data for key '" + key + "'");
+                    LOG.warn("Could not append index data for key '{}'", key);
                     //TODO : throw exception ?
                 }
             } catch (final EXistException | IOException e) {
                 LOG.error(e.getMessage(), e);
             } catch (final LockException e) {
-                LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+                LOG.warn("Failed to acquire lock for '{}'", FileUtils.fileName(dbValues.getFile()), e);
                 //TODO : return ?
             } catch (final ReadOnlyException e) {
                 LOG.warn(e.getMessage(), e);
@@ -521,7 +521,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                             // write the node IDs
                             os.write(nodeIdsData);
                         } catch (final IOException e) {
-                            LOG.warn("IO error while writing range index: " + e.getMessage(), e);
+                            LOG.warn("IO error while writing range index: {}", e.getMessage(), e);
                             //TODO : throw exception?
                         }
                     }
@@ -529,20 +529,20 @@ public class NativeValueIndex implements ContentLoadingObserver {
 //                        if(os.data().size() == 0)
 //                            dbValues.remove(value);
                     if (dbValues.update(value.getAddress(), searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.error("Could not update index data for value '" + searchKey + "'");
+                        LOG.error("Could not update index data for value '{}'", searchKey);
                         //TODO: throw exception ?
                     }
                 } else {
 
                     if (dbValues.put(searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.error("Could not put index data for value '" + searchKey + "'");
+                        LOG.error("Could not put index data for value '{}'", searchKey);
                         //TODO : throw exception ?
                     }
                 }
             } catch (final EXistException | IOException e) {
                 LOG.error(e.getMessage(), e);
             } catch (final LockException e) {
-                LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+                LOG.warn("Failed to acquire lock for '{}'", FileUtils.fileName(dbValues.getFile()), e);
                 //TODO : return ?
             } finally {
                 os.clear();
@@ -569,7 +569,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             ref = new QNameValue(collection.getId());
             dbValues.removeAll(null, new IndexQuery(IndexQuery.TRUNC_RIGHT, ref));
         } catch (final LockException e) {
-            LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+            LOG.warn("Failed to acquire lock for '{}'", FileUtils.fileName(dbValues.getFile()), e);
         } catch (final BTreeException | IOException e) {
             LOG.error(e.getMessage(), e);
         }
@@ -582,11 +582,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
             dropIndex(document.getDocId(), pendingGeneric, key -> new SimpleValue(collectionId, (Indexable) key));
             dropIndex(document.getDocId(), pendingQName, key -> new QNameValue(collectionId, key.qname, key.value, broker.getBrokerPool().getSymbols()));
         } catch (final LockException e) {
-            LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+            LOG.warn("Failed to acquire lock for '{}'", FileUtils.fileName(dbValues.getFile()), e);
         } catch (final IOException e) {
             LOG.error(e.getMessage(), e);
         } catch (final EXistException e) {
-            LOG.warn("Exception while removing range index: " + e.getMessage(), e);
+            LOG.warn("Exception while removing range index: {}", e.getMessage(), e);
         } finally {
             os.clear();
         }
@@ -643,7 +643,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     // still something to store:
                     // modify the existing value for the key
                     if (dbValues.put(v, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.error("Could not put index data for key '" + v + "'");
+                        LOG.error("Could not put index data for key '{}'", v);
                         //TODO : throw exception ?
                     }
                 }
@@ -715,7 +715,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 } catch (final EXistException | BTreeException | IOException e) {
                     LOG.error(e.getMessage(), e);
                 } catch (final LockException e) {
-                    LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+                    LOG.warn("Failed to acquire lock for '{}'", FileUtils.fileName(dbValues.getFile()), e);
                 }
             } else {
                 for (final QName qname : qnames) {
@@ -734,7 +734,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     } catch (final EXistException | BTreeException | IOException e) {
                         LOG.error(e.getMessage(), e);
                     } catch (final LockException e) {
-                        LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+                        LOG.warn("Failed to acquire lock for '{}'", FileUtils.fileName(dbValues.getFile()), e);
                     }
                 }
             }
@@ -813,13 +813,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
             if (term.length() > 0) {
                 startTerm = new StringValue(term.toString());
-                LOG.debug("Match will begin index scan at '" + startTerm + "'");
+                LOG.debug("Match will begin index scan at '{}'", startTerm);
             } else {
                 startTerm = null;
             }
         } else if (collator == null && (type == DBBroker.MATCH_EXACT || type == DBBroker.MATCH_STARTSWITH)) {
             startTerm = new StringValue(expr);
-            LOG.debug("Match will begin index scan at '" + startTerm + "'");
+            LOG.debug("Match will begin index scan at '{}'", startTerm);
         } else {
             startTerm = null;
         }
@@ -873,7 +873,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 } catch (final IOException | BTreeException e) {
                     LOG.error(e.getMessage(), e);
                 } catch (final LockException e) {
-                    LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+                    LOG.warn("Failed to acquire lock for '{}'", FileUtils.fileName(dbValues.getFile()), e);
                 }
             } else {
                 for (final QName qname : qnames) {
@@ -891,7 +891,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     } catch (final IOException | BTreeException e) {
                         LOG.error(e.getMessage(), e);
                     } catch (final LockException e) {
-                        LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+                        LOG.warn("Failed to acquire lock for '{}'", FileUtils.fileName(dbValues.getFile()), e);
                     }
                 }
             }
@@ -923,7 +923,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             } catch (final EXistException | IOException | TerminatedException | BTreeException e) {
                 LOG.error(e.getMessage(), e);
             } catch (final LockException e) {
-                LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+                LOG.warn("Failed to acquire lock for '{}'", FileUtils.fileName(dbValues.getFile()), e);
             }
         }
         final Map<AtomicValue, ValueOccurrences> map = cb.map;
@@ -972,7 +972,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 } catch (final EXistException | BTreeException | IOException | TerminatedException e) {
                     LOG.error(e.getMessage(), e);
                 } catch (final LockException e) {
-                    LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+                    LOG.warn("Failed to acquire lock for '{}'", FileUtils.fileName(dbValues.getFile()), e);
                 }
             }
         }
@@ -1048,7 +1048,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             try {
                 atomic = new StringValue(value).convertTo(xpathType);
             } catch (final XPathException e) {
-                LOG.error("Node value '" + value + "' cannot be converted to " + Type.getTypeName(xpathType));
+                LOG.error("Node value '{}' cannot be converted to {}", value, Type.getTypeName(xpathType));
                 return null;
             }
         }
@@ -1062,7 +1062,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             config.setProperty(getConfigKeyForFile(), null);
             dbValues.closeAndRemove();
         } catch (final LockException e) {
-            LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+            LOG.warn("Failed to acquire lock for '{}'", FileUtils.fileName(dbValues.getFile()), e);
         }
     }
 
@@ -1072,7 +1072,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             config.setProperty(getConfigKeyForFile(), null);
             dbValues.close();
         } catch (final LockException e) {
-            LOG.warn("Failed to acquire lock for '" + FileUtils.fileName(dbValues.getFile()) + "'", e);
+            LOG.warn("Failed to acquire lock for '{}'", FileUtils.fileName(dbValues.getFile()), e);
         }
     }
 

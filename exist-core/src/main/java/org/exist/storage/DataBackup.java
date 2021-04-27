@@ -29,6 +29,7 @@ import org.exist.backup.RawDataBackup;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -86,7 +87,7 @@ public class DataBackup implements SystemTask {
             }
         }
 
-        LOG.debug("Setting backup data directory: " + dest);
+        LOG.debug("Setting backup data directory: {}", dest);
     }
 
     @Override
@@ -102,15 +103,15 @@ public class DataBackup implements SystemTask {
         this.lastBackup = Optional.of(outFilename);
         
         // Create the ZIP file
-        LOG.debug("Archiving data files into: " + outFilename);
+        LOG.debug("Archiving data files into: {}", outFilename);
         
-        try(final ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(outFilename))) {
+        try(final ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(Files.newOutputStream(outFilename)))) {
             out.setLevel(Deflater.NO_COMPRESSION);
             final Callback cb = new Callback(out);
             broker.backupToArchive(cb);
             // close the zip file
 		} catch (final IOException e) {
-			LOG.error("An IO error occurred while backing up data files: " + e.getMessage(), e);
+            LOG.error("An IO error occurred while backing up data files: {}", e.getMessage(), e);
 		}
 	}
 

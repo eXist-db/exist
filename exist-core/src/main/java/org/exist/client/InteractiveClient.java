@@ -2069,7 +2069,7 @@ public class InteractiveClient {
 
                     final int maxResults = options.howManyResults.filter(n -> n > 0).orElse((int)result.getSize());
                     if (options.outputFile.isPresent()) {
-                        try(final OutputStream fos = Files.newOutputStream(options.outputFile.get());
+                        try(final OutputStream fos = new BufferedOutputStream(Files.newOutputStream(options.outputFile.get()));
                             final BufferedOutputStream bos = new BufferedOutputStream(fos);
                             final PrintStream ps = new PrintStream(bos)
                         ) {
@@ -2634,7 +2634,7 @@ public class InteractiveClient {
     }
 
     private void writeOutputFile(final Path file, final Object data) throws Exception {
-        try (final OutputStream os = Files.newOutputStream(file)) {
+        try (final OutputStream os = new BufferedOutputStream(Files.newOutputStream(file))) {
             if (data instanceof byte[]) {
                 os.write((byte[]) data);
             } else {

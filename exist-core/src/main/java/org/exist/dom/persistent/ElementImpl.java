@@ -21,6 +21,8 @@
  */
 package org.exist.dom.persistent;
 
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.dom.NamedNodeMapImpl;
@@ -41,41 +43,23 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.pool.NodePool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
-import org.w3c.dom.Attr;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.Comment;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.ProcessingInstruction;
-import org.w3c.dom.Text;
-import org.w3c.dom.TypeInfo;
+import org.w3c.dom.*;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Function;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.function.Function;
 
 import static org.exist.dom.QName.Validity.ILLEGAL_FORMAT;
-import static org.exist.dom.QName.Validity.INVALID_NAMESPACE;
 
 /**
  * ElementImpl.java
@@ -473,7 +457,7 @@ public class ElementImpl extends NamedNode implements Element {
             childId = getNodeId().newChild();
         } else {
             if(prevNode.getNodeId() == null) {
-                LOG.warn(getQName() + " : " + prevNode.getNodeName());
+                LOG.warn("{} : {}", getQName(), prevNode.getNodeName());
             }
             childId = prevNode.getNodeId().nextSibling();
         }
@@ -598,7 +582,7 @@ public class ElementImpl extends NamedNode implements Element {
             indexes.reindex(transaction, reindexRoot, ReindexMode.STORE);
             broker.flush();
         } catch(final EXistException e) {
-            LOG.warn("Exception while appending child node: " + e.getMessage(), e);
+            LOG.warn("Exception while appending child node: {}", e.getMessage(), e);
         }
     }
 
@@ -623,7 +607,7 @@ public class ElementImpl extends NamedNode implements Element {
             if(followingId != null && next.equals(followingId)) {
                 next = newNodeId.insertNode(followingId);
                 if(LOG.isDebugEnabled()) {
-                    LOG.debug("Node ID collision on " + followingId + ". Using " + next + " instead.");
+                    LOG.debug("Node ID collision on {}. Using {} instead.", followingId, next);
                 }
             }
             newNodeId = next;
@@ -771,7 +755,7 @@ public class ElementImpl extends NamedNode implements Element {
                     throw new DOMException(DOMException.INVALID_MODIFICATION_ERR, "Unknown node type: " + child.getNodeType() + " " + child.getNodeName());
             }
         } catch(final EXistException e) {
-            LOG.warn("Exception while appending node: " + e.getMessage(), e);
+            LOG.warn("Exception while appending node: {}", e.getMessage(), e);
         }
 
         return null;
@@ -832,7 +816,7 @@ public class ElementImpl extends NamedNode implements Element {
                     map.setNamedItem(next);
                 }
             } catch(final EXistException | IOException e) {
-                LOG.warn("Exception while retrieving attributes: " + e.getMessage());
+                LOG.warn("Exception while retrieving attributes: {}", e.getMessage());
             }
         }
         if(declaresNamespacePrefixes()) {
@@ -854,7 +838,7 @@ public class ElementImpl extends NamedNode implements Element {
             iterator.next();
             return findAttribute(qname, iterator, this);
         } catch(final EXistException | IOException e) {
-            LOG.warn("Exception while retrieving attributes: " + e.getMessage());
+            LOG.warn("Exception while retrieving attributes: {}", e.getMessage());
         }
         return null;
     }
@@ -880,7 +864,7 @@ public class ElementImpl extends NamedNode implements Element {
             iterator.next();
             return findAttribute(qname, iterator, this);
         } catch(final EXistException | IOException e) {
-            LOG.warn("Exception while retrieving attributes: " + e.getMessage());
+            LOG.warn("Exception while retrieving attributes: {}", e.getMessage());
         }
         return null;
     }
@@ -991,7 +975,7 @@ public class ElementImpl extends NamedNode implements Element {
                 }
             }
         } catch(final IOException | XMLStreamException | EXistException e) {
-            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+            LOG.warn("Internal error while reading child nodes: {}", e.getMessage(), e);
         }
     }
 
@@ -1045,7 +1029,7 @@ public class ElementImpl extends NamedNode implements Element {
                 }
             }
         } catch(final EXistException | IOException e) {
-            LOG.warn("Exception while retrieving child node: " + e.getMessage(), e);
+            LOG.warn("Exception while retrieving child node: {}", e.getMessage(), e);
         }
         return null;
     }
@@ -1113,7 +1097,7 @@ public class ElementImpl extends NamedNode implements Element {
         try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker()) {
             return broker.getNodeValue(this, false);
         } catch(final EXistException e) {
-            LOG.warn("Exception while reading node value: " + e.getMessage(), e);
+            LOG.warn("Exception while reading node value: {}", e.getMessage(), e);
         }
         return "";
     }
@@ -1467,7 +1451,7 @@ public class ElementImpl extends NamedNode implements Element {
         } catch(final TransactionException e) {
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, e.getMessage());
         } catch(final EXistException e) {
-            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+            LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
         }
         return null;
     }
@@ -1519,7 +1503,7 @@ public class ElementImpl extends NamedNode implements Element {
             indexes.reindex(transaction, reindexRoot, ReindexMode.STORE);
             broker.flush();
         } catch(final EXistException e) {
-            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+            LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
         }
     }
 
@@ -1566,7 +1550,7 @@ public class ElementImpl extends NamedNode implements Element {
             indexes.reindex(transaction, reindexRoot, ReindexMode.STORE);
             broker.flush();
         } catch(final EXistException e) {
-            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+            LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
         }
     }
 
@@ -1626,7 +1610,7 @@ public class ElementImpl extends NamedNode implements Element {
             broker.getValueIndex().reindex(valueReindexRoot);
             broker.flush();
         } catch(final EXistException e) {
-            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+            LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
         }
     }
 
@@ -1702,7 +1686,7 @@ public class ElementImpl extends NamedNode implements Element {
             valueIndex.reindex(valueReindexRoot);
             broker.flush();
         } catch(final EXistException e) {
-            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+            LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
         }
         return newNode;
     }
@@ -1745,7 +1729,7 @@ public class ElementImpl extends NamedNode implements Element {
                 indexes.reindex(transaction, reindexRoot, ReindexMode.STORE);
             }
         } catch(final EXistException e) {
-            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+            LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
         }
         return oldNode;
     }
@@ -1809,7 +1793,7 @@ public class ElementImpl extends NamedNode implements Element {
             indexes.reindex(transaction, reindexRoot,
                     ReindexMode.STORE);
         } catch (final EXistException e) {
-            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+            LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
         }
     }
 
@@ -1886,7 +1870,7 @@ public class ElementImpl extends NamedNode implements Element {
             indexes.reindex(transaction, reindexRoot, ReindexMode.STORE);
             broker.flush();
         } catch(final EXistException e) {
-            LOG.warn("Exception while inserting node: " + e.getMessage(), e);
+            LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
         }
         //return oldChild;	// method is spec'd to return the old child, even though that's probably useless in this case
         return newNode; //returning the newNode is more sensible than returning the oldNode
@@ -1993,7 +1977,12 @@ public class ElementImpl extends NamedNode implements Element {
                 if(nodeBaseURI.isEmpty()) {
                     baseURI = parentsBaseURI;
                 } else {
-                    baseURI = parentsBaseURI.append(baseURI);
+                    if(parentsBaseURI.toString().endsWith("/") || !parentsBaseURI.toString().contains("/")){
+                        baseURI = parentsBaseURI.append(baseURI);
+                    } else {
+                        // there is a filename, remove it
+                        baseURI = parentsBaseURI.removeLastSegment().append(baseURI);
+                    }
                 }
             }
         } else {

@@ -257,7 +257,7 @@ public class ExtCollection extends Function {
                 @Override
                 public void debug() {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("UpdateListener: Line: " + getLine() + ": " + ExtCollection.this.toString());
+                        LOG.debug("UpdateListener: Line: {}: {}", getLine(), ExtCollection.this.toString());
                     }
                 }
             };

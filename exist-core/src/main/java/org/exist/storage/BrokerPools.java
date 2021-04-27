@@ -73,7 +73,7 @@ abstract class BrokerPools {
             LOG.debug("BrokerPools.ShutdownHook hook registered");
         } catch (final IllegalArgumentException e) {
             // hook already registered
-            LOG.warn("Unable to add BrokerPools.ShutdownHook hook: " + e.getMessage());
+            LOG.warn("Unable to add BrokerPools.ShutdownHook hook: {}", e.getMessage());
         }
     }
 
@@ -152,7 +152,7 @@ abstract class BrokerPools {
         // optimize for read-concurrency as instances are configured (created) once and used many times
         try(final ManagedLock<ReadWriteLock> readLock = ManagedLock.acquire(instancesLock, LockMode.READ_LOCK)) {
             if (instances.containsKey(instanceName)) {
-                LOG.warn("Database instance '" + instanceName + "' is already configured");
+                LOG.warn("Database instance '{}' is already configured", instanceName);
                 return;
             }
         }
@@ -161,12 +161,12 @@ abstract class BrokerPools {
         try(final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(instancesLock, LockMode.WRITE_LOCK)) {
             // check again, as another thread may have preempted us since we released the read-lock
             if (instances.containsKey(instanceName)) {
-                LOG.warn("Database instance '" + instanceName + "' is already configured");
+                LOG.warn("Database instance '{}' is already configured", instanceName);
                 return;
             }
 
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Configuring database instance '" + instanceName + "'...");
+                LOG.debug("Configuring database instance '{}'...", instanceName);
             }
 
             try {
@@ -180,7 +180,7 @@ abstract class BrokerPools {
                 instances.put(instanceName, instance);
             } catch(final Throwable e) {
                 // Catch all possible issues and report.
-                LOG.error("Unable to initialize database instance '" + instanceName + "': " + e.getMessage(), e);
+                LOG.error("Unable to initialize database instance '{}': {}", instanceName, e.getMessage(), e);
                 final EXistException ee;
                 if(e instanceof EXistException) {
                     ee = (EXistException)e;

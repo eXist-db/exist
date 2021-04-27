@@ -101,7 +101,7 @@ public class Directory extends BasicFunction {
         final Path directoryPath = FileModuleHelper.getFile(inputPath);
 		
         if (logger.isDebugEnabled()) {
-            logger.debug("Listing matching files in directory: " + directoryPath.toAbsolutePath().toString());
+            logger.debug("Listing matching files in directory: {}", directoryPath.toAbsolutePath().toString());
         }
 
         if(!Files.isDirectory(directoryPath)) {
@@ -119,7 +119,7 @@ public class Directory extends BasicFunction {
 
             scannedFiles.forEach(entry -> {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Found: " + entry.toAbsolutePath().toString());
+                    logger.debug("Found: {}", entry.toAbsolutePath().toString());
                 }
 
                 String entryType = "unknown";

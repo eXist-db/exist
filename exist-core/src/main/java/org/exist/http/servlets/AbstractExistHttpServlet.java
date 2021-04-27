@@ -21,24 +21,13 @@
  */
 package org.exist.http.servlets;
 
-import java.io.IOException;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.http.urlrewrite.XQueryURLRewrite;
 import org.exist.security.AuthenticationException;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.Principal;
-import java.util.Optional;
-
+import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
+import org.exist.security.XmldbPrincipal;
 import org.exist.security.internal.web.HttpAccount;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
@@ -46,8 +35,18 @@ import org.exist.util.DatabaseConfigurationException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
-import org.exist.security.SecurityManager;
-import org.exist.security.XmldbPrincipal;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.Principal;
+import java.util.Optional;
 
 /**
  *
@@ -112,10 +111,10 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
                     )
                     .orElse(Optional.ofNullable(config.getServletContext().getRealPath("/")).map(Paths::get));
 
-            getLog().info("EXistServlet: exist.home=" + dbHome.map(Path::toString).orElse("null"));
+            getLog().info("EXistServlet: exist.home={}", dbHome.map(Path::toString).orElse("null"));
 
             final Path cf = dbHome.map(h -> h.resolve(confFile)).orElse(Paths.get(confFile));
-            getLog().info("Reading configuration from " + cf.toAbsolutePath().toString());
+            getLog().info("Reading configuration from {}", cf.toAbsolutePath().toString());
             if (!Files.isReadable(cf)) {
                 throw new ServletException("Configuration file " + confFile + " not found or not readable");
             }
@@ -185,9 +184,9 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
             }
 
             if (getDefaultUser() != null) {
-                getLog().info("Using default user " + getDefaultUsername() + " for all unauthorized requests.");
+                getLog().info("Using default user {} for all unauthorized requests.", getDefaultUsername());
             } else {
-                getLog().error("Default user " + getDefaultUsername() + " cannot be found.  A BASIC AUTH challenge will be the default.");
+                getLog().error("Default user {} cannot be found.  A BASIC AUTH challenge will be the default.", getDefaultUsername());
             }
         } else {
             getLog().info("No default user.  All requires must be authorized or will result in a BASIC AUTH challenge.");
@@ -231,8 +230,8 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
 	
 	            final String username = ((XmldbPrincipal) principal).getName();
 	            final String password = ((XmldbPrincipal) principal).getPassword();
-	
-	            getLog().info("Validating Principle: " + username);
+
+                getLog().info("Validating Principle: {}", username);
 	            try {
 	                return getPool().getSecurityManager().authenticate(username, password);
 	            } catch (final AuthenticationException e) {

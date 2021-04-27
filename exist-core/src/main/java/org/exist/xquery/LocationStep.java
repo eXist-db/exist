@@ -227,7 +227,7 @@ public class LocationStep extends Step {
             result = pred.evalPredicate(outerSequence, result, axis);
             // subsequent predicates operate on the result of the previous one
             outerSequence = null;
-            context.setContextSequencePosition(-1, null);
+            context.setContextSequencePosition(0, null);
         }
         return result;
     }
@@ -1227,9 +1227,7 @@ public class LocationStep extends Step {
                 @Override
                 public void debug() {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("UpdateListener: Line: "
-                                + LocationStep.this.toString() + "; id: "
-                                + LocationStep.this.getExpressionId());
+                        LOG.debug("UpdateListener: Line: {}; id: {}", LocationStep.this.toString(), LocationStep.this.getExpressionId());
                     }
                 }
             };

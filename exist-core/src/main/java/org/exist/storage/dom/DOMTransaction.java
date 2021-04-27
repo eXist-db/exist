@@ -42,7 +42,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author wolf
  *
  */
-public abstract class DOMTransaction {
+public abstract class DOMTransaction<T> {
 
     private static final Logger LOG = LogManager.getLogger(DOMTransaction.class);
 
@@ -83,21 +83,21 @@ public abstract class DOMTransaction {
      * @return an <code>Object</code> value
      * @throws ReadOnlyException if an error occurs
      */
-    public abstract Object start() throws ReadOnlyException;
+    public abstract T start() throws ReadOnlyException;
 
     /**
      * The method <code>run</code>
      *
      * @return an <code>Object</code> value
      */
-    public Object run() {
+    public T run() {
         // try to acquire a lock on the file
         try(final ManagedLock<ReentrantLock> domFileLock = acquireFn.get()) {
             file.setOwnerObject(ownerObject);
             file.setCurrentDocument(document);
             return start();
         } catch(final LockException e) {
-            LOG.error("Failed to acquire read lock on " + FileUtils.fileName(file.getFile()), e);
+            LOG.error("Failed to acquire read lock on {}", FileUtils.fileName(file.getFile()), e);
             return null;
         } catch(final ReadOnlyException e) {
             LOG.error(e.getMessage(), e);

@@ -103,7 +103,7 @@ public class PersistentLogin {
 
         LoginDetails data = seriesMap.get(tokens[0]);
         if (data == null) {
-            LOG.debug("No session found for series " + tokens[0]);
+            LOG.debug("No session found for series {}", tokens[0]);
             return null;
         }
         long now = System.currentTimeMillis();

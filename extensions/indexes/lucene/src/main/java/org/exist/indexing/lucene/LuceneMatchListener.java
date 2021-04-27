@@ -215,7 +215,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
                 }
             }
         } catch (final IOException | XMLStreamException e) {
-            LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
+            LOG.warn("Problem found while serializing XML: {}", e.getMessage(), e);
         }
 
         // Retrieve the Analyzer for the NodeProxy that was used for
@@ -228,7 +228,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Analyzer: " + analyzer + " for path: " + path);
+            LOG.debug("Analyzer: {} for path: {}", analyzer, path);
         }
 
         final String str = extractor.getText().toString();
@@ -313,7 +313,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
                 }
             }
         } catch (final IOException e) {
-            LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
+            LOG.warn("Problem found while serializing XML: {}", e.getMessage(), e);
         }
     }
 
@@ -355,7 +355,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
                 return null;
             });
         } catch (final IOException e) {
-            LOG.warn("Match listener caught IO exception while reading query tersm: " + e.getMessage(), e);
+            LOG.warn("Match listener caught IO exception while reading query tersm: {}", e.getMessage(), e);
         }
     }
 

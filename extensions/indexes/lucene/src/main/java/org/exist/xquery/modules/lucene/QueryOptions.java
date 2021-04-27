@@ -252,7 +252,7 @@ public class QueryOptions {
         }
         if (allowLeadingWildcard)
             parser.setAllowLeadingWildcard(true);
-        phraseSlop.ifPresent(integer -> parser.setPhraseSlop(integer));
+        phraseSlop.ifPresent(parser::setPhraseSlop);
         if (filterRewrite)
             parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
         else

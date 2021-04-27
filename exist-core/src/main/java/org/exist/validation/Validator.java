@@ -211,7 +211,7 @@ public class Validator {
             } else if(grammarUrl.endsWith(".xml")){
 
                 // Scenario 2 : path to catalog (xml)
-                logger.debug("Validation using user specified catalog '" + grammarUrl + "'.");
+                logger.debug("Validation using user specified catalog '{}'.", grammarUrl);
                 final eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
                 resolver.setCatalogList(new String[]{grammarUrl});
                 xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
@@ -219,14 +219,14 @@ public class Validator {
             } else if(grammarUrl.endsWith("/")){
 
                 // Scenario 3 : path to collection ("/"): search.
-                logger.debug("Validation using searched grammar, start from '" + grammarUrl + "'.");
+                logger.debug("Validation using searched grammar, start from '{}'.", grammarUrl);
                 final SearchResourceResolver resolver = new SearchResourceResolver(grammarUrl, brokerPool);
                 xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
 
             } else {
 
                 // Scenario 4 : path to grammar (xsd, dtd) specified.
-                logger.debug("Validation using specified grammar '" + grammarUrl + "'.");
+                logger.debug("Validation using specified grammar '{}'.", grammarUrl);
                 final AnyUriResolver resolver = new AnyUriResolver(grammarUrl);
                 xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
             }
@@ -252,7 +252,7 @@ public class Validator {
         } finally {
             report.stop();
 
-            logger.debug("Validation performed in " + report.getValidationDuration() + " msec.");
+            logger.debug("Validation performed in {} msec.", report.getValidationDuration());
 
         }
 

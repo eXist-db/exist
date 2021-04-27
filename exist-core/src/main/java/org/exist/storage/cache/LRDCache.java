@@ -152,7 +152,7 @@ public class LRDCache<T extends Cacheable> extends GClockCache<T> {
 	 */
 	protected void cleanup() {
 	    if(LOG.isDebugEnabled()) {
-            LOG.debug("totalReferences = " + totalReferences + "; maxReferences = " + maxReferences);
+            LOG.debug("totalReferences = {}; maxReferences = {}", totalReferences, maxReferences);
         }
 		totalReferences = count;
         for(int i = 0; i < count; i++) {

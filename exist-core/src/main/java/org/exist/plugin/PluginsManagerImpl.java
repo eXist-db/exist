@@ -65,8 +65,11 @@ import static java.lang.invoke.MethodType.methodType;
  * It control search procedure, activation and de-actication (including runtime).
  *
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
+ *
+ * @deprecated Should no longer be used.
  */
 @ConfigurationClass("plugin-manager")
+@Deprecated
 public class PluginsManagerImpl implements Configurable, BrokerPoolService, PluginsManager, LifeCycle {
 
     private static final Logger LOG = LogManager.getLogger(PluginsManagerImpl.class);
@@ -121,7 +124,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
                 }
 
     		} catch (final TriggerException | PermissionDeniedException | IOException | LockException e) {
-    			LOG.warn("Loading PluginsManager configuration failed: " + e.getMessage());
+                LOG.warn("Loading PluginsManager configuration failed: {}", e.getMessage());
             }
 
             final Configuration _config_ = Configurator.parse(this, broker, collection, CONFIG_FILE_URI);
@@ -184,8 +187,14 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
         }
     }
 
+    @Override
+    @Deprecated
+    public void stop(final DBBroker broker) {
+	    stopSystem(broker);
+    }
+
 	@Override
-	public void stop(final DBBroker broker) {
+	public void stopSystem(final DBBroker broker) {
 		for (final Plug plugin : jacks.values()) {
 			try {
 				plugin.stop(broker);

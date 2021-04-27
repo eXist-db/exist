@@ -70,7 +70,7 @@ public class JournalManager implements BrokerPoolService {
                 .orElse(configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR));
         this.groupCommits = configuration.getProperty(BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT, false);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("GroupCommits = " + groupCommits);
+            LOG.debug("GroupCommits = {}", groupCommits);
         }
     }
 
@@ -155,12 +155,12 @@ public class JournalManager implements BrokerPoolService {
     }
 
     /**
+     * Flush the Journal.
+     *
      * @param fsync true to use fsync
      * @param forceSync true to force an fsync
      *
-     * @see Journal#flushToLog(boolean, boolean)
-     * @param forceSync en-/disable forced sync
-     * @param fsync en- / disable file system sync
+     * See {@link Journal#flushToLog(boolean, boolean)}.
      */
     public synchronized void flush(final boolean fsync, final boolean forceSync) {
         journal.flushToLog(fsync, forceSync);

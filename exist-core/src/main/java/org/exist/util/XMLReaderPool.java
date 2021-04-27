@@ -133,10 +133,10 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
             object=xmlReader.getProperty(propertyName);
 
         } catch (final SAXNotRecognizedException ex) {
-            LOG.error("SAXNotRecognizedException: " + ex.getMessage());
+            LOG.error("SAXNotRecognizedException: {}", ex.getMessage());
 
         } catch (final SAXNotSupportedException ex) {
-            LOG.error("SAXNotSupportedException:" + ex.getMessage());
+            LOG.error("SAXNotSupportedException:{}", ex.getMessage());
         }
         return object;
     }

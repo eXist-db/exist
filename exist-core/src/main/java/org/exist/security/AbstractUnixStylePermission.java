@@ -199,7 +199,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
     private void setExistSymbolicMode(final String existSymbolicMode)
             throws SyntaxException, PermissionDeniedException {
 
-        LOG.warn("Permission modes should not be set using this format '" + existSymbolicMode + "', consider using the UNIX symbolic mode instead");
+        LOG.warn("Permission modes should not be set using this format '{}', consider using the UNIX symbolic mode instead", existSymbolicMode);
 
         int shift = 0;
         int mode = getMode();

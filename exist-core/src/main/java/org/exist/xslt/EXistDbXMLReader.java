@@ -100,21 +100,21 @@ public class EXistDbXMLReader implements XMLReader, Locator {
             this.contentHandler.endDocument();
         }
         catch (SAXParseException e) {
-            LOG.error("SaxParseException: {}", e);
+            LOG.error("SaxParseException: {}", e.getMessage(), e);
             try {
                 this.errHandler.error(e);
             } catch (Exception e2) {
-                LOG.error("Exception handling exception: {}", e2);
+                LOG.error("Exception handling exception: {}", e2.getMessage(), e2);
             }
         } catch (Exception e) {
-            LOG.error("Exception: {}", e);
+            LOG.error("Exception: {}", e.getMessage(), e);
             try {
 		/* FIXME:  Do we need to forward the exception to the errHandler, or has this
                  * been done for us? - PLM
 		 */
                 this.errHandler.error(new SAXParseException("Unable to parse document", null, e));
             } catch (Exception e2) {
-                LOG.error("Exception handling exception: {}", e2);
+                LOG.error("Exception handling exception: {}", e.getMessage(), e2);
             }
 
         } finally {

@@ -113,7 +113,7 @@ public class SearchFunction extends BasicFunction
 				DirContext ctx = (DirContext)JNDIModule.retrieveJNDIContext( context, ctxID );
 				
 				if( ctx == null ) {
-					logger.error( "jndi:search() - Invalid JNDI context handle provided: " + ctxID );
+					logger.error("jndi:search() - Invalid JNDI context handle provided: {}", ctxID);
 				} else {
 					NamingEnumeration<SearchResult> results = null;
 					
@@ -142,10 +142,10 @@ public class SearchFunction extends BasicFunction
 				}
 			}
 			catch( NameNotFoundException nf ) {
-				logger.warn( "jndi:search() Not found for dn [" + dn + "]", nf );
+				logger.warn("jndi:search() Not found for dn [{}]", dn, nf);
 			}
 			catch( NamingException ne ) {
-				logger.error( "jndi:search() Search failed for dn [" + dn + "]: ", ne );
+				logger.error("jndi:search() Search failed for dn [{}]: ", dn, ne);
 				throw( new XPathException( this, "jndi:search() Search failed for dn [" + dn + "]: " + ne ) );
 			}
 		}

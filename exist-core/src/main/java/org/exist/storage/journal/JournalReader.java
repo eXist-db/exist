@@ -256,8 +256,7 @@ public class JournalReader implements AutoCloseable {
             // read entry backLink
             final short backLink = payload.getShort();
             if (backLink != size + LOG_ENTRY_HEADER_LEN) {
-                LOG.error("Bad pointer to previous: backLink = " + backLink + "; size = " + size +
-                        "; transactId = " + transactId);
+                LOG.error("Bad pointer to previous: backLink = {}; size = {}; transactId = {}", backLink, size, transactId);
                 throw new LogException("Bad pointer to previous in entry: " + loggable.dump());
             }
 

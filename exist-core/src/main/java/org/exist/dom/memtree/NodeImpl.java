@@ -21,8 +21,8 @@
  */
 package org.exist.dom.memtree;
 
-import org.apache.xml.utils.XMLChar;
 import org.apache.xml.utils.XML11Char;
+import org.apache.xml.utils.XMLChar;
 import org.exist.collections.Collection;
 import org.exist.dom.INode;
 import org.exist.dom.NodeListImpl;
@@ -35,27 +35,10 @@ import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.Receiver;
-import org.exist.xquery.Constants;
-import org.exist.xquery.NodeTest;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.MemoryNodeSet;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.UntypedAtomicValue;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
+import org.w3c.dom.*;
 import org.xml.sax.ContentHandler;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.UserDataHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 

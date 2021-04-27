@@ -148,13 +148,13 @@ public class IndexManager implements BrokerPoolService {
             index.open();
             indexers.put(id, index);
             if (LOG.isInfoEnabled()) {
-                LOG.info("Registered index " + className + " as " + id);
+                LOG.info("Registered index {} as {}", className, id);
             }
             return index;
         } catch (final ClassNotFoundException e) {
-            LOG.warn("Class " + className + " not found. Cannot configure index.");
+            LOG.warn("Class {} not found. Cannot configure index.", className);
         } catch (final IllegalAccessException | InstantiationException e) {
-            LOG.warn("Exception while configuring index " + className + ": " + e.getMessage(), e);
+            LOG.warn("Exception while configuring index {}: {}", className, e.getMessage(), e);
         }
         return null;
     }
@@ -163,7 +163,7 @@ public class IndexManager implements BrokerPoolService {
         index.open();
         indexers.put(index.getIndexId(), index);
         if (LOG.isInfoEnabled()) {
-            LOG.info("Registered index " + index.getClass() + " as " + index.getIndexId());
+            LOG.info("Registered index {} as {}", index.getClass(), index.getIndexId());
         }
 
         configurationChanged();
@@ -175,7 +175,7 @@ public class IndexManager implements BrokerPoolService {
         indexers.remove(index.getIndexId(), index);
         index.close();
         if (LOG.isInfoEnabled()) {
-            LOG.info("Unregistered index " + index.getClass() + " as " + index.getIndexId());
+            LOG.info("Unregistered index {} as {}", index.getClass(), index.getIndexId());
         }
 
         configurationChanged();
@@ -244,7 +244,7 @@ public class IndexManager implements BrokerPoolService {
      * @throws BrokerPoolServiceException in case of an error in the BrookerPoolService
      */
     @Override
-    public void stop(final DBBroker systemBroker) throws BrokerPoolServiceException {
+    public void stopSystem(final DBBroker systemBroker) throws BrokerPoolServiceException {
         for (final Iterator<Index> i = iterator(); i.hasNext(); ) {
             final Index index = i.next();
             try {

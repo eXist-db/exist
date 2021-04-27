@@ -133,7 +133,7 @@ public class LDAPRealm extends AbstractRealm {
             final AbstractAccount account = (AbstractAccount) getAccount(ctx, name);
             if (account == null) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Account '" + name + "' can not be found.");
+                    LOG.debug("Account '{}' can not be found.", name);
                 }
                 throw new AuthenticationException(
                         AuthenticationException.ACCOUNT_NOT_FOUND,
@@ -331,7 +331,7 @@ public class LDAPRealm extends AbstractRealm {
             return executeAsSystemUser(ctx, (ctx2, broker) -> {
 
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Saving account '" + username + "'.");
+                        LOG.debug("Saving account '{}'.", username);
                     }
 
                     //get (or create) the primary group if it doesnt exist
@@ -479,7 +479,7 @@ public class LDAPRealm extends AbstractRealm {
         name = ensureCase(name);
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Get request for account '" + name + "'.");
+            LOG.debug("Get request for account '{}'.", name);
         }
 
         //first attempt to get the cached account
@@ -498,7 +498,7 @@ public class LDAPRealm extends AbstractRealm {
                 final SearchResult ldapUser = findAccountByAccountName(ctx, name);
 
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("LDAP search return '" + ldapUser + "'.");
+                    LOG.debug("LDAP search return '{}'.", ldapUser);
                 }
 
                 if (ldapUser == null) {
@@ -509,7 +509,7 @@ public class LDAPRealm extends AbstractRealm {
                         final String primaryGroupSID = getPrimaryGroupSID(ldapUser);
                         final String primaryGroup = findGroupBySID(ctx, primaryGroupSID);
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("LDAP search for primary group by SID '" + primaryGroupSID + "', found '" + primaryGroup + "'.");
+                            LOG.debug("LDAP search for primary group by SID '{}', found '{}'.", primaryGroupSID, primaryGroup);
                         }
                         if (primaryGroup == null) {
                             //or exception?
@@ -766,7 +766,7 @@ public class LDAPRealm extends AbstractRealm {
 
             //make sure there is not another item available, there should be only 1 match
             if (results.hasMoreElements()) {
-                LOG.error("Matched multiple users for the accountName: " + accountName);
+                LOG.error("Matched multiple users for the accountName: {}", accountName);
             }
         }
 
@@ -789,13 +789,13 @@ public class LDAPRealm extends AbstractRealm {
 
             //make sure there is not another item available, there should be only 1 match
             if (results.hasMoreElements()) {
-                LOG.error("Matched multiple groups for the group with SID: " + sid);
+                LOG.error("Matched multiple groups for the group with SID: {}", sid);
                 return null;
             } else {
                 return addDomainPostfix((String) searchResult.getAttributes().get(search.getSearchGroup().getSearchAttribute(LDAPSearchAttributeKey.NAME)).get());
             }
         }
-        LOG.error("Matched no group with SID: " + sid);
+        LOG.error("Matched no group with SID: {}", sid);
         return null;
     }
 
@@ -819,13 +819,13 @@ public class LDAPRealm extends AbstractRealm {
 
             //make sure there is not another item available, there should be only 1 match
             if (results.hasMoreElements()) {
-                LOG.error("Matched multiple groups for the groupName: " + groupName);
+                LOG.error("Matched multiple groups for the groupName: {}", groupName);
                 return null;
             } else {
                 return searchResult;
             }
         }
-        LOG.error("Matched no groups for the groupName: " + groupName);
+        LOG.error("Matched no groups for the groupName: {}", groupName);
         return null;
     }
 

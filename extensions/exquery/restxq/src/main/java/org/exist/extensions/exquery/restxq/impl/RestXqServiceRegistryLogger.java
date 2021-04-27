@@ -41,12 +41,12 @@ class RestXqServiceRegistryLogger implements RestXqServiceRegistryListener {
     
     @Override
     public void registered(final RestXqService service) {
-        log.info("Registered RESTXQ Resource Function: " + getIdentifier(service));
+        log.info("Registered RESTXQ Resource Function: {}", getIdentifier(service));
     }
 
     @Override
     public void deregistered(final RestXqService service) {
-        log.info("De-registered RESTXQ Resource Function: " + getIdentifier(service));
+        log.info("De-registered RESTXQ Resource Function: {}", getIdentifier(service));
     }
     
     private String getIdentifier(final RestXqService service) {

@@ -282,8 +282,8 @@ public class ConsistencyCheck {
      */
     public ErrorReport checkDocument(final DocumentImpl doc) {
         final DOMFile domDb = ((NativeBroker) broker).getDOMFile();
-        return (ErrorReport) new DOMTransaction(this, domDb, () -> broker.getBrokerPool().getLockManager().acquireBtreeWriteLock(domDb.getLockName()), doc) {
-            public Object start() {
+        return new DOMTransaction<ErrorReport>(this, domDb, () -> broker.getBrokerPool().getLockManager().acquireBtreeWriteLock(domDb.getLockName()), doc) {
+            public ErrorReport start() {
                 try {
                     final ElementImpl root = (ElementImpl) doc.getDocumentElement();
                     if (root == null) {
@@ -312,8 +312,8 @@ public class ConsistencyCheck {
      */
     public ErrorReport checkXMLTree(final DocumentImpl doc) {
         final DOMFile domDb = ((NativeBroker) broker).getDOMFile();
-        return (ErrorReport) new DOMTransaction(this, domDb, () -> broker.getBrokerPool().getLockManager().acquireBtreeWriteLock(domDb.getLockName()), doc) {
-            public Object start() {
+        return new DOMTransaction<ErrorReport>(this, domDb, () -> broker.getBrokerPool().getLockManager().acquireBtreeWriteLock(domDb.getLockName()), doc) {
+            public ErrorReport start() {
                 EmbeddedXMLStreamReader reader = null;
                 try {
                     final Node root = doc.getFirstChild();

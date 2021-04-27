@@ -125,7 +125,7 @@ public class ParsingFunctions extends BasicFunction {
                 xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, saxAdapter);
                 xr.parse(src);
             } catch (final SAXException e) {
-                logger.debug("Error while parsing XML: " + e.getMessage(), e);
+                logger.debug("Error while parsing XML: {}", e.getMessage(), e);
             } catch (final IOException e) {
                 throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + ": " + e.getMessage(),
                         new StringValue(xml), e);

@@ -21,17 +21,17 @@
  */
 package org.exist.http.urlrewrite;
 
-import org.exist.xquery.*;
-import org.exist.xquery.Module;
-import org.w3c.dom.Element;
-import org.exist.xquery.value.Sequence;
-import org.exist.dom.QName;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.QName;
+import org.exist.xquery.Module;
+import org.exist.xquery.*;
+import org.exist.xquery.value.Sequence;
+import org.w3c.dom.Element;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletException;
 import java.util.ArrayList;
 
 import static org.apache.commons.lang3.ArrayUtils.isEmpty;
@@ -102,7 +102,7 @@ public class ModuleCall extends URLRewrite {
 
             final Sequence result = call.eval(contextSequence);
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Found: " + result.getItemCount());
+                LOG.debug("Found: {}", result.getItemCount());
             }
             request.setAttribute(XQueryURLRewrite.RQ_ATTR_RESULT, result);
 

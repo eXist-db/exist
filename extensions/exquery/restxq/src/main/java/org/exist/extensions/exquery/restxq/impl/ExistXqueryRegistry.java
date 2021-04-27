@@ -263,12 +263,12 @@ public class ExistXqueryRegistry {
                         recordMissingDependency(missingModuleHint.moduleHint, XmldbURI.xmldbUriFor(missingModuleHint.dependantModule));
                     } catch(final URISyntaxException use) {
                         recordInvalidQuery(document.getURI());
-                        LOG.error("XQuery '" + document.getURI() + "' could not be compiled! " + e.getMessage());
+                        LOG.error("XQuery '{}' could not be compiled! {}", document.getURI(), e.getMessage());
                     }
                 }
             } else {
                 recordInvalidQuery(document.getURI());
-                LOG.error("XQuery '" + document.getURI() + "' could not be compiled! " + e.getMessage());
+                LOG.error("XQuery '{}' could not be compiled! {}", document.getURI(), e.getMessage());
             }
 
             /*
@@ -307,7 +307,7 @@ public class ExistXqueryRegistry {
                 
                 final DocumentImpl dependantModule = broker.getResource(XmldbURI.create(dependant), Permission.READ);
                 
-                /**
+                /*
                  * This null check is needed, as a dependency module may have been renamed,
                  * and so is no longer accessible under its old URI.
                  *
@@ -318,13 +318,13 @@ public class ExistXqueryRegistry {
                  * or the dependency has been removed
                  */
                 if(dependantModule != null) {
-                    LOG.info("Missing dependency '" + compiledModuleUri +"' has been added to the database, re-examining '" + dependant + "'...");
+                    LOG.info("Missing dependency '{}' has been added to the database, re-examining '{}'...", compiledModuleUri, dependant);
                     
                     final List<RestXqService> services = findServices(broker, dependantModule);
-                    LOG.info("Discovered " + services.size() + " resource functions for " + dependant);
+                    LOG.info("Discovered {} resource functions for {}", services.size(), dependant);
                     registerServices(broker, services);
                 } else {
-                    LOG.info("Dependant '" + compiledModuleUri + "' has been resolved. Dependency on: " + dependant + " was removed");
+                    LOG.info("Dependant '{}' has been resolved. Dependency on: {} was removed", compiledModuleUri, dependant);
 
                     //we need to remove dependant from the dependenciesTree of dependant
                     removeDependency(dependant, compiledModuleUri);
@@ -424,8 +424,8 @@ public class ExistXqueryRegistry {
             
             missingDependencies.put(moduleUri, dependants);
         }
-        
-        LOG.warn("Module '" + xqueryUri + "' has a missing dependency on '" + moduleUri + "'. Will re-examine if the missing module is added.");
+
+        LOG.warn("Module '{}' has a missing dependency on '{}'. Will re-examine if the missing module is added.", xqueryUri, moduleUri);
     }
     
     private void removeDependency(final String dependant, final String dependency) {

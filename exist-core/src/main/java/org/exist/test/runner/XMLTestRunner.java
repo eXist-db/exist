@@ -31,22 +31,31 @@ import org.exist.source.ClassLoaderSource;
 import org.exist.source.Source;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.ExistSAXParserFactory;
-import org.exist.util.FileUtils;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.xquery.FunctionCall;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.FunctionReference;
+import org.exist.xquery.value.Sequence;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import javax.annotation.Nullable;
-import javax.xml.parsers.*;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 

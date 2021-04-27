@@ -145,7 +145,7 @@ public class LdapContextFactory implements Configurable {
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Initializing LDAP context using URL [" + url + "] and username [" + username + "] " + "with pooling [" + (usePooling ? "enabled" : "disabled") + "]");
+            LOG.debug("Initializing LDAP context using URL [{}] and username [{}] with pooling [{}]", url, username, usePooling ? "enabled" : "disabled");
         }
 
         return new InitialLdapContext(env, null);

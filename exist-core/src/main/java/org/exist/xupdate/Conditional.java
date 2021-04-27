@@ -106,7 +106,8 @@ public class Conditional extends Modification {
 			}
 			
 			if (LOG.isDebugEnabled())
-				{LOG.debug(mods + " modifications processed.");}
+				{
+                    LOG.debug("{} modifications processed.", mods);}
 			
 			return mods;
 		} else

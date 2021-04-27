@@ -81,7 +81,7 @@ public class RestXqServlet extends AbstractExistHttpServlet {
             if(service != null) {
                 
                 if(log.isTraceEnabled()) {
-                    log.trace("Received " + requestAdapter.getMethod().name() + " request for \"" + requestAdapter.getPath() + "\" and found Resource Function \"" + service.getResourceFunction().getFunctionSignature() + "\" in  module \"" + service.getResourceFunction().getXQueryLocation() + "\"");
+                    log.trace("Received {} request for \"{}\" and found Resource Function \"{}\" in  module \"{}\"", requestAdapter.getMethod().name(), requestAdapter.getPath(), service.getResourceFunction().getFunctionSignature(), service.getResourceFunction().getXQueryLocation());
                 }
                 
                 service.service(
@@ -92,7 +92,7 @@ public class RestXqServlet extends AbstractExistHttpServlet {
                 );
             } else {
                 if(log.isTraceEnabled()) {
-                    log.trace("Received " + requestAdapter.getMethod().name() + " request for \"" + requestAdapter.getPath() + "\" but no suitable Resource Function found!");
+                    log.trace("Received {} request for \"{}\" but no suitable Resource Function found!", requestAdapter.getMethod().name(), requestAdapter.getPath());
                 }
                 
                 super.service(request, response);

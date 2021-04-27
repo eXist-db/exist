@@ -154,7 +154,7 @@ public class IndentingXMLWriter extends XMLWriter {
         try {
             indentAmount = Integer.parseInt(option);
         } catch (final NumberFormatException e) {
-            LOG.warn("Invalid indentation value: '" + option + "'");
+            LOG.warn("Invalid indentation value: '{}'", option);
         }
         indent = "yes".equals(outputProperties.getProperty(OutputKeys.INDENT, "no"));
     }

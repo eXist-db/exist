@@ -200,7 +200,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
                     resource = loadFromURI(collection, uri, docName, binary, mimeType);
 
                 } catch (final URISyntaxException e) {
-                    logger.error("Invalid URI: " + item.getStringValue());
+                    logger.error("Invalid URI: {}", item.getStringValue());
                     throw new XPathException(this, "Invalid URI: " + item.getStringValue(), e);
                 }
 

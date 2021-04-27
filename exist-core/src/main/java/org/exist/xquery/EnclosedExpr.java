@@ -98,7 +98,7 @@ public class EnclosedExpr extends PathExpr {
                 while (next != null) {
                     context.proceed(this, builder);
                     if (Type.subTypeOf(next.getType(), Type.FUNCTION_REFERENCE)) {
-                        throw new XPathException(ErrorCodes.XQTY0105, "Enclosed expression contains function item");
+                        throw new XPathException(this, ErrorCodes.XQTY0105, "Enclosed expression contains function item");
 
                         // if item is an atomic value, collect the string values of all
                         // following atomic values and separate them by a space.
@@ -150,7 +150,7 @@ public class EnclosedExpr extends PathExpr {
                     receiver.characters(buf);
                 }
             } catch (final SAXException e) {
-                LOG.warn("SAXException during serialization: " + e.getMessage(), e);
+                LOG.warn("SAXException during serialization: {}", e.getMessage(), e);
                 throw new XPathException(this, e);
             }
         } finally {

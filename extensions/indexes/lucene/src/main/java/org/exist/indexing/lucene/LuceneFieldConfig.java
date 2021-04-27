@@ -124,10 +124,9 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
                 doBuild(broker, document, nodeId, luceneDoc, text);
             }
         } catch (XPathException e) {
-            LOG.warn("XPath error while evaluating expression for field named '" + fieldName + "': " + expression +
-                    ": " + e.getMessage(), e);
+            LOG.warn("XPath error while evaluating expression for field named '{}': {}: {}", fieldName, expression, e.getMessage(), e);
         } catch (PermissionDeniedException e) {
-            LOG.warn("Permission denied while evaluating expression for field named '" + fieldName + "': " + expression, e);
+            LOG.warn("Permission denied while evaluating expression for field named '{}': {}", fieldName, expression, e);
         }
     }
 
@@ -214,8 +213,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
             }
         } catch (NumberFormatException | XPathException e) {
             // wrong type: ignore
-            LOG.trace("Cannot convert field " + fieldName + " to type " + Type.getTypeName(type) +
-                    ". Content was: " + content);
+            LOG.trace("Cannot convert field {} to type {}. Content was: {}", fieldName, Type.getTypeName(type), content);
         }
         return null;
     }

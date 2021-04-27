@@ -27,11 +27,7 @@ import org.exist.dom.INode;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
 import org.exist.storage.txn.Txn;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.UserDataHandler;
+import org.w3c.dom.*;
 
 import javax.xml.XMLConstants;
 

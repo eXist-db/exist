@@ -19,35 +19,18 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.util.io;
+package org.exist.http;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+public class MethodNotAllowedException extends Exception {
 
-/**
- * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
- */
-public class ResourceInputStream extends FileInputStream {
+    private static final long serialVersionUID = -8399138417913514619L;
 
-	Resource resource;
-	
-	public ResourceInputStream(Resource file) throws FileNotFoundException {
-		super(file.getFile().toFile());
-		
-		resource = file;
-	}
-	
-	public void close() throws IOException {
-		super.close();
-		
-		resource.freeFile();
-		
-		if (resource.isXML()) {
-			//XXX: cleanup tmp file
-		}
-		
-		//XXX: locking?
-	}
+    public MethodNotAllowedException(String message) {
+        super(message);
+    }
+
+    public MethodNotAllowedException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

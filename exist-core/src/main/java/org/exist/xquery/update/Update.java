@@ -163,7 +163,7 @@ public class Update extends Modification {
                         case Node.ATTRIBUTE_NODE:
                             final ElementImpl attrParent = (ElementImpl) ((Attr)node).getOwnerElement();
                             if (attrParent == null) {
-                                LOG.warn("parent node not found for " + node.getNodeId());
+                                LOG.warn("parent node not found for {}", node.getNodeId());
                                 break;
                             }
                             final AttrImpl attr = (AttrImpl) node;

@@ -21,14 +21,15 @@
  */
 package org.exist.dom.persistent;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.xquery.Constants;
 import org.w3c.dom.DocumentFragment;
 import org.xml.sax.InputSource;
 
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -38,7 +39,6 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import javax.xml.transform.TransformerException;
 
 /**
  * Defines some static utility methods.

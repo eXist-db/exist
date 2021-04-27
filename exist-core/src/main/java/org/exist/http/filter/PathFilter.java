@@ -95,14 +95,14 @@ public class PathFilter implements Filter {
         final String queryString = httpServletRequest.getQueryString();
         final String requestURI = httpServletRequest.getRequestURI();
 
-        LOG.info("requestURI = [" + requestURI + "]");
-        LOG.info("queryString = [" + queryString + "]");
-        LOG.info("method = [" + httpServletRequest.getMethod() + "]");
+        LOG.info("requestURI = [{}]", requestURI);
+        LOG.info("queryString = [{}]", queryString);
+        LOG.info("method = [{}]", httpServletRequest.getMethod());
 
-        if ((queryString != null && queryString.indexOf("_query=") >= 0) && filterNames.contains(TEST_GET_QUERY)) {
+        if ((queryString != null && queryString.contains("_query=")) && filterNames.contains(TEST_GET_QUERY)) {
             LOG.info(TEST_GET_QUERY + " met");
             conditionMet = true;
-        } else if (requestURI != null && requestURI.indexOf("/rest/") >= 0 && filterNames.contains(TEST_REST)) {
+        } else if (requestURI != null && requestURI.contains("/rest/") && filterNames.contains(TEST_REST)) {
             conditionMet = true;
             LOG.info(TEST_REST + " met");
         } else if (httpServletRequest.getMethod().equalsIgnoreCase("PUT") && filterNames.contains(TEST_PUT)) {
@@ -188,7 +188,7 @@ public class PathFilter implements Filter {
                 final String name = (String) initParams.nextElement();
                 final String value = filterConfig.getInitParameter(name);
 
-                LOG.info("Parameter [" + name + "][" + value + "]");
+                LOG.info("Parameter [{}][{}]", name, value);
 
                 if (name.startsWith("exclude")) {
                     denys.add(value);

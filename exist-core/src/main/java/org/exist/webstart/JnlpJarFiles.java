@@ -98,11 +98,11 @@ public class JnlpJarFiles {
         final String resolvedFile = jarFileResolver.getResolvedFileName(fileToFind);
         final Path jar = Paths.get(resolvedFile).normalize();
         if (Files.exists(jar)) {
-            LOGGER.debug(String.format("Found match: %s for file pattern: %s", resolvedFile, fileToFind));
+            LOGGER.debug("Found match: {} for file pattern: {}", resolvedFile, fileToFind);
             return jar;
 
         } else {
-            LOGGER.error(String.format("Could not resolve file pattern: %s", fileToFind));
+            LOGGER.error("Could not resolve file pattern: {}", fileToFind);
             return null;
         }
     }
@@ -128,7 +128,7 @@ public class JnlpJarFiles {
     public JnlpJarFiles(final Path libDir) {
         LOGGER.info("Initializing jar files Webstart");
 
-        LOGGER.debug(String.format("Number of webstart jars=%s", allJarNames.length));
+        LOGGER.debug("Number of webstart jars={}", allJarNames.length);
 
         // Setup jars
         for (final String jarname : allJarNames) {

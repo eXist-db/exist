@@ -120,11 +120,11 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
             try(final ManagedLock<ReentrantLock> btreeLock = index.lockManager.acquireBtreeReadLock(index.btree.getLockName())) {
                 index.btree.query(query, callback);
             } catch (final LockException e) {
-                NativeStructuralIndex.LOG.warn("Lock problem while searching structural index: " + e.getMessage(), e);
+                NativeStructuralIndex.LOG.warn("Lock problem while searching structural index: {}", e.getMessage(), e);
             } catch (final TerminatedException e) {
-                NativeStructuralIndex.LOG.warn("Query was terminated while searching structural index: " + e.getMessage(), e);
+                NativeStructuralIndex.LOG.warn("Query was terminated while searching structural index: {}", e.getMessage(), e);
             } catch (final Exception e) {
-                NativeStructuralIndex.LOG.error("Error while searching structural index: " + e.getMessage(), e);
+                NativeStructuralIndex.LOG.error("Error while searching structural index: {}", e.getMessage(), e);
             }
         }
         return result;
@@ -212,11 +212,11 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                 try {
                     index.btree.query(query, callback);
                 } catch (final Exception e) {
-                    NativeStructuralIndex.LOG.error("Error while searching structural index: " + e.getMessage(), e);
+                    NativeStructuralIndex.LOG.error("Error while searching structural index: {}", e.getMessage(), e);
                 }
             }
         } catch (final LockException e) {
-            NativeStructuralIndex.LOG.warn("Lock problem while searching structural index: " + e.getMessage(), e);
+            NativeStructuralIndex.LOG.warn("Lock problem while searching structural index: {}", e.getMessage(), e);
         }
         result.updateNoSort();
         return result;
@@ -255,9 +255,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                 }
             }
         } catch (final LockException e) {
-            NativeStructuralIndex.LOG.warn("Lock problem while searching structural index: " + e.getMessage(), e);
+            NativeStructuralIndex.LOG.warn("Lock problem while searching structural index: {}", e.getMessage(), e);
         } catch (final Exception e) {
-            NativeStructuralIndex.LOG.error("Error while searching structural index: " + e.getMessage(), e);
+            NativeStructuralIndex.LOG.error("Error while searching structural index: {}", e.getMessage(), e);
         }
         result.sort(true);
         return result;
@@ -287,12 +287,12 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 	                    try {
 	                        index.btree.query(query, callback);
 	                    } catch (final Exception e) {
-	                        NativeStructuralIndex.LOG.error("Error while searching structural index: " + e.getMessage(), e);
+                            NativeStructuralIndex.LOG.error("Error while searching structural index: {}", e.getMessage(), e);
 	                    }
 	            	}
 	            }
             } catch (final LockException e) {
-                NativeStructuralIndex.LOG.warn("Lock problem while searching structural index: " + e.getMessage(), e);
+                NativeStructuralIndex.LOG.warn("Lock problem while searching structural index: {}", e.getMessage(), e);
             }
         }
 //        result.updateNoSort();
@@ -500,9 +500,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                         index.btree.removeValue(new Value(key));
                     }
                 } catch (final LockException e) {
-                    NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
+                    NativeStructuralIndex.LOG.warn("Failed to lock structural index: {}", e.getMessage(), e);
                 } catch (final Exception e) {
-                    NativeStructuralIndex.LOG.warn("Exception caught while writing to structural index: " + e.getMessage(), e);
+                    NativeStructuralIndex.LOG.warn("Exception caught while writing to structural index: {}", e.getMessage(), e);
                 }
             }
         } finally {
@@ -521,10 +521,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
             try(final ManagedLock<ReentrantLock> btreeLock = index.lockManager.acquireBtreeWriteLock(index.btree.getLockName())) {
                 index.btree.remove(query, null);
             } catch (final LockException e) {
-                NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
+                NativeStructuralIndex.LOG.warn("Failed to lock structural index: {}", e.getMessage(), e);
             } catch (final Exception e) {
-                NativeStructuralIndex.LOG.warn("Exception caught while removing structural index for document " +
-                    docToRemove.getURI() + ": " + e.getMessage(), e);
+                NativeStructuralIndex.LOG.warn("Exception caught while removing structural index for document {}: {}", docToRemove.getURI(), e.getMessage(), e);
             }
         }
         removeQNamesForDoc(docToRemove);
@@ -537,10 +536,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         try(final ManagedLock<ReentrantLock> btreeLock = index.lockManager.acquireBtreeWriteLock(index.btree.getLockName())) {
             index.btree.remove(query, null);
         } catch (final LockException e) {
-            NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
+            NativeStructuralIndex.LOG.warn("Failed to lock structural index: {}", e.getMessage(), e);
         } catch (final Exception e) {
-            NativeStructuralIndex.LOG.warn("Exception caught while reading structural index for document " +
-                doc.getURI() + ": " + e.getMessage(), e);
+            NativeStructuralIndex.LOG.warn("Exception caught while reading structural index for document {}: {}", doc.getURI(), e.getMessage(), e);
         }
     }
 
@@ -558,10 +556,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                 return true;
             });
         } catch (final LockException e) {
-            NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
+            NativeStructuralIndex.LOG.warn("Failed to lock structural index: {}", e.getMessage(), e);
         } catch (final Exception e) {
-            NativeStructuralIndex.LOG.warn("Exception caught while reading structural index for document " +
-                doc.getURI() + ": " + e.getMessage(), e);
+            NativeStructuralIndex.LOG.warn("Exception caught while reading structural index for document {}: {}", doc.getURI(), e.getMessage(), e);
         }
         return qnames;
     }
@@ -623,10 +620,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                         return true;
                     });
                 } catch (final LockException e) {
-                    NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
+                    NativeStructuralIndex.LOG.warn("Failed to lock structural index: {}", e.getMessage(), e);
                 } catch (final Exception e) {
-                    NativeStructuralIndex.LOG.warn("Exception caught while reading structural index for document " +
-                            doc.getURI() + ": " + e.getMessage(), e);
+                    NativeStructuralIndex.LOG.warn("Exception caught while reading structural index for document {}: {}", doc.getURI(), e.getMessage(), e);
                 }
             }
         }
@@ -681,11 +677,11 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                         index.btree.addValue(docKey, 0);
                     }
                 } catch (final LockException e) {
-                    NativeStructuralIndex.LOG.warn("Failed to lock structural index: " + e.getMessage(), e);
+                    NativeStructuralIndex.LOG.warn("Failed to lock structural index: {}", e.getMessage(), e);
                 // } catch (ReadOnlyException e) {
                 //    NativeStructuralIndex.LOG.warn("Read-only error: " + e.getMessage(), e);
                 } catch (final Exception e) {
-                    NativeStructuralIndex.LOG.warn("Exception caught while writing to structural index: " + e.getMessage(), e);
+                    NativeStructuralIndex.LOG.warn("Exception caught while writing to structural index: {}", e.getMessage(), e);
                 }
             }
         } finally {

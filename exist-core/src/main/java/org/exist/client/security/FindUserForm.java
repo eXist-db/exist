@@ -166,7 +166,7 @@ public class FindUserForm extends javax.swing.JFrame implements DialogWithRespon
     
     private ComboBoxModel<String> getUsernameModel() {
         if(usernameModel == null) {
-            usernameModel = new DefaultComboBoxModel<String>();
+            usernameModel = new DefaultComboBoxModel<>();
             usernameModel.addElement("");
             for(final String username : allUsernames) {
                usernameModel.addElement(username);

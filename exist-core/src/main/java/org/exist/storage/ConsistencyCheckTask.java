@@ -99,7 +99,7 @@ public class ConsistencyCheckTask implements SystemTask {
         exportDir = dir.toAbsolutePath().toString();
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Using output directory " + exportDir);
+            LOG.debug("Using output directory {}", exportDir);
         }
 
         final String backup = properties.getProperty(BACKUP_PROP_NAME, "no");
@@ -160,8 +160,8 @@ public class ConsistencyCheckTask implements SystemTask {
                 if (!errors.isEmpty()) {
                     endStatus.setStatus(TaskStatus.Status.STOPPED_ERROR);
                     endStatus.setReason(errors);
-                   
-                    LOG.error("Errors found: " + errors.size());
+
+                    LOG.error("Errors found: {}", errors.size());
 
                     doBackup = true;
 
@@ -182,7 +182,7 @@ public class ConsistencyCheckTask implements SystemTask {
                 agentInstance.changeStatus(brokerPool, new TaskStatus(TaskStatus.Status.RUNNING_BACKUP));
 
                 if (lastExportedBackup != null) {
-                    LOG.info("Created backup to file: " + lastExportedBackup.toAbsolutePath().toString());
+                    LOG.info("Created backup to file: {}", lastExportedBackup.toAbsolutePath().toString());
                 }
                 
                 LOG.info("Finished backup");

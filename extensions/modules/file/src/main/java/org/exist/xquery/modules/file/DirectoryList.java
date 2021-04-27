@@ -110,7 +110,7 @@ public class DirectoryList extends BasicFunction {
         final Sequence patterns = args[1];
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Listing matching files in directory: " + baseDir);
+            logger.debug("Listing matching files in directory: {}", baseDir);
         }
 
         context.pushDocumentContext();
@@ -136,7 +136,7 @@ public class DirectoryList extends BasicFunction {
                 final Path file = baseDir.resolve(includedFile);
 
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Found: " + file.toAbsolutePath());
+                    logger.debug("Found: {}", file.toAbsolutePath());
                 }
 
                 String relPath = file.toString().substring(baseDir.toString().length() + 1);

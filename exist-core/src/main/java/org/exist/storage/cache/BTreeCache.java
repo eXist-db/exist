@@ -21,8 +21,10 @@
  */
 package org.exist.storage.cache;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.jcip.annotations.NotThreadSafe;
-import org.exist.util.hashtable.SequencedLongHashMap;
+
+import java.util.Iterator;
 
 /**
  * This cache implementation always tries to keep the inner btree pages in
@@ -51,18 +53,20 @@ public class BTreeCache<T extends BTreeCacheable> extends LRUCache<T> {
     private void removeNext(final T item) {
         boolean removed = false;
         boolean mustRemoveInner = false;
-        SequencedLongHashMap.Entry<T> next = map.getFirstEntry();
+        Iterator<Long2ObjectMap.Entry<T>> iterator = map.fastEntrySetIterator();
         do {
+            final Long2ObjectMap.Entry<T> next = iterator.next();
             final T cached = next.getValue();
             if(cached.allowUnload() && cached.getKey() != item.getKey() &&
                     (mustRemoveInner || !cached.isInnerPage())) {
                 cached.sync(true);
-                map.remove(next.getKey());
+                map.remove(next.getLongKey());
                 removed = true;
             } else {
-                next = next.getNext();
-                if(next == null) {
-                    next = map.getFirstEntry();
+                if (!iterator.hasNext()) {
+                    // reset the iterator to the beginning
+                    iterator = map.fastEntrySetIterator();      // TODO(AR) this can cause a never ending loop potentially!
+
                     mustRemoveInner = true;
                 }
             }

@@ -23,14 +23,12 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-
+import org.exist.xmldb.EXistCollectionManagementService;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
-
-import org.exist.xmldb.EXistCollectionManagementService;
-import org.exist.xmldb.XmldbURI;
 
 import java.net.URISyntaxException;
 
@@ -128,7 +126,7 @@ public class XMLDBCopyTask extends AbstractXMLDBTask
      *
      * @param collection the collection.
      */
-    public void setCollection( String collection )
+    public void setCollection(final String collection )
     {
         this.collection = collection;
     }
@@ -139,19 +137,19 @@ public class XMLDBCopyTask extends AbstractXMLDBTask
      *
      * @param resource the resource
      */
-    public void setResource( String resource )
+    public void setResource(final String resource )
     {
         this.resource = resource;
     }
 
 
-    public void setDestination( String destination )
+    public void setDestination(final String destination )
     {
         this.destination = destination;
     }
 
 
-    public void setName( String name )
+    public void setName(final String name )
     {
         this.name = name;
     }

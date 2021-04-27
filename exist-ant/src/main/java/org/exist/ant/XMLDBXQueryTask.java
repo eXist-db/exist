@@ -24,38 +24,25 @@ package org.exist.ant;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.PropertyHelper;
-
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.ResourceIterator;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XMLResource;
-
-import org.exist.source.BinarySource;
-import org.exist.source.FileSource;
-import org.exist.source.Source;
-import org.exist.source.StringSource;
-import org.exist.source.URLSource;
+import org.exist.source.*;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.*;
+import org.xmldb.api.modules.XMLResource;
 
+import javax.xml.transform.OutputKeys;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
-
 import java.net.URL;
-
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
-import javax.xml.transform.OutputKeys;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -192,29 +179,10 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
 
             final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 
-            final Writer writer;
-            if (dest.isDirectory()) {
-
-                if (!dest.exists()) {
-                    dest.mkdirs();
-                }
-
-                String fname = resource.getId();
-
-                if (!fname.endsWith(".xml")) {
-                    fname += ".xml";
-                }
-
-                final File file = new File(dest, fname);
-                writer = new OutputStreamWriter(new FileOutputStream(file), UTF_8);
-
-            } else {
-                writer = new OutputStreamWriter(new FileOutputStream(dest), UTF_8);
+            try(final Writer writer = getWriter(resource, dest)) {
+                serializer.setOutput(writer, outputProperties);
+                resource.getContentAsSAX(serializer);
             }
-
-            serializer.setOutput(writer, outputProperties);
-            resource.getContentAsSAX(serializer);
-            writer.close();
             SerializerPool.getInstance().returnObject(serializer);
 
         } else {
@@ -226,6 +194,28 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
                 log(msg, Project.MSG_ERR);
             }
         }
+    }
+
+    private Writer getWriter(XMLResource resource, File dest) throws XMLDBException, IOException {
+        final Writer writer;
+        if (dest.isDirectory()) {
+
+            if (!dest.exists()) {
+                dest.mkdirs();
+            }
+
+            String fname = resource.getId();
+            if (!fname.endsWith(".xml")) {
+                fname += ".xml";
+            }
+
+            final Path file = dest.toPath().resolve(fname);
+            writer = Files.newBufferedWriter(file, UTF_8);
+
+        } else {
+            writer = Files.newBufferedWriter(dest.toPath(), UTF_8);
+        }
+        return writer;
     }
 
 

@@ -92,7 +92,8 @@ public class Insert extends Modification {
             final NotificationService notifier = broker.getBrokerPool().getNotificationService();
             final int len = children.getLength();
             if (LOG.isDebugEnabled())
-                {LOG.debug("found " + len + " nodes to insert");}
+                {
+                    LOG.debug("found {} nodes to insert", len);}
             for (final StoredNode node : ql) {
                 final DocumentImpl doc = node.getOwnerDocument();
                 if (!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.WRITE)) {

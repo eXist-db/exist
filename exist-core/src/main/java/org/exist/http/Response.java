@@ -21,12 +21,11 @@
  */
 package org.exist.http;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
+import org.exist.util.MimeType;
 
 import javax.servlet.http.HttpServletResponse;
-
-import org.exist.util.MimeType;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public class Response {
 	

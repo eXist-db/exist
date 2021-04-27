@@ -88,7 +88,7 @@ public class CustomMatchListenerFactory {
                     LOG.error("Failed to instantiate class {}: it is not a subclass of CustomMatchListener", listenerClass.getName());
                 }
             } catch (final Exception e) {
-                LOG.error("An exception was caught while trying to instantiate a custom MatchListener: " + e.getMessage(), e);
+                LOG.error("An exception was caught while trying to instantiate a custom MatchListener: {}", e.getMessage(), e);
             }
         }
     }

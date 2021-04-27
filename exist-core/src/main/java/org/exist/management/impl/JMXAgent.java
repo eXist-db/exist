@@ -92,7 +92,7 @@ public final class JMXAgent implements Agent {
             try {
                 addMBean(perInstanceMBean);
             } catch (final DatabaseConfigurationException e) {
-                LOG.warn("Exception while registering JMX MBean: " + perInstanceMBean.getClass().getName() + ", for database: " + instance.getId() + ".", e);
+                LOG.warn("Exception while registering JMX MBean: {}, for database: {}.", perInstanceMBean.getClass().getName(), instance.getId(), e);
             }
         }
     }
@@ -103,7 +103,7 @@ public final class JMXAgent implements Agent {
         while (!stack.isEmpty()) {
             final ObjectName on = stack.pop();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("deregistering JMX MBean: " + on);
+                LOG.debug("deregistering JMX MBean: {}", on);
             }
             beanInstances.remove(on);
             removeMBean(on);
@@ -124,7 +124,7 @@ public final class JMXAgent implements Agent {
             }
             beanInstances.put(mbean.getName(), mbean);
         } catch (final MalformedObjectNameException e) {
-            LOG.warn("Problem registering JMX MBean: " + e.getMessage(), e);
+            LOG.warn("Problem registering JMX MBean: {}", e.getMessage(), e);
             throw new DatabaseConfigurationException("Exception while registering JMX MBean: " + e.getMessage());
         }
     }
@@ -136,7 +136,7 @@ public final class JMXAgent implements Agent {
             }
 
         } catch (final InstanceAlreadyExistsException | MBeanRegistrationException | NotCompliantMBeanException e) {
-            LOG.warn("Problem registering JMX MBean: " + e.getMessage(), e);
+            LOG.warn("Problem registering JMX MBean: {}", e.getMessage(), e);
             throw new DatabaseConfigurationException("Exception while registering JMX MBean: " + e.getMessage());
         }
     }
@@ -147,7 +147,7 @@ public final class JMXAgent implements Agent {
                 server.unregisterMBean(name);
             }
         } catch (final InstanceNotFoundException | MBeanRegistrationException  e) {
-            LOG.warn("Problem unregistering mbean: " + e.getMessage(), e);
+            LOG.warn("Problem unregistering mbean: {}", e.getMessage(), e);
         }
     }
 
@@ -160,7 +160,7 @@ public final class JMXAgent implements Agent {
                 report.changeStatus(actualStatus);
             }
         } catch (final MalformedObjectNameException e) {
-            LOG.warn("Problem calling JMX MBean: " + e.getMessage(), e);
+            LOG.warn("Problem calling JMX MBean: {}", e.getMessage(), e);
         }
     }
 
@@ -173,7 +173,7 @@ public final class JMXAgent implements Agent {
                 report.updateStatus(percentage);
             }
         } catch (final MalformedObjectNameException e) {
-            LOG.warn("Problem calling JMX MBean: " + e.getMessage(), e);
+            LOG.warn("Problem calling JMX MBean: {}", e.getMessage(), e);
         }
     }
 }

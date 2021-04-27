@@ -306,7 +306,7 @@ public class AccountImpl extends AbstractAccount {
                         loadedSecurityProperties.load(is);
                     }
                 } catch(final IOException ioe) {
-                    LOG.error("Unable to load security.properties, using defaults. " + ioe.getMessage(), ioe);
+                    LOG.error("Unable to load security.properties, using defaults. {}", ioe.getMessage(), ioe);
                 }
             }
             return loadedSecurityProperties.getProperty(propertyName);

@@ -21,18 +21,6 @@
  */
 package org.exist.repo;
 
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.*;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
@@ -45,13 +33,21 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.expath.pkg.repo.FileSystemStorage;
-import org.expath.pkg.repo.FileSystemStorage.FileSystemResolver;
+import org.expath.pkg.repo.*;
 import org.expath.pkg.repo.Package;
-import org.expath.pkg.repo.Packages;
-import org.expath.pkg.repo.PackageException;
-import org.expath.pkg.repo.Repository;
-import org.expath.pkg.repo.URISpace;
+import org.expath.pkg.repo.FileSystemStorage.FileSystemResolver;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
 
 /**
  * A repository as viewed by eXist.
@@ -90,7 +86,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
             throw new BrokerPoolServiceException("Unable to access EXPath repository", e);
         }
 
-        LOG.info("Using directory " + expathDir.toAbsolutePath().toString() + " for expath package repository");
+        LOG.info("Using directory {} for expath package repository", expathDir.toAbsolutePath().toString());
 
         try {
             final FileSystemStorage storage = new FileSystemStorage(expathDir);
@@ -244,7 +240,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
                             streamSource.getReader().close();
                         }
                     } catch (final IOException e) {
-                        LOG.warn("Unable to close pkg source: " + e.getMessage(), e);
+                        LOG.warn("Unable to close pkg source: {}", e.getMessage(), e);
                     }
                 }
             }
@@ -297,7 +293,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
         }).orElse(Paths.get(System.getProperty("java.io.tmpdir")).resolve(EXPATH_REPO_DIR));
 
         if (Files.isReadable(repo_dir)) {
-            LOG.info("Found old expathrepo directory. Moving to new default location: " + newRepo.toAbsolutePath().toString());
+            LOG.info("Found old expathrepo directory. Moving to new default location: {}", newRepo.toAbsolutePath().toString());
             try {
                 Files.move(repo_dir, newRepo, StandardCopyOption.ATOMIC_MOVE);
             } catch (final IOException e) {

@@ -126,7 +126,7 @@ public class Insert extends Modification {
         
         if (!inSeq.isEmpty()) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Found: " + inSeq.getItemCount() + " nodes");
+                LOG.debug("Found: {} nodes", inSeq.getItemCount());
             }
 
             context.pushInScopeNamespaces();

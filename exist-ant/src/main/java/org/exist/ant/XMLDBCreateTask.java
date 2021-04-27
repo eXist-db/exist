@@ -23,13 +23,11 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
-
-import org.exist.xmldb.XmldbURI;
 
 import java.net.URISyntaxException;
 
@@ -54,7 +52,7 @@ public class XMLDBCreateTask extends AbstractXMLDBTask
 
         try {
             log( "Get base collection: " + uri, Project.MSG_DEBUG );
-            Collection base = DatabaseManager.getCollection( uri, user, password );
+            final Collection base = DatabaseManager.getCollection( uri, user, password );
 
             if( base == null ) {
                 final String msg = "Collection " + uri + " could not be found.";
@@ -110,13 +108,13 @@ public class XMLDBCreateTask extends AbstractXMLDBTask
      *
      * @param collection the collection.
      */
-    public void setCollection( String collection )
+    public void setCollection(final String collection )
     {
         this.collection = collection;
     }
 
 
-    private Collection mkcol( Collection root, String base, /*String path,*/  String relPath ) throws XMLDBException, URISyntaxException
+    private Collection mkcol(final Collection root, final String base, /*String path,*/  final String relPath ) throws XMLDBException, URISyntaxException
     {
         CollectionManagementService mgtService;
         Collection                  current  = root;

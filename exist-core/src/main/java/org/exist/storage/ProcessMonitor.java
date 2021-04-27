@@ -295,8 +295,7 @@ public class ProcessMonitor implements BrokerPoolService {
     public void killAll(final long waitTime) {
         synchronized(runningQueries) {
             for (final XQueryWatchDog watchdog : runningQueries) {
-                LOG.debug("Killing query: " +
-                        ExpressionDumper.dump(watchdog.getContext().getRootExpression()));
+                LOG.debug("Killing query: {}", ExpressionDumper.dump(watchdog.getContext().getRootExpression()));
                 watchdog.kill(waitTime);
             }
         }

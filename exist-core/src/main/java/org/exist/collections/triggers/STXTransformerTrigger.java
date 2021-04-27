@@ -109,7 +109,7 @@ public class STXTransformerTrigger extends SAXTrigger implements DocumentTrigger
             }
         } else {
             try {
-                LOG.debug("compiling stylesheet " + stylesheet);
+                LOG.debug("compiling stylesheet {}", stylesheet);
                 final Templates template = factory.newTemplates(new StreamSource(stylesheet));
                 handler = factory.newTransformerHandler(template);
             } catch (final TransformerConfigurationException e) {

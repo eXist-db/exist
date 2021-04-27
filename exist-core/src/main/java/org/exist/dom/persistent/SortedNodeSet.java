@@ -24,18 +24,13 @@ package org.exist.dom.persistent;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
-
 import org.exist.EXistException;
 import org.exist.numbering.NodeId;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.OrderedLinkedList;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.Constants;
-import org.exist.xquery.PathExpr;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
@@ -100,7 +95,7 @@ public class SortedNodeSet extends AbstractNodeSet {
                 LOG.debug(parser.getErrorMessage());
             }
             final AST ast = parser.getAST();
-            LOG.debug("generated AST: " + ast.toStringTree());
+            LOG.debug("generated AST: {}", ast.toStringTree());
             final PathExpr expr = new PathExpr(context);
             treeParser.xpath(ast, expr);
             if(treeParser.foundErrors()) {
@@ -117,8 +112,7 @@ public class SortedNodeSet extends AbstractNodeSet {
         } catch(final EXistException | XPathException e) {
             LOG.debug("Exception during sort", e); //TODO : throw exception ! -pb
         }
-        LOG.debug("sort-expression found " + list.size() + " in "
-            + (System.currentTimeMillis() - start) + "ms.");
+        LOG.debug("sort-expression found {} in {}ms.", list.size(), System.currentTimeMillis() - start);
     }
 
     public void addAll(final NodeList other) {

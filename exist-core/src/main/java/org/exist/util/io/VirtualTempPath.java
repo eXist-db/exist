@@ -22,10 +22,7 @@
 
 package org.exist.util.io;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.locks.StampedLock;
@@ -70,7 +67,7 @@ public final class VirtualTempPath implements ContentFile {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Initializing overflow to " + contentFile.toAbsolutePath());
             }
-            return Files.newOutputStream(contentFile);
+            return new BufferedOutputStream(Files.newOutputStream(contentFile));
 
         } finally {
             lock.unlockWrite(stamp);
@@ -87,7 +84,7 @@ public final class VirtualTempPath implements ContentFile {
                 }
             }
             if (contentFile != null) {
-                return Files.newOutputStream(contentFile);
+                return new BufferedOutputStream(Files.newOutputStream(contentFile));
             }
             if (content == null) {
                 // initial blocks are 10 % of the specified in memory size but minimum 1
@@ -103,7 +100,7 @@ public final class VirtualTempPath implements ContentFile {
         long stamp = lock.readLock();
         try {
             if (contentFile != null) {
-                return Files.newInputStream(contentFile);
+                return new BufferedInputStream(Files.newInputStream(contentFile));
             }
             if (content != null) {
                 return new MemoryContentsInputStream(content);

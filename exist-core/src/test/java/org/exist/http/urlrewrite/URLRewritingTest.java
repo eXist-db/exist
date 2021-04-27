@@ -22,18 +22,12 @@
 
 package org.exist.http.urlrewrite;
 
-import com.evolvedbinary.j8fu.function.FunctionE;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
-import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.exist.TestUtils;
+import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
@@ -50,7 +44,10 @@ import static org.exist.http.urlrewrite.XQueryURLRewrite.XQUERY_CONTROLLER_FILEN
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class URLRewritingTest {
+/**
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
+ */
+public class URLRewritingTest extends AbstractHttpTest {
 
     private static final XmldbURI TEST_COLLECTION_NAME = XmldbURI.create("controller-test");
     private static final XmldbURI TEST_COLLECTION = XmldbURI.create("/db/apps").append(TEST_COLLECTION_NAME);
@@ -66,17 +63,17 @@ public class URLRewritingTest {
         final XmldbURI docName = XmldbURI.create("test.xml");
         final String testDocument = "<hello>world</hello>";
 
-        final String storeDocUri = getRestUri() + TEST_COLLECTION.append(nestedCollectionName).append(docName);
+        final String storeDocUri = getRestUri(existWebServer) + TEST_COLLECTION.append(nestedCollectionName).append(docName);
         final Request storeRequest = Request
                 .Put(storeDocUri)
                 .bodyString(testDocument, ContentType.APPLICATION_XML);
-        final int storeResponseStatusCode = withHttpExecutor(executor -> executor.execute(storeRequest).returnResponse().getStatusLine().getStatusCode());
+        final int storeResponseStatusCode = withHttpExecutor(existWebServer, executor -> executor.execute(storeRequest).returnResponse().getStatusLine().getStatusCode());
         assertEquals(HttpStatus.SC_CREATED, storeResponseStatusCode);
 
-        final String retrieveDocUri = getAppsUri() + "/" + TEST_COLLECTION_NAME.append(nestedCollectionName).append(docName);
+        final String retrieveDocUri = getAppsUri(existWebServer) + "/" + TEST_COLLECTION_NAME.append(nestedCollectionName).append(docName);
         final Request retrieveRequest = Request
                 .Get(retrieveDocUri);
-        final Tuple2<Integer, String> retrieveResponseStatusCodeAndBody = withHttpExecutor(executor -> {
+        final Tuple2<Integer, String> retrieveResponseStatusCodeAndBody = withHttpExecutor(existWebServer,  executor -> {
             final HttpResponse response = executor.execute(retrieveRequest).returnResponse();
             final String responseBody;
             try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream((int)response.getEntity().getContentLength())) {
@@ -92,10 +89,10 @@ public class URLRewritingTest {
     @BeforeClass
     public static void setup() throws IOException {
         final Request request = Request
-                .Put(getRestUri() + TEST_COLLECTION + "/" + XQUERY_CONTROLLER_FILENAME)
+                .Put(getRestUri(existWebServer) + TEST_COLLECTION + "/" + XQUERY_CONTROLLER_FILENAME)
                 .bodyString(TEST_CONTROLLER, ContentType.create("application/xquery"));
 
-        final int statusCode = withHttpExecutor(executor ->
+        final int statusCode = withHttpExecutor(existWebServer, executor ->
                 executor.execute(request).returnResponse().getStatusLine().getStatusCode()
         );
 
@@ -105,43 +102,12 @@ public class URLRewritingTest {
     @AfterClass
     public static void cleanup() throws IOException {
         final Request request = Request
-                .Delete(getRestUri() + TEST_COLLECTION);
+                .Delete(getRestUri(existWebServer) + TEST_COLLECTION);
 
-        final int statusCode = withHttpExecutor(executor ->
+        final int statusCode = withHttpExecutor(existWebServer, executor ->
                 executor.execute(request).returnResponse().getStatusLine().getStatusCode()
         );
 
         assertEquals(HttpStatus.SC_OK, statusCode);
-    }
-
-    private static String getServerUri() {
-        return "http://localhost:" + existWebServer.getPort() + "/exist";
-    }
-
-    private static String getRestUri() {
-        return getServerUri() + "/rest";
-    }
-
-    private static String getAppsUri() {
-        return getServerUri() + "/apps";
-    }
-
-    private static <T> T withHttpClient(final FunctionE<HttpClient, T, IOException> fn) throws IOException {
-        try (final CloseableHttpClient client = HttpClientBuilder
-                .create()
-                .disableAutomaticRetries()
-                .build()) {
-            return fn.apply(client);
-        }
-    }
-
-    private static <T> T withHttpExecutor(final FunctionE<Executor, T, IOException> fn) throws IOException {
-        return withHttpClient(client -> {
-            final Executor executor = Executor
-                    .newInstance(client)
-                    .auth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
-                    .authPreemptive(new HttpHost("localhost", existWebServer.getPort()));
-            return fn.apply(executor);
-        });
     }
 }

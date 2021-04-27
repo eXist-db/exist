@@ -21,19 +21,18 @@
  */
 package org.exist.http.servlets;
 
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.exist.security.MessageDigester;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.security.internal.AccountImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.storage.BrokerPool;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
 

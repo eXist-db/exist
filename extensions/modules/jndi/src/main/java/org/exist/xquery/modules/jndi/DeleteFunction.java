@@ -91,13 +91,13 @@ public class DeleteFunction extends BasicFunction
 				DirContext ctx = (DirContext)JNDIModule.retrieveJNDIContext( context, ctxID );
 				
 				if( ctx == null ) {
-					logger.error( "jndi:delete() - Invalid JNDI context handle provided: " + ctxID );
+					logger.error("jndi:delete() - Invalid JNDI context handle provided: {}", ctxID);
 				} else {	
 					ctx.destroySubcontext( dn );
 				}
 			}
 			catch( NamingException ne ) {
-				logger.error( "jndi:delete() Delete failed for dn [" + dn + "]: ", ne );
+				logger.error("jndi:delete() Delete failed for dn [{}]: ", dn, ne);
 				throw( new XPathException(this, "jndi:delete() Delete failed for dn [" + dn + "]: ", ne ) );
 			}
 		}
