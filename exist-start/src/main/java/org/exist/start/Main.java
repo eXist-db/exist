@@ -162,15 +162,17 @@ public class Main {
     }
 
     private void checkForCorrectJavaVersions() throws StartException {
+
         final String jreVersion = System.getProperty("java.version", "UNKNOWN");
-        if (!jreVersion.startsWith("1.8") && !jreVersion.startsWith("9.")
-                && !jreVersion.startsWith("10.") && !jreVersion.startsWith("11.")) {
+        final String majorVersion = jreVersion.split("\\.")[0];
+        final String[] blockedMajorVersions= {"UNKNOWN", "12", "13", "14", "15"};
+
+        if (!jreVersion.startsWith("1.8") && Arrays.asList(blockedMajorVersions).contains(majorVersion)) {
             System.err.println("*****************************************************");
             System.err.println("Warning: Unreliable Java version has been detected!");
             System.err.println();
-            System.err.println("OpenJDK versions 12 and higher currently suffer from a");
-            System.err.println("critical bug in the JIT compiler that will cause");
-            System.err.println("data loss in eXist-db.");
+            System.err.println("OpenJDK versions 12-15 suffer from a critical bug in the");
+            System.err.println("JIT compiler that will cause data loss in eXist-db.");
             System.err.println();
             System.err.println("The problem has been reported to the OpenJDK community.");
             System.err.println();
@@ -181,8 +183,7 @@ public class Main {
             System.err.println("The detected version of Java on your system is " + jreVersion + ".");
             System.err.println();
             System.err.println("To prevent data loss, eXist-db will not be started.");
-            System.err.println("Until this OpenJDK bug is resolved, we urge you to");
-            System.err.println("switch to LTS versions Java 8 or 11.");
+            System.err.println("We urge you to switch to LTS versions Java 8 or 11.");
             System.err.println("*****************************************************");
 
             throw new StartException(ERROR_CODE_RELIABLE_JAVA_DETECTED);
