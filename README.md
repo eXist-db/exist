@@ -12,7 +12,7 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/ae1c8a7eb1164e919b0ac3c8588560c6)](https://www.codacy.com/gh/eXist-db/exist/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=eXist-db/exist&amp;utm_campaign=Badge_Grade)
 [![Java 8](https://img.shields.io/badge/java-8-blue.svg)](https://adoptopenjdk.net/)
 [![License](https://img.shields.io/badge/license-LGPL%202.1-blue.svg)](https://www.gnu.org/licenses/lgpl-2.1.html)
-[![Download](https://api.bintray.com/packages/existdb/releases/exist/images/download.svg)](https://bintray.com/existdb/releases/exist/_latestVersion)
+[![Download](https://img.shields.io/github/v/release/eXist-db/exist.svg)](https://github.com/eXist-db/exist/releases/)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.exist-db/exist/badge.svg)](https://search.maven.org/search?q=g:org.exist-db)
 [![Slack](https://img.shields.io/badge/exist--db-slack-3e103f.svg)](https://exist-db.slack.com)
 <a href="https://opencollective.com/existdb#backer">
@@ -47,9 +47,6 @@ The notes of past Community Calls are located [here](https://drive.google.com/dr
 New developers may find the notes in [BUILD.md](https://github.com/eXist-db/exist/blob/develop/BUILD.md) and [CONTRIBUTING.md](https://github.com/eXist-db/exist/blob/develop/CONTRIBUTING.md) helpful to start using and sharing your work with the eXist community.
 
 ## Credits
-eXist-db delivers its releases via [BinTray](https://bintray.com/) which is kindly provided by [JFrog](https://jfrog.com/).
-
-<img src="https://bintray.com/assets/layout/jfrog_green_footer_logo-676d1edce7dfe5980a3a56e134a0581b.png" alt="JFrog Logo" width="81" height="79"/>
 
 The eXist-db developers use the YourKit Java Profiler.
 
