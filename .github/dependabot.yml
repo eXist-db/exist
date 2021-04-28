@@ -1,0 +1,59 @@
+version: 2
+updates:
+- package-ecosystem: maven
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "03:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: com.github.ben-manes.caffeine:caffeine
+    versions:
+    - ">= 3.a, < 4"
+  - dependency-name: org.apache.lucene:lucene-analyzers-common
+    versions:
+    - ">= 8.a, < 9"
+  - dependency-name: org.apache.lucene:lucene-analyzers-icu
+    versions:
+    - ">= 8.a, < 9"
+  - dependency-name: org.apache.lucene:lucene-core
+    versions:
+    - ">= 8.a, < 9"
+  - dependency-name: org.apache.lucene:lucene-facet
+    versions:
+    - ">= 8.a, < 9"
+  - dependency-name: org.apache.lucene:lucene-queries
+    versions:
+    - ">= 8.a, < 9"
+  - dependency-name: org.apache.lucene:lucene-queryparser
+    versions:
+    - ">= 8.a, < 9"
+  - dependency-name: org.aspectj:aspectjrt
+    versions:
+    - "> 1.9.4, < 1.10"
+  - dependency-name: org.aspectj:aspectjtools
+    versions:
+    - "> 1.9.4, < 1.10"
+  - dependency-name: net.sf.saxon:Saxon-HE
+    versions:
+    - "10.3"
+    - "10.5"
+  - dependency-name: org.hsqldb:hsqldb
+    versions:
+    - 2.6.0
+  - dependency-name: com.ibm.icu:icu4j
+    versions:
+    - "69.1"
+  - dependency-name: com.sun.mail:jakarta.mail
+    versions:
+    - 2.0.1
+  - dependency-name: com.sun.activation:jakarta.activation
+    versions:
+    - 2.0.1
+  - dependency-name: com.mycila:license-maven-plugin
+    versions:
+    - "4.0"
+    - 4.0.rc2
+  - dependency-name: org.owasp:dependency-check-maven
+    versions:
+    - 6.1.3
