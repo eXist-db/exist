@@ -108,7 +108,7 @@
         <exquery.distribution.version>0.2.0</exquery.distribution.version>
         <icu.version>59.1</icu.version>
         <izpack.version>5.1.3</izpack.version>
-        <jaxb.api.version>3.0.0</jaxb.api.version>
+        <jaxb.api.version>3.0.1</jaxb.api.version>
         <jaxb.impl.version>3.0.1</jaxb.impl.version>
         <jetty.version>9.4.40.v20210413</jetty.version>
         <log4j.version>2.14.1</log4j.version>
