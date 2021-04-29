@@ -36,8 +36,7 @@ updates:
     - "> 1.9.4, < 1.10"
   - dependency-name: net.sf.saxon:Saxon-HE
     versions:
-    - "10.3"
-    - "10.5"
+    > "9"
   - dependency-name: org.hsqldb:hsqldb
     versions:
     - 2.6.0
