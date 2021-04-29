@@ -34,13 +34,12 @@ import static org.junit.Assert.assertEquals;
 import java.io.OutputStream;
 import java.util.List;
 
+import com.siemens.ct.exi.main.api.sax.SAXEncoder;
 import org.easymock.Capture;
 import org.exist.dom.QName;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.Attributes;
-
-import com.siemens.ct.exi.api.sax.SAXEncoder;
 
 public class EXISerializerTest {
 

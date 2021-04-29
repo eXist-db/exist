@@ -21,31 +21,18 @@
  */
 package org.exist.xquery.modules.exi;
 
+import com.siemens.ct.exi.core.exceptions.EXIException;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.exist.dom.QName;
+import org.exist.util.serializer.EXISerializer;
+import org.exist.xquery.*;
+import org.exist.xquery.ErrorCodes.JavaErrorCode;
+import org.exist.xquery.value.*;
+import org.xml.sax.SAXException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-
-import org.exist.dom.QName;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
-import org.exist.util.serializer.EXISerializer;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.ErrorCodes;
-import org.exist.xquery.ErrorCodes.JavaErrorCode;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64BinaryValueType;
-import org.exist.xquery.value.BinaryValueFromInputStream;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.xml.sax.SAXException;
-
-import com.siemens.ct.exi.exceptions.EXIException;
 
 /**
  * eXist EXI Module Extension EncodeExiFunction.
