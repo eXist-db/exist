@@ -744,7 +744,12 @@
         <builtin-modules>
 
             <!-- Module under test -->
-            <module uri="http://exist-db.org/xquery/sql" class="org.exist.xquery.modules.sql.SQLModule"/>
+            <module uri="http://exist-db.org/xquery/sql" class="org.exist.xquery.modules.sql.SQLModule">
+                <parameter name="pool.1.name" value="pool-1"/>
+                <parameter name="pool.1.properties.dataSourceClassName" value="org.h2.jdbcx.JdbcDataSource"/>
+                <parameter name="pool.1.properties.jdbcUrl" value="jdbc:h2:~/test"/>
+                <parameter name="pool.1.properties.maximumPoolSize" value="10"/>
+            </module>
 
         </builtin-modules>
     </xquery>
