@@ -193,29 +193,31 @@ public class CastExpression extends AbstractExpression {
             final SequenceType argType = new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE);
             signature.setArgumentTypes(new SequenceType[]{argType});
             signature.setReturnType(new SequenceType(CastExpression.this.requiredType, CastExpression.this.cardinality));
-            return new FunctionWrapper(context, signature);
+            return new FunctionWrapper(this, signature);
         } catch (final QName.IllegalQNameException e) {
             throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + typeName);
         }
     }
 
-    private class FunctionWrapper extends Function {
+    private static class FunctionWrapper extends Function {
+        private final CastExpression castExpression;
 
-        protected FunctionWrapper(XQueryContext context, FunctionSignature signature) throws XPathException {
-            super(context, signature);
+        protected FunctionWrapper(final CastExpression castExpression, final FunctionSignature signature) throws XPathException {
+            super(castExpression.getContext(), signature);
             final List<Expression> args = new ArrayList<>(1);
-            args.add(new Function.Placeholder(context));
+            args.add(new Function.Placeholder(castExpression.getContext()));
             super.setArguments(args);
+            this.castExpression = castExpression;
         }
 
         @Override
-        public void setArguments(List<Expression> arguments) throws XPathException {
-            CastExpression.this.setExpression(arguments.get(0));
+        public void setArguments(final List<Expression> arguments) throws XPathException {
+            castExpression.setExpression(arguments.get(0));
         }
 
         @Override
         public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-            return CastExpression.this.eval(contextSequence);
+            return castExpression.eval(contextSequence);
         }
     }
 }
