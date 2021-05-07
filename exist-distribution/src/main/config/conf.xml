@@ -989,7 +989,31 @@
             <!--
                 Extension Modules
             -->
-            <module uri="http://exist-db.org/xquery/cache" class="org.exist.xquery.modules.cache.CacheModule"/>
+            <module uri="http://exist-db.org/xquery/cache" class="org.exist.xquery.modules.cache.CacheModule">
+                <!--
+                If a named Cache does not exist it can be created lazily on-demand
+                when an operation is first performed upon it.
+
+                    - enableLazyCreation
+                        true to enable lazy creation, false to disable.
+                        When false, if the Cache is not explicitly created before
+                        it is used then an error is raised.
+
+                    - lazy.*
+                        These settings are as documented for the Cache Module
+                        and control the config that is used when lazily creating
+                        a Cache.
+                        Valid settings are:
+                            - lazy.maximumSize
+                            - lazy.expireAfterAccess
+                            - lazy.putGroup
+                            - lazy.getGroup
+                            - lazy.removeGroup
+                            - lazy.clearGroup
+                -->
+                <parameter name="enableLazyCreation" value="true"/>
+                <parameter name="lazy.maximumSize" value="128"/>
+            </module>
             <module uri="http://exist-db.org/xquery/compression" class="org.exist.xquery.modules.compression.CompressionModule"/>
             <module uri="http://exist-db.org/xquery/counter" class="org.exist.xquery.modules.counter.CounterModule"/>
             <module uri="http://exist-db.org/xquery/cqlparser" class="org.exist.xquery.modules.cqlparser.CQLParserModule"/>
