@@ -228,12 +228,5 @@ public class ByteConversion {
         data[start] = (byte) ( ( v >>> 8 ) & 0xff );
         return data;
     }
-
-    public static void main(String[] args) {
-        final short i = 783;
-        final byte[] data = new byte[2];
-        ByteConversion.shortToByte(i, data, 0);
-        System.out.println("i = " + ByteConversion.byteToShort(data, 0));
-    }
 }
 

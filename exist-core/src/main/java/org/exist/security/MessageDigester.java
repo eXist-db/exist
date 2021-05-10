@@ -107,17 +107,5 @@ public class MessageDigester {
         }
         return buf.toString();
     }
-
-
-    /**
-     *  The main program for the MD5 class
-     *
-     *@param  args  The command line arguments
-     */
-    public static void main( String[] args ) {
-        System.out.println( "input: " + args[0] );
-        System.out.println( "MD5:   " + MessageDigester.md5( args[0], false ) );
-        System.out.println( "MD5 (base64):   " + MessageDigester.md5( args[0], true ) );
-    }
 }
 

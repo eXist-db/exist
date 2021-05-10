@@ -413,9 +413,4 @@ public class XIncludeSerializerTest {
         params.add(1);
         xmlrpc.execute("parse", params);
     }
-
-    public static void main(String[] args) {
-        org.junit.runner.JUnitCore.runClasses(XIncludeSerializerTest.class);
-    }
-
 }

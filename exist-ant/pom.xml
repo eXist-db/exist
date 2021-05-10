@@ -52,6 +52,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-start</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>net.sf.xmldb-org</groupId>
             <artifactId>xmldb-api</artifactId>
         </dependency>

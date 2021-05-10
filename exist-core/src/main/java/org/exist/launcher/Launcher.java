@@ -27,7 +27,9 @@ import org.exist.EXistException;
 import org.exist.jetty.JettyStart;
 import org.exist.repo.ExistRepository;
 import org.exist.security.PermissionDeniedException;
+import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.Main;
+import org.exist.start.StartException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.ConfigurationHelper;
@@ -81,6 +83,15 @@ public class Launcher extends Observable implements Observer {
     static final String PACKAGE_MONEX = "http://exist-db.org/apps/monex";
 
     public static void main(final String[] args) {
+        try {
+            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
+        } catch (final StartException e) {
+            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
+                System.err.println(e.getMessage());
+            }
+            System.exit(e.getErrorCode());
+        }
+
         final String os = System.getProperty("os.name", "");
         // Switch to native look and feel except for Linux (ugly)
         if (!"Linux".equals(os)) {
