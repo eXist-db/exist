@@ -24,6 +24,8 @@ package org.exist.storage.btree;
 import org.exist.EXistException;
 import org.exist.indexing.Index;
 import org.exist.indexing.StructuralIndex;
+import org.exist.start.CompatibleJavaVersionCheck;
+import org.exist.start.StartException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
@@ -104,7 +106,16 @@ public class Repair {
         pool.shutdown(false);
     }
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
+        try {
+            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
+        } catch (final StartException e) {
+            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
+                System.err.println(e.getMessage());
+            }
+            System.exit(e.getErrorCode());
+        }
+
         if (args.length == 0) {
             System.out.println("\nUsage: " + Repair.class.getName() + " [index-name]+\n");
             System.out.println("Rebuilds the index files specified as arguments. Can be applied to");
@@ -114,8 +125,8 @@ public class Repair {
             System.out.println("Example call to rebuild all indexes:\n");
             System.out.println(Repair.class.getName() + " dom collections structure ngram-index");
         } else {
-            Repair repair = new Repair();
-            for (String arg: args) {
+            final Repair repair = new Repair();
+            for (final String arg: args) {
                 repair.repair(arg);
             }
             repair.shutdown();

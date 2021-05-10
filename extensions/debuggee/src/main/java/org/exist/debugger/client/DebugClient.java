@@ -108,7 +108,16 @@ public class DebugClient implements ResponseListener {
         System.out.println(command.getStatus() + ": " + response.getText());
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(final String[] args) throws IOException {
+        try {
+            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
+        } catch (final StartException e) {
+            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
+                System.err.println(e.getMessage());
+            }
+            System.exit(e.getErrorCode());
+        }
+
         DebugClient client = new DebugClient();
         client.readlineInputLoop();
     }

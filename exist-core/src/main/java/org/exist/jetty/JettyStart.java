@@ -35,7 +35,9 @@ import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.exist.SystemProperties;
 import org.exist.http.servlets.ExistExtensionServlet;
+import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.Main;
+import org.exist.start.StartException;
 import org.exist.storage.BrokerPool;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.FileUtils;
@@ -88,6 +90,15 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
 
     public static void main(final String[] args) {
+        try {
+            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
+        } catch (final StartException e) {
+            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
+                System.err.println(e.getMessage());
+            }
+            System.exit(e.getErrorCode());
+        }
+
         final JettyStart start = new JettyStart();
         start.run(args, null);
     }

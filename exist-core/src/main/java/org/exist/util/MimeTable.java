@@ -274,12 +274,15 @@ public class MimeTable {
     }
 
     /**
-     * @param stream
-     * @throws SAXException 
-     * @throws ParserConfigurationException 
-     * @throws IOException 
+     * Load Mime Types
+     *
+     * @param stream input stream.
+     *
+     * @throws SAXException if an error occurs whilst reading the XML stream
+     * @throws ParserConfigurationException if an error occurs whilst parsing the stream
+     * @throws IOException if an error occurs whilst reading the stream
      */
-    private void loadMimeTypes(InputStream stream) throws ParserConfigurationException, SAXException, IOException {
+    private void loadMimeTypes(final InputStream stream) throws ParserConfigurationException, SAXException, IOException {
         final SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
         factory.setNamespaceAware(true);
         factory.setValidating(false);
