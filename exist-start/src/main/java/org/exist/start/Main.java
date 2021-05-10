@@ -68,7 +68,7 @@ public class Main {
 
     private static final int ERROR_CODE_GENERAL = 1;
     private static final int ERROR_CODE_NO_JETTY_CONFIG = 7;
-    private static final int ERROR_CODE_RELIABLE_JAVA_DETECTED = 13;
+    static final int ERROR_CODE_INCOMPATIBLE_JAVA_DETECTED = 13;
 
     public static final String CONFIG_DIR_NAME = "etc";
 
@@ -157,43 +157,19 @@ public class Main {
         try {
             runEx(args);
         } catch (final StartException e) {
+            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
+                System.err.println(e.getMessage());
+            }
             System.exit(e.getErrorCode());
         }
     }
 
-    private void checkForCorrectJavaVersions() throws StartException {
 
-        final String jreVersion = System.getProperty("java.version", "UNKNOWN");
-        final String majorVersion = jreVersion.split("\\.")[0];
-        final String[] blockedMajorVersions= {"UNKNOWN", "12", "13", "14", "15"};
-
-        if (!jreVersion.startsWith("1.8") && Arrays.asList(blockedMajorVersions).contains(majorVersion)) {
-            System.err.println("*****************************************************");
-            System.err.println("Warning: Unreliable Java version has been detected!");
-            System.err.println();
-            System.err.println("OpenJDK versions 12-15 suffer from a critical bug in the");
-            System.err.println("JIT compiler that will cause data loss in eXist-db.");
-            System.err.println();
-            System.err.println("The problem has been reported to the OpenJDK community.");
-            System.err.println();
-            System.err.println("For more information, see:");
-            System.err.println("- https://bugs.openjdk.java.net/browse/JDK-8253191");
-            System.err.println("- https://github.com/eXist-db/exist/issues/3375");
-            System.err.println();
-            System.err.println("The detected version of Java on your system is " + jreVersion + ".");
-            System.err.println();
-            System.err.println("To prevent data loss, eXist-db will not be started.");
-            System.err.println("We urge you to switch to LTS versions Java 8 or 11.");
-            System.err.println("*****************************************************");
-
-            throw new StartException(ERROR_CODE_RELIABLE_JAVA_DETECTED);
-        }
-    }
 
     public void runEx(String[] args) throws StartException {
 
         // Check if the OpenJDK version can corrupt eXist-db
-        checkForCorrectJavaVersions();
+        CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
 
         final String _classname;
         if (args.length > 0) {
