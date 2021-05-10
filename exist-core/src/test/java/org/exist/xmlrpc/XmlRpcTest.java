@@ -664,10 +664,4 @@ public class XmlRpcTest {
         client.setConfig(config);
         return client;
     }
-
-    public static void main(String[] args) {
-        org.junit.runner.JUnitCore.main(XmlRpcTest.class.getName());
-        //Explicit shutdownDB for the shutdownDB hook
-        System.exit(0);
-    }
 }

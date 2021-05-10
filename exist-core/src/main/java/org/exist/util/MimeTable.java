@@ -304,10 +304,7 @@ public class MimeTable {
         
         private MimeType mime = null;
         private final StringBuilder charBuf = new StringBuilder(64);
-        
-        /* (non-Javadoc)
-         * @see org.xml.sax.helpers.DefaultHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-         */
+
         @Override
         public void startElement(String uri, String localName, String qName,
                 Attributes attributes) throws SAXException {
@@ -363,10 +360,7 @@ public class MimeTable {
             }
             charBuf.setLength(0);
         }
-        
-        /* (non-Javadoc)
-         * @see org.xml.sax.helpers.DefaultHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-         */
+
         @Override
         public void endElement(String uri, String localName, String qName)
                 throws SAXException {
@@ -395,25 +389,11 @@ public class MimeTable {
                 }
             }
         }
-        
-        /* (non-Javadoc)
-         * @see org.xml.sax.helpers.DefaultHandler#characters(char[], int, int)
-         */
+
         @Override
         public void characters(char[] ch, int start, int length)
                 throws SAXException {
             charBuf.append(ch, start, length);
-        }
-    }
-    
-    public static void main(String[] args) {
-        final MimeTable table = MimeTable.getInstance();
-        final MimeType type = table.getContentTypeFor("samples/xquery/fibo.svg");
-        if (type == null) {
-            System.out.println("Not found!");
-        } else {
-            System.out.println(type.getName());
-            System.out.println(type.getDescription());
         }
     }
 }

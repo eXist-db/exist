@@ -208,47 +208,4 @@ public class ValueIndexFactory {
             throw new EXistException("Unknown data type for serialization: " + Type.getTypeName(value.getType()));
         }
     }
-
-    public static void main(final String[] args) {
-        try {
-            //******** DateTimeValue ********
-            final DateTimeValue dtv = new DateTimeValue("0753-04-21T01:00:00+01:00");
-            final byte[] b1 = ValueIndexFactory.serialize(dtv, 0);
-            print(dtv, b1);
-            final DateTimeValue dtv2 = new DateTimeValue("1960-03-19T19:03:59.782+01:00");
-            final byte[] b2 = ValueIndexFactory.serialize(dtv2, 0);
-            print(dtv2, b2);
-            System.out.println(new Value(b1).compareTo(new Value(b2)));
-            final DateTimeValue dtv2_ = (DateTimeValue) ValueIndexFactory.deserialize(b2, 0, b2.length);
-            if (!dtv2.equals(dtv2_)) {
-                System.out.println("ERROR! " + dtv2.toString() + " ne " + dtv2_.toString());
-            }
-            //******** DateValue ********
-            final DateValue dv = new DateValue("1960-03-19Z");
-            final byte[] b3 = ValueIndexFactory.serialize(dv, 0);
-            print(dv, b3);
-            final DateValue dv_ = (DateValue) ValueIndexFactory.deserialize(b3, 0, b3.length);
-            if (!dv.equals(dv_)) {
-                System.out.println("ERROR! " + dv.toString() + " ne " + dv_.toString());
-            }
-            //******** IntegerValue ********
-            final IntegerValue iv = new IntegerValue(753);
-            final byte[] i1 = ValueIndexFactory.serialize(iv, 0);
-            print(iv, i1);
-            final IntegerValue iv2 = new IntegerValue(1960);
-            final byte[] i2 = ValueIndexFactory.serialize(iv2, 0);
-            print(iv2, i2);
-            System.out.println(new Value(i1).compareTo(new Value(i2)));
-        } catch (final Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void print(final AtomicValue dtv, final byte[] data) throws XPathException {
-        System.out.print(dtv.getStringValue() + " = ");
-        for (byte datum : data) {
-            System.out.print(" " + Integer.toHexString(datum & 0xff));
-        }
-        System.out.println();
-    }
 }
