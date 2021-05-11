@@ -62,7 +62,7 @@ public class CacheFunctions extends BasicFunction {
             "Explicitly create a cache with a specific configuration",
             returns(Type.BOOLEAN, "true if the cache was created, false if the cache already exists"),
             FS_PARAM_CACHE_NAME,
-            param("config", Type.MAP, "A map with configuration for the cache. At present cache LRU and permission groups may be specified, for operations on the cache. `maximumSize` is optional and specifies the maximum number of entries. `expireAfterAccess` is optional and specified the expiry period for infrequently accessed entries (in milliseconds). If a permission group is not specified for an operation, then permissions are not checked for that operation. Should have the format: map { \"maximumSize\": 1000, \"expireAfterAccess\": 120000, \"permissions\": map { \"put-group\": \"group1\", \"get-group\": \"group2\", \"remove-group\": \"group3\", \"clear-group\": \"group4\"} }")
+            param("config", Type.MAP, "A map with configuration for the cache. At present cache LRU and permission groups may be specified, for operations on the cache. `maximumSize` is optional and specifies the maximum number of entries. `expireAfterAccess` is optional and specifies the expiry period for infrequently accessed entries (in milliseconds). If a permission group is not specified for an operation, then permissions are not checked for that operation. Should have the format: map { \"maximumSize\": 1000, \"expireAfterAccess\": 120000, \"permissions\": map { \"put-group\": \"group1\", \"get-group\": \"group2\", \"remove-group\": \"group3\", \"clear-group\": \"group4\"} }")
     );
 
     private static final String FS_NAMES_NAME = "names";
@@ -159,7 +159,7 @@ public class CacheFunctions extends BasicFunction {
             cacheName = null;
         }
 
-        switch(getName().getLocalPart()) {
+        switch (getName().getLocalPart()) {
 
             case FS_CREATE_NAME:
                 if(CacheModule.caches.containsKey(cacheName)) {
@@ -173,7 +173,7 @@ public class CacheFunctions extends BasicFunction {
             case FS_PUT_NAME:
                 // lazy create cache if it doesn't exist
                 if(!CacheModule.caches.containsKey(cacheName)) {
-                    createCache(cacheName, new CacheConfig());
+                    lazilyCreateCache(cacheName);
                 }
                 final String putKey = toMapKey(args[1]);
                 final Sequence value = args[2];
@@ -182,7 +182,7 @@ public class CacheFunctions extends BasicFunction {
             case FS_LIST_NAME:
                 // lazy create cache if it doesn't exist
                 if(!CacheModule.caches.containsKey(cacheName)) {
-                    createCache(cacheName, new CacheConfig());
+                    lazilyCreateCache(cacheName);
                 }
                 final String[] keys = toMapKeys(args[1]);
                 return list(cacheName, keys);
@@ -190,14 +190,14 @@ public class CacheFunctions extends BasicFunction {
             case FS_KEYS_NAME:
                 // lazy create cache if it doesn't exist
                 if(!CacheModule.caches.containsKey(cacheName)) {
-                    createCache(cacheName, new CacheConfig());
+                    lazilyCreateCache(cacheName);
                 }
                 return listKeys(cacheName);
 
             case FS_GET_NAME:
                 // lazy create cache if it doesn't exist
                 if(!CacheModule.caches.containsKey(cacheName)) {
-                    createCache(cacheName, new CacheConfig());
+                    lazilyCreateCache(cacheName);
                 }
                 final String getKey = toMapKey(args[1]);
                 return get(cacheName, getKey);
@@ -205,7 +205,7 @@ public class CacheFunctions extends BasicFunction {
             case FS_REMOVE_NAME:
                 // lazy create cache if it doesn't exist
                 if(!CacheModule.caches.containsKey(cacheName)) {
-                    createCache(cacheName, new CacheConfig());
+                    lazilyCreateCache(cacheName);
                 }
                 final String removeKey = toMapKey(args[1]);
                 return remove(cacheName, removeKey);
@@ -290,6 +290,17 @@ public class CacheFunctions extends BasicFunction {
 
         // is new
         return newOrExisting.getConfig() == config;
+    }
+
+    private void lazilyCreateCache(final String cacheName) throws XPathException {
+        final CacheModule cacheModule = (CacheModule) getParentModule();
+        final Optional<CacheConfig> maybeLazyCacheConfig = cacheModule.getLazyCacheConfig();
+
+        if (!maybeLazyCacheConfig.isPresent()) {
+            throw new XPathException(this, LAZY_CREATION_DISABLED, "There is no such named cache: " + cacheName + ", and lazy creation of the cache has been disabled.");
+        }
+
+        createCache(cacheName, maybeLazyCacheConfig.get());
     }
 
     private Sequence cacheNames() throws XPathException {

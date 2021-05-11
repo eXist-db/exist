@@ -744,7 +744,10 @@
         <builtin-modules>
 
             <!-- Module under test -->
-            <module uri="http://exist-db.org/xquery/cache" class="org.exist.xquery.modules.cache.CacheModule"/>
+            <module uri="http://exist-db.org/xquery/cache" class="org.exist.xquery.modules.cache.CacheModule">
+                <parameter name="enableLazyCreation" value="true"/>
+                <parameter name="lazy.maximumSize" value="128"/>
+            </module>
 
 
             <!-- Needed for XQSuite! -->
