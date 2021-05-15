@@ -16,7 +16,7 @@
   <Set name="KeyStorePassword"><Property name="jetty.sslContext.keyStorePassword" deprecated="jetty.keystore.password" default="OBF:1yta1t331v8w1v9q1t331ytc"/></Set>
   <Set name="KeyStoreType"><Property name="jetty.sslContext.keyStoreType" default="PKCS12"/></Set>
   <Set name="KeyStoreProvider"><Property name="jetty.sslContext.keyStoreProvider"/></Set>
-  <Set name="CertAlias"><Property name="jetty.keystore.alias" default="jetty"/></Set>
+  <Set name="CertAlias"><Property name="jetty.keystore.alias" default="existdb"/></Set>
   <Set name="KeyManagerPassword"><Property name="jetty.sslContext.keyManagerPassword" deprecated="jetty.keymanager.password" default="OBF:1yta1t331v8w1v9q1t331ytc"/></Set>
   <Set name="TrustStorePath"><Property name="jetty.base" default="." />/<Property name="jetty.sslContext.trustStorePath" deprecated="jetty.truststore" default="etc/keystore.p12"/></Set>
   <Set name="TrustStorePassword"><Property name="jetty.sslContext.trustStorePassword" deprecated="jetty.truststore.password" default="OBF:1yta1t331v8w1v9q1t331ytc"/></Set>
