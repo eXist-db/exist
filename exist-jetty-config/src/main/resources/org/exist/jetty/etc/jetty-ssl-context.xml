@@ -12,14 +12,15 @@
 
 <Configure id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory$Server">
   <Set name="Provider"><Property name="jetty.sslContext.provider"/></Set>
-  <Set name="KeyStorePath"><Property name="jetty.base" default="." />/<Property name="jetty.sslContext.keyStorePath" deprecated="jetty.keystore" default="etc/keystore"/></Set>
+  <Set name="KeyStorePath"><Property name="jetty.base" default="." />/<Property name="jetty.sslContext.keyStorePath" deprecated="jetty.keystore" default="etc/keystore.p12"/></Set>
   <Set name="KeyStorePassword"><Property name="jetty.sslContext.keyStorePassword" deprecated="jetty.keystore.password" default="OBF:1yta1t331v8w1v9q1t331ytc"/></Set>
-  <Set name="KeyStoreType"><Property name="jetty.sslContext.keyStoreType" default="JKS"/></Set>
+  <Set name="KeyStoreType"><Property name="jetty.sslContext.keyStoreType" default="PKCS12"/></Set>
   <Set name="KeyStoreProvider"><Property name="jetty.sslContext.keyStoreProvider"/></Set>
+  <Set name="CertAlias"><Property name="jetty.keystore.alias" default="existdb"/></Set>
   <Set name="KeyManagerPassword"><Property name="jetty.sslContext.keyManagerPassword" deprecated="jetty.keymanager.password" default="OBF:1yta1t331v8w1v9q1t331ytc"/></Set>
-  <Set name="TrustStorePath"><Property name="jetty.base" default="." />/<Property name="jetty.sslContext.trustStorePath" deprecated="jetty.truststore" default="etc/keystore"/></Set>
+  <Set name="TrustStorePath"><Property name="jetty.base" default="." />/<Property name="jetty.sslContext.trustStorePath" deprecated="jetty.truststore" default="etc/keystore.p12"/></Set>
   <Set name="TrustStorePassword"><Property name="jetty.sslContext.trustStorePassword" deprecated="jetty.truststore.password" default="OBF:1yta1t331v8w1v9q1t331ytc"/></Set>
-  <Set name="TrustStoreType"><Property name="jetty.sslContext.trustStoreType"/></Set>
+  <Set name="TrustStoreType"><Property name="jetty.sslContext.trustStoreType" default="PKCS12"/></Set>
   <Set name="TrustStoreProvider"><Property name="jetty.sslContext.trustStoreProvider"/></Set>
   <Set name="EndpointIdentificationAlgorithm"><Property name="jetty.sslContext.endpointIdentificationAlgorithm"/></Set>
   <Set name="NeedClientAuth"><Property name="jetty.sslContext.needClientAuth" deprecated="jetty.ssl.needClientAuth" default="false"/></Set>
@@ -30,7 +31,37 @@
   <Set name="RenegotiationAllowed"><Property name="jetty.sslContext.renegotiationAllowed" default="true"/></Set>
   <Set name="RenegotiationLimit"><Property name="jetty.sslContext.renegotiationLimit" default="5"/></Set>
   <Set name="SniRequired"><Property name="jetty.sslContext.sniRequired" default="false"/></Set>
- 
+
+  <!-- Eliminate Old / Insecure / Anonymous Ciphers -->
+  <Call name="addExcludeCipherSuites">
+    <Arg>
+      <Array type="String">
+        <Item>.*NULL.*</Item>
+        <Item>.*RC4.*</Item>
+        <Item>.*MD5.*</Item>
+        <Item>.*DES.*</Item>
+        <Item>.*DSS.*</Item>
+      </Array>
+    </Arg>
+  </Call>
+
+  <!-- Eliminate Insecure Protocols
+  Since 2014 SSLv3 is considered insecure and should be disabled.
+  -->
+  <Call name="addExcludeProtocols">
+    <Arg>
+      <Array type="java.lang.String">
+        <Item>SSL</Item>
+        <Item>SSLv2</Item>
+        <Item>SSLv2Hello</Item>
+        <Item>SSLv3</Item>
+      </Array>
+    </Arg>
+  </Call>
+
+  <!--  TLS renegotiation is disabled too to prevent an attack based on this feature. -->
+  <Set name="renegotiationAllowed">FALSE</Set>
+
   <!-- Example of how to configure a PKIX Certificate Path revocation Checker
   <Call id="pkixPreferCrls" class="java.security.cert.PKIXRevocationChecker$Option" name="valueOf"><Arg>PREFER_CRLS</Arg></Call>
   <Call id="pkixSoftFail" class="java.security.cert.PKIXRevocationChecker$Option" name="valueOf"><Arg>SOFT_FAIL</Arg></Call>
