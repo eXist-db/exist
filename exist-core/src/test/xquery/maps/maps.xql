@@ -701,7 +701,7 @@ function mt:immutable-remove-then-remove() {
     return
         (
             $expected eq $removed($mt:test-key-one),
-            $expected ne $result($mt:test-key-one)
+            not(exists($result($mt:test-key-one)))
         )
 };
 
@@ -740,7 +740,7 @@ function mt:immutable-merge-then-remove() {
     return
         (
             $expected eq $merged($mt:test-key-one),
-            $expected ne $result($mt:test-key-one)
+            not(exists($result($mt:test-key-one)))
         )
 };
 
@@ -753,6 +753,6 @@ function mt:immutable-merge-then-merge() {
     return
         (
             $expected eq $merged($mt:test-key-one),
-            $expected ne $result($mt:test-key-one)
+            $result($mt:test-key-one) eq false()
         )
 };
