@@ -239,15 +239,15 @@ public class SQLModule extends AbstractInternalModule {
         ModuleUtils.modifyContextMap(xqueryContext, SQLModule.CONNECTIONS_CONTEXTVAR, new ContextMapEntryModifier<Connection>() {
 
             @Override
-            public void modify(final Map<Long, Connection> map) {
-                super.modify(map);
+            public void modifyWithoutResult(final Map<Long, Connection> map) {
+                super.modifyWithoutResult(map);
 
                 // empty the map
                 map.clear();
             }
 
             @Override
-            public void modify(final Entry<Long, Connection> entry) {
+            public void modifyEntry(final Entry<Long, Connection> entry) {
                 final Connection con = entry.getValue();
                 try {
                     // close the Connection
@@ -268,15 +268,15 @@ public class SQLModule extends AbstractInternalModule {
         ModuleUtils.modifyContextMap(xqueryContext, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, new ContextMapEntryModifier<PreparedStatementWithSQL>() {
 
             @Override
-            public void modify(final Map<Long, PreparedStatementWithSQL> map) {
-                super.modify(map);
+            public void modifyWithoutResult(final Map<Long, PreparedStatementWithSQL> map) {
+                super.modifyWithoutResult(map);
 
                 // empty the map
                 map.clear();
             }
 
             @Override
-            public void modify(final Entry<Long, PreparedStatementWithSQL> entry) {
+            public void modifyEntry(final Entry<Long, PreparedStatementWithSQL> entry) {
                 final PreparedStatementWithSQL stmt = entry.getValue();
                 try {
                     // close the PreparedStatement
