@@ -27,9 +27,5 @@ jobs:
       - name: Maven Test
         run: mvn -V -B clean verify
       - name: Maven Code Coverage
-        if: ${{ matrix.jdk == '8' && matrix.os == 'ubuntu-latest' }}
-        env:
-          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
-        run: |
-          echo "ADAM COVERALLS_TOKEN='${COVERALLS_TOKEN}'"
-          mvn -V -B jacoco:report coveralls:report
+        if: ${{ github.ref == 'refs/heads/develop' && matrix.jdk == '8' && matrix.os == 'ubuntu-latest' }}
+        run: mvn -V -B jacoco:report coveralls:report -DrepoToken=${{ secrets.COVERALLS_TOKEN }}
