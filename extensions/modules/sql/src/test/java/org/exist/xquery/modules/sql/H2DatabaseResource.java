@@ -52,7 +52,7 @@ public class H2DatabaseResource extends ExternalResource {
 
     private static final Logger LOG =  LogManager.getLogger(H2DatabaseResource.class);
 
-    private static final String DEFAULT_URL = "jdbc:h2:~/test";
+    private static final String DEFAULT_URL = "jdbc:h2:mem:test-1";
     private static final String DEFAULT_USER = "sa";
     private static final String DEFAULT_PASSWORD = "sa";
 

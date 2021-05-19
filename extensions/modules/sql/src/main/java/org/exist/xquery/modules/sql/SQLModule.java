@@ -76,6 +76,7 @@ public class SQLModule extends AbstractInternalModule {
     public static final FunctionDef[] functions = functionDefs(
             functionDefs(GetConnectionFunction.class, GetConnectionFunction.FS_GET_CONNECTION),
             functionDefs(GetConnectionFunction.class, GetConnectionFunction.FS_GET_CONNECTION_FROM_POOL),
+            functionDefs(CloseConnectionFunction.class, CloseConnectionFunction.FS_CLOSE_CONNECTION),
             functionDefs(GetJNDIConnectionFunction.class, GetJNDIConnectionFunction.signatures),
             functionDefs(ExecuteFunction.class, ExecuteFunction.FS_EXECUTE),
             functionDefs(PrepareFunction.class, PrepareFunction.signatures)
@@ -192,6 +193,17 @@ public class SQLModule extends AbstractInternalModule {
     }
 
     /**
+     * Removes a Connection from the Context of an XQuery.
+     *
+     * @param context The Context of the XQuery to remove the Connection from
+     * @param connectionUID The UID of the Connection to remove from the Context of the XQuery
+     * @return the database connection for the UID, or null if there is no such connection.
+     */
+    public static @Nullable Connection removeConnection(final XQueryContext context, final long connectionUID) {
+        return ModuleUtils.removeObjectFromContextMap(context, SQLModule.CONNECTIONS_CONTEXTVAR, connectionUID);
+    }
+
+    /**
      * Retrieves a previously stored PreparedStatement from the Context of an XQuery.
      *
      * @param context The Context of the XQuery containing the PreparedStatement
@@ -239,15 +251,15 @@ public class SQLModule extends AbstractInternalModule {
         ModuleUtils.modifyContextMap(xqueryContext, SQLModule.CONNECTIONS_CONTEXTVAR, new ContextMapEntryModifier<Connection>() {
 
             @Override
-            public void modify(final Map<Long, Connection> map) {
-                super.modify(map);
+            public void modifyWithoutResult(final Map<Long, Connection> map) {
+                super.modifyWithoutResult(map);
 
                 // empty the map
                 map.clear();
             }
 
             @Override
-            public void modify(final Entry<Long, Connection> entry) {
+            public void modifyEntry(final Entry<Long, Connection> entry) {
                 final Connection con = entry.getValue();
                 try {
                     // close the Connection
@@ -268,15 +280,15 @@ public class SQLModule extends AbstractInternalModule {
         ModuleUtils.modifyContextMap(xqueryContext, SQLModule.PREPARED_STATEMENTS_CONTEXTVAR, new ContextMapEntryModifier<PreparedStatementWithSQL>() {
 
             @Override
-            public void modify(final Map<Long, PreparedStatementWithSQL> map) {
-                super.modify(map);
+            public void modifyWithoutResult(final Map<Long, PreparedStatementWithSQL> map) {
+                super.modifyWithoutResult(map);
 
                 // empty the map
                 map.clear();
             }
 
             @Override
-            public void modify(final Entry<Long, PreparedStatementWithSQL> entry) {
+            public void modifyEntry(final Entry<Long, PreparedStatementWithSQL> entry) {
                 final PreparedStatementWithSQL stmt = entry.getValue();
                 try {
                     // close the PreparedStatement
