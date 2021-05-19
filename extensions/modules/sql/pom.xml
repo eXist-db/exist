@@ -142,8 +142,10 @@
                                 <exclude>src/main/java/org/exist/xquery/modules/sql/SQLModule.java</exclude>
                                 <exclude>src/test/resources/jndi.properties</exclude>
                                 <exclude>src/test/java/org/exist/xquery/modules/sql/ConnectionIT.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/modules/sql/ConnectionPoolIT.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/modules/sql/H2DatabaseResource.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/modules/sql/JndiConnectionIT.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/modules/sql/Util.java</exclude>
                             </excludes>
                         </licenseSet>
 
@@ -158,8 +160,10 @@
                                 <include>src/main/java/org/exist/xquery/modules/sql/SQLModule.java</include>
                                 <include>src/test/resources/jndi.properties</include>
                                 <include>src/test/java/org/exist/xquery/modules/sql/ConnectionIT.java</include>
+                                <include>src/test/java/org/exist/xquery/modules/sql/ConnectionPoolIT.java</include>
                                 <include>src/test/java/org/exist/xquery/modules/sql/H2DatabaseResource.java</include>
                                 <include>src/test/java/org/exist/xquery/modules/sql/JndiConnectionIT.java</include>
+                                <include>src/test/java/org/exist/xquery/modules/sql/Util.java</include>
                             </includes>
 
                         </licenseSet>
@@ -171,6 +175,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
         </plugins>
