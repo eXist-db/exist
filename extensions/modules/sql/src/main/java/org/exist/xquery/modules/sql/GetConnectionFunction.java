@@ -64,7 +64,7 @@ import static org.exist.xquery.modules.sql.SQLModule.functionSignatures;
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class GetConnectionFunction extends BasicFunction {
-    private static final FunctionReturnSequenceType RETURN_TYPE = returnsOpt(Type.LONG, "an xs:long representing the connection handle");
+    private static final FunctionReturnSequenceType RETURN_TYPE = returnsOpt(Type.LONG, "an xs:long representing the connection handle. The connection will be closed (or returned to the pool) automatically when the calling XQuery finishes execution, if you need to return it sooner you can call sql:close-connection#1");
     private static final FunctionParameterSequenceType JDBC_PASSWORD_PARAM = param("password", Type.STRING, "The SQL database password");
     private static final FunctionParameterSequenceType JDBC_USERNAME_PARAM = param("username", Type.STRING, "The SQL database username");
     private static final FunctionParameterSequenceType JDBC_PROPERTIES_PARAM = optParam("properties", Type.ELEMENT, "The JDBC database connection properties in the form <properties><property name=\"\" value=\"\"/></properties>.");
