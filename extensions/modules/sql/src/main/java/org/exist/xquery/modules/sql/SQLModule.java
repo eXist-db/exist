@@ -76,6 +76,7 @@ public class SQLModule extends AbstractInternalModule {
     public static final FunctionDef[] functions = functionDefs(
             functionDefs(GetConnectionFunction.class, GetConnectionFunction.FS_GET_CONNECTION),
             functionDefs(GetConnectionFunction.class, GetConnectionFunction.FS_GET_CONNECTION_FROM_POOL),
+            functionDefs(CloseConnectionFunction.class, CloseConnectionFunction.FS_CLOSE_CONNECTION),
             functionDefs(GetJNDIConnectionFunction.class, GetJNDIConnectionFunction.signatures),
             functionDefs(ExecuteFunction.class, ExecuteFunction.FS_EXECUTE),
             functionDefs(PrepareFunction.class, PrepareFunction.signatures)
@@ -189,6 +190,17 @@ public class SQLModule extends AbstractInternalModule {
      */
     public static long storeConnection(final XQueryContext context, final Connection con) {
         return ModuleUtils.storeObjectInContextMap(context, SQLModule.CONNECTIONS_CONTEXTVAR, con);
+    }
+
+    /**
+     * Removes a Connection from the Context of an XQuery.
+     *
+     * @param context The Context of the XQuery to remove the Connection from
+     * @param connectionUID The UID of the Connection to remove from the Context of the XQuery
+     * @return the database connection for the UID, or null if there is no such connection.
+     */
+    public static @Nullable Connection removeConnection(final XQueryContext context, final long connectionUID) {
+        return ModuleUtils.removeObjectFromContextMap(context, SQLModule.CONNECTIONS_CONTEXTVAR, connectionUID);
     }
 
     /**
