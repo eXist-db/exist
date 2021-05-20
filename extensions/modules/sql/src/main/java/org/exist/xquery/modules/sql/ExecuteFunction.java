@@ -67,7 +67,7 @@ import javax.annotation.Nullable;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.xquery.FunctionDSL.*;
-import static org.exist.xquery.modules.sql.SQLUtils.functionSignatures;
+import static org.exist.xquery.modules.sql.SQLModule.functionSignatures;
 
 
 /**

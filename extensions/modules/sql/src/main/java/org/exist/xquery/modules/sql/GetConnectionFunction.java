@@ -135,7 +135,6 @@ public class GetConnectionFunction extends BasicFunction {
 
     private Connection getConnection(final Sequence[] args) throws XPathException {
         // get the db connection details
-        final String dbDriver = args[0].getStringValue();
         final String dbURL = args[1].getStringValue();
 
         try {

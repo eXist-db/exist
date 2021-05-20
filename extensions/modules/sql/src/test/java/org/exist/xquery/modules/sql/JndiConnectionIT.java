@@ -32,7 +32,6 @@
  */
 package org.exist.xquery.modules.sql;
 
-import com.evolvedbinary.j8fu.function.Function2E;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -42,15 +41,12 @@ import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.Sequence;
@@ -73,6 +69,8 @@ import java.util.Properties;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.xquery.modules.sql.Util.executeQuery;
+import static org.exist.xquery.modules.sql.Util.withCompiledQuery;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -184,45 +182,5 @@ public class JndiConnectionIT {
 
             transaction.commit();
         }
-    }
-
-    private Sequence executeQuery(final DBBroker broker, final CompiledXQuery compiledXQuery) throws PermissionDeniedException, XPathException {
-        final BrokerPool pool = broker.getBrokerPool();
-        final XQuery xqueryService = pool.getXQueryService();
-        return xqueryService.execute(broker, compiledXQuery, null, new Properties());
-    }
-
-    private <T> T withCompiledQuery(final DBBroker broker, final Source source, final Function2E<CompiledXQuery, T, XPathException, PermissionDeniedException> op) throws XPathException, PermissionDeniedException, IOException {
-        final BrokerPool pool = broker.getBrokerPool();
-        final XQuery xqueryService = pool.getXQueryService();
-        final XQueryPool xqueryPool = pool.getXQueryPool();
-        final CompiledXQuery compiledQuery = compileQuery(broker, xqueryService, xqueryPool, source);
-        try {
-            return op.apply(compiledQuery);
-        } finally {
-            if (compiledQuery != null) {
-                xqueryPool.returnCompiledXQuery(source, compiledQuery);
-            }
-        }
-    }
-
-    private CompiledXQuery compileQuery(final DBBroker broker, final XQuery xqueryService, final XQueryPool xqueryPool, final Source query) throws PermissionDeniedException, XPathException, IOException {
-        CompiledXQuery compiled = xqueryPool.borrowCompiledXQuery(broker, query);
-        XQueryContext context;
-        if (compiled == null) {
-            context = new XQueryContext(broker.getBrokerPool());
-        } else {
-            context = compiled.getContext();
-            context.prepareForReuse();
-        }
-
-        if (compiled == null) {
-            compiled = xqueryService.compile(broker, context, query);
-        } else {
-            compiled.getContext().updateContext(context);
-            context.getWatchDog().reset();
-        }
-
-        return compiled;
     }
 }

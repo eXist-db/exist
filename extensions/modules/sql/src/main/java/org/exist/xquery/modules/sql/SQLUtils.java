@@ -201,9 +201,4 @@ public final class SQLUtils {
 
         return (work);
     }
-
-    static FunctionSignature[] functionSignatures(final String name, final String description,
-            final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
-        return FunctionDSL.functionSignatures(new QName(name, SQLModule.NAMESPACE_URI, SQLModule.PREFIX), description, returnType, variableParamTypes);
-    }
 }
