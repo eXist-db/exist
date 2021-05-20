@@ -51,11 +51,11 @@ public class GetResource extends BasicFunction {
 			},
 			new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE,
 					"<status result=\"ok\"/> if deployment was ok. Throws an error otherwise."));
-	
+
 	public GetResource(XQueryContext context) {
 		super(context, signature);
 	}
-	
+
 	@Override
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
@@ -72,8 +72,8 @@ public class GetResource extends BasicFunction {
                             // FileSystemResolver already returns an input stream
                             StreamSource source = (StreamSource) pkg.getResolver().resolveResource(path);
                             return Base64BinaryDocument.getInstance(context, source.getInputStream());
-                        } catch (Storage.NotExistException ex) {
-                            // nothing
+                        } catch (Storage.NotExistException e) {
+                            throw new XPathException(ErrorCodes.FODC0002, "Resource " + path + " does not exist.", e);
                         }
                     }
                 }
