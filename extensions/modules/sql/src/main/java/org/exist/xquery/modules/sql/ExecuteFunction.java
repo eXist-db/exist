@@ -106,7 +106,7 @@ public class ExecuteFunction extends BasicFunction {
                     ),
                     arity(
                             FS_PARAM_CONNECTION_HANDLE,
-                            param("statement-handle", Type.INTEGER, "The prepared statement handle"),
+                            param("statement-handle", Type.LONG, "The prepared statement handle"),
                             optParam("parameters", Type.ELEMENT, "Parameters for the prepared statement. e.g. <sql:parameters><sql:param sql:type=\"long\">1234</sql:param><sql:param sql:type=\"varchar\"><sql:null/></sql:param></sql:parameters>"),
                             FS_PARAM_MAKE_NODE_FROM_COLUMN_NAME
                     )
