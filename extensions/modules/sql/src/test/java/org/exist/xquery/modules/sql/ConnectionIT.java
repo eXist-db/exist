@@ -46,24 +46,23 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.modules.ModuleUtils;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.Optional;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.xquery.modules.sql.Util.executeQuery;
 import static org.exist.xquery.modules.sql.Util.withCompiledQuery;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * SQL Connection Integration Tests.
@@ -80,26 +79,34 @@ public class ConnectionIT {
 
     @Test
     public void getConnectionIsAutomaticallyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException {
-        final String query =
+        final String mainQuery =
                 "import module namespace sql = \"http://exist-db.org/xquery/sql\";\n" +
                 "sql:get-connection(\"" + h2Database.getDriverClass().getName() + "\", \"" + h2Database.getUrl() + "\", \"" + h2Database.getUser() + "\", \"" + h2Database.getPassword() + "\")";
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        final Source source = new StringSource(query);
+        final Source mainQuerySource = new StringSource(mainQuery);
         try (final DBBroker broker = pool.getBroker();
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
-            // execute query
-            final Tuple2<XQueryContext, Boolean> contextAndResult = withCompiledQuery(broker, source, compiledXQuery -> {
-                final Sequence result = executeQuery(broker, compiledXQuery);
-                return Tuple(compiledXQuery.getContext(), !result.isEmpty());
+            final XQueryContext escapedMainQueryContext = withCompiledQuery(broker, mainQuerySource, mainCompiledQuery -> {
+                final XQueryContext mainQueryContext = mainCompiledQuery.getContext();
+
+                // execute the query
+                final Sequence result = executeQuery(broker, mainCompiledQuery);
+
+                // check that the handle for the sql connection that was created was valid
+                assertEquals(1, result.getItemCount());
+                assertTrue(result.itemAt(0) instanceof IntegerValue);
+                assertEquals(Type.LONG, result.itemAt(0).getType());
+                final long connectionHandle = result.itemAt(0).toJavaObject(long.class);
+                assertFalse(connectionHandle == 0);
+
+                // intentionally escape the context from the lambda
+                return mainQueryContext;
             });
 
-            // check that the handle for the sql connection that was created is valid
-            assertTrue(contextAndResult._2);
-
-            // check the connections were closed
-            final int connectionsCount = ModuleUtils.readContextMap(contextAndResult._1, SQLModule.CONNECTIONS_CONTEXTVAR, Map::size);
+            // check the connections map is empty
+            final int connectionsCount = ModuleUtils.readContextMap(escapedMainQueryContext, SQLModule.CONNECTIONS_CONTEXTVAR, Map::size);
             assertEquals(0, connectionsCount);
 
             transaction.commit();
@@ -108,42 +115,66 @@ public class ConnectionIT {
 
     @Test
     public void getConnectionFromModuleIsAutomaticallyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException, LockException, TriggerException {
-        final String module =
+        final String moduleQuery =
                 "module namespace mymodule = \"http://mymodule.com\";\n" +
                 "import module namespace sql = \"http://exist-db.org/xquery/sql\";\n" +
                 "declare function mymodule:get-handle() {\n" +
                 "    sql:get-connection(\"" + h2Database.getDriverClass().getName() + "\", \"" + h2Database.getUrl() + "\", \"" + h2Database.getUser() + "\", \"" + h2Database.getPassword() + "\")\n" +
                 "};\n";
+        final Source moduleQuerySource = new StringSource(moduleQuery);
 
-        final String query =
+        final String mainQuery =
                 "import module namespace mymodule = \"http://mymodule.com\" at \"xmldb:exist:///db/mymodule.xqm\";\n" +
                 "mymodule:get-handle()";
+        final Source mainQuerySource = new StringSource(mainQuery);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        final Source source = new StringSource(query);
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             // store module
-            final byte[] moduleData = module.getBytes(UTF_8);
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(moduleData)) {
+            try (final InputStream is = moduleQuerySource.getInputStream()) {
                 try (final Collection collection = broker.openCollection(XmldbURI.create("/db"), Lock.LockMode.WRITE_LOCK)) {
-                    collection.addBinaryResource(transaction, broker, XmldbURI.create("mymodule.xqm"), bais, "application/xquery", moduleData.length);
+                    collection.addBinaryResource(transaction, broker, XmldbURI.create("mymodule.xqm"), is, "application/xquery", -1);
                 }
             }
 
-            // execute query
-            final Tuple2<XQueryContext, Boolean> contextAndResult = withCompiledQuery(broker, source, compiledXQuery -> {
-                final Sequence result = executeQuery(broker, compiledXQuery);
-                return Tuple(compiledXQuery.getContext(), !result.isEmpty());
+            final Tuple2<XQueryContext, ModuleContext> escapedContexts = withCompiledQuery(broker, mainQuerySource, mainCompiledQuery -> {
+                final XQueryContext mainQueryContext = mainCompiledQuery.getContext();
+
+                // get the context of the library module
+                final Module[] libraryModules = mainQueryContext.getModules("http://mymodule.com");
+                assertEquals(1, libraryModules.length);
+                assertTrue(libraryModules[0] instanceof ExternalModule);
+                final ExternalModule libraryModule = (ExternalModule) libraryModules[0];
+                final XQueryContext libraryQueryContext = libraryModule.getContext();
+                assertTrue(libraryQueryContext instanceof ModuleContext);
+
+                // execute the query
+                final Sequence result = executeQuery(broker, mainCompiledQuery);
+
+                // check that the handle for the sql connection that was created was valid
+                assertEquals(1, result.getItemCount());
+                assertTrue(result.itemAt(0) instanceof IntegerValue);
+                assertEquals(Type.LONG, result.itemAt(0).getType());
+                final long connectionHandle = result.itemAt(0).toJavaObject(long.class);
+                assertFalse(connectionHandle == 0);
+
+                // intentionally escape the contexts from the lambda
+                return Tuple(mainQueryContext, (ModuleContext) libraryQueryContext);
             });
 
-            // check that the handle for the sql connection that was created is valid
-            assertTrue(contextAndResult._2);
+            final XQueryContext escapedMainQueryContext = escapedContexts._1;
+            final ModuleContext escapedLibraryQueryContext = escapedContexts._2;
+            assertTrue(escapedMainQueryContext != escapedLibraryQueryContext);
 
-            // check the connections were closed
-            final int connectionsCount = ModuleUtils.readContextMap(contextAndResult._1, SQLModule.CONNECTIONS_CONTEXTVAR, Map::size);
-            assertEquals(0, connectionsCount);
+            // check the connections were closed in the main module
+            final int mainConnectionsCount = ModuleUtils.readContextMap(escapedMainQueryContext, SQLModule.CONNECTIONS_CONTEXTVAR, Map::size);
+            assertEquals(0, mainConnectionsCount);
+
+            // check the connections were closed in the library module
+            final int libraryConnectionsCount = ModuleUtils.readContextMap(escapedLibraryQueryContext, SQLModule.CONNECTIONS_CONTEXTVAR, Map::size);
+            assertEquals(0, libraryConnectionsCount);
 
             transaction.commit();
         }
