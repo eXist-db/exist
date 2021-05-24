@@ -73,6 +73,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>4.0.3</version>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -131,10 +137,15 @@
                             -->
                             <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
                             <excludes>
+                                <exclude>src/main/java/org/exist/xquery/modules/sql/GetConnectionFunction.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/modules/sql/CloseConnectionFunction.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/modules/sql/SQLModule.java</exclude>
                                 <exclude>src/test/resources/jndi.properties</exclude>
                                 <exclude>src/test/java/org/exist/xquery/modules/sql/ConnectionIT.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/modules/sql/ConnectionPoolIT.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/modules/sql/H2DatabaseResource.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/modules/sql/JndiConnectionIT.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/modules/sql/Util.java</exclude>
                             </excludes>
                         </licenseSet>
 
@@ -144,10 +155,15 @@
                             -->
                             <header>${project.parent.relativePath}/FDB-backport-LGPL-21-ONLY-license.template.txt</header>
                             <includes>
+                                <include>src/main/java/org/exist/xquery/modules/sql/GetConnectionFunction.java</include>
+                                <include>src/main/java/org/exist/xquery/modules/sql/CloseConnectionFunction.java</include>
+                                <include>src/main/java/org/exist/xquery/modules/sql/SQLModule.java</include>
                                 <include>src/test/resources/jndi.properties</include>
                                 <include>src/test/java/org/exist/xquery/modules/sql/ConnectionIT.java</include>
+                                <include>src/test/java/org/exist/xquery/modules/sql/ConnectionPoolIT.java</include>
                                 <include>src/test/java/org/exist/xquery/modules/sql/H2DatabaseResource.java</include>
                                 <include>src/test/java/org/exist/xquery/modules/sql/JndiConnectionIT.java</include>
+                                <include>src/test/java/org/exist/xquery/modules/sql/Util.java</include>
                             </includes>
 
                         </licenseSet>
@@ -159,6 +175,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
         </plugins>

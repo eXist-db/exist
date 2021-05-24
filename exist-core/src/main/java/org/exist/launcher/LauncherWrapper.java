@@ -21,6 +21,8 @@
  */
 package org.exist.launcher;
 
+import org.exist.start.CompatibleJavaVersionCheck;
+import org.exist.start.StartException;
 import org.exist.util.ConfigurationHelper;
 
 import javax.swing.*;
@@ -49,7 +51,16 @@ public class LauncherWrapper {
     private final static String LAUNCHER = org.exist.launcher.Launcher.class.getName();
     private final static String OS = System.getProperty("os.name").toLowerCase();
 
-    public final static void main(String[] args) {
+    public final static void main(final String[] args) {
+        try {
+            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
+        } catch (final StartException e) {
+            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
+                System.err.println(e.getMessage());
+            }
+            System.exit(e.getErrorCode());
+        }
+
         final LauncherWrapper wrapper = new LauncherWrapper(LAUNCHER);
         if (ConfigurationUtility.isFirstStart()) {
             System.out.println("First launch: opening configuration dialog");

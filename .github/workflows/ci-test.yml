@@ -27,9 +27,11 @@ jobs:
       - name: Maven Test
         run: mvn -V -B clean verify
       - name: Maven Code Coverage
-        if: ${{ matrix.jdk == '8' && matrix.os == 'ubuntu-latest' }}
+        if: ${{ github.ref == 'refs/heads/develop' && matrix.jdk == '8' && matrix.os == 'ubuntu-latest' }}
         env:
-          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
-        run: |
-          echo "ADAM COVERALLS_TOKEN='${COVERALLS_TOKEN}'"
-          mvn -V -B jacoco:report coveralls:report
+          CI_NAME: github
+          BRANCH_NAME_OR_REF: ${{ github.head_ref || github.ref }}
+          CI_BUILD_NUMBER: ${{ github.run_id }}
+          CI_BUILD_URL: https://github.com/${{ github.repository }}/commit/${{ github.event.after }}/checks
+          COVERALLS_SECRET: ${{ secrets.GITHUB_TOKEN }}
+        run: mvn -V -B jacoco:report coveralls:report -DrepoToken=${{ secrets.COVERALLS_TOKEN }}

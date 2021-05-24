@@ -34,10 +34,6 @@ public class CacheConfig {
     private final Optional<Long> maximumSize;
     private final Optional<Long> expireAfterAccess;
 
-    public CacheConfig() {
-        this(Optional.empty(), Optional.empty(), Optional.empty());
-    }
-
     /**
      * @param permissions Any restrictions on cache operations
      * @param maximumSize The maximimum number of entries in the cache

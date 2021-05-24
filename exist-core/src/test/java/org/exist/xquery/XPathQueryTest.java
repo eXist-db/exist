@@ -27,7 +27,6 @@ import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.w3c.dom.Document;
@@ -2344,9 +2343,5 @@ public class XPathQueryTest {
                 "XPathQueryService",
                 "1.0");
         return service;
-    }
-
-    public static void main(final String[] args) {
-        JUnitCore.runClasses(XPathQueryTest.class);
     }
 }

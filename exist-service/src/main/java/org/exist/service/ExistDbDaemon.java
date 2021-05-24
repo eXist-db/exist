@@ -24,7 +24,9 @@ package org.exist.service;
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
 import org.apache.commons.daemon.DaemonInitException;
+import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.Main;
+import org.exist.start.StartException;
 
 public class ExistDbDaemon implements Daemon {
 
@@ -42,6 +44,15 @@ public class ExistDbDaemon implements Daemon {
 
     @Override
     public void init(final DaemonContext daemonContext) throws DaemonInitException {
+        try {
+            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
+        } catch (final StartException e) {
+            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
+                System.err.println(e.getMessage());
+            }
+            System.exit(e.getErrorCode());
+        }
+
         if (this.main != null) {
             throw new DaemonInitException("Daemon already initialised");
         }

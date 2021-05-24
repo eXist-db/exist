@@ -989,7 +989,31 @@
             <!--
                 Extension Modules
             -->
-            <module uri="http://exist-db.org/xquery/cache" class="org.exist.xquery.modules.cache.CacheModule"/>
+            <module uri="http://exist-db.org/xquery/cache" class="org.exist.xquery.modules.cache.CacheModule">
+                <!--
+                If a named Cache does not exist it can be created lazily on-demand
+                when an operation is first performed upon it.
+
+                    - enableLazyCreation
+                        true to enable lazy creation, false to disable.
+                        When false, if the Cache is not explicitly created before
+                        it is used then an error is raised.
+
+                    - lazy.*
+                        These settings are as documented for the Cache Module
+                        and control the config that is used when lazily creating
+                        a Cache.
+                        Valid settings are:
+                            - lazy.maximumSize
+                            - lazy.expireAfterAccess
+                            - lazy.putGroup
+                            - lazy.getGroup
+                            - lazy.removeGroup
+                            - lazy.clearGroup
+                -->
+                <parameter name="enableLazyCreation" value="true"/>
+                <parameter name="lazy.maximumSize" value="128"/>
+            </module>
             <module uri="http://exist-db.org/xquery/compression" class="org.exist.xquery.modules.compression.CompressionModule"/>
             <module uri="http://exist-db.org/xquery/counter" class="org.exist.xquery.modules.counter.CounterModule"/>
             <module uri="http://exist-db.org/xquery/cqlparser" class="org.exist.xquery.modules.cqlparser.CQLParserModule"/>
@@ -1004,7 +1028,38 @@
             <module uri="http://exist-db.org/xquery/process" class="org.exist.xquery.modules.process.ProcessModule"/>
             <module uri="http://exist-db.org/xquery/scheduler" class="org.exist.xquery.modules.scheduler.SchedulerModule"/>
             <module uri="http://exist-db.org/xquery/simple-ql" class="org.exist.xquery.modules.simpleql.SimpleQLModule"/>
-            <module uri="http://exist-db.org/xquery/sql" class="org.exist.xquery.modules.sql.SQLModule"/>
+            <module uri="http://exist-db.org/xquery/sql" class="org.exist.xquery.modules.sql.SQLModule">
+
+                <!--
+                Connection Pools can be setup for SQL connections, for use with sql:get-connection-from-pool($pool-name)
+                Each pool has a name and a number of configuration properties.
+                The HikariCP Connection Pool is used, you can find its configuration options
+                here: https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby
+
+                You can specify the username and password for a connection here, or you may specify it
+                when you call sql:get-connection-from-pool($pool-name, $username, $password).
+                -->
+
+                <!--
+                <parameter name="pool.1.name" value="pool-1"/>
+                <parameter name="pool.1.properties.dataSourceClassName" value="org.postgresql.ds.PGSimpleDataSource"/>
+                <parameter name="pool.1.properties.dataSource.user" value="my-username"/>
+                <parameter name="pool.1.properties.dataSource.password" value="my-password"/>
+                <parameter name="pool.1.properties.dataSource.databaseName" value="my-db"/>
+                <parameter name="pool.1.properties.maximumPoolSize" value="10"/>
+                <parameter name="pool.1.properties.registerMbeans" value="false"/>
+                -->
+
+                <!--
+                <parameter name="pool.2.name" value="pool-2"/>
+                <parameter name="pool.2.properties.dataSourceClassName" value="org.mariadb.jdbc.MariaDbDataSource"/>
+                <parameter name="pool.2.properties.dataSource.user" value="my-other-username"/>
+                <parameter name="pool.2.properties.dataSource.password" value="my-other-password"/>
+                <parameter name="pool.2.properties.dataSource.databaseName" value="other-db"/>
+                <parameter name="pool.2.properties.maximumPoolSize" value="10"/>
+                <parameter name="pool.2.properties.registerMbeans" value="false"/>
+                -->
+            </module>
             <module uri="http://exist-db.org/xquery/xmldiff" class="org.exist.xquery.modules.xmldiff.XmlDiffModule"/>
             <!--
                 XSL:FO Transformation Module

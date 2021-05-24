@@ -387,19 +387,4 @@ public class DLN extends DLNBase implements NodeId {
         os.write(bits, i, bits.length - i);
         return this;
     }
-
-    public static void main(final String[] args) {
-        final DLN left1 = new DLN("5.6.2.6");
-        final DLN left2 = new DLN("5.6.2.7");
-        final DLN right = new DLN("5.6.2.7.1");
-        final byte[] nodeIdData1 = new byte[left1.size()];
-        left1.serialize(nodeIdData1, 0);
-        System.out.println(left1.units() + ": " +left1 + ": " + MessageDigester.byteArrayToHex(nodeIdData1) + Integer.toHexString(left1.units()));
-        final byte[] nodeIdData2 = new byte[left2.size()];
-        left2.serialize(nodeIdData2, 0);
-        System.out.println(left2.units() + ": " + left2 + ": " + MessageDigester.byteArrayToHex(nodeIdData2) + Integer.toHexString(left2.units()));
-        final byte[] nodeIdData3 = new byte[right.size()];
-        right.serialize(nodeIdData3, 0);
-        System.out.println(right.units() + ": " + right + ": " + MessageDigester.byteArrayToHex(nodeIdData3) + Integer.toHexString(right.units()));
-    }
 }

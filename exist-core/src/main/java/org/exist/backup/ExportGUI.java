@@ -23,6 +23,8 @@ package org.exist.backup;
 
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
+import org.exist.start.CompatibleJavaVersionCheck;
+import org.exist.start.StartException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
@@ -604,11 +606,20 @@ public class ExportGUI extends javax.swing.JFrame {
 
 
     /**
-     * DOCUMENT ME!
+     * Main entry point.
      *
      * @param args the command line arguments
      */
     public static void main(final String[] args) {
+        try {
+            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
+        } catch (final StartException e) {
+            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
+                System.err.println(e.getMessage());
+            }
+            System.exit(e.getErrorCode());
+        }
+
         java.awt.EventQueue.invokeLater(() -> new ExportGUI().setVisible(true));
     }
 }

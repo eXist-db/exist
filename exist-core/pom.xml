@@ -192,7 +192,7 @@
         <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
-            <version>3.19.0</version>
+            <version>3.20.0</version>
         </dependency>
 
         <dependency>
@@ -427,6 +427,10 @@
                 <exclusion>
                     <groupId>com.zaxxer</groupId>
                     <artifactId>HikariCP-java6</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.zaxxer</groupId>
+                    <artifactId>HikariCP-java7</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

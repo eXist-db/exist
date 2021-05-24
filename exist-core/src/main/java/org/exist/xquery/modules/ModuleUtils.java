@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import javax.annotation.Nullable;
 import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
 
@@ -314,32 +315,82 @@ public class ModuleUtils {
             return lock;
         }
     }
-    
+
+    /**
+     * Stores an Object into the Context of an XQuery.
+     *
+     * @param context The Context of the XQuery to store the Object in
+     * @param contextMapName The name of the context map
+     * @param o The Object to store
+     * @param <T> the type of the object being stored
+     *
+     * @return A unique ID representing the Object
+     */
+    public static <T> long storeObjectInContextMap(final XQueryContext context, final String contextMapName, final T o) {
+        return modifyContextMap(context, contextMapName, contextMap -> {
+            // get an id for the map
+            long uid = 0;
+            while (uid == 0 || contextMap.keySet().contains(uid)) {
+                uid = getUID();
+            }
+
+            // place the object in the map
+            contextMap.put(uid, o);
+
+            return uid;
+        });
+    }
+
     /**
      * Retrieves a previously stored Object from the Context of an XQuery.
      *
-     * @param   context         The Context of the XQuery containing the Object
-     * @param   contextMapName  DOCUMENT ME!
-     * @param   objectUID       The UID of the Object to retrieve from the Context of the XQuery
-     * @param <T> class of the object stored in the context
-     * @return  the object stored in the context or null
-     */        
-    public static <T> T retrieveObjectFromContextMap(XQueryContext context, String contextMapName, long objectUID) {
-        try(final ManagedLock<ReadWriteLock> readLock = ManagedLock.acquire(contextMapLocks.getLock(contextMapName), LockMode.READ_LOCK)){
-            // get the existing object map from the context
-            final Map<Long, T> map = (HashMap<Long, T>)context.getAttribute(contextMapName);
-
-            if(map == null) {
-                return null;
-            }
-
-            // get the connection
-            return map.get(objectUID);
-        }
+     * @param context The Context of the XQuery containing the Object
+     * @param contextMapName The name of the context map
+     * @param objectUID The UID of the Object to retrieve from the Context of the XQuery
+     *
+     * @param <T> the type of the object being retrieved
+     *
+     * @return the object stored in the context or null
+     */
+    public static @Nullable <T> T retrieveObjectFromContextMap(final XQueryContext context, final String contextMapName, final long objectUID) {
+        return readContextMap(context, contextMapName, contextMap -> {
+            // get the object
+            return (T) contextMap.get(objectUID);
+        });
     }
-    
-    public static <T> void modifyContextMap(XQueryContext context, String contextMapName, ContextMapModifier<T> modifier) {
-        try(final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(contextMapLocks.getLock(contextMapName), LockMode.WRITE_LOCK)) {
+
+    /**
+     * Removes a previously stored Object from the Context of an XQuery.
+     *
+     * @param context The Context of the XQuery containing the Object
+     * @param contextMapName The name of the context map
+     * @param objectUID The UID of the Object to remove from the Context of the XQuery
+     *
+     * @param <T> the type of the object being removed
+     *
+     * @return the object that was removed from the context or null if there was no object for the UID
+     */
+    public static @Nullable <T> T removeObjectFromContextMap(final XQueryContext context, final String contextMapName, final long objectUID) {
+        return modifyContextMap(context, contextMapName, contextMap -> {
+            // get the object
+            return (T) contextMap.remove(objectUID);
+        });
+    }
+
+    /**
+     * Modify a context map.
+     *
+     * @param context the XQuery context
+     * @param contextMapName The name of the context map
+     * @param modifier the modification function
+     *
+     * @param <T> the type of the value in the map
+     * @param <U> the type of the return value of the modifier function
+     *
+     * @return the result of the modification function
+     */
+    public static @Nullable <T, U> U modifyContextMap(final XQueryContext context, final String contextMapName, final ContextMapModifier<T, U> modifier) {
+        try (final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(contextMapLocks.getLock(contextMapName), LockMode.WRITE_LOCK)) {
             // get the existing map from the context
             Map<Long, T> map = (Map<Long, T>)context.getAttribute(contextMapName);
             if(map == null) {
@@ -349,12 +400,24 @@ public class ModuleUtils {
             }
             
             //modify the map
-            modifier.modify(map);
+            return modifier.modify(map);
         }
     }
 
+    /**
+     * Read a context map.
+     *
+     * @param context the XQuery context
+     * @param contextMapName The name of the context map
+     * @param reader the reader function
+     *
+     * @param <T> the type of the value in the map
+     * @param <U> the type of the return value of the reader function
+     *
+     * @return the result of the reader function
+     */
     public static <T, U> U readContextMap(final XQueryContext context, final String contextMapName, final ContextMapReader<T, U> reader) {
-        try(final ManagedLock<ReadWriteLock> readLock = ManagedLock.acquire(contextMapLocks.getLock(contextMapName), LockMode.READ_LOCK)) {
+        try (final ManagedLock<ReadWriteLock> readLock = ManagedLock.acquire(contextMapLocks.getLock(contextMapName), LockMode.READ_LOCK)) {
             // get the existing map from the context
             Map<Long, T> map = (Map<Long, T>)context.getAttribute(contextMapName);
             if (map == null) {
@@ -367,64 +430,37 @@ public class ModuleUtils {
     }
 
     @FunctionalInterface
-    public interface ContextMapModifier<T> {
-        void modify(Map<Long, T> map);
+    public interface ContextMapModifier<T, U> {
+        U modify(final Map<Long, T> map);
+    }
+
+    @FunctionalInterface
+    public interface ContextMapModifierWithoutResult<T> extends ContextMapModifier<T, Void> {
+        @Override
+        default Void modify(final Map<Long, T> map) {
+            modifyWithoutResult(map);
+            return null;
+        }
+
+        void modifyWithoutResult(final Map<Long, T> map);
     }
 
     @FunctionalInterface
     public interface ContextMapReader<T, U> {
-        U read(Map<Long, T> map);
+        U read(final Map<Long, T> map);
     }
-    
-    public static abstract class ContextMapEntryModifier<T> implements ContextMapModifier<T> {
-        
+
+    public static abstract class ContextMapEntryModifier<T> implements ContextMapModifierWithoutResult<T> {
         @Override
-        public void modify(Map<Long, T> map) {
+        public void modifyWithoutResult(final Map<Long, T> map) {
             for(final Entry<Long, T> entry : map.entrySet()) {
-                modify(entry);
+                modifyEntry(entry);
             }
         }
-        
-        public abstract void modify(Entry<Long, T> entry);
+
+        public abstract void modifyEntry(final Entry<Long, T> entry);
     }
 
-    /**
-     * Stores an Object in the Context of an XQuery.
-     *
-     * @param   context         The Context of the XQuery to store the Object in
-     * @param   contextMapName  The name of the context map
-     * @param   o               The Object to store
-     * @param <T> the class of the object being stored
-     * @return  A unique ID representing the Object
-     */
-    public static <T> long storeObjectInContextMap(XQueryContext context, String contextMapName, T o) {
-
-        try(final ManagedLock<ReadWriteLock> writeLock = ManagedLock.acquire(contextMapLocks.getLock(contextMapName), LockMode.WRITE_LOCK)) {
-
-            // get the existing map from the context
-            Map<Long, T> map = (Map<Long, T>)context.getAttribute(contextMapName);
-
-            if(map == null) {
-                // if there is no map, create a new one
-                map = new HashMap<>();
-            }
-
-            // get an id for the map
-            long uid = 0;
-            while(uid == 0 || map.keySet().contains(uid)) {
-                uid = getUID();
-            }
-
-            // place the object in the map
-            map.put(uid, o);
-
-            // store the map back in the context
-            context.setAttribute(contextMapName, map);
-
-            return (uid);
-        }
-    }
-    
     private static long getUID() {
         final BigInteger bi = new BigInteger(64, random);
         return bi.longValue();

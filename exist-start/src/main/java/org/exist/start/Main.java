@@ -68,6 +68,7 @@ public class Main {
 
     private static final int ERROR_CODE_GENERAL = 1;
     private static final int ERROR_CODE_NO_JETTY_CONFIG = 7;
+    static final int ERROR_CODE_INCOMPATIBLE_JAVA_DETECTED = 13;
 
     public static final String CONFIG_DIR_NAME = "etc";
 
@@ -156,11 +157,20 @@ public class Main {
         try {
             runEx(args);
         } catch (final StartException e) {
+            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
+                System.err.println(e.getMessage());
+            }
             System.exit(e.getErrorCode());
         }
     }
 
+
+
     public void runEx(String[] args) throws StartException {
+
+        // Check if the OpenJDK version can corrupt eXist-db
+        CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
+
         final String _classname;
         if (args.length > 0) {
             if ("client".equals(args[0])) {

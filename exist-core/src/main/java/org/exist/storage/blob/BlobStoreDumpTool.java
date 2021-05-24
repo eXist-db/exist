@@ -32,6 +32,8 @@
  */
 package org.exist.storage.blob;
 
+import org.exist.start.CompatibleJavaVersionCheck;
+import org.exist.start.StartException;
 import org.exist.util.SystemExitCodes;
 import org.exist.util.crypto.digest.DigestType;
 import se.softhouse.jargo.Argument;
@@ -76,6 +78,8 @@ public class BlobStoreDumpTool {
 
     public static void main(final String args[]) throws IOException {
         try {
+            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
+
             final ParsedArguments arguments = CommandLineParser
                     .withArguments(digestArg, persistentFileArg)
                     .andArguments(helpArg)
@@ -87,7 +91,11 @@ public class BlobStoreDumpTool {
             final PrintStream printStream = System.out;
 
             dump(digestType, persistentFile, printStream);
-
+        } catch (final StartException e) {
+            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
+                System.err.println(e.getMessage());
+            }
+            System.exit(e.getErrorCode());
         } catch(final ArgumentException e) {
             System.out.println(e.getMessageAndUsage());
             System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);

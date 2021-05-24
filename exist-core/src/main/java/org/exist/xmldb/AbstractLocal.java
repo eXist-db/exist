@@ -265,7 +265,7 @@ public abstract class AbstractLocal {
                 final R result = dbOperation.apply(broker, transaction);
                 transaction.commit();
                 return result;
-            } catch (final XMLDBException e) {
+            } catch (final XMLDBException | EXistException e) {
                 transaction.abort();
                 throw e;
             }

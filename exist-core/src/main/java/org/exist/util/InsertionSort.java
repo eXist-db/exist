@@ -21,8 +21,6 @@
  */
 package org.exist.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -217,39 +215,5 @@ public final class InsertionSort {
 				if(b!=null)  {b[j+1]=tempb;}
 			}
 		}
-	}
-	
-	public static void main(String[] args) throws Exception {
-		final List<String> l = new ArrayList<>();
-		
-		if(args.length==0) {
-			final String[] a=new String[] {
-				"Rudi",
-				"Herbert",
-				"Anton",
-				"Berta",
-				"Olga",
-				"Willi",
-				"Heinz"
-			};
-
-            l.addAll(Arrays.asList(a));
-		} else {
-			System.err.println("Ordering file "+args[0]+"\n");
-			try(final java.io.BufferedReader is=new java.io.BufferedReader(new java.io.FileReader(args[0]))) {
-				String rr;
-				
-				while((rr=is.readLine())!=null) {
-					l.add(rr);
-				}
-			}
-		}
-		long a;
-		long b;
-		a=System.currentTimeMillis();
-		sort(l, 0, l.size() - 1);
-		b=System.currentTimeMillis();
-		System.err.println("Ellapsed time: "+(b-a)+" size: "+l.size());
-        for (String s : l) System.out.println(s);
 	}
 }

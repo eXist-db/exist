@@ -42,7 +42,7 @@
         <dependency>
             <groupId>org.openjdk.jcstress</groupId>
             <artifactId>jcstress-core</artifactId>
-            <version>0.8</version>
+            <version>0.11</version>
         </dependency>
         <dependency>
             <groupId>org.exist-db</groupId>

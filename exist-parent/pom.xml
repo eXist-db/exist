@@ -108,9 +108,9 @@
         <exquery.distribution.version>0.2.0</exquery.distribution.version>
         <icu.version>59.1</icu.version>
         <izpack.version>5.1.3</izpack.version>
-        <jaxb.api.version>3.0.0</jaxb.api.version>
-        <jaxb.impl.version>3.0.0</jaxb.impl.version>
-        <jetty.version>9.4.40.v20210413</jetty.version>
+        <jaxb.api.version>3.0.1</jaxb.api.version>
+        <jaxb.impl.version>3.0.1</jaxb.impl.version>
+        <jetty.version>9.4.41.v20210516</jetty.version>
         <log4j.version>2.14.1</log4j.version>
         <lucene.version>4.10.4</lucene.version>
         <milton.version>1.8.1.3</milton.version>
@@ -157,7 +157,7 @@
             <dependency>
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
-                <version>2.9.0</version>
+                <version>2.9.1</version>
             </dependency>
 
             <dependency>
@@ -372,7 +372,7 @@
             <dependency>
                 <groupId>org.expath.packaging</groupId>
                 <artifactId>pkg-java</artifactId>
-                <version>1.5.0</version>
+                <version>1.6.1</version>
             </dependency>
 
             <dependency>
@@ -420,7 +420,7 @@
             <dependency>
                 <groupId>io.lacuna</groupId>
                 <artifactId>bifurcan</artifactId>
-                <version>0.2.0-alpha4</version>
+                <version>0.2.0-alpha6</version>
             </dependency>
 
             <dependency>
@@ -505,7 +505,7 @@
                 <plugin>
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
-                    <version>6.1.5</version>
+                    <version>6.1.6</version>
                     <configuration>
                         <archiveAnalyzerEnabled>false</archiveAnalyzerEnabled>
                         <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
@@ -646,7 +646,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.6</version>
+                    <version>0.8.7</version>
                     <configuration>
                         <propertyName>jacocoArgLine</propertyName>
                         <excludes>
@@ -701,7 +701,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-project-info-reports-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>3.1.2</version>
                     <configuration>
                         <dependencyDetailsEnabled>false</dependencyDetailsEnabled>  <!-- TODO(AR) disabled due to slow `mvn site` build times -->
                     </configuration>

@@ -52,6 +52,8 @@ import org.exist.management.Cache;
 import org.exist.management.CacheManager;
 import org.exist.management.impl.*;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.start.CompatibleJavaVersionCheck;
+import org.exist.start.StartException;
 import org.exist.util.NamedThreadFactory;
 import org.exist.util.serializer.DOMSerializer;
 import org.w3c.dom.Element;
@@ -471,6 +473,15 @@ public class JMXtoXML {
      * @param args program arguments
      */
     public static void main(final String[] args) {
+        try {
+            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
+        } catch (final StartException e) {
+            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
+                System.err.println(e.getMessage());
+            }
+            System.exit(e.getErrorCode());
+        }
+
         final JMXtoXML client = new JMXtoXML();
         try {
             client.connect("localhost", 1099);
