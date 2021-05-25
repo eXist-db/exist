@@ -271,12 +271,12 @@
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>exist-security-iprange</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>exist-security-ldap</artifactId>
@@ -766,7 +766,7 @@
                             <systemProperty>file.encoding=UTF-8</systemProperty>
                             <systemProperty>log4j.configurationFile=@BASEDIR@/etc/log4j2.xml</systemProperty>
                             <systemProperty>exist.home=@BASEDIR@</systemProperty>
-                            <systemProperty>exist.configurationFile=@BASEDIR@/etc/conf.xml</systemProperty>
+                            <systemProperty>exist.configurationFile=@cd BASEDIR@/etc/conf.xml</systemProperty>
                             <systemProperty>jetty.home=@BASEDIR@</systemProperty>
                             <systemProperty>exist.jetty.config=@BASEDIR@/etc/jetty/standard.enabled-jetty-configs</systemProperty>
                         </systemProperties>
