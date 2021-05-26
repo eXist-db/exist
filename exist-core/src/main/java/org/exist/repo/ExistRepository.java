@@ -61,8 +61,8 @@ import java.util.*;
 public class ExistRepository extends Observable implements BrokerPoolService {
 
     private final static Logger LOG = LogManager.getLogger(ExistRepository.class);
-    public final static String EXPATH_REPO_DIR = "expathrepo";
-    public final static String EXPATH_REPO_DEFAULT = "webapp/WEB-INF/" + EXPATH_REPO_DIR;
+    private static final String EXPATH_REPO_DIR_NAME = "expathrepo";
+    private static final String LEGACY_DEFAULT_EXPATH_REPO_DIR = "webapp/WEB-INF/" + EXPATH_REPO_DIR_NAME;
 
     /** The wrapped EXPath repository. */
     private Path expathDir;
@@ -72,7 +72,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
     public void configure(final Configuration configuration) throws BrokerPoolServiceException {
         final Path dataDir = Optional.ofNullable((Path) configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR))
                 .orElse(Paths.get(NativeBroker.DEFAULT_DATA_DIR));
-        this.expathDir = dataDir.resolve(EXPATH_REPO_DIR);
+        this.expathDir = dataDir.resolve(EXPATH_REPO_DIR_NAME);
     }
 
     @Override
@@ -274,7 +274,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
     public static Path getRepositoryDir(final Configuration config) throws IOException {
         final Path dataDir = Optional.ofNullable((Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR))
                         .orElse(Paths.get(NativeBroker.DEFAULT_DATA_DIR));
-        final Path expathDir = dataDir.resolve(EXPATH_REPO_DIR);
+        final Path expathDir = dataDir.resolve(EXPATH_REPO_DIR_NAME);
 
         if(!Files.exists(expathDir)) {
             moveOldRepo(config.getExistHome(), expathDir);
@@ -286,11 +286,11 @@ public class ExistRepository extends Observable implements BrokerPoolService {
     private static void moveOldRepo(final Optional<Path> home, final Path newRepo) {
         final Path repo_dir = home.map(h -> {
             if(FileUtils.fileName(h).equals("WEB-INF")) {
-                return h.resolve(EXPATH_REPO_DIR);
+                return h.resolve(EXPATH_REPO_DIR_NAME);
             } else {
-                return h.resolve( EXPATH_REPO_DEFAULT);
+                return h.resolve(LEGACY_DEFAULT_EXPATH_REPO_DIR);
             }
-        }).orElse(Paths.get(System.getProperty("java.io.tmpdir")).resolve(EXPATH_REPO_DIR));
+        }).orElse(Paths.get(System.getProperty("java.io.tmpdir")).resolve(EXPATH_REPO_DIR_NAME));
 
         if (Files.isReadable(repo_dir)) {
             LOG.info("Found old expathrepo directory. Moving to new default location: {}", newRepo.toAbsolutePath().toString());

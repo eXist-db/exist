@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.modules.xmldiff;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
@@ -42,8 +39,6 @@ import java.util.Properties;
  * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  */
 public class Compare extends Function {
-	
-    private static final Logger logger = LogManager.getLogger(Compare.class);
     private final static Properties OUTPUT_PROPERTIES = new Properties();
 
     static {
@@ -126,9 +121,6 @@ public class Compare extends Function {
 				.checkForIdentical()
 				.build();
             boolean identical = !diff.hasDifferences();
-            if (!identical) {
-				logger.warn("Diff result: {}", diff.toString());
-            }
             result = new BooleanValue(identical);
         } catch (Exception e) {
 	    throw new XPathException(this, "An exception occurred while serializing node " +
