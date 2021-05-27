@@ -532,6 +532,98 @@ public class ImportModuleTest {
                 transaction.commit();
 
                 assertEquals(ErrorCodes.XQST0034, e.getErrorCode());
+                assertTrue(e.getMessage().contains("{http://example.com/impl}f1#1"));
+            }
+        }
+    }
+
+    /**
+     * Checks that XQST0034 is raised if a main module contains two functions of the same name and arity.
+     */
+    @Test
+    public void functionDuplicateInMainModule() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
+        final String query =
+                        "declare function local:f1($a as xs:string) as xs:string {\n" +
+                        "    <first>{$a}</first>\n" +
+                        "};\n" +
+                        "\n" +
+                        "declare function local:f1($a as xs:string) as xs:string {\n" +
+                        "    <second>{$a}</second>\n" +
+                        "};\n" +
+                        "\n" +
+                        "<result>\n" +
+                        "    <impl1>{local:f1(\"to impl1\")}</impl1>" +
+                        "    <impl2>{local:f1(\"to impl1\")}</impl2>" +
+                        "</result>\n";
+
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final Source source = new StringSource(query);
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+
+            // execute query
+            try {
+                final Tuple2<XQueryContext, Sequence> contextAndResult = withCompiledQuery(broker, source, compiledXQuery -> {
+                    final Sequence result = executeQuery(broker, compiledXQuery);
+                    return Tuple(compiledXQuery.getContext(), result);
+                });
+
+                transaction.commit();
+
+                fail("expected XQST0034");
+
+            } catch (final XPathException e) {
+                transaction.commit();
+
+                assertEquals(ErrorCodes.XQST0034, e.getErrorCode());
+                assertTrue(e.getMessage().contains("{http://www.w3.org/2005/xquery-local-functions}f1#1"));
+            }
+        }
+    }
+
+    /**
+     * Checks that XQST0034 is raised if a main module contains two functions of the same name and arity.
+     */
+    @Test
+    public void functionDuplicateNsInMainModule() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
+        final String query =
+                "declare namespace ns1 = 'http://ns1';\n" +
+                "declare namespace ns12 = 'http://ns1';\n" +
+                "\n" +
+                "declare function ns1:f1($a as xs:string) as xs:string {\n" +
+                        "    <first>{$a}</first>\n" +
+                        "};\n" +
+                        "\n" +
+                        "declare function ns12:f1($a as xs:string) as xs:string {\n" +
+                        "    <second>{$a}</second>\n" +
+                        "};\n" +
+                        "\n" +
+                        "<result>\n" +
+                        "    <impl1>{ns1:f1(\"to impl1\")}</impl1>" +
+                        "    <impl2>{ns12:f1(\"to impl1\")}</impl2>" +
+                        "</result>\n";
+
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final Source source = new StringSource(query);
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+
+            // execute query
+            try {
+                final Tuple2<XQueryContext, Sequence> contextAndResult = withCompiledQuery(broker, source, compiledXQuery -> {
+                    final Sequence result = executeQuery(broker, compiledXQuery);
+                    return Tuple(compiledXQuery.getContext(), result);
+                });
+
+                transaction.commit();
+
+                fail("expected XQST0034");
+
+            } catch (final XPathException e) {
+                transaction.commit();
+
+                assertEquals(ErrorCodes.XQST0034, e.getErrorCode());
+                assertTrue(e.getMessage().contains("{http://ns1}f1#1"));
             }
         }
     }
@@ -583,6 +675,7 @@ public class ImportModuleTest {
                 transaction.commit();
 
                 assertEquals(ErrorCodes.XQST0034, e.getErrorCode());
+                assertTrue(e.getMessage().contains("{http://example.com/impl}f1#1"));
             }
         }
     }
