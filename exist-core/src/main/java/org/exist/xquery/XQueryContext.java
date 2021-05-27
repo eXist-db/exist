@@ -1717,9 +1717,10 @@ public class XQueryContext implements BinaryValueManager, Context {
             throw new XPathException(function, ErrorCodes.XQST0060, "Every declared function name must have a non-null namespace URI, but function '" + name + "' does not meet this requirement.");
         }
 
-        final FunctionId functionKey = function.getSignature().getFunctionId();
+        final FunctionSignature signature = function.getSignature();
+        final FunctionId functionKey = signature.getFunctionId();
         if (declaredFunctions.containsKey(functionKey)) {
-            throw new XPathException(ErrorCodes.XQST0034, "Function " + function.getName() + "#" + function.getArgumentCount() + " is already defined.");
+            throw new XPathException(ErrorCodes.XQST0034, "Function " +  signature.getName().toURIQualifiedName() + '#' + signature.getArgumentCount() + " is already defined.");
         } else {
             declaredFunctions.put(functionKey, function);
         }
