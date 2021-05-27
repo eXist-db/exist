@@ -744,6 +744,10 @@ public class NativeBroker extends DBBroker {
             final CollectionCache collectionCache, final Optional<Tuple2<Permission, Long>> creationAttributes)
             throws TriggerException, ReadOnlyException, PermissionDeniedException, LockException, IOException {
 
+        if(parentCollection != null && !parentCollection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)){
+            throw new PermissionDeniedException("No write permissions for " + parentCollection.getURI().getCollectionPath());
+        }
+
         final CollectionTrigger trigger;
         if(parentCollection == null) {
             trigger = new CollectionTriggers(this, transaction);
