@@ -209,7 +209,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     protected XQueryWatchDog watchdog;
 
     /**
-     * Loaded modules.
+     * Loaded modules within this module.
      *
      * The format of the map is: <code>Map&lt;NamespaceURI, Modules&gt;</code>.
      */
@@ -1402,7 +1402,13 @@ public class XQueryContext implements BinaryValueManager, Context {
             watchdog.reset();
         }
 
-        for (final Module[] modules : allModules.values()) {
+        /*
+            NOTE: we use `modules` (and not `allModules`) here so as to only reset
+            the modules of this module.
+            The inner call to `module.reset` will be called on sub-modules
+            which in-turn will reset their modules, and so on.
+         */
+        for (final Module[] modules : modules.values()) {
             for (final Module module : modules) {
                 module.reset(this, keepGlobals);
             }
