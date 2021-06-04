@@ -112,7 +112,7 @@ public class PrepareFunction extends BasicFunction {
             stmt = con.prepareStatement(sql);
 
             // store the PreparedStatement and return the uid handle of the PreparedStatement
-            return (new IntegerValue(SQLModule.storePreparedStatement(context, new PreparedStatementWithSQL(sql, stmt))));
+            return (new IntegerValue(SQLModule.storePreparedStatement(context, new PreparedStatementWithSQL(sql, stmt)), Type.LONG));
         } catch (SQLException sqle) {
             LOG.error("sql:prepare() Caught SQLException \"{}\" for SQL: \"{}\"", sqle.getMessage(), sql, sqle);
 

@@ -680,6 +680,7 @@
                                 <exclude>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/Cardinality.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/ImportModuleTest.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/XQueryContextAttributesTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/functions/map/MapType.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/functions/session/AbstractSessionTest.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/functions/xmldb/AbstractXMLDBTest.java</exclude>
@@ -819,6 +820,7 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</include>
                                 <include>src/main/java/org/exist/xquery/Cardinality.java</include>
                                 <include>src/test/java/org/exist/xquery/ImportModuleTest.java</include>
+                                <include>src/test/java/org/exist/xquery/XQueryContextAttributesTest.java</include>
                                 <include>src/main/java/org/exist/xquery/functions/map/MapType.java</include>
                                 <include>src/test/java/org/exist/xquery/functions/session/AbstractSessionTest.java</include>
                                 <include>src/test/java/org/exist/xquery/functions/xmldb/AbstractXMLDBTest.java</include>

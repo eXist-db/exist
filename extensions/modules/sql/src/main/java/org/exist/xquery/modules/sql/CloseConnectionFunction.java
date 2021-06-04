@@ -35,17 +35,15 @@ package org.exist.xquery.modules.sql;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.dom.QName;
+import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
 import static org.exist.xquery.FunctionDSL.*;
-import static org.exist.xquery.modules.sql.SQLModule.functionSignature;
+import static org.exist.xquery.modules.sql.SQLModule.*;
 
 
 /**
@@ -101,5 +99,9 @@ public class CloseConnectionFunction extends BasicFunction {
         } catch (final SQLException e) {
             throw new XPathException(this, "Unable to close connection with handle: " + connectionUid + ". " + e.getMessage());
         }
+    }
+
+    private static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
+        return FunctionDSL.functionSignature(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, paramTypes);
     }
 }

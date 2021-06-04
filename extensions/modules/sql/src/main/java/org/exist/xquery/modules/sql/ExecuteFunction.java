@@ -27,22 +27,14 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.memtree.*;
 import org.exist.util.XMLReaderPool;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.ErrorCodes;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -59,7 +51,6 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 
-import org.exist.xquery.value.DateTimeValue;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
@@ -67,7 +58,8 @@ import javax.annotation.Nullable;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.xquery.FunctionDSL.*;
-import static org.exist.xquery.modules.sql.SQLUtils.functionSignatures;
+import static org.exist.xquery.modules.sql.SQLModule.NAMESPACE_URI;
+import static org.exist.xquery.modules.sql.SQLModule.PREFIX;
 
 
 /**
@@ -106,7 +98,7 @@ public class ExecuteFunction extends BasicFunction {
                     ),
                     arity(
                             FS_PARAM_CONNECTION_HANDLE,
-                            param("statement-handle", Type.INTEGER, "The prepared statement handle"),
+                            param("statement-handle", Type.LONG, "The prepared statement handle"),
                             optParam("parameters", Type.ELEMENT, "Parameters for the prepared statement. e.g. <sql:parameters><sql:param sql:type=\"long\">1234</sql:param><sql:param sql:type=\"varchar\"><sql:null/></sql:param></sql:parameters>"),
                             FS_PARAM_MAKE_NODE_FROM_COLUMN_NAME
                     )
@@ -215,15 +207,15 @@ public class ExecuteFunction extends BasicFunction {
 
     private void setParametersOnPreparedStatement(final Statement stmt, final Element parametersElement) throws SQLException, XPathException {
         final String ns = parametersElement.getNamespaceURI();
-        if (ns != null && ns.equals(SQLModule.NAMESPACE_URI) && parametersElement.getLocalName().equals(PARAMETERS_ELEMENT_NAME)) {
-            final NodeList paramElements = parametersElement.getElementsByTagNameNS(SQLModule.NAMESPACE_URI, PARAM_ELEMENT_NAME);
+        if (ns != null && ns.equals(NAMESPACE_URI) && parametersElement.getLocalName().equals(PARAMETERS_ELEMENT_NAME)) {
+            final NodeList paramElements = parametersElement.getElementsByTagNameNS(NAMESPACE_URI, PARAM_ELEMENT_NAME);
 
             for (int i = 0; i < paramElements.getLength(); i++) {
                 final Element param = ((Element) paramElements.item(i));
                 Node child = param.getFirstChild();
 
                 final int sqlType;
-                final String type = param.getAttributeNS(SQLModule.NAMESPACE_URI, TYPE_ATTRIBUTE_NAME);
+                final String type = param.getAttributeNS(NAMESPACE_URI, TYPE_ATTRIBUTE_NAME);
                 if (type != null) {
                     sqlType = SQLUtils.sqlTypeFromString(type);
                 } else {
@@ -239,7 +231,7 @@ public class ExecuteFunction extends BasicFunction {
                     if (child instanceof Element) {
                         // check for <sql:null/>
                         final Element elem = (Element)child;
-                        if ("null".equals(elem.getLocalName()) && SQLModule.NAMESPACE_URI.equals(elem.getNamespaceURI())) {
+                        if ("null".equals(elem.getLocalName()) && NAMESPACE_URI.equals(elem.getNamespaceURI())) {
                             value = null;
                         } else {
                             value = child.getNodeValue();
@@ -280,7 +272,7 @@ public class ExecuteFunction extends BasicFunction {
 
             builder.startDocument();
 
-            builder.startElement(new QName("result", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+            builder.startElement(new QName("result", NAMESPACE_URI, PREFIX), null);
             builder.addAttribute(new QName("count", null, null), "-1");
             builder.addAttribute(new QName("updateCount", null, null), String.valueOf(stmt.getUpdateCount()));
 
@@ -309,7 +301,7 @@ public class ExecuteFunction extends BasicFunction {
                     final int iColumns = rsmd.getColumnCount();
 
                     while (rs.next()) {
-                        builder.startElement(new QName("row", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+                        builder.startElement(new QName("row", NAMESPACE_URI, PREFIX), null);
                         builder.addAttribute(new QName("index", null, null), String.valueOf(rs.getRow()));
 
                         // get each tuple in the row
@@ -330,7 +322,7 @@ public class ExecuteFunction extends BasicFunction {
                                     colElement = SQLUtils.escapeXmlAttr(columnName.replace(' ', '_'));
                                 }
 
-                                builder.startElement(new QName(colElement, SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+                                builder.startElement(new QName(colElement, NAMESPACE_URI, PREFIX), null);
 
                                 if (!makeNodeFromColumnName || columnName.length() <= 0) {
                                     final String name;
@@ -343,7 +335,7 @@ public class ExecuteFunction extends BasicFunction {
                                     builder.addAttribute(new QName("name", null, null), name);
                                 }
 
-                                builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX), rsmd.getColumnTypeName(i + 1));
+                                builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, NAMESPACE_URI, PREFIX), rsmd.getColumnTypeName(i + 1));
                                 builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, Namespaces.SCHEMA_NS, "xs"), Type.getTypeName(SQLUtils.sqlTypeToXMLType(rsmd.getColumnType(i + 1))));
 
                                 //get the content
@@ -354,7 +346,7 @@ public class ExecuteFunction extends BasicFunction {
 
                                         if (rs.wasNull()) {
                                             // Add a null indicator attribute if the value was SQL Null
-                                            builder.addAttribute(new QName("null", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), "true");
+                                            builder.addAttribute(new QName("null", NAMESPACE_URI, PREFIX), "true");
                                         } else {
                                             try (final Reader charStream = sqlXml.getCharacterStream()) {
                                                 final InputSource src = new InputSource(charStream);
@@ -383,7 +375,7 @@ public class ExecuteFunction extends BasicFunction {
 
                                     if (rs.wasNull()) {
                                         // Add a null indicator attribute if the value was SQL Null
-                                        builder.addAttribute(new QName("null", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), "true");
+                                        builder.addAttribute(new QName("null", NAMESPACE_URI, PREFIX), "true");
                                     } else {
                                         if (colValue != null) {
                                             builder.characters(colValue);
@@ -435,23 +427,23 @@ public class ExecuteFunction extends BasicFunction {
             final MemTreeBuilder builder = context.getDocumentBuilder();
 
             builder.startDocument();
-            builder.startElement(new QName("exception", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+            builder.startElement(new QName("exception", NAMESPACE_URI, PREFIX), null);
 
             final boolean recoverable = sqle instanceof SQLRecoverableException;
             builder.addAttribute(new QName("recoverable", null, null), String.valueOf(recoverable));
 
-            builder.startElement(new QName("state", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+            builder.startElement(new QName("state", NAMESPACE_URI, PREFIX), null);
             builder.characters(sqle.getSQLState());
             builder.endElement();
 
-            builder.startElement(new QName("message", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+            builder.startElement(new QName("message", NAMESPACE_URI, PREFIX), null);
             final String state = sqle.getMessage();
             if (state != null) {
                 builder.characters(state);
             }
             builder.endElement();
 
-            builder.startElement(new QName("stack-trace", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+            builder.startElement(new QName("stack-trace", NAMESPACE_URI, PREFIX), null);
             try (final UnsynchronizedByteArrayOutputStream bufStackTrace = new UnsynchronizedByteArrayOutputStream();
                  final PrintStream ps = new PrintStream(bufStackTrace)) {
                 sqle.printStackTrace(ps);
@@ -461,25 +453,25 @@ public class ExecuteFunction extends BasicFunction {
             }
             builder.endElement();
 
-            builder.startElement(new QName("sql", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+            builder.startElement(new QName("sql", NAMESPACE_URI, PREFIX), null);
             builder.characters(sql);
             builder.endElement();
 
             if (parametersElement != null) {
                 final String ns = parametersElement.getNamespaceURI();
-                if (ns != null && ns.equals(SQLModule.NAMESPACE_URI) && parametersElement.getLocalName().equals(PARAMETERS_ELEMENT_NAME)) {
-                    final NodeList paramElements = parametersElement.getElementsByTagNameNS(SQLModule.NAMESPACE_URI, PARAM_ELEMENT_NAME);
+                if (ns != null && ns.equals(NAMESPACE_URI) && parametersElement.getLocalName().equals(PARAMETERS_ELEMENT_NAME)) {
+                    final NodeList paramElements = parametersElement.getElementsByTagNameNS(NAMESPACE_URI, PARAM_ELEMENT_NAME);
 
-                    builder.startElement(new QName(PARAMETERS_ELEMENT_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+                    builder.startElement(new QName(PARAMETERS_ELEMENT_NAME, NAMESPACE_URI, PREFIX), null);
 
                     for (int i = 0; i < paramElements.getLength(); i++) {
                         final Element param = ((Element) paramElements.item(i));
                         final Node valueNode = param.getFirstChild();
                         final String value = valueNode != null ? valueNode.getNodeValue() : null;
-                        final String type = param.getAttributeNS(SQLModule.NAMESPACE_URI, TYPE_ATTRIBUTE_NAME);
+                        final String type = param.getAttributeNS(NAMESPACE_URI, TYPE_ATTRIBUTE_NAME);
 
-                        builder.startElement(new QName(PARAM_ELEMENT_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
-                        builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, SQLModule.NAMESPACE_URI, SQLModule.PREFIX), type);
+                        builder.startElement(new QName(PARAM_ELEMENT_NAME, NAMESPACE_URI, PREFIX), null);
+                        builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, NAMESPACE_URI, PREFIX), type);
                         builder.characters(value);
                         builder.endElement();
                     }
@@ -488,7 +480,7 @@ public class ExecuteFunction extends BasicFunction {
                 }
             }
 
-            builder.startElement(new QName("xquery", SQLModule.NAMESPACE_URI, SQLModule.PREFIX), null);
+            builder.startElement(new QName("xquery", NAMESPACE_URI, PREFIX), null);
             builder.addAttribute(new QName("line", null, null), String.valueOf(getLine()));
             builder.addAttribute(new QName("column", null, null), String.valueOf(getColumn()));
             builder.endElement();
@@ -500,5 +492,9 @@ public class ExecuteFunction extends BasicFunction {
         } finally {
             context.popDocumentContext();
         }
+    }
+
+    private static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
+        return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, variableParamTypes);
     }
 }

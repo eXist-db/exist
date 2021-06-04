@@ -36,11 +36,9 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.exist.dom.QName;
 import org.exist.util.ParametersExtractor;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
@@ -55,7 +53,8 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import static org.exist.xquery.FunctionDSL.*;
-import static org.exist.xquery.modules.sql.SQLModule.functionSignatures;
+import static org.exist.xquery.modules.sql.SQLModule.NAMESPACE_URI;
+import static org.exist.xquery.modules.sql.SQLModule.PREFIX;
 
 
 /**
@@ -130,12 +129,11 @@ public class GetConnectionFunction extends BasicFunction {
         }
 
         // store the Connection and return the uid handle of the Connection
-        return new IntegerValue(SQLModule.storeConnection(context, connection));
+        return new IntegerValue(SQLModule.storeConnection(context, connection), Type.LONG);
     }
 
     private Connection getConnection(final Sequence[] args) throws XPathException {
         // get the db connection details
-        final String dbDriver = args[0].getStringValue();
         final String dbURL = args[1].getStringValue();
 
         try {
@@ -187,5 +185,9 @@ public class GetConnectionFunction extends BasicFunction {
             LOGGER.error("sql:get-connection-from-pool() Cannot retrieve connection from pool: " + poolName, sqle);
             throw new XPathException(this, "sql:get-connection-from-pool() Cannot retrieve connection from pool: " + poolName, sqle);
         }
+    }
+
+    private static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
+        return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, variableParamTypes);
     }
 }
