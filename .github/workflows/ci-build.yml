@@ -10,7 +10,7 @@ jobs:
         jdk: ['8', '11']
         include:
           - os: ubuntu-latest
-            jdk: '15'        
+            jdk: '16'   
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -26,5 +26,10 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 # NOTE(AR) The `-T 2C` enables multi-threaded builds below, faster, but may need to be disabled when diagnosing problems 
 # NOTE(DP): Reuse of build artefacts across workflows to (hopefully) limit network traffic
+      - name: Maven Build allow fail
+        if: ${{ matrix.jdk == '16' }}
+        run: mvn -V -B -q -T 2C -DskipTests=true "-Dmaven.javadoc.skip=true" install
+        continue-on-error: true
       - name: Maven Build
+        if: ${{ matrix.jdk != '16' }} 
         run: mvn -V -B -q -T 2C -DskipTests=true "-Dmaven.javadoc.skip=true" install
