@@ -5,7 +5,7 @@ jobs:
     name: ${{ matrix.jdk }} Javadocs 
     strategy:
       matrix: 
-        jdk: ['11', '16']
+        jdk: ['8','11', '16']
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -22,6 +22,10 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Maven Javadoc
+        if: ${{ matrix.jdk == '8' }} 
         run: mvn -V -B -q -T 2C javadoc:javadoc
-        continue-on-error: true
+      - name: Maven Javadoc allow fail
+        if: ${{ matrix.jdk != '8' }} 
+        run: mvn -V -B -q -T 2C javadoc:javadoc
+        continue-on-error: true  
         
