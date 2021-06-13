@@ -2,16 +2,19 @@ name: Javadoc
 on: [push, pull_request]
 jobs:
   test:
-    name: Generate Javadocs
+    name: ${{ matrix.jdk }} Javadocs 
+    strategy:
+      matrix: 
+        jdk: ['8','11', '16']
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
             fetch-depth: 0
-      - name: Set up JDK 8
+      - name: Set up JDK 
         uses: actions/setup-java@v1
         with:
-          java-version: '8'
+          java-version: ${{ matrix.jdk }}
       - name: Cache Maven packages
         uses: actions/cache@v2
         with:
@@ -19,4 +22,10 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Maven Javadoc
-        run: mvn -V -B -q -T 2C javadoc:javadoc    
+        if: ${{ matrix.jdk == '8' }} 
+        run: mvn -V -B -q -T 2C javadoc:javadoc
+      - name: Maven Javadoc allow fail
+        if: ${{ matrix.jdk != '8' }} 
+        run: mvn -V -B -q -T 2C javadoc:javadoc
+        continue-on-error: true  
+        

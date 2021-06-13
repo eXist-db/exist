@@ -10,7 +10,7 @@ jobs:
         jdk: ['8', '11']
         include:
           - os: ubuntu-latest
-            jdk: '15'        
+            jdk: '16'      
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -24,8 +24,13 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-      - name: Maven Test
+      - name: Maven Test allow fail
+        if: ${{ matrix.jdk == '16' }} 
         run: mvn -V -B clean verify
+        continue-on-error: true
+      - name: Maven Test 
+        if: ${{ matrix.jdk != '16' }} 
+        run: mvn -V -B clean verify    
       - name: Maven Code Coverage
         if: ${{ github.ref == 'refs/heads/develop' && matrix.jdk == '8' && matrix.os == 'ubuntu-latest' }}
         env:
