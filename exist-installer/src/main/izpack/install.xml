@@ -172,7 +172,7 @@
         <pack name="shared" required="true" preselected="true" parent="Apps">
             <description>Shared Resources: jquery, dojo, ace, templating, utilities</description>
             <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
-                <include name="shared-resources-*.xar"/>
+                <include name="templating-*.xar"/>
             </fileset>
         </pack>
 
