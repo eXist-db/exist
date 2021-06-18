@@ -28,6 +28,7 @@ import org.apache.xmlrpc.common.XmlRpcController;
 import org.apache.xmlrpc.common.XmlRpcStreamConfig;
 import org.apache.xmlrpc.parser.TypeParser;
 import org.apache.xmlrpc.serializer.TypeSerializer;
+import org.exist.security.internal.aider.ACEAider;
 import org.xml.sax.SAXException;
 
 /**
@@ -45,6 +46,10 @@ public class ExistRpcTypeFactory extends TypeFactoryImpl {
     public TypeParser getParser(final XmlRpcStreamConfig config, final NamespaceContextImpl context, final String uri, final String localName) {
         if (TupleSerializer.TUPLE_TAG.equals(localName)) {
             return new TupleParser(config, context, this);
+
+        } else if (ACEAiderSerializer.ACEAIDER_TAG.equals(localName)) {
+            return new ACEAiderParser(config, context, this);
+
         } else {
             return super.getParser(config, context, uri, localName);
         }
@@ -54,6 +59,10 @@ public class ExistRpcTypeFactory extends TypeFactoryImpl {
     public TypeSerializer getSerializer(final XmlRpcStreamConfig config, final Object object) throws SAXException {
         if (object instanceof Tuple) {
             return new TupleSerializer(this, config);
+
+        } else if (object instanceof ACEAider) {
+            return new ACEAiderSerializer(this, config);
+
         } else {
             return super.getSerializer(config, object);
         }
