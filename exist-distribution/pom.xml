@@ -671,16 +671,13 @@
                                     <abbrev>monex</abbrev>
                                 </package>
                                 <package>
-                                    <abbrev>markdown</abbrev>
-                                </package>
-                                <package>
                                     <abbrev>packageservice</abbrev>
                                 </package>
                                 <package>
                                     <abbrev>semver-xq</abbrev>
                                 </package>
                                 <package>
-                                    <abbrev>shared</abbrev>
+                                    <abbrev>templating</abbrev>
                                 </package>
                             </packages>
                         </configuration>
