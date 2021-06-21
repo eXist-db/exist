@@ -349,7 +349,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.xmlrpc</groupId>
+            <groupId>com.evolvedbinary.thirdparty.org.apache.xmlrpc</groupId>
             <artifactId>xmlrpc-common</artifactId>
             <exclusions>
                 <exclusion> <!-- conflicts with xerces 2.12.0 dependency on xml-apis version 1.4.01 -->
@@ -359,12 +359,12 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.apache.xmlrpc</groupId>
+            <groupId>com.evolvedbinary.thirdparty.org.apache.xmlrpc</groupId>
             <artifactId>xmlrpc-client</artifactId>
             <version>${apache.xmlrpc.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.xmlrpc</groupId>
+            <groupId>com.evolvedbinary.thirdparty.org.apache.xmlrpc</groupId>
             <artifactId>xmlrpc-server</artifactId>
             <version>${apache.xmlrpc.version}</version>
         </dependency>
@@ -678,6 +678,8 @@
                                 <exclude>src/main/java/org/exist/test/DiffMatcher.java</exclude>
                                 <exclude>src/main/java/org/exist/util/CollectionOfArrayIterator.java</exclude>
                                 <exclude>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</exclude>
+                                <exclude>src/main/java/org/exist/xmlrpc/ACEAiderParser.java</exclude>
+                                <exclude>src/main/java/org/exist/xmlrpc/ACEAiderSerializer.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/Cardinality.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/ImportModuleTest.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/XQueryContextAttributesTest.java</exclude>
@@ -834,6 +836,8 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/main/java/org/exist/xquery/value/SubSequence.java</include>
                                 <include>src/test/java/org/exist/xquery/value/SubSequenceRangeTest.java</include>
                                 <include>src/test/java/org/exist/xquery/value/SubSequenceTest.java</include>
+                                <include>src/main/java/org/exist/xmlrpc/ACEAiderParser.java</include>
+                                <include>src/main/java/org/exist/xmlrpc/ACEAiderSerializer.java</include>
                             </includes>
 
                         </licenseSet>
