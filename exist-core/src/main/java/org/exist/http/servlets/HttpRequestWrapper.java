@@ -186,9 +186,6 @@ public class HttpRequestWrapper implements RequestWrapper {
         // Create a factory for disk-based file items
         final DiskFileItemFactory factory = new DiskFileItemFactory();
 
-        // Dizzzz: Wonder why this should be zero
-        factory.setSizeThreshold(0);
-
         // Create a new file upload handler
         final ServletFileUpload upload = new ServletFileUpload(factory);
 
