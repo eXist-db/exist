@@ -164,13 +164,13 @@
 
         <pack name="Apps" required="false" installGroups="Group2">
             <description>Application Packages: additional applications for XQuery development, database management,
-                documentation, examples and more. You should at least install the "dashboard" and the "shared" package to
-                be able to add more applications later.
+                documentation, examples and more. You should at least install the "dashboard" and "packageservice" 
+                package to be able to add more applications later.
             </description>
         </pack>
 
-        <pack name="shared" required="true" preselected="true" parent="Apps">
-            <description>Shared Resources: jquery, dojo, ace, templating, utilities</description>
+        <pack name="templating" required="true" preselected="true" parent="Apps">
+            <description>Templating library (formally part of shared-resources)</description>
             <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
                 <include name="templating-*.xar"/>
             </fileset>
@@ -229,13 +229,6 @@
             <description>XQuery Function Documentation</description>
             <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
                 <include name="exist-function-documentation-*.xar"/>
-            </fileset>
-        </pack>
-
-        <pack name="markdown" required="false" preselected="true" parent="Apps">
-            <description>Markdown Parser in XQuery</description>
-            <fileset targetdir="$INSTALL_PATH/autodeploy" dir="autodeploy">
-                <include name="markdown-*.xar"/>
             </fileset>
         </pack>
 
