@@ -57,7 +57,11 @@ class Cache {
 	}
 
     public Sequence put(final String key, final Sequence value) {
-	    return store.asMap().put(key, value);
+	    final Sequence previous = store.asMap().put(key, value);
+	    if (previous != null) {
+	        return previous;
+        }
+	    return Sequence.EMPTY_SEQUENCE;
     }
 
     public Sequence list(final String[] keys) throws XPathException {
