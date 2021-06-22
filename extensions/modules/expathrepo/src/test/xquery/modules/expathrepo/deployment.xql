@@ -35,7 +35,7 @@ import module namespace xmldb = "http://exist-db.org/xquery/xmldb";
 declare variable $deploy:expathxml := 
     <package xmlns="http://expath.org/ns/pkg" name="http://exist-db.org/apps/dtest" abbrev="dtest" version="1.0.0" spec="1.0">
         <title>Deployment Test</title>
-        <dependency package="http://exist-db.org/html-templating" semver-min="0.4.0"/>
+        <dependency package="http://exist-db.org/html-templating" semver-min="1.0.2"/>
     </package>;
 
 declare variable $deploy:repoxml :=
