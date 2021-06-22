@@ -135,36 +135,38 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
-
             <plugin>
-                <groupId>com.carrotgarden.maven</groupId>
-                <artifactId>bintray-maven-plugin</artifactId>
+                <groupId>de.jutzig</groupId>
+                <artifactId>github-release-plugin</artifactId>
+                <version>1.1.1</version>
                 <executions>
                     <execution>
-                        <id>upload-installer-to-bintray</id>
+                        <id>github-upload</id>
                         <phase>deploy</phase>
                         <goals>
-                            <goal>upload</goal>
+                            <goal>release</goal>
                         </goals>
+                        <inherited>true</inherited>
                         <configuration>
-                            <restApiUrl>https://api.bintray.com</restApiUrl>
-                            <subject>existdb</subject>
-                            <repository>releases</repository>
-                            <bintrayPackage>exist</bintrayPackage>
-                            <targetFolder>/</targetFolder>
+                            <description>
+                                Release Notes: https://exist-db.org/exist/apps/wiki/blogs/eXist/exist${project.version}
 
-                            <packageLicenses>GNU Lesser General Public License, version 2.1</packageLicenses>
-
-                            <!-- Bintray API credentials must be in ~/.m2/settings.xml for server id -->
-                            <serverId>exist-bintray</serverId>
-
-                            <sourceFolder>${project.build.directory}</sourceFolder>
-                            <uploadRegex>.+/${project.artifactId}-${project.version}\.jar</uploadRegex>
+                                Maven Central: https://search.maven.org/search?q=g:org.exist-db
+                            </description>
+                            <releaseName>eXist-db ${project.version}</releaseName>
+                            <tag>eXist-${project.version}</tag>
+                            <fileSets>
+                                <fileSet>
+                                    <directory>${project.build.directory}</directory>
+                                    <includes>
+                                        <include>${project.artifactId}-${project.version}.jar</include>
+                                    </includes>
+                                </fileSet>
+                            </fileSets>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 
