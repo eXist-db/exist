@@ -109,7 +109,7 @@ Version 3.0.0 was released before Semantic Versioning. The following steps will 
 
 ### Preparing a Product Release
 
-Once development on a new stable version is complete, the following steps will prepare the version for release. For purposes of illustration, we will assume we are preparing the stable release of version 5.0.0.
+Once development on a new stable version is complete, the following steps will prepare the version for release. For purposes of illustration, we will assume we are preparing the stable release of version 5.3.0.
 You will require a system with:
 * macOS
 * JDK 8
@@ -119,11 +119,11 @@ You will require a system with:
 * A GPG key (for signing release artifacts)
 * A Java KeyStore with key (for signing IzPack Installer)
 * A valid Apple Developer Certificate (for signing Mac DMG)
+* A Github account and username / password or Github Personal access tokens (https://github.com/settings/tokens) with permission to publish Github releases to the eXist-db .org
 
 1. You will need login credentials for the eXist-db organisation on:
     1. Sonatype OSS staging for Maven Central - https://oss.sonatype.org/
-    2. Bintray - https://bintray.com/existdb
-    3. DockerHub - https://cloud.docker.com/orgs/existdb/
+    2. DockerHub - https://cloud.docker.com/orgs/existdb/
     
     Your credentials for these should be stored securely in the `<servers`> section on your machine in your local `~/.m2/settings.xml` file, e.g.:
     ```xml
@@ -147,11 +147,10 @@ You will require a system with:
                 <password>YOUR-PASSWORD</password>
             </server>
 
-            <!-- eXist-db BinTray -->
+            <!-- eXist-db Github Release -->
             <server>
-                <id>exist-bintray</id>
-                <username>YOUR-USERNAME</username>
-                <password>YOUR-PASSWORD</password>
+                <id>github</id>
+                <privateKey>[Github Personal access tokens]</privateKey>
             </server>
         </servers>
     </settings>
@@ -186,7 +185,7 @@ You will require a system with:
     </activeProfiles>
     ```
 
-3.  Merge any outstanding PRs that have been reviewed and accepted for the milestone eXist-5.0.0.
+3.  Merge any outstanding PRs that have been reviewed and accepted for the milestone eXist-5.3.0.
 
 4.  Make sure that you have the HEAD of `origin/develop` (or `upstream` if you are on a fork).
 
@@ -204,24 +203,24 @@ You will require a system with:
     [INFO] Executing: /bin/sh -c cd /Users/aretter/code/exist.maven && git status
     [INFO] Working directory: /Users/aretter/code/exist.maven
     [INFO] Checking dependencies and plugins for snapshots ...
-    What is the release version for "eXist-db"? (org.exist-db:exist) 5.0.0: :
-    What is SCM release tag or label for "eXist-db"? (org.exist-db:exist) eXist-5.0.0: :
-    What is the new development version for "eXist-db"? (org.exist-db:exist) 5.1.0-SNAPSHOT: :
+    What is the release version for "eXist-db"? (org.exist-db:exist) 5.3.0: :
+    What is SCM release tag or label for "eXist-db"? (org.exist-db:exist) eXist-5.3.0: :
+    What is the new development version for "eXist-db"? (org.exist-db:exist) 5.4.0-SNAPSHOT: :
     ```
 
 6.  Once the prepare process completes you can perform the release. This will upload Maven Artifacts to Maven
-Central (staging), Docker images to Docker Hub, and eXist-db distributions and installer to BinTray:
+Central (staging), Docker images to Docker Hub, and eXist-db distributions and installer to Github releases:
     ```
     $ mvn -Ddocker=true -Dmac-signing=true -Djarsigner.skip=false -Darguments="-Ddocker=true -Dmac-signing=true -Djarsigner.skip=false" release:perform
     ```
 
 7.  Update the stable branch (`master`) of eXist-db to reflect the latest release:
     ```
-    $ git push origin eXist-5.0.0:master
+    $ git push origin eXist-5.3.0:master
     ```
 
 #### Publishing/Promoting the Product Release
-1.  Check that the new versions are visible on [BinTray](https://bintray.com/existdb/releases/exist).
+1.  Check that the new versions are visible on [Github](https://github.com/eXist-db/exist/releases).
 
 2.  Check that the new versions are visible on [DockerHub](https://hub.docker.com/r/existdb/existdb).
 
@@ -238,13 +237,13 @@ Central (staging), Docker images to Docker Hub, and eXist-db distributions and i
    <div class="row">
      <div class="col-md-12">
          <h2 id="download">Download</h2>
-         <a href="https://bintray.com/existdb/releases/exist/5.0.0/view">
+         <a href="https://github.com/eXist-db/exist/releases/tag/eXist-5.3.0">
              <button class="btn btn-default download-btn stable" type="button">
                  <span class="status">Latest Release</span>
                  <span class="icon">
                      <i class="fa fa-download"/>
                  </span>
-                 <span class="exist-version">Version 5.0.0</span>
+                 <span class="exist-version">Version 5.3.0</span>
              </button>
          </a>
          <a href="https://hub.docker.com/r/evolvedbinary/exist-db/tags/">
@@ -253,7 +252,7 @@ Central (staging), Docker images to Docker Hub, and eXist-db distributions and i
                  <span class="icon">
                      <i class="fa fa-ship"/>
                  </span>
-                 <span class="exist-version">Version 5.0.0</span>
+                 <span class="exist-version">Version 5.3.0</span>
              </button>
          </a>
          <a href="https://github.com/exist-db/mvn-repo">
@@ -262,18 +261,18 @@ Central (staging), Docker images to Docker Hub, and eXist-db distributions and i
                  <span class="icon">
                      <i class="fa fa-github"/>
                  </span>
-                 <span class="exist-version">Version 5.0.0</span>
+                 <span class="exist-version">Version 5.3.0</span>
              </button>
          </a>
    ```
 
     3. Edit the file `expath-pkg.xml` and bump the version i.e. `version="4"` to reflect the new version.
 
-    4. Commit your change and push: `$ git commit index.html expath-pkg.xml -m "Update for eXist-5.0.0 website" && git push origin master`
+    4. Commit your change and push: `$ git commit index.html expath-pkg.xml -m "Update for eXist-5.3.0 website" && git push origin master`
 
-    5. Tag your release of the Website and push the tag: `$ git tag -s -m "Release tag for eXist 5.0.0 website" eXist-5.0.0 && git push origin eXist-5.0.0`.
+    5. Tag your release of the Website and push the tag: `$ git tag -s -m "Release tag for eXist 5.3.0 website" eXist-5.3.0 && git push origin eXist-5.3.0`.
 
-    6. Create a XAR for the website: `$ git checkout eXist-5.0.0 && ant`.
+    6. Create a XAR for the website: `$ git checkout eXist-5.3.0 && ant`.
 
     7. Visit http://www.exist-db.org/exist/apps/dashboard/index.html, login and upload the new `build/homepage.xar` file via the Package Manager.
 
@@ -281,9 +280,9 @@ Central (staging), Docker images to Docker Hub, and eXist-db distributions and i
 
     6.1. Warning: there is a know issue in Atomic-Wiki where your release notes might suddenly disappear. In case this happens your data is not lost but stored in  /db/apps/wiki/data/blogs/eXist/.md. You can rename it or move the content to a eXistdb<VERSION>.md file and create an according eXistdb<VERSION>.atom for it. Once these two files are available the blog entry will become visible on the eXist-db homepage and it will be visible in the eXist-db blog. 
 
-7.  Visit the GitHub releases page [https://github.com/eXist-db/exist/releases](https://github.com/eXist-db/exist/releases) and create a new release, enter the tag you previously created and link the release notes from the blog and the binaries from BinTray.
+7.  Visit the GitHub releases page [https://github.com/eXist-db/exist/releases](https://github.com/eXist-db/exist/releases) and create a new release, enter the tag you previously created and link the release notes from the blog.
 
-8.  Send an email to the `exist-open` mailing list announcing the release with a title similar to `[ANN] Release of eXist 5.0.0`, copy and paste the release notes from the blog into the email and reformat appropriately (see past emails).
+8.  Send an email to the `exist-open` mailing list announcing the release with a title similar to `[ANN] Release of eXist 5.3.0`, copy and paste the release notes from the blog into the email and reformat appropriately (see past emails).
 
 9.  Tweet about it using the `existdb` twitter account.
 
@@ -315,7 +314,7 @@ cask-repair exist-db
 The cask-repair tool will prompt you to enter the new version number. It will then use this version number to construct a download URL using the formula (where `{version}` represents the version number):
 
 ```
-https://bintray.com/artifact/download/existdb/releases/eXist-db-#{version}.dmg
+https://github.com/eXist-db/exist/releases/download/eXist-{version}/eXist-db-{version}.dmg
 ```
 
 **Note:** It is important that both version number components (the tag and version number) match, so that the formula can find the installer's URL.

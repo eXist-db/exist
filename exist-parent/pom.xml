@@ -784,9 +784,9 @@
                     <version>1.6</version>
                 </plugin>
                 <plugin>
-                    <groupId>com.carrotgarden.maven</groupId>
-                    <artifactId>bintray-maven-plugin</artifactId>
-                    <version>1.5.20191113165555</version>
+                    <groupId>de.jutzig</groupId>
+                    <artifactId>github-release-plugin</artifactId>
+                    <version>1.1.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.eluder.coveralls</groupId>
