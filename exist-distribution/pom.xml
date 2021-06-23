@@ -1090,8 +1090,8 @@
                                     <directory>${project.build.directory}</directory>
                                     <includes>
                                         <include>eXist-db-${project.version}.dmg</include>
-                                        <include>${project.artifactId})-${project.version}-unix.tar.bz2</include>
-                                        <include>${project.artifactId})-${project.version}-win.zip</include>
+                                        <include>${project.artifactId}-${project.version}-unix.tar.bz2</include>
+                                        <include>${project.artifactId}-${project.version}-win.zip</include>
                                     </includes>
                                 </fileSet>
                             </fileSets>

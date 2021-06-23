@@ -138,7 +138,6 @@
             <plugin>
                 <groupId>de.jutzig</groupId>
                 <artifactId>github-release-plugin</artifactId>
-                <version>1.1.1</version>
                 <executions>
                     <execution>
                         <id>github-upload</id>
