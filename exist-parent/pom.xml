@@ -786,7 +786,7 @@
                 <plugin>
                     <groupId>de.jutzig</groupId>
                     <artifactId>github-release-plugin</artifactId>
-                    <version>1.1.1</version>
+                    <version>1.4.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.eluder.coveralls</groupId>
