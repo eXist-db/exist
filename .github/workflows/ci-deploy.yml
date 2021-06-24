@@ -30,7 +30,10 @@ jobs:
       - name: Build images
         run: mvn -V -B -q -Pdocker -DskipTests -Ddependency-check.skip=true clean package
       - name: Check local images
-        run: docker image ls     
+        run: docker image ls
+      - name: Check license headers
+        run: mvn license:check
+        working-directory: exist-docker      
       - name: Start exist-ci container
         run: |
           docker run -dit -p 8080:8080 --name exist-ci --rm existdb/existdb:latest
