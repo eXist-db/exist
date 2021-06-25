@@ -135,37 +135,6 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>de.jutzig</groupId>
-                <artifactId>github-release-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>github-upload</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>release</goal>
-                        </goals>
-                        <inherited>true</inherited>
-                        <configuration>
-                            <description>
-                                Release Notes: https://exist-db.org/exist/apps/wiki/blogs/eXist/exist${project.version}
-
-                                Maven Central: https://search.maven.org/search?q=g:org.exist-db
-                            </description>
-                            <releaseName>eXist-db ${project.version}</releaseName>
-                            <tag>eXist-${project.version}</tag>
-                            <fileSets>
-                                <fileSet>
-                                    <directory>${project.build.directory}</directory>
-                                    <includes>
-                                        <include>${project.artifactId}-${project.version}.jar</include>
-                                    </includes>
-                                </fileSet>
-                            </fileSets>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
@@ -194,6 +163,47 @@
                                     <storepass>${existdb.release.keystore.pass}</storepass>
                                     <alias>${existdb.release.keystore.key.alias}</alias>
                                     <keypass>${existdb.release.keystore.key.pass}</keypass>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <!-- NOTE: this is activated by the maven-release-plugin -->
+            <id>exist-release</id>
+            <build>
+                <plugins>
+                    <!-- This is needed in a profile to workaround https://github.com/jutzig/github-release-plugin/issues/50 -->
+                    <plugin>
+                        <groupId>de.jutzig</groupId>
+                        <artifactId>github-release-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>github-upload</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>release</goal>
+                                </goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <description>
+                                        Release Notes: https://exist-db.org/exist/apps/wiki/blogs/eXist/exist${project.version}
+
+                                        Maven Central: https://search.maven.org/search?q=g:org.exist-db
+                                    </description>
+                                    <releaseName>eXist-db ${project.version}</releaseName>
+                                    <tag>eXist-${project.version}</tag>
+                                    <fileSets>
+                                        <fileSet>
+                                            <directory>${project.build.directory}</directory>
+                                            <includes>
+                                                <include>${project.artifactId}-${project.version}.jar</include>
+                                            </includes>
+                                        </fileSet>
+                                    </fileSets>
                                 </configuration>
                             </execution>
                         </executions>
