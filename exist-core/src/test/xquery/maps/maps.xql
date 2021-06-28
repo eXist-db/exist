@@ -674,6 +674,7 @@ function mt:multi-merge() {
 declare variable $mt:test-key-one := 1;
 declare variable $mt:test-key-two := 2;
 declare variable $mt:test-key-three := 3;
+
 declare function mt:create-test-map() {
     map {
         $mt:test-key-one : true(),
@@ -740,15 +741,18 @@ function mt:immutable-remove-then-put() {
 };
 
 declare
-    %test:assertEquals("true", "true")
+    %test:assertEquals("true", 1, "true", "true", 0)
 function mt:immutable-remove-then-remove() {
     let $removed := map:remove(mt:create-test-map(), $mt:test-key-two)
     let $expected := $removed($mt:test-key-one)
     let $result := map:remove($removed, $mt:test-key-one)
     return
         (
+            fn:empty($removed($mt:test-key-two)),
+            map:size($removed),
             $expected eq $removed($mt:test-key-one),
-            $expected ne $result($mt:test-key-one)
+            fn:empty($result($mt:test-key-one)),
+            map:size($result)
         )
 };
 
@@ -779,15 +783,17 @@ function mt:immutable-merge-then-put() {
 };
 
 declare
-    %test:assertEquals("true", "true")
+    %test:assertEquals(2, "true", "true", 1)
 function mt:immutable-merge-then-remove() {
     let $merged := map:merge(mt:create-test-map())
     let $expected := $merged($mt:test-key-one)
     let $result := map:remove($merged, $mt:test-key-one)
     return
         (
+            map:size($merged),
             $expected eq $merged($mt:test-key-one),
-            $expected ne $result($mt:test-key-one)
+            fn:empty($result($mt:test-key-one)),
+            map:size($result)
         )
 };
 
@@ -818,15 +824,17 @@ function mt:immutable-merge2-then-put() {
 };
 
 declare
-    %test:assertEquals("true", "true")
+    %test:assertEquals(3, "true", "true", 2)
 function mt:immutable-merge2-then-remove() {
     let $merged := map:merge((mt:create-test-map(), mt:create-test-map2()))
     let $expected := $merged($mt:test-key-one)
     let $result := map:remove($merged, $mt:test-key-one)
     return
         (
-            $expected eq $merged($mt:test-key-one),
-            $expected ne $result($mt:test-key-one)
+           map:size($merged),
+           $expected eq $merged($mt:test-key-one),
+           fn:empty($result($mt:test-key-one)),
+           map:size($result)
         )
 };
 
@@ -856,15 +864,17 @@ function mt:immutable-merge-duplicates-then-put() {
 };
 
 declare
-    %test:assertEquals("true", "true")
+    %test:assertEquals(2, "true", "true", 1)
 function mt:immutable-merge-duplicates-then-remove() {
     let $merged := map:merge((mt:create-test-map(), mt:create-test-map()))
     let $expected := $merged($mt:test-key-one)
     let $result := map:remove($merged, $mt:test-key-one)
     return
         (
+            map:size($merged),
             $expected eq $merged($mt:test-key-one),
-            $expected ne $result($mt:test-key-one)
+            fn:empty($result($mt:test-key-one)),
+            map:size($result)
         )
 };
 
