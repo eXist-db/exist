@@ -680,6 +680,7 @@ function mt:multi-merge() {
 declare variable $mt:test-key-one := 1;
 declare variable $mt:test-key-two := 2;
 declare variable $mt:test-key-three := 3;
+
 declare function mt:create-test-map() {
     map {
         $mt:test-key-one : true(),
@@ -836,11 +837,10 @@ function mt:immutable-merge2-then-remove() {
     let $result := map:remove($merged, $mt:test-key-one)
     return
         (
-            map:size($merged),
-            $expected eq $merged($mt:test-key-one),
-            fn:empty($result($mt:test-key-one)),
-            $expected ne $result($mt:test-key-one),
-            map:size($result)
+           map:size($merged),
+           $expected eq $merged($mt:test-key-one),
+           fn:empty($result($mt:test-key-one)),
+           map:size($result)
         )
 };
 
