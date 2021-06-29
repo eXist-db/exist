@@ -1,5 +1,3 @@
-
-package org.exist.start;
 /*
  * eXist-db Open Source Native XML Database
  * Copyright (C) 2001 The eXist-db Authors
@@ -21,20 +19,30 @@ package org.exist.start;
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-import java.util.Optional;
+package org.exist.start;
 
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import static org.exist.start.CompatibleJavaVersionCheck.IncompatibleJavaVersion.IncompatibleJavaVersion;
 import static org.exist.start.Main.ERROR_CODE_INCOMPATIBLE_JAVA_DETECTED;
 
 public class CompatibleJavaVersionCheck {
 
-    private static final int[] INCOMPATIBLE_MAJOR_JAVA_VERSIONS = { 12, 13, 14, 15 };
+    private static final IncompatibleJavaVersion[] INCOMPATIBLE_JAVA_VERSIONS = {
+            IncompatibleJavaVersion(12),
+            IncompatibleJavaVersion(13),
+            IncompatibleJavaVersion(14),
+            IncompatibleJavaVersion(15, 0, 2)
+    };
 
     private static final String INCOMPATIBLE_JAVA_VERSION_NOTICE =
             "*****************************************************%n" +
             "Warning: Unreliable Java version has been detected!%n" +
             "%n" +
-            "OpenJDK versions 12-15 suffer from a critical bug in the%n" +
-            "JIT C2 compiler that will cause data loss in eXist-db.%n" +
+            "OpenJDK versions 12 through 15.0.1 suffer from a critical%n" +
+            " bug in the JIT C2 compiler that will cause data loss in%n" +
+            "eXist-db.%n" +
             "%n" +
             "The problem has been reported to the OpenJDK community.%n" +
             "%n" +
@@ -57,25 +65,90 @@ public class CompatibleJavaVersionCheck {
      * @throws StartException if the runtime version of Java is incompatible with eXist-db.
      */
     public static void checkForCompatibleJavaVersion() throws StartException {
-        final Optional<Integer> maybeRuntimeMajorJavaVersion = RUNTIME_JAVA_VERSION
-                .map(str -> str.split("\\."))
-                .filter(ary -> ary.length > 0)
-                .map(ary -> ary[0])
-                .filter(str -> !str.isEmpty())
-                .map(str -> { try { return Integer.parseInt(str); } catch (final NumberFormatException e) { return -1; }})
-                .filter(i -> i != -1);
+        checkForCompatibleJavaVersion(RUNTIME_JAVA_VERSION);
+    }
 
-        if (!maybeRuntimeMajorJavaVersion.isPresent()) {
-            // Could not determine major java version of runtime, so best to let the user proceed...
+    static void checkForCompatibleJavaVersion(final Optional<String> checkJavaVersion) throws StartException {
+        final Optional<int[]> maybeJavaVersionComponents = extractJavaVersionComponents(checkJavaVersion);
+
+        if (!maybeJavaVersionComponents.isPresent()) {
+            // Could not determine major java version, so best to let the user proceed...
             return;
         }
 
-        // check for incompatible major java version
-        final int runtimeMajorJavaVersion = maybeRuntimeMajorJavaVersion.get();
-        for (int i = 0; i < INCOMPATIBLE_MAJOR_JAVA_VERSIONS.length; i++) {
-            if (runtimeMajorJavaVersion == INCOMPATIBLE_MAJOR_JAVA_VERSIONS[i]) {
+        // check for incompatible java version
+        final int[] javaVersionComponents = maybeJavaVersionComponents.get();
+        final int majorJavaVersion = javaVersionComponents[0];
+        /* @Nullable */ final Integer minorJavaVersion = javaVersionComponents.length > 1 ? javaVersionComponents[1] : null;
+        /* @Nullable */ final Integer patchJavaVersion = javaVersionComponents.length > 2 ? javaVersionComponents[2] : null;
+
+        for (int i = 0; i < INCOMPATIBLE_JAVA_VERSIONS.length; i++) {
+            final IncompatibleJavaVersion incompatibleJavaVersion = INCOMPATIBLE_JAVA_VERSIONS[i];
+
+            // compare major versions
+            if (majorJavaVersion == incompatibleJavaVersion.major) {
+
+                // major version might be incompatible
+
+                if (incompatibleJavaVersion.lessThanMinor != null && minorJavaVersion != null) {
+                    // compare minor version
+                    if (minorJavaVersion >= incompatibleJavaVersion.lessThanMinor) {
+                        // minor version is compatible
+
+                        if (incompatibleJavaVersion.lessThanPatch != null && patchJavaVersion != null) {
+                            // compare patch version
+                            if (patchJavaVersion >= incompatibleJavaVersion.lessThanPatch) {
+                                // patch version is compatible
+                                continue;
+                            }
+                        }
+                    }
+                }
+
+                // version is NOT compatible!
                 throw new StartException(ERROR_CODE_INCOMPATIBLE_JAVA_DETECTED, String.format(INCOMPATIBLE_JAVA_VERSION_NOTICE, RUNTIME_JAVA_VERSION));
             }
+
+            // version is compatible
+        }
+    }
+
+    static Optional<int[]> extractJavaVersionComponents(final Optional<String> javaVersion) {
+        return javaVersion
+                .map(str -> str.split("\\.|_|-"))
+                .filter(ary -> ary.length > 0)
+                .map(ary ->
+                        Stream.of(ary)
+                                .filter(str -> !str.isEmpty())
+                                .map(str -> { try { return Integer.parseInt(str); } catch (final NumberFormatException e) { return -1; }})
+                                .filter(i -> i != -1)
+                                .mapToInt(Integer::intValue)
+                                .toArray()
+                )
+                .filter(ary -> ary.length > 0);
+    }
+
+    static class IncompatibleJavaVersion {
+        final int major;
+        /* @Nullable */  final Integer lessThanMinor;
+        /* @Nullable */ final Integer lessThanPatch;
+
+        private IncompatibleJavaVersion(final int major, /* @Nullable */ Integer lessThanMinor, /* @Nullable */ Integer lessThanPatch) {
+            this.major = major;
+            this.lessThanMinor = lessThanMinor;
+            this.lessThanPatch = lessThanPatch;
+        }
+
+        public static IncompatibleJavaVersion IncompatibleJavaVersion(final int major, /* @Nullable */ Integer lessThanMinor, /* @Nullable */ Integer lessThanPatch) {
+            return new IncompatibleJavaVersion(major, lessThanMinor, lessThanPatch);
+        }
+
+        public static IncompatibleJavaVersion IncompatibleJavaVersion(final int major, /* @Nullable */ Integer lessThanMinor) {
+            return IncompatibleJavaVersion(major, lessThanMinor, null);
+        }
+
+        public static IncompatibleJavaVersion IncompatibleJavaVersion(final int major) {
+            return IncompatibleJavaVersion(major, null, null);
         }
     }
 }
