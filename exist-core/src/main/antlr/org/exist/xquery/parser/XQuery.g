@@ -1541,7 +1541,9 @@ argumentList throws XPathException
 
 argument throws XPathException
 :
-	argumentPlaceholder | exprSingle
+	(QUESTION! ( NCNAME | INTEGER_LITERAL | LPAREN | STAR )) => lookup
+	| argumentPlaceholder
+	| exprSingle
 	;
 
 argumentPlaceholder throws XPathException : QUESTION ;
