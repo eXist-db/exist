@@ -272,20 +272,31 @@ function bang:mixed-function-types-call-parenthesized-context-item () {
     return (function ($a) {1}, $id, sum#1, [1], map{1:1}) ! (.)(1)
 };
 
-(:~
- : parse error needs to be fixed first
- : https://github.com/eXist-db/exist/issues/1655
-
+(: https://github.com/eXist-db/exist/issues/1655 :)
 declare
     %test:assertEquals(1,2,3)
 function bang:array-lookup-implicit-context () {
     ([1], [2], [3]) ! ?1
 };
 
+(: https://github.com/eXist-db/exist/issues/1655 :)
 declare
     %test:assertEquals(1,2,3)
 function bang:map-lookup-implicit-context () {
     (map {'a':1}, map {'a':2}, map {'a':3}) ! ?a
 };
 
- :)
+(: https://github.com/eXist-db/exist/issues/3491 :)
+declare
+    %test:assertEquals(3,4,5)
+function bang:map-lookup-implicit-context-as-argument () {
+    (map {'a': (1,2)}, map {'a': (2,2)}, map {'a':(2,3)}) ! sum(?a)
+};
+
+(: https://github.com/eXist-db/exist/issues/3491 :)
+declare
+    %test:assertEquals("1|2|3", "a|b|c")
+function bang:array-to-sequence-as-parameter () {
+    ([1,2,3], ['a', 'b', 'c'])
+      ! string-join(?*, '|')
+};
