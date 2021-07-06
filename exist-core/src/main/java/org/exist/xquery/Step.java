@@ -35,7 +35,7 @@ public abstract class Step extends AbstractExpression {
 
     protected final static Logger LOG = LogManager.getLogger(Step.class);
 
-    protected int axis = Constants.UNKNOWN_AXIS;
+    protected int axis;
 
     protected boolean abbreviatedStep = false;
 
@@ -47,18 +47,18 @@ public abstract class Step extends AbstractExpression {
 
     protected int staticReturnType = Type.ITEM;
 
-    public Step( XQueryContext context, int axis ) {
+    public Step(XQueryContext context, int axis) {
         super(context);
         this.axis = axis;
     }
 
-    public Step( XQueryContext context, int axis, NodeTest test ) {
-        this( context, axis );
+    public Step(XQueryContext context, int axis, NodeTest test) {
+        this(context, axis);
         this.test = test;
     }
 
-    public void addPredicate( Expression expr ) {
-        predicates.add( (Predicate) expr );
+    public void addPredicate(Expression expr) {
+        predicates.add((Predicate) expr);
     }
 
     public void insertPredicate(Expression previous, Expression predicate) {
@@ -78,30 +78,36 @@ public abstract class Step extends AbstractExpression {
         return predicates;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
-     */
+    @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        if (test != null && test.getName() != null &&
-                test.getName().getPrefix() != null &&
-                (!test.getName().getPrefix().isEmpty()) && context.getInScopePrefixes() !=  null &&
-                context.getURIForPrefix(test.getName().getPrefix()) == null)
-            {throw new XPathException(this, ErrorCodes.XPST0081, "undeclared prefix '"
-                + test.getName().getPrefix() + "'");}
+        if (
+                test != null &&
+                        test.getName() != null &&
+                        test.getName().getPrefix() != null &&
+                        !test.getName().getPrefix().isEmpty() &&
+                        context.getInScopePrefixes() != null &&
+                        context.getURIForPrefix(test.getName().getPrefix()) == null) {
+            throw new XPathException(this, ErrorCodes.XPST0081,
+                    "undeclared prefix '" + test.getName().getPrefix() + "'");
+        }
+
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
         this.contextId = contextInfo.getContextId();
+
         if (predicates.size() > 0) {
             final AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
             newContext.setStaticType(this.axis == Constants.SELF_AXIS ? contextInfo.getStaticType() : Type.NODE);
             newContext.setParent(this);
             newContext.setContextStep(this);
-            for (final Predicate pred : predicates) {
-                pred.analyze(newContext);
+
+            for (final Predicate predicate : predicates) {
+                predicate.analyze(newContext);
             }
         }
         // if we are on the self axis, remember the static return type given in the context
-        if (this.axis == Constants.SELF_AXIS)
-            {staticReturnType = contextInfo.getStaticType();}
+        if (this.axis == Constants.SELF_AXIS) {
+            staticReturnType = contextInfo.getStaticType();
+        }
     }
 
     /**
@@ -109,37 +115,35 @@ public abstract class Step extends AbstractExpression {
      * If yes, set a flag on the {@link LocationStep}
      *
      * @param inPredicate true if in a predicate, false otherwise
-     *
      * @return true if the first filter is a positional predicate
      */
     protected boolean checkPositionalFilters(final boolean inPredicate) {
-        if (!inPredicate && this.hasPredicates()) {
-            final List<Predicate> preds = this.getPredicates();
-            final Predicate predicate = preds.get(0);
-            final Expression predExpr = predicate.getFirst();
-            // only apply optimization if the static return type is a single number
-            // and there are no dependencies on the context item
-            if (Type.subTypeOfUnion(predExpr.returnsType(), Type.NUMBER) &&
-                    !Dependency.dependsOn(predExpr, Dependency.CONTEXT_POSITION)) {
-                return true;
-            }
+        if (inPredicate || !hasPredicates()) {
+            return false;
         }
-        return false;
+
+        final List<Predicate> predicates = this.getPredicates();
+        final Predicate predicate = predicates.get(0);
+        final Expression predicateExpr = predicate.getFirst();
+
+        // only apply optimization if the static return type is a single number
+        // and there are no dependencies on the context item
+        return (Type.subTypeOfUnion(predicateExpr.returnsType(), Type.NUMBER) &&
+                !Dependency.dependsOn(predicateExpr, Dependency.CONTEXT_POSITION));
     }
 
-    public abstract Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException;
+    public abstract Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException;
 
     public int getAxis() {
         return axis;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.AbstractExpression#setPrimaryAxis(int)
-     */
+    @Override
     public void setPrimaryAxis(int axis) {
         this.axis = axis;
     }
 
+    @Override
     public int getPrimaryAxis() {
         return this.axis;
     }
@@ -152,59 +156,70 @@ public abstract class Step extends AbstractExpression {
         abbreviatedStep = abbrev;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
-     */
+    @Override
     public void dump(ExpressionDumper dumper) {
-        if (axis != Constants.UNKNOWN_AXIS)
-            {dumper.display( Constants.AXISSPECIFIERS[axis] );}
-        dumper.display( "::" );
-        if ( test != null )
+        if (axis != Constants.UNKNOWN_AXIS) {
+            dumper.display(Constants.AXISSPECIFIERS[axis]);
+        }
+        dumper.display("::");
+        if (test != null) {
             //TODO : toString() or... dump ?
-            {dumper.display( test.toString() );}
-        else
-            {dumper.display( "node()" );}
-        if ( predicates.size() > 0 )
-            for (final Predicate pred : predicates) {
-                pred.dump(dumper);
+            dumper.display(test.toString());
+        } else {
+            dumper.display("node()");
+        }
+        if (predicates.size() > 0) {
+            for (final Predicate predicates : predicates) {
+                predicates.dump(dumper);
             }
+        }
     }
 
+    @Override
     public String toString() {
         final StringBuilder result = new StringBuilder();
-        if (axis != Constants.UNKNOWN_AXIS)
-            {result.append( Constants.AXISSPECIFIERS[axis] );}
-        result.append( "::" );
-        if (test != null )
-            {result.append( test.toString() );}
-        else
-            {result.append( "node()" );}
-        if (predicates.size() > 0 )
-            for (final Predicate pred : predicates) {
-                result.append(pred.toString());
+
+        if (axis != Constants.UNKNOWN_AXIS) {
+            result.append(Constants.AXISSPECIFIERS[axis]);
+        }
+
+        result.append("::");
+
+        if (test != null) {
+            result.append(test.toString());
+        } else {
+            result.append("node()");
+        }
+
+        if (predicates.size() > 0) {
+            for (final Predicate predicates : predicates) {
+                result.append(predicates.toString());
             }
+        }
         return result.toString();
     }
 
+    @Override
     public int returnsType() {
-        //Polysemy of "." which might be atomic if the context sequence is atomic itself
+        // Polysemy of "." which might be atomic if the context sequence is atomic itself
         if (axis == Constants.SELF_AXIS) {
-            //Type.ITEM by default : this may change *after* evaluation
+            // Type.ITEM by default : this may change *after* evaluation
             return staticReturnType;
-        } else
-            {return Type.NODE;}
+        } else {
+            return Type.NODE;
+        }
     }
 
     @Override
     public Cardinality getCardinality() {
         return Cardinality.ZERO_OR_MORE;
-   }
+    }
 
-    public void setAxis( int axis ) {
+    public void setAxis(int axis) {
         this.axis = axis;
     }
 
-    public void setTest( NodeTest test ) {
+    public void setTest(NodeTest test) {
         this.test = test;
     }
 
@@ -212,13 +227,11 @@ public abstract class Step extends AbstractExpression {
         return test;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.AbstractExpression#resetState()
-     */
+    @Override
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
-        for (final Predicate pred : predicates) {
-            pred.resetState(postOptimization);
+        for (final Predicate predicate : predicates) {
+            predicate.resetState(postOptimization);
         }
     }
 }
