@@ -500,7 +500,7 @@ return
     <test output="text">
         <task>fn:filter function (wrong argument order: deprecated)</task>
         <code>fn:filter(function($a) {$a mod 2 = 0}, 1 to 10)</code>
-        <expected>2 4 6 8 10</expected>
+        <error>XPTY0004</error>
     </test>
     <test output="text">
         <task>fn:filter function (correct argument order)</task>
