@@ -35,6 +35,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -190,10 +191,13 @@ public class Optimize extends Pragma {
                 }
             }
 
-            public void visitLocationStep(LocationStep locationStep) {
-                final List<Predicate> predicates = locationStep.getPredicates();
-                for (final Predicate pred : predicates) {
-                    pred.accept(this);
+            @Override
+            public void visitLocationStep(final LocationStep locationStep) {
+                @Nullable final Predicate[] predicates = locationStep.getPredicates();
+                if (predicates != null) {
+                    for (final Predicate pred : predicates) {
+                        pred.accept(this);
+                    }
                 }
             }
 
