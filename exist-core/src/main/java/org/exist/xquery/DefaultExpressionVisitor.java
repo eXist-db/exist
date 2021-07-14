@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -96,10 +97,13 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         conditional.getElseExpr().accept(this);
     }
 
-    public void visitLocationStep(LocationStep locationStep) {
-        final List<Predicate> predicates = locationStep.getPredicates();
-        for (final Predicate pred : predicates) {
-			pred.accept(this);
+    @Override
+    public void visitLocationStep(final LocationStep locationStep) {
+        @Nullable final Predicate[] predicates = locationStep.getPredicates();
+        if (predicates != null) {
+            for (final Predicate pred : predicates) {
+                pred.accept(this);
+            }
         }
     }
 

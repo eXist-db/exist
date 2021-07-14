@@ -31,6 +31,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -68,17 +69,17 @@ public class OptimizeFieldPragma extends Pragma {
     }
 
     @Override
-    public void before(XQueryContext context, Expression expression, Sequence contextSequence) throws XPathException {
-        LocationStep locationStep = (LocationStep) expression;
-        if (locationStep.hasPredicates()) {
-            Expression parentExpr = locationStep.getParentExpression();
+    public void before(final XQueryContext context, final Expression expression, final Sequence contextSequence) throws XPathException {
+        final LocationStep locationStep = (LocationStep) expression;
+        @Nullable final Predicate[] preds = locationStep.getPredicates();
+        if (preds != null) {
+            final Expression parentExpr = locationStep.getParentExpression();
             if (!(parentExpr instanceof RewritableExpression)) {
                 return;
             }
-            final List<Predicate> preds = locationStep.getPredicates();
 
             // get path of path expression before the predicates
-            NodePath contextPath = RangeQueryRewriter.toNodePath(RangeQueryRewriter.getPrecedingSteps(locationStep));
+            final NodePath contextPath = RangeQueryRewriter.toNodePath(RangeQueryRewriter.getPrecedingSteps(locationStep));
 
             rewritten = tryRewriteToFields(locationStep, preds, contextPath, contextSequence);
             axis = locationStep.getAxis();
@@ -90,15 +91,15 @@ public class OptimizeFieldPragma extends Pragma {
 
     }
 
-    private Expression tryRewriteToFields(LocationStep locationStep, List<Predicate> preds, NodePath contextPath, Sequence contextSequence) throws XPathException {
+    private Expression tryRewriteToFields(LocationStep locationStep, final Predicate[] preds, NodePath contextPath, Sequence contextSequence) throws XPathException {
         // without context path, we cannot rewrite the entire query
         if (contextPath != null) {
-            List<Predicate> notOptimizable = new ArrayList<>(preds.size());
+            final List<Predicate> notOptimizable = new ArrayList<>(preds.length);
             List<RangeIndexConfig> configs = getConfigurations(contextSequence);
             // walk through the predicates attached to the current location step
             // check if expression can be optimized
 
-            final Map<Predicate, List<Expression>> predicateArgs = new IdentityHashMap<>(preds.size());
+            final Map<Predicate, List<Expression>> predicateArgs = new IdentityHashMap<>(preds.length);
 
             for (final Predicate pred : preds) {
                 List<Expression> args = null;
@@ -138,11 +139,18 @@ public class OptimizeFieldPragma extends Pragma {
                     }
 
                     // found index configuration with sub-fields
+                    int predIdx = -1;
+                    for (int i = 0; i < preds.length; i++) {
+                        if (preds[i] == pred) {
+                            predIdx = i;
+                            break;
+                        }
+                    }
 
-                    ComplexRangeIndexConfigElement rice = null;
-                    final List<Predicate> precedingPreds = preds.subList(0, preds.indexOf(pred));
+                    final Predicate[] precedingPreds = Arrays.copyOf(preds, predIdx);
                     final ArrayList<Predicate> matchedPreds = new ArrayList<>();
 
+                    ComplexRangeIndexConfigElement rice = null;
                     for (ComplexRangeIndexConfigElement testRice : rices) {
 
                         if (testRice.getNumberOfConditions() > 0) {

@@ -26,6 +26,7 @@ import org.exist.storage.NodePath;
 import org.exist.xquery.*;
 import org.exist.xquery.Constants.Comparison;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,21 +41,21 @@ public class RangeQueryRewriter extends QueryRewriter {
     }
 
     @Override
-    public Pragma rewriteLocationStep(LocationStep locationStep) throws XPathException {
+    public Pragma rewriteLocationStep(final LocationStep locationStep) throws XPathException {
         int axis = locationStep.getAxis();
         if (!(axis == Constants.CHILD_AXIS || axis == Constants.DESCENDANT_AXIS ||
                 axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.ATTRIBUTE_AXIS ||
                 axis == Constants.DESCENDANT_ATTRIBUTE_AXIS || axis == Constants.SELF_AXIS)) {
             return null;
         }
-        if (locationStep.hasPredicates()) {
-            Expression parentExpr = locationStep.getParentExpression();
+
+        @Nullable final Predicate[] preds = locationStep.getPredicates();
+        if (preds != null) {
+            final Expression parentExpr = locationStep.getParentExpression();
             if ((parentExpr instanceof RewritableExpression)) {
                 // Step 1: replace all optimizable expressions within predicates with
                 // calls to the range functions. If those functions are used or not will
                 // be decided at run time.
-
-                final List<Predicate> preds = locationStep.getPredicates();
 
                 // will become true if optimizable expression is found
                 boolean canOptimize = false;
