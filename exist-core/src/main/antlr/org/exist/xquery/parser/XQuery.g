@@ -1326,6 +1326,12 @@ lookup throws XPathException
     )
     ;
 
+unaryLookup throws XPathException
+:
+    l:lookup
+    { #unaryLookup= #(#[PARENTHESIZED, "Parenthesized"], #l); }
+    ;
+
 dynamicFunCall throws XPathException
 :
 	args:argumentList
@@ -1369,7 +1375,7 @@ primaryExpr throws XPathException
 	|
 	( eqName LPAREN ) => functionCall
 	|
-	( QUESTION ) => lookup
+	( QUESTION ) => unaryLookup
 	|
 	( STRING_CONSTRUCTOR_START ) => stringConstructor
 	|
@@ -1535,7 +1541,9 @@ argumentList throws XPathException
 
 argument throws XPathException
 :
-	argumentPlaceholder | exprSingle
+	(QUESTION! ( NCNAME | INTEGER_LITERAL | LPAREN | STAR )) => lookup
+	| argumentPlaceholder
+	| exprSingle
 	;
 
 argumentPlaceholder throws XPathException : QUESTION ;
