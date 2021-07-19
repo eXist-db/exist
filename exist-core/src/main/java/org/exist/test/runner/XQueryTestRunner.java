@@ -28,7 +28,6 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.source.ClassLoaderSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.FunctionCall;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -73,7 +72,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
         this.info = extractTestInfo(path);
     }
 
-    private static XQueryTestInfo extractTestInfo(final Path path) throws InitializationError {
+    private XQueryTestInfo extractTestInfo(final Path path) throws InitializationError {
         try {
             final Source query = new StringSource("inspect:inspect-module(xs:anyURI(\"" + path.toAbsolutePath().toString() + "\"))");
             final Sequence inspectionResults = executeQuery(query, Collections.emptyList());
@@ -141,7 +140,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
 
             return new XQueryTestInfo(prefix, namespace, testFunctions);
 
-        } catch(final DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException e) {
+        } catch(final IOException | EXistException | PermissionDeniedException | XPathException e) {
             throw new InitializationError(e);
         }
     }
@@ -188,15 +187,16 @@ public class XQueryTestRunner extends AbstractTestRunner {
 
     @Override
     public Description getDescription() {
-        final Description description = Description.createSuiteDescription(getSuiteName(), (java.lang.annotation.Annotation[]) null);
+        final String suiteName = checkDescription(this, getSuiteName());
+        final Description description = Description.createSuiteDescription(suiteName, EMPTY_ANNOTATIONS);
         for (final XQueryTestInfo.TestFunctionDef testFunctionDef : info.getTestFunctions()) {
-            description.addChild(Description.createTestDescription(getSuiteName(), testFunctionDef.getLocalName(), (java.lang.annotation.Annotation) null));
+            description.addChild(Description.createTestDescription(suiteName, checkDescription(testFunctionDef, testFunctionDef.getLocalName()), EMPTY_ANNOTATIONS));
         }
         return description;
     }
 
     @Override
-    public void run(final RunNotifier notifier) {
+    protected void doRun(final RunNotifier notifier) {
         try {
             final String pkgName = getClass().getPackage().getName().replace('.', '/');
             final Source query = new ClassLoaderSource(pkgName + "/xquery-test-runner.xq");
@@ -216,7 +216,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
 
             executeQuery(query, externalVariableDeclarations);
 
-        } catch(final DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException e) {
+        } catch(final IOException | EXistException | PermissionDeniedException | XPathException e) {
             //TODO(AR) what to do here?
             throw new RuntimeException(e);
         }

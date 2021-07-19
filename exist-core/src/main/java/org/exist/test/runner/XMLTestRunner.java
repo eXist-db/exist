@@ -29,7 +29,6 @@ import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.ClassLoaderSource;
 import org.exist.source.Source;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.ExistSAXParserFactory;
 import org.exist.xquery.FunctionCall;
 import org.exist.xquery.XPathException;
@@ -174,15 +173,16 @@ public class XMLTestRunner extends AbstractTestRunner {
 
     @Override
     public Description getDescription() {
-        final Description description = Description.createSuiteDescription(getSuiteName(), (java.lang.annotation.Annotation[]) null);
+        final String suiteName = checkDescription(info, getSuiteName());
+        final Description description = Description.createSuiteDescription(suiteName, EMPTY_ANNOTATIONS);
         for (final String childName : info.getChildNames()) {
-            description.addChild(Description.createTestDescription(getSuiteName(), childName, (java.lang.annotation.Annotation[]) null));
+            description.addChild(Description.createTestDescription(suiteName, checkDescription(info, childName), EMPTY_ANNOTATIONS));
         }
         return description;
     }
 
     @Override
-    public void run(final RunNotifier notifier) {
+    protected void doRun(final RunNotifier notifier) {
         try {
             final String pkgName = getClass().getPackage().getName().replace('.', '/');
             final Source query = new ClassLoaderSource(pkgName + "/xml-test-runner.xq");
@@ -203,7 +203,7 @@ public class XMLTestRunner extends AbstractTestRunner {
             executeQuery(query, externalVariableDeclarations);
 
 
-        } catch(final DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException e) {
+        } catch(final IOException | EXistException | PermissionDeniedException | XPathException e) {
             //TODO(AR) what to do here?
             throw new RuntimeException(e);
         }

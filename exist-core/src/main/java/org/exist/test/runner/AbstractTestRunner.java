@@ -25,11 +25,13 @@ package org.exist.test.runner;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.SecurityManager;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
@@ -38,8 +40,10 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.junit.runner.Runner;
+import org.junit.runner.notification.RunNotifier;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,24 +51,42 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Base class for XSuite test runners.
  *
  * @author Adam Retter
  */
 public abstract class AbstractTestRunner extends Runner {
+    protected static final Annotation[] EMPTY_ANNOTATIONS = new Annotation[0];
+
+    private final ExistServer existServer;
 
     protected final Path path;
     protected final boolean parallel;
 
     protected AbstractTestRunner(final Path path, final boolean parallel) {
+        existServer = new ExistServer();
         this.path = path;
         this.parallel = parallel;
     }
 
-    protected static Sequence executeQuery(final Source query, final List<Function<XQueryContext, Tuple2<String, Object>>> externalVariableBindings) throws EXistException, PermissionDeniedException, XPathException, IOException, DatabaseConfigurationException {
-        final BrokerPool brokerPool = XSuite.ExistServer.getRunningServer().getBrokerPool();
-        try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()))) {
+    @Override
+    public final void run(RunNotifier notifier) {
+        try {
+            doRun(notifier);
+        } finally {
+            existServer.stopServer();
+        }
+    }
+
+    protected abstract void doRun(RunNotifier notifier);
+
+    protected final Sequence executeQuery(final Source query, final List<Function<XQueryContext, Tuple2<String, Object>>> externalVariableBindings) throws EXistException, PermissionDeniedException, XPathException, IOException {
+        final BrokerPool brokerPool = getCleanBrokerPool();
+        final SecurityManager securityManager = requireNonNull(brokerPool.getSecurityManager(), "securityManager is null");
+        try (final DBBroker broker = brokerPool.get(Optional.of(securityManager.getSystemSubject()))) {
             final XQueryPool queryPool = brokerPool.getXQueryPool();
             CompiledXQuery compiledQuery = queryPool.borrowCompiledXQuery(broker, query);
 
@@ -109,6 +131,52 @@ public abstract class AbstractTestRunner extends Runner {
             } finally {
                 queryPool.returnCompiledXQuery(query, compiledQuery);
             }
+        }
+    }
+
+    protected final BrokerPool getCleanBrokerPool() {
+        return requireNonNull(existServer.getCleanBrokerPool(), "brokerPool is null");
+    }
+
+    protected static String checkDescription(Object source,  String description) {
+        if (description == null) {
+            throw new IllegalArgumentException(source + " description is null");
+        }
+        if (description.isEmpty()) {
+            throw new IllegalArgumentException(source + " description is empty");
+        }
+        if (description.startsWith("(")) {
+            throw new IllegalArgumentException(source + " description '" + description + "' starts with '('");
+        }
+        return description;
+    }
+
+    private static class ExistServer {
+        private ExistEmbeddedServer embeddedServer;
+
+        protected void stopServer() {
+            if (embeddedServer != null && embeddedServer.getBrokerPool() != null) {
+                embeddedServer.stopDb();
+                embeddedServer = null;
+            }
+        }
+
+        protected BrokerPool getCleanBrokerPool() {
+            if (embeddedServer == null) {
+                embeddedServer = new ExistEmbeddedServer(true, true);
+                try {
+                    embeddedServer.startDb();
+                } catch (DatabaseConfigurationException | EXistException | IOException e) {
+                    throw new AssertionError("Embedded eXist server failed to start ", e);
+                }
+            } else {
+                try {
+                    embeddedServer.restart(true);
+                } catch (DatabaseConfigurationException | EXistException | IOException e) {
+                    throw new AssertionError("Embedded eXist server failed to re-start ", e);
+                }
+            }
+            return embeddedServer.getBrokerPool();
         }
     }
 }

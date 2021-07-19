@@ -21,9 +21,6 @@
  */
 package org.exist.test.runner;
 
-import org.exist.EXistException;
-import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.util.XQueryFilenameFilter;
 import org.junit.runner.Description;
@@ -58,7 +55,7 @@ import java.util.stream.Stream;
  *
  * @author Adam Retter
  */
-public class XSuite extends ParentRunner<Runner> {
+public class XSuite extends ParentRunner<Runner>  {
 
     /**
      * Returns an empty suite.
@@ -249,34 +246,5 @@ public class XSuite extends ParentRunner<Runner> {
     @Override
     protected void runChild(final Runner runner, final RunNotifier notifier) {
         runner.run(notifier);
-    }
-
-    @Override
-    public void run(final RunNotifier notifier) {
-        try {
-            super.run(notifier);
-        } finally {
-            ExistServer.stopServer();
-        }
-    }
-
-    public static class ExistServer {
-        private static final ExistEmbeddedServer EXIST_EMBEDDED_SERVER = new ExistEmbeddedServer(true, true);
-        private static boolean running = false;
-
-        public static ExistEmbeddedServer getRunningServer() throws EXistException, IOException, DatabaseConfigurationException {
-            if(!running) {
-                EXIST_EMBEDDED_SERVER.startDb();
-                running = true;
-            }
-            return EXIST_EMBEDDED_SERVER;
-        }
-
-        public static void stopServer() {
-            if(running) {
-                EXIST_EMBEDDED_SERVER.stopDb();
-                running = false;
-            }
-        }
     }
 }
