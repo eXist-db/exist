@@ -58,7 +58,7 @@ map {
     </test>
     -->
     <test output="text" id="inline-function-002">
-        <task></task>
+        <task>inline function</task>
         <code><![CDATA[xquery version "3.1";
 
 declare function local:external-func($data) {
