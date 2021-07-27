@@ -29,6 +29,7 @@ import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.ClassLoaderSource;
 import org.exist.source.Source;
+import org.exist.storage.BrokerPool;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.ExistSAXParserFactory;
 import org.exist.xquery.FunctionCall;
@@ -200,7 +201,9 @@ public class XMLTestRunner extends AbstractTestRunner {
                 context -> new Tuple2<>("test-finished-function", new FunctionReference(new FunctionCall(context, new ExtTestFinishedFunction(context, getSuiteName(), notifier))))
             );
 
-            executeQuery(query, externalVariableDeclarations);
+            // NOTE: at this stage EXIST_EMBEDDED_SERVER_CLASS_INSTANCE in XSuite will be usable
+            final BrokerPool brokerPool = XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.getBrokerPool();
+            executeQuery(brokerPool, query, externalVariableDeclarations);
 
 
         } catch(final DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException e) {

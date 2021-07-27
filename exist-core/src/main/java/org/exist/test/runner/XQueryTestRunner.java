@@ -28,6 +28,8 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.source.ClassLoaderSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
+import org.exist.storage.BrokerPool;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.FunctionCall;
 import org.exist.xquery.XPathException;
@@ -74,9 +76,16 @@ public class XQueryTestRunner extends AbstractTestRunner {
     }
 
     private static XQueryTestInfo extractTestInfo(final Path path) throws InitializationError {
+        // NOTE: at this stage EXIST_EMBEDDED_SERVER_CLASS_INSTANCE in XSuite will be null, as the @BeforeClass rule has not yet run
+        // TODO(AR) is there a way to get the info after @BeforeClass of XSuite has run? -- perhaps in run() for the event fireTestSuiteStarted ? <--- NO can't find one
+        // TODO(AR) otherwise could this be rewritten to just use eXist-db's XQuery Parser directly, or perhaps another XQuery parser?
+        final ExistEmbeddedServer existDbServer = XSuite.newExistDbServer();
         try {
+            // start the database
+            existDbServer.startDb();
+
             final Source query = new StringSource("inspect:inspect-module(xs:anyURI(\"" + path.toAbsolutePath().toString() + "\"))");
-            final Sequence inspectionResults = executeQuery(query, Collections.emptyList());
+            final Sequence inspectionResults = executeQuery(existDbServer.getBrokerPool(), query, Collections.emptyList());
 
             // extract the details
             String prefix = null;
@@ -143,6 +152,8 @@ public class XQueryTestRunner extends AbstractTestRunner {
 
         } catch(final DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException e) {
             throw new InitializationError(e);
+        } finally {
+            existDbServer.stopDb();
         }
     }
 
@@ -214,7 +225,9 @@ public class XQueryTestRunner extends AbstractTestRunner {
                     context -> new Tuple2<>("test-finished-function", new FunctionReference(new FunctionCall(context, new ExtTestFinishedFunction(context, getSuiteName(), notifier))))
             );
 
-            executeQuery(query, externalVariableDeclarations);
+            // NOTE: at this stage EXIST_EMBEDDED_SERVER_CLASS_INSTANCE in XSuite will be usable
+            final BrokerPool brokerPool = XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.getBrokerPool();
+            executeQuery(brokerPool, query, externalVariableDeclarations);
 
         } catch(final DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException e) {
             //TODO(AR) what to do here?
