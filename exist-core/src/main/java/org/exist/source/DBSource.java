@@ -183,6 +183,7 @@ public class DBSource extends AbstractSource {
      *
      * @deprecated These security checks should be done by the caller
      */
+    @Override
     @Deprecated
     public void validate(final Subject subject, final int mode) throws PermissionDeniedException {
         //TODO(AR) This check should not even be here! Its up to the database to refuse access not requesting source

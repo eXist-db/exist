@@ -135,6 +135,18 @@ public interface Source {
     @Nullable Charset getEncoding() throws IOException;
 
     /**
+     * Check: has subject requested permissions for this resource?
+     *
+     * @param subject The subject
+     * @param perm The requested permissions
+     * @throws PermissionDeniedException if user has not sufficient rights
+     *
+     * @deprecated These security checks only apply to {@link DBSource} and should be done by the caller
+     */
+    @Deprecated
+    void validate(Subject subject, int perm) throws PermissionDeniedException;
+
+    /**
      * Check if the source is an XQuery module. If it is, return a QName containing
      * the module prefix as local name and the module namespace as namespace URI.
      *

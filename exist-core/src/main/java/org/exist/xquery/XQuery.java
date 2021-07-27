@@ -60,6 +60,25 @@ public class XQuery {
     /**
      * Compiles an XQuery from a String.
      *
+     * @param broker the database broker (unused)
+     * @param context the XQuery context
+     * @param expression the expression to compile
+     *
+     * @return the compiled XQuery
+     *
+     * @throws XPathException if an error occurs during compilation
+     * @throws PermissionDeniedException if the caller is not permitted to compile the XQuery
+     *
+     * @deprecated Use {@link #compile(XQueryContext, String)} instead.
+     */
+    @Deprecated
+    public CompiledXQuery compile(final DBBroker broker, final XQueryContext context, final String expression) throws XPathException, PermissionDeniedException {
+        return compile(context, expression);
+    }
+
+    /**
+     * Compiles an XQuery from a String.
+     *
      * @param context the XQuery context
      * @param expression the expression to compile
      *
@@ -81,6 +100,26 @@ public class XQuery {
     /**
      * Compiles an XQuery from a Source.
      *
+     * @param broker the database broker (unused)
+     * @param context the XQuery context
+     * @param source the source of the XQuery to compile
+     *
+     * @return the compiled XQuery
+     *
+     * @throws XPathException if an error occurs during compilation
+     * @throws IOException if an IO error occurs when reading the source
+     * @throws PermissionDeniedException if the caller is not permitted to compile the XQuery
+     *
+     * @deprecated Use {@link #compile(XQueryContext, Source)} instead.
+     */
+    @Deprecated
+    public CompiledXQuery compile(final DBBroker broker, final XQueryContext context, final Source source) throws XPathException, IOException, PermissionDeniedException {
+        return compile(context, source);
+    }
+
+    /**
+     * Compiles an XQuery from a Source.
+     *
      * @param context the XQuery context
      * @param source the source of the XQuery to compile
      *
@@ -92,6 +131,27 @@ public class XQuery {
      */
     public CompiledXQuery compile(final XQueryContext context, final Source source) throws XPathException, IOException, PermissionDeniedException {
         return compile(context, source, false);
+    }
+
+    /**
+     * Compiles an XQuery from a Source.
+     *
+     * @param broker the database broker (unused)
+     * @param context the XQuery context
+     * @param source the source of the XQuery to compile
+     * @param xpointer true if the query is part of an XPointer, false otherwise
+     *
+     * @return the compiled XQuery
+     *
+     * @throws XPathException if an error occurs during compilation
+     * @throws IOException if an IO error occurs when reading the source
+     * @throws PermissionDeniedException if the caller is not permitted to compile the XQuery
+     *
+     * @deprecated Use {@link #compile(XQueryContext, Source, boolean)} instead.
+     */
+    @Deprecated
+    public CompiledXQuery compile(final DBBroker broker, final XQueryContext context, final Source source, final boolean xpointer) throws XPathException, IOException, PermissionDeniedException {
+        return compile(context, source, xpointer);
     }
 
     /**

@@ -29,6 +29,8 @@ import java.nio.charset.Charset;
 import net.jpountz.xxhash.XXHash64;
 import net.jpountz.xxhash.XXHashFactory;
 import org.exist.dom.QName;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.Subject;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.parser.DeclScanner;
 import org.exist.xquery.parser.XQueryLexer;
@@ -58,6 +60,11 @@ public abstract class AbstractSource implements Source {
     @Override
     public Charset getEncoding() throws IOException {
         return null;
+    }
+
+    @Deprecated
+    public void validate(final Subject subject, final int perm) throws PermissionDeniedException {
+        // no-op
     }
 
     @Override
