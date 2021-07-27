@@ -122,7 +122,7 @@ public class IPRangeRealm extends AbstractRealm {
                     "iprange[" + ipToTest + " ge number(start) and " + ipToTest + " le number(end)]/../name";
             final XQueryContext context = new XQueryContext(broker.getBrokerPool());
 
-            final CompiledXQuery compiled = queryService.compile(broker, context, query);
+            final CompiledXQuery compiled = queryService.compile(context, query);
 
             final Properties outputProperties = new Properties();
 

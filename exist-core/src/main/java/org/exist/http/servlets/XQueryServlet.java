@@ -32,10 +32,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.internal.web.HttpAccount;
-import org.exist.source.FileSource;
-import org.exist.source.Source;
-import org.exist.source.SourceFactory;
-import org.exist.source.StringSource;
+import org.exist.source.*;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
@@ -390,17 +387,19 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                 //check are we allowed to show the xquery source - descriptor.xml
 //                System.out.println("path="+path);
                 if(descriptor.allowSource(path)) {
-                	
-                	try {
-						source.validate(user, Permission.READ);
-					} catch (final PermissionDeniedException e) {
-						if (getDefaultUser().equals(user)) {
-							getAuthenticator().sendChallenge(request, response);
-						} else {
-							response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + path + " denied. (no read access)");
-						}
-						return;
-					}
+
+                    if (source instanceof DBSource) {
+                        try {
+                            ((DBSource) source).validate(user, Permission.READ);
+                        } catch (final PermissionDeniedException e) {
+                            if (getDefaultUser().equals(user)) {
+                                getAuthenticator().sendChallenge(request, response);
+                            } else {
+                                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + path + " denied. (no read access)");
+                            }
+                            return;
+                        }
+                    }
                     
 					//Show the source of the XQuery
                     //writeResourceAs(resource, broker, stylesheet, encoding, "text/plain", outputProperties, response);
@@ -437,7 +436,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                context = new XQueryContext(getPool());
                context.setModuleLoadPath(moduleLoadPath);
                try {
-            	   query = xquery.compile(broker, context, source);
+            	   query = xquery.compile(context, source);
                    
                } catch (final XPathException ex) {
                   throw new EXistException("Cannot compile xquery: "+ ex.getMessage(), ex);

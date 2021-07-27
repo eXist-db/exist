@@ -279,7 +279,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements EXis
             setupContext(source, context);
 
             if (compiled == null) {
-                compiled = xquery.compile(broker, context, source);
+                compiled = xquery.compile(context, source);
             }
 
             try {
@@ -327,7 +327,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements EXis
 
         try {
             setupContext(null, context);
-            final CompiledExpression expr = xquery.compile(broker, context, query);
+            final CompiledExpression expr = xquery.compile(context, query);
             if(LOG.isDebugEnabled()) {
                 LOG.debug("compilation took {}", System.currentTimeMillis() - start);
             }

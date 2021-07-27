@@ -90,11 +90,6 @@ public class BinarySource extends AbstractSource {
     }
 
     @Override
-    public void validate(final Subject subject, final int perm) {
-        // TODO protected?
-    }
-
-    @Override
     public int hashCode() {
         return Arrays.hashCode(data);
     }

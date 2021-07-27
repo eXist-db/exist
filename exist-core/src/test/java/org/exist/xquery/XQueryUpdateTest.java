@@ -74,7 +74,7 @@ public class XQueryUpdateTest {
             	"		</product>\n" +
             	"	into /products";
             XQueryContext context = new XQueryContext(pool);
-            CompiledXQuery compiled = xquery.compile(broker, context, query);
+            CompiledXQuery compiled = xquery.compile(context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
                 context.declareVariable("i", Integer.valueOf(i));
                 xquery.execute(broker, compiled, null);
@@ -109,7 +109,7 @@ public class XQueryUpdateTest {
             	"		attribute name { concat('n', $i) }\n" +
             	"	into //product[@num = $i]";
             XQueryContext context = new XQueryContext(pool);
-            CompiledXQuery compiled = xquery.compile(broker, context, query);
+            CompiledXQuery compiled = xquery.compile(context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
                 context.declareVariable("i", Integer.valueOf(i));
                 xquery.execute(broker, compiled, null);
@@ -169,7 +169,7 @@ public class XQueryUpdateTest {
                 "       </product>\n" +
                 "   preceding /products/product[1]";
             XQueryContext context = new XQueryContext(pool);
-            CompiledXQuery compiled = xquery.compile(broker, context, query);
+            CompiledXQuery compiled = xquery.compile(context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
                 context.declareVariable("i", Integer.valueOf(i));
                 xquery.execute(broker, compiled, null);
@@ -219,7 +219,7 @@ public class XQueryUpdateTest {
                 "       </product>\n" +
                 "   following /products/product[1]";
             XQueryContext context = new XQueryContext(pool);
-            CompiledXQuery compiled = xquery.compile(broker, context, query);
+            CompiledXQuery compiled = xquery.compile(context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
                 context.declareVariable("i", Integer.valueOf(i));
                 xquery.execute(broker, compiled, null);
@@ -409,7 +409,7 @@ public class XQueryUpdateTest {
             	"		</product>\n" +
             	"	into /products";
             XQueryContext context = new XQueryContext(pool);
-            CompiledXQuery compiled = xquery.compile(broker, context, query);
+            CompiledXQuery compiled = xquery.compile(context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
                 xquery.execute(broker, compiled, null);
             }

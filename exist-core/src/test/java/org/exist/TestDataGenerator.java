@@ -91,7 +91,7 @@ public class TestDataGenerator {
 
             final String query = IMPORT + xqueryContent;
 
-            final CompiledXQuery compiled = service.compile(broker, context, query);
+            final CompiledXQuery compiled = service.compile(context, query);
 
             for (int i = 0; i < count; i++) {
                 generatedFiles[i] = Files.createTempFile(prefix, ".xml");

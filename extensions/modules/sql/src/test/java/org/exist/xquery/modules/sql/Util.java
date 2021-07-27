@@ -84,7 +84,7 @@ public class Util {
         }
 
         if (compiled == null) {
-            compiled = xqueryService.compile(broker, context, query);
+            compiled = xqueryService.compile(context, query);
         } else {
             compiled.getContext().updateContext(context);
             context.getWatchDog().reset();

@@ -136,7 +136,7 @@ public class AuditTrailSessionListener implements HttpSessionListener {
                         context.setBaseURI(new AnyURIValue(pathUri.toString()));
 
                         if (compiled == null) {
-                            compiled = xquery.compile(broker, context, source);
+                            compiled = xquery.compile(context, source);
                         } else {
                             compiled.getContext().updateContext(context);
                             context.getWatchDog().reset();

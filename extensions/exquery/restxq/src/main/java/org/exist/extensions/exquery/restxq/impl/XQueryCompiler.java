@@ -74,7 +74,7 @@ class XQueryCompiler {
                     //set the module load path for any module imports that are relative
                     context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + source.getDocumentPath().removeLastSegment());
                     
-                    return broker.getBrokerPool().getXQueryService().compile(broker, context, source);
+                    return broker.getBrokerPool().getXQueryService().compile(context, source);
                 } else {
                     throw new RestXqServiceCompilationException("Invalid mimetype '" +  document.getMimeType() + "' for XQuery: "  + document.getURI().toString());
                 }

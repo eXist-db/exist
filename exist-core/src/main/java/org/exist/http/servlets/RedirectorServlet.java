@@ -278,7 +278,7 @@ public class RedirectorServlet extends AbstractExistHttpServlet {
                 response.setHeader("X-XQuery-Cached", "false");
                 context = new XQueryContext(getPool());
                 context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.toString());
-                compiled = xquery.compile(broker, context, source);
+                compiled = xquery.compile(context, source);
             } else {
                 response.setHeader("X-XQuery-Cached", "true");
                 context = compiled.getContext();

@@ -191,7 +191,7 @@ public class Scan extends BasicFunction {
             Source source = new ClassLoaderSource(NORMALIZE_XQUERY);
             XQueryContext xc = new XQueryContext(context.getBroker().getBrokerPool());
             try {
-                normalizeXQuery = xquery.compile(context.getBroker(), xc, source);
+                normalizeXQuery = xquery.compile(xc, source);
             } catch(final PermissionDeniedException e) {
                 throw new XPathException(this, e);
             }

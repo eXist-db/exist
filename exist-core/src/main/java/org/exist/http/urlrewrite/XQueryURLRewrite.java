@@ -473,7 +473,9 @@ public class XQueryURLRewrite extends HttpServlet {
 
         try (final DBBroker broker = pool.get(Optional.ofNullable(user))) {
 
-            model.getSourceInfo().source.validate(broker.getCurrentSubject(), Permission.EXECUTE);
+            if (model.getSourceInfo().source instanceof DBSource) {
+                ((DBSource) model.getSourceInfo().source).validate(Permission.EXECUTE);
+            }
 
             if (model.getSourceInfo().source.isValid(broker) != Source.Validity.VALID) {
                 urlCache.remove(url);
@@ -662,7 +664,7 @@ public class XQueryURLRewrite extends HttpServlet {
         declareVariables(queryContext, sourceInfo, staticRewrite, basePath, request, response);
         if (compiled == null) {
             try {
-                compiled = xquery.compile(broker, queryContext, sourceInfo.source);
+                compiled = xquery.compile(queryContext, sourceInfo.source);
             } catch (final IOException e) {
                 throw new ServletException("Failed to read query from " + query, e);
             }

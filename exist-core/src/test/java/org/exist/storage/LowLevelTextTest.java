@@ -66,7 +66,7 @@ public class LowLevelTextTest {
 
 		final XQuery xquery = pool.getXQueryService();
 		final XQueryContext context = new XQueryContext(broker.getBrokerPool());
-		preCompiledXQuery = xquery.compile(broker, context, stringSource);
+		preCompiledXQuery = xquery.compile(context, stringSource);
 	}
 
 	@After

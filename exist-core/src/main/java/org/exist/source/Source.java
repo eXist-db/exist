@@ -133,15 +133,6 @@ public interface Source {
      * @throws IOException in case of an I/O error
      */
     @Nullable Charset getEncoding() throws IOException;
-    
-    /**
-     * Check: has subject requested permissions for this resource?
-     *
-     * @param subject The subject
-     * @param perm The requested permissions
-     * @throws PermissionDeniedException if user has not sufficient rights
-     */
-    void validate(Subject subject, int perm) throws PermissionDeniedException;
 
     /**
      * Check if the source is an XQuery module. If it is, return a QName containing

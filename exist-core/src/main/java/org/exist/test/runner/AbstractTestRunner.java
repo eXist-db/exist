@@ -97,7 +97,7 @@ public abstract class AbstractTestRunner extends Runner {
 
                 // compile or update the context
                 if (compiledQuery == null) {
-                    compiledQuery = xqueryService.compile(broker, context, query);
+                    compiledQuery = xqueryService.compile(context, query);
                 } else {
                     compiledQuery.getContext().updateContext(context);
                     context.getWatchDog().reset();

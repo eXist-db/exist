@@ -43,6 +43,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.util.Configuration;
 import org.exist.util.Holder;
@@ -182,7 +183,9 @@ public class XQueryPool implements BrokerPoolService {
         }
 
         //check execution permission
-        source.validate(broker.getCurrentSubject(), Permission.EXECUTE);
+        if (source instanceof DBSource) {
+            ((DBSource) source).validate(Permission.EXECUTE);
+        }
 
         return borrowedCompiledQuery.value;
     }

@@ -99,7 +99,7 @@ public class EmbeddedBinariesTest extends AbstractBinariesTest<Sequence, Item, I
             final CompiledXQuery compiled;
             if (existingCompiled == null) {
                 context = new XQueryContext(brokerPool);
-                compiled = xquery.compile(broker, context, source);
+                compiled = xquery.compile(context, source);
             } else {
                 context = existingCompiled.getContext();
                 context.prepareForReuse();

@@ -207,7 +207,7 @@ public class UserXQueryJob extends UserJob {
             if (compiled == null) {
 
                 try {
-                    compiled = xquery.compile(broker, context, source);
+                    compiled = xquery.compile(context, source);
                 } catch (final IOException e) {
                     abort("Failed to read query from " + xqueryResource);
                 }

@@ -151,11 +151,6 @@ public class FileSource extends AbstractSource {
     	return path();
     }
 
-	@Override
-	public void validate(final Subject subject, final int perm) {
-		// TODO protected?
-	}
-
     @Override
     public int hashCode() {
         return path.hashCode();

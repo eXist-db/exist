@@ -1353,7 +1353,7 @@ public class RESTServer {
             final long compilationTime;
             if (compiled == null) {
                 final long compilationStart = System.currentTimeMillis();
-                compiled = xquery.compile(broker, context, source);
+                compiled = xquery.compile(context, source);
                 compilationTime = System.currentTimeMillis() - compilationStart;
             } else {
                 compiled.getContext().updateContext(context);
@@ -1546,7 +1546,7 @@ public class RESTServer {
             if (compiled == null) {
                 try {
                     final long compilationStart = System.currentTimeMillis();
-                    compiled = xquery.compile(broker, context, source);
+                    compiled = xquery.compile(context, source);
                     compilationTime = System.currentTimeMillis() - compilationStart;
                 } catch (final IOException e) {
                     throw new BadRequestException("Failed to read query from " + resource.getURI(), e);
@@ -1634,7 +1634,7 @@ public class RESTServer {
             if (compiled == null) {
                 try {
                     final long compilationStart = System.currentTimeMillis();
-                    compiled = xquery.compile(broker, context, source);
+                    compiled = xquery.compile(context, source);
                     compilationTime = System.currentTimeMillis() - compilationStart;
                 } catch (final IOException e) {
                     throw new BadRequestException("Failed to read query from "

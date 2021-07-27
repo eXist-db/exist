@@ -254,7 +254,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         try
         {
         	//compile the XQuery
-        	compiledQuery = service.compile(broker, context, query);
+        	compiledQuery = service.compile(context, query);
 
         	//declare external variables
         	context.declareVariable(bindingPrefix + "type", EVENT_TYPE_PREPARE);
@@ -325,7 +325,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         CompiledXQuery compiledQuery = null;
         try {
         	//compile the XQuery
-        	compiledQuery = service.compile(broker, context, query);
+        	compiledQuery = service.compile(context, query);
         	
         	//declare external variables
         	context.declareVariable(bindingPrefix + "type", EVENT_TYPE_FINISH);
@@ -408,7 +408,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         CompiledXQuery compiledQuery;
         try {
         	//compile the XQuery
-        	compiledQuery = service.compile(broker, context, query);
+        	compiledQuery = service.compile(context, query);
 
         	//declare user defined parameters as external variables
             for (Object o : userDefinedVariables.keySet()) {
