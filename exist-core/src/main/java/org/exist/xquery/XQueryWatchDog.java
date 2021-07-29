@@ -86,8 +86,7 @@ public class XQueryWatchDog {
     }
 
     private void configureDefaults() {
-    	final DBBroker broker = context.getBroker();
-        final Configuration conf = broker.getBrokerPool().getConfiguration();
+        final Configuration conf = context.getConfiguration();
         Object option = conf.getProperty(PROPERTY_QUERY_TIMEOUT);
         if(option != null)
             {timeout = (Long) option;}

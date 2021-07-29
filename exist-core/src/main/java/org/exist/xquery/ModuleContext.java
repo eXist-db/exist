@@ -29,6 +29,7 @@ import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.Subject;
 import org.exist.storage.UpdateListener;
+import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.AnyURIValue;
@@ -70,8 +71,8 @@ public class ModuleContext extends XQueryContext {
         this.location = location;
         setParentContext(parentContext);
 
-        loadDefaults(getBroker().getConfiguration());
-        this.profiler = new Profiler(getBroker().getBrokerPool());
+        loadDefaults(getConfiguration());
+        this.profiler = new Profiler(getBroker() != null ? getBroker().getBrokerPool() : null);
     }
 
     @Override
@@ -180,6 +181,11 @@ public class ModuleContext extends XQueryContext {
             LOG.error(e);
         }
         return ctx;
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        return parentContext.getConfiguration();
     }
 
     @Override
