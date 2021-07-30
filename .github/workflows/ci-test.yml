@@ -30,7 +30,7 @@ jobs:
         continue-on-error: true
       - name: Maven Test 
         if: ${{ matrix.jdk != '16' }} 
-        run: mvn -V -B clean verify    
+        run: mvn -V -B -DtrimStackTrace=false clean verify
       - name: Maven Code Coverage
         if: ${{ github.ref == 'refs/heads/develop' && matrix.jdk == '8' && matrix.os == 'ubuntu-latest' }}
         env:
@@ -40,3 +40,4 @@ jobs:
           CI_BUILD_URL: https://github.com/${{ github.repository }}/commit/${{ github.event.after }}/checks
           COVERALLS_SECRET: ${{ secrets.GITHUB_TOKEN }}
         run: mvn -V -B jacoco:report coveralls:report -DrepoToken=${{ secrets.COVERALLS_TOKEN }}
+

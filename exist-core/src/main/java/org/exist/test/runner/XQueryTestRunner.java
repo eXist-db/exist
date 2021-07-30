@@ -199,9 +199,10 @@ public class XQueryTestRunner extends AbstractTestRunner {
 
     @Override
     public Description getDescription() {
-        final Description description = Description.createSuiteDescription(getSuiteName(), (java.lang.annotation.Annotation[]) null);
+        final String suiteName = checkDescription(this, getSuiteName());
+        final Description description = Description.createSuiteDescription(suiteName, EMPTY_ANNOTATIONS);
         for (final XQueryTestInfo.TestFunctionDef testFunctionDef : info.getTestFunctions()) {
-            description.addChild(Description.createTestDescription(getSuiteName(), testFunctionDef.getLocalName(), (java.lang.annotation.Annotation) null));
+            description.addChild(Description.createTestDescription(suiteName, checkDescription(testFunctionDef, testFunctionDef.getLocalName()), EMPTY_ANNOTATIONS));
         }
         return description;
     }

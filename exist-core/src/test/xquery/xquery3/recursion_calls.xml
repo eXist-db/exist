@@ -37,7 +37,7 @@
         <remove-collection collection="/db/xq3-test"/>
     </tearDown>
     <test output="xml" id="recursion-function-calls-001">
-        <task></task>
+        <task>recursion function call 1</task>
         <code><![CDATA[xquery version "3.1";
 
 declare function local:test($node) {
@@ -56,7 +56,7 @@ local:test(<x><y><z/><x/></y></x>)
         <expected><x><y><z/><x/></y></x></expected>
     </test>
     <test output="text" id="recursion-function-calls-002">
-        <task></task>
+        <task>recursion function call 2</task>
         <code><![CDATA[xquery version "3.1";
 
 declare function local:join($value){
