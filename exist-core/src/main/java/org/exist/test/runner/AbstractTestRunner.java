@@ -62,8 +62,7 @@ public abstract class AbstractTestRunner extends Runner {
         this.parallel = parallel;
     }
 
-    protected static Sequence executeQuery(final Source query, final List<Function<XQueryContext, Tuple2<String, Object>>> externalVariableBindings) throws EXistException, PermissionDeniedException, XPathException, IOException, DatabaseConfigurationException {
-        final BrokerPool brokerPool = XSuite.ExistServer.getRunningServer().getBrokerPool();
+    protected static Sequence executeQuery(final BrokerPool brokerPool, final Source query, final List<Function<XQueryContext, Tuple2<String, Object>>> externalVariableBindings) throws EXistException, PermissionDeniedException, XPathException, IOException, DatabaseConfigurationException {
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()))) {
             final XQueryPool queryPool = brokerPool.getXQueryPool();
             CompiledXQuery compiledQuery = queryPool.borrowCompiledXQuery(broker, query);
@@ -98,7 +97,7 @@ public abstract class AbstractTestRunner extends Runner {
 
                 // compile or update the context
                 if (compiledQuery == null) {
-                    compiledQuery = xqueryService.compile(broker, context, query);
+                    compiledQuery = xqueryService.compile(context, query);
                 } else {
                     compiledQuery.getContext().updateContext(context);
                     context.getWatchDog().reset();

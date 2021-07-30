@@ -260,7 +260,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
                 context.setModuleLoadPath(moduleLoadPath);
 
                 // Compile query
-                CompiledXQuery compiledQuery = service.compile(broker, context, source);
+                CompiledXQuery compiledQuery = service.compile(context, source);
 
                 LOG.info("Starting XQuery at '{}'", path);
 

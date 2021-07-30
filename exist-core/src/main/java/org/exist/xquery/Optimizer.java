@@ -22,6 +22,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.QName;
+import org.exist.storage.DBBroker;
 import org.exist.xquery.functions.array.ArrayConstructor;
 import org.exist.xquery.pragmas.Optimize;
 import org.apache.logging.log4j.LogManager;
@@ -66,7 +67,8 @@ public class Optimizer extends DefaultExpressionVisitor {
 
     public Optimizer(XQueryContext context) {
         this.context = context;
-        this.rewriters = context.getBroker().getIndexController().getQueryRewriters(context);
+        final DBBroker broker = context.getBroker();
+        this.rewriters = broker != null ? broker.getIndexController().getQueryRewriters(context) : Collections.emptyList();
     }
 
     public boolean hasOptimized() {

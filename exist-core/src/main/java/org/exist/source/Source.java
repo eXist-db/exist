@@ -133,14 +133,17 @@ public interface Source {
      * @throws IOException in case of an I/O error
      */
     @Nullable Charset getEncoding() throws IOException;
-    
+
     /**
      * Check: has subject requested permissions for this resource?
      *
      * @param subject The subject
      * @param perm The requested permissions
      * @throws PermissionDeniedException if user has not sufficient rights
+     *
+     * @deprecated These security checks only apply to {@link DBSource} and should be done by the caller
      */
+    @Deprecated
     void validate(Subject subject, int perm) throws PermissionDeniedException;
 
     /**

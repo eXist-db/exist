@@ -219,11 +219,6 @@ public class URLSource extends AbstractSource {
     }
 
     @Override
-    public void validate(final Subject subject, final int perm) {
-        // TODO protected?
-    }
-
-    @Override
     public QName isModule() throws IOException {
         try (final InputStream is = getInputStream()) {
             return getModuleDecl(is);

@@ -463,7 +463,7 @@ public class Eval extends BasicFunction {
         try {
             compiled = cache ? pool.borrowCompiledXQuery(broker, querySource) : null;
             if (compiled == null) {
-                compiled = xqueryService.compile(broker, innerContext, querySource);
+                compiled = xqueryService.compile(innerContext, querySource);
             } else {
                 compiled.getContext().updateContext(innerContext);
                 compiled.getContext().prepareForReuse();

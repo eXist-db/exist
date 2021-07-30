@@ -56,36 +56,146 @@ import org.exist.xquery.value.Sequence;
 public class XQuery {
 
     private final static Logger LOG = LogManager.getLogger(XQuery.class);
-    
+
+    /**
+     * Compiles an XQuery from a String.
+     *
+     * @param broker the database broker (unused)
+     * @param context the XQuery context
+     * @param expression the expression to compile
+     *
+     * @return the compiled XQuery
+     *
+     * @throws XPathException if an error occurs during compilation
+     * @throws PermissionDeniedException if the caller is not permitted to compile the XQuery
+     *
+     * @deprecated Use {@link #compile(XQueryContext, String)} instead.
+     */
+    @Deprecated
     public CompiledXQuery compile(final DBBroker broker, final XQueryContext context, final String expression) throws XPathException, PermissionDeniedException {
+        return compile(context, expression);
+    }
+
+    /**
+     * Compiles an XQuery from a String.
+     *
+     * @param context the XQuery context
+     * @param expression the expression to compile
+     *
+     * @return the compiled XQuery
+     *
+     * @throws XPathException if an error occurs during compilation
+     * @throws PermissionDeniedException if the caller is not permitted to compile the XQuery
+     */
+    public CompiledXQuery compile(final XQueryContext context, final String expression) throws XPathException, PermissionDeniedException {
     	final Source source = new StringSource(expression);
     	try {
-            return compile(broker, context, source);
+            return compile(context, source);
         } catch(final IOException ioe) {
             //should not happen because expression is a String
             throw new XPathException(ioe.getMessage());
         }
     }
-    
+
+    /**
+     * Compiles an XQuery from a Source.
+     *
+     * @param broker the database broker (unused)
+     * @param context the XQuery context
+     * @param source the source of the XQuery to compile
+     *
+     * @return the compiled XQuery
+     *
+     * @throws XPathException if an error occurs during compilation
+     * @throws IOException if an IO error occurs when reading the source
+     * @throws PermissionDeniedException if the caller is not permitted to compile the XQuery
+     *
+     * @deprecated Use {@link #compile(XQueryContext, Source)} instead.
+     */
+    @Deprecated
     public CompiledXQuery compile(final DBBroker broker, final XQueryContext context, final Source source) throws XPathException, IOException, PermissionDeniedException {
-        return compile(broker, context, source, false);
+        return compile(context, source);
     }
-    
+
+    /**
+     * Compiles an XQuery from a Source.
+     *
+     * @param context the XQuery context
+     * @param source the source of the XQuery to compile
+     *
+     * @return the compiled XQuery
+     *
+     * @throws XPathException if an error occurs during compilation
+     * @throws IOException if an IO error occurs when reading the source
+     * @throws PermissionDeniedException if the caller is not permitted to compile the XQuery
+     */
+    public CompiledXQuery compile(final XQueryContext context, final Source source) throws XPathException, IOException, PermissionDeniedException {
+        return compile(context, source, false);
+    }
+
+    /**
+     * Compiles an XQuery from a Source.
+     *
+     * @param broker the database broker (unused)
+     * @param context the XQuery context
+     * @param source the source of the XQuery to compile
+     * @param xpointer true if the query is part of an XPointer, false otherwise
+     *
+     * @return the compiled XQuery
+     *
+     * @throws XPathException if an error occurs during compilation
+     * @throws IOException if an IO error occurs when reading the source
+     * @throws PermissionDeniedException if the caller is not permitted to compile the XQuery
+     *
+     * @deprecated Use {@link #compile(XQueryContext, Source, boolean)} instead.
+     */
+    @Deprecated
     public CompiledXQuery compile(final DBBroker broker, final XQueryContext context, final Source source, final boolean xpointer) throws XPathException, IOException, PermissionDeniedException {
+        return compile(context, source, xpointer);
+    }
+
+    /**
+     * Compiles an XQuery from a Source.
+     *
+     * @param context the XQuery context
+     * @param source the source of the XQuery to compile
+     * @param xpointer true if the query is part of an XPointer, false otherwise
+     *
+     * @return the compiled XQuery
+     *
+     * @throws XPathException if an error occurs during compilation
+     * @throws IOException if an IO error occurs when reading the source
+     * @throws PermissionDeniedException if the caller is not permitted to compile the XQuery
+     */
+    public CompiledXQuery compile(final XQueryContext context, final Source source, final boolean xpointer) throws XPathException, IOException, PermissionDeniedException {
 
         context.setSource(source);
 
         try(final Reader reader = source.getReader()) {
-            return compile(broker, context, reader, xpointer);
+            return compile(context, reader, xpointer);
         } catch(final UnsupportedEncodingException e) {
             throw new XPathException(ErrorCodes.XQST0087, "unsupported encoding " + e.getMessage());
         }
     }
-    
-    private CompiledXQuery compile(final DBBroker broker, final XQueryContext context, final Reader reader, final boolean xpointer) throws XPathException, PermissionDeniedException {
-        
+
+    /**
+     * Compiles an XQuery from a Source.
+     *
+     * @param context the XQuery context
+     * @param reader the reader to use for obtaining theXQuery to compile
+     * @param xpointer true if the query is part of an XPointer, false otherwise
+     *
+     * @return the compiled XQuery
+     *
+     * @throws XPathException if an error occurs during compilation
+     * @throws PermissionDeniedException if the caller is not permitted to compile the XQuery
+     */
+    private CompiledXQuery compile(final XQueryContext context, final Reader reader, final boolean xpointer) throws XPathException, PermissionDeniedException {
+
         //check read permission
-        context.getSource().validate(broker.getCurrentSubject(), Permission.READ);
+        if (context.getSource() instanceof DBSource) {
+            ((DBSource) context.getSource()).validate(Permission.READ);
+        }
         
         
     	//TODO: move XQueryContext.getUserFromHttpSession() here, have to check if servlet.jar is in the classpath
@@ -197,7 +307,9 @@ public class XQuery {
     public Sequence execute(final DBBroker broker, final CompiledXQuery expression, Sequence contextSequence, final Properties outputProperties, final boolean resetContext) throws XPathException, PermissionDeniedException {
     	
         //check execute permissions
-        expression.getContext().getSource().validate(broker.getCurrentSubject(), Permission.EXECUTE);
+        if (expression.getContext().getSource() instanceof DBSource) {
+            ((DBSource) expression.getContext().getSource()).validate(Permission.EXECUTE);
+        }
         
         final long start = System.currentTimeMillis();
     	
@@ -288,13 +400,13 @@ public class XQuery {
 
     public Sequence execute(final DBBroker broker, final String expression, final Sequence contextSequence) throws XPathException, PermissionDeniedException {
         final XQueryContext context = new XQueryContext(broker.getBrokerPool());
-        final CompiledXQuery compiled = compile(broker, context, expression);
+        final CompiledXQuery compiled = compile(context, expression);
         return execute(broker, compiled, contextSequence);
     }
 	
     public Sequence execute(final DBBroker broker, File file, Sequence contextSequence) throws XPathException, IOException, PermissionDeniedException {
         final XQueryContext context = new XQueryContext(broker.getBrokerPool());
-        final CompiledXQuery compiled = compile(broker, context, new FileSource(file.toPath(), true));
+        final CompiledXQuery compiled = compile(context, new FileSource(file.toPath(), true));
         return execute(broker, compiled, contextSequence);
     }
 }

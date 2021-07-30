@@ -436,7 +436,7 @@ public class XIncludeFilter implements Receiver {
 
                 if (compiled == null) {
                     try {
-                        compiled = xquery.compile(serializer.broker, context, source, xpointer != null);
+                        compiled = xquery.compile(context, source, xpointer != null);
                     } catch (final IOException e) {
                         throw new SAXException("I/O error while reading query for xinclude: " + e.getMessage(), e);
                     }

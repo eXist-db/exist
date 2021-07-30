@@ -351,7 +351,7 @@ public class RpcConnection implements RpcAPI {
             context.setStaticallyKnownDocuments(new XmldbURI[]{context.getBaseURI().toXmldbURI()});
         }
         if (compiled == null) {
-            compiled = xquery.compile(broker, context, source);
+            compiled = xquery.compile(context, source);
         }
         return compiled;
     }

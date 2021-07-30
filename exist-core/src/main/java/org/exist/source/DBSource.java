@@ -160,11 +160,33 @@ public class DBSource extends AbstractSource {
     	return doc.getDocumentURI();
     }
 
+    /**
+     * Check: has current subject requested permissions for this resource?
+     *
+     * @param mode The requested mode
+     * @throws PermissionDeniedException if user has not sufficient rights
+     *
+     * @deprecated These security checks should be done by the caller
+     */
+    @Deprecated
+    public void validate(final int mode) throws PermissionDeniedException {
+        //TODO(AR) This check should not even be here! Its up to the database to refuse access not requesting source
+        validate(broker.getCurrentSubject(), mode);
+    }
+
+    /**
+     * Check: has subject requested permissions for this resource?
+     *
+     * @param subject The subject
+     * @param mode The requested mode
+     * @throws PermissionDeniedException if user has not sufficient rights
+     *
+     * @deprecated These security checks should be done by the caller
+     */
     @Override
+    @Deprecated
     public void validate(final Subject subject, final int mode) throws PermissionDeniedException {
-        
-        //TODO This check should not even be here! Its up to the database to refuse access not requesting source
-        
+        //TODO(AR) This check should not even be here! Its up to the database to refuse access not requesting source
         if (!doc.getPermissions().validate(subject, mode)) {
             final String modeStr = new UnixStylePermissionAider(mode).toString();
             throw new PermissionDeniedException("Subject '" + subject.getName() + "' does not have '" + modeStr + "' access to resource '" + doc.getURI() + "'.");

@@ -385,6 +385,8 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     protected Database db;
 
+    protected Configuration configuration = null;
+
     private boolean analyzed = false;
 
     /**
@@ -416,6 +418,12 @@ public class XQueryContext implements BinaryValueManager, Context {
     public XQueryContext() {
         profiler = new Profiler(null);
         staticDecimalFormats.put(UNNAMED_DECIMAL_FORMAT, DecimalFormat.UNNAMED);
+    }
+
+    public XQueryContext(final Configuration configuration) {
+        this();
+        this.configuration = configuration;
+        loadDefaults(configuration);
     }
 
     public XQueryContext(final Database db) {
@@ -2006,7 +2014,17 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public DBBroker getBroker() {
-        return db.getActiveBroker();
+        if (db != null) {
+            return db.getActiveBroker();
+        }
+        return null;
+    }
+
+    public Configuration getConfiguration() {
+        if (db != null) {
+            return db.getConfiguration();
+        }
+        return configuration;
     }
 
     @Override

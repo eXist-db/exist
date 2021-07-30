@@ -24,33 +24,32 @@ package org.exist.test.runner;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
+import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.ClassLoaderSource;
+import org.exist.source.FileSource;
 import org.exist.source.Source;
-import org.exist.source.StringSource;
+import org.exist.storage.BrokerPool;
+import org.exist.util.Configuration;
+import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.xquery.FunctionCall;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.util.FileUtils;
+import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.FunctionReference;
-import org.exist.xquery.value.Sequence;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.nio.file.Paths;
+import java.util.*;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A JUnit test runner which can run the XQuery tests (XQSuite)
@@ -59,6 +58,8 @@ import java.util.List;
  * @author Adam Retter
  */
 public class XQueryTestRunner extends AbstractTestRunner {
+
+    private static final String XQSUITE_NAMESPACE = "http://exist-db.org/xquery/xqsuite";
 
     private final XQueryTestInfo info;
 
@@ -73,81 +74,91 @@ public class XQueryTestRunner extends AbstractTestRunner {
         this.info = extractTestInfo(path);
     }
 
+    private static Configuration getConfiguration() throws DatabaseConfigurationException {
+        final Optional<Path> home = Optional.ofNullable(System.getProperty("exist.home", System.getProperty("user.dir"))).map(Paths::get);
+        final Path confFile = ConfigurationHelper.lookup("conf.xml", home);
+
+        if (confFile.isAbsolute() && Files.exists(confFile)) {
+            return new Configuration(confFile.toAbsolutePath().toString());
+        } else {
+            return new Configuration(FileUtils.fileName(confFile), home);
+        }
+    }
+
     private static XQueryTestInfo extractTestInfo(final Path path) throws InitializationError {
         try {
-            final Source query = new StringSource("inspect:inspect-module(xs:anyURI(\"" + path.toAbsolutePath().toString() + "\"))");
-            final Sequence inspectionResults = executeQuery(query, Collections.emptyList());
+            final Configuration config = getConfiguration();
+            final XQueryContext xqueryContext = new XQueryContext(config);
 
-            // extract the details
-            String prefix = null;
-            String namespace = null;
+            final Source xquerySource = new FileSource(path, UTF_8, false);
+            final XQuery xquery = new XQuery();
+
+            final CompiledXQuery compiledXQuery = xquery.compile(xqueryContext, xquerySource);
+
+            String moduleNsPrefix = null;
+            String moduleNsUri = null;
             final List<XQueryTestInfo.TestFunctionDef> testFunctions = new ArrayList<>();
 
-            if(inspectionResults != null && inspectionResults.hasOne()) {
-                final Element moduleElement = (Element)inspectionResults.itemAt(0);
+            final Iterator<UserDefinedFunction> localFunctions = compiledXQuery.getContext().localFunctions();
+            while (localFunctions.hasNext()) {
+                final UserDefinedFunction localFunction = localFunctions.next();
+                final FunctionSignature localFunctionSignature = localFunction.getSignature();
 
-                prefix = moduleElement.getAttribute("prefix");
-                namespace = moduleElement.getAttribute("uri");
+                String testName = null;
+                boolean isTest = false;
 
-                final NodeList children = moduleElement.getChildNodes();
-                for(int i = 0; i < children.getLength(); i++) {
-                    final Node child = children.item(i);
-                    if (child.getNodeType() == Node.ELEMENT_NODE && child.getNamespaceURI() == null) {
-
-                        if(child.getNodeName().equals("function")) {
-                            boolean isTestFunction = false;
-                            final NamedNodeMap functionAttributes = child.getAttributes();
-                            final String name = functionAttributes.getNamedItem("name").getNodeValue();
-
-                            String testFunctionAnnotatedName = null;
-                            final NodeList functionChildren = child.getChildNodes();
-                            for(int j = 0; j < functionChildren.getLength(); j++) {
-                                final Node functionChild = functionChildren.item(j);
-                                if (functionChild.getNodeType() == Node.ELEMENT_NODE && functionChild.getNamespaceURI() == null) {
-
-                                    // filter functions by annotations... we only want the test:assert* annotated ones!
-                                    if(functionChild.getNodeName().equals("annotation")) {
-                                        final NamedNodeMap annotationAttributes = functionChild.getAttributes();
-                                        final Node annotationAttributeName = annotationAttributes.getNamedItem("name");
-                                        if(annotationAttributeName.getNodeValue().startsWith("test:assert")) {
-                                            isTestFunction = true;
-                                        } else if(annotationAttributeName.getNodeValue().equals("test:name")) {
-                                            final NodeList annotationChildren = functionChild.getChildNodes();
-                                            for(int k = 0; k < annotationChildren.getLength(); k++) {
-                                                final Node annotationChild = annotationChildren.item(k);
-                                                if(annotationChild.getNodeType() == Node.ELEMENT_NODE && annotationChild.getNamespaceURI() == null) {
-                                                    if(annotationChild.getNodeName().equals("value")) {
-                                                        testFunctionAnnotatedName = annotationChild.getTextContent();
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
+                final Annotation[] annotations = localFunctionSignature.getAnnotations();
+                if (annotations != null) {
+                    for (final Annotation annotation : annotations) {
+                        final QName annotationName = annotation.getName();
+                        if (annotationName.getNamespaceURI().equals(XQSUITE_NAMESPACE)) {
+                            if (annotationName.getLocalPart().startsWith("assert")) {
+                                isTest = true;
+                                if (testName != null) {
+                                    break;
                                 }
-                            }
-
-                            if(isTestFunction) {
-                                // strip module prefix from function name
-                                String testFunctionLocalName = testFunctionAnnotatedName != null ? testFunctionAnnotatedName : name;
-                                if(testFunctionLocalName.startsWith(prefix + ':')) {
-                                    testFunctionLocalName = testFunctionLocalName.substring(testFunctionLocalName.indexOf(':') + 1);
-                                    testFunctions.add(new XQueryTestInfo.TestFunctionDef(testFunctionLocalName));
+                            } else if (annotationName.getLocalPart().equals("name")) {
+                                final LiteralValue[] annotationValues = annotation.getValue();
+                                if (annotationValues != null && annotationValues.length > 0) {
+                                    testName = annotationValues[0].getValue().getStringValue();
+                                    if (isTest) {
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            return new XQueryTestInfo(prefix, namespace, testFunctions);
+                if (isTest) {
+                    if (testName == null) {
+                        testName = localFunctionSignature.getName().getLocalPart();
+                    }
 
-        } catch(final DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException e) {
+                    if (moduleNsPrefix == null) {
+                        moduleNsPrefix = localFunctionSignature.getName().getPrefix();
+                    }
+                    if (moduleNsUri == null) {
+                        moduleNsUri = localFunctionSignature.getName().getNamespaceURI();
+                    }
+
+                    testFunctions.add(new XQueryTestInfo.TestFunctionDef(testName));
+                }
+            } // end while
+
+            return new XQueryTestInfo(moduleNsPrefix, moduleNsUri, testFunctions);
+
+        } catch (final DatabaseConfigurationException | IOException | PermissionDeniedException | XPathException e) {
             throw new InitializationError(e);
         }
     }
 
     private String getSuiteName() {
-         return namespaceToPackageName(info.getNamespace());
+        if (info.getNamespace() == null) {
+            return path.getFileName().toString();
+        }
+
+        return namespaceToPackageName(info.getNamespace());
     }
 
     private String namespaceToPackageName(final String namespace) {
@@ -214,7 +225,9 @@ public class XQueryTestRunner extends AbstractTestRunner {
                     context -> new Tuple2<>("test-finished-function", new FunctionReference(new FunctionCall(context, new ExtTestFinishedFunction(context, getSuiteName(), notifier))))
             );
 
-            executeQuery(query, externalVariableDeclarations);
+            // NOTE: at this stage EXIST_EMBEDDED_SERVER_CLASS_INSTANCE in XSuite will be usable
+            final BrokerPool brokerPool = XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.getBrokerPool();
+            executeQuery(brokerPool, query, externalVariableDeclarations);
 
         } catch(final DatabaseConfigurationException | IOException | EXistException | PermissionDeniedException | XPathException e) {
             //TODO(AR) what to do here?

@@ -49,7 +49,7 @@ public abstract class XQueryCompilationTest {
         final XQuery xqueryService = pool.getXQueryService();
         try (final DBBroker broker = pool.getBroker()) {
             try {
-                return Right(xqueryService.compile(broker, new XQueryContext(broker.getDatabase()), string));
+                return Right(xqueryService.compile(new XQueryContext(broker.getDatabase()), string));
             } catch (final XPathException e) {
                 return Left(e);
             }

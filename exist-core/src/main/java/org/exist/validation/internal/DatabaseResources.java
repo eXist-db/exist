@@ -153,7 +153,7 @@ public class DatabaseResources {
                 context.declareVariable(CATALOG, catalogPath);
             }
             
-            CompiledXQuery compiled = xquery.compile(broker, context, new ClassLoaderSource(queryPath) );
+            CompiledXQuery compiled = xquery.compile(context, new ClassLoaderSource(queryPath) );
             
             result = xquery.execute(broker, compiled, null);
             

@@ -1148,7 +1148,7 @@ public class XQueryTest {
                 context.declareVariable(new QName("s"), new IntegerValue(timestamp));
 
                 if(compiled == null) {
-                    compiled = xquery.compile(broker, context, source);
+                    compiled = xquery.compile(context, source);
                 }
 
                 final Sequence result = xquery.execute(broker, compiled, null, null);

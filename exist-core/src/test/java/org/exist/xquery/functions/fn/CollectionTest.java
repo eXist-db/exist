@@ -84,7 +84,7 @@ public class CollectionTest {
             context.addDynamicallyAvailableCollection(collectionUri, (broker2, transaction, uri) -> asInMemoryDocument(doc));
 
             final XQuery xqueryService = pool.getXQueryService();
-            final CompiledXQuery compiled = xqueryService.compile(broker, context, query);
+            final CompiledXQuery compiled = xqueryService.compile(context, query);
             final Sequence result = xqueryService.execute(broker, compiled, null);
 
             assertFalse(result.isEmpty());
@@ -118,7 +118,7 @@ public class CollectionTest {
             context.addDynamicallyAvailableCollection(baseUri + collectionRelativeUri, (broker2, transaction, uri) -> asInMemoryDocument(doc));
 
             final XQuery xqueryService = pool.getXQueryService();
-            final CompiledXQuery compiled = xqueryService.compile(broker, context, query);
+            final CompiledXQuery compiled = xqueryService.compile(context, query);
             final Sequence result = xqueryService.execute(broker, compiled, null);
 
             assertFalse(result.isEmpty());

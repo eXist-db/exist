@@ -166,7 +166,7 @@ public abstract class Modification {
 		declareVariables(context);
 		if(compiled == null)
 			try {
-				compiled = xquery.compile(broker, context, source);
+				compiled = xquery.compile(context, source);
 			} catch (final IOException e) {
 				throw new EXistException("An exception occurred while compiling the query: " + e.getMessage());
 			}

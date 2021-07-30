@@ -80,11 +80,6 @@ public class StringSource extends AbstractSource {
         return content;
     }
 
-	@Override
-	public void validate(final Subject subject, final int perm) {
-		// TODO protected?
-	}
-
     @Override
     public int hashCode() {
         return content.hashCode();

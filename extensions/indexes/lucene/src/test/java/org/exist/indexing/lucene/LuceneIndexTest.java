@@ -592,7 +592,7 @@ public class LuceneIndexTest {
             assertNotNull(xquery);
 
             final XQueryContext context = new XQueryContext(broker.getBrokerPool());
-            final CompiledXQuery compiled = xquery.compile(broker, context, "declare variable $q external; " +
+            final CompiledXQuery compiled = xquery.compile(context, "declare variable $q external; " +
                     "ft:query(//p, parse-xml($q)/query)");
 
             context.declareVariable("q", "<query><term>heiterkeit</term></query>");

@@ -69,7 +69,7 @@ public class FunUnparsedTextTest {
             context.addDynamicallyAvailableTextResource(textUri, UTF_8, (broker2, transaction, uri, charset) -> new InputStreamReader(new ByteArrayInputStream(text.getBytes(UTF_8)), charset));
 
             final XQuery xqueryService = pool.getXQueryService();
-            final CompiledXQuery compiled = xqueryService.compile(broker, context, query);
+            final CompiledXQuery compiled = xqueryService.compile(context, query);
             final Sequence result = xqueryService.execute(broker, compiled, null);
 
             assertFalse(result.isEmpty());
@@ -94,7 +94,7 @@ public class FunUnparsedTextTest {
             context.addDynamicallyAvailableTextResource(baseUri + textRelativeUri, UTF_8, (broker2, transaction, uri, charset) -> new InputStreamReader(new ByteArrayInputStream(text.getBytes(UTF_8)), charset));
 
             final XQuery xqueryService = pool.getXQueryService();
-            final CompiledXQuery compiled = xqueryService.compile(broker, context, query);
+            final CompiledXQuery compiled = xqueryService.compile(context, query);
             final Sequence result = xqueryService.execute(broker, compiled, null);
 
             assertFalse(result.isEmpty());
@@ -117,7 +117,7 @@ public class FunUnparsedTextTest {
             context.addDynamicallyAvailableTextResource(textUri, UTF_8, (broker2, transaction, uri, charset) -> new InputStreamReader(new ByteArrayInputStream(text.getBytes(UTF_8)), charset));
 
             final XQuery xqueryService = pool.getXQueryService();
-            final CompiledXQuery compiled = xqueryService.compile(broker, context, query);
+            final CompiledXQuery compiled = xqueryService.compile(context, query);
             final Sequence result = xqueryService.execute(broker, compiled, null);
 
             assertFalse(result.isEmpty());
@@ -141,7 +141,7 @@ public class FunUnparsedTextTest {
             context.addDynamicallyAvailableTextResource(baseUri + textRelativeUri, UTF_8, (broker2, transaction, uri, charset) -> new InputStreamReader(new ByteArrayInputStream(text.getBytes(UTF_8)), charset));
 
             final XQuery xqueryService = pool.getXQueryService();
-            final CompiledXQuery compiled = xqueryService.compile(broker, context, query);
+            final CompiledXQuery compiled = xqueryService.compile(context, query);
             final Sequence result = xqueryService.execute(broker, compiled, null);
 
             assertFalse(result.isEmpty());
@@ -164,7 +164,7 @@ public class FunUnparsedTextTest {
                     (broker2, transaction, uri, charset) -> new InputStreamReader(null, charset));
 
             final XQuery xqueryService = pool.getXQueryService();
-            final CompiledXQuery compiled = xqueryService.compile(broker, context, query);
+            final CompiledXQuery compiled = xqueryService.compile(context, query);
             final Sequence result = xqueryService.execute(broker, compiled, null);
         }
     }

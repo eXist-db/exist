@@ -353,7 +353,7 @@ public class FunctionFactory {
                 throw new XPathException(ast.getLine(), ast.getColumn(), ErrorCodes.XPST0017, buf.toString());
             }
         }
-        if ((Boolean) context.getBroker().getConfiguration()
+        if ((Boolean) context.getConfiguration()
                 .getProperty(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS) &&
                 def.getSignature().isDeprecated()) {
             throw new XPathException(ast.getLine(), ast.getColumn(), ErrorCodes.XPST0017,

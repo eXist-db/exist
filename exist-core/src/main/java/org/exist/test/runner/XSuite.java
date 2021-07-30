@@ -21,17 +21,16 @@
  */
 package org.exist.test.runner;
 
-import org.exist.EXistException;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.XMLFilenameFilter;
 import org.exist.util.XQueryFilenameFilter;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.ParentRunner;
-import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.RunnerBuilder;
+import org.junit.runners.model.*;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -252,31 +251,113 @@ public class XSuite extends ParentRunner<Runner> {
     }
 
     @Override
-    public void run(final RunNotifier notifier) {
-        try {
-            super.run(notifier);
-        } finally {
-            ExistServer.stopServer();
+    protected Statement withBeforeClasses(final Statement statement) {
+        // get @BeforeClass methods
+        final List<FrameworkMethod> befores = getTestClass().getAnnotatedMethods(BeforeClass.class);
+
+        // inject an eXist-db Server startup as though it were an @BeforeClass
+        final Statement startExistDb = new StartExistDbStatement();
+
+        return new RunXSuiteBefores(statement, startExistDb, befores, null);
+    }
+
+    @Override
+    protected Statement withAfterClasses(final Statement statement) {
+        // get @AfterClass methods
+        final List<FrameworkMethod> afters = getTestClass().getAnnotatedMethods(AfterClass.class);
+
+        // inject an eXist-db Server shutdown as though it were an @AfterClass
+        final Statement stopExist = new StopExistDbStatement();
+
+        return new RunXSuiteAfters(statement, stopExist, afters, null);
+    }
+
+    private static class RunXSuiteBefores extends Statement {
+        private final Statement next;
+        private final Object target;
+        private final Statement beforeXSuite;
+        private final List<FrameworkMethod> befores;
+
+        public RunXSuiteBefores(final Statement next, final Statement beforeXSuite, final List<FrameworkMethod> befores, final Object target) {
+            this.next = next;
+            this.beforeXSuite = beforeXSuite;
+            this.befores = befores;
+            this.target = target;
+        }
+
+        @Override
+        public void evaluate() throws Throwable {
+            beforeXSuite.evaluate();
+            for (final FrameworkMethod before : befores) {
+                before.invokeExplosively(target);
+            }
+            next.evaluate();
         }
     }
 
-    public static class ExistServer {
-        private static final ExistEmbeddedServer EXIST_EMBEDDED_SERVER = new ExistEmbeddedServer(true, true);
-        private static boolean running = false;
+    private static class RunXSuiteAfters extends Statement {
+        private final Statement next;
+        private final Object target;
+        private final Statement afterXSuite;
+        private final List<FrameworkMethod> afters;
 
-        public static ExistEmbeddedServer getRunningServer() throws EXistException, IOException, DatabaseConfigurationException {
-            if(!running) {
-                EXIST_EMBEDDED_SERVER.startDb();
-                running = true;
-            }
-            return EXIST_EMBEDDED_SERVER;
+        public RunXSuiteAfters(final Statement next, final Statement afterXSuite, final List<FrameworkMethod> afters, final Object target) {
+            this.next = next;
+            this.afterXSuite = afterXSuite;
+            this.afters = afters;
+            this.target = target;
         }
 
-        public static void stopServer() {
-            if(running) {
-                EXIST_EMBEDDED_SERVER.stopDb();
-                running = false;
+        @Override
+        public void evaluate() throws Throwable {
+            final List<Throwable> errors = new ArrayList<>();
+            try {
+                next.evaluate();
+            } catch (final Throwable e) {
+                errors.add(e);
+            } finally {
+                try {
+                    afterXSuite.evaluate();
+                } catch (final Throwable e) {
+                    errors.add(e);
+                }
+                for (final FrameworkMethod after : afters) {
+                    try {
+                        after.invokeExplosively(target);
+                    } catch (final Throwable e) {
+                        errors.add(e);
+                    }
+                }
             }
+            MultipleFailureException.assertEmpty(errors);
         }
+    }
+
+    private static class StartExistDbStatement extends Statement {
+        @Override
+        public void evaluate() throws Throwable {
+            if (EXIST_EMBEDDED_SERVER_CLASS_INSTANCE != null) {
+                throw new IllegalStateException("EXIST_EMBEDDED_SERVER_CLASS_INSTANCE already instantiated");
+            }
+            EXIST_EMBEDDED_SERVER_CLASS_INSTANCE = newExistDbServer();
+            EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.startDb();
+        }
+    }
+
+    private static class StopExistDbStatement extends Statement {
+        @Override
+        public void evaluate() {
+            if (EXIST_EMBEDDED_SERVER_CLASS_INSTANCE == null) {
+                throw new IllegalStateException("EXIST_EMBEDDED_SERVER_CLASS_INSTANCE already stopped");
+            }
+            EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.stopDb();
+            EXIST_EMBEDDED_SERVER_CLASS_INSTANCE = null;
+        }
+    }
+
+    static ExistEmbeddedServer EXIST_EMBEDDED_SERVER_CLASS_INSTANCE = null;
+
+    static ExistEmbeddedServer newExistDbServer() {
+        return new ExistEmbeddedServer(true, true);
     }
 }
