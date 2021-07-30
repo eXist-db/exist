@@ -456,17 +456,9 @@
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>compile</scope>
-            <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
-            <exclusions>
-                <exclusion>
-                    <!-- we ourselves have a test scoped dependency on a newer hamcrest... see below! -->
-                    <groupId>org.hamcrest</groupId>
-                    <artifactId>hamcrest-core</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -995,6 +987,18 @@ The BaseX Team. The original license statement is also included below.]]></pream
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.junit.jupiter</groupId>
+                        <artifactId>junit-jupiter-engine</artifactId>
+                        <version>${junit.jupiter.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.junit.vintage</groupId>
+                        <artifactId>junit-vintage-engine</artifactId>
+                        <version>${junit.vintage.version}</version>
+                    </dependency>
+                </dependencies>
                 <configuration>
                     <argLine>@{jacocoArgLine} -Dfile.encoding=${project.build.sourceEncoding}</argLine>
                     <systemPropertyVariables>
@@ -1051,7 +1055,20 @@ The BaseX Team. The original license statement is also included below.]]></pream
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.junit.jupiter</groupId>
+                                <artifactId>junit-jupiter-engine</artifactId>
+                                <version>${junit.jupiter.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.junit.vintage</groupId>
+                                <artifactId>junit-vintage-engine</artifactId>
+                                <version>${junit.vintage.version}</version>
+                            </dependency>
+                        </dependencies>
                         <configuration>
+                            <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
                             <forkCount>1C</forkCount>
                             <reuseForks>false</reuseForks>
                             <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
