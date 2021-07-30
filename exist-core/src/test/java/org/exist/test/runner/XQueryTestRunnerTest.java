@@ -22,48 +22,41 @@
 
 package org.exist.test.runner;
 
-import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.junit.runner.Description;
 import org.junit.runners.model.InitializationError;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-
-import static java.nio.file.Files.write;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 import static org.junit.Assert.*;
 
 /**
  * Tests the global methods of the {@link XQueryTestRunner}.
  */
 public class XQueryTestRunnerTest {
-    @ClassRule
-    public static final TemporaryFolder tempDir = new TemporaryFolder();
 
-    protected XQueryTestRunner runner;
-
-    @Before
-    public void prepare() throws InitializationError, IOException {
-        final Path xmlTestFile = tempDir.newFile("test.xq").toPath();
-        final List<String> lines = new ArrayList<>();
-        lines.add("xquery version \"3.1\";");
-        lines.add("module namespace t = \"http://exist-db.org/xquery/some/test\";");
-        lines.add("declare function t:testFunction() {};");
-        write(xmlTestFile, lines);
-        runner = new XQueryTestRunner(xmlTestFile, false);
+    @Test
+    public void testGetDescription() throws URISyntaxException, InitializationError {
+        final URL queryUrl = getClass().getResource("single-test.xq");
+        final XQueryTestRunner runner = new XQueryTestRunner(Paths.get(queryUrl.toURI()), false);
+        final Description description = runner.getDescription();
+        assertNotNull(description);
+        assertTrue(description.isSuite());
+        assertEquals(true, description.getAnnotations().isEmpty());
+        assertEquals("xqts.org.exist-db.xquery.single-test-module", description.getDisplayName());
+        assertEquals(1, description.testCount());
     }
 
     @Test
-    public void testGetDescription() {
+    public void testGetDescriptionWhenNoTests() throws URISyntaxException, InitializationError {
+        final URL queryUrl = getClass().getResource("no-tests.xq");
+        final XQueryTestRunner runner = new XQueryTestRunner(Paths.get(queryUrl.toURI()), false);
         final Description description = runner.getDescription();
         assertNotNull(description);
         assertFalse(description.isSuite());
         assertEquals(true, description.getAnnotations().isEmpty());
-        assertEquals("xqts.org.exist-db.xquery.some.test", description.getDisplayName());
+        assertEquals("no-tests.xq", description.getDisplayName());
         assertEquals(1, description.testCount());
     }
 }
