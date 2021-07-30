@@ -674,3 +674,25 @@ function ser:adaptive-xs-strings-map-params() {
     return
         ser:adaptive-map-params($input, ",")
 };
+
+ declare
+  %test:assertXPath("contains($result, 'include')")
+  function ser:exist-expand-xinclude-false() {
+  let $doc := document{               <article xmlns:xi="http://www.w3.org/2001/XInclude">
+                                        <title>My Title</title>
+                                        <xi:include href="{$ser:collection}/test.xml"/>
+                                      </article>
+                     } return
+    fn:serialize($doc, map { xs:QName("exist:expand-xincludes"): false() })
+  };
+
+declare
+ %test:assertXPath("contains($result, 'comment')")
+ function ser:exist-expand-xinclude-true() {
+ let $doc := document{               <article xmlns:xi="http://www.w3.org/2001/XInclude">
+                                       <title>My Title</title>
+                                       <xi:include href="{$ser:collection}/test.xml"/>
+                                     </article>
+                    } return
+   fn:serialize($doc, map {  xs:QName("exist:expand-xincludes"): true() })
+ };
