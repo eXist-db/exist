@@ -22,9 +22,6 @@
 package org.exist.storage;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
-import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.backup.RawDataBackup;
@@ -32,7 +29,6 @@ import org.exist.collections.Collection;
 import org.exist.collections.Collection.SubCollectionEntry;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.*;
-import org.exist.indexing.Index;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.StreamListener;
 import org.exist.indexing.StructuralIndex;
@@ -49,7 +45,6 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.Lock.LockType;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
-import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.crypto.digest.DigestType;
@@ -79,135 +74,66 @@ import java.util.function.Function;
  * 
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
-public abstract class DBBroker implements AutoCloseable {
+public interface DBBroker extends AutoCloseable {
 
 	// Matching types
-	public final static int MATCH_EXACT 		= 0;
-	public final static int MATCH_REGEXP 		= 1;
-//	public final static int MATCH_WILDCARDS 	= 2;  // no longer used!
-	public final static int MATCH_CONTAINS 		= 3;
-	public final static int MATCH_STARTSWITH 	= 4;
-	public final static int MATCH_ENDSWITH 		= 5;
+	int MATCH_EXACT 		= 0;
+	int MATCH_REGEXP 		= 1;
+    int MATCH_WILDCARDS 	= 2;  // no longer used!
+	int MATCH_CONTAINS 		= 3;
+	int MATCH_STARTSWITH 	= 4;
+	int MATCH_ENDSWITH 		= 5;
 	
 	//TODO : move elsewhere
-	public static final String CONFIGURATION_ELEMENT_NAME = "xupdate";
+	String CONFIGURATION_ELEMENT_NAME = "xupdate";
     
     //TODO : move elsewhere
-    public final static String XUPDATE_FRAGMENTATION_FACTOR_ATTRIBUTE = "allowed-fragmentation";
+    String XUPDATE_FRAGMENTATION_FACTOR_ATTRIBUTE = "allowed-fragmentation";
 
     //TODO : move elsewhere
-    public final static String PROPERTY_XUPDATE_FRAGMENTATION_FACTOR = "xupdate.fragmentation";
+    String PROPERTY_XUPDATE_FRAGMENTATION_FACTOR = "xupdate.fragmentation";
 
     //TODO : move elsewhere
-    public final static String XUPDATE_CONSISTENCY_CHECKS_ATTRIBUTE = "enable-consistency-checks";
+    String XUPDATE_CONSISTENCY_CHECKS_ATTRIBUTE = "enable-consistency-checks";
 
     //TODO : move elsewhere
-    public final static String PROPERTY_XUPDATE_CONSISTENCY_CHECKS = "xupdate.consistency-checks";
+    String PROPERTY_XUPDATE_CONSISTENCY_CHECKS = "xupdate.consistency-checks";
 
-    public static final String POSIX_CHOWN_RESTRICTED_ATTRIBUTE = "posix-chown-restricted";
-    public static final String POSIX_CHOWN_RESTRICTED_PROPERTY = "db-connection.posix-chown-restricted";
-    public static final String PRESERVE_ON_COPY_ATTRIBUTE = "preserve-on-copy";
-    public static final String PRESERVE_ON_COPY_PROPERTY = "db-connection.preserve-on-copy";
+    String POSIX_CHOWN_RESTRICTED_ATTRIBUTE = "posix-chown-restricted";
+    String POSIX_CHOWN_RESTRICTED_PROPERTY = "db-connection.posix-chown-restricted";
+    String PRESERVE_ON_COPY_ATTRIBUTE = "preserve-on-copy";
+    String PRESERVE_ON_COPY_PROPERTY = "db-connection.preserve-on-copy";
 
-    protected final static Logger LOG = LogManager.getLogger(DBBroker.class);
+    String getId();
 
-    protected boolean caseSensitive = true;
-
-    protected Configuration config;
-
-    protected BrokerPool pool;
-
-    private Deque<Subject> subject = new ArrayDeque<>();
-
-    /**
-     * Used when TRACE level logging is enabled
-     * to provide a history of {@link Subject} state
-     * changes
-     *
-     * This can be written to a log file by calling
-     * {@link DBBroker#traceSubjectChanges()}
-     */
-    private TraceableStateChanges<Subject, TraceableSubjectChange.Change> subjectChangeTrace = LOG.isTraceEnabled() ? new TraceableStateChanges<>() : null;
-
-    private int referenceCount = 0;
-
-    protected String id;
-
-    private final TimestampedReference<IndexController> indexController = new TimestampedReference<>();
-
-    private final PreserveType preserveOnCopy;
-
-    private boolean triggersEnabled = true;
-
-    public DBBroker(final BrokerPool pool, final Configuration config) {
-        this.config = config;
-        final Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
-        if (temp != null) {
-            caseSensitive = temp;
-        }
-        this.pool = pool;
-        this.preserveOnCopy = config.getProperty(PRESERVE_ON_COPY_PROPERTY, PreserveType.NO_PRESERVE);
-    }
+    void setId(String id);
 
     /**
      * Prepares the broker for (re-)use,
      * when (re-)leased from BrokerPool.
      */
-    public void prepare() {
-        /**
-         * Index modules should always be re-loaded in case
-         * {@link org.exist.indexing.IndexManager#registerIndex(Index)} or
-         * {@link org.exist.indexing.IndexManager#unregisterIndex(Index)}
-         * has been called since the previous lease of this broker.
-         */
-        loadIndexModules();
-    }
-
-    /**
-     * Loads the index modules via an IndexController
-     */
-    protected void loadIndexModules() {
-        indexController.setIfExpiredOrNull(getBrokerPool().getIndexManager().getConfigurationTimestamp(), () -> new IndexController(this));
-    }
+    void prepare();
 
     /**
      * Change the state that the broker performs actions as
      *
      * @param subject The new state for the broker to perform actions as
      */
-    public void pushSubject(final Subject subject) {
-        if(LOG.isTraceEnabled()) {
-            subjectChangeTrace.add(TraceableSubjectChange.push(subject, getId()));
-        }
-        if (subject == null) {
-            //TODO (AP) this is a workaround - what is the root cause ?
-            LOG.warn("Attempt to push null subject ignored.");
-        } else {
-            this.subject.addFirst(subject);
-        }
-    }
+    void pushSubject(final Subject subject);
 
     /**
      * Restore the previous state for the broker to perform actions as
      *
      * @return The state which has been popped
      */
-    public Subject popSubject() {
-        final Subject subject = this.subject.removeFirst();
-        if(LOG.isTraceEnabled()) {
-            subjectChangeTrace.add(TraceableSubjectChange.pop(subject, getId()));
-        }
-        return subject;
-    }
+    Subject popSubject();
 
     /**
      * The state that is currently using this DBBroker object
      * 
      * @return The current state that the broker is executing as
      */
-    public Subject getCurrentSubject() {
-        return subject.peekFirst();
-    }
+    Subject getCurrentSubject();
 
     /**
      * Logs the details of all state changes
@@ -217,9 +143,7 @@ public abstract class DBBroker implements AutoCloseable {
      *
      * @throws IllegalStateException if TRACE level logging is not enabled
      */
-    public void traceSubjectChanges() {
-        subjectChangeTrace.logTrace(LOG);
-    }
+    void traceSubjectChanges();
 
     /**
      * Clears the details of all state changes
@@ -229,54 +153,35 @@ public abstract class DBBroker implements AutoCloseable {
      *
      * @throws IllegalStateException if TRACE level logging is not enabled
      */
-    public void clearSubjectChangesTrace() {
-        if(!LOG.isTraceEnabled()) {
-            throw new IllegalStateException("This is only enabled at TRACE level logging");
-        }
+    void clearSubjectChangesTrace();
 
-        subjectChangeTrace.clear();
-    }
+    IndexController getIndexController();
 
-    public IndexController getIndexController() {
-        return indexController.get();
-    }
+    ElementIndex getElementIndex();
 
-    public abstract ElementIndex getElementIndex();
+    StructuralIndex getStructuralIndex();
 
-    public abstract StructuralIndex getStructuralIndex();
-
-    /** Flush all data that has not been written before. */
-    public void flush() {
-        // do nothing
-    }
-
-    /** Observer Design Pattern: List of ContentLoadingObserver objects */
-    protected List<ContentLoadingObserver> contentLoadingObservers = new ArrayList<>();
+    /**
+     * Flush all data that has not been written before.
+     */
+    void flush();
 
     /** Remove all observers */
-    public void clearContentLoadingObservers() {
-        contentLoadingObservers.clear();
-    }    
+    void clearContentLoadingObservers();
 
     /**
      * Observer Design Pattern: add an observer.
      *
      * @param observer the observer
      */
-    public void addContentLoadingObserver(ContentLoadingObserver observer) {
-        if (!contentLoadingObservers.contains(observer))
-            {contentLoadingObservers.add(observer);}
-    }
+    void addContentLoadingObserver(ContentLoadingObserver observer);
 
     /**
      * Observer Design Pattern: remove an observer.
      *
      * @param observer the observer
      */
-    public void removeContentLoadingObserver(ContentLoadingObserver observer) {
-        if (contentLoadingObservers.contains(observer))
-            {contentLoadingObservers.remove(observer);}
-    }
+    void removeContentLoadingObserver(ContentLoadingObserver observer);
 
     /**
      * Adds all the documents in the database to the specified DocumentSet.
@@ -289,11 +194,11 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws PermissionDeniedException when one collection can not be accessed
      * @throws LockException when one collection is locked
      */
-    public abstract MutableDocumentSet getAllXMLResources(MutableDocumentSet docs) throws PermissionDeniedException, LockException;
+    MutableDocumentSet getAllXMLResources(MutableDocumentSet docs) throws PermissionDeniedException, LockException;
 
-    public abstract void getResourcesFailsafe(Txn transaction, BTreeCallback callback, boolean fullScan) throws TerminatedException;
+    void getResourcesFailsafe(Txn transaction, BTreeCallback callback, boolean fullScan) throws TerminatedException;
 
-    public abstract void getCollectionsFailsafe(Txn transaction, BTreeCallback callback) throws TerminatedException;
+    void getCollectionsFailsafe(Txn transaction, BTreeCallback callback) throws TerminatedException;
 
     /**
      * Gets a database Collection.
@@ -314,7 +219,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @return the Collection, or null if no Collection matches the path
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
      */
-    @Nullable @EnsureUnlocked public abstract Collection getCollection(XmldbURI uri) throws PermissionDeniedException;
+    @Nullable @EnsureUnlocked Collection getCollection(XmldbURI uri) throws PermissionDeniedException;
 
     /**
      * Open a Collection for reading or writing.
@@ -331,10 +236,10 @@ public abstract class DBBroker implements AutoCloseable {
      * @return the Collection, or null if no Collection matches the path
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
      */
-    @Nullable @EnsureLocked public abstract Collection openCollection(XmldbURI uri,
+    @Nullable @EnsureLocked Collection openCollection(XmldbURI uri,
             LockMode lockMode) throws PermissionDeniedException;
 
-    public abstract List<String> findCollectionsMatching(String regexp);
+    List<String> findCollectionsMatching(String regexp);
 
     /**
      * Gets the database Collection identified by the specified path.
@@ -354,7 +259,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws IOException If an error occurs whilst reading (get) or writing (create) a Collection to disk
      * @throws TriggerException If a CollectionTrigger throws an exception
      */
-    public abstract @EnsureUnlocked Collection getOrCreateCollection(Txn transaction, XmldbURI uri)
+    @EnsureUnlocked Collection getOrCreateCollection(Txn transaction, XmldbURI uri)
         throws PermissionDeniedException, IOException, TriggerException;
 
     /**
@@ -370,7 +275,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws IOException If an error occurs whilst reading (get) or writing (create) a Collection to disk
      * @throws TriggerException If a CollectionTrigger throws an exception
      */
-    public abstract Collection getOrCreateCollection(Txn transaction, XmldbURI uri, Optional<Tuple2<Permission, Long>> creationAttributes)
+    Collection getOrCreateCollection(Txn transaction, XmldbURI uri, Optional<Tuple2<Permission, Long>> creationAttributes)
             throws PermissionDeniedException, IOException, TriggerException;
 
     /**
@@ -471,9 +376,7 @@ public abstract class DBBroker implements AutoCloseable {
      *
      * @return the configuration
      */
-    public Configuration getConfiguration() {
-        return config;
-    }
+    Configuration getConfiguration();
 
     /**
      * Return a {@link org.exist.storage.dom.NodeIterator} starting at the
@@ -483,9 +386,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @return NodeIterator of node.
      * @throws RuntimeException not implemented
      */
-    public INodeIterator getNodeIterator(NodeHandle node) throws RuntimeException {
-        throw new RuntimeException("not implemented for this storage backend");
-    }
+    INodeIterator getNodeIterator(NodeHandle node) throws RuntimeException;
 
     /**
      * Return the document stored at the specified path. The path should be
@@ -497,7 +398,7 @@ public abstract class DBBroker implements AutoCloseable {
      *
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
      */
-    public abstract @EnsureUnlocked Document getXMLResource(XmldbURI docURI) throws PermissionDeniedException;
+    @EnsureUnlocked Document getXMLResource(XmldbURI docURI) throws PermissionDeniedException;
 
     /**
      * Get a document by its file name. The document's file name is used to
@@ -509,9 +410,9 @@ public abstract class DBBroker implements AutoCloseable {
      * @return The document value or null if no document could be found
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
      */
-    public abstract @EnsureUnlocked DocumentImpl getResource(XmldbURI docURI, int accessType) throws PermissionDeniedException;
+    @EnsureUnlocked DocumentImpl getResource(XmldbURI docURI, int accessType) throws PermissionDeniedException;
 
-    public abstract @EnsureUnlocked DocumentImpl getResourceById(int collectionId, byte resourceType, int documentId) throws PermissionDeniedException;
+    @EnsureUnlocked DocumentImpl getResourceById(int collectionId, byte resourceType, int documentId) throws PermissionDeniedException;
 
     /**
      * Return the document stored at the specified path. The path should be
@@ -526,7 +427,7 @@ public abstract class DBBroker implements AutoCloseable {
      *
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
      */
-    @Nullable @EnsureLocked public abstract LockedDocument getXMLResource(XmldbURI docURI, LockMode lockMode)
+    @Nullable @EnsureLocked LockedDocument getXMLResource(XmldbURI docURI, LockMode lockMode)
         throws PermissionDeniedException;
 
     /**
@@ -539,7 +440,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws EXistException when something went wrong
      * @throws LockException when the resource or collection is locked
      */
-    public abstract int getNextResourceId(Txn transaction) throws EXistException, LockException;
+    int getNextResourceId(Txn transaction) throws EXistException, LockException;
 
     /**
      * Get the string value of the specified node.
@@ -553,9 +454,7 @@ public abstract class DBBroker implements AutoCloseable {
      *
      * @throws RuntimeException not implemented
      */
-    public String getNodeValue(IStoredNode node, boolean addWhitespace) {
-        throw new RuntimeException("not implemented for this storage backend");
-    }
+    String getNodeValue(IStoredNode node, boolean addWhitespace);
 
     /**
      * Get an instance of the Serializer used for converting nodes back to XML
@@ -565,7 +464,7 @@ public abstract class DBBroker implements AutoCloseable {
      *
      * @return the {@link Serializer}
      */
-    public abstract Serializer borrowSerializer();
+    Serializer borrowSerializer();
 
     /**
      * Return an instance of the Serializer used for converting nodes back to XML
@@ -575,7 +474,7 @@ public abstract class DBBroker implements AutoCloseable {
      *
      * @param serializer the {@link Serializer}
      */
-    public abstract void returnSerializer(Serializer serializer);
+    void returnSerializer(Serializer serializer);
 
     /**
      * Get's a new Serializer.
@@ -585,7 +484,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @deprecated Use {@link #borrowSerializer()} and {@link #returnSerializer(Serializer)} instead. Will be removed in eXist-db 6.0.0
      */
     @Deprecated
-    public abstract Serializer getSerializer();
+    Serializer getSerializer();
 
     /**
      * Get's a new Serializer.
@@ -595,7 +494,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @deprecated Use {@link #borrowSerializer()} and {@link #returnSerializer(Serializer)} instead. Will be removed in eXist-db 6.0.0
      */
     @Deprecated
-    public abstract Serializer newSerializer();
+    Serializer newSerializer();
 
     /**
      * Get's a new Serializer.
@@ -606,9 +505,9 @@ public abstract class DBBroker implements AutoCloseable {
      * @deprecated Use {@link #borrowSerializer()} and {@link #returnSerializer(Serializer)} instead. Will be removed in eXist-db 6.0.0
      */
     @Deprecated
-    public abstract Serializer newSerializer(final List<String> chainOfReceivers);
+    Serializer newSerializer(final List<String> chainOfReceivers);
 
-    public abstract NativeValueIndex getValueIndex();
+    NativeValueIndex getValueIndex();
 
     /**
      * Get a node with given owner document and id from the database.
@@ -618,9 +517,9 @@ public abstract class DBBroker implements AutoCloseable {
      *
      * @return the IStoredNode
      */
-    public abstract IStoredNode objectWith(@EnsureLocked(mode=LockMode.READ_LOCK) Document doc, NodeId nodeId);
+    IStoredNode objectWith(@EnsureLocked(mode=LockMode.READ_LOCK) Document doc, NodeId nodeId);
 
-    public abstract IStoredNode objectWith(NodeProxy p);
+    IStoredNode objectWith(NodeProxy p);
 
     /**
      * Remove the Collection and all of its sub-Collections from the database.
@@ -634,7 +533,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws IOException If an error occurs whilst removing the Collection from disk
      * @throws TriggerException If a CollectionTrigger throws an exception
      */
-    public abstract boolean removeCollection(Txn transaction,
+    boolean removeCollection(Txn transaction,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) Collection collection)
             throws PermissionDeniedException, IOException, TriggerException;
 
@@ -644,7 +543,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @param transaction The database transaction.
      * @param document The document to remove.
      */
-    public abstract void removeResourceMetadata(final Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) final DocumentImpl document);
+    void removeResourceMetadata(final Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) final DocumentImpl document);
 
     /**
      * Remove a document from the database.
@@ -655,7 +554,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws IOException If an error occurs whilst removing the Collection from disk
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
      */
-    public abstract void removeResource(Txn tx, @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl doc)
+    void removeResource(Txn tx, @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl doc)
             throws IOException, PermissionDeniedException;
 
     /**
@@ -671,10 +570,8 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws IOException If an error occurs whilst removing the Collection from disk
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
      */
-    public void removeXMLResource(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl document)
-            throws PermissionDeniedException, IOException {
-        removeXMLResource(transaction, document, true);
-    }
+    void removeXMLResource(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl document)
+            throws PermissionDeniedException, IOException;
 
     /**
      * Remove a XML document from the database.
@@ -690,10 +587,10 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws IOException If an error occurs whilst removing the Collection from disk
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
      */
-    public abstract void removeXMLResource(Txn transaction,
+    void removeXMLResource(Txn transaction,
         @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl document, boolean freeDocId) throws PermissionDeniedException, IOException;
 
-    public enum IndexMode {
+    enum IndexMode {
         STORE,
         REPAIR,
         REMOVE
@@ -712,13 +609,13 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws LockException If an exception occurs whilst acquiring locks
      * @throws IOException If an error occurs whilst reindexing the Collection on disk
      */
-    public abstract void reindexCollection(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK, type=LockType.COLLECTION) XmldbURI collectionUri)
+    void reindexCollection(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK, type=LockType.COLLECTION) XmldbURI collectionUri)
             throws PermissionDeniedException, IOException, LockException;
 
-    public abstract void reindexXMLResource(final Txn txn,
+    void reindexXMLResource(final Txn txn,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) final DocumentImpl doc);
 
-    public abstract void reindexXMLResource(final Txn transaction,
+    void reindexXMLResource(final Txn transaction,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) final DocumentImpl doc, final IndexMode mode);
 
     /**
@@ -729,13 +626,13 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws LockException If an exception occurs whilst acquiring locks
      * @throws IOException If an error occurs whilst repairing indexes the database
      */
-    public abstract void repair() throws PermissionDeniedException, IOException, LockException;
+    void repair() throws PermissionDeniedException, IOException, LockException;
 
     /**
      * Repair core indexes (dom, collections ...). This method is called immediately
      * after recovery and before {@link #repair()}.
      */
-    public abstract void repairPrimary();
+    void repairPrimary();
 
     /**
      * Saves the specified Collection to disk. Collections are usually cached in
@@ -753,16 +650,16 @@ public abstract class DBBroker implements AutoCloseable {
      *
      * @throws IOException If an error occurs whilst writing the Collection to disk
      */
-    public abstract void saveCollection(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) Collection collection)
+    void saveCollection(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) Collection collection)
             throws IOException;
 
-    public abstract void closeDocument();
+    void closeDocument();
 
     /**
      * Shut down the database instance. All open files, jdbc connections etc.
      * should be closed.
      */
-    public abstract void shutdown();
+    void shutdown();
 
     /**
      * Store a node into the database. This method is called by the parser to
@@ -776,13 +673,21 @@ public abstract class DBBroker implements AutoCloseable {
      * @param indexSpec the IndexSpec
      * @param <T> the return type
      */
-    public abstract <T extends IStoredNode> void storeNode(Txn transaction, IStoredNode<T> node, NodePath currentPath, IndexSpec indexSpec);
+    <T extends IStoredNode> void storeNode(Txn transaction, IStoredNode<T> node, NodePath currentPath, IndexSpec indexSpec);
 
-    public <T extends IStoredNode> void endElement(final IStoredNode<T> node, NodePath currentPath, String content) {
-        endElement(node, currentPath, content, false);
-    }
+    <T extends IStoredNode> void endElement(final IStoredNode<T> node, NodePath currentPath, String content);
 
-    public abstract <T extends IStoredNode> void endElement(final IStoredNode<T> node, NodePath currentPath, String content, boolean remove);
+    /**
+     * Update indexes for the given element node. This method is called when the indexer
+     * encounters a closing element tag. It updates any range indexes defined on the
+     * element value and adds the element id to the structural index.
+     *
+     * @param node        the current element node
+     * @param currentPath node path leading to the element
+     * @param content     contains the string value of the element. Needed if a range index
+     *                    is defined on it.
+     */
+    <T extends IStoredNode> void endElement(final IStoredNode<T> node, NodePath currentPath, String content, boolean remove);
 
     /**
      * Store a document (descriptor) into the database.
@@ -791,9 +696,9 @@ public abstract class DBBroker implements AutoCloseable {
      * @param doc
      *            the document's metadata to store.
      */
-    public abstract void storeXMLResource(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl doc);
+    void storeXMLResource(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl doc);
 
-    public abstract void storeMetadata(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl doc) throws TriggerException;
+    void storeMetadata(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl doc) throws TriggerException;
 
     /**
      * Stores the given data under the given binary resource descriptor
@@ -808,7 +713,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws IOException If an error occurs whilst writing the binary resource to disk
      */
     @Deprecated
-    public abstract void storeBinaryResource(Txn transaction,
+    void storeBinaryResource(Txn transaction,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) BinaryDocument blob, byte[] data) throws IOException;
 
     /**
@@ -823,10 +728,10 @@ public abstract class DBBroker implements AutoCloseable {
      *
      * @throws IOException If an error occurs whilst writing the binary resource to disk
      */
-    public abstract void storeBinaryResource(Txn transaction,
+    void storeBinaryResource(Txn transaction,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) BinaryDocument blob, InputStream is) throws IOException;
 
-    public abstract void getCollectionResources(Collection.InternalAccess collectionInternalAccess);
+    void getCollectionResources(Collection.InternalAccess collectionInternalAccess);
 
     /**
      * @deprecated use {@link #readBinaryResource(Txn, BinaryDocument, OutputStream)}
@@ -836,10 +741,10 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws IOException If an error occurs whilst reading the binary resource from disk
      */
     @Deprecated
-    public abstract void readBinaryResource(@EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob,
+    void readBinaryResource(@EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob,
         final OutputStream os) throws IOException;
 
-    public abstract void readBinaryResource(final Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob,
+    void readBinaryResource(final Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob,
         final OutputStream os) throws IOException;
 
     /**
@@ -850,7 +755,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws IOException If an error occurs whilst reading the binary resource from disk
      */
     @Deprecated
-    public abstract Path getBinaryFile(@EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob) throws IOException;
+    Path getBinaryFile(@EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob) throws IOException;
 
     /**
      * Perform an operation with a {@link Path} reference to the BLOB file
@@ -885,7 +790,7 @@ public abstract class DBBroker implements AutoCloseable {
      *
      * @throws IOException if an error occurs whilst retrieving the BLOB file.
      */
-    public abstract <T> T withBinaryFile(final Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument binaryDocument,
+    <T> T withBinaryFile(final Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument binaryDocument,
             final Function<Path, T> fnFile) throws IOException;
 
     /**
@@ -896,10 +801,10 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws IOException if an error occurs whilst retrieving the binary resource.
      */
     @Deprecated
-	public abstract InputStream getBinaryResource(@EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob)
+	InputStream getBinaryResource(@EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob)
            throws IOException;
 
-    public abstract InputStream getBinaryResource(final Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob)
+    InputStream getBinaryResource(final Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob)
             throws IOException;
 
     /**
@@ -910,7 +815,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws IOException if an error occurs whilst retrieving the binary resource.
      */
     @Deprecated
-    public abstract long getBinaryResourceSize(@EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob)
+    long getBinaryResourceSize(@EnsureLocked(mode=LockMode.READ_LOCK) final BinaryDocument blob)
            throws IOException;
 
     /**
@@ -923,7 +828,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @return the message digest of the content of the Binary Document
      * @throws IOException if an error occurs whilst retrieving the digest.
      */
-    public abstract MessageDigest getBinaryResourceContentDigest(final Txn transaction,
+    MessageDigest getBinaryResourceContentDigest(final Txn transaction,
             final BinaryDocument binaryDocument, final DigestType digestType) throws IOException;
     
     /**
@@ -935,7 +840,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
      * @throws IOException if an error occurs whilst removing the binary resource.
      */
-    public abstract void removeBinaryResource(Txn transaction,
+    void removeBinaryResource(Txn transaction,
         @EnsureLocked(mode=LockMode.WRITE_LOCK) BinaryDocument blob) throws PermissionDeniedException,IOException;
 
 	/**
@@ -956,7 +861,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws IOException If an error occurs whilst moving the Collection on disk
      * @throws TriggerException If a CollectionTrigger throws an exception
 	 */
-	public abstract void moveCollection(Txn transaction,
+	void moveCollection(Txn transaction,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) Collection sourceCollection,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) Collection targetCollection, XmldbURI newName)
             throws PermissionDeniedException, LockException, IOException, TriggerException;
@@ -977,7 +882,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws IOException If an error occurs whilst moving the Document on disk
      * @throws TriggerException If a CollectionTrigger throws an exception
 	 */
-	public abstract void moveResource(Txn transaction,
+	void moveResource(Txn transaction,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl sourceDocument,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) Collection targetCollection, XmldbURI newName)
 			throws PermissionDeniedException, LockException, IOException, TriggerException;
@@ -1002,7 +907,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @deprecated Use {@link #copyCollection(Txn, Collection, Collection, XmldbURI, PreserveType)}
 	 */
 	@Deprecated
-	public abstract void copyCollection(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) Collection sourceCollection,
+	void copyCollection(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) Collection sourceCollection,
 			@EnsureLocked(mode=LockMode.WRITE_LOCK) Collection destination, XmldbURI newName)
 			throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException;
 
@@ -1026,7 +931,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws TriggerException If a CollectionTrigger throws an exception
      * @throws EXistException If an internal error occurs
      */
-    public abstract void copyCollection(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) Collection sourceCollection,
+    void copyCollection(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) Collection sourceCollection,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) Collection targetCollection, XmldbURI newName, final PreserveType preserve)
             throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException;
 
@@ -1052,7 +957,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @deprecated Use {@link #copyResource(Txn, DocumentImpl, Collection, XmldbURI, PreserveType)}
 	 */
 	@Deprecated
-	public abstract void copyResource(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) DocumentImpl sourceDocument,
+	void copyResource(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) DocumentImpl sourceDocument,
 			@EnsureLocked(mode=LockMode.WRITE_LOCK) Collection targetCollection, XmldbURI newName)
             throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException;
 
@@ -1078,7 +983,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws TriggerException If a CollectionTrigger throws an exception
      * @throws EXistException If an internal error occurs
      */
-    public abstract void copyResource(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) DocumentImpl sourceDocument,
+    void copyResource(Txn transaction, @EnsureLocked(mode=LockMode.READ_LOCK) DocumentImpl sourceDocument,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) Collection targetCollection, XmldbURI newName, final PreserveType preserve)
             throws PermissionDeniedException, LockException, IOException, TriggerException, EXistException;
 
@@ -1089,7 +994,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @param transaction The current transaction
 	 * @param doc to defrag
 	 */
-	public abstract void defragXMLResource(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl doc);
+	void defragXMLResource(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) DocumentImpl doc);
 
 	/**
 	 * Perform a consistency check on the specified document.
@@ -1098,9 +1003,9 @@ public abstract class DBBroker implements AutoCloseable {
 	 * 
 	 * @param doc the document to check the XML tree in
 	 */
-	public abstract void checkXMLResourceTree(@EnsureLocked(mode=LockMode.READ_LOCK) DocumentImpl doc);
+	void checkXMLResourceTree(@EnsureLocked(mode=LockMode.READ_LOCK) DocumentImpl doc);
 
-	public abstract void checkXMLResourceConsistency(@EnsureLocked(mode=LockMode.READ_LOCK) DocumentImpl doc)
+	void checkXMLResourceConsistency(@EnsureLocked(mode=LockMode.READ_LOCK) DocumentImpl doc)
 			throws EXistException;
 
 	/**
@@ -1110,7 +1015,7 @@ public abstract class DBBroker implements AutoCloseable {
 	 * 
 	 * @param syncEvent the event
 	 */
-	public abstract void sync(Sync syncEvent);
+	void sync(Sync syncEvent);
 
 	/**
 	 * Update a node's data. To keep nodes in a correct sequential order, it is
@@ -1122,7 +1027,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @param reindex true will trigger a reindex
      * @param <T> the type to return
 	 */
-	public abstract <T extends IStoredNode> void updateNode(Txn transaction, IStoredNode<T> node, boolean reindex);
+	<T extends IStoredNode> void updateNode(Txn transaction, IStoredNode<T> node, boolean reindex);
 
 	/**
 	 * Is the database running read-only? Returns false by default. Storage
@@ -1130,34 +1035,26 @@ public abstract class DBBroker implements AutoCloseable {
 	 * 
 	 * @return boolean
 	 */
-	public boolean isReadOnly() {
-		return false;
-	}
+	boolean isReadOnly();
 
-	public BrokerPool getBrokerPool() {
-		return pool;
-	}
+	BrokerPool getBrokerPool();
 
-	public Database getDatabase() {
-		return pool;
-	}
+	Database getDatabase();
 
-	public abstract void insertNodeAfter(Txn transaction,
+	void insertNodeAfter(Txn transaction,
 			final NodeHandle previous, final IStoredNode node);
     
-    public abstract void indexNode(Txn transaction, IStoredNode node, NodePath currentPath);    
+    void indexNode(Txn transaction, IStoredNode node, NodePath currentPath);
 
-	public void indexNode(Txn transaction, IStoredNode node) {
-		indexNode(transaction, node, null);
-	}
+	void indexNode(Txn transaction, IStoredNode node);
 
-	public abstract <T extends IStoredNode> void removeNode(Txn transaction, IStoredNode<T> node,
+	<T extends IStoredNode> void removeNode(Txn transaction, IStoredNode<T> node,
 			NodePath currentPath, String content);
 
-	public abstract void removeAllNodes(Txn transaction, IStoredNode node,
+	void removeAllNodes(Txn transaction, IStoredNode node,
 			NodePath currentPath, StreamListener listener);
 
-	public abstract void endRemove(Txn transaction);
+	void endRemove(Txn transaction);
 
 	/**
 	 * Create a temporary document in the temp collection and store the supplied
@@ -1170,7 +1067,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
      * @throws LockException If an exception occurs whilst acquiring locks
 	 */
-	public abstract @EnsureUnlocked DocumentImpl storeTempResource(
+	@EnsureUnlocked DocumentImpl storeTempResource(
 			org.exist.dom.memtree.DocumentImpl doc) throws EXistException,
 			PermissionDeniedException, LockException;
 		
@@ -1180,12 +1077,12 @@ public abstract class DBBroker implements AutoCloseable {
 	 * @param forceRemoval Should temporary resources be forcefully removed
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
 	 */
-	public abstract void cleanUpTempResources(boolean forceRemoval) throws PermissionDeniedException;
+	void cleanUpTempResources(boolean forceRemoval) throws PermissionDeniedException;
 	
 	/** Convenience method that allows to check available memory during broker-related processes.
 	 * This method should eventually trigger flush() events.
 	 */
-	public abstract void checkAvailableMemory();
+	void checkAvailableMemory();
 
     /**
      * Get all the documents in this database matching the given
@@ -1202,42 +1099,23 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
      * @throws LockException If an exception occurs whilst acquiring locks
      */
-	public abstract MutableDocumentSet getXMLResourcesByDoctype(String doctype, MutableDocumentSet result) throws PermissionDeniedException, LockException;
+	MutableDocumentSet getXMLResourcesByDoctype(String doctype, MutableDocumentSet result) throws PermissionDeniedException, LockException;
 
-	public int getReferenceCount() {
-		return referenceCount;
-	}
+	int getReferenceCount();
 
-	public void incReferenceCount() {
-		++referenceCount;
-	}
+	void incReferenceCount();
 
-	public void decReferenceCount() {
-		--referenceCount;
-	}
+	void decReferenceCount();
 
-	public abstract IndexSpec getIndexConfiguration();
+	IndexSpec getIndexConfiguration();
 
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	@Override
-	public String toString() {
-		return id;
-	}
-
-    public abstract IEmbeddedXMLStreamReader getXMLStreamReader(NodeHandle node, boolean reportAttributes)
+    IEmbeddedXMLStreamReader getXMLStreamReader(NodeHandle node, boolean reportAttributes)
             throws IOException, XMLStreamException;
 
-    public abstract IEmbeddedXMLStreamReader newXMLStreamReader(NodeHandle node, boolean reportAttributes)
+    IEmbeddedXMLStreamReader newXMLStreamReader(NodeHandle node, boolean reportAttributes)
             throws IOException, XMLStreamException;
 
-    public abstract void backupToArchive(RawDataBackup backup) throws IOException, EXistException;
+    void backupToArchive(RawDataBackup backup) throws IOException, EXistException;
 
     /**
      * Reads and populates the metadata for a sub-Collection
@@ -1252,7 +1130,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @throws IOException If an error occurs whilst reading (get) or writing (create) a Collection to disk
      * @throws LockException if we are unable to obtain a lock on the collections.dbx
      */
-    public abstract void readCollectionEntry(SubCollectionEntry entry) throws IOException, LockException;
+    void readCollectionEntry(SubCollectionEntry entry) throws IOException, LockException;
 
     /**
      * Determines if Collection or Document attributes be preserved on copy,
@@ -1267,43 +1145,13 @@ public abstract class DBBroker implements AutoCloseable {
      *
      * @return true if attributes should be preserved.
      */
-    public boolean preserveOnCopy(final PreserveType preserve) {
-        Objects.requireNonNull(preserve);
+    boolean preserveOnCopy(PreserveType preserve);
 
-        return PreserveType.PRESERVE == preserve ||
-                (PreserveType.DEFAULT == preserve && PreserveType.PRESERVE == this.preserveOnCopy);
-    }
+    void addCurrentTransaction(Txn transaction);
 
-    @Override
-    public void close() {
-        pool.release(this);
-    }
+    void removeCurrentTransaction(Txn transaction);
 
-    private ObjectLinkedOpenHashSet<Txn> currentTransactions = new ObjectLinkedOpenHashSet(4);  // 4 - we don't expect many concurrent transactions per-broker!
-    public void addCurrentTransaction(final Txn transaction) {
-        synchronized (currentTransactions) {
-            if (!currentTransactions.add(transaction)) {
-                throw new IllegalStateException("Transaction is already current: " + transaction.getId());
-            }
-        }
-    }
-
-    public void removeCurrentTransaction(final Txn transaction) {
-        synchronized (currentTransactions) {
-            if (!currentTransactions.remove(transaction)) {
-                throw new IllegalStateException("Unable to remove current transaction: " + transaction.getId());
-            }
-        }
-    }
-
-    public @Nullable Txn getCurrentTransaction() {
-        synchronized (currentTransactions) {
-            if (currentTransactions.isEmpty()) {
-                return null;
-            }
-            return currentTransactions.last();
-        }
-    }
+    @Nullable Txn getCurrentTransaction();
 
     /**
      * Gets the current transaction, or if there is no current transaction
@@ -1322,16 +1170,7 @@ public abstract class DBBroker implements AutoCloseable {
      * @return the transaction
      */
     @Deprecated
-    public Txn continueOrBeginTransaction() {
-        synchronized (currentTransactions) {
-            if (currentTransactions.isEmpty()) {
-                final TransactionManager tm = getBrokerPool().getTransactionManager();
-                return tm.beginTransaction(); //TransactionManager will call this#addCurrentTransaction
-            } else {
-                return new Txn.ReusableTxn(currentTransactions.last());
-            }
-        }
-    }
+    Txn continueOrBeginTransaction();
 
     //TODO the object passed to the function e.g. Txn should not implement .close
     //if we are using a function passing approach like this, i.e. one point of
@@ -1350,58 +1189,19 @@ public abstract class DBBroker implements AutoCloseable {
 //    }
 
 
-    public boolean isTriggersEnabled() {
-        return triggersEnabled;
-    }
+    boolean isTriggersEnabled();
 
-    public void setTriggersEnabled(final boolean triggersEnabled) {
-        this.triggersEnabled = triggersEnabled;
-    }
+    void setTriggersEnabled(boolean triggersEnabled);
 
-    /**
-     * Represents a {@link Subject} change
-     * made to a broker
-     *
-     * Used for tracing subject changes
-     */
-    private static class TraceableSubjectChange extends TraceableStateChange<Subject, TraceableSubjectChange.Change> {
-        private final String id;
-
-        public enum Change {
-            PUSH,
-            POP
-        }
-
-        private TraceableSubjectChange(final Change change, final Subject subject, final String id) {
-            super(change, subject);
-            this.id = id;
-        }
-
-        @Override
-        public String getId() {
-            return id;
-        }
-
-        @Override
-        public String describeState() {
-            return getState().getName();
-        }
-
-        final static TraceableSubjectChange push(final Subject subject, final String id) {
-            return new TraceableSubjectChange(Change.PUSH, subject, id);
-        }
-
-        final static TraceableSubjectChange pop(final Subject subject, final String id) {
-            return new TraceableSubjectChange(Change.POP, subject, id);
-        }
-    }
+    @Override
+    void close();
 
     /**
      * Indicates the behaviour for not preserving or
      * preserving Collection of Document attributes
      * when making a copy.
      */
-    public enum PreserveType {
+    enum PreserveType {
         /**
          * Implies whatever the default is,
          * as configured in conf.xml: /exist/db-connection/@preserve-on-copy

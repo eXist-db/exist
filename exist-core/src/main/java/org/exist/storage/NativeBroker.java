@@ -22,6 +22,7 @@
 package org.exist.storage;
 
 import com.evolvedbinary.j8fu.function.FunctionE;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
@@ -29,6 +30,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.Database;
 import org.exist.collections.*;
 import org.exist.collections.Collection;
 import org.exist.dom.memtree.DOMIndexer;
@@ -39,6 +41,8 @@ import org.exist.Indexer;
 import org.exist.backup.RawDataBackup;
 import org.exist.collections.Collection.SubCollectionEntry;
 import org.exist.collections.triggers.*;
+import org.exist.indexing.Index;
+import org.exist.indexing.IndexController;
 import org.exist.indexing.StreamListener;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.StructuralIndex;
@@ -119,11 +123,12 @@ import static org.exist.util.io.InputStreamUtil.copy;
  *
  * @author Wolfgang Meier
  */
-public class NativeBroker extends DBBroker {
+public class NativeBroker implements DBBroker {
 
-    public final static String EXIST_STATISTICS_LOGGER = "org.exist.statistics";
+    private static final Logger LOG = LogManager.getLogger(DBBroker.class);
 
-    protected final static Logger LOG_STATS = LogManager.getLogger(EXIST_STATISTICS_LOGGER);
+    public static final String EXIST_STATISTICS_LOGGER = "org.exist.statistics";
+    private static final Logger LOG_STATS = LogManager.getLogger(EXIST_STATISTICS_LOGGER);
 
     public static final byte PREPEND_DB_ALWAYS = 0;
     public static final byte PREPEND_DB_NEVER = 1;
@@ -162,6 +167,34 @@ public class NativeBroker extends DBBroker {
 
     private final static DigestType BINARY_RESOURCE_DIGEST_TYPE = DigestType.BLAKE_256;
 
+    private boolean caseSensitive = true;
+
+    private Configuration config;
+
+    private BrokerPool pool;
+
+    private Deque<Subject> subject = new ArrayDeque<>();
+
+    /**
+     * Used when TRACE level logging is enabled
+     * to provide a history of {@link Subject} state
+     * changes
+     *
+     * This can be written to a log file by calling
+     * {@link DBBroker#traceSubjectChanges()}
+     */
+    private TraceableStateChanges<Subject, TraceableSubjectChange.Change> subjectChangeTrace = LOG.isTraceEnabled() ? new TraceableStateChanges<>() : null;
+
+    private int referenceCount = 0;
+
+    private String id;
+
+    private final TimestampedReference<IndexController> indexController = new TimestampedReference<>();
+
+    private final PreserveType preserveOnCopy;
+
+    private boolean triggersEnabled = true;
+
     /** the database files */
     private final CollectionStore collectionsDb;
     private final DOMFile domDb;
@@ -193,9 +226,23 @@ public class NativeBroker extends DBBroker {
     private final LockManager lockManager;
     private final Optional<JournalManager> logManager;
 
+    /**
+     * Observer Design Pattern: List of ContentLoadingObserver objects
+     */
+    private List<ContentLoadingObserver> contentLoadingObservers = new ArrayList<>();
+
+    private ObjectLinkedOpenHashSet<Txn> currentTransactions = new ObjectLinkedOpenHashSet(4);  // 4 - we don't expect many concurrent transactions per-broker!
+
     // initialize database; read configuration, etc.
     public NativeBroker(final BrokerPool pool, final Configuration config) throws EXistException {
-        super(pool, config);
+        this.config = config;
+        final Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
+        if (temp != null) {
+            caseSensitive = temp;
+        }
+        this.pool = pool;
+        this.preserveOnCopy = config.getProperty(PRESERVE_ON_COPY_PROPERTY, PreserveType.NO_PRESERVE);
+
         this.lockManager = pool.getLockManager();
         this.logManager = pool.getJournalManager();
         LOG.debug("Initializing broker {}", hashCode());
@@ -268,8 +315,111 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(final String id) {
+		this.id = id;
+	}
+
+    @Override
+    public String toString() {
+        return getId();
+    }
+
+    @Override
+    public void prepare() {
+        /**
+         * Index modules should always be re-loaded in case
+         * {@link org.exist.indexing.IndexManager#registerIndex(Index)} or
+         * {@link org.exist.indexing.IndexManager#unregisterIndex(Index)}
+         * has been called since the previous lease of this broker.
+         */
+        loadIndexModules();
+    }
+
+    /**
+     * Loads the index modules via an IndexController
+     */
+    private void loadIndexModules() {
+        indexController.setIfExpiredOrNull(getBrokerPool().getIndexManager().getConfigurationTimestamp(), () -> new IndexController(this));
+    }
+
+    @Override
+    public void pushSubject(final Subject subject) {
+        if(LOG.isTraceEnabled()) {
+            subjectChangeTrace.add(TraceableSubjectChange.push(subject, getId()));
+        }
+        if (subject == null) {
+            //TODO (AP) this is a workaround - what is the root cause ?
+            LOG.warn("Attempt to push null subject ignored.");
+        } else {
+            this.subject.addFirst(subject);
+        }
+    }
+
+    @Override
+    public Subject popSubject() {
+        final Subject subject = this.subject.removeFirst();
+        if(LOG.isTraceEnabled()) {
+            subjectChangeTrace.add(TraceableSubjectChange.pop(subject, getId()));
+        }
+        return subject;
+    }
+
+    @Override
+    public Subject getCurrentSubject() {
+        return subject.peekFirst();
+    }
+
+    @Override
+    public void traceSubjectChanges() {
+        subjectChangeTrace.logTrace(LOG);
+    }
+
+    @Override
+    public void clearSubjectChangesTrace() {
+        if(!LOG.isTraceEnabled()) {
+            throw new IllegalStateException("This is only enabled at TRACE level logging");
+        }
+
+        subjectChangeTrace.clear();
+    }
+
+    @Override
+    public IndexController getIndexController() {
+        return indexController.get();
+    }
+
+    @Override
     public ElementIndex getElementIndex() {
         return null;
+    }
+
+    @Override
+    public void clearContentLoadingObservers() {
+        contentLoadingObservers.clear();
+    }
+
+    @Override
+    public void addContentLoadingObserver(final ContentLoadingObserver observer) {
+        if (!contentLoadingObservers.contains(observer)) {
+            contentLoadingObservers.add(observer);
+        }
+    }
+
+    @Override
+    public void removeContentLoadingObserver(final ContentLoadingObserver observer) {
+        if (contentLoadingObservers.contains(observer)) {
+            contentLoadingObservers.remove(observer);
+        }
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        return config;
     }
 
     // ============ dispatch the various events to indexing classes ==========
@@ -346,6 +496,11 @@ public class NativeBroker extends DBBroker {
             observer.closeAndRemove();
         }
         clearContentLoadingObservers();
+    }
+
+    @Override
+    public <T extends IStoredNode> void endElement(final IStoredNode<T> node, final NodePath currentPath, final String content) {
+        endElement(node, currentPath, content, false);
     }
 
     /**
@@ -1148,7 +1303,7 @@ public class NativeBroker extends DBBroker {
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
      * @throws LockException If an exception occurs whilst acquiring locks
      */
-    protected void checkPermissionsForCopy(@EnsureLocked(mode=LockMode.READ_LOCK) final Collection sourceCollection,
+    void checkPermissionsForCopy(@EnsureLocked(mode=LockMode.READ_LOCK) final Collection sourceCollection,
             @EnsureLocked(mode=LockMode.READ_LOCK) @Nullable final Collection targetCollection, final XmldbURI newName)
             throws PermissionDeniedException, LockException {
 
@@ -1323,6 +1478,14 @@ public class NativeBroker extends DBBroker {
             }
         }
         PermissionFactory.chmod(this, destPermission, Optional.of(srcPermission.getMode()), Optional.of(aces));
+    }
+
+    @Override
+    public boolean preserveOnCopy(final PreserveType preserve) {
+        Objects.requireNonNull(preserve);
+
+        return PreserveType.PRESERVE == preserve ||
+                (PreserveType.DEFAULT == preserve && PreserveType.PRESERVE == this.preserveOnCopy);
     }
 
     private boolean isSubCollection(@EnsureLocked(mode=LockMode.READ_LOCK) final Collection col,
@@ -2938,6 +3101,12 @@ public class NativeBroker extends DBBroker {
         }
     }
 
+    @Override
+    public void removeXMLResource(final Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK) final DocumentImpl document)
+            throws PermissionDeniedException, IOException {
+        removeXMLResource(transaction, document, true);
+    }
+
     /**
      * get next Free Doc Id
      *
@@ -3485,6 +3654,11 @@ public class NativeBroker extends DBBroker {
         indexNode(transaction, node, currentPath, IndexMode.STORE);
     }
 
+    @Override
+    public void indexNode(final Txn transaction, final IStoredNode node) {
+        indexNode(transaction, node, null);
+    }
+
     public void indexNode(final Txn transaction, final IStoredNode node, final NodePath currentPath, final IndexMode repairMode) {
         nodeProcessor.reset(transaction, node, currentPath, null);
         nodeProcessor.setIndexMode(repairMode);
@@ -3700,7 +3874,7 @@ public class NativeBroker extends DBBroker {
         rebuildIndex(COLLECTIONS_DBX_ID);
     }
 
-    protected void rebuildIndex(final byte indexId) {
+    private void rebuildIndex(final byte indexId) {
         final BTree btree = getStorage(indexId);
         try(final ManagedLock<ReentrantLock> btreeLock = lockManager.acquireBtreeWriteLock(btree.getLockName())) {
             LOG.info("Rebuilding index {}", FileUtils.fileName(btree.getFile()));
@@ -3709,6 +3883,31 @@ public class NativeBroker extends DBBroker {
         } catch(final LockException | IOException | TerminatedException | DBException e) {
             LOG.error("Caught error while rebuilding core index {}: {}", FileUtils.fileName(btree.getFile()), e.getMessage(), e);
         }
+    }
+
+    @Override
+    public BrokerPool getBrokerPool() {
+        return pool;
+    }
+
+    @Override
+    public Database getDatabase() {
+        return pool;
+    }
+
+    @Override
+    public int getReferenceCount() {
+        return referenceCount;
+    }
+
+    @Override
+    public void incReferenceCount() {
+        ++referenceCount;
+    }
+
+    @Override
+    public void decReferenceCount() {
+        --referenceCount;
     }
 
     @Override
@@ -3826,6 +4025,94 @@ public class NativeBroker extends DBBroker {
                 return null;
             }
         }.run();
+    }
+
+    @Override
+    public void addCurrentTransaction(final Txn transaction) {
+        synchronized (currentTransactions) {
+            if (!currentTransactions.add(transaction)) {
+                throw new IllegalStateException("Transaction is already current: " + transaction.getId());
+            }
+        }
+    }
+
+    @Override
+    public void removeCurrentTransaction(final Txn transaction) {
+        synchronized (currentTransactions) {
+            if (!currentTransactions.remove(transaction)) {
+                throw new IllegalStateException("Unable to remove current transaction: " + transaction.getId());
+            }
+        }
+    }
+
+    @Override
+    public @Nullable Txn getCurrentTransaction() {
+        synchronized (currentTransactions) {
+            if (currentTransactions.isEmpty()) {
+                return null;
+            }
+            return currentTransactions.last();
+        }
+    }
+
+    /**
+     * Gets the current transaction, or if there is no current transaction
+     * for this thread (i.e. broker), then we begin a new transaction.
+     *
+     * The callee is *always* responsible for calling .close on the transaction
+     *
+     * Note - When there is an existing transaction, calling .close on the object
+     * returned (e.g. ResusableTxn) from this function will only cause a minor state
+     * change and not close the original transaction. That is intentional, as it will
+     * eventually be closed by the creator of the original transaction (i.e. the code
+     * site that began the first transaction)
+     *
+     * @deprecated This is a stepping-stone; Transactions should be explicitly passed
+     *   around. This will be removed in the near future.
+     * @return the transaction
+     */
+    @Override
+    @Deprecated
+    public Txn continueOrBeginTransaction() {
+        synchronized (currentTransactions) {
+            if (currentTransactions.isEmpty()) {
+                final TransactionManager tm = getBrokerPool().getTransactionManager();
+                return tm.beginTransaction(); //TransactionManager will call this#addCurrentTransaction
+            } else {
+                return new Txn.ReusableTxn(currentTransactions.last());
+            }
+        }
+    }
+
+    //TODO the object passed to the function e.g. Txn should not implement .close
+    //if we are using a function passing approach like this, i.e. one point of
+    //responsibility and WE HERE should be responsible for closing the transaction.
+    //we could return a sub-class of Txn which is uncloseable like Txn.reuseable or similar
+    //also getCurrentTransaction should then be made private
+//    private <T> T transact(final Function<Txn, T> transactee) throws EXistException {
+//        final Txn existing = getCurrentTransaction();
+//        if(existing == null) {
+//            try(final Txn txn = pool.getTransactionManager().beginTransaction()) {
+//                return transactee.apply(txn);
+//            }
+//        } else {
+//            return transactee.apply(existing);
+//        }
+//    }
+
+    @Override
+    public boolean isTriggersEnabled() {
+        return triggersEnabled;
+    }
+
+    @Override
+    public void setTriggersEnabled(final boolean triggersEnabled) {
+        this.triggersEnabled = triggersEnabled;
+    }
+
+    @Override
+    public void close() {
+        pool.release(this);
     }
 
     public final static class NodeRef extends Value {
@@ -4078,6 +4365,44 @@ public class NativeBroker extends DBBroker {
             }
 
             return true;
+        }
+    }
+
+    /**
+     * Represents a {@link Subject} change
+     * made to a broker
+     *
+     * Used for tracing subject changes
+     */
+    private static class TraceableSubjectChange extends TraceableStateChange<Subject, TraceableSubjectChange.Change> {
+        private final String id;
+
+        public enum Change {
+            PUSH,
+            POP
+        }
+
+        private TraceableSubjectChange(final Change change, final Subject subject, final String id) {
+            super(change, subject);
+            this.id = id;
+        }
+
+        @Override
+        public String getId() {
+            return id;
+        }
+
+        @Override
+        public String describeState() {
+            return getState().getName();
+        }
+
+        final static TraceableSubjectChange push(final Subject subject, final String id) {
+            return new TraceableSubjectChange(Change.PUSH, subject, id);
+        }
+
+        final static TraceableSubjectChange pop(final Subject subject, final String id) {
+            return new TraceableSubjectChange(Change.POP, subject, id);
         }
     }
 }
