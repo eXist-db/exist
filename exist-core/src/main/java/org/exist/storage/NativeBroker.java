@@ -167,8 +167,6 @@ public class NativeBroker implements DBBroker {
 
     private final static DigestType BINARY_RESOURCE_DIGEST_TYPE = DigestType.BLAKE_256;
 
-    private boolean caseSensitive = true;
-
     private Configuration config;
 
     private BrokerPool pool;
@@ -224,7 +222,6 @@ public class NativeBroker implements DBBroker {
     private IEmbeddedXMLStreamReader streamReader;
 
     private final LockManager lockManager;
-    private final Optional<JournalManager> logManager;
 
     /**
      * Observer Design Pattern: List of ContentLoadingObserver objects
@@ -236,15 +233,10 @@ public class NativeBroker implements DBBroker {
     // initialize database; read configuration, etc.
     public NativeBroker(final BrokerPool pool, final Configuration config) throws EXistException {
         this.config = config;
-        final Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
-        if (temp != null) {
-            caseSensitive = temp;
-        }
         this.pool = pool;
         this.preserveOnCopy = config.getProperty(PRESERVE_ON_COPY_PROPERTY, PreserveType.NO_PRESERVE);
 
         this.lockManager = pool.getLockManager();
-        this.logManager = pool.getJournalManager();
         LOG.debug("Initializing broker {}", hashCode());
 
         final String prependDB = (String) config.getProperty("db-connection.prepend-db");
