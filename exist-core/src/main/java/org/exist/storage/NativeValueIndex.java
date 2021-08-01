@@ -189,8 +189,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     cacheValueThresHold);
             config.setProperty(getConfigKeyForFile(), nativeFile);
         }
-        dbValues = nativeFile;
-        caseSensitive = Optional.ofNullable((Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE)).orElse(false);
+        this.dbValues = nativeFile;
+        this.caseSensitive = Optional.ofNullable((Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE)).orElse(false);
 
         broker.addContentLoadingObserver(getInstance());
     }
