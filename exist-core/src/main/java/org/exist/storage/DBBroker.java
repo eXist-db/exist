@@ -77,15 +77,15 @@ import java.util.function.Function;
 public interface DBBroker extends AutoCloseable {
 
 	// Matching types
-	int MATCH_EXACT 		= 0;
-	int MATCH_REGEXP 		= 1;
+    int MATCH_EXACT 		= 0;
+    int MATCH_REGEXP 		= 1;
     int MATCH_WILDCARDS 	= 2;  // no longer used!
-	int MATCH_CONTAINS 		= 3;
-	int MATCH_STARTSWITH 	= 4;
-	int MATCH_ENDSWITH 		= 5;
+    int MATCH_CONTAINS 		= 3;
+    int MATCH_STARTSWITH 	= 4;
+    int MATCH_ENDSWITH 		= 5;
 	
 	//TODO : move elsewhere
-	String CONFIGURATION_ELEMENT_NAME = "xupdate";
+    String CONFIGURATION_ELEMENT_NAME = "xupdate";
     
     //TODO : move elsewhere
     String XUPDATE_FRAGMENTATION_FACTOR_ATTRIBUTE = "allowed-fragmentation";
