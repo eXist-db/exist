@@ -695,7 +695,7 @@ public class NativeBroker implements DBBroker {
         if (uri.startsWith(XmldbURI.ROOT_COLLECTION_URI)) {
             return uri;
         }
-        return uri.prepend(XmldbURI.ROOT_COLLECTION_URI);
+        return XmldbURI.ROOT_COLLECTION_URI.append(uri);
     }
 
     /**
