@@ -130,10 +130,6 @@ public class NativeBroker implements DBBroker {
     public static final String EXIST_STATISTICS_LOGGER = "org.exist.statistics";
     private static final Logger LOG_STATS = LogManager.getLogger(EXIST_STATISTICS_LOGGER);
 
-    public static final byte PREPEND_DB_ALWAYS = 0;
-    public static final byte PREPEND_DB_NEVER = 1;
-    public static final byte PREPEND_DB_AS_NEEDED = 2;
-
     public static final byte COLLECTIONS_DBX_ID = 0;
     public static final byte VALUES_DBX_ID = 2;
     public static final byte DOM_DBX_ID = 3;
@@ -213,8 +209,6 @@ public class NativeBroker implements DBBroker {
 
     private final Path dataDir;
 
-    private final byte prepend;
-
     private final Runtime run = Runtime.getRuntime();
 
     private final NodeProcessor nodeProcessor = new NodeProcessor();
@@ -238,15 +232,6 @@ public class NativeBroker implements DBBroker {
 
         this.lockManager = pool.getLockManager();
         LOG.debug("Initializing broker {}", hashCode());
-
-        final String prependDB = (String) config.getProperty("db-connection.prepend-db");
-        if("always".equalsIgnoreCase(prependDB)) {
-            this.prepend = PREPEND_DB_ALWAYS;
-        } else if("never".equalsIgnoreCase(prependDB)) {
-            this.prepend = PREPEND_DB_NEVER;
-        } else {
-            this.prepend = PREPEND_DB_AS_NEEDED;
-        }
 
         this.dataDir = config.getProperty(BrokerPool.PROPERTY_DATA_DIR, Paths.get(DEFAULT_DATA_DIR));
 
@@ -696,15 +681,21 @@ public class NativeBroker implements DBBroker {
         return new NativeSerializer(this, getConfiguration(), chainOfReceivers);
     }
 
-    public XmldbURI prepend(final XmldbURI uri) {
-        switch(prepend) {
-            case PREPEND_DB_ALWAYS:
-                return uri.prepend(XmldbURI.ROOT_COLLECTION_URI);
-            case PREPEND_DB_AS_NEEDED:
-                return uri.startsWith(XmldbURI.ROOT_COLLECTION_URI) ? uri : uri.prepend(XmldbURI.ROOT_COLLECTION_URI);
-            default:
-                return uri;
+    /**
+     * Prepends '/db' to the URI if it is missing
+     *
+     * @param uri the URI
+     *
+     * @return the database URI
+     *
+     * @deprecated This is used inconsistently in NativeBroker, instead the caller should if necessary enforce the correct URI
+     */
+    @Deprecated
+    private XmldbURI prepend(final XmldbURI uri) {
+        if (uri.startsWith(XmldbURI.ROOT_COLLECTION_URI)) {
+            return uri;
         }
+        return uri.prepend(XmldbURI.ROOT_COLLECTION_URI);
     }
 
     /**
