@@ -43,7 +43,7 @@
         <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
         <url>scm:git:https://github.com/exist-db/exist.git</url>
       <tag>HEAD</tag>
-  </scm>
+    </scm>
 
     <dependencies>
         <dependency>
@@ -94,6 +94,14 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <!-- needed for resolving the XAR for PackageTriggerTest -->
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-expathrepo-trigger-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -110,6 +118,31 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-expathrepo-trigger-test-xar</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/generated-test-resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>expathrepo-trigger-test/target</directory>
+                                    <includes>
+                                        <include>*.xar</include>
+                                    </includes>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
@@ -121,6 +154,7 @@
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
                                 <ignoredUnusedDeclaredDependency>${project.groupId}:exist-compression:jar:${project.version}</ignoredUnusedDeclaredDependency>  <!-- needed for XQSuite tests that depend on Compression Module -->
+                                <ignoredUnusedDeclaredDependency>${project.groupId}:exist-expathrepo-trigger-test:jar:${project.version}</ignoredUnusedDeclaredDependency>  <!-- needed for resolving the XAR for PackageTriggerTest -->
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
