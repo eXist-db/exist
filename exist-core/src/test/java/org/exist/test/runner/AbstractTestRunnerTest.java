@@ -22,43 +22,42 @@
 
 package org.exist.test.runner;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 
 import static org.exist.test.runner.AbstractTestRunner.checkDescription;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests the global methods of the {@link AbstractTestRunner}.
  */
-public class AbstractTestRunnerTest {
-
+class AbstractTestRunnerTest {
     @Test
-    public void testCheckDescriptionNull() {
-        final IllegalArgumentException iae = assertThrows(IllegalArgumentException.class, () -> checkDescription(this, null));
+     void testCheckDescriptionNull() {
+        final IllegalArgumentException iae = assertThrows(IllegalArgumentException.class, () ->  checkDescription(this, null));
         assertEquals(this + " description is null", iae.getMessage());
     }
 
     @Test
-    public void testCheckDescriptionEmpty() {
-        final IllegalArgumentException iae = assertThrows(IllegalArgumentException.class, () -> checkDescription(this, ""));
+     void testCheckDescriptionEmpty() {
+        final IllegalArgumentException iae = assertThrows(IllegalArgumentException.class, () ->  checkDescription(this, ""));
         assertEquals(this + " description is empty", iae.getMessage());
     }
 
     @Test
-    public void testCheckDescriptionStartsWithBrace() {
-        final IllegalArgumentException iae = assertThrows(IllegalArgumentException.class, () -> checkDescription(this, "(bla)"));
+     void testCheckDescriptionStartsWithBrace() {
+        final IllegalArgumentException iae = assertThrows(IllegalArgumentException.class, () ->  checkDescription(this, "(bla)"));
         assertEquals(this + " description '(bla)' starts with '('", iae.getMessage());
     }
 
     @Test
-    public void testCheckDescription() {
+     void testCheckDescription() {
         assertEquals("testMethod", checkDescription(this, "testMethod"));
     }
 
     @Test
-    public void testRun() {
+    void testRun() {
         final AbstractTestRunner runner = new AbstractTestRunner(null, false) {
             @Override
             public void run(final RunNotifier notifier) {
@@ -72,6 +71,6 @@ public class AbstractTestRunnerTest {
         };
 
         final RunNotifier notifier = new RunNotifier();
-        runner.run(notifier);
+        assertDoesNotThrow(() -> runner.run(notifier));
     }
 }

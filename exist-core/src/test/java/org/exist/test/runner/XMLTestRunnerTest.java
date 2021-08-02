@@ -22,10 +22,9 @@
 
 package org.exist.test.runner;
 
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.runner.Description;
 import org.junit.runners.model.InitializationError;
 
@@ -35,21 +34,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.nio.file.Files.write;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests the global methods of the {@link XMLTestRunner}.
  */
-public class XMLTestRunnerTest {
+class XMLTestRunnerTest {
+    @TempDir
+    Path tempPath;
+    XMLTestRunner runner;
 
-    @ClassRule
-    public static final TemporaryFolder tempDir = new TemporaryFolder();
-
-    protected XMLTestRunner runner;
-
-    @Before
-    public void prepare() throws InitializationError, IOException {
-        final Path xmlTestFile = tempDir.newFile("test.xml").toPath();
+    @BeforeEach
+    void prepare() throws InitializationError, IOException {
+        final Path xmlTestFile = tempPath.resolve("test.xml");
         final List<String> lines = new ArrayList<>();
         lines.add("<TestSet>");
         lines.add("    <testName>demoTest</testName>");
@@ -64,7 +64,7 @@ public class XMLTestRunnerTest {
     }
 
     @Test
-    public void testGetDescription() {
+    void testGetDescription() {
         final Description description = runner.getDescription();
         assertNotNull(description);
         assertTrue(description.isSuite());

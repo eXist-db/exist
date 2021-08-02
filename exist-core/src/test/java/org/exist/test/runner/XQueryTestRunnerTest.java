@@ -22,22 +22,25 @@
 
 package org.exist.test.runner;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.Description;
 import org.junit.runners.model.InitializationError;
 
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
-import static org.junit.Assert.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests the global methods of the {@link XQueryTestRunner}.
  */
-public class XQueryTestRunnerTest {
-
+class XQueryTestRunnerTest {
     @Test
-    public void testGetDescription() throws URISyntaxException, InitializationError {
+    void testGetDescription() throws URISyntaxException, InitializationError {
         final URL queryUrl = getClass().getResource("single-test.xq");
         final XQueryTestRunner runner = new XQueryTestRunner(Paths.get(queryUrl.toURI()), false);
         final Description description = runner.getDescription();
@@ -49,7 +52,7 @@ public class XQueryTestRunnerTest {
     }
 
     @Test
-    public void testGetDescriptionWhenNoTests() throws URISyntaxException, InitializationError {
+     void testGetDescriptionWhenNoTests() throws URISyntaxException, InitializationError {
         final URL queryUrl = getClass().getResource("no-tests.xq");
         final XQueryTestRunner runner = new XQueryTestRunner(Paths.get(queryUrl.toURI()), false);
         final Description description = runner.getDescription();
