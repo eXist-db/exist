@@ -219,6 +219,38 @@ function mt:merge-duplicate-keys-use-last-implicit-2() {
 };
 
 declare
+    %test:assertEquals("Saturday", "Saturday")
+function mt:merge-duplicate-keys-use-first-explicit-1() {
+    let $specialWeek := map:merge(($mt:integerKeys, map { 7 : "Caturday" }), map { "duplicates": "use-first" })
+    return
+        ($mt:integerKeys(7), $specialWeek(7))
+};
+
+declare
+    %test:assertEquals("Saturday", "Caturday")
+function mt:merge-duplicate-keys-use-first-explicit-2() {
+    let $specialWeek := map:merge((map { 7 : "Caturday" }, $mt:integerKeys), map { "duplicates": "use-first" })
+    return
+        ($mt:integerKeys(7), $specialWeek(7))
+};
+
+declare
+    %test:assertEquals("Saturday", "Caturday")
+function mt:merge-duplicate-keys-use-last-explicit-1() {
+    let $specialWeek := map:merge(($mt:integerKeys, map { 7 : "Caturday" }), map { "duplicates": "use-last" })
+    return
+        ($mt:integerKeys(7), $specialWeek(7))
+};
+
+declare
+    %test:assertEquals("Saturday", "Saturday")
+function mt:merge-duplicate-keys-use-last-explicit-2() {
+    let $specialWeek := map:merge((map { 7 : "Caturday" }, $mt:integerKeys), map { "duplicates": "use-last" })
+    return
+        ($mt:integerKeys(7), $specialWeek(7))
+};
+
+declare
     %test:assertEmpty
 function mt:mapEmptyValue() {
     let $map := $mt:mapOfSequences
@@ -648,6 +680,7 @@ function mt:multi-merge() {
 declare variable $mt:test-key-one := 1;
 declare variable $mt:test-key-two := 2;
 declare variable $mt:test-key-three := 3;
+
 declare function mt:create-test-map() {
     map {
         $mt:test-key-one : true(),
@@ -804,11 +837,10 @@ function mt:immutable-merge2-then-remove() {
     let $result := map:remove($merged, $mt:test-key-one)
     return
         (
-            map:size($merged),
-            $expected eq $merged($mt:test-key-one),
-            fn:empty($result($mt:test-key-one)),
-            $expected ne $result($mt:test-key-one),
-            map:size($result)
+           map:size($merged),
+           $expected eq $merged($mt:test-key-one),
+           fn:empty($result($mt:test-key-one)),
+           map:size($result)
         )
 };
 
