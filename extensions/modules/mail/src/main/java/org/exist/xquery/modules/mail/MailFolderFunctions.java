@@ -22,9 +22,9 @@
 package org.exist.xquery.modules.mail;
 
 
-import javax.mail.Folder;
-import javax.mail.MessagingException;
-import javax.mail.Store;
+import jakarta.mail.Folder;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Store;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

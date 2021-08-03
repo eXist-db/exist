@@ -24,7 +24,7 @@ package org.exist.xquery.modules.mail;
 
 import java.util.Properties;
 
-import javax.mail.Session;
+import jakarta.mail.Session;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
