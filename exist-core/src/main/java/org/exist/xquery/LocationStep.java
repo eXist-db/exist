@@ -105,8 +105,10 @@ public class LocationStep extends Step {
 
         // TODO : normally, we should call this one...
         // int deps = super.getDependencies(); ???
-        for (final Predicate pred : predicates) {
-            deps |= pred.getDependencies();
+        if (predicates != null) {
+            for (final Predicate pred : predicates) {
+                deps |= pred.getDependencies();
+            }
         }
 
         // TODO : should we remove the CONTEXT_ITEM dependency returned by the
@@ -165,7 +167,7 @@ public class LocationStep extends Step {
         if (contextSequence == null) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        if (predicates.size() == 0
+        if (predicates == null
                 || !applyPredicate
                 || (!(contextSequence instanceof VirtualNodeSet) && contextSequence
                 .isEmpty()))
@@ -174,7 +176,7 @@ public class LocationStep extends Step {
             return contextSequence;
         }
         Sequence result;
-        final Predicate pred = predicates.get(0);
+        final Predicate pred = predicates[0];
         // If the current step is an // abbreviated step, we have to treat the
         // predicate
         // specially to get the context position right. //a[1] translates to
@@ -219,15 +221,16 @@ public class LocationStep extends Step {
 
     private Sequence processPredicate(Sequence outerSequence, final Sequence contextSequence) throws XPathException {
         Sequence result = contextSequence;
-        for (final Iterator<Predicate> i = predicates.iterator(); i.hasNext()
-                && (result instanceof VirtualNodeSet || !result.isEmpty()); ) {
-            // TODO : log and/or profile ?
-            final Predicate pred = i.next();
-            pred.setContextDocSet(getContextDocSet());
-            result = pred.evalPredicate(outerSequence, result, axis);
-            // subsequent predicates operate on the result of the previous one
-            outerSequence = null;
-            context.setContextSequencePosition(0, null);
+        if (predicates != null) {
+            for (int i = 0; i < predicates.length && (result instanceof VirtualNodeSet || !result.isEmpty()); i++) {
+                // TODO : log and/or profile ?
+                final Predicate pred = predicates[i];
+                pred.setContextDocSet(getContextDocSet());
+                result = pred.evalPredicate(outerSequence, result, axis);
+                // subsequent predicates operate on the result of the previous one
+                outerSequence = null;
+                context.setContextSequencePosition(0, null);
+            }
         }
         return result;
     }
@@ -997,7 +1000,7 @@ public class LocationStep extends Step {
     private int computeLimit() throws XPathException {
         int position = -1;
         if (this.checkPositionalFilters(this.inPredicate)) {
-            final Predicate pred = predicates.get(0);
+            final Predicate pred = predicates[0];
             final Sequence seq = pred.preprocess();
 
             final NumericValue v = (NumericValue) seq.itemAt(0);

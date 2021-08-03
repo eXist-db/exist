@@ -28,8 +28,8 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import javax.annotation.Nullable;
+import java.util.Arrays;
 
 public abstract class Step extends AbstractExpression {
 
@@ -39,7 +39,7 @@ public abstract class Step extends AbstractExpression {
 
     protected boolean abbreviatedStep = false;
 
-    protected List<Predicate> predicates = new CopyOnWriteArrayList<>();
+    @Nullable protected Predicate[] predicates = null;
 
     protected NodeTest test;
 
@@ -57,31 +57,49 @@ public abstract class Step extends AbstractExpression {
         this.test = test;
     }
 
-    public void addPredicate( Expression expr ) {
-        predicates.add( (Predicate) expr );
+    public void addPredicate(final Expression expr) {
+        if (predicates == null) {
+            predicates = new Predicate[1];
+        } else {
+            predicates = Arrays.copyOf(predicates, predicates.length + 1);
+        }
+
+        predicates[predicates.length - 1] = (Predicate) expr;
     }
 
-    public void insertPredicate(Expression previous, Expression predicate) {
-        final int idx = predicates.indexOf(previous);
-        if (idx < 0) {
+    public void insertPredicate(final Expression previous, final Expression predicate) {
+        int previousIdx = -1;
+        if (predicates != null) {
+            for (int i = 0; i < predicates.length; i++) {
+                if (predicates[i] == previous) {
+                    previousIdx = i;
+                    break;
+                }
+            }
+        }
+
+        if (previousIdx < 0) {
             LOG.warn("Old predicate not found: {}; in: {}", ExpressionDumper.dump(previous), ExpressionDumper.dump(this));
             return;
         }
-        predicates.add(idx + 1, (Predicate) predicate);
+
+        final Predicate[] newPredicates = new Predicate[predicates.length + 1];
+        System.arraycopy(predicates, 0, newPredicates, 0, previousIdx + 1);
+        newPredicates[previousIdx + 1] = (Predicate) predicate;
+        System.arraycopy(predicates, previousIdx + 1, newPredicates, previousIdx + 2, predicates.length - previousIdx - 1);
+        predicates = newPredicates;
     }
 
     public boolean hasPredicates() {
-        return predicates.size() > 0;
+        return predicates != null;
     }
 
-    public List<Predicate> getPredicates() {
+    public @Nullable Predicate[] getPredicates() {
         return predicates;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
-     */
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    @Override
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         if (test != null && test.getName() != null &&
                 test.getName().getPrefix() != null &&
                 (!test.getName().getPrefix().isEmpty()) && context.getInScopePrefixes() !=  null &&
@@ -90,7 +108,7 @@ public abstract class Step extends AbstractExpression {
                 + test.getName().getPrefix() + "'");}
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
         this.contextId = contextInfo.getContextId();
-        if (predicates.size() > 0) {
+        if (predicates != null) {
             final AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
             newContext.setStaticType(this.axis == Constants.SELF_AXIS ? contextInfo.getStaticType() : Type.NODE);
             newContext.setParent(this);
@@ -113,10 +131,8 @@ public abstract class Step extends AbstractExpression {
      * @return true if the first filter is a positional predicate
      */
     protected boolean checkPositionalFilters(final boolean inPredicate) {
-        if (!inPredicate && this.hasPredicates()) {
-            final List<Predicate> preds = this.getPredicates();
-            final Predicate predicate = preds.get(0);
-            final Expression predExpr = predicate.getFirst();
+        if (!inPredicate && predicates != null) {
+            final Expression predExpr = predicates[0].getFirst();
             // only apply optimization if the static return type is a single number
             // and there are no dependencies on the context item
             if (Type.subTypeOfUnion(predExpr.returnsType(), Type.NUMBER) &&
@@ -152,34 +168,39 @@ public abstract class Step extends AbstractExpression {
         abbreviatedStep = abbrev;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
-     */
-    public void dump(ExpressionDumper dumper) {
-        if (axis != Constants.UNKNOWN_AXIS)
-            {dumper.display( Constants.AXISSPECIFIERS[axis] );}
-        dumper.display( "::" );
-        if ( test != null )
+    @Override
+    public void dump(final ExpressionDumper dumper) {
+        if (axis != Constants.UNKNOWN_AXIS) {
+            dumper.display(Constants.AXISSPECIFIERS[axis]);
+        }
+        dumper.display("::");
+        if (test != null) {
             //TODO : toString() or... dump ?
-            {dumper.display( test.toString() );}
-        else
-            {dumper.display( "node()" );}
-        if ( predicates.size() > 0 )
+            dumper.display(test.toString());
+        } else  {
+            dumper.display( "node()" );
+        }
+
+        if (predicates != null) {
             for (final Predicate pred : predicates) {
                 pred.dump(dumper);
             }
+        }
     }
 
+    @Override
     public String toString() {
         final StringBuilder result = new StringBuilder();
-        if (axis != Constants.UNKNOWN_AXIS)
-            {result.append( Constants.AXISSPECIFIERS[axis] );}
-        result.append( "::" );
-        if (test != null )
-            {result.append( test.toString() );}
-        else
-            {result.append( "node()" );}
-        if (predicates.size() > 0 )
+        if (axis != Constants.UNKNOWN_AXIS) {
+            result.append(Constants.AXISSPECIFIERS[axis]);
+        }
+        result.append("::");
+        if (test != null ) {
+            result.append(test.toString());
+        } else {
+            result.append( "node()" );
+        }
+        if (predicates != null)
             for (final Predicate pred : predicates) {
                 result.append(pred.toString());
             }
@@ -212,13 +233,13 @@ public abstract class Step extends AbstractExpression {
         return test;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.AbstractExpression#resetState()
-     */
-    public void resetState(boolean postOptimization) {
+    @Override
+    public void resetState(final boolean postOptimization) {
         super.resetState(postOptimization);
-        for (final Predicate pred : predicates) {
-            pred.resetState(postOptimization);
+        if (predicates != null) {
+            for (final Predicate pred : predicates) {
+                pred.resetState(postOptimization);
+            }
         }
     }
 }
