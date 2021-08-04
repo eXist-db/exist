@@ -676,7 +676,7 @@ function ser:adaptive-xs-strings-map-params() {
 };
 
 declare
-  %test:assertXPath("contains($result, 'include')")
+    %test:assertXPath("contains($result, 'include')")
 function ser:exist-expand-xinclude-false() {
     let $doc := document{<article xmlns:xi="http://www.w3.org/2001/XInclude">
                             <title>My Title</title>
@@ -687,7 +687,7 @@ function ser:exist-expand-xinclude-false() {
 };
 
 declare
- %test:assertXPath("contains($result, 'comment')")
+    %test:assertXPath("contains($result, 'comment')")
 function ser:exist-expand-xinclude-true() {
     let $doc := document{<article xmlns:xi="http://www.w3.org/2001/XInclude">
                             <title>My Title</title>
