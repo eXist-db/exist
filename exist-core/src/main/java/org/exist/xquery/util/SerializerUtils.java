@@ -215,8 +215,7 @@ public class SerializerUtils {
     public static void getSerializationOptions(final Expression parent, final NodeValue parameters, final Properties properties) throws XPathException {
         try {
             final XMLStreamReader reader = parent.getContext().getXMLStreamReader(parameters);
-            while (reader.hasNext() && (reader.next() != XMLStreamReader.START_ELEMENT)) {
-            }
+            while (reader.hasNext() && (reader.next() != XMLStreamReader.START_ELEMENT)) { }
             if (!Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(reader.getNamespaceURI())) {
                 throw new XPathException(parent, FnModule.SENR0001, "serialization parameter elements should be in the output namespace");
             }
@@ -398,24 +397,27 @@ public class SerializerUtils {
     }
 
     private static void setPropertyForMap(final Properties properties, final ParameterConvention<?> parameterConvention, final Sequence parameterValue) throws XPathException {
-        if(Type.BOOLEAN == parameterConvention.getType()) {
-            // ignore "admit" i.e. "standalone" empty sequence
-            if(!parameterValue.isEmpty()) {
-                if (((BooleanValue) parameterValue.itemAt(0)).getValue()) {
-                    properties.setProperty(parameterConvention.getLocalParameterName(), "yes");
-                } else {
-                    properties.setProperty(parameterConvention.getLocalParameterName(), "no");
-                }
-            }
-        } else if(Type.STRING == parameterConvention.getType()) {
-            // ignore "absent" i.e. empty sequence
-            if(!parameterValue.isEmpty()) {
+        //TODO(YB): have a discussion about DECIMAL TYPE
+        // ignore "admit" i.e. "standalone" empty sequence
+        // ignore "absent" i.e. empty sequence
+        if(parameterValue.isEmpty()) {
+            return;
+        }
+
+        switch (parameterConvention.getType()) {
+            case Type.BOOLEAN:
+                properties.setProperty(
+                        parameterConvention.getLocalParameterName(),
+                        ((BooleanValue) parameterValue.itemAt(0)).getValue() ? "yes" : "no"
+                );
+                break;
+            case Type.STRING:
                 properties.setProperty(parameterConvention.getLocalParameterName(), ((StringValue) parameterValue.itemAt(0)).getStringValue());
-            }
-        } else if(Type.DECIMAL == parameterConvention.getType()) {
-            properties.setProperty(parameterConvention.getLocalParameterName(), ((DecimalValue) parameterValue.itemAt(0)).getStringValue());
-        } else if(Type.QNAME == parameterConvention.getType()) {
-            if(!parameterValue.isEmpty()) {
+                break;
+            case Type.DECIMAL:
+                properties.setProperty(parameterConvention.getLocalParameterName(), ((DecimalValue) parameterValue.itemAt(0)).getStringValue());
+                break;
+            case Type.QNAME:
                 if (Cardinality._MANY.isSuperCardinalityOrEqualOf(parameterConvention.getCardinality())) {
                     final SequenceIterator iterator = parameterValue.iterate();
                     while (iterator.hasNext()) {
@@ -429,12 +431,10 @@ public class SerializerUtils {
                 } else {
                     properties.setProperty(parameterConvention.getLocalParameterName(), ((QNameValue) parameterValue.itemAt(0)).getQName().toURIQualifiedName());
                 }
-            }
-        } else if(Type.MAP == parameterConvention.getType()) {
-            if(!parameterValue.isEmpty()) {
+                break;
+            case Type.MAP:
                 //TODO(AR) implement `use-character-maps`
                 throw new UnsupportedOperationException("Not yet implemented support for the map serialization parameter: " + parameterConvention.getLocalParameterName());
-            }
         }
     }
 
