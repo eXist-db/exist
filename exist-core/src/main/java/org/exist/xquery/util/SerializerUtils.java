@@ -156,7 +156,9 @@ public class SerializerUtils {
      * for Exist xquery specific functions
      */
     public enum ExistParameterConvention implements ParameterConvention<QName> {
-        EXPAND_XINCLUDE("expand-xincludes", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE);
+        EXPAND_XINCLUDE("expand-xincludes", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
+        ADD_EXIST_ID("add-exist-id", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none"));
+
 
         private final QName parameterName;
         private final int type;
