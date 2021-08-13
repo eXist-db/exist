@@ -696,3 +696,25 @@ function ser:exist-expand-xinclude-true() {
     return
         fn:serialize($doc, map {  xs:QName("exist:expand-xincludes"): true() })
 };
+
+declare
+    %test:assertXPath("contains($result, 'true')")
+function ser:exist-add-exist-id-all() {
+    let $doc := doc($ser:collection || "/test.xml")
+    return fn:serialize($doc, map { xs:QName("exist:add-exist-id"): "all" }) eq '<?pi?><elem xmlns:exist="http://exist.sourceforge.net/NS/exist" exist:id="2" exist:source="test.xml" a="abc"><!--comment--><b exist:id="2.3">123</b></elem>'
+};
+
+declare
+    %test:assertXPath("contains($result, 'true')")
+function ser:exist-add-exist-id-element() {
+    let $doc := doc($ser:collection || "/test.xml")
+    return fn:serialize($doc, map { xs:QName("exist:add-exist-id"): "element" })  eq '<?pi?><elem xmlns:exist="http://exist.sourceforge.net/NS/exist" exist:id="2" exist:source="test.xml" a="abc"><!--comment--><b>123</b></elem>'
+};
+
+declare
+     %test:assertXPath("not(contains($result, 'exist:id'))")
+function ser:exist-add-exist-id-none() {
+    let $doc := doc($ser:collection || "/test.xml")
+    return fn:serialize($doc, map { xs:QName("exist:add-exist-id"): "none" })
+};
+
