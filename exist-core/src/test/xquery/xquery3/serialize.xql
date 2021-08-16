@@ -718,3 +718,13 @@ function ser:exist-add-exist-id-none() {
     return fn:serialize($doc, map { xs:QName("exist:add-exist-id"): "none" })
 };
 
+declare
+    %test:assertXPath("contains($result, 'true')")
+function ser:exist-jsonp() {
+      let $node := <book>
+          <author>John Doe</author>
+          <author>Robert Smith</author>
+      </book>
+    return fn:serialize($node, map {"method":"json", "media-type":"application/json", xs:QName("exist:jsonp"):"functionName"}) eq 'functionName({"author":["John Doe","Robert Smith"]})'
+};
+
