@@ -158,6 +158,7 @@ public class SerializerUtils {
     public enum ExistParameterConvention implements ParameterConvention<QName> {
         EXPAND_XINCLUDE("expand-xincludes", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
         HIGHLIGHT_MATCHES("highlight-matches", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none")),
+        JSONP("jsonp", Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),
         ADD_EXIST_ID("add-exist-id", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none"));
 
 
@@ -218,7 +219,9 @@ public class SerializerUtils {
     public static void getSerializationOptions(final Expression parent, final NodeValue parameters, final Properties properties) throws XPathException {
         try {
             final XMLStreamReader reader = parent.getContext().getXMLStreamReader(parameters);
-            while (reader.hasNext() && (reader.next() != XMLStreamReader.START_ELEMENT)) { }
+            while (reader.hasNext() && (reader.next() != XMLStreamReader.START_ELEMENT)) {
+                //
+            }
             if (!Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(reader.getNamespaceURI())) {
                 throw new XPathException(parent, FnModule.SENR0001, "serialization parameter elements should be in the output namespace");
             }
@@ -400,9 +403,7 @@ public class SerializerUtils {
     }
 
     private static void setPropertyForMap(final Properties properties, final ParameterConvention<?> parameterConvention, final Sequence parameterValue) throws XPathException {
-        //TODO(YB): have a discussion about DECIMAL TYPE
-        // ignore "admit" i.e. "standalone" empty sequence
-        // ignore "absent" i.e. empty sequence
+        // ignore "absent","admit" i.e. "standalone" empty sequence
         if(parameterValue.isEmpty()) {
             return;
         }
