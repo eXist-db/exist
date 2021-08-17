@@ -42,19 +42,39 @@ function mlt:wildcard_lookup_on_map() {
 declare
     %test:assertEquals("Tom", "Dick", "Harry")
 function mlt:postfix_lookup_on_maps() {
-    (map {"first": "Tom"}, map {"first": "Dick"}, map {"first": "Harry"})?first
+    (
+        map {"first": "Tom"},
+        map {"first": "Dick"},
+        map {"first": "Harry"}
+    )?first
 };
 
 declare
-%test:assertEquals( "null", "null")
-function mlt:null_lookup(){
-    let $serializationParams := <output:serialization-parameters> <output:method>json</output:method> </output:serialization-parameters>
+    %test:assertEquals("null", "null")
+function mlt:null_lookup() {
+    let $serializationParams :=
+        <output:serialization-parameters>
+            <output:method>json</output:method>
+        </output:serialization-parameters>
 
-    let $json1 := parse-json( '{"total":[{"data":null}]}' )
+    let $json1 := parse-json('{"total":[{"data":null}]}')
     let $test1 := $json1?total?*?foobar
 
-    let $json2 := parse-json( '{"total":[{"data":null}]}' )
+    let $json2 := parse-json('{"total":[{"data":null}]}')
     let $test2 :=  $json2?total?*?foobar?aaa
 
-    return ( serialize($test1, $serializationParams) , serialize($test2, $serializationParams) )
+    return (
+        serialize($test1, $serializationParams),
+        serialize($test2, $serializationParams)
+    )
+};
+
+declare
+    %test:assertEquals("err:XPDY0002", "1", "1")
+function mlt:wildcard-lookup-without-context () {
+    try {
+        util:eval("?noctx", false(), (), true())
+    } catch * {
+        xs:string($err:code), $err:line-number, $err:column-number
+    }
 };
