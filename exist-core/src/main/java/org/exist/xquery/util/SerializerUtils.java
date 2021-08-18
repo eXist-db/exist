@@ -157,6 +157,8 @@ public class SerializerUtils {
      */
     public enum ExistParameterConvention implements ParameterConvention<QName> {
         EXPAND_XINCLUDE("expand-xincludes", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
+        PROCESS_XSL_PI("process-xsl-pi", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
+        JSON_IGNORE_WHITE_SPACE_TEXT_NODES("json-ignore-whitespace-text-nodes", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
         HIGHLIGHT_MATCHES("highlight-matches", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none")),
         JSONP("jsonp", Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),
         ADD_EXIST_ID("add-exist-id", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none"));
@@ -222,6 +224,7 @@ public class SerializerUtils {
             while (reader.hasNext() && (reader.next() != XMLStreamReader.START_ELEMENT)) {
                 //
             }
+
             if (!Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(reader.getNamespaceURI())) {
                 throw new XPathException(parent, FnModule.SENR0001, "serialization parameter elements should be in the output namespace");
             }
