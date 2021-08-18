@@ -103,6 +103,18 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <atomic:idrefs atomic:attr="id1 id2">id1 id2</atomic:idrefs>
     </atomic:root>;
 
+
+declare variable $ser:test-xsl := document {
+    <?xml-stylesheet href="xmldb:exist://db/serialization-test/test.xsl" type="text/xsl"?>,
+    <elem a="abc"><!--comment--><b>123</b></elem>
+};
+
+declare variable $ser:xsl := document {
+    <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="3.0">
+    <xsl:template match="b">processed</xsl:template>
+    </xsl:stylesheet>
+};
+
 declare variable $ser:test-xml := document {
     <?pi?>,
     <elem a="abc"><!--comment--><b>123</b></elem>
@@ -116,7 +128,9 @@ declare
     %test:setUp
 function ser:setup() {
     xmldb:create-collection("/db", $ser:collection-name),
-    xmldb:store($ser:collection, "test.xml", $ser:test-xml)
+    xmldb:store($ser:collection, "test.xml", $ser:test-xml),
+    xmldb:store($ser:collection, "test-xsl.xml", $ser:test-xsl),
+    xmldb:store($ser:collection, "test.xsl", $ser:xsl)
 };
 
 declare
@@ -728,3 +742,33 @@ function ser:exist-jsonp() {
     return fn:serialize($node, map {"method":"json", "media-type":"application/json", xs:QName("exist:jsonp"):"functionName"}) eq 'functionName({"author":["John Doe","Robert Smith"]})'
 };
 
+
+declare
+    %test:assertXPath("contains($result, 'null')")
+function ser:exist-json-ignore-whitespace-text-nodes-false() {
+      let $node := <book>
+          <author>John Doe</author>
+          <author>Robert Smith</author>
+          <author>  </author>
+      </book>
+    return fn:serialize($node, map {"method":"json", "media-type":"application/json", xs:QName("exist:json-ignore-whitespace-text-nodes"): false()})
+};
+
+declare
+    %test:assertXPath("contains($result, 'true')")
+function ser:exist-json-ignore-whitespace-text-nodes-true() {
+    let $node := <a z='99'>
+                <b x='1'/>
+                <b x='2'></b>
+                <b x='3'>stuff</b>
+                <b>           </b>
+               </a>
+    return fn:serialize($node, map {"method":"json", "media-type":"application/json", xs:QName("exist:json-ignore-whitespace-text-nodes"): false()})
+};
+
+declare
+    %test:assertXPath("contains($result, 'true')")
+function ser:exist-process-xsl-pi-true() {
+    let $doc := doc($ser:collection || "/test-xsl.xml")
+    return fn:serialize($doc, map {xs:QName("exist:process-xsl-pi"): true()})
+};
