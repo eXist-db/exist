@@ -709,7 +709,7 @@ public abstract class Serializer implements XMLReader {
 	 *
 	 * @throws TransformerConfigurationException if the stylesheet cannot be set
 	 */
-	public void setStylesheet(DocumentImpl doc, String stylesheet) throws TransformerConfigurationException {
+	public void setStylesheet(Document doc, String stylesheet) throws TransformerConfigurationException {
 		if (stylesheet == null) {
 			templates = null;
 			return;
@@ -739,8 +739,8 @@ public abstract class Serializer implements XMLReader {
         } else {
             // if stylesheet is relative, add path to the
             // current collection and normalize
-            if(doc != null) {
-                stylesheetUri = doc.getCollection().getURI().resolveCollectionPath(stylesheetUri).normalizeCollectionPath();
+            if(doc != null && doc instanceof DocumentImpl) {
+                stylesheetUri = ((DocumentImpl)doc).getCollection().getURI().resolveCollectionPath(stylesheetUri).normalizeCollectionPath();
             }
 
             // load stylesheet from eXist
@@ -1087,9 +1087,33 @@ public abstract class Serializer implements XMLReader {
 		}
         setDocument(null);
 		if(n.getNodeType() == Node.DOCUMENT_NODE) {
-			setXQueryContext(((org.exist.dom.memtree.DocumentImpl)n).getContext());
+			final org.exist.dom.memtree.DocumentImpl doc = (org.exist.dom.memtree.DocumentImpl)n;
+			setXQueryContext(doc.getContext());
+			//TODO set XSL //code from set Stlyesheet XSL_PI
+			if ("yes".equals(outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no"))) {
+				final String stylesheet = hasXSLPi(doc);
+				if (stylesheet != null)
+					try {
+						setStylesheet(doc, stylesheet);
+					} catch (final TransformerConfigurationException e) {
+						throw new SAXException(e.getMessage(), e);
+					}
+			}
+			try {
+				setStylesheetFromProperties(doc);
+			} catch (final TransformerConfigurationException e) {
+				throw new SAXException(e.getMessage(), e);
+			}
+			setXSLHandler(null, true);
 		} else {
 			setXQueryContext(n.getOwnerDocument().getContext());
+			//TODO unSet XSL code from
+			try {
+				setStylesheetFromProperties(null);
+			} catch (final TransformerConfigurationException e) {
+				throw new SAXException(e.getMessage(), e);
+			}
+			setXSLHandler(null, false);
 		}
         n.streamTo(this, receiver);
 		if (generateDocEvents) {
