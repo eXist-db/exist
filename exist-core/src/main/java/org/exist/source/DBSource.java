@@ -171,7 +171,10 @@ public class DBSource extends AbstractSource {
     @Deprecated
     public void validate(final int mode) throws PermissionDeniedException {
         //TODO(AR) This check should not even be here! Its up to the database to refuse access not requesting source
-        validate(broker.getCurrentSubject(), mode);
+        final Subject subject = broker.getCurrentSubject();
+        if (subject != null) {
+            doValidation(subject, mode);
+        }
     }
 
     /**
@@ -187,12 +190,21 @@ public class DBSource extends AbstractSource {
     @Deprecated
     public void validate(final Subject subject, final int mode) throws PermissionDeniedException {
         //TODO(AR) This check should not even be here! Its up to the database to refuse access not requesting source
+        if (subject == null) {
+            final String modeStr = new UnixStylePermissionAider(mode).toString();
+            throw new PermissionDeniedException("Subject not given for checking  '" + modeStr + "' access to resource '" + doc.getURI() + "'.");
+        } else {
+            doValidation(subject, mode);
+        }
+    }
+
+    private void doValidation(final Subject subject, final int mode) throws PermissionDeniedException {
         if (!doc.getPermissions().validate(subject, mode)) {
             final String modeStr = new UnixStylePermissionAider(mode).toString();
             throw new PermissionDeniedException("Subject '" + subject.getName() + "' does not have '" + modeStr + "' access to resource '" + doc.getURI() + "'.");
         }
     }
-    
+
     public Permission getPermissions() {
         return doc.getPermissions();
     }
