@@ -75,7 +75,10 @@ public class Lookup extends AbstractExpression {
             contextSequence = contextItem.toSequence();
         }
         Sequence leftSeq;
-        if (contextExpression == null) {
+        if (contextExpression == null && contextSequence == null) {
+            throw new XPathException(this, ErrorCodes.XPDY0002,
+                    "Lookup has nothing to select, the context item is absent");
+        } else if (contextExpression == null) {
             leftSeq = contextSequence;
         } else {
             leftSeq = contextExpression.eval(contextSequence);
