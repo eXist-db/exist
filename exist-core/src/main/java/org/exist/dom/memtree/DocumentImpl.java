@@ -332,7 +332,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         }
         if((nodeNum > 0) && !(nodeKind[nodeNum] == Node.ELEMENT_NODE || nodeKind[nodeNum] == NodeImpl.NAMESPACE_NODE)) {
             throw (new DOMException(DOMException.INUSE_ATTRIBUTE_ERR,
-                "err:XQTY0024: An attribute node cannot follow a node that is not an attribute node."));
+                "err:XQTY0024: An attribute node cannot follow a node that is not an element or namespace node."));
         }
         int prevAttr = nextAttr - 1;
         int attrN;
