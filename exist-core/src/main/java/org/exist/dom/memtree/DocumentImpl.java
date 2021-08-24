@@ -1377,12 +1377,19 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public NodeList getChildNodes() {
-        final NodeListImpl nl = new NodeListImpl(getChildCount());
-        final Element el = getDocumentElement();
-        if(el != null) {
-            nl.add(el);
+        if (size == 1) {
+            return new NodeListImpl(0);
         }
-        return nl;
+
+        final NodeListImpl children = new NodeListImpl(1);  // most likely a single element!
+        int nextChildNodeNum = 1;
+        while (nextChildNodeNum > 0) {
+            final NodeImpl child = getNode(nextChildNodeNum);
+            children.add(child);
+            nextChildNodeNum = next[nextChildNodeNum];
+        }
+
+        return children;
     }
 
     @Override
