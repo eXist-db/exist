@@ -46,6 +46,8 @@ import com.evolvedbinary.j8fu.lazy.LazyVal;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
+import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.memtree.ReferenceNode;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.ProcessingInstructionImpl;
@@ -1137,25 +1139,38 @@ public abstract class Serializer implements XMLReader {
      * @param doc the document
      * @return link to the stylesheet
      */
-	public String hasXSLPi(Document doc) {
-        boolean applyXSLPI = 
-            outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no").equalsIgnoreCase("yes");
-        if (!applyXSLPI) {return null;}
-        
-		final NodeList docChildren = doc.getChildNodes();
-		Node node;
-		String xsl, type, href;
-		for (int i = 0; i < docChildren.getLength(); i++) {
-			node = docChildren.item(i);
+	public String hasXSLPi(final Document doc) {
+        final boolean applyXSLPI = outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no").equalsIgnoreCase("yes");
+        if (!applyXSLPI) {
+            return null;
+        }
+
+		NodeList docChildren = doc.getChildNodes();
+        if (docChildren.getLength() == 1) {
+            final Node onlyChild = docChildren.item(0);
+			if (onlyChild.getNodeType() == NodeImpl.REFERENCE_NODE) {
+			    // if this is a reference to a persistent document node then we must expand it
+				final NodeProxy nodeProxy = ((ReferenceNode) onlyChild).getReference();
+				if (nodeProxy.getNodeType() == Node.DOCUMENT_NODE) {
+					// switch docChildren to the children of the dereferencedNode
+					final Node dereferencedNode = nodeProxy.getNode();
+					docChildren = dereferencedNode.getChildNodes();
+				}
+			}
+		}
+
+        for (int i = 0; i < docChildren.getLength(); i++) {
+			final Node node = docChildren.item(i);
 			if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
 				&& "xml-stylesheet".equals(((ProcessingInstruction)node).getTarget())) {
 				// found <?xml-stylesheet?>
-				xsl = ((ProcessingInstruction) node).getData();
-				type = XMLUtil.parseValue(xsl, "type");
-				if(type != null && (type.equals(MimeType.XML_TYPE.getName()) || type.equals(MimeType.XSL_TYPE.getName()) || type.equals(MimeType.XSLT_TYPE.getName()))) {
-					href = XMLUtil.parseValue(xsl, "href");
-					if (href == null)
-						{continue;}
+				final String xsl = ((ProcessingInstruction) node).getData();
+				final String type = XMLUtil.parseValue(xsl, "type");
+				if (type != null && (type.equals(MimeType.XML_TYPE.getName()) || type.equals(MimeType.XSL_TYPE.getName()) || type.equals(MimeType.XSLT_TYPE.getName()))) {
+					final String href = XMLUtil.parseValue(xsl, "href");
+					if (href == null) {
+					    continue;
+					}
 					return href;
 				}
 			}
