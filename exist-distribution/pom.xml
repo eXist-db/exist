@@ -1016,7 +1016,7 @@
             <plugin>
                 <groupId>com.evolvedbinary.appbundler</groupId>
                 <artifactId>appbundler-maven-plugin</artifactId>
-                <version>1.0.7</version>
+                <version>1.1.0</version>
                 <executions>
                     <execution>
                         <id>exist-db-mac-app</id>
