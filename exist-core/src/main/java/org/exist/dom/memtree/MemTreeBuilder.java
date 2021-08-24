@@ -156,9 +156,8 @@ public class MemTreeBuilder {
             for(int i = 0; i < attributes.getLength(); i++) {
                 final String attrQName = attributes.getQName(i);
 
-                // skip xmlns-attributes and attributes in eXist's namespace
+                // skip xmlns-attributes
                 if(!(attrQName.startsWith(XMLConstants.XMLNS_ATTRIBUTE))) {
-//                  || attrNS.equals(Namespaces.EXIST_NS))) {
                     final int p = attrQName.indexOf(':');
                     final String attrNS = attributes.getURI(i);
                     final String attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
