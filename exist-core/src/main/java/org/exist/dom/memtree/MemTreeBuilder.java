@@ -161,7 +161,13 @@ public class MemTreeBuilder {
                     final int p = attrQName.indexOf(':');
                     final String attrNS = attributes.getURI(i);
                     final String attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
-                    final String attrLocalName = attributes.getLocalName(i);
+
+                    String attrLocalName = attributes.getLocalName(i);
+                    if (p == Constants.STRING_NOT_FOUND && attrLocalName.isEmpty()) {
+                        // NOTE: Attributes#getLocalName(int) can return empty string if namespace processing is not enabled
+                        attrLocalName = attrQName;
+                    }
+
                     final QName attrQn = new QName(attrLocalName, attrNS, attrPrefix);
                     final int type = getAttribType(attrQn, attributes.getType(i));
                     doc.addAttribute(nodeNr, attrQn, attributes.getValue(i), type);
