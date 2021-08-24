@@ -56,11 +56,35 @@ import static org.exist.dom.QName.Validity.ILLEGAL_FORMAT;
 /**
  * An in-memory implementation of Document.
  *
+ * Nodes are stored in a series of arrays which are all indexed by the {@code nodeNum} (Node Number).
+ * Nodes are stored into the arrays in a Depth First Preorder (Root, Left, Right) Traversal.
+ * The {@code nodeNum} starts at 0, the array {@link #nodeKind} indicates the type of the Node.
+ * For example, for a complete XML Document, when {@code nodeNum == 0}, then {@code nodeKind[nodeNum] == org.w3c.dom.Node.DOCUMENT_NODE}.
+ *
+ * The array {@link #treeLevel} indicates at what level in the tree the node appears, the root of the tree is 0.
+ * For example, for a complete XML Document, when {@code nodeNum == 0}, then {@code treeLevel[nodeNum] == 0}.
+ *
+ * The array {@link #next} gives the {@code nodeNum} of the next node in the tree,
+ * for example {@code int nextNodeNum = next[nodeNum]}.
+ *
+ * The following arrays hold the data of the nodes themselves:
+ *  * {@link #namespaceParent}
+ *  * {@link #namespaceCode}
+ *  * {@link #nodeName}
+ *  * {@link #alpha}
+ *  * {@link #alphaLen}
+ *  * {@link #characters}
+ *  * {@link #nodeId}
+ *  * {@link #attrName}
+ *  * {@link #attrType}
+ *  * {@link #attrNodeId}
+ *  * {@link #attrParent}
+ *  * {@link #attrValue}
+ *  * {@link #references}
+ *
  * This implementation stores all node data in the document object. Nodes from another document, i.e. a persistent document in the database, can be
  * stored as reference nodes, i.e. the nodes are not copied into this document object. Instead a reference is inserted which will only be expanded
  * during serialization.
- *
- * @author wolf
  */
 public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
@@ -1360,6 +1384,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         return context.storeTemporaryDoc(this);
     }
 
+    // this is DOM specific
     public int getChildCount() {
         int count = 0;
         int top = (size > 1) ? 1 : -1;
