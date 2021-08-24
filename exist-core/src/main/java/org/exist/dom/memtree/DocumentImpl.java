@@ -616,6 +616,15 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     }
 
     public int getFirstChildFor(final int nodeNumber) {
+        if (nodeNumber == 0) {
+            // optimisation for document-node
+            if (size > 1) {
+                return 1;
+            } else {
+                return -1;
+            }
+        }
+
         final short level = treeLevel[nodeNumber];
         final int nextNode = nodeNumber + 1;
         if((nextNode < size) && (treeLevel[nextNode] > level)) {
