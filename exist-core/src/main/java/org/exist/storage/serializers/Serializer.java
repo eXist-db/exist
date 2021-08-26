@@ -808,22 +808,32 @@ public abstract class Serializer implements XMLReader {
 			final SAXResult result = new SAXResult();
 			boolean processXInclude =
 				"yes".equals(getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes"));
-			ReceiverToSAX filter;
+
+			final ReceiverToSAX filter;
 			if (processXInclude) {
-				filter = (ReceiverToSAX)xinclude.getReceiver();
+				final Receiver xincludeReceiver = xinclude.getReceiver();
+				if (xincludeReceiver != null && xincludeReceiver instanceof SAXSerializer) {
+					filter = new ReceiverToSAX((SAXSerializer) xincludeReceiver);
+				} else {
+					filter = (ReceiverToSAX) xincludeReceiver;
+				}
 			} else {
 				filter = (ReceiverToSAX) receiver;
 			}
+
 			result.setHandler(filter.getContentHandler());
 			result.setLexicalHandler(filter.getLexicalHandler());
+
 			filter.setLexicalHandler(xslHandler);
 			filter.setContentHandler(xslHandler);
+
 			xslHandler.setResult(result);
 			if (processXInclude) {
 				xinclude.setReceiver(new ReceiverToSAX(xslHandler));
 				receiver = xinclude;
-			} else
-				{receiver = new ReceiverToSAX(xslHandler);}
+			} else {
+				receiver = new ReceiverToSAX(xslHandler);
+			}
 		}
         if (root != null && getHighlightingMode() != TAG_NONE) {
             final IndexController controller = broker.getIndexController();
