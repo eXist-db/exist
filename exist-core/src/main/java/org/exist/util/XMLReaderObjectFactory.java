@@ -25,8 +25,9 @@ import javax.annotation.Nullable;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.commons.pool.BasePoolableObjectFactory;
-
+import org.apache.commons.pool2.BasePooledObjectFactory;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -45,7 +46,7 @@ import java.util.Map;
  * Factory to create new XMLReader objects on demand.
  * The factory is used by {@link org.exist.util.XMLReaderPool}.
  */
-public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader> implements BrokerPoolService {
+public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> implements BrokerPoolService {
 
     private static final Logger LOG = LogManager.getLogger(XMLReaderObjectFactory.class);
 
@@ -93,7 +94,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
     }
 
     @Override
-    public XMLReader makeObject() throws Exception {
+    public XMLReader create() throws Exception {
         final SAXParser saxParser = saxParserFactory.newSAXParser();
         final XMLReader xmlReader = saxParser.getXMLReader();
 
@@ -103,7 +104,13 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
     }
 
     @Override
-    public void activateObject(final XMLReader xmlReader) {
+    public PooledObject<XMLReader> wrap(final XMLReader value) {
+        return new DefaultPooledObject<>(value);
+    }
+
+    @Override
+    public void activateObject(final PooledObject<XMLReader> pooledXmlReader) {
+        final XMLReader xmlReader = pooledXmlReader.getObject();
 
         if (validation.maybe()) {
             // Only need to set Grammar Cache if we are validating
@@ -124,7 +131,9 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
     }
 
     @Override
-    public void passivateObject(final XMLReader xmlReader) throws Exception {
+    public void passivateObject(final PooledObject<XMLReader> pooledXmlReader) throws Exception {
+        final XMLReader xmlReader = pooledXmlReader.getObject();
+
         xmlReader.setContentHandler(null);
         xmlReader.setErrorHandler(null);
         xmlReader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, null);

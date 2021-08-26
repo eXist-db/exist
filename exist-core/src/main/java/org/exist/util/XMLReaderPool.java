@@ -22,8 +22,9 @@
 package org.exist.util;
 
 import net.jcip.annotations.ThreadSafe;
-import org.apache.commons.pool.PoolableObjectFactory;
-import org.apache.commons.pool.impl.StackObjectPool;
+import org.apache.commons.pool2.PooledObjectFactory;
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolService;
 import org.xml.sax.XMLReader;
@@ -34,17 +35,24 @@ import org.xml.sax.XMLReader;
  * The pool is available through {@link BrokerPool#getParserPool()}.
  */
 @ThreadSafe
-public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerPoolService {
+public class XMLReaderPool extends GenericObjectPool<XMLReader> implements BrokerPoolService {
 
     /**
      * Constructs an XML Reader Pool.
      *
      * @param factory the XMLReader object factory
      * @param maxIdle the maximum number of idle instances in the pool
-     * @param initSize initial size of the pool (this specifies the size of the container, it does not cause the pool to be pre-populated.)
+     * @param initSize initial size of the pool (this specifies the size of the container, it does not cause the pool to be pre-populated.) (unused)
      */
-    public XMLReaderPool(final PoolableObjectFactory<XMLReader> factory, final int maxIdle, final int initSize) {
-        super(factory, maxIdle, initSize);
+    public XMLReaderPool(final PooledObjectFactory<XMLReader> factory, final int maxIdle, @Deprecated final int initSize) {
+        super(factory, toConfig(maxIdle));
+    }
+
+    private static GenericObjectPoolConfig toConfig(final int maxIdle) {
+        final GenericObjectPoolConfig<Object> config = new GenericObjectPoolConfig<>();
+        config.setLifo(true);
+        config.setMaxIdle(maxIdle);
+        return config;
     }
 
     @Override
@@ -75,7 +83,7 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
     }
 
     @Override
-    public void returnObject(final XMLReader obj) throws Exception {
+    public void returnObject(final XMLReader obj) {
         returnXMLReader(obj);
     }
 
