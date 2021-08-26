@@ -782,6 +782,11 @@ public abstract class Serializer implements XMLReader {
 		LOG.debug("compiling stylesheet took {}", System.currentTimeMillis() - start);
         if(templates != null) {
         	xslHandler = factory.get().newTransformerHandler(templates);
+			try {
+				xslHandler.startDocument();
+			} catch (final SAXException e) {
+				throw new TransformerConfigurationException(e.getMessage(), e);
+			}
         }
 //			xslHandler.getTransformer().setOutputProperties(outputProperties);
         checkStylesheetParams();
