@@ -21,52 +21,42 @@
  */
 package org.exist.util.serializer;
 
+import net.jcip.annotations.ThreadSafe;
 import org.apache.commons.pool.KeyedPoolableObjectFactory;
 import org.apache.commons.pool.impl.StackKeyedObjectPool;
-import org.exist.storage.serializers.Serializer;
 
-/**
- * @author wolf
- *
- */
-public class SerializerPool extends StackKeyedObjectPool {
+@ThreadSafe
+public class SerializerPool extends StackKeyedObjectPool<Class<?>, Object> {
 
-    private final static SerializerPool instance = new SerializerPool(new SerializerObjectFactory(), 10, 1);
-    
-    public final static SerializerPool getInstance() {
+    private static final SerializerPool instance = new SerializerPool(new SerializerObjectFactory(), 10, 1);
+
+    public static SerializerPool getInstance() {
         return instance;
     }
-    
+
     /**
      * @param factory the object factory
-     * @param max the maximum size of the pool
-     * @param init the initial size of the pool
+     * @param max     the maximum size of the pool
+     * @param init    the initial size of the pool
      */
-    public SerializerPool(KeyedPoolableObjectFactory factory, int max, int init) {
+    public SerializerPool(final KeyedPoolableObjectFactory<Class<?>, Object> factory, final int max, final int init) {
         super(factory, max, init);
     }
-    
-    public synchronized Object borrowObject(Object key) {
+
+    @Override
+    public Object borrowObject(final Class<?> key) {
         try {
             return super.borrowObject(key);
         } catch (final Exception e) {
             throw new IllegalStateException("Error while creating serializer: " + e.getMessage());
         }
     }
-    
-    public DOMStreamer borrowDOMStreamer(Serializer delegate) {
-        try {
-            final ExtendedDOMStreamer serializer = (ExtendedDOMStreamer)borrowObject(DOMStreamer.class);
-            serializer.setSerializer(delegate);
-            return serializer;
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
+
+    public void returnObject(final Object obj) {
+        if (obj == null) {
+            return;
         }
-    }
-    
-    public synchronized void returnObject(Object obj) {
-        if (obj == null)
-            {return;}
+
         try {
             super.returnObject(obj.getClass(), obj);
         } catch (final Exception e) {
