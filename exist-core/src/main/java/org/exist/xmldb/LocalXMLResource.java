@@ -394,10 +394,13 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
             try {
                 final String option = collection.getProperty(Serializer.GENERATE_DOC_EVENTS, "false");
                 final DOMStreamer streamer = (DOMStreamer) SerializerPool.getInstance().borrowObject(DOMStreamer.class);
-                streamer.setContentHandler(handler);
-                streamer.setLexicalHandler(lexicalHandler);
-                streamer.serialize(root, option.equalsIgnoreCase("true"));
-                SerializerPool.getInstance().returnObject(streamer);
+                try {
+                    streamer.setContentHandler(handler);
+                    streamer.setLexicalHandler(lexicalHandler);
+                    streamer.serialize(root, option.equalsIgnoreCase("true"));
+                } finally {
+                    SerializerPool.getInstance().returnObject(streamer);
+                }
             } catch (final Exception e) {
                 throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
             }
