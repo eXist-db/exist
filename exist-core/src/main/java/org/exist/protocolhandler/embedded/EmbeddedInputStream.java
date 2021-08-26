@@ -123,8 +123,11 @@ public class EmbeddedInputStream extends InputStream {
                     } else {
                         final DocumentImpl resource = lockedResource.getDocument();
                         if (resource.getResourceType() == DocumentImpl.XML_FILE) {
-                            final Serializer serializer = broker.getSerializer();
-                            serializer.reset();
+
+//                            final Serializer serializer = broker.getSerializer();
+//                            serializer.reset();
+                            // TODO(AR) broker's serializer may already be in the process of serializing a document when this is called (e.g. XSL Processing Instruction), switch Broker to have a Pool of Serializer and remove its newSerializer method in favour of borrowing!
+                            final Serializer serializer = broker.newSerializer();
 
                             // Preserve doctype
                             serializer.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
