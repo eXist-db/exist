@@ -1152,8 +1152,8 @@ public class MutableCollection implements Collection {
         storeXMLInternal(transaction, broker, info, storeInfo -> {
             final CollectionConfiguration colconf = storeInfo.getDocument().getCollection().getConfiguration(broker);
             final XMLReader reader = getReader(broker, false, colconf);
-            storeInfo.setReader(reader, null);
             try {
+                storeInfo.setReader(reader, null);
                 reader.parse(new InputSource(new StringReader(data)));
             } catch(final IOException e) {
                 throw new EXistException(e);

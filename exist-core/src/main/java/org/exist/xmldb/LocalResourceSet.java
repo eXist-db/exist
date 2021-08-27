@@ -158,10 +158,11 @@ public class LocalResourceSet extends AbstractLocal implements ResourceSet {
 
                 final Resource res = new LocalXMLResource(user, brokerPool, collection, XmldbURI.EMPTY_URI);
                 res.setContent(writer.toString());
-                SerializerPool.getInstance().returnObject(handler);
                 return res;
             }  catch (final SAXException e) {
                 throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "serialization error", e);
+            } finally {
+                SerializerPool.getInstance().returnObject(handler);
             }
         });
     }

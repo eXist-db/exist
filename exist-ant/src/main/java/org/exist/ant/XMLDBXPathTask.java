@@ -178,9 +178,9 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
             try(final Writer writer = getWriter(resource, dest)) {
                 serializer.setOutput(writer, outputProperties);
                 resource.getContentAsSAX(serializer);
+            } finally {
+                SerializerPool.getInstance().returnObject(serializer);
             }
-
-            SerializerPool.getInstance().returnObject(serializer);
 
         } else {
             final String msg = "Destination target does not exist.";

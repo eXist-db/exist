@@ -241,21 +241,25 @@ public class XSLTServlet extends HttpServlet {
                 } else {
                     final SAXToReceiver saxreceiver = new SAXToReceiver(receiver);
                     final XMLReader reader = pool.getParserPool().borrowXMLReader();
-                    reader.setContentHandler(saxreceiver);
-
-                    //Handle gziped input stream
-                    InputStream stream;
-
-                    InputStream inStream = new BufferedInputStream(request.getInputStream());
-                    inStream.mark(10);
                     try {
-                        stream = new GZIPInputStream(inStream);
-                    } catch (final IOException e) {
-                        inStream.reset();
-                        stream = inStream;
-                    }
+                        reader.setContentHandler(saxreceiver);
 
-                    reader.parse(new InputSource(stream));
+                        //Handle gziped input stream
+                        InputStream stream;
+
+                        InputStream inStream = new BufferedInputStream(request.getInputStream());
+                        inStream.mark(10);
+                        try {
+                            stream = new GZIPInputStream(inStream);
+                        } catch (final IOException e) {
+                            inStream.reset();
+                            stream = inStream;
+                        }
+
+                        reader.parse(new InputSource(stream));
+                    } finally {
+                        pool.getParserPool().returnXMLReader(reader);
+                    }
                 }
 
             } catch (final SAXParseException e) {
