@@ -21,6 +21,7 @@
  */
 package org.exist.util;
 
+import javax.annotation.Nullable;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -113,12 +114,12 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
      * @throws ParserConfigurationException if the parser cannot be configured
      * @throws SAXException if an exception occurs with the parser
      */
-    public static XMLReader createXmlReader(VALIDATION_SETTING validation, GrammarPool grammarPool,
-            eXistXMLCatalogResolver resolver) throws ParserConfigurationException, SAXException {
+    public static XMLReader createXmlReader(final VALIDATION_SETTING validation, final GrammarPool grammarPool,
+            final eXistXMLCatalogResolver resolver) throws ParserConfigurationException, SAXException {
 
         // Create a xmlreader
         final SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
-        
+
         if (validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED){
             saxFactory.setValidating(true);
         } else {
@@ -149,17 +150,20 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
      *
      * @return the validation setting
      */
-    public static VALIDATION_SETTING convertValidationMode(String option) {
+    public static VALIDATION_SETTING convertValidationMode(final @Nullable String option) {
         VALIDATION_SETTING mode = VALIDATION_SETTING.AUTO;
         if (option != null) {
-            if ("true".equals(option) || "yes".equals(option)) {
-                mode = VALIDATION_SETTING.ENABLED;
-
-            } else if ("auto".equals(option)) {
+            if ("auto".equalsIgnoreCase(option)) {
                 mode = VALIDATION_SETTING.AUTO;
 
-            } else {
+            } else if ("true".equalsIgnoreCase(option) || "yes".equalsIgnoreCase(option)) {
+                mode = VALIDATION_SETTING.ENABLED;
+
+            } else if ("false".equalsIgnoreCase(option) || "no".equalsIgnoreCase(option)) {
                 mode = VALIDATION_SETTING.DISABLED;
+
+            } else {
+                mode = VALIDATION_SETTING.UNKNOWN;
             }
         }
         return mode;
@@ -171,14 +175,15 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
      * @param validation the validation setting
      * @param xmlReader the reader
      */
-    public static void setReaderValidationMode(VALIDATION_SETTING validation, XMLReader xmlReader) {
+    public static void setReaderValidationMode(final VALIDATION_SETTING validation, final XMLReader xmlReader) {
+        // Configure XMLReader see http://xerces.apache.org/xerces2-j/features.html
+        setReaderFeature(xmlReader, Namespaces.SAX_NAMESPACES_PREFIXES, true);
+        setReaderFeature(xmlReader, APACHE_PROPERTIES_LOAD_EXT_DTD,
+                (validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED) );
 
         if (validation == VALIDATION_SETTING.UNKNOWN) {
             return;
         }
-
-        // Configure xmlreader see http://xerces.apache.org/xerces2-j/features.html
-        setReaderFeature(xmlReader, Namespaces.SAX_NAMESPACES_PREFIXES, true);
 
         setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION,
                 validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED);
@@ -188,12 +193,6 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
 
         setReaderFeature(xmlReader, APACHE_FEATURES_VALIDATION_SCHEMA,
                 (validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED) );
-
-        setReaderFeature(xmlReader, APACHE_PROPERTIES_LOAD_EXT_DTD,
-                (validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED) );
-
-        // Attempt to make validation function equal to insert mode
-        //saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
     }
 
     private static void setReaderFeature(XMLReader xmlReader, String featureName, boolean value){
