@@ -67,7 +67,7 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
         this.parserFeatures = (Map<String, Boolean>)configuration.getProperty(XmlParser.XML_PARSER_FEATURES_PROPERTY);
     }
 
-    public synchronized XMLReader borrowXMLReader() {
+    public XMLReader borrowXMLReader() {
         try {
             final XMLReader reader = super.borrowObject();
             setParserConfigFeatures(reader);
@@ -89,12 +89,12 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
     }
 
     @Override
-    public synchronized XMLReader borrowObject() throws Exception {
+    public XMLReader borrowObject() throws Exception {
         return borrowXMLReader();
     }
     
    
-    public synchronized void returnXMLReader(final XMLReader reader) {
+    public void returnXMLReader(final XMLReader reader) {
         if (reader == null) {
             return;
         }
@@ -120,7 +120,7 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
     }
 
     @Override
-    public synchronized void returnObject(final XMLReader obj) throws Exception {
+    public void returnObject(final XMLReader obj) throws Exception {
         returnXMLReader(obj);
     }   
 
