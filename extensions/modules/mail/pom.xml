@@ -46,7 +46,8 @@
   </scm>
 
     <properties>
-        <jakarta.activation.version>2.0.0</jakarta.activation.version>
+        <jakarta.activation.version>2.0.1</jakarta.activation.version>
+        <jakarta.mail.version>2.0.0</jakarta.mail.version>
     </properties>
 
     <dependencies>
@@ -57,9 +58,22 @@
         </dependency>
 
         <dependency>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
+            <version>${jakarta.mail.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+            <version>${jakarta.activation.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
-            <version>1.6.5</version>
+            <version>${jakarta.mail.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
@@ -75,12 +89,6 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.sun.activation</groupId>
-            <artifactId>jakarta.activation</artifactId>
-            <version>${jakarta.activation.version}</version>
         </dependency>
 
         <dependency>
@@ -103,11 +111,8 @@
                         </goals>
                         <configuration>
                             <failOnWarning>true</failOnWarning>
-                            <ignoredUsedUndeclaredDependencies>
-                                <ignoredUsedUndeclaredDependency>javax.activation:javax.activation-api:jar:1.2.0</ignoredUsedUndeclaredDependency>
-                            </ignoredUsedUndeclaredDependencies>
                             <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>com.sun.activation:jakarta.activation:jar:${jakarta.activation.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>com.sun.mail:jakarta.mail:jar:${jakarta.mail.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

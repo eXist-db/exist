@@ -118,7 +118,7 @@ public class MapExpr extends AbstractExpression {
         dumper.display("map {");
         for (final Mapping mapping : this.mappings) {
             mapping.key.dump(dumper);
-            dumper.display(" := ");
+            dumper.display(" : ");
             mapping.value.dump(dumper);
         }
         dumper.display("}");

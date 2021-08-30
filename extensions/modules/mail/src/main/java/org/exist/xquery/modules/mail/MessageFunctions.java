@@ -30,12 +30,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.regex.Pattern;
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParameterList;
-import javax.activation.MimeTypeParseException;
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
+import jakarta.activation.MimeType;
+import jakarta.activation.MimeTypeParameterList;
+import jakarta.activation.MimeTypeParseException;
+import jakarta.mail.*;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.logging.log4j.LogManager;

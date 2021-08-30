@@ -35,13 +35,19 @@
         <remove-collection collection="/db/xq3-test"/>
     </tearDown>
 
-    <!-- fix - "variable declaration of '$var' cannot be executed because of a circularity" -->
+    <!-- TODO(AR) - this raises "err:XQST0054 It is a static error if a variable depends on itself" because dependencies are calculated over zealously -->
     <test output="text" id="maps-lookup-001" ignore="true">
         <task>maps-lookup-001</task>
         <code><![CDATA[xquery version "3.0";
 
-declare variable $var := map { 'a':local:fun#1, 'b':0 };
-declare function local:fun($a) { $var?b = $a };
+declare variable $var := map {
+    'a' : local:fun#1,
+    'b' : 0
+};
+
+declare function local:fun($a) {
+    $var?b = $a
+};
 local:fun(1)
 
 ]]></code>
