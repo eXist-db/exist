@@ -56,11 +56,9 @@ import org.exist.storage.txn.Txn;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
 
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.functions.util.BinaryDoc;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;

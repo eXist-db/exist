@@ -57,8 +57,6 @@ import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

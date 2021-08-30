@@ -47,7 +47,6 @@ import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;

@@ -37,7 +37,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.MimeType;
-import com.evolvedbinary.j8fu.Either;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.SAXSerializer;

@@ -64,7 +64,7 @@ public class XMLReaderPool extends GenericObjectPool<XMLReader> implements Broke
         try {
             return super.borrowObject();
         } catch (final Exception e) {
-            throw new IllegalStateException("error while returning XMLReader: " + e.getMessage(), e);
+            throw new IllegalStateException("Error while borrowing: " + e.getMessage(), e);
         }
     }
 
@@ -78,7 +78,7 @@ public class XMLReaderPool extends GenericObjectPool<XMLReader> implements Broke
             super.returnObject(reader);
 
         } catch (final Exception e) {
-            throw new IllegalStateException("error while returning XMLReader: " + e.getMessage(), e);
+            throw new IllegalStateException("Error while returning: " + e.getMessage(), e);
         }
     }
 
