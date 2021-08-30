@@ -35,12 +35,12 @@ public class SerializerPool extends StackKeyedObjectPool<Class<?>, Object> {
     }
 
     /**
-     * @param factory the object factory
-     * @param max     the maximum size of the pool
-     * @param init    the initial size of the pool
+     * @param factory the serializer object factory
+     * @param maxIdle the maximum number of idle instances in the pool
+     * @param initSize initial size of the pool (this specifies the size of the container, it does not cause the pool to be pre-populated.)
      */
-    public SerializerPool(final KeyedPoolableObjectFactory<Class<?>, Object> factory, final int max, final int init) {
-        super(factory, max, init);
+    public SerializerPool(final KeyedPoolableObjectFactory<Class<?>, Object> factory, final int maxIdle, final int initSize) {
+        super(factory, maxIdle, initSize);
     }
 
     @Override

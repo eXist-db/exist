@@ -21,6 +21,7 @@
  */
 package org.exist.util;
 
+import net.jcip.annotations.ThreadSafe;
 import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.commons.pool.impl.StackObjectPool;
 import org.exist.storage.BrokerPool;
@@ -32,17 +33,18 @@ import org.xml.sax.XMLReader;
  *
  * The pool is available through {@link BrokerPool#getParserPool()}.
  */
+@ThreadSafe
 public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerPoolService {
 
     /**
      * Constructs an XML Reader Pool.
      *
-     * @param factory          the object factory
-     * @param maxIdle          the max idle time for a reader
-     * @param initIdleCapacity the initial capacity
+     * @param factory the XMLReader object factory
+     * @param maxIdle the maximum number of idle instances in the pool
+     * @param initSize initial size of the pool (this specifies the size of the container, it does not cause the pool to be pre-populated.)
      */
-    public XMLReaderPool(final PoolableObjectFactory<XMLReader> factory, final int maxIdle, final int initIdleCapacity) {
-        super(factory, maxIdle, initIdleCapacity);
+    public XMLReaderPool(final PoolableObjectFactory<XMLReader> factory, final int maxIdle, final int initSize) {
+        super(factory, maxIdle, initSize);
     }
 
     @Override
