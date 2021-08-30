@@ -35,16 +35,6 @@ public class SerializerObjectFactory extends BaseKeyedPoolableObjectFactory<Clas
         return null;
     }
 
-    // TODO(AR) we likely need only call #reset() on #passivateObject(Class, Object)!
-    @Override
-    public void activateObject(final Class<?> key, final Object obj) {
-        if (key == SAXSerializer.class) {
-            ((SAXSerializer) obj).reset();
-        } else if (key == DOMStreamer.class) {
-            ((DOMStreamer) obj).reset();
-        }
-    }
-
     @Override
     public void passivateObject(final Class<?> key, final Object obj) {
         if (key == SAXSerializer.class) {
