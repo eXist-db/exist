@@ -6,9 +6,8 @@ import org.exist.validation.resolver.eXistXMLCatalogResolver;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
+import org.xml.sax.ext.LexicalHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -374,8 +373,6 @@ public class XMLReaderPoolTest {
         verify(mockConfiguration);
     }
 
-    // TODO(AR) test above after borrow, change, return... and then borrow again
-
     @ParameterizedTest
     @ValueSource(strings = {"yes", "YES", "true", "TRUE", "auto", "AUTO" })
     public void reusedXmlReaderStillHasEnabledValidation(final String validationMode) throws SAXNotSupportedException, SAXNotRecognizedException {
@@ -726,6 +723,123 @@ public class XMLReaderPoolTest {
             assertFalse(xmlreader.getFeature("http://xml.org/sax/features/external-general-entities"));
             assertFalse(xmlreader.getFeature("http://xml.org/sax/features/external-parameter-entities"));
             assertTrue(xmlreader.getFeature("http://javax.xml.XMLConstants/feature/secure-processing"));
+        } finally {
+            xmlReaderPool.returnXMLReader(xmlreader);
+        }
+
+        verify(mockConfiguration);
+    }
+
+    @Test
+    public void reusedXmlReaderStillHasNoContentHandler()  {
+        final Configuration mockConfiguration = createMock(Configuration.class);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE)).andReturn("auto");
+
+        expect(mockConfiguration.getProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY)).andReturn(Collections.emptyMap());
+
+        replay(mockConfiguration);
+
+        final XMLReaderObjectFactory xmlReaderObjectFactory = new XMLReaderObjectFactory();
+        xmlReaderObjectFactory.configure(mockConfiguration);
+        final XMLReaderPool xmlReaderPool = new XMLReaderPool(xmlReaderObjectFactory, 1, 0);
+        xmlReaderPool.configure(mockConfiguration);
+
+        XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
+        assertNotNull(xmlreader);
+        try {
+            // explicitly set a content handler
+            final ContentHandler mockContentHandler = createMock(ContentHandler.class);
+            xmlreader.setContentHandler(mockContentHandler);
+        } finally {
+            xmlReaderPool.returnXMLReader(xmlreader);
+        }
+
+        // borrow again after return...
+
+        xmlreader = xmlReaderPool.borrowXMLReader();
+        assertNotNull(xmlreader);
+        try {
+            assertNull(xmlreader.getContentHandler());
+        } finally {
+            xmlReaderPool.returnXMLReader(xmlreader);
+        }
+
+        verify(mockConfiguration);
+    }
+
+    @Test
+    public void reusedXmlReaderStillHasNoErrorHandler()  {
+        final Configuration mockConfiguration = createMock(Configuration.class);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE)).andReturn("auto");
+
+        expect(mockConfiguration.getProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY)).andReturn(Collections.emptyMap());
+
+        replay(mockConfiguration);
+
+        final XMLReaderObjectFactory xmlReaderObjectFactory = new XMLReaderObjectFactory();
+        xmlReaderObjectFactory.configure(mockConfiguration);
+        final XMLReaderPool xmlReaderPool = new XMLReaderPool(xmlReaderObjectFactory, 1, 0);
+        xmlReaderPool.configure(mockConfiguration);
+
+        XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
+        assertNotNull(xmlreader);
+        try {
+            // explicitly set an error handler
+            final ErrorHandler mockErrorHandler = createMock(ErrorHandler.class);
+            xmlreader.setErrorHandler(mockErrorHandler);
+        } finally {
+            xmlReaderPool.returnXMLReader(xmlreader);
+        }
+
+        // borrow again after return...
+
+        xmlreader = xmlReaderPool.borrowXMLReader();
+        assertNotNull(xmlreader);
+        try {
+            assertNull(xmlreader.getErrorHandler());
+        } finally {
+            xmlReaderPool.returnXMLReader(xmlreader);
+        }
+
+        verify(mockConfiguration);
+    }
+
+    @Test
+    public void reusedXmlReaderStillHasNoLexicalHandler() throws SAXNotSupportedException, SAXNotRecognizedException {
+        final Configuration mockConfiguration = createMock(Configuration.class);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE)).andReturn("auto");
+
+        expect(mockConfiguration.getProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY)).andReturn(Collections.emptyMap());
+
+        replay(mockConfiguration);
+
+        final XMLReaderObjectFactory xmlReaderObjectFactory = new XMLReaderObjectFactory();
+        xmlReaderObjectFactory.configure(mockConfiguration);
+        final XMLReaderPool xmlReaderPool = new XMLReaderPool(xmlReaderObjectFactory, 1, 0);
+        xmlReaderPool.configure(mockConfiguration);
+
+        XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
+        assertNotNull(xmlreader);
+        try {
+            // explicitly set a lexical handler
+            final LexicalHandler mockLexicalHandler = createMock(LexicalHandler.class);
+            xmlreader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, mockLexicalHandler);
+        } finally {
+            xmlReaderPool.returnXMLReader(xmlreader);
+        }
+
+        // borrow again after return...
+
+        xmlreader = xmlReaderPool.borrowXMLReader();
+        assertNotNull(xmlreader);
+        try {
+            assertNull(xmlreader.getProperty(Namespaces.SAX_LEXICAL_HANDLER));
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }

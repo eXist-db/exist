@@ -117,6 +117,13 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
         setReaderProperty(xmlReader, APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
     }
 
+    @Override
+    public void passivateObject(final XMLReader xmlReader) throws Exception {
+        xmlReader.setContentHandler(null);
+        xmlReader.setErrorHandler(null);
+        xmlReader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, null);
+    }
+
     /**
      * Convert configuration text (yes,no,true,false,auto) into a magic number.
      *
