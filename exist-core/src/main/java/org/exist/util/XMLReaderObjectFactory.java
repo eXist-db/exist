@@ -102,8 +102,12 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
     public XMLReader makeObject() throws Exception {
         final XMLReader xmlReader = createXmlReader();
         xmlReader.setErrorHandler(null);  // disable default Xerces Error Handler
-        setReaderValidationMode(validation, xmlReader);
         return xmlReader;
+    }
+
+    @Override
+    public void activateObject(final XMLReader xmlReader) {
+        setReaderValidationMode(validation, xmlReader);
     }
 
     /**
@@ -168,10 +172,6 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
         setReaderFeature(xmlReader, Namespaces.SAX_NAMESPACES_PREFIXES, true);
         setReaderFeature(xmlReader, APACHE_PROPERTIES_LOAD_EXT_DTD,
                 (validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED) );
-
-        if (validation == VALIDATION_SETTING.UNKNOWN) {
-            return;
-        }
 
         setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION,
                 validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED);

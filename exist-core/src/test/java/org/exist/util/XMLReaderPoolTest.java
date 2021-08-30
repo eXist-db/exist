@@ -376,6 +376,158 @@ public class XMLReaderPoolTest {
 
     // TODO(AR) test above after borrow, change, return... and then borrow again
 
+    @ParameterizedTest
+    @ValueSource(strings = {"yes", "YES", "true", "TRUE", "auto", "AUTO" })
+    public void reusedXmlReaderStillHasEnabledValidation(final String validationMode) throws SAXNotSupportedException, SAXNotRecognizedException {
+        final Configuration mockConfiguration = createMock(Configuration.class);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE)).andReturn(validationMode);
+
+        expect(mockConfiguration.getProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY)).andReturn(Collections.emptyMap());
+
+        replay(mockConfiguration);
+
+        final XMLReaderObjectFactory xmlReaderObjectFactory = new XMLReaderObjectFactory();
+        xmlReaderObjectFactory.configure(mockConfiguration);
+        final XMLReaderPool xmlReaderPool = new XMLReaderPool(xmlReaderObjectFactory, 1, 0);
+        xmlReaderPool.configure(mockConfiguration);
+
+        XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
+        assertNotNull(xmlreader);
+        try {
+            // explicitly disable validation properties, before returning to pool
+            xmlreader.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, false);
+            xmlreader.setFeature(Namespaces.SAX_VALIDATION, false);
+            if ("auto".equalsIgnoreCase(validationMode)) {
+                xmlreader.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC, false);
+            } else {
+                xmlreader.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC, true);
+            }
+            xmlreader.setFeature(XMLReaderObjectFactory.APACHE_FEATURES_VALIDATION_SCHEMA, false);
+            xmlreader.setFeature(XMLReaderObjectFactory.APACHE_PROPERTIES_LOAD_EXT_DTD, false);
+        } finally {
+            xmlReaderPool.returnXMLReader(xmlreader);
+        }
+
+        // borrow again after return...
+
+        xmlreader = xmlReaderPool.borrowXMLReader();
+        assertNotNull(xmlreader);
+        try {
+            assertTrue(xmlreader.getFeature(Namespaces.SAX_NAMESPACES_PREFIXES));
+            assertTrue(xmlreader.getFeature(Namespaces.SAX_VALIDATION));
+            if ("auto".equalsIgnoreCase(validationMode)) {
+                assertTrue(xmlreader.getFeature(Namespaces.SAX_VALIDATION_DYNAMIC));
+            } else {
+                assertFalse(xmlreader.getFeature(Namespaces.SAX_VALIDATION_DYNAMIC));
+            }
+            assertTrue(xmlreader.getFeature(XMLReaderObjectFactory.APACHE_FEATURES_VALIDATION_SCHEMA));
+            assertTrue(xmlreader.getFeature(XMLReaderObjectFactory.APACHE_PROPERTIES_LOAD_EXT_DTD));
+        } finally {
+            xmlReaderPool.returnXMLReader(xmlreader);
+        }
+
+        verify(mockConfiguration);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"no", "NO", "false", "FALSE"})
+    public void reusedXmlReaderStillHasDisabledValidation(final String validationMode) throws SAXNotSupportedException, SAXNotRecognizedException {
+        final Configuration mockConfiguration = createMock(Configuration.class);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE)).andReturn(validationMode);
+
+        expect(mockConfiguration.getProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY)).andReturn(Collections.emptyMap());
+
+        replay(mockConfiguration);
+
+        final XMLReaderObjectFactory xmlReaderObjectFactory = new XMLReaderObjectFactory();
+        xmlReaderObjectFactory.configure(mockConfiguration);
+        final XMLReaderPool xmlReaderPool = new XMLReaderPool(xmlReaderObjectFactory, 1, 0);
+        xmlReaderPool.configure(mockConfiguration);
+
+        XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
+        assertNotNull(xmlreader);
+        try {
+            // explicitly enable validation properties, before returning to pool
+            xmlreader.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
+            xmlreader.setFeature(Namespaces.SAX_VALIDATION, true);
+            if ("auto".equalsIgnoreCase(validationMode)) {
+                xmlreader.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC, true);
+            } else {
+                xmlreader.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC, false);
+            }
+            xmlreader.setFeature(XMLReaderObjectFactory.APACHE_FEATURES_VALIDATION_SCHEMA, true);
+            xmlreader.setFeature(XMLReaderObjectFactory.APACHE_PROPERTIES_LOAD_EXT_DTD, true);
+        } finally {
+            xmlReaderPool.returnXMLReader(xmlreader);
+        }
+
+        // borrow again after return...
+
+        xmlreader = xmlReaderPool.borrowXMLReader();
+        assertNotNull(xmlreader);
+        try {
+            assertTrue(xmlreader.getFeature(Namespaces.SAX_NAMESPACES_PREFIXES));
+            assertFalse(xmlreader.getFeature(Namespaces.SAX_VALIDATION));
+            assertFalse(xmlreader.getFeature(Namespaces.SAX_VALIDATION_DYNAMIC));
+            assertFalse(xmlreader.getFeature(XMLReaderObjectFactory.APACHE_FEATURES_VALIDATION_SCHEMA));
+            assertFalse(xmlreader.getFeature(XMLReaderObjectFactory.APACHE_PROPERTIES_LOAD_EXT_DTD));
+        } finally {
+            xmlReaderPool.returnXMLReader(xmlreader);
+        }
+
+        verify(mockConfiguration);
+    }
+
+    @Test
+    public void reusedXmlReaderStillHasUnknownValidation() throws SAXNotSupportedException, SAXNotRecognizedException {
+        final Configuration mockConfiguration = createMock(Configuration.class);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE)).andReturn("unknown");
+
+        expect(mockConfiguration.getProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY)).andReturn(Collections.emptyMap());
+
+        replay(mockConfiguration);
+
+        final XMLReaderObjectFactory xmlReaderObjectFactory = new XMLReaderObjectFactory();
+        xmlReaderObjectFactory.configure(mockConfiguration);
+        final XMLReaderPool xmlReaderPool = new XMLReaderPool(xmlReaderObjectFactory, 1, 0);
+        xmlReaderPool.configure(mockConfiguration);
+
+        XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
+        assertNotNull(xmlreader);
+        try {
+            // explicitly enable validation properties, before returning to pool
+            xmlreader.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
+            xmlreader.setFeature(Namespaces.SAX_VALIDATION, true);
+            xmlreader.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC, true);
+            xmlreader.setFeature(XMLReaderObjectFactory.APACHE_FEATURES_VALIDATION_SCHEMA, true);
+            xmlreader.setFeature(XMLReaderObjectFactory.APACHE_PROPERTIES_LOAD_EXT_DTD, true);
+        } finally {
+            xmlReaderPool.returnXMLReader(xmlreader);
+        }
+
+        // borrow again after return...
+
+        xmlreader = xmlReaderPool.borrowXMLReader();
+        assertNotNull(xmlreader);
+        try {
+            assertTrue(xmlreader.getFeature(Namespaces.SAX_NAMESPACES_PREFIXES));
+            assertFalse(xmlreader.getFeature(Namespaces.SAX_VALIDATION));
+            assertFalse(xmlreader.getFeature(Namespaces.SAX_VALIDATION_DYNAMIC));
+            assertFalse(xmlreader.getFeature(XMLReaderObjectFactory.APACHE_FEATURES_VALIDATION_SCHEMA));
+            assertFalse(xmlreader.getFeature(XMLReaderObjectFactory.APACHE_PROPERTIES_LOAD_EXT_DTD));
+        } finally {
+            xmlReaderPool.returnXMLReader(xmlreader);
+        }
+
+        verify(mockConfiguration);
+    }
+
     @Test
     public void exceedMaxIdle() {
         final int maxIdle = 3;
