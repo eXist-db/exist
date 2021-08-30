@@ -22,7 +22,6 @@
 package org.exist.util;
 
 import javax.annotation.Nullable;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -36,7 +35,6 @@ import org.exist.storage.BrokerPoolService;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
 
-import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
@@ -100,39 +98,23 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
 
     @Override
     public XMLReader makeObject() throws Exception {
-        final XMLReader xmlReader = createXmlReader();
+        final SAXParser saxParser = saxParserFactory.newSAXParser();
+        final XMLReader xmlReader = saxParser.getXMLReader();
+
         xmlReader.setErrorHandler(null);  // disable default Xerces Error Handler
+
         return xmlReader;
     }
 
     @Override
     public void activateObject(final XMLReader xmlReader) {
         setReaderValidationMode(validation, xmlReader);
-    }
 
-    /**
-     * Create an XMLReader and setup validation.
-     *
-     * @return the configured reader
-     *
-     * @throws ParserConfigurationException if the parser cannot be configured
-     * @throws SAXException if an exception occurs with the parser
-     */
-    private XMLReader createXmlReader() throws ParserConfigurationException, SAXException {
-        final SAXParser saxParser = saxParserFactory.newSAXParser();
-        final XMLReader xmlReader = saxParser.getXMLReader();
+        // Set Grammar Cache
+        setReaderProperty(xmlReader, APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
 
-        // Setup grammar cache
-        if (grammarPool != null) {
-            setReaderProperty(xmlReader,APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
-        }
-
-        // Setup xml catalog resolver
-        if (resolver != null) {
-           setReaderProperty(xmlReader,APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
-        }
-
-        return xmlReader;
+        // Set XML Catalog Resolver
+        setReaderProperty(xmlReader, APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
     }
 
     /**
