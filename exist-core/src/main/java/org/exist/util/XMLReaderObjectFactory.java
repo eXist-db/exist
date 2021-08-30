@@ -64,7 +64,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
     public final static String PROPERTY_VALIDATION_MODE = "validation.mode";
     public final static String CATALOG_RESOLVER = "validation.resolver";
     public final static String CATALOG_URIS = "validation.catalog_uris";
-    public final static String GRAMMER_POOL = "validation.grammar_pool";
+    public final static String GRAMMAR_POOL = "validation.grammar_pool";
 
     // Xerces feature and property names
     public final static String APACHE_FEATURES_VALIDATION_SCHEMA
@@ -88,7 +88,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
     @Override
     public void configure(final Configuration configuration) {
         this.configuration = configuration;
-        this.grammarPool = (GrammarPool) configuration.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
+        this.grammarPool = (GrammarPool) configuration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL);
         this.resolver = (eXistXMLCatalogResolver) configuration.getProperty(CATALOG_RESOLVER);
         final String option = (String) configuration.getProperty(PROPERTY_VALIDATION_MODE);
         this.validation = convertValidationMode(option);

@@ -139,7 +139,7 @@ public class GrammarTooling extends BasicFunction  {
     throws XPathException {
         
         final GrammarPool grammarpool
-            = (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
+            = (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL);
         
         if (isCalledAs("clear-grammar-cache")){
             

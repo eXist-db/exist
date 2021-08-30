@@ -19,7 +19,7 @@ public class XMLReaderPoolTest {
     @ValueSource(strings = {"yes", "YES", "true", "TRUE", "auto", "AUTO"})
     public void xmlReaderWithEnabledValidation(final String validationMode) throws SAXNotSupportedException, SAXNotRecognizedException {
         final Configuration mockConfiguration = createMock(Configuration.class);
-        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.GRAMMER_POOL)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL)).andReturn(null);
         expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(null);
         expect(mockConfiguration.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE)).andReturn(validationMode);
 
@@ -55,7 +55,7 @@ public class XMLReaderPoolTest {
     @ValueSource(strings = {"no", "NO", "false", "FALSE"})
     public void xmlReaderWithDisabledValidation(final String validationMode) throws SAXNotSupportedException, SAXNotRecognizedException {
         final Configuration mockConfiguration = createMock(Configuration.class);
-        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.GRAMMER_POOL)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL)).andReturn(null);
         expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(null);
         expect(mockConfiguration.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE)).andReturn(validationMode);
 
@@ -86,7 +86,7 @@ public class XMLReaderPoolTest {
     @Test
     public void xmlReaderWithUnknownValidation() throws SAXNotSupportedException, SAXNotRecognizedException {
         final Configuration mockConfiguration = createMock(Configuration.class);
-        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.GRAMMER_POOL)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL)).andReturn(null);
         expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(null);
         expect(mockConfiguration.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE)).andReturn("unknown");
 
@@ -120,7 +120,7 @@ public class XMLReaderPoolTest {
         final int initialCapacity = 0;
 
         final Configuration mockConfiguration = createMock(Configuration.class);
-        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.GRAMMER_POOL)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL)).andReturn(null);
         expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(null);
         expect(mockConfiguration.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE)).andReturn("auto");
 

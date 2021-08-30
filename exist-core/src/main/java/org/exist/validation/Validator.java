@@ -84,7 +84,7 @@ public class Validator {
 
         // setup grammar brokerPool
         grammarPool = (GrammarPool) 
-                config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
+                config.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL);
 
         // setup system wide catalog resolver
         systemCatalogResolver = (eXistXMLCatalogResolver) 
