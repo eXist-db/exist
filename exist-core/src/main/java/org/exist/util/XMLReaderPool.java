@@ -34,7 +34,7 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.DefaultHandler2;
 
-import javax.xml.parsers.ParserConfigurationException;
+import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
@@ -49,7 +49,8 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
 
     private final static DefaultHandler2 DUMMY_HANDLER = new DefaultHandler2();
 
-    private Configuration configuration = null;
+    private Configuration configuration;
+    @Nullable private Map<String, Boolean> parserFeatures;
 
     /**
      * Constructs an XML Reader Pool.
@@ -65,6 +66,7 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
     @Override
     public void configure(final Configuration configuration) {
         this.configuration = configuration;
+        this.parserFeatures = (Map<String, Boolean>)configuration.getProperty(XmlParser.XML_PARSER_FEATURES_PROPERTY);
     }
 
     public synchronized XMLReader borrowXMLReader() {
@@ -80,10 +82,9 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
     /**
      * Sets any features for the parser which were defined in conf.xml
      */
-    private void setParserConfigFeatures(final XMLReader xmlReader) throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
-        final Map<String, Boolean> parserFeatures = (Map<String, Boolean>)configuration.getProperty(XmlParser.XML_PARSER_FEATURES_PROPERTY);
-        if(parserFeatures != null) {
-            for(final Map.Entry<String, Boolean> feature : parserFeatures.entrySet()) {
+    private void setParserConfigFeatures(final XMLReader xmlReader) throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (parserFeatures != null) {
+            for (final Map.Entry<String, Boolean> feature : parserFeatures.entrySet()) {
                 xmlReader.setFeature(feature.getKey(), feature.getValue());
             }
         }
