@@ -101,6 +101,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
     @Override
     public XMLReader makeObject() throws Exception {
         final XMLReader xmlReader = createXmlReader();
+        xmlReader.setErrorHandler(null);  // disable default Xerces Error Handler
         setReaderValidationMode(validation, xmlReader);
         return xmlReader;
     }
