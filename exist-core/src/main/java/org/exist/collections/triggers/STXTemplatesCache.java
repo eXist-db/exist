@@ -110,11 +110,15 @@ public class STXTemplatesCache {
     }
 
     private Templates compileTemplate(final DBBroker broker, final DocumentImpl stylesheet) throws TransformerConfigurationException, SAXException {
-        final Serializer serializer = broker.getSerializer();
-        final TemplatesHandler thandler = factory.newTemplatesHandler();
-        serializer.setSAXHandlers(thandler, null);
-        serializer.toSAX(stylesheet);
-        return thandler.getTemplates();
+        final Serializer serializer = broker.borrowSerializer();
+        try {
+            final TemplatesHandler thandler = factory.newTemplatesHandler();
+            serializer.setSAXHandlers(thandler, null);
+            serializer.toSAX(stylesheet);
+            return thandler.getTemplates();
+        } finally {
+            broker.returnSerializer(serializer);
+        }
     }
 
     private static class CachedTemplate {

@@ -34,6 +34,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
@@ -119,14 +120,19 @@ public class StoreResourceTest {
         try (final DBBroker broker = pool.get(Optional.of(execAsUser));
              final LockedDocument lockedDoc = broker.getXMLResource(uri, Lock.LockMode.READ_LOCK)) {
 
-            final String docXml = broker.getSerializer().serialize(lockedDoc.getDocument());
+            final Serializer serializer = broker.borrowSerializer();
+            try {
+                final String docXml = serializer.serialize(lockedDoc.getDocument());
 
-            final Diff diff = DiffBuilder
-                    .compare(Input.fromString(content))
-                    .withTest(Input.fromString(docXml))
-                    .build();
+                final Diff diff = DiffBuilder
+                        .compare(Input.fromString(content))
+                        .withTest(Input.fromString(docXml))
+                        .build();
 
-            assertFalse(diff.toString(), diff.hasDifferences());
+                assertFalse(diff.toString(), diff.hasDifferences());
+            } finally {
+                broker.returnSerializer(serializer);
+            }
         }
     }
 

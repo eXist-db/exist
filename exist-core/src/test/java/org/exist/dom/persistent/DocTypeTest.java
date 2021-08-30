@@ -115,14 +115,14 @@ public class DocTypeTest {
                 assertNotNull(docType);
                 assertEquals("-//OASIS//DTD DITA Reference//EN", docType.getPublicId());
 
-                final Serializer serializer = broker.getSerializer();
-                serializer.reset();
-
-                serializer.setProperties(OUTPUT_PROPERTIES);
-
-                final String serialized = serializer.serialize(doc);
-
-                assertTrue("Checking for Public Id in output", serialized.contains("-//OASIS//DTD DITA Reference//EN"));
+                final Serializer serializer = broker.borrowSerializer();
+                try {
+                    serializer.setProperties(OUTPUT_PROPERTIES);
+                    final String serialized = serializer.serialize(doc);
+                    assertTrue("Checking for Public Id in output", serialized.contains("-//OASIS//DTD DITA Reference//EN"));
+                } finally {
+                    broker.returnSerializer(serializer);
+                }
             }
 		}
 	}
@@ -140,14 +140,14 @@ public class DocTypeTest {
 
             assertEquals("-//OASIS//DTD DITA Topic//EN", docType.getPublicId());
 
-            Serializer serializer = broker.getSerializer();
-            serializer.reset();
-
-            serializer.setProperties(OUTPUT_PROPERTIES);
-
-            String serialized = serializer.serialize(doc);
-
-            assertTrue("Checking for Public Id in output", serialized.contains("-//OASIS//DTD DITA Topic//EN"));
+            final Serializer serializer = broker.borrowSerializer();
+            try {
+                serializer.setProperties(OUTPUT_PROPERTIES);
+                String serialized = serializer.serialize(doc);
+                assertTrue("Checking for Public Id in output", serialized.contains("-//OASIS//DTD DITA Topic//EN"));
+            } finally {
+                broker.returnSerializer(serializer);
+            }
 
         }
 	}

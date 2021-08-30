@@ -162,10 +162,10 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
         // Case 5: content is a document or internal node, we MUST serialize it
         } else {
             content = withDb((broker, transaction) -> {
-                final Serializer serializer = broker.getSerializer();
-                serializer.setUser(user);
+                final Serializer serializer = broker.borrowSerializer();
 
                 try {
+                    serializer.setUser(user);
                     serializer.setProperties(getProperties());
 
                     if (root != null) {
@@ -183,6 +183,8 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
                     }
                 } catch (final SAXException e) {
                     throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+                } finally {
+                    broker.returnSerializer(serializer);
                 }
             });
             return content;
@@ -190,12 +192,11 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
     }
 
     private String serialize(final DBBroker broker, final ConsumerE<Serializer, SAXException> toSaxFunction) throws SAXException, IOException {
-        final Serializer serializer = broker.getSerializer();
-        serializer.setUser(user);
-        serializer.setProperties(getProperties());
-
+        final Serializer serializer = broker.borrowSerializer();
         SAXSerializer saxSerializer = null;
         try {
+            serializer.setUser(user);
+            serializer.setProperties(getProperties());
             saxSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 
             try (final StringWriter writer = new StringWriter()) {
@@ -211,6 +212,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
             if (saxSerializer != null) {
                 SerializerPool.getInstance().returnObject(saxSerializer);
             }
+            broker.returnSerializer(serializer);
         }
     }
 
@@ -413,25 +415,29 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 
                     // case 3: content is an internal node or a document
                     } else {
-                        final Serializer serializer = broker.newSerializer();
-                        serializer.setUser(user);
-                        serializer.setProperties(getProperties());
-                        serializer.setSAXHandlers(handler, lexicalHandler);
-                        if (root != null) {
-                            serializer.toSAX((NodeValue) root);
+                        final Serializer serializer = broker.borrowSerializer();
+                        try {
+                            serializer.setUser(user);
+                            serializer.setProperties(getProperties());
+                            serializer.setSAXHandlers(handler, lexicalHandler);
+                            if (root != null) {
+                                serializer.toSAX((NodeValue) root);
 
-                        } else if (proxy != null) {
-                            serializer.toSAX(proxy);
+                            } else if (proxy != null) {
+                                serializer.toSAX(proxy);
 
-                        } else {
-                            read(broker, transaction).apply((document, broker1, transaction1) -> {
-                                try {
-                                    serializer.toSAX(document);
-                                    return null;
-                                } catch(final SAXException e) {
-                                    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
-                                }
-                            });
+                            } else {
+                                read(broker, transaction).apply((document, broker1, transaction1) -> {
+                                    try {
+                                        serializer.toSAX(document);
+                                        return null;
+                                    } catch (final SAXException e) {
+                                        throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+                                    }
+                                });
+                            }
+                        } finally {
+                            broker.returnSerializer(serializer);
                         }
                     }
                     return null;

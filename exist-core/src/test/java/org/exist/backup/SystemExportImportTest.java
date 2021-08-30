@@ -191,10 +191,14 @@ public class SystemExportImportTest {
     }
 	
 	private String serializer(final DBBroker broker, final DocumentImpl document) throws SAXException {
-		final Serializer serializer = broker.getSerializer();
-		serializer.setUser(broker.getCurrentSubject());
-		serializer.setProperties(contentsOutputProps);
-		return serializer.serialize(document);
+		final Serializer serializer = broker.borrowSerializer();
+		try {
+            serializer.setUser(broker.getCurrentSubject());
+            serializer.setProperties(contentsOutputProps);
+            return serializer.serialize(document);
+        } finally {
+            broker.returnSerializer(serializer);
+        }
 	}
 
     private void clean() throws PermissionDeniedException, IOException, TriggerException, EXistException {

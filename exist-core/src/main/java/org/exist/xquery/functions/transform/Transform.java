@@ -210,9 +210,7 @@ public class Transform extends BasicFunction {
                 result.setLexicalHandler(builderReceiver);        //preserve comments etc... from xslt output
                 handler.setResult(result);
                 final Receiver receiver = new ReceiverToSAX(handler);
-                final Serializer serializer = context.getBroker().getSerializer();
-                serializer.reset();
-
+                final Serializer serializer = context.getBroker().borrowSerializer();
                 try {
                     serializer.setProperties(serializationProps);
                     serializer.setReceiver(receiver, true);
@@ -232,6 +230,8 @@ public class Transform extends BasicFunction {
 
                 } catch (final Exception e) {
                     throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
+                } finally {
+                    context.getBroker().returnSerializer(serializer);
                 }
 
                 errorListener.checkForErrors();
@@ -278,8 +278,7 @@ public class Transform extends BasicFunction {
                 final OutputStream os = new BufferedOutputStream(response.getOutputStream());
                 final StreamResult result = new StreamResult(os);
                 handler.setResult(result);
-                final Serializer serializer = context.getBroker().getSerializer();
-                serializer.reset();
+                final Serializer serializer = context.getBroker().borrowSerializer();
                 Receiver receiver = new ReceiverToSAX(handler);
 
                 try {
@@ -305,6 +304,8 @@ public class Transform extends BasicFunction {
 
                 } catch (final Exception e) {
                     throw new XPathException(this, "Exception while transforming node: " + e.getMessage(), e);
+                } finally {
+                    context.getBroker().returnSerializer(serializer);
                 }
 
                 errorListener.checkForErrors();

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.Database;
 import org.exist.storage.io.BlockingInputStream;
 import org.exist.storage.serializers.Serializer;
@@ -47,12 +48,12 @@ public class NodeInputStream extends InputStream {
      * Creates a new instance of NodeInputStream.
      *
      * @param database      The database.
-     * @param serializer    The serializer.
+     * @param withSerializerFn The serializer closure.
      * @param node          The node that is serialized.
      */
-    public NodeInputStream(final Database database, final Serializer serializer, final NodeValue node) {
+    public NodeInputStream(final Database database, final ConsumerE<ConsumerE<Serializer, IOException>, IOException> withSerializerFn, final NodeValue node) {
         this.bis = new BlockingInputStream();
-        final Thread thread = newInstanceThread(database, "node-input-stream-serializer-" + nodeSerializerThreadId.getAndIncrement(), new NodeSerializerRunnable(serializer, node, bis.getOutputStream()));
+        final Thread thread = newInstanceThread(database, "node-input-stream-serializer-" + nodeSerializerThreadId.getAndIncrement(), new NodeSerializerRunnable(withSerializerFn, node, bis.getOutputStream()));
         thread.start();
     }
 

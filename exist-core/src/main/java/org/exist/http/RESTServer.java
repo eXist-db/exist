@@ -1759,8 +1759,7 @@ public class RESTServer {
             // xml resource
 
             SAXSerializer sax = null;
-            final Serializer serializer = broker.getSerializer();
-            serializer.reset();
+            final Serializer serializer = broker.borrowSerializer();
 
             //setup the http context
             final HttpRequestWrapper reqw = new HttpRequestWrapper(request, formEncoding, containerEncoding);
@@ -1824,6 +1823,7 @@ public class RESTServer {
                 if (sax != null) {
                     SerializerPool.getInstance().returnObject(sax);
                 }
+                broker.returnSerializer(serializer);
             }
         }
     }
@@ -2182,8 +2182,7 @@ public class RESTServer {
             howmany = 0;
         }
 
-        final Serializer serializer = broker.getSerializer();
-        serializer.reset();
+        final Serializer serializer = broker.borrowSerializer();
         outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
         try {
             serializer.setProperties(outputProperties);
@@ -2229,6 +2228,8 @@ public class RESTServer {
             writer.close();
         } catch (final IOException | XPathException | SAXException e) {
             throw new BadRequestException("Error while serializing xml: " + e.toString(), e);
+        } finally {
+            broker.returnSerializer(serializer);
         }
     }
 

@@ -185,7 +185,7 @@ public abstract class Modification extends AbstractExpression
         context.pushDocumentContext();
         final MemTreeBuilder builder = context.getDocumentBuilder();
         final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
-        final Serializer serializer = context.getBroker().getSerializer();
+        final Serializer serializer = context.getBroker().borrowSerializer();
         serializer.setReceiver(receiver);
 
         try {
@@ -219,6 +219,7 @@ public abstract class Modification extends AbstractExpression
         } catch(final SAXException | DOMException e) {
             throw new XPathException(this, e.getMessage(), e);
         } finally {
+            context.getBroker().returnSerializer(serializer);
             context.popDocumentContext();
         }
     }

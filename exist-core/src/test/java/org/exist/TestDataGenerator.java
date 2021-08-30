@@ -100,8 +100,7 @@ public class TestDataGenerator {
                 context.declareVariable("count", new Integer(i));
                 final Sequence results = service.execute(broker, compiled, Sequence.EMPTY_SEQUENCE);
 
-                final Serializer serializer = broker.getSerializer();
-                serializer.reset();
+                final Serializer serializer = broker.borrowSerializer();
                 try(final Writer out = Files.newBufferedWriter(generatedFiles[i], StandardCharsets.UTF_8)) {
                     final SAXSerializer sax = new SAXSerializer(out, outputProps);
                     serializer.setSAXHandlers(sax, sax);
@@ -112,6 +111,8 @@ public class TestDataGenerator {
                         }
                         serializer.toSAX((NodeValue) item);
                     }
+                } finally {
+                    broker.returnSerializer(serializer);
                 }
             }
         } catch (final XPathException | PermissionDeniedException | LockException | IOException e) {

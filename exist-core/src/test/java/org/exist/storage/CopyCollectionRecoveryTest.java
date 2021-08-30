@@ -152,12 +152,12 @@ public class CopyCollectionRecoveryTest {
     private void read() throws EXistException, PermissionDeniedException, SAXException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            final Serializer serializer = broker.getSerializer();
-            serializer.reset();
-
+            final Serializer serializer = broker.borrowSerializer();
             try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination/test3/test.xml"), LockMode.READ_LOCK)) {
                 assertNotNull("Document should not be null", lockedDoc);
                 serializer.serialize(lockedDoc.getDocument());
+            } finally {
+                broker.returnSerializer(serializer);
             }
         }
     }
@@ -202,10 +202,11 @@ public class CopyCollectionRecoveryTest {
     private void readAborted() throws EXistException, PermissionDeniedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            final Serializer serializer = broker.getSerializer();
-            serializer.reset();
+            final Serializer serializer = broker.borrowSerializer();
             try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination/test3/test.xml"), LockMode.READ_LOCK)) {
                 assertNull("Document should not exist as copy was not committed", lockedDoc);
+            } finally {
+                broker.returnSerializer(serializer);
             }
         }
     }

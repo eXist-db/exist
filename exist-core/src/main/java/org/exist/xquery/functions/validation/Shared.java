@@ -30,12 +30,14 @@ import java.util.ArrayList;
 
 import javax.xml.transform.stream.StreamSource;
 
+import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.validation.ValidationReport;
@@ -151,10 +153,19 @@ public class Shared {
             }
 
             // Node provided
-            final Serializer serializer = context.getBroker().newSerializer();
+
+            final DBBroker broker = context.getBroker();
+            final ConsumerE<ConsumerE<Serializer, IOException>, IOException> withSerializerFn = fn -> {
+                final Serializer serializer = broker.borrowSerializer();
+                try {
+                    fn.accept(serializer);
+                } finally {
+                    broker.returnSerializer(serializer);
+                }
+            };
 
             final NodeValue node = (NodeValue) item;
-            final InputStream is = new NodeInputStream(context.getBroker().getBrokerPool(), serializer, node);
+            final InputStream is = new NodeInputStream(context.getBroker().getBrokerPool(), withSerializerFn, node);
             streamSource.setInputStream(is);
 
         } else if (item.getType() == Type.BASE64_BINARY || item.getType() == Type.HEX_BINARY) {

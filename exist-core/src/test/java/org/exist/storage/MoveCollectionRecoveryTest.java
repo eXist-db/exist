@@ -162,13 +162,14 @@ public class MoveCollectionRecoveryTest {
     private void read() throws EXistException, PermissionDeniedException, SAXException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            final Serializer serializer = broker.getSerializer();
-            serializer.reset();
+            final Serializer serializer = broker.borrowSerializer();
 
             try(final LockedDocument lockedDoc =  broker.getXMLResource(TestConstants.DESTINATION_COLLECTION_URI.append("test3").append(TestConstants.TEST_XML_URI), LockMode.READ_LOCK)) {
                 assertNotNull("Document should not be null", lockedDoc);
                 String data = serializer.serialize(lockedDoc.getDocument());
                 assertNotNull(data);
+            } finally {
+                broker.returnSerializer(serializer);
             }
         }
     }
@@ -218,10 +219,11 @@ public class MoveCollectionRecoveryTest {
     private void readAborted() throws EXistException, PermissionDeniedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            final Serializer serializer = broker.getSerializer();
-            serializer.reset();
+            final Serializer serializer = broker.borrowSerializer();
             try(final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.DESTINATION_COLLECTION_URI2.append("test3").append(TestConstants.TEST_XML_URI), LockMode.READ_LOCK)) {
                 assertNull("Document should be null", lockedDoc);
+            } finally {
+                broker.returnSerializer(serializer);
             }
         }
     }

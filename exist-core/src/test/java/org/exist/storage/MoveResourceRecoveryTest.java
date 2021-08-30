@@ -135,13 +135,14 @@ public class MoveResourceRecoveryTest {
     private void read() throws EXistException, PermissionDeniedException, SAXException, IOException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            final Serializer serializer = broker.getSerializer();
-            serializer.reset();
+            final Serializer serializer = broker.borrowSerializer();
 
             try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/new_test.xml"), LockMode.READ_LOCK)) {
                 assertNotNull("Document should not be null", lockedDoc);
                 final String data = serializer.serialize(lockedDoc.getDocument());
                 assertNotNull(data);
+            } finally {
+                broker.returnSerializer(serializer);
             }
 
             final TransactionManager transact = pool.getTransactionManager();
@@ -197,13 +198,14 @@ public class MoveResourceRecoveryTest {
     private void readAborted() throws EXistException, PermissionDeniedException, SAXException, IOException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            final Serializer serializer = broker.getSerializer();
-            serializer.reset();
+            final Serializer serializer = broker.borrowSerializer();
 
             try(final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append("new_test2.xml"), LockMode.READ_LOCK)) {
                 assertNotNull("Document should not be null", lockedDoc);
                 final String data = serializer.serialize(lockedDoc.getDocument());
                 assertNotNull(data);
+            } finally {
+                broker.returnSerializer(serializer);
             }
 
             final TransactionManager transact = pool.getTransactionManager();

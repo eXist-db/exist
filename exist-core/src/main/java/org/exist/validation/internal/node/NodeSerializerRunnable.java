@@ -25,6 +25,8 @@ package org.exist.validation.internal.node;
 import java.io.IOException;
 import java.util.Properties;
 import javax.xml.transform.OutputKeys;
+
+import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.io.BlockingOutputStream;
@@ -34,25 +36,27 @@ import org.exist.xquery.value.NodeValue;
 /**
  * Node serializer (threaded).
  *
+ * @param <SR> Serializer result
+ *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class NodeSerializerRunnable implements Runnable {
     
-    private final static Logger logger = LogManager.getLogger(NodeSerializerRunnable.class);
-    
-    private final Serializer serializer;
+    private static final Logger logger = LogManager.getLogger(NodeSerializerRunnable.class);
+
+    private final ConsumerE<ConsumerE<Serializer, IOException>, IOException> withSerializer;
     private final NodeValue node;
     private final BlockingOutputStream bos;
 
     /**
      * Creates a new instance of NodeSerializerRunnable.
      *
-     * @param serializer The serializer.
+     * @param withSerializer The serializer closure.
      * @param node       The node to be serialized.
      * @param bos        Blocking outputstream.
      */
-    public NodeSerializerRunnable(final Serializer serializer, final NodeValue node, final  BlockingOutputStream bos) {
-        this.serializer = serializer;
+    public NodeSerializerRunnable(final ConsumerE<ConsumerE<Serializer, IOException>, IOException> withSerializer, final NodeValue node, final  BlockingOutputStream bos) {
+        this.withSerializer = withSerializer;
         this.node = node;
         this.bos = bos;
     }
@@ -68,9 +72,11 @@ public class NodeSerializerRunnable implements Runnable {
             final Properties outputProperties = new Properties();
             outputProperties.setProperty(OutputKeys.INDENT, "yes");
             outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            
-            NodeSerializer.serialize(serializer, node, outputProperties, bos);
-            
+
+            withSerializer.accept(serializer ->
+                NodeSerializer.serialize(serializer, node, outputProperties, bos)
+            );
+
         } catch (final IOException ex) {
             logger.error(ex);
             exception = ex;
@@ -81,6 +87,7 @@ public class NodeSerializerRunnable implements Runnable {
             } catch (final IOException ex) {
                 logger.warn(ex);
             }
+
         }
     }
 }

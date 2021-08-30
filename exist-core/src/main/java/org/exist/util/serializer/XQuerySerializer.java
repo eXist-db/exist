@@ -83,8 +83,7 @@ public class XQuerySerializer {
     }
 
     private void serializeXML(final Sequence sequence, final int start, final int howmany, final boolean wrap, final boolean typed, final long compilationTime, final long executionTime) throws SAXException, XPathException {
-        final Serializer serializer = broker.getSerializer();
-        serializer.reset();
+        final Serializer serializer = broker.borrowSerializer();
         SAXSerializer sax = null;
         try {
             sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(
@@ -99,6 +98,7 @@ public class XQuerySerializer {
             if (sax != null) {
                 SerializerPool.getInstance().returnObject(sax);
             }
+            broker.returnSerializer(serializer);
         }
     }
 

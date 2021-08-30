@@ -100,11 +100,8 @@ public class Stream extends StrictResponseFunction {
             try (final DBBroker broker = db.getBroker();
                     final PrintWriter output = new PrintWriter(new OutputStreamWriter(response.getOutputStream(), encoding))) {
 
-                final Serializer serializer = broker.getSerializer();
-                serializer.reset();
-
+                final Serializer serializer = broker.borrowSerializer();
                 final SerializerPool serializerPool = SerializerPool.getInstance();
-
                 final SAXSerializer sax = (SAXSerializer) serializerPool.borrowObject(SAXSerializer.class);
                 try {
                     sax.setOutput(output, serializeOptions);
@@ -118,6 +115,7 @@ public class Stream extends StrictResponseFunction {
                     throw new IOException(e);
                 } finally {
                     serializerPool.returnObject(sax);
+                    broker.returnSerializer(serializer);
                 }
 
                 output.flush();

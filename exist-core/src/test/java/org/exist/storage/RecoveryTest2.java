@@ -118,13 +118,14 @@ public class RecoveryTest2 {
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             assertNotNull(broker);
-            Serializer serializer = broker.getSerializer();
-            serializer.reset();
+            final Serializer serializer = broker.borrowSerializer();
             
             try(final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append("terms-eng.xml"), LockMode.READ_LOCK)) {
                 assertNotNull("Document should not be null", lockedDoc);
                 String data = serializer.serialize(lockedDoc.getDocument());
                 assertNotNull(data);
+            } finally {
+                broker.returnSerializer(serializer);
             }
         }
     }

@@ -211,14 +211,15 @@ public class Sync extends BasicFunction {
             if (isRepoXML) {
                 processRepoDesc(targetFile, doc, sax, output);
             } else {
+				final Serializer serializer = context.getBroker().borrowSerializer();
 				try(final Writer writer = new OutputStreamWriter(new BufferedOutputStream(Files.newOutputStream(targetFile)), StandardCharsets.UTF_8)) {
 					sax.setOutput(writer, DEFAULT_PROPERTIES);
-					Serializer serializer = context.getBroker().getSerializer();
-					serializer.reset();
 					serializer.setProperties(DEFAULT_PROPERTIES);
 
 					serializer.setSAXHandlers(sax, sax);
 					serializer.toSAX(doc);
+				} finally {
+					context.getBroker().returnSerializer(serializer);
 				}
             }
 		} catch (final IOException e) {
@@ -242,6 +243,8 @@ public class Sync extends BasicFunction {
             final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             final Document original = builder.parse(targetFile.toFile());
 
+			final Serializer serializer = context.getBroker().borrowSerializer();
+
             try (final Writer writer = new OutputStreamWriter(new BufferedOutputStream(Files.newOutputStream(targetFile)), StandardCharsets.UTF_8)) {
                 sax.setOutput(writer, DEFAULT_PROPERTIES);
                 
@@ -251,14 +254,15 @@ public class Sync extends BasicFunction {
                 final TransformerHandler handler = factory.newTransformerHandler(stylesource);
                 handler.getTransformer().setParameter("original", original.getDocumentElement());
                 handler.setResult(new SAXResult(sax));
-                
-                final Serializer serializer = context.getBroker().getSerializer();
+
                 serializer.reset();
                 serializer.setProperties(DEFAULT_PROPERTIES);
                 serializer.setSAXHandlers(handler, handler);
                 
                 serializer.toSAX(doc);
-            }
+            } finally {
+				context.getBroker().returnSerializer(serializer);
+			}
         } catch (final ParserConfigurationException e) {
             reportError(output, "Parser exception while saving file " + targetFile.toAbsolutePath().toString() + ": " + e.getMessage());
         } catch (final SAXException e) {

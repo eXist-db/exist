@@ -199,7 +199,7 @@ public class ExistDocument extends ExistResource {
     }
 
     private void serialize(final DBBroker broker, final DocumentImpl document, final OutputStream os) throws SAXException, IOException {
-        final Serializer serializer = broker.getSerializer();
+        final Serializer serializer = broker.borrowSerializer();
         // Set custom serialization options when available
         if (!configuration.isEmpty()) {
             serializer.setProperties(configuration);
@@ -222,6 +222,7 @@ public class ExistDocument extends ExistResource {
             if (saxSerializer != null) {
                 SerializerPool.getInstance().returnObject(saxSerializer);
             }
+            broker.returnSerializer(serializer);
         }
     }
 

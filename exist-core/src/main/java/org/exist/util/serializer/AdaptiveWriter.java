@@ -292,8 +292,7 @@ public class AdaptiveWriter extends IndentingXMLWriter {
     private void writeXML(final Item item) throws SAXException {
         final Properties xmlProperties = new Properties(outputProperties);
         xmlProperties.setProperty(OutputKeys.METHOD, "xml");
-        final Serializer serializer = broker.getSerializer();
-        serializer.reset();
+        final Serializer serializer = broker.borrowSerializer();
         SAXSerializer sax = null;
         try {
             sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(
@@ -308,6 +307,7 @@ public class AdaptiveWriter extends IndentingXMLWriter {
             if (sax != null) {
                 SerializerPool.getInstance().returnObject(sax);
             }
+            broker.returnSerializer(serializer);
         }
     }
 }

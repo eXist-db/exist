@@ -325,11 +325,15 @@ public abstract class AbstractCompressFunction extends BasicFunction
                         }
                     } else {
                         //xml
-                        Serializer serializer = context.getBroker().getSerializer();
-                        serializer.setUser(context.getSubject());
-                        serializer.setProperty("omit-xml-declaration", "no");
-                        getDynamicSerializerOptions(serializer);
-                        value = serializer.serialize((NodeValue) content).getBytes();
+                        final Serializer serializer = context.getBroker().borrowSerializer();
+                        try {
+                            serializer.setUser(context.getSubject());
+                            serializer.setProperty("omit-xml-declaration", "no");
+                            getDynamicSerializerOptions(serializer);
+                            value = serializer.serialize((NodeValue) content).getBytes();
+                        } finally {
+                            context.getBroker().returnSerializer(serializer);
+                        }
                     }
                 }
 
@@ -396,12 +400,16 @@ public abstract class AbstractCompressFunction extends BasicFunction
         final byte[] value;
         if (doc.getResourceType() == DocumentImpl.XML_FILE) {
             // xml file
-            Serializer serializer = context.getBroker().getSerializer();
-            serializer.setUser(context.getSubject());
-            serializer.setProperty("omit-xml-declaration", "no");
-            getDynamicSerializerOptions(serializer);
-            String strDoc = serializer.serialize(doc);
-            value = strDoc.getBytes();
+            final Serializer serializer = context.getBroker().borrowSerializer();
+            try {
+                serializer.setUser(context.getSubject());
+                serializer.setProperty("omit-xml-declaration", "no");
+                getDynamicSerializerOptions(serializer);
+                String strDoc = serializer.serialize(doc);
+                value = strDoc.getBytes();
+            } finally {
+                context.getBroker().returnSerializer(serializer);
+            }
         } else if (doc.getResourceType() == DocumentImpl.BINARY_FILE && doc.getContentLength() > 0) {
             // binary file
             try (final InputStream is = context.getBroker().getBinaryResource((BinaryDocument) doc);

@@ -186,10 +186,14 @@ public class SystemExportFiltersTest {
     }
 
     private String serializer(final DBBroker broker, final DocumentImpl document) throws SAXException, IOException {
-        final Serializer serializer = broker.getSerializer();
-        serializer.setUser(broker.getCurrentSubject());
-        serializer.setProperties(contentsOutputProps);
-        return serializer.serialize(document);
+        final Serializer serializer = broker.borrowSerializer();
+        try {
+            serializer.setUser(broker.getCurrentSubject());
+            serializer.setProperties(contentsOutputProps);
+            return serializer.serialize(document);
+        } finally {
+            broker.returnSerializer(serializer);
+        }
     }
 
     private static Collection createCollection(Txn txn, DBBroker broker, XmldbURI uri) throws PermissionDeniedException, IOException, TriggerException {

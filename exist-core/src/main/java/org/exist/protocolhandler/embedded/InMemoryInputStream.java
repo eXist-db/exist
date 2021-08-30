@@ -82,13 +82,15 @@ public class InMemoryInputStream {
 
           final DocumentImpl document = lockedDocument.getDocument();
           if (document.getResourceType() == DocumentImpl.XML_FILE) {
-            final Serializer serializer = broker.getSerializer();
-            serializer.reset();
-
-            // Preserve doctype
-            serializer.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
-            try(final Writer w = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
-              serializer.serialize(document, w);
+            final Serializer serializer = broker.borrowSerializer();
+            try {
+              // Preserve doctype
+              serializer.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
+              try (final Writer w = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
+                serializer.serialize(document, w);
+              }
+            } finally {
+              broker.returnSerializer(serializer);
             }
 
           } else {

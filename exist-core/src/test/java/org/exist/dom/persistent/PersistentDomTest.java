@@ -426,8 +426,7 @@ public class PersistentDomTest {
     private static String serialize(final DBBroker broker, final Node node, @Nullable final Properties outputProperties)
             throws IOException, SAXException {
         // serialize the results to the response output stream
-        final Serializer serializer = broker.getSerializer();
-        serializer.reset();
+        final Serializer serializer = broker.borrowSerializer();
         SAXSerializer sax = null;
         try(final StringWriter writer = new StringWriter()) {
             sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(
@@ -446,6 +445,7 @@ public class PersistentDomTest {
             if (sax != null) {
                 SerializerPool.getInstance().returnObject(sax);
             }
+            broker.returnSerializer(serializer);
         }
     }
 

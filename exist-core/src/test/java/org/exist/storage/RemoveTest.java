@@ -81,12 +81,13 @@ public class RemoveTest extends AbstractUpdateTest {
             transact.commit(transaction);
         }
             
-        final Serializer serializer = broker.getSerializer();
-        serializer.reset();
+        final Serializer serializer = broker.borrowSerializer();
 
         try(final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_XML_URI), LockMode.READ_LOCK);) {
             assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test.xml' should not be null", lockedDoc);
             final String data = serializer.serialize(lockedDoc.getDocument());
+        } finally {
+            broker.returnSerializer(serializer);
         }
 
         // the following transaction will not be committed and thus undone during recovery

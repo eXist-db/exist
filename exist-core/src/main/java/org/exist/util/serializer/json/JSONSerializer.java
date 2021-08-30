@@ -114,8 +114,7 @@ public class JSONSerializer {
     }
 
     private void serializeNode(Item item, JsonGenerator generator) throws SAXException {
-        final Serializer serializer = broker.getSerializer();
-        serializer.reset();
+        final Serializer serializer = broker.borrowSerializer();
         final Properties xmlOutput = new Properties();
         xmlOutput.setProperty(OutputKeys.METHOD, outputProperties.getProperty(EXistOutputKeys.JSON_NODE_OUTPUT_METHOD, "xml"));
         xmlOutput.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
@@ -125,6 +124,8 @@ public class JSONSerializer {
             generator.writeString(serializer.serialize((NodeValue)item));
         } catch (IOException e) {
             throw new SAXException(e.getMessage(), e);
+        } finally {
+            broker.returnSerializer(serializer);
         }
     }
 

@@ -665,12 +665,12 @@ public class RpcConnection implements RpcAPI {
     }
 
     private void serialize(final DBBroker broker, final Properties properties, final ConsumerE<Serializer, SAXException> toSaxFunction, final Writer writer) throws SAXException, IOException {
-        final Serializer serializer = broker.getSerializer();
-        serializer.setUser(user);
-        serializer.setProperties(properties);
+        final Serializer serializer = broker.borrowSerializer();
 
         SAXSerializer saxSerializer = null;
         try {
+            serializer.setUser(user);
+            serializer.setProperties(properties);
             saxSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 
             saxSerializer.setOutput(writer, properties);
@@ -683,6 +683,7 @@ public class RpcConnection implements RpcAPI {
             if (saxSerializer != null) {
                 SerializerPool.getInstance().returnObject(saxSerializer);
             }
+            broker.returnSerializer(serializer);
         }
     }
 

@@ -215,9 +215,7 @@ public class XSLTServlet extends HttpServlet {
             final SAXResult result = new SAXResult(sax);
             handler.setResult(result);
 
-            final Serializer serializer = broker.getSerializer();
-            serializer.reset();
-
+            final Serializer serializer = broker.borrowSerializer();
             Receiver receiver = new ReceiverToSAX(handler);
             try {
                 XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
@@ -271,6 +269,7 @@ public class XSLTServlet extends HttpServlet {
 
             } finally {
                 SerializerPool.getInstance().returnObject(sax);
+                broker.returnSerializer(serializer);
             }
 
             writer.flush();

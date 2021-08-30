@@ -41,6 +41,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.serializers.Serializer;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
@@ -186,12 +187,15 @@ public class SourceFactory {
                 if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
                     source = new DBSource(broker, (BinaryDocument) resource, true);
                 } else {
+                    final Serializer serializer = broker.borrowSerializer();
                     try {
                         // XML document: serialize to string source so it can be read as a stream
                         // by fn:unparsed-text and friends
-                        source = new StringSource(broker.getSerializer().serialize(resource));
+                        source = new StringSource(serializer.serialize(resource));
                     } catch (final SAXException e) {
                         throw new IOException(e.getMessage());
+                    } finally {
+                        broker.returnSerializer(serializer);
                     }
                 }
             }

@@ -456,18 +456,26 @@ public abstract class DBBroker implements AutoCloseable {
     }
 
     /**
-     * Get an instance of the Serializer used for converting nodes back to XML.
-     * Subclasses of DBBroker may have specialized subclasses of Serializer to
-     * convert a node into an XML-string
+     * Get an instance of the Serializer used for converting nodes back to XML
+     * from the pool.
+     *
+     * After use {@link #returnSerializer(Serializer)} should always be called.
+     *
      * @return the {@link Serializer}
      */
-    public abstract Serializer getSerializer();
+    public abstract Serializer borrowSerializer();
+
+    /**
+     * Return an instance of the Serializer used for converting nodes back to XML
+     * to the pool.
+     *
+     * The {@code serializer} should have been obtained by {@link #borrowSerializer()}
+     *
+     * @param serializer the {@link Serializer}
+     */
+    public abstract void returnSerializer(Serializer serializer);
 
     public abstract NativeValueIndex getValueIndex();
-
-    public abstract Serializer newSerializer();
-
-    public abstract Serializer newSerializer(List<String> chainOfReceivers);
 
     /**
      * Get a node with given owner document and id from the database.

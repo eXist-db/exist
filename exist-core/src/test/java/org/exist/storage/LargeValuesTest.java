@@ -138,12 +138,12 @@ public class LargeValuesTest {
             try(final LockedDocument lockedDoc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"), LockMode.READ_LOCK)) {
                 assertNotNull(lockedDoc);
 
-                final Serializer serializer = broker.getSerializer();
-                serializer.reset();
-
                 final Path tempFile = Files.createTempFile("eXist", ".xml");
+                final Serializer serializer = broker.borrowSerializer();
                 try (final Writer writer = Files.newBufferedWriter(tempFile, UTF_8)) {
                     serializer.serialize(lockedDoc.getDocument(), writer);
+                } finally {
+                    broker.returnSerializer(serializer);
                 }
 
                 // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme

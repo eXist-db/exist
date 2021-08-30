@@ -58,7 +58,7 @@ public class ExtendedDOMSerializer extends DOMSerializer {
         if(node.getNodeType() == NodeImpl.REFERENCE_NODE) {
             final SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
             handler.setReceiver(receiver);
-            final Serializer serializer = broker.getSerializer();
+            final Serializer serializer = broker.borrowSerializer();
             serializer.setSAXHandlers(handler, handler);
             try {
                 serializer.setProperties(outputProperties);
@@ -72,6 +72,7 @@ public class ExtendedDOMSerializer extends DOMSerializer {
                 throw new TransformerException(e.getMessage(), e);
             } finally {
                 SerializerPool.getInstance().returnObject(handler);
+                broker.returnSerializer(serializer);
             }
         } else
             {super.startNode(node);}
