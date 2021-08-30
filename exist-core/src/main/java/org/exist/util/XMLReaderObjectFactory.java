@@ -47,7 +47,7 @@ import org.xml.sax.XMLReader;
  *
  * @author wolf
  */
-public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements BrokerPoolService {
+public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader> implements BrokerPoolService {
 
     private final static Logger LOG = LogManager.getLogger(XMLReaderObjectFactory.class);
 
@@ -98,10 +98,8 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
         saxParserFactory.setNamespaceAware(true);
     }
 
-    /**
-     * @see org.apache.commons.pool.BasePoolableObjectFactory#makeObject()
-     */
-    public Object makeObject() throws Exception {
+    @Override
+    public XMLReader makeObject() throws Exception {
         final XMLReader xmlReader = createXmlReader();
         setReaderValidationMode(validation, xmlReader);
         return xmlReader;
