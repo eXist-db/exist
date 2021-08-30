@@ -39,6 +39,8 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
+import java.util.Map;
+
 /**
  * Factory to create new XMLReader objects on demand.
  * The factory is used by {@link org.exist.util.XMLReaderPool}.
@@ -75,19 +77,19 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
     public static final String APACHE_PROPERTIES_NONAMESPACESCHEMALOCATION
             = "http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation";
 
-    private Configuration configuration;
-    private GrammarPool grammarPool;
-    private eXistXMLCatalogResolver resolver;
+    @Nullable private GrammarPool grammarPool;
+    @Nullable private eXistXMLCatalogResolver resolver;
     private VALIDATION_SETTING validation = VALIDATION_SETTING.UNKNOWN;
+    @Nullable private Map<String, Boolean> parserFeatures;
     private SAXParserFactory saxParserFactory;
 
     @Override
     public void configure(final Configuration configuration) {
-        this.configuration = configuration;
         this.grammarPool = (GrammarPool) configuration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL);
         this.resolver = (eXistXMLCatalogResolver) configuration.getProperty(CATALOG_RESOLVER);
         final String option = (String) configuration.getProperty(PROPERTY_VALIDATION_MODE);
         this.validation = convertValidationMode(option);
+        this.parserFeatures = (Map<String, Boolean>) configuration.getProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY);
 
         this.saxParserFactory = ExistSAXParserFactory.getSAXParserFactory();
         saxParserFactory.setValidating(validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED);
@@ -113,6 +115,13 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
 
         // Set XML Catalog Resolver
         setReaderProperty(xmlReader, APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
+
+        // Sets any features for the parser which were defined in conf.xml
+        if (parserFeatures != null) {
+            for (final Map.Entry<String, Boolean> feature : parserFeatures.entrySet()) {
+                setReaderFeature(xmlReader, feature.getKey(), feature.getValue());
+            }
+        }
     }
 
     @Override

@@ -34,9 +34,6 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.DefaultHandler2;
 
-import javax.annotation.Nullable;
-import java.util.Map;
-
 /**
  * Maintains a pool of XMLReader objects.
  * <p>
@@ -47,9 +44,6 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
     private static final Logger LOG = LogManager.getLogger(XMLReaderPool.class);
 
     private static final DefaultHandler2 DUMMY_HANDLER = new DefaultHandler2();
-
-    @Nullable
-    private Map<String, Boolean> parserFeatures;
 
     /**
      * Constructs an XML Reader Pool.
@@ -64,27 +58,14 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
 
     @Override
     public void configure(final Configuration configuration) {
-        this.parserFeatures = (Map<String, Boolean>) configuration.getProperty(XmlParser.XML_PARSER_FEATURES_PROPERTY);
+        //nothing to configure
     }
 
     public XMLReader borrowXMLReader() {
         try {
-            final XMLReader reader = super.borrowObject();
-            setParserConfigFeatures(reader);
-            return reader;
+            return super.borrowObject();
         } catch (final Exception e) {
             throw new IllegalStateException("error while returning XMLReader: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Sets any features for the parser which were defined in conf.xml
-     */
-    private void setParserConfigFeatures(final XMLReader xmlReader) throws SAXNotRecognizedException, SAXNotSupportedException {
-        if (parserFeatures != null) {
-            for (final Map.Entry<String, Boolean> feature : parserFeatures.entrySet()) {
-                xmlReader.setFeature(feature.getKey(), feature.getValue());
-            }
         }
     }
 
@@ -92,7 +73,6 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
     public XMLReader borrowObject() throws Exception {
         return borrowXMLReader();
     }
-
 
     public void returnXMLReader(final XMLReader reader) {
         if (reader == null) {
