@@ -687,6 +687,53 @@ public class XMLReaderPoolTest {
     }
 
     @Test
+    public void reusedXmlReaderStillHasConfiguredFeatures() throws SAXNotSupportedException, SAXNotRecognizedException {
+        final Configuration mockConfiguration = createMock(Configuration.class);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE)).andReturn("auto");
+
+        final Map<String, Boolean> features = new HashMap<>();
+        features.put("http://xml.org/sax/features/external-general-entities", false);
+        features.put("http://xml.org/sax/features/external-parameter-entities", false);
+        features.put("http://javax.xml.XMLConstants/feature/secure-processing", true);
+
+        expect(mockConfiguration.getProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY)).andReturn(features);
+
+        replay(mockConfiguration);
+
+        final XMLReaderObjectFactory xmlReaderObjectFactory = new XMLReaderObjectFactory();
+        xmlReaderObjectFactory.configure(mockConfiguration);
+        final XMLReaderPool xmlReaderPool = new XMLReaderPool(xmlReaderObjectFactory, 1, 0);
+        xmlReaderPool.configure(mockConfiguration);
+
+        XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
+        assertNotNull(xmlreader);
+        try {
+            // explicitly switch the features
+            xmlreader.setFeature("http://xml.org/sax/features/external-general-entities", true);
+            xmlreader.setFeature("http://xml.org/sax/features/external-parameter-entities", true);
+            xmlreader.setFeature("http://javax.xml.XMLConstants/feature/secure-processing", false);
+        } finally {
+            xmlReaderPool.returnXMLReader(xmlreader);
+        }
+
+        // borrow again after return...
+
+        xmlreader = xmlReaderPool.borrowXMLReader();
+        assertNotNull(xmlreader);
+        try {
+            assertFalse(xmlreader.getFeature("http://xml.org/sax/features/external-general-entities"));
+            assertFalse(xmlreader.getFeature("http://xml.org/sax/features/external-parameter-entities"));
+            assertTrue(xmlreader.getFeature("http://javax.xml.XMLConstants/feature/secure-processing"));
+        } finally {
+            xmlReaderPool.returnXMLReader(xmlreader);
+        }
+
+        verify(mockConfiguration);
+    }
+
+    @Test
     public void exceedMaxIdle() {
         final int maxIdle = 3;
         final int initialCapacity = 0;
