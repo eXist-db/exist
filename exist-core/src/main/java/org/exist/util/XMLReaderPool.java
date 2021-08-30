@@ -28,7 +28,6 @@ import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolService;
-import org.exist.storage.BrokerPoolServiceException;
 import org.exist.validation.GrammarPool;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -64,7 +63,7 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
     }
 
     @Override
-    public void configure(final Configuration configuration) throws BrokerPoolServiceException {
+    public void configure(final Configuration configuration) {
         this.configuration = configuration;
     }
 
