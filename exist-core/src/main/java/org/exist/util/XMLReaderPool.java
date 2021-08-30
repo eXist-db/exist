@@ -49,7 +49,6 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
 
     private final static DefaultHandler2 DUMMY_HANDLER = new DefaultHandler2();
 
-    private Configuration configuration;
     @Nullable private Map<String, Boolean> parserFeatures;
 
     /**
@@ -65,7 +64,6 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
 
     @Override
     public void configure(final Configuration configuration) {
-        this.configuration = configuration;
         this.parserFeatures = (Map<String, Boolean>)configuration.getProperty(XmlParser.XML_PARSER_FEATURES_PROPERTY);
     }
 
@@ -96,7 +94,7 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
     }
     
    
-    public synchronized void returnXMLReader(XMLReader reader) {
+    public synchronized void returnXMLReader(final XMLReader reader) {
         if (reader == null) {
             return;
         }
@@ -122,11 +120,11 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
     }
 
     @Override
-    public synchronized void returnObject(XMLReader obj) throws Exception {
+    public synchronized void returnObject(final XMLReader obj) throws Exception {
         returnXMLReader(obj);
     }   
 
-    private Object getReaderProperty(XMLReader xmlReader, String propertyName){
+    private Object getReaderProperty(final XMLReader xmlReader, final String propertyName){
 
         Object object = null;
         try {

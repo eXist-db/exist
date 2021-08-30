@@ -113,12 +113,12 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
      * @throws ParserConfigurationException if the parser cannot be configured
      * @throws SAXException if an exception occurs with the parser
      */
-    public XMLReader createXmlReader() throws ParserConfigurationException, SAXException {
+    private XMLReader createXmlReader() throws ParserConfigurationException, SAXException {
         final SAXParser saxParser = saxParserFactory.newSAXParser();
         final XMLReader xmlReader = saxParser.getXMLReader();
 
         // Setup grammar cache
-        if ( grammarPool != null ){
+        if (grammarPool != null) {
             setReaderProperty(xmlReader,APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
         }
 
@@ -194,7 +194,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
         }
     }
 
-    private static void setReaderProperty(XMLReader xmlReader, String propertyName, Object object){
+    private static void setReaderProperty(final XMLReader xmlReader, final String propertyName, final Object object) {
         try {
             xmlReader.setProperty(propertyName, object);
 
