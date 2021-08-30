@@ -40,42 +40,40 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
 /**
- * Factory to create new XMLReader objects on demand. The factory is used
- * by {@link org.exist.util.XMLReaderPool}.
- *
- * @author wolf
+ * Factory to create new XMLReader objects on demand.
+ * The factory is used by {@link org.exist.util.XMLReaderPool}.
  */
 public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader> implements BrokerPoolService {
 
-    private final static Logger LOG = LogManager.getLogger(XMLReaderObjectFactory.class);
+    private static final Logger LOG = LogManager.getLogger(XMLReaderObjectFactory.class);
 
     public enum VALIDATION_SETTING {
         UNKNOWN, ENABLED, AUTO, DISABLED
     }
 
-    public final static String CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME = "entity-resolver";
-    public final static String CONFIGURATION_CATALOG_ELEMENT_NAME = "catalog";
-    public final static String CONFIGURATION_ELEMENT_NAME = "validation";
+    public static final String CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME = "entity-resolver";
+    public static final String CONFIGURATION_CATALOG_ELEMENT_NAME = "catalog";
+    public static final String CONFIGURATION_ELEMENT_NAME = "validation";
 
     //TOO : move elsewhere ?
-    public final static String VALIDATION_MODE_ATTRIBUTE = "mode";
-    public final static String PROPERTY_VALIDATION_MODE = "validation.mode";
-    public final static String CATALOG_RESOLVER = "validation.resolver";
-    public final static String CATALOG_URIS = "validation.catalog_uris";
-    public final static String GRAMMAR_POOL = "validation.grammar_pool";
+    public static final String VALIDATION_MODE_ATTRIBUTE = "mode";
+    public static final String PROPERTY_VALIDATION_MODE = "validation.mode";
+    public static final String CATALOG_RESOLVER = "validation.resolver";
+    public static final String CATALOG_URIS = "validation.catalog_uris";
+    public static final String GRAMMAR_POOL = "validation.grammar_pool";
 
     // Xerces feature and property names
-    public final static String APACHE_FEATURES_VALIDATION_SCHEMA
-            ="http://apache.org/xml/features/validation/schema";
-    public final static String APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL
-            ="http://apache.org/xml/properties/internal/grammar-pool";
-    public final static String APACHE_PROPERTIES_LOAD_EXT_DTD
-            ="http://apache.org/xml/features/nonvalidating/load-external-dtd";
-    public final static String APACHE_PROPERTIES_ENTITYRESOLVER
-            ="http://apache.org/xml/properties/internal/entity-resolver";
+    public static final String APACHE_FEATURES_VALIDATION_SCHEMA
+            = "http://apache.org/xml/features/validation/schema";
+    public static final String APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL
+            = "http://apache.org/xml/properties/internal/grammar-pool";
+    public static final String APACHE_PROPERTIES_LOAD_EXT_DTD
+            = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+    public static final String APACHE_PROPERTIES_ENTITYRESOLVER
+            = "http://apache.org/xml/properties/internal/entity-resolver";
 
-    public final static String APACHE_PROPERTIES_NONAMESPACESCHEMALOCATION
-            ="http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation";
+    public static final String APACHE_PROPERTIES_NONAMESPACESCHEMALOCATION
+            = "http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation";
 
     private Configuration configuration;
     private GrammarPool grammarPool;
@@ -128,7 +126,6 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
      * Convert configuration text (yes,no,true,false,auto) into a magic number.
      *
      * @param option the configuration option
-     *
      * @return the validation setting
      */
     public static VALIDATION_SETTING convertValidationMode(final @Nullable String option) {
@@ -154,25 +151,22 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
      * Setup validation mode of xml reader.
      *
      * @param validation the validation setting
-     * @param xmlReader the reader
+     * @param xmlReader  the reader
      */
     public static void setReaderValidationMode(final VALIDATION_SETTING validation, final XMLReader xmlReader) {
         // Configure XMLReader see http://xerces.apache.org/xerces2-j/features.html
         setReaderFeature(xmlReader, Namespaces.SAX_NAMESPACES_PREFIXES, true);
         setReaderFeature(xmlReader, APACHE_PROPERTIES_LOAD_EXT_DTD,
-                (validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED) );
-
+                validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED);
         setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION,
                 validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED);
-
         setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION_DYNAMIC,
                 validation == VALIDATION_SETTING.AUTO);
-
         setReaderFeature(xmlReader, APACHE_FEATURES_VALIDATION_SCHEMA,
-                (validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED) );
+                validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED);
     }
 
-    private static void setReaderFeature(XMLReader xmlReader, String featureName, boolean value){
+    private static void setReaderFeature(final XMLReader xmlReader, final String featureName, final boolean value) {
         try {
             xmlReader.setFeature(featureName, value);
 
@@ -180,11 +174,11 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
             LOG.error("SAXNotRecognizedException: {}", ex.getMessage());
 
         } catch (final SAXNotSupportedException ex) {
-            LOG.error("SAXNotSupportedException:{}", ex.getMessage());
+            LOG.error("SAXNotSupportedException: {}", ex.getMessage());
         }
     }
 
-    private static void setReaderProperty(final XMLReader xmlReader, final String propertyName, final Object object) {
+    private static void setReaderProperty(final XMLReader xmlReader, final String propertyName, @Nullable final Object object) {
         try {
             xmlReader.setProperty(propertyName, object);
 
@@ -195,6 +189,4 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
             LOG.error("SAXNotSupportedException:{}", ex.getMessage());
         }
     }
-
-
 }

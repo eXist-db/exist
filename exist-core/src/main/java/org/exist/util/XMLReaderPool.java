@@ -38,24 +38,24 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
- * Maintains a pool of XMLReader objects. The pool is available through
- * {@link BrokerPool#getParserPool()}.
- * 
- * @author wolf
+ * Maintains a pool of XMLReader objects.
+ * <p>
+ * The pool is available through {@link BrokerPool#getParserPool()}.
  */
 public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerPoolService {
 
-    private final static Logger LOG = LogManager.getLogger(XMLReaderPool.class);
+    private static final Logger LOG = LogManager.getLogger(XMLReaderPool.class);
 
-    private final static DefaultHandler2 DUMMY_HANDLER = new DefaultHandler2();
+    private static final DefaultHandler2 DUMMY_HANDLER = new DefaultHandler2();
 
-    @Nullable private Map<String, Boolean> parserFeatures;
+    @Nullable
+    private Map<String, Boolean> parserFeatures;
 
     /**
      * Constructs an XML Reader Pool.
      *
-     * @param factory the object factory
-     * @param maxIdle the max idle time for a reader
+     * @param factory          the object factory
+     * @param maxIdle          the max idle time for a reader
      * @param initIdleCapacity the initial capacity
      */
     public XMLReaderPool(final PoolableObjectFactory<XMLReader> factory, final int maxIdle, final int initIdleCapacity) {
@@ -64,7 +64,7 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
 
     @Override
     public void configure(final Configuration configuration) {
-        this.parserFeatures = (Map<String, Boolean>)configuration.getProperty(XmlParser.XML_PARSER_FEATURES_PROPERTY);
+        this.parserFeatures = (Map<String, Boolean>) configuration.getProperty(XmlParser.XML_PARSER_FEATURES_PROPERTY);
     }
 
     public XMLReader borrowXMLReader() {
@@ -73,7 +73,7 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
             setParserConfigFeatures(reader);
             return reader;
         } catch (final Exception e) {
-            throw new IllegalStateException("error while returning XMLReader: " + e.getMessage(), e );
+            throw new IllegalStateException("error while returning XMLReader: " + e.getMessage(), e);
         }
     }
 
@@ -92,28 +92,28 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
     public XMLReader borrowObject() throws Exception {
         return borrowXMLReader();
     }
-    
-   
+
+
     public void returnXMLReader(final XMLReader reader) {
         if (reader == null) {
             return;
         }
-        
-        try {            
+
+        try {
             reader.setContentHandler(DUMMY_HANDLER);
             reader.setErrorHandler(DUMMY_HANDLER);
             reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, DUMMY_HANDLER);
-            
+
             // DIZZZ; workaround Xerces bug. Cached DTDs cause for problems during validation parsing.
             final GrammarPool grammarPool =
-               (GrammarPool) getReaderProperty(reader,
-                                    XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL);
-            if(grammarPool!=null){
+                    (GrammarPool) getReaderProperty(reader,
+                            XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL);
+            if (grammarPool != null) {
                 grammarPool.clearDTDs();
             }
-            
+
             super.returnObject(reader);
-            
+
         } catch (final Exception e) {
             throw new IllegalStateException("error while returning XMLReader: " + e.getMessage(), e);
         }
@@ -122,19 +122,18 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
     @Override
     public void returnObject(final XMLReader obj) throws Exception {
         returnXMLReader(obj);
-    }   
+    }
 
-    private Object getReaderProperty(final XMLReader xmlReader, final String propertyName){
-
+    private Object getReaderProperty(final XMLReader xmlReader, final String propertyName) {
         Object object = null;
         try {
-            object=xmlReader.getProperty(propertyName);
+            object = xmlReader.getProperty(propertyName);
 
         } catch (final SAXNotRecognizedException ex) {
             LOG.error("SAXNotRecognizedException: {}", ex.getMessage());
 
         } catch (final SAXNotSupportedException ex) {
-            LOG.error("SAXNotSupportedException:{}", ex.getMessage());
+            LOG.error("SAXNotSupportedException: {}", ex.getMessage());
         }
         return object;
     }
@@ -146,5 +145,4 @@ public class XMLReaderPool extends StackObjectPool<XMLReader> implements BrokerP
         String XML_PARSER_FEATURES_ELEMENT = "features";
         String XML_PARSER_FEATURES_PROPERTY = "parser.xml-parser.features";
     }
-    
 }
