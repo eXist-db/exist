@@ -81,20 +81,21 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
     private Configuration configuration;
     private GrammarPool grammarPool;
     private eXistXMLCatalogResolver resolver;
+    private VALIDATION_SETTING validation = VALIDATION_SETTING.UNKNOWN;
 
     @Override
     public void configure(final Configuration configuration) {
         this.configuration = configuration;
         this.grammarPool = (GrammarPool) configuration.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
         this.resolver = (eXistXMLCatalogResolver) configuration.getProperty(CATALOG_RESOLVER);
+        final String option = (String) configuration.getProperty(PROPERTY_VALIDATION_MODE);
+        this.validation = convertValidationMode(option);
     }
 
     /**
      * @see org.apache.commons.pool.BasePoolableObjectFactory#makeObject()
      */
     public Object makeObject() throws Exception {
-        final String option = (String) configuration.getProperty(PROPERTY_VALIDATION_MODE);
-        final VALIDATION_SETTING validation = convertValidationMode(option);
         final XMLReader xmlReader = createXmlReader(validation, grammarPool, resolver);
         setReaderValidationMode(validation, xmlReader);
         return xmlReader;
