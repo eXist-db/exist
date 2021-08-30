@@ -83,6 +83,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
     private GrammarPool grammarPool;
     private eXistXMLCatalogResolver resolver;
     private VALIDATION_SETTING validation = VALIDATION_SETTING.UNKNOWN;
+    private SAXParserFactory saxParserFactory;
 
     @Override
     public void configure(final Configuration configuration) {
@@ -91,52 +92,40 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
         this.resolver = (eXistXMLCatalogResolver) configuration.getProperty(CATALOG_RESOLVER);
         final String option = (String) configuration.getProperty(PROPERTY_VALIDATION_MODE);
         this.validation = convertValidationMode(option);
+
+        this.saxParserFactory = ExistSAXParserFactory.getSAXParserFactory();
+        saxParserFactory.setValidating(validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED);
+        saxParserFactory.setNamespaceAware(true);
     }
 
     /**
      * @see org.apache.commons.pool.BasePoolableObjectFactory#makeObject()
      */
     public Object makeObject() throws Exception {
-        final XMLReader xmlReader = createXmlReader(validation, grammarPool, resolver);
+        final XMLReader xmlReader = createXmlReader();
         setReaderValidationMode(validation, xmlReader);
         return xmlReader;
     }
 
     /**
-     * Create Xmlreader and setup validation.
-     *
-     * @param validation the validation setting
-     * @param grammarPool the grammar pool
-     * @param resolver the catalog resolver
+     * Create an XMLReader and setup validation.
      *
      * @return the configured reader
      *
      * @throws ParserConfigurationException if the parser cannot be configured
      * @throws SAXException if an exception occurs with the parser
      */
-    public static XMLReader createXmlReader(final VALIDATION_SETTING validation, final GrammarPool grammarPool,
-            final eXistXMLCatalogResolver resolver) throws ParserConfigurationException, SAXException {
-
-        // Create a xmlreader
-        final SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
-
-        if (validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED){
-            saxFactory.setValidating(true);
-        } else {
-            saxFactory.setValidating(false);
-        }
-        saxFactory.setNamespaceAware(true);
-
-        final SAXParser saxParser = saxFactory.newSAXParser();
+    public XMLReader createXmlReader() throws ParserConfigurationException, SAXException {
+        final SAXParser saxParser = saxParserFactory.newSAXParser();
         final XMLReader xmlReader = saxParser.getXMLReader();
 
         // Setup grammar cache
-        if(grammarPool!=null){
+        if ( grammarPool != null ){
             setReaderProperty(xmlReader,APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
         }
 
         // Setup xml catalog resolver
-        if(resolver!=null){
+        if (resolver != null) {
            setReaderProperty(xmlReader,APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
         }
 
