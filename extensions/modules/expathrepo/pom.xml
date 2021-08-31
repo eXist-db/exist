@@ -111,6 +111,10 @@
                 <filtering>false</filtering>
             </testResource>
             <testResource>
+                <directory>target/generated-test-resources</directory>
+                <filtering>false</filtering>
+            </testResource>
+            <testResource>
                 <directory>src/test/resources-filtered</directory>
                 <filtering>true</filtering>
             </testResource>
@@ -130,7 +134,7 @@
                             <outputDirectory>${basedir}/target/generated-test-resources</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>expathrepo-trigger-test/target</directory>
+                                    <directory>expathrepo-trigger-test/target/</directory>
                                     <includes>
                                         <include>*.xar</include>
                                     </includes>
