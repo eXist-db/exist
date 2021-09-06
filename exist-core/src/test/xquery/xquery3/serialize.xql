@@ -105,7 +105,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
 
 declare variable $ser:test-xsl := document {
-    <?xml-stylesheet href="xmldb:exist://db/serialization-test/test.xsl" type="text/xsl"?>,
+    <?xml-stylesheet href="xmldb:exist:///db/serialization-test/test.xsl" type="text/xsl"?>,
     <elem a="abc"><!--comment--><b>123</b></elem>
 };
 
