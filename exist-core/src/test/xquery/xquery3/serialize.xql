@@ -742,33 +742,16 @@ function ser:exist-jsonp() {
     return fn:serialize($node, map {"method":"json", "media-type":"application/json", xs:QName("exist:jsonp"):"functionName"}) eq 'functionName({"author":["John Doe","Robert Smith"]})'
 };
 
-
 declare
-    %test:assertXPath("contains($result, 'null')")
-function ser:exist-json-ignore-whitespace-text-nodes-false() {
-      let $node := <book>
-          <author>John Doe</author>
-          <author>Robert Smith</author>
-          <author>  </author>
-      </book>
-    return fn:serialize($node, map {"method":"json", "media-type":"application/json", xs:QName("exist:json-ignore-whitespace-text-nodes"): false()})
-};
-
-declare
-    %test:assertXPath("contains($result, 'true')")
-function ser:exist-json-ignore-whitespace-text-nodes-true() {
-    let $node := <a z='99'>
-                <b x='1'/>
-                <b x='2'></b>
-                <b x='3'>stuff</b>
-                <b>           </b>
-               </a>
-    return fn:serialize($node, map {"method":"json", "media-type":"application/json", xs:QName("exist:json-ignore-whitespace-text-nodes"): false()})
-};
-
-declare
-    %test:assertXPath("contains($result, 'true')")
+    %test:assertEquals('processed')
 function ser:exist-process-xsl-pi-true() {
     let $doc := doc($ser:collection || "/test-xsl.xml")
     return fn:serialize($doc, map {xs:QName("exist:process-xsl-pi"): true()})
+};
+
+declare
+    %test:assertXPath("contains($result, 'stylesheet')")
+function ser:exist-process-xsl-pi-false() {
+    let $doc := doc($ser:collection || "/test-xsl.xml")
+    return fn:serialize($doc, map {xs:QName("exist:process-xsl-pi"): false()})
 };
