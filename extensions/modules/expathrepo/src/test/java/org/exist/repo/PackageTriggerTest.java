@@ -23,6 +23,7 @@ package org.exist.repo;
 
 import org.apache.commons.io.IOUtils;
 import org.exist.EXistException;
+import org.exist.Version;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
@@ -50,7 +51,7 @@ import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_C
 
 public class PackageTriggerTest {
 
-    static final String xarFile = "triggertest-1.1.0.xar";
+    static final String xarFile = "exist-expathrepo-trigger-test-" + Version.getVersion() + ".xar";
     static final XmldbURI triggerTestCollection = XmldbURI.create("/db");
     static final XmldbURI xarUri = triggerTestCollection.append(xarFile);
 
@@ -73,7 +74,7 @@ public class PackageTriggerTest {
 
         // Load XAR file
         byte[] content;
-        try (InputStream resourceAsStream = PackageTriggerTest.class.getResourceAsStream(xarFile)) {
+        try (InputStream resourceAsStream = PackageTriggerTest.class.getResourceAsStream("/" + xarFile)) {
             Assert.assertNotNull(resourceAsStream);
             content = IOUtils.toByteArray(resourceAsStream);
         }
