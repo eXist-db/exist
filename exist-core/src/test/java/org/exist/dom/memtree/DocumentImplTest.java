@@ -41,10 +41,13 @@ import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+/**
+ * @author Adam Retter <adam@evolvedbinary.com>
+ */
 @RunWith(ParallelRunner.class)
 public class DocumentImplTest {
 
-    private static final String DOC =
+    private static final String DOC_WITH_NAMESPACES =
             "<repo:meta xmlns=\"http://exist-db.org/xquery/repo\" xmlns:repo=\"http://exist-db.org/xquery/repo\">\n" +
             "    <repo:description>some description or other</repo:description>\n" +
             "</repo:meta>";
@@ -52,7 +55,7 @@ public class DocumentImplTest {
     @Test
     public void checkNamespaces_xerces() throws IOException, ParserConfigurationException, SAXException {
         final Document doc;
-        try(final InputStream is = new UnsynchronizedByteArrayInputStream(DOC.getBytes(UTF_8))) {
+        try(final InputStream is = new UnsynchronizedByteArrayInputStream(DOC_WITH_NAMESPACES.getBytes(UTF_8))) {
             doc = parseXerces(is);
         }
 
@@ -85,7 +88,7 @@ public class DocumentImplTest {
     @Test
     public void checkNamespaces_saxon() throws IOException, ParserConfigurationException, SAXException, IllegalAccessException, InstantiationException, ClassNotFoundException {
         final Document doc;
-        try(final InputStream is = new UnsynchronizedByteArrayInputStream(DOC.getBytes(UTF_8))) {
+        try(final InputStream is = new UnsynchronizedByteArrayInputStream(DOC_WITH_NAMESPACES.getBytes(UTF_8))) {
             doc = parseSaxon(is);
         }
 
@@ -123,7 +126,7 @@ public class DocumentImplTest {
     @Test
     public void checkNamespaces_exist() throws IOException, SAXException, ParserConfigurationException {
         final DocumentImpl doc;
-        try(final InputStream is = new UnsynchronizedByteArrayInputStream(DOC.getBytes(UTF_8))) {
+        try(final InputStream is = new UnsynchronizedByteArrayInputStream(DOC_WITH_NAMESPACES.getBytes(UTF_8))) {
             doc = parseExist(is);
         }
 
@@ -157,12 +160,14 @@ public class DocumentImplTest {
         final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         final DocumentBuilder builder = factory.newDocumentBuilder();
+        assertTrue(builder.isNamespaceAware());
         return builder.parse(is);
     }
 
-    private Document parseSaxon(final InputStream is) throws IOException, SAXException, ParserConfigurationException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    private Document parseSaxon(final InputStream is) throws IOException, SAXException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         final Class clazz = Class.forName("net.sf.saxon.dom.DocumentBuilderImpl");
         final DocumentBuilder builder = (DocumentBuilder)clazz.newInstance();
+        assertTrue(builder.isNamespaceAware());
         return builder.parse(is);
     }
 
@@ -170,6 +175,8 @@ public class DocumentImplTest {
         final SAXParserFactory saxParserFactory = ExistSAXParserFactory.getSAXParserFactory();
         final SAXParser saxParser  = saxParserFactory.newSAXParser();
         final XMLReader reader = saxParser.getXMLReader();
+        reader.setFeature("http://xml.org/sax/features/namespaces", true);
+        assertTrue(saxParser.isNamespaceAware());
         final InputSource src = new InputSource(is);
         final SAXAdapter adapter = new SAXAdapter();
         reader.setContentHandler(adapter);

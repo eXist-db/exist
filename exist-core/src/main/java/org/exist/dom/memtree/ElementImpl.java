@@ -73,7 +73,7 @@ public class ElementImpl extends NodeImpl implements Element {
 
     @Override
     public NodeList getChildNodes() {
-        final NodeListImpl nl = new NodeListImpl();
+        final NodeListImpl nl = new NodeListImpl(1);  // nil elements are rare, so we use 1 here
         int nextNode = document.getFirstChildFor(nodeNumber);
         while(nextNode > nodeNumber) {
             final Node n = document.getNode(nextNode);
