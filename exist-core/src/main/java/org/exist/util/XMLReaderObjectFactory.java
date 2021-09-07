@@ -106,8 +106,10 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
     public void activateObject(final XMLReader xmlReader) {
         setReaderValidationMode(validation, xmlReader);
 
-        // Set Grammar Cache
-        setReaderProperty(xmlReader, APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+        if (validation.maybe()) {
+            // Only need to set Grammar Cache if we are validating
+            setReaderProperty(xmlReader, APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+        }
 
         // Set XML Catalog Resolver
         setReaderProperty(xmlReader, APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, resolver);
