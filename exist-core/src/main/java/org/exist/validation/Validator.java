@@ -206,7 +206,7 @@ public class Validator {
 
                 // Scenario 1 : no params - use system catalog
                 logger.debug("Validation using system catalog.");
-                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, systemCatalogResolver);
+                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, systemCatalogResolver);
 
             } else if(grammarUrl.endsWith(".xml")){
 
@@ -214,21 +214,21 @@ public class Validator {
                 logger.debug("Validation using user specified catalog '{}'.", grammarUrl);
                 final eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
                 resolver.setCatalogList(new String[]{grammarUrl});
-                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
+                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, resolver);
 
             } else if(grammarUrl.endsWith("/")){
 
                 // Scenario 3 : path to collection ("/"): search.
                 logger.debug("Validation using searched grammar, start from '{}'.", grammarUrl);
                 final SearchResourceResolver resolver = new SearchResourceResolver(grammarUrl, brokerPool);
-                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
+                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, resolver);
 
             } else {
 
                 // Scenario 4 : path to grammar (xsd, dtd) specified.
                 logger.debug("Validation using specified grammar '{}'.", grammarUrl);
                 final AnyUriResolver resolver = new AnyUriResolver(grammarUrl);
-                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
+                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, resolver);
             }
 
             logger.debug("Validation started.");

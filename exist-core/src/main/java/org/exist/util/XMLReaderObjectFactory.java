@@ -67,7 +67,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
             = "http://apache.org/xml/properties/internal/grammar-pool";
     public static final String APACHE_PROPERTIES_LOAD_EXT_DTD
             = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
-    public static final String APACHE_PROPERTIES_ENTITYRESOLVER
+    public static final String APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER
             = "http://apache.org/xml/properties/internal/entity-resolver";
 
     public static final String APACHE_PROPERTIES_NONAMESPACESCHEMALOCATION
@@ -110,7 +110,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
         setReaderProperty(xmlReader, APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
 
         // Set XML Catalog Resolver
-        setReaderProperty(xmlReader, APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
+        setReaderProperty(xmlReader, APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, resolver);
 
         // Sets any features for the parser which were defined in conf.xml
         if (parserFeatures != null) {

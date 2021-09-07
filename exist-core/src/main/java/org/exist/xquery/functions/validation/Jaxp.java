@@ -349,7 +349,7 @@ public class Jaxp extends BasicFunction {
     private void setXmlReaderEnitityResolver(XMLReader xmlReader, XMLEntityResolver entityResolver ){
 
         try {
-            xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, entityResolver);
+            xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, entityResolver);
 
         } catch (final SAXNotRecognizedException | SAXNotSupportedException ex) {
             LOG.error(ex.getMessage());

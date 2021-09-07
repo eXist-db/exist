@@ -215,7 +215,7 @@ public class XMLReaderPoolTest {
         final XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertTrue(mockResolver == xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER));
+            assertTrue(mockResolver == xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER));
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
@@ -242,7 +242,7 @@ public class XMLReaderPoolTest {
         final XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertNull(xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER));
+            assertNull(xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER));
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
@@ -647,7 +647,7 @@ public class XMLReaderPoolTest {
         assertNotNull(xmlreader);
         try {
             // explicitly disable the resolver
-            xmlreader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, null);
+            xmlreader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, null);
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
@@ -657,7 +657,7 @@ public class XMLReaderPoolTest {
         xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertTrue(mockResolver == xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER));
+            assertTrue(mockResolver == xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER));
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
@@ -686,7 +686,7 @@ public class XMLReaderPoolTest {
         try {
             // explicitly enable the resolver
             final eXistXMLCatalogResolver mockResolver = createMock(eXistXMLCatalogResolver.class);
-            xmlreader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER, mockResolver);
+            xmlreader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, mockResolver);
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
@@ -696,7 +696,7 @@ public class XMLReaderPoolTest {
         xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertNull(xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_ENTITYRESOLVER));
+            assertNull(xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER));
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
