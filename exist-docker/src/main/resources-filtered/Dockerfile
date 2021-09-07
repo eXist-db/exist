@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   expat \
   fontconfig \
   liblcms2-2 \
-  ttf-dejavu-core
+  fonts-dejavu-core
 
 FROM gcr.io/distroless/java:8
 
