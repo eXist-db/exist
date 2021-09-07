@@ -49,10 +49,6 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
 
     private static final Logger LOG = LogManager.getLogger(XMLReaderObjectFactory.class);
 
-    public enum VALIDATION_SETTING {
-        UNKNOWN, ENABLED, AUTO, DISABLED
-    }
-
     public static final String CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME = "entity-resolver";
     public static final String CONFIGURATION_CATALOG_ELEMENT_NAME = "catalog";
     public static final String CONFIGURATION_ELEMENT_NAME = "validation";
@@ -88,7 +84,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
         this.grammarPool = (GrammarPool) configuration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL);
         this.resolver = (eXistXMLCatalogResolver) configuration.getProperty(CATALOG_RESOLVER);
         final String option = (String) configuration.getProperty(PROPERTY_VALIDATION_MODE);
-        this.validation = convertValidationMode(option);
+        this.validation = VALIDATION_SETTING.fromOption(option);
         this.parserFeatures = (Map<String, Boolean>) configuration.getProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY);
 
         this.saxParserFactory = ExistSAXParserFactory.getSAXParserFactory();
@@ -132,31 +128,6 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
     }
 
     /**
-     * Convert configuration text (yes,no,true,false,auto) into a magic number.
-     *
-     * @param option the configuration option
-     * @return the validation setting
-     */
-    public static VALIDATION_SETTING convertValidationMode(final @Nullable String option) {
-        VALIDATION_SETTING mode = VALIDATION_SETTING.AUTO;
-        if (option != null) {
-            if ("auto".equalsIgnoreCase(option)) {
-                mode = VALIDATION_SETTING.AUTO;
-
-            } else if ("true".equalsIgnoreCase(option) || "yes".equalsIgnoreCase(option)) {
-                mode = VALIDATION_SETTING.ENABLED;
-
-            } else if ("false".equalsIgnoreCase(option) || "no".equalsIgnoreCase(option)) {
-                mode = VALIDATION_SETTING.DISABLED;
-
-            } else {
-                mode = VALIDATION_SETTING.UNKNOWN;
-            }
-        }
-        return mode;
-    }
-
-    /**
      * Setup validation mode of xml reader.
      *
      * @param validation the validation setting
@@ -165,14 +136,10 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
     public static void setReaderValidationMode(final VALIDATION_SETTING validation, final XMLReader xmlReader) {
         // Configure XMLReader see http://xerces.apache.org/xerces2-j/features.html
         setReaderFeature(xmlReader, Namespaces.SAX_NAMESPACES_PREFIXES, true);
-        setReaderFeature(xmlReader, APACHE_PROPERTIES_LOAD_EXT_DTD,
-                validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED);
-        setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION,
-                validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED);
-        setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION_DYNAMIC,
-                validation == VALIDATION_SETTING.AUTO);
-        setReaderFeature(xmlReader, APACHE_FEATURES_VALIDATION_SCHEMA,
-                validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED);
+        setReaderFeature(xmlReader, APACHE_PROPERTIES_LOAD_EXT_DTD, validation.maybe());
+        setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION, validation.maybe());
+        setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION_DYNAMIC, validation == VALIDATION_SETTING.AUTO);
+        setReaderFeature(xmlReader, APACHE_FEATURES_VALIDATION_SCHEMA, validation.maybe());
     }
 
     private static void setReaderFeature(final XMLReader xmlReader, final String featureName, final boolean value) {
@@ -196,6 +163,44 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
 
         } catch (final SAXNotSupportedException ex) {
             LOG.error("SAXNotSupportedException:{}", ex.getMessage());
+        }
+    }
+
+    public enum VALIDATION_SETTING {
+        UNKNOWN, ENABLED, AUTO, DISABLED;
+
+        /**
+         * Return true if the VALIDATION_SETTING is {@link #AUTO} or {@link #ENABLED}.
+         *
+         * @true if validation may happen, false otherwise
+         */
+        public boolean maybe() {
+            return this == VALIDATION_SETTING.AUTO || this == VALIDATION_SETTING.ENABLED;
+        }
+
+        /**
+         * Convert configuration text (yes,no,true,false,auto) into a magic number.
+         *
+         * @param option the configuration option
+         * @return the validation setting
+         */
+        public static VALIDATION_SETTING fromOption(final @Nullable String option) {
+            VALIDATION_SETTING mode = VALIDATION_SETTING.AUTO;
+            if (option != null) {
+                if ("auto".equalsIgnoreCase(option)) {
+                    mode = VALIDATION_SETTING.AUTO;
+
+                } else if ("true".equalsIgnoreCase(option) || "yes".equalsIgnoreCase(option)) {
+                    mode = VALIDATION_SETTING.ENABLED;
+
+                } else if ("false".equalsIgnoreCase(option) || "no".equalsIgnoreCase(option)) {
+                    mode = VALIDATION_SETTING.DISABLED;
+
+                } else {
+                    mode = VALIDATION_SETTING.UNKNOWN;
+                }
+            }
+            return mode;
         }
     }
 }
