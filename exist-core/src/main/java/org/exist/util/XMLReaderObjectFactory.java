@@ -104,7 +104,6 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
 
     @Override
     public void activateObject(final XMLReader xmlReader) {
-        setReaderValidationMode(validation, xmlReader);
 
         if (validation.maybe()) {
             // Only need to set Grammar Cache if we are validating
@@ -113,6 +112,8 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
 
         // Set XML Catalog Resolver
         setReaderProperty(xmlReader, APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, resolver);
+
+        setReaderValidationMode(validation, xmlReader);
 
         // Sets any features for the parser which were defined in conf.xml
         if (parserFeatures != null) {
