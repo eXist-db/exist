@@ -531,6 +531,10 @@
                     <artifactId>dependency-check-maven</artifactId>
                     <version>6.2.2</version>
                     <configuration>
+                        <!-- Use Evolved Binary's mirror of nvd.nist.gov -->
+                        <cveUrlModified>https://nvd.mirror.evolvedbinary.com/feeds/json/cve/1.1/nvdcve-1.1-modified.json.gz</cveUrlModified>
+                        <cveUrlBase>https://nvd.mirror.evolvedbinary.com/feeds/json/cve/1.1/nvdcve-1.1-%d.json.gz</cveUrlBase>
+
                         <archiveAnalyzerEnabled>false</archiveAnalyzerEnabled>
                         <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                         <autoconfAnalyzerEnabled>false</autoconfAnalyzerEnabled>
