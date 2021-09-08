@@ -23,7 +23,8 @@ package org.exist.util;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
-import org.exist.collections.*;
+import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -42,29 +43,16 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-/**
- * Tests around security exploits of the {@link org.xml.sax.XMLReader}
- */
-public class XMLReaderSecurityTest extends AbstractXMLReaderSecurityTest {
+public class XMLReaderExpansionTest extends AbstractXMLReaderSecurityTest {
 
-    private static final String EXPECTED_EXPANSION_DISABLED_DOC = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><foo/>";
-
-    private static final Properties secureConfigProperties = new Properties();
-    static {
-        final Map<String, Boolean> secureProperties = new HashMap<>();
-        secureProperties.put(FEATURE_EXTERNAL_GENERAL_ENTITIES, false);
-        secureProperties.put("http://xml.org/sax/features/external-parameter-entities", false);
-        secureProperties.put("http://javax.xml.XMLConstants/feature/secure-processing", true);
-        secureConfigProperties.put(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY, secureProperties);
-    }
+    private static final String EXPECTED_EXPANDED_DOC = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><foo>" + EXTERNAL_FILE_PLACEHOLDER + "</foo>";
 
     @Rule
-    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(secureConfigProperties, true, true);
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Override
     protected ExistEmbeddedServer getExistEmbeddedServer() {
@@ -72,8 +60,11 @@ public class XMLReaderSecurityTest extends AbstractXMLReaderSecurityTest {
     }
 
     @Test
-    public void cannotExpandExternalEntitiesWhenDisabled() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, TransformerException {
+    public void expandExternalEntities() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, TransformerException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
+        final Map<String, Boolean> parserConfig = new HashMap<>();
+        parserConfig.put(FEATURE_EXTERNAL_GENERAL_ENTITIES, true);
+        brokerPool.getConfiguration().setProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY, parserConfig);
 
         // create a temporary file on disk that contains secret info
         final Tuple2<String, Path> secret = createTempSecretFile();
@@ -86,7 +77,7 @@ public class XMLReaderSecurityTest extends AbstractXMLReaderSecurityTest {
 
             try (final Collection testCollection = broker.openCollection(TEST_COLLECTION, Lock.LockMode.WRITE_LOCK)) {
 
-                //debugReader("cannotExpandExternalEntitiesWhenDisabled", broker, testCollection);
+                //debugReader("expandExternalEntities", broker, testCollection);
 
                 final String docContent = EXPANSION_DOC.replace(EXTERNAL_FILE_PLACEHOLDER, secret._2.toUri().toString());
                 final IndexInfo indexInfo = testCollection.validateXMLResource(transaction, broker, docName, docContent);
@@ -96,7 +87,7 @@ public class XMLReaderSecurityTest extends AbstractXMLReaderSecurityTest {
             transaction.commit();
         }
 
-        // read back the document, to confirm that it does not contain the secret
+        // read back the document, to confirm that it does contain the secret
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
              final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
@@ -108,8 +99,7 @@ public class XMLReaderSecurityTest extends AbstractXMLReaderSecurityTest {
                     testCollection.close();
 
                     assertNotNull(testDoc);
-
-                    final String expected = EXPECTED_EXPANSION_DISABLED_DOC;
+                    final String expected = EXPECTED_EXPANDED_DOC.replace(EXTERNAL_FILE_PLACEHOLDER, secret._1);
                     final String actual = serialize(testDoc.getDocument());
 
                     assertEquals(expected, actual);

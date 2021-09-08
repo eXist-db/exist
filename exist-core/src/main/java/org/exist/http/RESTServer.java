@@ -1125,6 +1125,7 @@ public class RESTServer {
      * @throws PermissionDeniedException if the request has insufficient permissions
      * @throws NotFoundException if the request resource cannot be found
      * @throws IOException if an I/O error occurs
+     * @throws MethodNotAllowedException if the patch request is not permitted for the resource indicated
      */
     public void doPatch(final DBBroker broker, final Txn transaction, final XmldbURI path,
                       final HttpServletRequest request, final HttpServletResponse response)

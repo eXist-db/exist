@@ -165,7 +165,7 @@ public class CollectionConfiguration {
                         validationMode = XMLReaderObjectFactory.VALIDATION_SETTING.UNKNOWN;
                     } else {
                         LOG.debug("{} : Validation mode={}", srcCollectionURI, mode);
-                        validationMode = XMLReaderObjectFactory.convertValidationMode(mode);
+                        validationMode = XMLReaderObjectFactory.VALIDATION_SETTING.fromOption(mode);
                     }
 
                 } else {

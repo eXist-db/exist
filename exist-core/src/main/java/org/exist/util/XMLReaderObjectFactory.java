@@ -21,7 +21,7 @@
  */
 package org.exist.util;
 
-import javax.xml.parsers.ParserConfigurationException;
+import javax.annotation.Nullable;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -35,167 +35,117 @@ import org.exist.storage.BrokerPoolService;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
 
-import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
+import java.util.Map;
+
 /**
- * Factory to create new XMLReader objects on demand. The factory is used
- * by {@link org.exist.util.XMLReaderPool}.
- *
- * @author wolf
+ * Factory to create new XMLReader objects on demand.
+ * The factory is used by {@link org.exist.util.XMLReaderPool}.
  */
-public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements BrokerPoolService {
+public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader> implements BrokerPoolService {
 
-    private final static Logger LOG = LogManager.getLogger(XMLReaderObjectFactory.class);
+    private static final Logger LOG = LogManager.getLogger(XMLReaderObjectFactory.class);
 
-    public enum VALIDATION_SETTING {
-        UNKNOWN, ENABLED, AUTO, DISABLED
-    }
-
-    public final static String CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME = "entity-resolver";
-    public final static String CONFIGURATION_CATALOG_ELEMENT_NAME = "catalog";
-    public final static String CONFIGURATION_ELEMENT_NAME = "validation";
+    public static final String CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME = "entity-resolver";
+    public static final String CONFIGURATION_CATALOG_ELEMENT_NAME = "catalog";
+    public static final String CONFIGURATION_ELEMENT_NAME = "validation";
 
     //TOO : move elsewhere ?
-    public final static String VALIDATION_MODE_ATTRIBUTE = "mode";
-    public final static String PROPERTY_VALIDATION_MODE = "validation.mode";
-    public final static String CATALOG_RESOLVER = "validation.resolver";
-    public final static String CATALOG_URIS = "validation.catalog_uris";
-    public final static String GRAMMER_POOL = "validation.grammar_pool";
+    public static final String VALIDATION_MODE_ATTRIBUTE = "mode";
+    public static final String PROPERTY_VALIDATION_MODE = "validation.mode";
+    public static final String CATALOG_RESOLVER = "validation.resolver";
+    public static final String CATALOG_URIS = "validation.catalog_uris";
+    public static final String GRAMMAR_POOL = "validation.grammar_pool";
 
     // Xerces feature and property names
-    public final static String APACHE_FEATURES_VALIDATION_SCHEMA
-            ="http://apache.org/xml/features/validation/schema";
-    public final static String APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL
-            ="http://apache.org/xml/properties/internal/grammar-pool";
-    public final static String APACHE_PROPERTIES_LOAD_EXT_DTD
-            ="http://apache.org/xml/features/nonvalidating/load-external-dtd";
-    public final static String APACHE_PROPERTIES_ENTITYRESOLVER
-            ="http://apache.org/xml/properties/internal/entity-resolver";
+    public static final String APACHE_FEATURES_VALIDATION_SCHEMA
+            = "http://apache.org/xml/features/validation/schema";
+    public static final String APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL
+            = "http://apache.org/xml/properties/internal/grammar-pool";
+    public static final String APACHE_PROPERTIES_LOAD_EXT_DTD
+            = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+    public static final String APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER
+            = "http://apache.org/xml/properties/internal/entity-resolver";
 
-    public final static String APACHE_PROPERTIES_NONAMESPACESCHEMALOCATION
-            ="http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation";
+    public static final String APACHE_PROPERTIES_NONAMESPACESCHEMALOCATION
+            = "http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation";
 
-    private Configuration configuration;
-    private GrammarPool grammarPool;
-    private eXistXMLCatalogResolver resolver;
+    @Nullable private GrammarPool grammarPool;
+    @Nullable private eXistXMLCatalogResolver resolver;
+    private VALIDATION_SETTING validation = VALIDATION_SETTING.UNKNOWN;
+    @Nullable private Map<String, Boolean> parserFeatures;
+    private SAXParserFactory saxParserFactory;
 
     @Override
     public void configure(final Configuration configuration) {
-        this.configuration = configuration;
-        this.grammarPool = (GrammarPool) configuration.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
+        this.grammarPool = (GrammarPool) configuration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL);
         this.resolver = (eXistXMLCatalogResolver) configuration.getProperty(CATALOG_RESOLVER);
-    }
-
-    /**
-     * @see org.apache.commons.pool.BasePoolableObjectFactory#makeObject()
-     */
-    public Object makeObject() throws Exception {
         final String option = (String) configuration.getProperty(PROPERTY_VALIDATION_MODE);
-        final VALIDATION_SETTING validation = convertValidationMode(option);
-        final XMLReader xmlReader = createXmlReader(validation, grammarPool, resolver);
-        setReaderValidationMode(validation, xmlReader);
-        return xmlReader;
+        this.validation = VALIDATION_SETTING.fromOption(option);
+        this.parserFeatures = (Map<String, Boolean>) configuration.getProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY);
+
+        this.saxParserFactory = ExistSAXParserFactory.getSAXParserFactory();
+        saxParserFactory.setValidating(validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED);
+        saxParserFactory.setNamespaceAware(true);
     }
 
-    /**
-     * Create Xmlreader and setup validation.
-     *
-     * @param validation the validation setting
-     * @param grammarPool the grammar pool
-     * @param resolver the catalog resolver
-     *
-     * @return the configured reader
-     *
-     * @throws ParserConfigurationException if the parser cannot be configured
-     * @throws SAXException if an exception occurs with the parser
-     */
-    public static XMLReader createXmlReader(VALIDATION_SETTING validation, GrammarPool grammarPool,
-            eXistXMLCatalogResolver resolver) throws ParserConfigurationException, SAXException {
-
-        // Create a xmlreader
-        final SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
-        
-        if (validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED){
-            saxFactory.setValidating(true);
-        } else {
-            saxFactory.setValidating(false);
-        }
-        saxFactory.setNamespaceAware(true);
-
-        final SAXParser saxParser = saxFactory.newSAXParser();
+    @Override
+    public XMLReader makeObject() throws Exception {
+        final SAXParser saxParser = saxParserFactory.newSAXParser();
         final XMLReader xmlReader = saxParser.getXMLReader();
 
-        // Setup grammar cache
-        if(grammarPool!=null){
-            setReaderProperty(xmlReader,APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
-        }
-
-        // Setup xml catalog resolver
-        if(resolver!=null){
-           setReaderProperty(xmlReader,APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
-        }
+        xmlReader.setErrorHandler(null);  // disable default Xerces Error Handler
 
         return xmlReader;
     }
 
-    /**
-     * Convert configuration text (yes,no,true,false,auto) into a magic number.
-     *
-     * @param option the configuration option
-     *
-     * @return the validation setting
-     */
-    public static VALIDATION_SETTING convertValidationMode(String option) {
-        VALIDATION_SETTING mode = VALIDATION_SETTING.AUTO;
-        if (option != null) {
-            if ("true".equals(option) || "yes".equals(option)) {
-                mode = VALIDATION_SETTING.ENABLED;
+    @Override
+    public void activateObject(final XMLReader xmlReader) {
 
-            } else if ("auto".equals(option)) {
-                mode = VALIDATION_SETTING.AUTO;
+        if (validation.maybe()) {
+            // Only need to set Grammar Cache if we are validating
+            setReaderProperty(xmlReader, APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+        }
 
-            } else {
-                mode = VALIDATION_SETTING.DISABLED;
+        // Set XML Catalog Resolver
+        setReaderProperty(xmlReader, APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, resolver);
+
+        setReaderValidationMode(validation, xmlReader);
+
+        // Sets any features for the parser which were defined in conf.xml
+        if (parserFeatures != null) {
+            for (final Map.Entry<String, Boolean> feature : parserFeatures.entrySet()) {
+                setReaderFeature(xmlReader, feature.getKey(), feature.getValue());
             }
         }
-        return mode;
+    }
+
+    @Override
+    public void passivateObject(final XMLReader xmlReader) throws Exception {
+        xmlReader.setContentHandler(null);
+        xmlReader.setErrorHandler(null);
+        xmlReader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, null);
     }
 
     /**
      * Setup validation mode of xml reader.
      *
      * @param validation the validation setting
-     * @param xmlReader the reader
+     * @param xmlReader  the reader
      */
-    public static void setReaderValidationMode(VALIDATION_SETTING validation, XMLReader xmlReader) {
-
-        if (validation == VALIDATION_SETTING.UNKNOWN) {
-            return;
-        }
-
-        // Configure xmlreader see http://xerces.apache.org/xerces2-j/features.html
+    public static void setReaderValidationMode(final VALIDATION_SETTING validation, final XMLReader xmlReader) {
+        // Configure XMLReader see http://xerces.apache.org/xerces2-j/features.html
         setReaderFeature(xmlReader, Namespaces.SAX_NAMESPACES_PREFIXES, true);
-
-        setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION,
-                validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED);
-
-        setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION_DYNAMIC,
-                validation == VALIDATION_SETTING.AUTO);
-
-        setReaderFeature(xmlReader, APACHE_FEATURES_VALIDATION_SCHEMA,
-                (validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED) );
-
-        setReaderFeature(xmlReader, APACHE_PROPERTIES_LOAD_EXT_DTD,
-                (validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED) );
-
-        // Attempt to make validation function equal to insert mode
-        //saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
+        setReaderFeature(xmlReader, APACHE_PROPERTIES_LOAD_EXT_DTD, validation.maybe());
+        setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION, validation.maybe());
+        setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION_DYNAMIC, validation == VALIDATION_SETTING.AUTO);
+        setReaderFeature(xmlReader, APACHE_FEATURES_VALIDATION_SCHEMA, validation.maybe());
     }
 
-    private static void setReaderFeature(XMLReader xmlReader, String featureName, boolean value){
+    private static void setReaderFeature(final XMLReader xmlReader, final String featureName, final boolean value) {
         try {
             xmlReader.setFeature(featureName, value);
 
@@ -203,11 +153,11 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
             LOG.error("SAXNotRecognizedException: {}", ex.getMessage());
 
         } catch (final SAXNotSupportedException ex) {
-            LOG.error("SAXNotSupportedException:{}", ex.getMessage());
+            LOG.error("SAXNotSupportedException: {}", ex.getMessage());
         }
     }
 
-    private static void setReaderProperty(XMLReader xmlReader, String propertyName, Object object){
+    private static void setReaderProperty(final XMLReader xmlReader, final String propertyName, @Nullable final Object object) {
         try {
             xmlReader.setProperty(propertyName, object);
 
@@ -219,5 +169,41 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
         }
     }
 
+    public enum VALIDATION_SETTING {
+        UNKNOWN, ENABLED, AUTO, DISABLED;
 
+        /**
+         * Return true if the VALIDATION_SETTING is {@link #AUTO} or {@link #ENABLED}.
+         *
+         * @return true if validation may happen, false otherwise
+         */
+        public boolean maybe() {
+            return this == VALIDATION_SETTING.AUTO || this == VALIDATION_SETTING.ENABLED;
+        }
+
+        /**
+         * Convert configuration text (yes,no,true,false,auto) into a magic number.
+         *
+         * @param option the configuration option
+         * @return the validation setting
+         */
+        public static VALIDATION_SETTING fromOption(final @Nullable String option) {
+            VALIDATION_SETTING mode = VALIDATION_SETTING.AUTO;
+            if (option != null) {
+                if ("auto".equalsIgnoreCase(option)) {
+                    mode = VALIDATION_SETTING.AUTO;
+
+                } else if ("true".equalsIgnoreCase(option) || "yes".equalsIgnoreCase(option)) {
+                    mode = VALIDATION_SETTING.ENABLED;
+
+                } else if ("false".equalsIgnoreCase(option) || "no".equalsIgnoreCase(option)) {
+                    mode = VALIDATION_SETTING.DISABLED;
+
+                } else {
+                    mode = VALIDATION_SETTING.UNKNOWN;
+                }
+            }
+            return mode;
+        }
+    }
 }

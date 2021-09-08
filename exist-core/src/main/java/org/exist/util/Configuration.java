@@ -1484,7 +1484,7 @@ public class Configuration implements ErrorHandler
 
         // cache
         final GrammarPool gp = new GrammarPool();
-        config.put( XMLReaderObjectFactory.GRAMMER_POOL, gp );
+        config.put( XMLReaderObjectFactory.GRAMMAR_POOL, gp );
 
     }
     

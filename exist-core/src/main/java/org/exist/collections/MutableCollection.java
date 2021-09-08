@@ -1813,7 +1813,7 @@ public class MutableCollection implements Collection {
         // Get validation mode from static configuration
         final Configuration config = broker.getConfiguration();
         final String optionValue = (String) config.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE);
-        final VALIDATION_SETTING validationMode = XMLReaderObjectFactory.convertValidationMode(optionValue);
+        final VALIDATION_SETTING validationMode = XMLReaderObjectFactory.VALIDATION_SETTING.fromOption(optionValue);
         
         // Restore default validation mode
         XMLReaderObjectFactory.setReaderValidationMode(validationMode, reader);
