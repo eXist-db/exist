@@ -73,7 +73,7 @@ public class EXistTreeBuilder implements TreeBuilder {
     
     public DocumentImpl close() {
         builder.endDocument();
-        final DocumentImpl doc = builder.getDocument();
+        final DocumentImpl doc = builder.getMemtree();
         builder.getContext().popDocumentContext();
         return doc;
     }

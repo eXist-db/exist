@@ -139,7 +139,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
             node = null;
             try {
                 final int nodeNr = builder.addAttribute(qn, value);
-                node = builder.getDocument().getAttribute(nodeNr);
+                node = builder.getMemtree().getAttribute(nodeNr);
             } catch (final DOMException e) {
                 throw new XPathException(this, ErrorCodes.XQDY0025, "element has more than one attribute '" + qn + "'");
             } 

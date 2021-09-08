@@ -110,7 +110,7 @@ public class DescribeFunction extends Function {
 				}
 			}
 			builder.endElement();
-			return ((DocumentImpl) builder.getDocument()).getNode(nodeNr);
+			return ((DocumentImpl) builder.getMemtree()).getNode(nodeNr);
 		} finally {
 			context.popDocumentContext();
 		}

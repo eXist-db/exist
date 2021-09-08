@@ -90,7 +90,7 @@ public class HighlightMatches extends BasicFunction {
             for (SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
                 NodeValue v = (NodeValue) i.nextItem();
                 try {
-                    int nodeNr = builder.getDocument().getLastNode();
+                    int nodeNr = builder.getMemtree().getLastNode();
                     if (v.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
                         ((NodeImpl) v).copyTo(context.getBroker(), docBuilder);
                     } else {
@@ -106,7 +106,7 @@ public class HighlightMatches extends BasicFunction {
                         serializer.setReceiver(receiver);
                         serializer.toReceiver((NodeProxy) v, false);
                     }
-                    result.add(builder.getDocument().getNode(++nodeNr));
+                    result.add(builder.getMemtree().getNode(++nodeNr));
                 } catch (SAXException e) {
                     LOG.warn(e.getMessage(), e);
                     throw new XPathException(this, e.getMessage());

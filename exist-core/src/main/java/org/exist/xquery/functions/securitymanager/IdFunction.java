@@ -91,7 +91,7 @@ public class IdFunction extends BasicFunction {
 
             builder.endDocument();
 
-            return builder.getDocument();
+            return builder.getMemtree();
         } finally {
             context.popDocumentContext();
         }

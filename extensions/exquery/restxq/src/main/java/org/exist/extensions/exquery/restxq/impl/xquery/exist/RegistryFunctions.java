@@ -271,7 +271,7 @@ public class RegistryFunctions extends BasicFunction {
             builder.endElement();
             builder.endDocument();
 
-            return builder.getDocument();
+            return builder.getMemtree();
         } finally {
             context.popDocumentContext();
         }
@@ -310,7 +310,7 @@ public class RegistryFunctions extends BasicFunction {
             builder.endElement();
             builder.endDocument();
 
-            return builder.getDocument();
+            return builder.getMemtree();
         } finally {
             context.popDocumentContext();
         }

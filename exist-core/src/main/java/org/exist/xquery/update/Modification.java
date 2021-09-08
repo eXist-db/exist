@@ -201,13 +201,13 @@ public abstract class Modification extends AbstractExpression
                 }
                 if (Type.subTypeOf(item.getType(), Type.NODE)) {
                     if (((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                        final int last = builder.getDocument().getLastNode();
+                        final int last = builder.getMemtree().getLastNode();
                         final NodeProxy p = (NodeProxy) item;
                         serializer.toReceiver(p, false, false);
                         if (p.getNodeType() == Node.ATTRIBUTE_NODE)
-                            {item = builder.getDocument().getLastAttr();}
+                            {item = builder.getMemtree().getLastAttr();}
                         else
-                            {item = builder.getDocument().getNode(last + 1);}
+                            {item = builder.getMemtree().getNode(last + 1);}
                     } else {
                         ((org.exist.dom.memtree.NodeImpl)item).deepCopy();
                     }

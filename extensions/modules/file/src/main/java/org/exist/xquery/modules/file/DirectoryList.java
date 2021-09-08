@@ -24,7 +24,6 @@ package org.exist.xquery.modules.file;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Date;
 
 import org.apache.logging.log4j.LogManager;
@@ -171,7 +170,7 @@ public class DirectoryList extends BasicFunction {
 
             builder.endElement();
 
-            return (NodeValue) builder.getDocument().getDocumentElement();
+            return (NodeValue) builder.getMemtree().getDocumentElement();
         } catch (final IOException e) {
             throw new XPathException(this, e.getMessage());
         } finally {

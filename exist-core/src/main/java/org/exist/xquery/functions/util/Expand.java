@@ -134,11 +134,11 @@ public class Expand extends BasicFunction {
                 builder.endDocument();
 
                 if (Node.DOCUMENT_NODE == nodeType) {
-                    result.add(builder.getDocument());
+                    result.add(builder.getMemtree().getDocumentNode());
                 } else if (Node.ATTRIBUTE_NODE == nodeType) {
-                    result.add(builder.getDocument().getAttribute(attrNr));
+                    result.add(builder.getMemtree().getAttribute(attrNr));
                 } else {
-                    result.add(builder.getDocument().getNode(1));
+                    result.add(builder.getMemtree().getNode(1));
                 }
 
                 builder.reset(getContext());

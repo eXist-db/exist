@@ -96,7 +96,7 @@ public class DynamicTextConstructor extends NodeConstructor {
                     {result = Sequence.EMPTY_SEQUENCE;}
                 else {
                     final int nodeNr = builder.characters(buf);
-                    result = builder.getDocument().getNode(nodeNr);
+                    result = builder.getMemtree().getNode(nodeNr);
                 }
             }
         } finally {

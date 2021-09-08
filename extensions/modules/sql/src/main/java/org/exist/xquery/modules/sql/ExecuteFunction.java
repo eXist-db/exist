@@ -396,7 +396,7 @@ public class ExecuteFunction extends BasicFunction {
                 builder.endElement();
 
                 // Change the root element count attribute to have the correct value
-                final ElementImpl docElement = (ElementImpl) builder.getDocument().getDocumentElement();
+                final ElementImpl docElement = (ElementImpl) builder.getMemtree().getDocumentElement();
                 final Node count = docElement.getNode().getAttributes().getNamedItem("count");
                 if (count != null) {
                     count.setNodeValue(String.valueOf(rowCount));
@@ -488,7 +488,7 @@ public class ExecuteFunction extends BasicFunction {
             builder.endElement();
             builder.endDocument();
 
-            return (ElementImpl) builder.getDocument().getDocumentElement();
+            return (ElementImpl) builder.getMemtree().getDocumentElement();
         } finally {
             context.popDocumentContext();
         }

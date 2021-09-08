@@ -224,7 +224,7 @@ public class SearchFunction extends BasicFunction
 			builder.endElement();
 			builder.endElement();
 
-			xmlResult = (NodeValue) builder.getDocument().getDocumentElement();
+			xmlResult = (NodeValue) builder.getMemtree().getDocumentElement();
 
 			return (xmlResult);
 		} finally {

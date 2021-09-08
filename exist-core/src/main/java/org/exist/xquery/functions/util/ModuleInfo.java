@@ -216,7 +216,7 @@ public class ModuleInfo extends BasicFunction {
 						outputModule(builder, module);
 					}
 				}
-				return builder.getDocument().getNode(1);
+				return builder.getMemtree().getNode(1);
 			} finally {
 				context.popDocumentContext();
 			}

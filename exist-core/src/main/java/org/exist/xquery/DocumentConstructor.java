@@ -131,7 +131,7 @@ public class DocumentConstructor extends NodeConstructor {
                 ExpressionDumper.dump(this));
         }
         context.popDocumentContext();
-        final NodeImpl node =  builder.getDocument();
+        final NodeImpl node =  builder.getMemtree();
         if (context.getProfiler().isEnabled())
             {context.getProfiler().end(this, "", node);}
         return node;

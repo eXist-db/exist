@@ -87,7 +87,7 @@ public class RegistryFunctionsTest {
         builder.endDocument();
 
         //assert result
-        final String xmlResult = documentToString(builder.getDocument());
+        final String xmlResult = documentToString(builder.getMemtree());
 
         final Source srcExpected = Input.fromString("<media-type xmlns=\"http://www.w3.org/2010/xslt-xquery-serialization\">" + internetMediaType + "</media-type>").build();
         final Source srcActual = Input.fromString(xmlResult).build();
@@ -128,7 +128,7 @@ public class RegistryFunctionsTest {
         builder.endDocument();
 
         //assert result
-        final String xmlResult = documentToString(builder.getDocument());
+        final String xmlResult = documentToString(builder.getMemtree());
 
         final Source srcExpected = Input.fromString("<method xmlns=\"http://www.w3.org/2010/xslt-xquery-serialization\">" + methodStr + "</method>").build();
         final Source srcActual = Input.fromString(xmlResult).build();

@@ -90,7 +90,7 @@ public class DynamicCommentConstructor extends NodeConstructor {
                         "'" + buf.toString() + "' is not a valid comment");
                 }
                 final int nodeNr = builder.comment(buf.toString());
-                result = builder.getDocument().getNode(nodeNr);
+                result = builder.getMemtree().getNode(nodeNr);
             }
         } finally {
             if (newDocumentContext)

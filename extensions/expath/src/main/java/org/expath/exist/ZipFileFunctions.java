@@ -226,7 +226,7 @@ public class ZipFileFunctions extends BasicFunction {
             }
 
             builder.endElement();
-            xmlResponse = (NodeValue) builder.getDocument().getDocumentElement();
+            xmlResponse = (NodeValue) builder.getMemtree().getDocumentElement();
             return (xmlResponse);
         } finally {
             context.popDocumentContext();

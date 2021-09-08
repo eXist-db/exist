@@ -50,7 +50,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("helloworld", text.getTextContent());
 
@@ -73,7 +73,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("helloworld", text.getTextContent());
 
@@ -96,7 +96,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("helloworld", text.getTextContent());
 
@@ -119,7 +119,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text)doc.getDocumentElement().getFirstChild();
         assertEquals("helloworld", text.getTextContent());
 
@@ -142,7 +142,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("hello", text.getTextContent());
 
@@ -168,7 +168,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("hello", text.getTextContent());
 
@@ -194,7 +194,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("hello", text.getTextContent());
 
@@ -220,7 +220,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("hello", text.getTextContent());
 
@@ -246,7 +246,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("hello", text.getTextContent());
 
@@ -272,7 +272,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("hello", text.getTextContent());
 
@@ -291,7 +291,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("hello", text.getTextContent());
 
@@ -317,7 +317,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("helloworld", text.getTextContent());
 
@@ -340,7 +340,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("hello", text.getTextContent());
 
@@ -366,7 +366,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("hello", text.getTextContent());
 
@@ -392,7 +392,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("hello", text.getTextContent());
 
@@ -418,7 +418,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("hello", text.getTextContent());
 
@@ -437,7 +437,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("hello", text.getTextContent());
 
@@ -460,7 +460,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("1230 North Ave. Dallas, Texas 98551", text.getTextContent());
 
@@ -477,7 +477,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("1230 North Ave. Dallas, Texas 98551", text.getTextContent());
 
@@ -494,7 +494,7 @@ public class TextImplTest {
         builder.endElement();
         builder.endDocument();
 
-        final Document doc = builder.getDocument();
+        final Document doc = builder.getMemtree();
         final Text text = (Text) doc.getDocumentElement().getFirstChild();
         assertEquals("1230 North Ave. Dallas, Texas 98551", text.getTextContent());
 

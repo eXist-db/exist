@@ -660,7 +660,9 @@ public class MemtreeImpl implements Memtree {
             }
 
             while (nextNode == -1) {
-                copyEndNode(nodeNumber, receiver);
+                if (nodeNumber != -1) {
+                    copyEndNode(nodeNumber, receiver);
+                }
                 if (topNodeNumber == nodeNumber) {
                     break;
                 }
@@ -669,7 +671,9 @@ public class MemtreeImpl implements Memtree {
                 if (nextNode == -1) {
                     nodeNumber = getParentNodeFor(nodeNumber);
                     if (nodeNumber == -1 || topNodeNumber == nodeNumber) {
-                        copyEndNode(nodeNumber, receiver);
+                        if (nodeNumber != -1) {
+                            copyEndNode(nodeNumber, receiver);
+                        }
                         break;
                     }
                 }
@@ -767,7 +771,9 @@ public class MemtreeImpl implements Memtree {
                 if (nextNode == -1) {
                     nodeNumber = getParentNodeFor(nodeNumber);
                     if (nodeNumber == -1 || topNodeNumber == nodeNumber) {
-                        endNode(nodeNumber, receiver);
+                        if (nodeNumber != -1) {
+                            endNode(nodeNumber, receiver);
+                        }
                         break;
                     }
                 }

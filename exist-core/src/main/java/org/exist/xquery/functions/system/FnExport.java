@@ -134,7 +134,7 @@ public class FnExport extends BasicFunction {
             } else {
                 builder.endElement();
                 builder.endDocument();
-                return (NodeValue) builder.getDocument().getDocumentElement();
+                return (NodeValue) builder.getMemtree().getDocumentElement();
             }
 
         } finally {
