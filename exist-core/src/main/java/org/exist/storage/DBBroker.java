@@ -475,6 +475,37 @@ public abstract class DBBroker implements AutoCloseable {
      */
     public abstract void returnSerializer(Serializer serializer);
 
+    /**
+     * Get's a new Serializer.
+     *
+     * @return a serializer
+     *
+     * @deprecated Use {@link #borrowSerializer()} and {@link #returnSerializer(Serializer)} instead. Will be removed in eXist-db 6.0.0
+     */
+    @Deprecated
+    public abstract Serializer getSerializer();
+
+    /**
+     * Get's a new Serializer.
+     *
+     * @return a serializer
+     *
+     * @deprecated Use {@link #borrowSerializer()} and {@link #returnSerializer(Serializer)} instead. Will be removed in eXist-db 6.0.0
+     */
+    @Deprecated
+    public abstract Serializer newSerializer();
+
+    /**
+     * Get's a new Serializer.
+     *
+     * @param chainOfReceivers the receivers to set on the serializer.
+     * @return a serializer
+     *
+     * @deprecated Use {@link #borrowSerializer()} and {@link #returnSerializer(Serializer)} instead. Will be removed in eXist-db 6.0.0
+     */
+    @Deprecated
+    public abstract Serializer newSerializer(final List<String> chainOfReceivers);
+
     public abstract NativeValueIndex getValueIndex();
 
     /**

@@ -527,6 +527,24 @@ public class NativeBroker extends DBBroker {
         xmlSerializerPool.returnObject(serializer);
     }
 
+    @Override
+    @Deprecated
+    public Serializer getSerializer() {
+        return newSerializer();
+    }
+
+    @Override
+    @Deprecated
+    public Serializer newSerializer() {
+        return new NativeSerializer(this, getConfiguration());
+    }
+
+    @Override
+    @Deprecated
+    public Serializer newSerializer(final List<String> chainOfReceivers) {
+        return new NativeSerializer(this, getConfiguration(), chainOfReceivers);
+    }
+
     public XmldbURI prepend(final XmldbURI uri) {
         switch(prepend) {
             case PREPEND_DB_ALWAYS:
