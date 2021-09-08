@@ -175,7 +175,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory<XMLReader>
         /**
          * Return true if the VALIDATION_SETTING is {@link #AUTO} or {@link #ENABLED}.
          *
-         * @true if validation may happen, false otherwise
+         * @return true if validation may happen, false otherwise
          */
         public boolean maybe() {
             return this == VALIDATION_SETTING.AUTO || this == VALIDATION_SETTING.ENABLED;
