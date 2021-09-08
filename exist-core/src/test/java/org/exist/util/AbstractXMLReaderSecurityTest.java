@@ -96,11 +96,9 @@ public abstract class AbstractXMLReaderSecurityTest {
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
              final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
             final Collection testCollection = broker.getCollection(TEST_COLLECTION);
-            if (testCollection != null) {
-                if (!broker.removeCollection(transaction, testCollection)) {
-                    transaction.abort();
-                    fail("Unable to remove test collection");
-                }
+            if (testCollection != null && !broker.removeCollection(transaction, testCollection)) {
+                transaction.abort();
+                fail("Unable to remove test collection");
             }
 
             transaction.commit();

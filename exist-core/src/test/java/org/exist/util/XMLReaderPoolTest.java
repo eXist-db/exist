@@ -159,7 +159,7 @@ public class XMLReaderPoolTest {
         final XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertTrue(mockGrammarPool == xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL));
+            assertSame(mockGrammarPool, xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL));
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
@@ -215,7 +215,7 @@ public class XMLReaderPoolTest {
         final XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertTrue(mockResolver == xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER));
+            assertSame(mockResolver, xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER));
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
@@ -578,7 +578,7 @@ public class XMLReaderPoolTest {
         xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertTrue(mockGrammarPool == xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL));
+            assertSame(mockGrammarPool, xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL));
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
@@ -657,7 +657,7 @@ public class XMLReaderPoolTest {
         xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertTrue(mockResolver == xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER));
+            assertSame(mockResolver, xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER));
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
@@ -902,7 +902,7 @@ public class XMLReaderPoolTest {
         // borrow 2
         final XMLReader xmlReader2 = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlReader2);
-        assertTrue(xmlReader2 != xmlReader1);
+        assertNotSame(xmlReader2, xmlReader1);
         assertEquals(maxIdle, xmlReaderPool.getMaxSleeping());
         assertEquals(0, xmlReaderPool.getNumIdle());
         assertEquals(2, xmlReaderPool.getNumActive());
@@ -912,7 +912,7 @@ public class XMLReaderPoolTest {
         // borrow 3
         final XMLReader xmlReader3 = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlReader3);
-        assertTrue(xmlReader3 != xmlReader2);
+        assertNotSame(xmlReader3, xmlReader2);
         assertEquals(maxIdle, xmlReaderPool.getMaxSleeping());
         assertEquals(0, xmlReaderPool.getNumIdle());
         assertEquals(3, xmlReaderPool.getNumActive());
@@ -922,7 +922,7 @@ public class XMLReaderPoolTest {
 
         // borrow 4 -- will exceed `maxIdle`
         final XMLReader xmlReader4 = xmlReaderPool.borrowXMLReader();
-        assertTrue(xmlReader4 != xmlReader3);
+        assertNotSame(xmlReader4, xmlReader3);
         assertNotNull(xmlReader4);
         assertEquals(maxIdle, xmlReaderPool.getMaxSleeping());
         assertEquals(0, xmlReaderPool.getNumIdle());
