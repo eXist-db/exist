@@ -123,21 +123,24 @@ public class EmbeddedInputStream extends InputStream {
                     } else {
                         final DocumentImpl resource = lockedResource.getDocument();
                         if (resource.getResourceType() == DocumentImpl.XML_FILE) {
-                            final Serializer serializer = broker.getSerializer();
-                            serializer.reset();
+                            final Serializer serializer = broker.borrowSerializer();
+                            try {
 
-                            // Preserve doctype
-                            serializer.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
+                                // Preserve doctype
+                                serializer.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
 
-                            // serialize the XML to a temporary file
-                            final TemporaryFileManager tempFileManager = TemporaryFileManager.getInstance();
-                            final Path tempFile = tempFileManager.getTemporaryFile();
-                            try (final Writer writer = Files.newBufferedWriter(tempFile, UTF_8, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
-                                serializer.serialize(resource, writer);
+                                // serialize the XML to a temporary file
+                                final TemporaryFileManager tempFileManager = TemporaryFileManager.getInstance();
+                                final Path tempFile = tempFileManager.getTemporaryFile();
+                                try (final Writer writer = Files.newBufferedWriter(tempFile, UTF_8, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
+                                    serializer.serialize(resource, writer);
+                                }
+
+                                // NOTE: the temp file will be returned to the manager when the InputStream is closed
+                                return Right(new CloseNotifyingInputStream(Files.newInputStream(tempFile, StandardOpenOption.READ), () -> tempFileManager.returnTemporaryFile(tempFile)));
+                            } finally {
+                                broker.returnSerializer(serializer);
                             }
-
-                            // NOTE: the temp file will be returned to the manager when the InputStream is closed
-                            return Right(new CloseNotifyingInputStream(Files.newInputStream(tempFile, StandardOpenOption.READ), () -> tempFileManager.returnTemporaryFile(tempFile)));
 
                         } else if (resource.getResourceType() == BinaryDocument.BINARY_FILE) {
                             return Right(broker.getBinaryResource((BinaryDocument) resource));

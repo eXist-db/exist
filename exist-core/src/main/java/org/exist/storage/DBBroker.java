@@ -456,18 +456,57 @@ public abstract class DBBroker implements AutoCloseable {
     }
 
     /**
-     * Get an instance of the Serializer used for converting nodes back to XML.
-     * Subclasses of DBBroker may have specialized subclasses of Serializer to
-     * convert a node into an XML-string
+     * Get an instance of the Serializer used for converting nodes back to XML
+     * from the pool.
+     *
+     * After use {@link #returnSerializer(Serializer)} should always be called.
+     *
      * @return the {@link Serializer}
      */
+    public abstract Serializer borrowSerializer();
+
+    /**
+     * Return an instance of the Serializer used for converting nodes back to XML
+     * to the pool.
+     *
+     * The {@code serializer} should have been obtained by {@link #borrowSerializer()}
+     *
+     * @param serializer the {@link Serializer}
+     */
+    public abstract void returnSerializer(Serializer serializer);
+
+    /**
+     * Get's a new Serializer.
+     *
+     * @return a serializer
+     *
+     * @deprecated Use {@link #borrowSerializer()} and {@link #returnSerializer(Serializer)} instead. Will be removed in eXist-db 6.0.0
+     */
+    @Deprecated
     public abstract Serializer getSerializer();
 
-    public abstract NativeValueIndex getValueIndex();
-
+    /**
+     * Get's a new Serializer.
+     *
+     * @return a serializer
+     *
+     * @deprecated Use {@link #borrowSerializer()} and {@link #returnSerializer(Serializer)} instead. Will be removed in eXist-db 6.0.0
+     */
+    @Deprecated
     public abstract Serializer newSerializer();
 
-    public abstract Serializer newSerializer(List<String> chainOfReceivers);
+    /**
+     * Get's a new Serializer.
+     *
+     * @param chainOfReceivers the receivers to set on the serializer.
+     * @return a serializer
+     *
+     * @deprecated Use {@link #borrowSerializer()} and {@link #returnSerializer(Serializer)} instead. Will be removed in eXist-db 6.0.0
+     */
+    @Deprecated
+    public abstract Serializer newSerializer(final List<String> chainOfReceivers);
+
+    public abstract NativeValueIndex getValueIndex();
 
     /**
      * Get a node with given owner document and id from the database.

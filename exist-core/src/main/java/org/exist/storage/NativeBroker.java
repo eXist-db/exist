@@ -22,6 +22,11 @@
 package org.exist.storage;
 
 import com.evolvedbinary.j8fu.function.FunctionE;
+import org.apache.commons.pool2.BasePooledObjectFactory;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.*;
@@ -164,7 +169,7 @@ public class NativeBroker extends DBBroker {
 
     private int defaultIndexDepth;
 
-    private final Serializer xmlSerializer;
+    private final XmlSerializerPool xmlSerializerPool;
 
     /** used to count the nodes inserted after the last memory check */
     private int nodesCount = 0;
@@ -213,7 +218,7 @@ public class NativeBroker extends DBBroker {
         }
 
         this.indexConfiguration = (IndexSpec) config.getProperty(Indexer.PROPERTY_INDEXER_CONFIG);
-        this.xmlSerializer = new NativeSerializer(this, config);
+        this.xmlSerializerPool = new XmlSerializerPool(this, config, 5);
 
         try {
             pushSubject(pool.getSecurityManager().getSystemSubject());
@@ -513,17 +518,29 @@ public class NativeBroker extends DBBroker {
     }
 
     @Override
-    public Serializer getSerializer() {
-        xmlSerializer.reset();
-        return xmlSerializer;
+    public Serializer borrowSerializer() {
+        return xmlSerializerPool.borrowObject();
     }
 
     @Override
+    public void returnSerializer(final Serializer serializer) {
+        xmlSerializerPool.returnObject(serializer);
+    }
+
+    @Override
+    @Deprecated
+    public Serializer getSerializer() {
+        return newSerializer();
+    }
+
+    @Override
+    @Deprecated
     public Serializer newSerializer() {
         return new NativeSerializer(this, getConfiguration());
     }
 
     @Override
+    @Deprecated
     public Serializer newSerializer(final List<String> chainOfReceivers) {
         return new NativeSerializer(this, getConfiguration(), chainOfReceivers);
     }
@@ -4023,6 +4040,67 @@ public class NativeBroker extends DBBroker {
             }
 
             return true;
+        }
+    }
+
+    private static class XmlSerializerPool extends GenericObjectPool<Serializer> {
+        public XmlSerializerPool(final DBBroker broker, final Configuration config, final int maxIdle) {
+            super(new XmlSerializerPoolObjectFactory(broker, config), toConfig(maxIdle));
+        }
+
+        private static GenericObjectPoolConfig<Serializer> toConfig(final int maxIdle) {
+            final GenericObjectPoolConfig<Serializer> config = new GenericObjectPoolConfig<>();
+            config.setLifo(true);
+            config.setMaxIdle(maxIdle);
+            return config;
+        }
+
+        @Override
+        public Serializer borrowObject() {
+            try {
+                return super.borrowObject();
+            } catch (final Exception e) {
+                throw new IllegalStateException("Error while borrowing serializer: " + e.getMessage());
+            }
+        }
+
+        @Override
+        public void returnObject(final Serializer obj) {
+            if (obj == null) {
+                return;
+            }
+
+            try {
+                super.returnObject(obj);
+            } catch (final Exception e) {
+                throw new IllegalStateException("Error while returning serializer: " + e.getMessage());
+            }
+        }
+    }
+
+    private static class XmlSerializerPoolObjectFactory extends BasePooledObjectFactory<Serializer> {
+
+        private final DBBroker broker;
+        private final Configuration config;
+
+        public XmlSerializerPoolObjectFactory(final DBBroker broker, final Configuration config) {
+            this.broker = broker;
+            this.config = config;
+        }
+
+        @Override
+        public Serializer create() {
+            return new NativeSerializer(broker, config);
+        }
+
+        @Override
+        public PooledObject wrap(final Serializer obj) {
+            return new DefaultPooledObject<>(obj);
+        }
+
+        @Override
+        public void passivateObject(final PooledObject<Serializer> p) {
+            p.getObject().reset();
         }
     }
 }

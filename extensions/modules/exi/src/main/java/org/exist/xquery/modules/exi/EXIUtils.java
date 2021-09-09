@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.serializers.Serializer;
@@ -68,10 +69,17 @@ public class EXIUtils {
             */
 
                 // Node provided
-                Serializer serializer = context.getBroker().newSerializer();
+                final ConsumerE<ConsumerE<Serializer, IOException>, IOException> withSerializerFn = fn -> {
+                    final Serializer serializer = context.getBroker().borrowSerializer();
+                    try {
+                        fn.accept(serializer);
+                    } finally {
+                        context.getBroker().returnSerializer(serializer);
+                    }
+                };
 
                 NodeValue node = (NodeValue) item;
-                return new NodeInputStream(context.getBroker().getBrokerPool(), serializer, node);
+                return new NodeInputStream(context.getBroker().getBrokerPool(), withSerializerFn, node);
             default:
                 LOG.error("Wrong item type {}", Type.getTypeName(item.getType()));
                 throw new XPathException("wrong item type " + Type.getTypeName(item.getType()));

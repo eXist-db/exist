@@ -42,7 +42,6 @@ import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.NodeHandle;
-import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedDocumentLock;
@@ -185,7 +184,7 @@ public abstract class Modification extends AbstractExpression
         context.pushDocumentContext();
         final MemTreeBuilder builder = context.getDocumentBuilder();
         final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
-        final Serializer serializer = context.getBroker().getSerializer();
+        final Serializer serializer = context.getBroker().borrowSerializer();
         serializer.setReceiver(receiver);
 
         try {
@@ -219,6 +218,7 @@ public abstract class Modification extends AbstractExpression
         } catch(final SAXException | DOMException e) {
             throw new XPathException(this, e.getMessage(), e);
         } finally {
+            context.getBroker().returnSerializer(serializer);
             context.popDocumentContext();
         }
     }

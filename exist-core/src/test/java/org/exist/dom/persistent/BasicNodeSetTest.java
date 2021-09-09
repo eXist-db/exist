@@ -357,8 +357,6 @@ public class BasicNodeSetTest {
     @Test
     public void testOptimizations() throws XPathException, SAXException, PermissionDeniedException, EXistException, LockException {
         try(final DBBroker broker = existEmbeddedServer.getBrokerPool().get(Optional.of(existEmbeddedServer.getBrokerPool().getSecurityManager().getSystemSubject()))) {
-            Serializer serializer = broker.getSerializer();
-            serializer.reset();
             DocumentSet docs = root.allDocs(broker, new DefaultDocumentSet(), true);
 
             //Testing NativeElementIndex.findChildNodesByTagName
@@ -515,15 +513,18 @@ public class BasicNodeSetTest {
     }
 
     private static String serialize(final DBBroker broker, final Item item) throws SAXException, XPathException {
-        final Serializer serializer = broker.getSerializer();
-        serializer.reset();
-        final String value;
-        if(Type.subTypeOf(item.getType(), Type.NODE)) {
-            value = serializer.serialize((NodeValue) item);
-        } else {
-            value = item.getStringValue();
+        final Serializer serializer = broker.borrowSerializer();
+        try {
+            final String value;
+            if (Type.subTypeOf(item.getType(), Type.NODE)) {
+                value = serializer.serialize((NodeValue) item);
+            } else {
+                value = item.getStringValue();
+            }
+            return value;
+        } finally {
+            broker.returnSerializer(serializer);
         }
-        return value;
     }
 
     @ClassRule

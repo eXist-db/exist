@@ -134,9 +134,12 @@ public class Compare extends Function {
     }
 	
     private String serialize(NodeValue node) throws SAXException {
-	Serializer serializer = context.getBroker().getSerializer();
-        serializer.reset();
-        serializer.setProperties(OUTPUT_PROPERTIES);
-        return serializer.serialize(node);
+		final Serializer serializer = context.getBroker().borrowSerializer();
+		try {
+			serializer.setProperties(OUTPUT_PROPERTIES);
+			return serializer.serialize(node);
+		} finally {
+			context.getBroker().returnSerializer(serializer);
+		}
     }
 }

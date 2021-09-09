@@ -56,11 +56,9 @@ import org.exist.storage.txn.Txn;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
 
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.functions.util.BinaryDoc;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
@@ -191,10 +189,14 @@ public class SystemExportImportTest {
     }
 	
 	private String serializer(final DBBroker broker, final DocumentImpl document) throws SAXException {
-		final Serializer serializer = broker.getSerializer();
-		serializer.setUser(broker.getCurrentSubject());
-		serializer.setProperties(contentsOutputProps);
-		return serializer.serialize(document);
+		final Serializer serializer = broker.borrowSerializer();
+		try {
+            serializer.setUser(broker.getCurrentSubject());
+            serializer.setProperties(contentsOutputProps);
+            return serializer.serialize(document);
+        } finally {
+            broker.returnSerializer(serializer);
+        }
 	}
 
     private void clean() throws PermissionDeniedException, IOException, TriggerException, EXistException {

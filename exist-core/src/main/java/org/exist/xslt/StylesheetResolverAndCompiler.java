@@ -149,10 +149,13 @@ public class StylesheetResolverAndCompiler implements Stylesheet {
     handler.setSystemId(stylesheet.getBaseURI());
     handler.startDocument();
 
-    final Serializer serializer = broker.newSerializer();
-    serializer.reset();
-    serializer.setSAXHandlers(handler, null);
-    serializer.toSAX(stylesheet);
+    final Serializer serializer = broker.borrowSerializer();
+    try {
+      serializer.setSAXHandlers(handler, null);
+      serializer.toSAX(stylesheet);
+    } finally {
+      broker.returnSerializer(serializer);
+    }
 
     handler.endDocument();
 
@@ -162,6 +165,7 @@ public class StylesheetResolverAndCompiler implements Stylesheet {
     errorListener.checkForErrors();
 
     return t;
+
   }
 
   private SAXTransformerFactory cachedFactory(BrokerPool db) {

@@ -321,10 +321,10 @@ public class SystemExport {
     private void exportOrphans(final BackupWriter output, final DocumentSet docs, final List<ErrorReport> errorList) throws IOException {
         output.newCollection("/db/__lost_and_found__");
 
+        final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
         try(final Writer contents = output.newContents()) {
 
             // serializer writes to __contents__.xml
-            final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
             serializer.setOutput(contents, contentsOutputProps);
 
             serializer.startDocument();
@@ -350,6 +350,7 @@ public class SystemExport {
                 callback.error(e.getMessage(), e);
             }
         } finally {
+            SerializerPool.getInstance().returnObject(serializer);
             output.closeCollection();
         }
     }
@@ -381,11 +382,11 @@ public class SystemExport {
         output.newCollection(Backup.encode(URIUtils.urlDecodeUtf8(current.getURI())));
 //        }
 
+        final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
         try {
             final Writer contents = output.newContents();
 
             // serializer writes to __contents__.xml
-            final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
             serializer.setOutput(contents, contentsOutputProps);
 
             final Permission perm = current.getPermissionsNoLock();
@@ -469,7 +470,7 @@ public class SystemExport {
             serializer.endDocument();
             output.closeContents();
         } finally {
-
+            SerializerPool.getInstance().returnObject(serializer);
 //            if( !current.getURI().equalsInternal( XmldbURI.ROOT_COLLECTION_URI ) ) {
             output.closeCollection();
 //            }
@@ -494,11 +495,11 @@ public class SystemExport {
                 if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
                     broker.readBinaryResource((BinaryDocument) doc, os);
                 } else {
+                    final SAXSerializer contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
                     final Writer writer = new BufferedWriter(new OutputStreamWriter(os, UTF_8));
                     try {
 
                         // write resource to contentSerializer
-                        final SAXSerializer contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
                         contentSerializer.setOutput(writer, defaultOutputProperties);
 
                         final Receiver receiver;
@@ -510,8 +511,8 @@ public class SystemExport {
                         }
 
                         writeXML(doc, receiver);
-                        SerializerPool.getInstance().returnObject(contentSerializer);
                     } finally {
+                        SerializerPool.getInstance().returnObject(contentSerializer);
                         writer.flush();
                     }
                 }

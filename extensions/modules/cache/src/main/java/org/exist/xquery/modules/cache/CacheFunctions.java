@@ -457,8 +457,7 @@ public class CacheFunctions extends BasicFunction {
     private String[] toMapKeys(final Sequence keys) throws XPathException {
         final String[] mapKeys = new String[keys.getItemCount()];
 
-        final Serializer serializer = context.getBroker().getSerializer();
-        serializer.reset();
+        final Serializer serializer = context.getBroker().borrowSerializer();
         try {
             serializer.setProperties(OUTPUT_PROPERTIES);
             int i = 0;
@@ -474,6 +473,8 @@ public class CacheFunctions extends BasicFunction {
             }
         } catch (final SAXException e) {
             throw new XPathException(this, KEY_SERIALIZATION, e);
+        } finally {
+            context.getBroker().returnSerializer(serializer);
         }
 
         return mapKeys;
@@ -481,8 +482,7 @@ public class CacheFunctions extends BasicFunction {
 
     private String serializeKey(final Sequence key) throws XPathException {
         final StringBuilder builder = new StringBuilder();
-        final Serializer serializer = context.getBroker().getSerializer();
-        serializer.reset();
+        final Serializer serializer = context.getBroker().borrowSerializer();
         try {
             serializer.setProperties(OUTPUT_PROPERTIES);
             for (final SequenceIterator i = key.iterate(); i.hasNext(); ) {
@@ -497,6 +497,8 @@ public class CacheFunctions extends BasicFunction {
             return builder.toString();
         } catch (final SAXException e) {
             throw new XPathException(this, KEY_SERIALIZATION, e);
+        } finally {
+            context.getBroker().returnSerializer(serializer);
         }
     }
 }

@@ -166,34 +166,37 @@ public class RecoveryTest {
 
     private void verify(final BrokerPool pool) throws EXistException, PermissionDeniedException, SAXException, XPathException, IOException, BTreeException, LockException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            final Serializer serializer = broker.getSerializer();
-            serializer.reset();
+            final Serializer serializer = broker.borrowSerializer();
+            try {
+                try (final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/hamlet.xml"), LockMode.READ_LOCK)) {
 
-            try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/hamlet.xml"), LockMode.READ_LOCK)) {
+                    assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/hamlet.xml' should not be null", lockedDoc);
+                    final String data = serializer.serialize(lockedDoc.getDocument());
+                    assertNotNull(data);
+                }
 
-                assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/hamlet.xml' should not be null", lockedDoc);
-                final String data = serializer.serialize(lockedDoc.getDocument());
-                assertNotNull(data);
-            }
+                try (final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/test_string.xml"), LockMode.READ_LOCK)) {
+                    assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test_string.xml' should not be null", lockedDoc);
+                    final String data = serializer.serialize(lockedDoc.getDocument());
+                    assertNotNull(data);
+                }
 
-            try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/test_string.xml"), LockMode.READ_LOCK)) {
-                assertNotNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/test_string.xml' should not be null", lockedDoc);
-                final String data = serializer.serialize(lockedDoc.getDocument());
-                assertNotNull(data);
-            }
+                final String lastSampleName = SAMPLES.getShakespeareXmlSampleNames()[SAMPLES.getShakespeareXmlSampleNames().length - 1];
+                try (final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(lastSampleName), LockMode.READ_LOCK)) {
+                    assertNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/'" + lastSampleName + " should not exist anymore", lockedDoc);
+                }
 
-            final String lastSampleName = SAMPLES.getShakespeareXmlSampleNames()[SAMPLES.getShakespeareXmlSampleNames().length - 1];
-            try(final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(lastSampleName), LockMode.READ_LOCK)) {
-                assertNull("Document '" + XmldbURI.ROOT_COLLECTION + "/test/test2/'" + lastSampleName + " should not exist anymore", lockedDoc);
-            }
-            
-            final XQuery xquery = pool.getXQueryService();
-            assertNotNull(xquery);
-            final Sequence seq = xquery.execute(broker, "//SPEECH[contains(LINE, 'king')]", null);
-            assertNotNull(seq);
-            for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-                final Item next = i.nextItem();
-                final String value = serializer.serialize((NodeValue) next);
+                final XQuery xquery = pool.getXQueryService();
+                assertNotNull(xquery);
+                final Sequence seq = xquery.execute(broker, "//SPEECH[contains(LINE, 'king')]", null);
+                assertNotNull(seq);
+                for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+                    final Item next = i.nextItem();
+                    final String value = serializer.serialize((NodeValue) next);
+                }
+
+            } finally {
+                broker.returnSerializer(serializer);
             }
             
             try(final LockedDocument lockedBinDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_BINARY_URI), LockMode.READ_LOCK)) {

@@ -291,200 +291,202 @@ public class Backup {
 
         // serializer writes to __contents__.xml
         final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-        serializer.setOutput(contents, contentsOutputProps);
+        try {
+            serializer.setOutput(contents, contentsOutputProps);
 
-        serializer.startDocument();
-        serializer.startPrefixMapping("", Namespaces.EXIST_NS);
+            serializer.startDocument();
+            serializer.startPrefixMapping("", Namespaces.EXIST_NS);
 
-        // write <collection> element
-        final EXistCollection cur = (EXistCollection) current;
-        final AttributesImpl attr = new AttributesImpl();
+            // write <collection> element
+            final EXistCollection cur = (EXistCollection) current;
+            final AttributesImpl attr = new AttributesImpl();
 
-        //The name should have come from an XmldbURI.toString() call
-        attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", current.getName());
-        writeUnixStylePermissionAttributes(attr, currentPerms);
-        attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue(cur.getCreationTime()));
-        attr.addAttribute(Namespaces.EXIST_NS, "deduplicate-blobs", "deduplicate-blobs", "CDATA", Boolean.toString(deduplicateBlobs));
-        attr.addAttribute(Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf(BACKUP_FORMAT_VERSION));
+            //The name should have come from an XmldbURI.toString() call
+            attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", current.getName());
+            writeUnixStylePermissionAttributes(attr, currentPerms);
+            attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue(cur.getCreationTime()));
+            attr.addAttribute(Namespaces.EXIST_NS, "deduplicate-blobs", "deduplicate-blobs", "CDATA", Boolean.toString(deduplicateBlobs));
+            attr.addAttribute(Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf(BACKUP_FORMAT_VERSION));
 
-        serializer.startElement(Namespaces.EXIST_NS, "collection", "collection", attr);
+            serializer.startElement(Namespaces.EXIST_NS, "collection", "collection", attr);
 
-        if (currentPerms instanceof ACLPermission) {
-            writeACLPermission(serializer, (ACLPermission) currentPerms);
-        }
+            if (currentPerms instanceof ACLPermission) {
+                writeACLPermission(serializer, (ACLPermission) currentPerms);
+            }
 
-        // scan through resources
-        Resource resource;
-        OutputStream os;
-        BufferedWriter writer;
-        SAXSerializer contentSerializer;
+            // scan through resources
+            Resource resource;
+            OutputStream os;
+            BufferedWriter writer;
+            SAXSerializer contentSerializer;
 
-        for (int i = 0; i < resources.length; i++) {
+            for (int i = 0; i < resources.length; i++) {
 
-            try {
+                try {
 
-                if ("__contents__.xml".equals(resources[i])) {
+                    if ("__contents__.xml".equals(resources[i])) {
 
-                    //Skipping resources[i]
-                    continue;
-                }
-
-                resource = current.getResource(resources[i]);
-
-                if (dialog != null) {
-                    dialog.setResource(resources[i]);
-                    dialog.setProgress(i);
-                }
-
-                // Avoid NPE
-                if (resource == null) {
-                    final String msg = "Resource " + resources[i] + " could not be found.";
-
-                    if(dialog != null) {
-                        Object[] options = {"Ignore", "Abort"};
-                        int n = JOptionPane.showOptionDialog(null, msg, "Backup Error",
-                                JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
-                                options, options[1]);
-                        if (n == JOptionPane.YES_OPTION) {
-                            // ignore one
-                            continue;
-                        }
-
-                        // Abort
-                        dialog.dispose();
-                        JOptionPane.showMessageDialog(null, "Backup aborted.", "Abort", JOptionPane.WARNING_MESSAGE);
+                        //Skipping resources[i]
+                        continue;
                     }
-                    throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, msg);
-                }
 
-                final String name = resources[i];
-                String filename = encode(URIUtils.urlDecodeUtf8(resources[i]));
+                    resource = current.getResource(resources[i]);
 
-                // Check for special resource names which cause problems as filenames, and if so, replace the filename with a generated filename
+                    if (dialog != null) {
+                        dialog.setResource(resources[i]);
+                        dialog.setProgress(i);
+                    }
 
-                if (".".equals(name.trim())) {
-                    filename = EXIST_GENERATED_FILENAME_DOT_FILENAME + i;
-                } else if ("..".equals(name.trim())) {
-                    filename = EXIST_GENERATED_FILENAME_DOTDOT_FILENAME + i;
-                }
+                    // Avoid NPE
+                    if (resource == null) {
+                        final String msg = "Resource " + resources[i] + " could not be found.";
 
-                if (resource instanceof ExtendedResource) {
-                    if (deduplicateBlobs && resource instanceof EXistBinaryResource) {
-                        // only add distinct blobs to the Blob Store once!
-                        final String blobId = ((EXistBinaryResource)resource).getBlobId().toString();
-                        if (!seenBlobIds.contains(blobId)) {
-                            os = output.newBlobEntry(blobId);
+                        if (dialog != null) {
+                            Object[] options = {"Ignore", "Abort"};
+                            int n = JOptionPane.showOptionDialog(null, msg, "Backup Error",
+                                    JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+                                    options, options[1]);
+                            if (n == JOptionPane.YES_OPTION) {
+                                // ignore one
+                                continue;
+                            }
+
+                            // Abort
+                            dialog.dispose();
+                            JOptionPane.showMessageDialog(null, "Backup aborted.", "Abort", JOptionPane.WARNING_MESSAGE);
+                        }
+                        throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, msg);
+                    }
+
+                    final String name = resources[i];
+                    String filename = encode(URIUtils.urlDecodeUtf8(resources[i]));
+
+                    // Check for special resource names which cause problems as filenames, and if so, replace the filename with a generated filename
+
+                    if (".".equals(name.trim())) {
+                        filename = EXIST_GENERATED_FILENAME_DOT_FILENAME + i;
+                    } else if ("..".equals(name.trim())) {
+                        filename = EXIST_GENERATED_FILENAME_DOTDOT_FILENAME + i;
+                    }
+
+                    if (resource instanceof ExtendedResource) {
+                        if (deduplicateBlobs && resource instanceof EXistBinaryResource) {
+                            // only add distinct blobs to the Blob Store once!
+                            final String blobId = ((EXistBinaryResource) resource).getBlobId().toString();
+                            if (!seenBlobIds.contains(blobId)) {
+                                os = output.newBlobEntry(blobId);
+                                ((ExtendedResource) resource).getContentIntoAStream(os);
+                                output.closeEntry();
+
+                                seenBlobIds.add(blobId);
+                            }
+                        } else {
+                            os = output.newEntry(filename);
                             ((ExtendedResource) resource).getContentIntoAStream(os);
                             output.closeEntry();
-
-                            seenBlobIds.add(blobId);
                         }
                     } else {
                         os = output.newEntry(filename);
-                        ((ExtendedResource)resource).getContentIntoAStream(os);
+                        writer = new BufferedWriter(new OutputStreamWriter(os, UTF_8));
+
+                        // write resource to contentSerializer
+                        contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+                        contentSerializer.setOutput(writer, defaultOutputProperties);
+                        ((EXistResource) resource).setLexicalHandler(contentSerializer);
+                        ((XMLResource) resource).getContentAsSAX(contentSerializer);
+                        SerializerPool.getInstance().returnObject(contentSerializer);
+
+                        writer.flush();
                         output.closeEntry();
                     }
-                } else {
-                    os = output.newEntry(filename);
-                    writer = new BufferedWriter(new OutputStreamWriter(os, UTF_8));
+                    final EXistResource ris = (EXistResource) resource;
 
-                    // write resource to contentSerializer
-                    contentSerializer = (SAXSerializer)SerializerPool.getInstance().borrowObject( SAXSerializer.class );
-                    contentSerializer.setOutput( writer, defaultOutputProperties );
-                    ( (EXistResource)resource ).setLexicalHandler( contentSerializer );
-                    ( (XMLResource)resource ).getContentAsSAX( contentSerializer );
-                    SerializerPool.getInstance().returnObject( contentSerializer );
+                    //store permissions
+                    attr.clear();
+                    attr.addAttribute(Namespaces.EXIST_NS, "type", "type", "CDATA", resource.getResourceType());
+                    attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", name);
+                    writeUnixStylePermissionAttributes(attr, perms[i]);
+                    Date date = ris.getCreationTime();
 
-                    writer.flush();
-                    output.closeEntry();
-                }
-                final EXistResource ris = (EXistResource)resource;
-
-                //store permissions
-                attr.clear();
-                attr.addAttribute(Namespaces.EXIST_NS, "type", "type", "CDATA", resource.getResourceType());
-                attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", name);
-                writeUnixStylePermissionAttributes(attr, perms[i]);
-                Date date = ris.getCreationTime();
-
-                if (date != null) {
-                    attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue(date));
-                }
-                date = ris.getLastModificationTime();
-
-                if (date != null) {
-                    attr.addAttribute(Namespaces.EXIST_NS, "modified", "modified", "CDATA", "" + new DateTimeValue(date));
-                }
-
-                attr.addAttribute(Namespaces.EXIST_NS, "filename", "filename", "CDATA", filename);
-                attr.addAttribute(Namespaces.EXIST_NS, "mimetype", "mimetype", "CDATA", encode(((EXistResource) resource).getMimeType()));
-
-                if (!"BinaryResource".equals(resource.getResourceType())) {
-
-                    if (ris.getDocType() != null) {
-
-                        if (ris.getDocType().getName() != null) {
-                            attr.addAttribute(Namespaces.EXIST_NS, "namedoctype", "namedoctype", "CDATA", ris.getDocType().getName());
-                        }
-
-                        if (ris.getDocType().getPublicId() != null) {
-                            attr.addAttribute(Namespaces.EXIST_NS, "publicid", "publicid", "CDATA", ris.getDocType().getPublicId());
-                        }
-
-                        if (ris.getDocType().getSystemId() != null) {
-                            attr.addAttribute(Namespaces.EXIST_NS, "systemid", "systemid", "CDATA", ris.getDocType().getSystemId());
-                        }
+                    if (date != null) {
+                        attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue(date));
                     }
-                } else {
-                    attr.addAttribute( Namespaces.EXIST_NS, "blob-id", "blob-id", "CDATA", ((EXistBinaryResource)ris).getBlobId().toString());
+                    date = ris.getLastModificationTime();
+
+                    if (date != null) {
+                        attr.addAttribute(Namespaces.EXIST_NS, "modified", "modified", "CDATA", "" + new DateTimeValue(date));
+                    }
+
+                    attr.addAttribute(Namespaces.EXIST_NS, "filename", "filename", "CDATA", filename);
+                    attr.addAttribute(Namespaces.EXIST_NS, "mimetype", "mimetype", "CDATA", encode(((EXistResource) resource).getMimeType()));
+
+                    if (!"BinaryResource".equals(resource.getResourceType())) {
+
+                        if (ris.getDocType() != null) {
+
+                            if (ris.getDocType().getName() != null) {
+                                attr.addAttribute(Namespaces.EXIST_NS, "namedoctype", "namedoctype", "CDATA", ris.getDocType().getName());
+                            }
+
+                            if (ris.getDocType().getPublicId() != null) {
+                                attr.addAttribute(Namespaces.EXIST_NS, "publicid", "publicid", "CDATA", ris.getDocType().getPublicId());
+                            }
+
+                            if (ris.getDocType().getSystemId() != null) {
+                                attr.addAttribute(Namespaces.EXIST_NS, "systemid", "systemid", "CDATA", ris.getDocType().getSystemId());
+                            }
+                        }
+                    } else {
+                        attr.addAttribute(Namespaces.EXIST_NS, "blob-id", "blob-id", "CDATA", ((EXistBinaryResource) ris).getBlobId().toString());
+                    }
+
+                    serializer.startElement(Namespaces.EXIST_NS, "resource", "resource", attr);
+                    if (perms[i] instanceof ACLPermission) {
+                        writeACLPermission(serializer, (ACLPermission) perms[i]);
+                    }
+                    serializer.endElement(Namespaces.EXIST_NS, "resource", "resource");
+                } catch (final XMLDBException e) {
+                    System.err.println("Failed to backup resource " + resources[i] + " from collection " + current.getName());
+                    throw e;
                 }
+            }
 
-                serializer.startElement(Namespaces.EXIST_NS, "resource", "resource", attr);
-                if (perms[i] instanceof ACLPermission) {
-                    writeACLPermission(serializer, (ACLPermission) perms[i]);
+            // write subcollections
+            final String[] collections = current.listChildCollections();
+
+            for (final String collection : collections) {
+
+                if (current.getName().equals(XmldbURI.SYSTEM_COLLECTION) && "temp".equals(collection)) {
+                    continue;
                 }
-                serializer.endElement(Namespaces.EXIST_NS, "resource", "resource");
-            } catch (final XMLDBException e) {
-                System.err.println("Failed to backup resource " + resources[i] + " from collection " + current.getName());
-                throw e;
+                attr.clear();
+                attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", collection);
+                attr.addAttribute(Namespaces.EXIST_NS, "filename", "filename", "CDATA", encode(URIUtils.urlDecodeUtf8(collection)));
+                serializer.startElement(Namespaces.EXIST_NS, "subcollection", "subcollection", attr);
+                serializer.endElement(Namespaces.EXIST_NS, "subcollection", "subcollection");
             }
-        }
 
-        // write subcollections
-        final String[] collections = current.listChildCollections();
+            // close <collection>
+            serializer.endElement(Namespaces.EXIST_NS, "collection", "collection");
+            serializer.endPrefixMapping("");
+            serializer.endDocument();
+            output.closeContents();
 
-        for (final String collection : collections) {
+            // descend into subcollections
+            Collection child;
 
-            if (current.getName().equals(XmldbURI.SYSTEM_COLLECTION) && "temp".equals(collection)) {
-                continue;
+            for (final String collection : collections) {
+                child = current.getChildCollection(collection);
+
+                if (child.getName().equals(XmldbURI.TEMP_COLLECTION)) {
+                    continue;
+                }
+                output.newCollection(encode(URIUtils.urlDecodeUtf8(collection)));
+                backup(seenBlobIds, child, output, dialog);
+                output.closeCollection();
             }
-            attr.clear();
-            attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", collection);
-            attr.addAttribute(Namespaces.EXIST_NS, "filename", "filename", "CDATA", encode(URIUtils.urlDecodeUtf8(collection)));
-            serializer.startElement(Namespaces.EXIST_NS, "subcollection", "subcollection", attr);
-            serializer.endElement(Namespaces.EXIST_NS, "subcollection", "subcollection");
-        }
-
-        // close <collection>
-        serializer.endElement(Namespaces.EXIST_NS, "collection", "collection");
-        serializer.endPrefixMapping("");
-        serializer.endDocument();
-        output.closeContents();
-
-        SerializerPool.getInstance().returnObject(serializer);
-
-        // descend into subcollections
-        Collection child;
-
-        for (final String collection : collections) {
-            child = current.getChildCollection(collection);
-
-            if (child.getName().equals(XmldbURI.TEMP_COLLECTION)) {
-                continue;
-            }
-            output.newCollection(encode(URIUtils.urlDecodeUtf8(collection)));
-            backup(seenBlobIds, child, output, dialog);
-            output.closeCollection();
+        } finally {
+            SerializerPool.getInstance().returnObject(serializer);
         }
     }
 

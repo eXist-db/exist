@@ -1222,16 +1222,17 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                             ((ExtendedResource) resource).getContentIntoAStream(os);
                         }
                     } else {
+                        contentSerializer = (SAXSerializer) SerializerPool
+                                .getInstance()
+                                .borrowObject(SAXSerializer.class);
                         try(final Writer writer = Files.newBufferedWriter(file, UTF_8)) {
                             // write resource to contentSerializer
-                            contentSerializer = (SAXSerializer) SerializerPool
-                                    .getInstance()
-                                    .borrowObject(SAXSerializer.class);
                             contentSerializer.setOutput(writer, properties);
                             ((EXistResource) resource)
                                     .setLexicalHandler(contentSerializer);
                             ((XMLResource) resource)
                                     .getContentAsSAX(contentSerializer);
+                        } finally {
                             SerializerPool.getInstance().returnObject(contentSerializer);
                         }
                     }

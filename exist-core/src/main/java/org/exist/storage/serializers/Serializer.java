@@ -1260,7 +1260,10 @@ public abstract class Serializer implements XMLReader {
 			final URI baseURI = URI.create(collectionId + "/");
 			final URI uri = URI.create(href);
 			href = baseURI.resolve(uri).toString();
-			final Serializer serializer = broker.newSerializer();
+
+			// TODO(AR) ideally we should reuse from DBBroker.borrowSerializer
+			final Serializer serializer = new NativeSerializer(broker, broker.getConfiguration());
+
 			return new SAXSource(serializer, new InputSource(href));
 		}
 	}

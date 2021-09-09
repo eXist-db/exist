@@ -577,9 +577,12 @@ public class MatchListenerTest {
         Properties props = new Properties();
         props.setProperty(OutputKeys.INDENT, "no");
         props.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
-        Serializer serializer = broker.getSerializer();
-        serializer.reset();
-        serializer.setProperties(props);
-        return serializer.serialize((NodeValue) seq.itemAt(index));
+        final Serializer serializer = broker.borrowSerializer();
+        try {
+            serializer.setProperties(props);
+            return serializer.serialize((NodeValue) seq.itemAt(index));
+        } finally {
+            broker.returnSerializer(serializer);
+        }
     }
 }

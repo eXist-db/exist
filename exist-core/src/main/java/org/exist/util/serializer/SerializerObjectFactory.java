@@ -21,26 +21,49 @@
  */
 package org.exist.util.serializer;
 
-import org.apache.commons.pool.BaseKeyedPoolableObjectFactory;
+import org.apache.commons.pool2.BaseKeyedPooledObjectFactory;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
 
-public class SerializerObjectFactory extends BaseKeyedPoolableObjectFactory<Class<?>, Object> {
+public class SerializerObjectFactory extends BaseKeyedPooledObjectFactory<Class<?>, Object> {
 
     @Override
-    public Object makeObject(final Class<?> key) {
+    public Object create(final Class<?> key) {
         if (key == SAXSerializer.class) {
             return new SAXSerializer();
         } else if (key == DOMStreamer.class) {
+            return new DOMStreamer();
+        } else if (key == ExtendedDOMStreamer.class) {
             return new ExtendedDOMStreamer();
         }
         return null;
     }
 
     @Override
-    public void passivateObject(final Class<?> key, final Object obj) {
+    public PooledObject<Object> wrap(final Object value) {
+        return new DefaultPooledObject<>(value);
+    }
+
+    // TODO(AR) we likely need only call #reset() on #passivateObject(Class, Object)!
+    @Override
+    public void activateObject(final Class<?> key, final PooledObject<Object> p) {
         if (key == SAXSerializer.class) {
-            ((SAXSerializer) obj).reset();
+            ((SAXSerializer) p.getObject()).reset();
         } else if (key == DOMStreamer.class) {
-            ((DOMStreamer) obj).reset();
+            ((DOMStreamer) p.getObject()).reset();
+        } else if (key == ExtendedDOMStreamer.class) {
+            ((ExtendedDOMStreamer) p.getObject()).reset();
+        }
+    }
+
+    @Override
+    public void passivateObject(final Class<?> key, final PooledObject<Object> p) {
+        if (key == SAXSerializer.class) {
+            ((SAXSerializer) p.getObject()).reset();
+        } else if (key == DOMStreamer.class) {
+            ((DOMStreamer) p.getObject()).reset();
+        } else if (key == ExtendedDOMStreamer.class) {
+            ((ExtendedDOMStreamer) p.getObject()).reset();
         }
     }
 }

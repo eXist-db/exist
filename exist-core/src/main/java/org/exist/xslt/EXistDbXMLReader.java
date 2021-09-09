@@ -89,11 +89,10 @@ public class EXistDbXMLReader implements XMLReader, Locator {
         }
 
         EXistDbInputSource source = (EXistDbInputSource) input;
+        final Serializer serializer = source.getBroker().borrowSerializer();
         try {
-            final Serializer serializer = source.getBroker().newSerializer();
             this.source = input;  
             this.contentHandler.setDocumentLocator(this);
-            serializer.reset();
             serializer.setSAXHandlers(this.contentHandler, null);
             serializer.toSAX(source.getDocument());
     
@@ -118,6 +117,7 @@ public class EXistDbXMLReader implements XMLReader, Locator {
             }
 
         } finally {
+            source.getBroker().returnSerializer(serializer);
             this.source = null;
         }
     }

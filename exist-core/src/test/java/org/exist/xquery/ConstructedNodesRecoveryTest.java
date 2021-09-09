@@ -57,8 +57,6 @@ import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -177,9 +175,7 @@ public class ConstructedNodesRecoveryTest {
 	}
 
 	private String serialize(final DBBroker broker, final DocumentImpl doc) throws IOException, SAXException {
-		final Serializer serializer = broker.getSerializer();
-		serializer.reset();
-
+		final Serializer serializer = broker.borrowSerializer();
 		SAXSerializer sax = null;
 		try (final StringWriter writer = new StringWriter()) {
 			sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
@@ -198,6 +194,7 @@ public class ConstructedNodesRecoveryTest {
 			if (sax != null) {
 				SerializerPool.getInstance().returnObject(sax);
 			}
+			broker.returnSerializer(serializer);
 		}
 	}
 	

@@ -197,8 +197,7 @@ public class SerializeToFile extends BasicFunction {
 	
 	
 	private void serializeXML(final SequenceIterator siNode, final Properties outputProperties, final Path file, final boolean doAppend) throws XPathException {
-        final Serializer serializer = context.getBroker().getSerializer();
-        serializer.reset();
+        final Serializer serializer = context.getBroker().borrowSerializer();
 
         StandardOpenOption ops[] = doAppend ? new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.APPEND}
                 : new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING};
@@ -218,6 +217,8 @@ public class SerializeToFile extends BasicFunction {
 
         } catch(final IOException | SAXException e) {
             throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the node set: " + e.getMessage(), e);
+        } finally {
+            context.getBroker().returnSerializer(serializer);
         }
 	}
 

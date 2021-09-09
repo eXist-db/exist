@@ -1122,11 +1122,14 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             case NodeImpl.REFERENCE_NODE:
                 if(expandRefs) {
                     try(final DBBroker broker = getDatabase().getBroker()) {
-                        final Serializer serializer = broker.getSerializer();
-                        serializer.reset();
-                        serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
-                        serializer.setReceiver(receiver);
-                        serializer.toReceiver(document.references[document.alpha[nr]], false, false);
+                        final Serializer serializer = broker.borrowSerializer();
+                        try {
+                            serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+                            serializer.setReceiver(receiver);
+                            serializer.toReceiver(document.references[document.alpha[nr]], false, false);
+                        } finally {
+                            broker.returnSerializer(serializer);
+                        }
                     } catch(final EXistException e) {
                         throw new SAXException(e);
                     }

@@ -121,15 +121,13 @@ public class LocalResourceSet extends AbstractLocal implements ResourceSet {
 
     @Override
     public Resource getMembersAsResource() throws XMLDBException {
-        final SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-        final StringWriter writer = new StringWriter();
-        handler.setOutput(writer, outputProperties);
-		
         return this.<Resource>withDb((broker, transaction) -> {
+            final Serializer serializer = broker.borrowSerializer();
+            final SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+            final StringWriter writer = new StringWriter();
+            handler.setOutput(writer, outputProperties);
             try {
                 // configure the serializer
-                final Serializer serializer = broker.getSerializer();
-                serializer.reset();
                 collection.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
                 serializer.setProperties(outputProperties);
                 serializer.setUser(user);
@@ -158,10 +156,12 @@ public class LocalResourceSet extends AbstractLocal implements ResourceSet {
 
                 final Resource res = new LocalXMLResource(user, brokerPool, collection, XmldbURI.EMPTY_URI);
                 res.setContent(writer.toString());
-                SerializerPool.getInstance().returnObject(handler);
                 return res;
             }  catch (final SAXException e) {
                 throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "serialization error", e);
+            } finally {
+                SerializerPool.getInstance().returnObject(handler);
+                broker.returnSerializer(serializer);
             }
         });
     }

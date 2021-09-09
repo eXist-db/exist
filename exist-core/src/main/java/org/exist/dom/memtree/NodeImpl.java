@@ -637,22 +637,25 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public void toSAX(final DBBroker broker, final ContentHandler handler, final Properties properties)
-        throws SAXException {
-        final Serializer serializer = broker.getSerializer();
-        serializer.reset();
-        serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+            throws SAXException {
+        final Serializer serializer = broker.borrowSerializer();
+        try {
+            serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
 
-        if(properties != null) {
-            serializer.setProperties(properties);
+            if (properties != null) {
+                serializer.setProperties(properties);
+            }
+
+            if (handler instanceof LexicalHandler) {
+                serializer.setSAXHandlers(handler, (LexicalHandler) handler);
+            } else {
+                serializer.setSAXHandlers(handler, null);
+            }
+
+            serializer.toSAX(this);
+        } finally {
+            broker.returnSerializer(serializer);
         }
-
-        if(handler instanceof LexicalHandler) {
-            serializer.setSAXHandlers(handler, (LexicalHandler) handler);
-        } else {
-            serializer.setSAXHandlers(handler, null);
-        }
-
-        serializer.toSAX(this);
     }
 
     @Override

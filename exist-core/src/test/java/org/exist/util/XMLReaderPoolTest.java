@@ -21,6 +21,8 @@
  */
 package org.exist.util;
 
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.exist.Namespaces;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
@@ -30,6 +32,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -887,77 +891,92 @@ public class XMLReaderPoolTest {
         final XMLReaderPool xmlReaderPool = new XMLReaderPool(xmlReaderObjectFactory, maxIdle, initialCapacity);
         xmlReaderPool.configure(mockConfiguration);
 
-        assertEquals(maxIdle, xmlReaderPool.getMaxSleeping());
+        assertEquals(maxIdle, xmlReaderPool.getMaxIdle());
         assertEquals(0, xmlReaderPool.getNumIdle());
         assertEquals(0, xmlReaderPool.getNumActive());
 
         // borrow 1
         final XMLReader xmlReader1 = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlReader1);
-        assertEquals(maxIdle, xmlReaderPool.getMaxSleeping());
+        assertEquals(maxIdle, xmlReaderPool.getMaxIdle());
         assertEquals(0, xmlReaderPool.getNumIdle());
         assertEquals(1, xmlReaderPool.getNumActive());
-        assertTrue(xmlReaderObjectFactory.validateObject(xmlReader1));
+        final PooledObject<XMLReader> pooledXmlReader1 = getPooledObject(xmlReaderPool, xmlReader1);
+        assertTrue(xmlReaderObjectFactory.validateObject(pooledXmlReader1));
 
         // borrow 2
         final XMLReader xmlReader2 = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlReader2);
         assertNotSame(xmlReader2, xmlReader1);
-        assertEquals(maxIdle, xmlReaderPool.getMaxSleeping());
+        assertEquals(maxIdle, xmlReaderPool.getMaxIdle());
         assertEquals(0, xmlReaderPool.getNumIdle());
         assertEquals(2, xmlReaderPool.getNumActive());
-        assertTrue(xmlReaderObjectFactory.validateObject(xmlReader1));
-        assertTrue(xmlReaderObjectFactory.validateObject(xmlReader2));
+        final PooledObject<XMLReader> pooledXmlReader2 = getPooledObject(xmlReaderPool, xmlReader2);
+        assertTrue(xmlReaderObjectFactory.validateObject(pooledXmlReader1));
+        assertTrue(xmlReaderObjectFactory.validateObject(pooledXmlReader2));
 
         // borrow 3
         final XMLReader xmlReader3 = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlReader3);
         assertNotSame(xmlReader3, xmlReader2);
-        assertEquals(maxIdle, xmlReaderPool.getMaxSleeping());
+        assertEquals(maxIdle, xmlReaderPool.getMaxIdle());
         assertEquals(0, xmlReaderPool.getNumIdle());
         assertEquals(3, xmlReaderPool.getNumActive());
-        assertTrue(xmlReaderObjectFactory.validateObject(xmlReader1));
-        assertTrue(xmlReaderObjectFactory.validateObject(xmlReader2));
-        assertTrue(xmlReaderObjectFactory.validateObject(xmlReader3));
+        final PooledObject<XMLReader> pooledXmlReader3 = getPooledObject(xmlReaderPool, xmlReader3);
+        assertTrue(xmlReaderObjectFactory.validateObject(pooledXmlReader1));
+        assertTrue(xmlReaderObjectFactory.validateObject(pooledXmlReader1));
+        assertTrue(xmlReaderObjectFactory.validateObject(pooledXmlReader3));
 
         // borrow 4 -- will exceed `maxIdle`
         final XMLReader xmlReader4 = xmlReaderPool.borrowXMLReader();
         assertNotSame(xmlReader4, xmlReader3);
         assertNotNull(xmlReader4);
-        assertEquals(maxIdle, xmlReaderPool.getMaxSleeping());
+        assertEquals(maxIdle, xmlReaderPool.getMaxIdle());
         assertEquals(0, xmlReaderPool.getNumIdle());
         assertEquals(4, xmlReaderPool.getNumActive());
-        assertTrue(xmlReaderObjectFactory.validateObject(xmlReader1));
-        assertTrue(xmlReaderObjectFactory.validateObject(xmlReader2));
-        assertTrue(xmlReaderObjectFactory.validateObject(xmlReader3));
-        assertTrue(xmlReaderObjectFactory.validateObject(xmlReader4));
+        final PooledObject<XMLReader> pooledXmlReader4 = getPooledObject(xmlReaderPool, xmlReader4);
+        assertTrue(xmlReaderObjectFactory.validateObject(pooledXmlReader1));
+        assertTrue(xmlReaderObjectFactory.validateObject(pooledXmlReader2));
+        assertTrue(xmlReaderObjectFactory.validateObject(pooledXmlReader3));
+        assertTrue(xmlReaderObjectFactory.validateObject(pooledXmlReader4));
 
         // now try and return the readers...
 
         // return 4
         xmlReaderPool.returnXMLReader(xmlReader4);
-        assertEquals(maxIdle, xmlReaderPool.getMaxSleeping());
+        assertEquals(maxIdle, xmlReaderPool.getMaxIdle());
         assertEquals(1, xmlReaderPool.getNumIdle());
         assertEquals(3, xmlReaderPool.getNumActive());
 
         // return 3
         xmlReaderPool.returnXMLReader(xmlReader3);
-        assertEquals(maxIdle, xmlReaderPool.getMaxSleeping());
+        assertEquals(maxIdle, xmlReaderPool.getMaxIdle());
         assertEquals(2, xmlReaderPool.getNumIdle());
         assertEquals(2, xmlReaderPool.getNumActive());
 
         // return 2
-        xmlReaderPool.returnXMLReader(xmlReader3);
-        assertEquals(maxIdle, xmlReaderPool.getMaxSleeping());
+        xmlReaderPool.returnXMLReader(xmlReader2);
+        assertEquals(maxIdle, xmlReaderPool.getMaxIdle());
         assertEquals(3, xmlReaderPool.getNumIdle());
         assertEquals(1, xmlReaderPool.getNumActive());
 
         // return 1 --  will exceed `maxIdle`
-        xmlReaderPool.returnXMLReader(xmlReader3);
-        assertEquals(maxIdle, xmlReaderPool.getMaxSleeping());
+        xmlReaderPool.returnXMLReader(xmlReader1);
+        assertEquals(maxIdle, xmlReaderPool.getMaxIdle());
         assertEquals(maxIdle, xmlReaderPool.getNumIdle());  // NOTE: that getNumIdle() can never exceed maxIdle
         assertEquals(0, xmlReaderPool.getNumActive());
 
         verify(mockConfiguration);
+    }
+
+    private PooledObject<XMLReader> getPooledObject(final XMLReaderPool xmlReaderPool, final XMLReader xmlReader) {
+        try {
+            final Method mGetPooledObject = GenericObjectPool.class.getDeclaredMethod("getPooledObject", Object.class);
+            mGetPooledObject.setAccessible(true);
+            return (PooledObject<XMLReader>) mGetPooledObject.invoke(xmlReaderPool, xmlReader);
+        } catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            fail(e.getMessage(), e);
+            return null;
+        }
     }
 }

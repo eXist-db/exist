@@ -255,10 +255,14 @@ public class XQueryDeclareContextItemTest {
     }
 
     private String serialize(final DBBroker broker, final NodeValue nodeValue) throws SAXException {
-        final Serializer serializer = broker.newSerializer();
-        final Properties properties = new Properties();
-        properties.setProperty(OutputKeys.INDENT, "no");
-        serializer.setProperties(properties);
-        return serializer.serialize(nodeValue);
+        final Serializer serializer = broker.borrowSerializer();
+        try {
+            final Properties properties = new Properties();
+            properties.setProperty(OutputKeys.INDENT, "no");
+            serializer.setProperties(properties);
+            return serializer.serialize(nodeValue);
+        } finally {
+            broker.returnSerializer(serializer);
+        }
     }
 }

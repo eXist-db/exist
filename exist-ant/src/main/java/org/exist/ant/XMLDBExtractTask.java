@@ -244,6 +244,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                 log("Writing resource " + res.getId() + " to destination " + dest.toAbsolutePath().toString(), Project.MSG_DEBUG);
                 serializer.setOutput(writer, outputProperties);
                 res.getContentAsSAX(serializer);
+            } finally {
                 SerializerPool.getInstance().returnObject(serializer);
             }
 

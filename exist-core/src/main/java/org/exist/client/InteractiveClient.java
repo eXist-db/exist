@@ -2417,8 +2417,9 @@ public class InteractiveClient {
         } catch (final IOException e) {
             System.err.println("Could not write history File to " + historyFile.toAbsolutePath().toString());
         }
+
+        final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
         try (final BufferedWriter writer = Files.newBufferedWriter(queryHistoryFile, StandardCharsets.UTF_8)) {
-            final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
             serializer.setOutput(writer, null);
             int p = 0;
             if (queryHistory.size() > 20) {
@@ -2435,12 +2436,12 @@ public class InteractiveClient {
             }
             serializer.endElement(XMLConstants.NULL_NS_URI, "history", "history");
             serializer.endDocument();
-            writer.close();
-            SerializerPool.getInstance().returnObject(serializer);
         } catch (final IOException e) {
             System.err.println("IO error while writing query history.");
         } catch (final SAXException e) {
             System.err.println("SAX exception while writing query history.");
+        } finally {
+            SerializerPool.getInstance().returnObject(serializer);
         }
 
     }

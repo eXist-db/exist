@@ -140,9 +140,12 @@ public class CollectionRemovalTest {
             try(final LockedDocument lockedDoc = test.getDocumentWithLock(broker, XmldbURI.createInternal("document.xml"), LockMode.READ_LOCK)) {
                 assertNotNull(lockedDoc);
 
-                Serializer serializer = broker.getSerializer();
-                serializer.reset();
-                String xml = serializer.serialize(lockedDoc.getDocument());
+                final Serializer serializer = broker.borrowSerializer();
+                try {
+                    String xml = serializer.serialize(lockedDoc.getDocument());
+                } finally {
+                    broker.returnSerializer(serializer);
+                }
 
                 // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
                 test.close();

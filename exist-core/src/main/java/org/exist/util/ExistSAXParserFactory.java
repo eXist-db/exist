@@ -105,7 +105,7 @@ public class ExistSAXParserFactory {
 
         SAXParserFactory factory = null;
 
-        // Get SAXParser configuratin from system
+        // Get SAXParser configuration from system
         final String config = System.getProperty(ORG_EXIST_SAXPARSERFACTORY);
 
         // Get SAXparser factory specified by system property

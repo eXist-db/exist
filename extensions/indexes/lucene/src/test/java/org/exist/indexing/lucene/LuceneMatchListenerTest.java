@@ -400,9 +400,12 @@ public class LuceneMatchListenerTest {
         final Properties props = new Properties();
         props.setProperty(OutputKeys.INDENT, indent ? "yes" : "no");
         props.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
-        Serializer serializer = broker.getSerializer();
-        serializer.reset();
-        serializer.setProperties(props);
-        return serializer.serialize((NodeValue) seq.itemAt(0));
+        final Serializer serializer = broker.borrowSerializer();
+        try {
+            serializer.setProperties(props);
+            return serializer.serialize((NodeValue) seq.itemAt(0));
+        } finally {
+            broker.returnSerializer(serializer);
+        }
     }
 }
