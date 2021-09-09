@@ -36,8 +36,6 @@ import org.exist.xquery.value.NodeValue;
 /**
  * Node serializer (threaded).
  *
- * @param <SR> Serializer result
- *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class NodeSerializerRunnable implements Runnable {
