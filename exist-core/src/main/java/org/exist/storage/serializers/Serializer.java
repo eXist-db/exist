@@ -192,6 +192,8 @@ public abstract class Serializer implements XMLReader {
     protected Subject user = null;
     
     protected XQueryContext.HttpContext httpContext = null;
+
+	protected boolean documentStarted = false;
     
     public void setHttpContext(final XQueryContext.HttpContext httpContext) {
     	this.httpContext = httpContext;
@@ -784,6 +786,7 @@ public abstract class Serializer implements XMLReader {
         	xslHandler = factory.get().newTransformerHandler(templates);
 			try {
 				xslHandler.startDocument();
+				documentStarted = true;
 			} catch (final SAXException e) {
 				throw new TransformerConfigurationException(e.getMessage(), e);
 			}
