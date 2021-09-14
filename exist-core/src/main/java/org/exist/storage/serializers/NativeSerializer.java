@@ -90,7 +90,7 @@ public class NativeSerializer extends Serializer {
     			return;
     	}
     	setDocument(p.getOwnerDocument());
-    	if (generateDocEvent) {
+    	if (generateDocEvent && !documentStarted) {
             receiver.startDocument();
         }
 
