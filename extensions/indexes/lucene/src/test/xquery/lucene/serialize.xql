@@ -140,27 +140,6 @@ function ser:teardown() {
 };
 
 declare
-    %test:assertXPath("contains($result, 'exist:id')")
-function ser:exist-add-exist-id-all() {
-    let $doc := doc($ser:collection || "/test.xml")
-    return fn:serialize($doc, map { xs:QName("exist:add-exist-id"): "all" })
-};
-
-declare
-    %test:assertXPath("contains($result, 'exist:id')")
-function ser:exist-add-exist-id-element() {
-    let $doc := doc($ser:collection || "/test.xml")
-    return fn:serialize($doc, map { xs:QName("exist:add-exist-id"): "element" })
-};
-
-declare
-     %test:assertXPath("not(contains($result, 'exist:id'))")
-function ser:exist-add-exist-id-none() {
-    let $doc := doc($ser:collection || "/test.xml")
-    return fn:serialize($doc, map { xs:QName("exist:add-exist-id"): "none" })
-};
-
-declare
      %test:assertXPath("contains($result, 'exist:match')")
 function ser:exist-highlight-matches-both() {
     let $doc := doc($ser:collection || "/test.xml")
