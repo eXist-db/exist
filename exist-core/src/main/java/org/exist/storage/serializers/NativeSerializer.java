@@ -92,6 +92,7 @@ public class NativeSerializer extends Serializer {
     	setDocument(p.getOwnerDocument());
     	if (generateDocEvent && !documentStarted) {
             receiver.startDocument();
+            documentStarted = true;
         }
 
         try(final INodeIterator domIter = broker.getNodeIterator(p)) {
@@ -112,6 +113,7 @@ public class NativeSerializer extends Serializer {
         final NodeList children = doc.getChildNodes();
         if (generateDocEvent && !documentStarted) {
             receiver.startDocument();
+            documentStarted = true;
         }
 
         if (doc.getDoctype() != null){
