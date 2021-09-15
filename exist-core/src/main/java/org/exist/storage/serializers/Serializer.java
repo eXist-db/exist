@@ -439,6 +439,7 @@ public abstract class Serializer implements XMLReader {
         outputProperties.clear();
         showId = EXIST_ID_NONE;
         httpContext = null;
+		documentStarted = false;
 	}
 
 	public String serialize(DocumentImpl doc) throws SAXException {
@@ -938,7 +939,10 @@ public abstract class Serializer implements XMLReader {
 		attrs.addAttribute(ATTR_COMPILATION_TIME_QNAME, Long.toString(compilationTime));
 		attrs.addAttribute(ATTR_EXECUTION_TIME_QNAME, Long.toString(compilationTime));
 
-		receiver.startDocument();
+		if(!documentStarted) {
+			receiver.startDocument();
+			documentStarted = true;
+		}
 		if(wrap) {
 			receiver.startPrefixMapping("exist", Namespaces.EXIST_NS);
 			receiver.startElement(ELEM_RESULT_QNAME, attrs);
@@ -981,7 +985,10 @@ public abstract class Serializer implements XMLReader {
         
         setXSLHandler(null, false);
 
-        receiver.startDocument();
+		if(!documentStarted) {
+			receiver.startDocument();
+			documentStarted = true;
+		}
 
         try {
             final SequenceIterator itSeq = seq.iterate();
@@ -1020,8 +1027,11 @@ public abstract class Serializer implements XMLReader {
             if (outputProperties.getProperty(PROPERTY_SESSION_ID) != null) {
                 attrs.addAttribute(ATTR_SESSION_ID, outputProperties.getProperty(PROPERTY_SESSION_ID));
             }
-		
-            receiver.startDocument();
+
+			if(!documentStarted) {
+				receiver.startDocument();
+				documentStarted = true;
+			}
             
             if(wrap) {
                 receiver.startPrefixMapping("exist", Namespaces.EXIST_NS);
@@ -1102,7 +1112,7 @@ public abstract class Serializer implements XMLReader {
 	
 	protected void serializeToReceiver(org.exist.dom.memtree.NodeImpl n, boolean generateDocEvents)
 	throws SAXException {
-		if (generateDocEvents) {
+		if (generateDocEvents && !documentStarted) {
 			receiver.startDocument();
 		}
         setDocument(null);
