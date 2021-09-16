@@ -46,6 +46,8 @@ import com.evolvedbinary.j8fu.lazy.LazyVal;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
+import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.memtree.ReferenceNode;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.ProcessingInstructionImpl;
@@ -190,6 +192,8 @@ public abstract class Serializer implements XMLReader {
     protected Subject user = null;
     
     protected XQueryContext.HttpContext httpContext = null;
+
+	protected boolean documentStarted = false;
     
     public void setHttpContext(final XQueryContext.HttpContext httpContext) {
     	this.httpContext = httpContext;
@@ -435,6 +439,7 @@ public abstract class Serializer implements XMLReader {
         outputProperties.clear();
         showId = EXIST_ID_NONE;
         httpContext = null;
+		documentStarted = false;
 	}
 
 	public String serialize(DocumentImpl doc) throws SAXException {
@@ -709,7 +714,7 @@ public abstract class Serializer implements XMLReader {
 	 *
 	 * @throws TransformerConfigurationException if the stylesheet cannot be set
 	 */
-	public void setStylesheet(DocumentImpl doc, String stylesheet) throws TransformerConfigurationException {
+	public void setStylesheet(Document doc, String stylesheet) throws TransformerConfigurationException {
 		if (stylesheet == null) {
 			templates = null;
 			return;
@@ -739,8 +744,8 @@ public abstract class Serializer implements XMLReader {
         } else {
             // if stylesheet is relative, add path to the
             // current collection and normalize
-            if(doc != null) {
-                stylesheetUri = doc.getCollection().getURI().resolveCollectionPath(stylesheetUri).normalizeCollectionPath();
+            if(doc != null && doc instanceof DocumentImpl) {
+                stylesheetUri = ((DocumentImpl)doc).getCollection().getURI().resolveCollectionPath(stylesheetUri).normalizeCollectionPath();
             }
 
             // load stylesheet from eXist
@@ -780,6 +785,12 @@ public abstract class Serializer implements XMLReader {
 		LOG.debug("compiling stylesheet took {}", System.currentTimeMillis() - start);
         if(templates != null) {
         	xslHandler = factory.get().newTransformerHandler(templates);
+			try {
+				xslHandler.startDocument();
+				documentStarted = true;
+			} catch (final SAXException e) {
+				throw new TransformerConfigurationException(e.getMessage(), e);
+			}
         }
 //			xslHandler.getTransformer().setOutputProperties(outputProperties);
         checkStylesheetParams();
@@ -801,22 +812,32 @@ public abstract class Serializer implements XMLReader {
 			final SAXResult result = new SAXResult();
 			boolean processXInclude =
 				"yes".equals(getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes"));
-			ReceiverToSAX filter;
+
+			final ReceiverToSAX filter;
 			if (processXInclude) {
-				filter = (ReceiverToSAX)xinclude.getReceiver();
+				final Receiver xincludeReceiver = xinclude.getReceiver();
+				if (xincludeReceiver != null && xincludeReceiver instanceof SAXSerializer) {
+					filter = new ReceiverToSAX((SAXSerializer) xincludeReceiver);
+				} else {
+					filter = (ReceiverToSAX) xincludeReceiver;
+				}
 			} else {
 				filter = (ReceiverToSAX) receiver;
 			}
+
 			result.setHandler(filter.getContentHandler());
 			result.setLexicalHandler(filter.getLexicalHandler());
+
 			filter.setLexicalHandler(xslHandler);
 			filter.setContentHandler(xslHandler);
+
 			xslHandler.setResult(result);
 			if (processXInclude) {
 				xinclude.setReceiver(new ReceiverToSAX(xslHandler));
 				receiver = xinclude;
-			} else
-				{receiver = new ReceiverToSAX(xslHandler);}
+			} else {
+				receiver = new ReceiverToSAX(xslHandler);
+			}
 		}
         if (root != null && getHighlightingMode() != TAG_NONE) {
             final IndexController controller = broker.getIndexController();
@@ -918,7 +939,10 @@ public abstract class Serializer implements XMLReader {
 		attrs.addAttribute(ATTR_COMPILATION_TIME_QNAME, Long.toString(compilationTime));
 		attrs.addAttribute(ATTR_EXECUTION_TIME_QNAME, Long.toString(compilationTime));
 
-		receiver.startDocument();
+		if(!documentStarted) {
+			receiver.startDocument();
+			documentStarted = true;
+		}
 		if(wrap) {
 			receiver.startPrefixMapping("exist", Namespaces.EXIST_NS);
 			receiver.startElement(ELEM_RESULT_QNAME, attrs);
@@ -961,7 +985,10 @@ public abstract class Serializer implements XMLReader {
         
         setXSLHandler(null, false);
 
-        receiver.startDocument();
+		if(!documentStarted) {
+			receiver.startDocument();
+			documentStarted = true;
+		}
 
         try {
             final SequenceIterator itSeq = seq.iterate();
@@ -1000,8 +1027,11 @@ public abstract class Serializer implements XMLReader {
             if (outputProperties.getProperty(PROPERTY_SESSION_ID) != null) {
                 attrs.addAttribute(ATTR_SESSION_ID, outputProperties.getProperty(PROPERTY_SESSION_ID));
             }
-		
-            receiver.startDocument();
+
+			if(!documentStarted) {
+				receiver.startDocument();
+				documentStarted = true;
+			}
             
             if(wrap) {
                 receiver.startPrefixMapping("exist", Namespaces.EXIST_NS);
@@ -1082,14 +1112,38 @@ public abstract class Serializer implements XMLReader {
 	
 	protected void serializeToReceiver(org.exist.dom.memtree.NodeImpl n, boolean generateDocEvents)
 	throws SAXException {
-		if (generateDocEvents) {
+		if (generateDocEvents && !documentStarted) {
 			receiver.startDocument();
 		}
         setDocument(null);
 		if(n.getNodeType() == Node.DOCUMENT_NODE) {
-			setXQueryContext(((org.exist.dom.memtree.DocumentImpl)n).getContext());
+			final org.exist.dom.memtree.DocumentImpl doc = (org.exist.dom.memtree.DocumentImpl)n;
+			setXQueryContext(doc.getContext());
+			//TODO set XSL //code from set Stlyesheet XSL_PI
+			if ("yes".equals(outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no"))) {
+				final String stylesheet = hasXSLPi(doc);
+				if (stylesheet != null)
+					try {
+						setStylesheet(doc, stylesheet);
+					} catch (final TransformerConfigurationException e) {
+						throw new SAXException(e.getMessage(), e);
+					}
+			}
+			try {
+				setStylesheetFromProperties(doc);
+			} catch (final TransformerConfigurationException e) {
+				throw new SAXException(e.getMessage(), e);
+			}
+			setXSLHandler(null, true);
 		} else {
 			setXQueryContext(n.getOwnerDocument().getContext());
+			//TODO unSet XSL code from
+			try {
+				setStylesheetFromProperties(null);
+			} catch (final TransformerConfigurationException e) {
+				throw new SAXException(e.getMessage(), e);
+			}
+			setXSLHandler(null, false);
 		}
         n.streamTo(this, receiver);
 		if (generateDocEvents) {
@@ -1113,25 +1167,38 @@ public abstract class Serializer implements XMLReader {
      * @param doc the document
      * @return link to the stylesheet
      */
-	public String hasXSLPi(Document doc) {
-        boolean applyXSLPI = 
-            outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no").equalsIgnoreCase("yes");
-        if (!applyXSLPI) {return null;}
-        
-		final NodeList docChildren = doc.getChildNodes();
-		Node node;
-		String xsl, type, href;
-		for (int i = 0; i < docChildren.getLength(); i++) {
-			node = docChildren.item(i);
+	public String hasXSLPi(final Document doc) {
+        final boolean applyXSLPI = outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no").equalsIgnoreCase("yes");
+        if (!applyXSLPI) {
+            return null;
+        }
+
+		NodeList docChildren = doc.getChildNodes();
+        if (docChildren.getLength() == 1) {
+            final Node onlyChild = docChildren.item(0);
+			if (onlyChild.getNodeType() == NodeImpl.REFERENCE_NODE) {
+			    // if this is a reference to a persistent document node then we must expand it
+				final NodeProxy nodeProxy = ((ReferenceNode) onlyChild).getReference();
+				if (nodeProxy.getNodeType() == Node.DOCUMENT_NODE) {
+					// switch docChildren to the children of the dereferencedNode
+					final Node dereferencedNode = nodeProxy.getNode();
+					docChildren = dereferencedNode.getChildNodes();
+				}
+			}
+		}
+
+        for (int i = 0; i < docChildren.getLength(); i++) {
+			final Node node = docChildren.item(i);
 			if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
 				&& "xml-stylesheet".equals(((ProcessingInstruction)node).getTarget())) {
 				// found <?xml-stylesheet?>
-				xsl = ((ProcessingInstruction) node).getData();
-				type = XMLUtil.parseValue(xsl, "type");
-				if(type != null && (type.equals(MimeType.XML_TYPE.getName()) || type.equals(MimeType.XSL_TYPE.getName()) || type.equals(MimeType.XSLT_TYPE.getName()))) {
-					href = XMLUtil.parseValue(xsl, "href");
-					if (href == null)
-						{continue;}
+				final String xsl = ((ProcessingInstruction) node).getData();
+				final String type = XMLUtil.parseValue(xsl, "type");
+				if (type != null && (type.equals(MimeType.XML_TYPE.getName()) || type.equals(MimeType.XSL_TYPE.getName()) || type.equals(MimeType.XSLT_TYPE.getName()))) {
+					final String href = XMLUtil.parseValue(xsl, "href");
+					if (href == null) {
+					    continue;
+					}
 					return href;
 				}
 			}
