@@ -94,17 +94,9 @@ public class DocumentImplTest {
 
         final Element elem = doc.getDocumentElement();
         final NamedNodeMap attrs = elem.getAttributes();
-        assertEquals(3, attrs.getLength());
+        assertEquals(2, attrs.getLength());
 
         int index = 0;
-
-        final Attr attr1 = (Attr)attrs.item(index++);
-        assertEquals(Node.ATTRIBUTE_NODE, attr1.getNodeType());
-        assertEquals(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, attr1.getNamespaceURI());
-        assertEquals(XMLConstants.XMLNS_ATTRIBUTE, attr1.getPrefix());
-        assertEquals(XMLConstants.XML_NS_PREFIX, attr1.getLocalName());
-        assertEquals(XMLConstants.XMLNS_ATTRIBUTE + ":" + XMLConstants.XML_NS_PREFIX, attr1.getNodeName());
-        assertEquals(XMLConstants.XML_NS_URI, attr1.getValue());
 
         final Attr attr2 = (Attr)attrs.item(index++);
         assertEquals(Node.ATTRIBUTE_NODE, attr2.getNodeType());

@@ -103,14 +103,14 @@ public class DayTimeDurationValue extends OrderedDurationValue {
         //Copied from Saxon 8.6.1
         final FastStringBuffer sb = new FastStringBuffer(32);
         if (canonicalDuration.getSign() < 0) {
-            sb.append('-');
+            sb.append("-");
         }
-        sb.append('P');
+        sb.append("P");
         if (d != 0) {
             sb.append(d + "D");
         }
         if (d == 0 || h != 0 || m != 0 || s.intValue() != 0) {
-            sb.append('T');
+            sb.append("T");
         }
         if (h != 0) {
             sb.append(h + "H");
