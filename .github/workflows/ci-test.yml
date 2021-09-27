@@ -2,7 +2,9 @@ name: Test
 on: [push, pull_request]
 jobs:
   test:
-    name: (JDK ${{ matrix.jdk }} / ${{ matrix.os }}) Test 
+    name: (JDK ${{ matrix.jdk }} / ${{ matrix.os }}) Test
+    env:
+      JAVA_OPS: -XX:+IgnoreUnrecognizedVMOptions --illegal-access=debug
     strategy:
       fail-fast: false
       matrix:
@@ -10,7 +12,7 @@ jobs:
         jdk: ['8', '11']
         include:
           - os: ubuntu-latest
-            jdk: '16'      
+            jdk: '16'
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -25,11 +27,13 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Maven Test allow fail
-        if: ${{ matrix.jdk == '16' }} 
-        run: mvn -V -B clean verify
+        if: ${{ matrix.jdk == '16' }}
+        timeout-minutes: 30
+        run: mvn -V -B -DtrimStackTrace=false clean verify
         continue-on-error: true
-      - name: Maven Test 
-        if: ${{ matrix.jdk != '16' }} 
+      - name: Maven Test
+        if: ${{ matrix.jdk != '16' }}
+        timeout-minutes: 30
         run: mvn -V -B -DtrimStackTrace=false clean verify
       - name: Maven Code Coverage
         if: ${{ github.ref == 'refs/heads/develop' && matrix.jdk == '8' && matrix.os == 'ubuntu-latest' }}
@@ -40,4 +44,12 @@ jobs:
           CI_BUILD_URL: https://github.com/${{ github.repository }}/commit/${{ github.event.after }}/checks
           COVERALLS_SECRET: ${{ secrets.GITHUB_TOKEN }}
         run: mvn -V -B jacoco:report coveralls:report -DrepoToken=${{ secrets.COVERALLS_TOKEN }}
-
+      - name: Archive build logs
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ runner.os }}-jdk${{ matrix.jdk }}-build-logs
+          retention-days: 5
+          path: |
+            **/hs_err_pid*.log
+            **/target/surefire-reports/*

@@ -10,7 +10,7 @@ jobs:
         jdk: ['8', '11']
         include:
           - os: ubuntu-latest
-            jdk: '16'   
+            jdk: '16'
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -30,6 +30,8 @@ jobs:
         if: ${{ matrix.jdk == '16' }}
         run: mvn -V -B -q -T 2C -DskipTests=true "-Dmaven.javadoc.skip=true" install
         continue-on-error: true
+        env:
+          JAVA_OPS: --illegal-access=debug
       - name: Maven Build
-        if: ${{ matrix.jdk != '16' }} 
+        if: ${{ matrix.jdk != '16' }}
         run: mvn -V -B -q -T 2C -DskipTests=true "-Dmaven.javadoc.skip=true" install
