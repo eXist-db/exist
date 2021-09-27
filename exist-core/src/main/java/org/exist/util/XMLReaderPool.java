@@ -54,6 +54,7 @@ public class XMLReaderPool extends GenericObjectPool<XMLReader> implements Broke
         config.setLifo(true);
         config.setMaxIdle(maxIdle);
         config.setMaxTotal(-1);            // TODO(AR) is this the best way to allow us to temporarily exceed the size of the pool?
+        config.setJmxNameBase("org.exist.management.exist:type=XMLReaderPool,name=");
         return config;
     }
 

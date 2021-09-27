@@ -52,6 +52,7 @@ public class SerializerPool extends GenericKeyedObjectPool<Class<?>, Object> {
         config.setLifo(true);
         config.setMaxIdlePerKey(maxIdle);
         config.setMaxTotalPerKey(-1);       // TODO(AR) is this the best way to allow us to temporarily exceed the size of the pool?
+        config.setJmxNameBase("org.exist.management.exist:type=SerializerPool,name=");
         return config;
     }
 
