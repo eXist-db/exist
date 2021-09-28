@@ -64,7 +64,6 @@
         <module>simpleql</module>
         <module>sql</module>
         <!-- module>sql-oracle</module -->  <!-- Requires registration with Oracle! -->
-        <module>xmldiff</module>
         <module>xslfo</module>
     </modules>
 

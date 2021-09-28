@@ -1060,7 +1060,6 @@
                 <parameter name="pool.2.properties.registerMbeans" value="false"/>
                 -->
             </module>
-            <module uri="http://exist-db.org/xquery/xmldiff" class="org.exist.xquery.modules.xmldiff.XmlDiffModule"/>
             <!--
                 XSL:FO Transformation Module
                     Valid processor adapters are:
