@@ -26,8 +26,6 @@ module namespace t = "http://exist-db.org/xquery/testing";
 import module namespace system = "http://exist-db.org/xquery/system";
 import module namespace util = "http://exist-db.org/xquery/util";
 import module namespace xmldb = "http://exist-db.org/xquery/xmldb";
-import module namespace xdiff = "http://exist-db.org/xquery/xmldiff"
-        at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";
 
 declare namespace err = "http://www.w3.org/2005/xqt-errors";
 declare namespace exerr = "http://www.exist-db.org/xqt-errors/";
