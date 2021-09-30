@@ -363,7 +363,7 @@ public class JMXtoXML {
 
         for (final ObjectName name : beans) {
             final MBeanInfo info = conn.getMBeanInfo(name);
-            String className = info.getClassName();
+            String className = info.getClassName().replace('$', '.');
             final int p = className.lastIndexOf('.');
             if (p > -1 && p + 1 < className.length()) {
                 className = className.substring(p + 1);
