@@ -272,7 +272,8 @@ public class Backup {
         current.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, defaultOutputProperties.getProperty(EXistOutputKeys.EXPAND_XINCLUDES));
         current.setProperty(EXistOutputKeys.PROCESS_XSL_PI, defaultOutputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI));
 
-        // get resources and permissions
+        // get collections and documents
+        final String[] collections = current.listChildCollections();
         final String[] resources = current.listResources();
 
         // do not sort: order is important because permissions need to be read in the same order below
@@ -282,11 +283,11 @@ public class Backup {
         final Permission[] perms = mgtService.listResourcePermissions();
         final Permission currentPerms = mgtService.getPermissions(current);
 
-
         if (dialog != null) {
             dialog.setCollection(current.getName());
             dialog.setResourceCount(resources.length);
         }
+
         final Writer contents = output.newContents();
 
         // serializer writes to __contents__.xml
@@ -451,9 +452,7 @@ public class Backup {
                 }
             }
 
-            // write subcollections
-            final String[] collections = current.listChildCollections();
-
+            // write sub-collections
             for (final String collection : collections) {
 
                 if (current.getName().equals(XmldbURI.SYSTEM_COLLECTION) && "temp".equals(collection)) {
@@ -472,21 +471,20 @@ public class Backup {
             serializer.endDocument();
             output.closeContents();
 
-            // descend into subcollections
-            Collection child;
-
-            for (final String collection : collections) {
-                child = current.getChildCollection(collection);
-
-                if (child.getName().equals(XmldbURI.TEMP_COLLECTION)) {
-                    continue;
-                }
-                output.newCollection(encode(URIUtils.urlDecodeUtf8(collection)));
-                backup(seenBlobIds, child, output, dialog);
-                output.closeCollection();
-            }
         } finally {
             SerializerPool.getInstance().returnObject(serializer);
+        }
+
+        // descend into sub-collections
+        for (final String collection : collections) {
+            final Collection child = current.getChildCollection(collection);
+
+            if (child.getName().equals(XmldbURI.TEMP_COLLECTION)) {
+                continue;
+            }
+            output.newCollection(encode(URIUtils.urlDecodeUtf8(collection)));
+            backup(seenBlobIds, child, output, dialog);
+            output.closeCollection();
         }
     }
 
