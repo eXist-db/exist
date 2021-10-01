@@ -50,8 +50,10 @@ public class XMLReaderPool extends GenericObjectPool<XMLReader> implements Broke
 
     private static GenericObjectPoolConfig toConfig(final int maxIdle) {
         final GenericObjectPoolConfig<Object> config = new GenericObjectPoolConfig<>();
+        config.setBlockWhenExhausted(false);
         config.setLifo(true);
         config.setMaxIdle(maxIdle);
+        config.setMaxTotal(-1);
         return config;
     }
 

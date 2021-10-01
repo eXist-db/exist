@@ -48,8 +48,10 @@ public class SerializerPool extends GenericKeyedObjectPool<Class<?>, Object> {
 
     private static GenericKeyedObjectPoolConfig toConfig(final int maxIdle) {
         final GenericKeyedObjectPoolConfig<Object> config = new GenericKeyedObjectPoolConfig<>();
+        config.setBlockWhenExhausted(false);
         config.setLifo(true);
         config.setMaxIdlePerKey(maxIdle);
+        config.setMaxTotalPerKey(-1);
         return config;
     }
 

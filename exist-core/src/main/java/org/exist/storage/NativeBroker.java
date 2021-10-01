@@ -4050,8 +4050,10 @@ public class NativeBroker extends DBBroker {
 
         private static GenericObjectPoolConfig<Serializer> toConfig(final int maxIdle) {
             final GenericObjectPoolConfig<Serializer> config = new GenericObjectPoolConfig<>();
+            config.setBlockWhenExhausted(false);
             config.setLifo(true);
             config.setMaxIdle(maxIdle);
+            config.setMaxTotal(-1);
             return config;
         }
 
