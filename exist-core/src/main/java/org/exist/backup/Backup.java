@@ -316,11 +316,6 @@ public class Backup {
             }
 
             // scan through resources
-            Resource resource;
-            OutputStream os;
-            BufferedWriter writer;
-            SAXSerializer contentSerializer;
-
             for (int i = 0; i < resources.length; i++) {
 
                 try {
@@ -331,7 +326,7 @@ public class Backup {
                         continue;
                     }
 
-                    resource = current.getResource(resources[i]);
+                    final Resource resource = current.getResource(resources[i]);
 
                     if (dialog != null) {
                         dialog.setResource(resources[i]);
@@ -370,6 +365,7 @@ public class Backup {
                         filename = EXIST_GENERATED_FILENAME_DOTDOT_FILENAME + i;
                     }
 
+                    final OutputStream os;
                     if (resource instanceof ExtendedResource) {
                         if (deduplicateBlobs && resource instanceof EXistBinaryResource) {
                             // only add distinct blobs to the Blob Store once!
@@ -388,14 +384,17 @@ public class Backup {
                         }
                     } else {
                         os = output.newEntry(filename);
-                        writer = new BufferedWriter(new OutputStreamWriter(os, UTF_8));
+                        final Writer writer = new BufferedWriter(new OutputStreamWriter(os, UTF_8));
 
                         // write resource to contentSerializer
-                        contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-                        contentSerializer.setOutput(writer, defaultOutputProperties);
-                        ((EXistResource) resource).setLexicalHandler(contentSerializer);
-                        ((XMLResource) resource).getContentAsSAX(contentSerializer);
-                        SerializerPool.getInstance().returnObject(contentSerializer);
+                        final SAXSerializer contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+                        try {
+                            contentSerializer.setOutput(writer, defaultOutputProperties);
+                            ((EXistResource) resource).setLexicalHandler(contentSerializer);
+                            ((XMLResource) resource).getContentAsSAX(contentSerializer);
+                        } finally {
+                            SerializerPool.getInstance().returnObject(contentSerializer);
+                        }
 
                         writer.flush();
                         output.closeEntry();
