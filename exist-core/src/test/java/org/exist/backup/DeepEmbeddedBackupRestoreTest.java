@@ -68,7 +68,7 @@ public class DeepEmbeddedBackupRestoreTest {
     @ClassRule
     public static final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private static final String EOL = System.getProperty("line.separator");
+    private static final String EOL = "\n";
     private static final long XXHASH64_SEED = 0x79742bc8;
 
     private final XXHashFactory xxHashFactory = XXHashFactory.fastestJavaInstance();
