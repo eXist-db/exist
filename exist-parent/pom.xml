@@ -718,6 +718,7 @@
                         </dependency>
                     </dependencies>
                     <configuration>
+                        <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
                         <forkCount>2C</forkCount>
                         <!--  Setting `reuseForks` to `true` greatly speeds up execution of the the test suite.
                               However it can make it hard to diagnose problems if tests leak state; If you experience
