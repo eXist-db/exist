@@ -29,7 +29,8 @@ jobs:
         if: ${{ matrix.jdk == '16' }} 
         run: mvn -V -B clean verify
         continue-on-error: true
-      - name: Maven Test 
+      - name: Maven Test
+        timeout-minutes: 60
         if: ${{ matrix.jdk != '16' }} 
         run: mvn -V -B -DtrimStackTrace=false clean verify
       - name: Maven Code Coverage
@@ -41,4 +42,8 @@ jobs:
           CI_BUILD_URL: https://github.com/${{ github.repository }}/commit/${{ github.event.after }}/checks
           COVERALLS_SECRET: ${{ secrets.GITHUB_TOKEN }}
         run: mvn -V -B jacoco:report coveralls:report -DrepoToken=${{ secrets.COVERALLS_TOKEN }}
-
+      - name: Archive error trace
+        uses: actions/upload-artifact@v2
+        with:
+          name: error-trace
+          path: "**/hs_err_pid*.log"
