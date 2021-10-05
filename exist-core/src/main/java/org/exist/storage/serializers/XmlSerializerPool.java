@@ -39,7 +39,7 @@ public class XmlSerializerPool extends GenericObjectPool<Serializer> {
         config.setLifo(true);
         config.setMaxIdle(maxIdle);
         config.setMaxTotal(-1);            // TODO(AR) is this the best way to allow us to temporarily exceed the size of the pool?
-        final String poolName = brokerId == null ? "" : "." + brokerId;
+        final String poolName = brokerId == null ? "" : "pool." + brokerId;
         config.setJmxNameBase("org.exist.management.exist:type=XmlSerializerPool,name=" + poolName);
         return config;
     }
