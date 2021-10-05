@@ -272,7 +272,8 @@ public class Backup {
         current.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, defaultOutputProperties.getProperty(EXistOutputKeys.EXPAND_XINCLUDES));
         current.setProperty(EXistOutputKeys.PROCESS_XSL_PI, defaultOutputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI));
 
-        // get resources and permissions
+        // get collections and documents
+        final String[] collections = current.listChildCollections();
         final String[] resources = current.listResources();
 
         // do not sort: order is important because permissions need to be read in the same order below
@@ -282,11 +283,11 @@ public class Backup {
         final Permission[] perms = mgtService.listResourcePermissions();
         final Permission currentPerms = mgtService.getPermissions(current);
 
-
         if (dialog != null) {
             dialog.setCollection(current.getName());
             dialog.setResourceCount(resources.length);
         }
+
         final Writer contents = output.newContents();
 
         // serializer writes to __contents__.xml
@@ -315,11 +316,6 @@ public class Backup {
             }
 
             // scan through resources
-            Resource resource;
-            OutputStream os;
-            BufferedWriter writer;
-            SAXSerializer contentSerializer;
-
             for (int i = 0; i < resources.length; i++) {
 
                 try {
@@ -330,7 +326,7 @@ public class Backup {
                         continue;
                     }
 
-                    resource = current.getResource(resources[i]);
+                    final Resource resource = current.getResource(resources[i]);
 
                     if (dialog != null) {
                         dialog.setResource(resources[i]);
@@ -369,6 +365,7 @@ public class Backup {
                         filename = EXIST_GENERATED_FILENAME_DOTDOT_FILENAME + i;
                     }
 
+                    final OutputStream os;
                     if (resource instanceof ExtendedResource) {
                         if (deduplicateBlobs && resource instanceof EXistBinaryResource) {
                             // only add distinct blobs to the Blob Store once!
@@ -387,14 +384,17 @@ public class Backup {
                         }
                     } else {
                         os = output.newEntry(filename);
-                        writer = new BufferedWriter(new OutputStreamWriter(os, UTF_8));
+                        final Writer writer = new BufferedWriter(new OutputStreamWriter(os, UTF_8));
 
                         // write resource to contentSerializer
-                        contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-                        contentSerializer.setOutput(writer, defaultOutputProperties);
-                        ((EXistResource) resource).setLexicalHandler(contentSerializer);
-                        ((XMLResource) resource).getContentAsSAX(contentSerializer);
-                        SerializerPool.getInstance().returnObject(contentSerializer);
+                        final SAXSerializer contentSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+                        try {
+                            contentSerializer.setOutput(writer, defaultOutputProperties);
+                            ((EXistResource) resource).setLexicalHandler(contentSerializer);
+                            ((XMLResource) resource).getContentAsSAX(contentSerializer);
+                        } finally {
+                            SerializerPool.getInstance().returnObject(contentSerializer);
+                        }
 
                         writer.flush();
                         output.closeEntry();
@@ -451,9 +451,7 @@ public class Backup {
                 }
             }
 
-            // write subcollections
-            final String[] collections = current.listChildCollections();
-
+            // write sub-collections
             for (final String collection : collections) {
 
                 if (current.getName().equals(XmldbURI.SYSTEM_COLLECTION) && "temp".equals(collection)) {
@@ -472,21 +470,20 @@ public class Backup {
             serializer.endDocument();
             output.closeContents();
 
-            // descend into subcollections
-            Collection child;
-
-            for (final String collection : collections) {
-                child = current.getChildCollection(collection);
-
-                if (child.getName().equals(XmldbURI.TEMP_COLLECTION)) {
-                    continue;
-                }
-                output.newCollection(encode(URIUtils.urlDecodeUtf8(collection)));
-                backup(seenBlobIds, child, output, dialog);
-                output.closeCollection();
-            }
         } finally {
             SerializerPool.getInstance().returnObject(serializer);
+        }
+
+        // descend into sub-collections
+        for (final String collection : collections) {
+            final Collection child = current.getChildCollection(collection);
+
+            if (child.getName().equals(XmldbURI.TEMP_COLLECTION)) {
+                continue;
+            }
+            output.newCollection(encode(URIUtils.urlDecodeUtf8(collection)));
+            backup(seenBlobIds, child, output, dialog);
+            output.closeCollection();
         }
     }
 

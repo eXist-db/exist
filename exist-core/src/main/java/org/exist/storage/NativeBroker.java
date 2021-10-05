@@ -64,6 +64,7 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.Lock.LockType;
 import org.exist.storage.serializers.NativeSerializer;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.serializers.XmlSerializerPool;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
@@ -3757,6 +3758,8 @@ public class NativeBroker extends DBBroker {
             notifyClose();
         } catch(final Exception e) {
             LOG.error(e.getMessage(), e);
+        } finally {
+            xmlSerializerPool.close();
         }
     }
 
@@ -4040,67 +4043,6 @@ public class NativeBroker extends DBBroker {
             }
 
             return true;
-        }
-    }
-
-    private static class XmlSerializerPool extends GenericObjectPool<Serializer> {
-        public XmlSerializerPool(final DBBroker broker, final Configuration config, final int maxIdle) {
-            super(new XmlSerializerPoolObjectFactory(broker, config), toConfig(maxIdle));
-        }
-
-        private static GenericObjectPoolConfig<Serializer> toConfig(final int maxIdle) {
-            final GenericObjectPoolConfig<Serializer> config = new GenericObjectPoolConfig<>();
-            config.setLifo(true);
-            config.setMaxIdle(maxIdle);
-            return config;
-        }
-
-        @Override
-        public Serializer borrowObject() {
-            try {
-                return super.borrowObject();
-            } catch (final Exception e) {
-                throw new IllegalStateException("Error while borrowing serializer: " + e.getMessage());
-            }
-        }
-
-        @Override
-        public void returnObject(final Serializer obj) {
-            if (obj == null) {
-                return;
-            }
-
-            try {
-                super.returnObject(obj);
-            } catch (final Exception e) {
-                throw new IllegalStateException("Error while returning serializer: " + e.getMessage());
-            }
-        }
-    }
-
-    private static class XmlSerializerPoolObjectFactory extends BasePooledObjectFactory<Serializer> {
-
-        private final DBBroker broker;
-        private final Configuration config;
-
-        public XmlSerializerPoolObjectFactory(final DBBroker broker, final Configuration config) {
-            this.broker = broker;
-            this.config = config;
-        }
-
-        @Override
-        public Serializer create() {
-            return new NativeSerializer(broker, config);
-        }
-
-        @Override
-        public PooledObject wrap(final Serializer obj) {
-            return new DefaultPooledObject<>(obj);
-        }
-
-        @Override
-        public void passivateObject(final PooledObject<Serializer> p) {
-            p.getObject().reset();
         }
     }
 }
