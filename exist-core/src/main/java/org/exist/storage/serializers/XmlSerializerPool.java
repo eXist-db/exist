@@ -26,18 +26,21 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 
+import javax.annotation.Nullable;
+
 public class XmlSerializerPool extends GenericObjectPool<Serializer> {
     public XmlSerializerPool(final DBBroker broker, final Configuration config, final int maxIdle) {
         super(new XmlSerializerPoolObjectFactory(broker, config), toConfig(broker.getId(), maxIdle));
     }
 
-    private static GenericObjectPoolConfig<Serializer> toConfig(final String brokerId, final int maxIdle) {
+    private static GenericObjectPoolConfig<Serializer> toConfig(@Nullable final String brokerId, final int maxIdle) {
         final GenericObjectPoolConfig<Serializer> config = new GenericObjectPoolConfig<>();
         config.setBlockWhenExhausted(false);
         config.setLifo(true);
         config.setMaxIdle(maxIdle);
         config.setMaxTotal(-1);            // TODO(AR) is this the best way to allow us to temporarily exceed the size of the pool?
-        config.setJmxNameBase("org.exist.management.exist:type=XmlSerializerPool,name=pool." + brokerId);
+        final String poolName = brokerId == null ? "" : "." + brokerId;
+        config.setJmxNameBase("org.exist.management.exist:type=XmlSerializerPool,name=" + poolName);
         return config;
     }
 
