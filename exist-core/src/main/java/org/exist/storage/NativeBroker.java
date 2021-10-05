@@ -3758,6 +3758,8 @@ public class NativeBroker extends DBBroker {
             notifyClose();
         } catch(final Exception e) {
             LOG.error(e.getMessage(), e);
+        } finally {
+            xmlSerializerPool.close();
         }
     }
 
