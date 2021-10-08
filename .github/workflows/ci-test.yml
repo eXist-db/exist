@@ -27,7 +27,7 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Maven Test
-        timeout-minutes: 30
+        timeout-minutes: 60
         run: mvn -V -B -DtrimStackTrace=false clean verify
         continue-on-error: ${{ matrix.jdk == '16' }}
       - name: Maven Code Coverage
