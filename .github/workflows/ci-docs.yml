@@ -22,10 +22,6 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Maven Javadoc
-        if: ${{ matrix.jdk == '8' }} 
         run: mvn -V -B -q -T 2C javadoc:javadoc
-      - name: Maven Javadoc allow fail
-        if: ${{ matrix.jdk != '8' }} 
-        run: mvn -V -B -q -T 2C javadoc:javadoc
-        continue-on-error: true  
+        continue-on-error: ${{ matrix.jdk != '8' }}
         
