@@ -132,6 +132,7 @@
                 <include name="CONTRIBUTING.md"/>
                 <include name="README.md"/>
                 <include name="LICENSE"/>
+                <include name="RECOVERY.md"/>
             </fileset>
             <fileset os="unix" targetdir="$INSTALL_PATH/bin" dir="bin">
                 <include name="*.sh"/>

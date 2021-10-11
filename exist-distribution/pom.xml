@@ -472,6 +472,10 @@
                                     <sourceFile>${project.basedir}/../CONTRIBUTING.md</sourceFile>
                                     <destinationFile>${assemble.dir}/CONTRIBUTING.md</destinationFile>
                                 </fileSet>
+                                <fileSet>
+                                    <sourceFile>${project.basedir}/../RECOVERY.md</sourceFile>
+                                    <destinationFile>${assemble.dir}/RECOVERY.md</destinationFile>
+                                </fileSet>
                             </fileSets>
                         </configuration>
                     </execution>
@@ -495,6 +499,10 @@
                                 <fileSet>
                                     <sourceFile>${project.basedir}/../CONTRIBUTING.md</sourceFile>
                                     <destinationFile>${mac.bundle.resources.dir}/CONTRIBUTING.md</destinationFile>
+                                </fileSet>
+                                <fileSet>
+                                    <sourceFile>${project.basedir}/../RECOVERY.md</sourceFile>
+                                    <destinationFile>${mac.bundle.resources.dir}/RECOVERY.md</destinationFile>
                                 </fileSet>
                             </fileSets>
                         </configuration>
