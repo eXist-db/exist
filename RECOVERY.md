@@ -9,8 +9,10 @@ If an index got corrupted, this is how to recover:
   - all ".lck" lock files
 - start database
 
-After starting the database the (secondary) indices must be reconstructed using 
-`xmldb:reindex('/db)`. This can be done on commandline via `./bin/client.sh -x "xmldb:reindex('/db')" -ouri=xmldb:exist:///`
+After starting the database the (secondary) indices must be reconstructed using the 
+eXist-db xquery function `xmldb:reindex('/db)`. This can be executed e.g. commandline via 
+
+`./bin/client.sh -x "xmldb:reindex('/db')" -ouri=xmldb:exist:///`
 
 # COMPLETELY CLEAN DATABASE
 
