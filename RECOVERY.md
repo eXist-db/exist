@@ -12,7 +12,7 @@ If an index got corrupted, this is how to recover:
 After starting the database the (secondary) indices must be reconstructed using the 
 eXist-db xquery function `xmldb:reindex('/db)`. This can be executed e.g. the command-line via 
 
-`./bin/client.sh -x "xmldb:reindex('/db')" -ouri=xmldb:exist:///`
+`./bin/client.sh --xpath "xmldb:reindex('/db')" --optionuri=xmldb:exist:///`
 
 Please check`./bin/client.sh --help` for available command-line options, e.g. for 
 setting username and password.
@@ -31,6 +31,8 @@ from a backup), this is how to do:
 # RESTORE BACKUP
 A backup file (or directory) can be most efficiently restored via the command-line:
 
-`./bin/backup.sh -r full20210925-1600.zip --rebuild -P <backup-password> -ouri=xmldb:exist:///`
+`./bin/backup.sh --restore full20210925-1600.zip --dba-password <backup-password> --rebuild --optionuri=xmldb:exist:///`
+
+Note that for this command the database should not run as a server.
 
 Please check`./bin/backup.sh --help` for available command-line options.
