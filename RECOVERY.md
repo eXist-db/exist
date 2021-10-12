@@ -3,7 +3,7 @@ If an index got corrupted, this is how to recover:
 
 - stop database
 - in the "data" directory remove
-  - all ".dbx" files EXCEPT dom.dbx, collections.dbx and symbols.dbx
+  - all ".dbx" files EXCEPT blob.dbx, collections.dbx, dom.dbx and symbols.dbx
   - the "lucene" and "range" directories
   - all ".log" transaction log files
   - all ".lck" lock files
