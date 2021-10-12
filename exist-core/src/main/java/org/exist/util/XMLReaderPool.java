@@ -27,6 +27,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolService;
+import org.exist.storage.DBBroker;
 import org.xml.sax.XMLReader;
 
 /**
@@ -50,8 +51,11 @@ public class XMLReaderPool extends GenericObjectPool<XMLReader> implements Broke
 
     private static GenericObjectPoolConfig toConfig(final int maxIdle) {
         final GenericObjectPoolConfig<Object> config = new GenericObjectPoolConfig<>();
+        config.setBlockWhenExhausted(false);
         config.setLifo(true);
         config.setMaxIdle(maxIdle);
+        config.setMaxTotal(-1);            // TODO(AR) is this the best way to allow us to temporarily exceed the size of the pool?
+        config.setJmxNameBase("org.exist.management.exist:type=XMLReaderPool,name=");
         return config;
     }
 
@@ -92,5 +96,10 @@ public class XMLReaderPool extends GenericObjectPool<XMLReader> implements Broke
         String XML_PARSER_ELEMENT = "xml";
         String XML_PARSER_FEATURES_ELEMENT = "features";
         String XML_PARSER_FEATURES_PROPERTY = "parser.xml-parser.features";
+    }
+
+    @Override
+    public void stopSystem(final DBBroker systemBroker) {
+        close();
     }
 }

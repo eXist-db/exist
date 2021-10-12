@@ -924,7 +924,7 @@ public class XMLReaderPoolTest {
         assertEquals(3, xmlReaderPool.getNumActive());
         final PooledObject<XMLReader> pooledXmlReader3 = getPooledObject(xmlReaderPool, xmlReader3);
         assertTrue(xmlReaderObjectFactory.validateObject(pooledXmlReader1));
-        assertTrue(xmlReaderObjectFactory.validateObject(pooledXmlReader1));
+        assertTrue(xmlReaderObjectFactory.validateObject(pooledXmlReader2));
         assertTrue(xmlReaderObjectFactory.validateObject(pooledXmlReader3));
 
         // borrow 4 -- will exceed `maxIdle`
