@@ -1169,6 +1169,11 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 "repair:repair()");
     }
 
+    public static void reindexDatabase(Collection collection) throws XMLDBException {
+        final EXistXQueryService service = (EXistXQueryService) collection.getService("XQueryService", "1.0");
+        service.query("xmldb:reindex()");
+    }
+
     public UserManagementService getUserManagementService() throws XMLDBException {
         final Collection collection = client.getCollection();
         return (UserManagementService) collection.getService("UserManagementService", "1.0");

@@ -129,6 +129,10 @@ public class Main {
             .description("overwrite newer applications installed in the database.")
             .defaultValue(false)
             .build();
+    private static final Argument<Boolean> reindexArg = optionArgument("-i", "--reindex")
+            .description("reindex database.")
+            .defaultValue(false)
+            .build();
 
     private static Properties loadProperties() {
         try {
@@ -175,6 +179,7 @@ public class Main {
         final Optional<Path> restorePath = getOpt(arguments, restoreArg).map(File::toPath);
         final boolean rebuildRepo = getBool(arguments, rebuildExpathRepoArg);
         final boolean overwriteApps = getBool(arguments, overwriteAppsArg);
+        final boolean reindex = getBool(arguments, reindexArg);
 
         boolean deduplicateBlobs = getBool(arguments, backupDeduplicateBlobs);
 
@@ -258,7 +263,7 @@ public class Main {
                         restoreWithGui(username, optionPass, optionDbaPass, path, dbUri, overwriteApps);
                     } else {
                         restoreWithoutGui(username, optionPass, optionDbaPass, path, dbUri,
-                                rebuildRepo, quiet, overwriteApps);
+                                rebuildRepo, quiet, overwriteApps, reindex);
                     }
                 } catch (final Exception e) {
                     reportError(e);
@@ -282,7 +287,7 @@ public class Main {
 
     private static void restoreWithoutGui(final String username, final String password,
             final Optional<String> dbaPassword, final Path f, final XmldbURI uri, final boolean rebuildRepo,
-            final boolean quiet, final boolean overwriteApps) {
+            final boolean quiet, final boolean overwriteApps, final boolean reindex) {
         final AggregatingConsoleRestoreServiceTaskListener listener = new AggregatingConsoleRestoreServiceTaskListener(quiet);
         try {
             final Collection collection = DatabaseManager.getCollection(uri.toString(), username, password);
@@ -320,6 +325,26 @@ public class Main {
                     "at \"resource:org/exist/xquery/modules/expathrepo/repair.xql\";\n" +
                     "repair:clean-all(),\n" +
                     "repair:repair()\n");
+        }
+
+        if (reindex) {
+            System.out.println("Reindexing database ...");
+            System.out.println("URI: " + uri);
+            try {
+                final Collection root = DatabaseManager.getCollection(uri.toString(), username, dbaPassword.orElse(password));
+                if (root != null) {
+                    ClientFrame.reindexDatabase(root);
+                    System.out.println("Reindex was successfull.");
+                } else {
+                    System.err.println("Failed to retrieve root collection: " + uri);
+                }
+            } catch (final XMLDBException e) {
+                reportError(e);
+                System.err.println("Reindexing failed!");
+            }
+        } else {
+            System.out.println("\nYou might want to reindex the database\n" +
+                    "xmldb:reindex('/db')\n");
         }
     }
 
@@ -394,6 +419,20 @@ public class Main {
                         System.err.println("Rebuilding application repository failed!");
                     }
                 }
+
+                if (JOptionPane.showConfirmDialog(null, "Would you like to reindex the database.\n" +
+                                "This might cost a lot of time depending on the database content.", "Reindex database?",
+                        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    System.out.println("Reindexing ...");
+                    try {
+                        final Collection root = DatabaseManager.getCollection(uri.toString(), username, dbaPassword.orElse(password));
+                        ClientFrame.reindexDatabase(root);
+                        System.out.println("Reindexing was successful.");
+                    } catch (final XMLDBException e) {
+                        reportError(e);
+                        System.err.println("Reindexing failed!");
+                    }
+                }
             } catch (final Exception e) {
                 ClientFrame.showErrorMessage(e.getMessage(), null); //$NON-NLS-1$
             } finally {
@@ -455,7 +494,7 @@ public class Main {
             final ParsedArguments arguments = CommandLineParser
                     .withArguments(userArg, passwordArg, dbaPasswordArg, useSslArg)
                     .andArguments(backupCollectionArg, backupOutputDirArg, backupDeduplicateBlobs)
-                    .andArguments(restoreArg, rebuildExpathRepoArg, overwriteAppsArg)
+                    .andArguments(restoreArg, rebuildExpathRepoArg, overwriteAppsArg, reindexArg)
                     .andArguments(helpArg, guiArg, quietArg, optionArg)
                     .parse(args);
 
