@@ -1,25 +1,29 @@
+
 # RECOVERY
+
 For full documentation on backup, restore, consistency checks, and emergency
 export procedures, see <https://exist-db.org/exist/apps/doc/backup>.
 
 ## Create (emergency) backup
-With the "Emergency Export tool" (see <https://exist-db.org/exist/apps/doc/backup#emergency-export-tool>) 
-it is possible to create a 'regular' backup of the database, but it can also handle many situations with 
+
+With the "Emergency Export tool" (see <https://exist-db.org/exist/apps/doc/backup#emergency-export-tool>)
+it is possible to create a 'regular' backup of the database, but it can also handle many situations with
 a database corruption. During the export process the database should not be running.
 
-    ```sh
-    ./bin/export.sh --direct --check-docs
-    ```
+```sh
+./bin/export.sh --direct --check-docs
+```
 
-By default a ZIP file is written into the 'export' directory. Please check `./bin/export.sh --help` 
+By default a ZIP file is written into the 'export' directory. Please check `./bin/export.sh --help`
 for available command-line options.
 
 ## Recovering from a corrupted index
+
 To recover from a corrupted index, perform the following steps:
 
 1. Stop the running eXist database instance
 2. Change into directory `$EXIST_HOME/data` or another directory you specified
-   as data directory in the configuration (`$EXIST_HOME/etc/conf.xml`). 
+   as data directory in the configuration (`$EXIST_HOME/etc/conf.xml`).
 3. Delete
    the following resources:
    - All ".dbx" files EXCEPT blob.dbx, collections.dbx, dom.dbx, and symbols.dbx
@@ -30,7 +34,7 @@ To recover from a corrupted index, perform the following steps:
    eXist-db XQuery function `xmldb:reindex("/db")`. This can be executed directly
    via the Java admin client, or, alternatively, on the command line via the
    following command:
-   
+
     ```sh
     ./bin/client.sh --xpath "xmldb:reindex('/db')" --optionuri=xmldb:exist:///
     ```
@@ -47,7 +51,7 @@ a clean database—perform the following steps:
 
 1. Stop the running eXist database instance
 2. Delete all files and directories from the "data" directory
-   
+
 > Note that restoring from a backup (or parts of it) does not automatically
 > delete all data in the database, nor does it necessarily require manually
 > wiping the existing data using this procedure. If a restore is performed
