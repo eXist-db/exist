@@ -130,7 +130,7 @@ public class Main {
             .defaultValue(false)
             .build();
     private static final Argument<Boolean> reindexArg = optionArgument("-i", "--reindex")
-            .description("reindex database.")
+            .description("reindex database after restore.")
             .defaultValue(false)
             .build();
 
