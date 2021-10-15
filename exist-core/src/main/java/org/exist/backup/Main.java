@@ -260,7 +260,7 @@ public class Main {
                     }
 
                     if (guiMode) {
-                        restoreWithGui(username, optionPass, optionDbaPass, path, dbUri, overwriteApps);
+                        restoreWithGui(username, optionPass, optionDbaPass, path, dbUri, rebuildRepo, overwriteApps, reindex);
                     } else {
                         restoreWithoutGui(username, optionPass, optionDbaPass, path, dbUri,
                                 rebuildRepo, quiet, overwriteApps, reindex);
@@ -343,8 +343,9 @@ public class Main {
                 System.err.println("Reindexing failed!");
             }
         } else {
-            System.out.println("\nYou might want to reindex the database\n" +
-                    "xmldb:reindex('/db')\n");
+            System.out.println("\nYou might want to reindex the database to ensure " +
+                    "the applications will work correctly.\n" +
+                    "To do so, run the following query as admin: xmldb:reindex('/db')\n");
         }
     }
 
@@ -394,9 +395,11 @@ public class Main {
     }
 
     private static void restoreWithGui(final String username, final String password, final Optional<String> dbaPassword,
-                                       final Path f, final XmldbURI uri, boolean overwriteApps) {
+                                       final Path f, final XmldbURI uri, boolean rebuildRepo, boolean overwriteApps, final boolean reindex) {
 
         final GuiRestoreServiceTaskListener listener = new GuiRestoreServiceTaskListener();
+
+        listener.info("Connecting ...");
 
         final Callable<Void> callable = () -> {
 
@@ -405,34 +408,39 @@ public class Main {
                 final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
                 service.restore(f.toAbsolutePath().toString(), dbaPassword.orElse(null), listener, overwriteApps);
 
-                listener.enableDismissDialogButton();
-
-                if (JOptionPane.showConfirmDialog(null, "Would you like to rebuild the application repository?\nThis is only necessary if application packages were restored.", "Rebuild App Repository?",
+                if (rebuildRepo ||
+                        JOptionPane.showConfirmDialog(null, "Would you like to rebuild the application repository?\n" +
+                                        "This is only necessary if application packages were restored.", "Rebuild App Repository?",
                         JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                    System.out.println("Rebuilding application repository ...");
+
+                    listener.info("Rebuilding application repository ...");
                     try {
                         final Collection root = DatabaseManager.getCollection(uri.toString(), username, dbaPassword.orElse(password));
                         ClientFrame.repairRepository(root);
-                        System.out.println("Application repository rebuilt successfully.");
+                        listener.info("Application repository rebuilt successfully.");
                     } catch (final XMLDBException e) {
                         reportError(e);
-                        System.err.println("Rebuilding application repository failed!");
+                        System.err.println("Rebuilding application repository failed! " +e.getMessage());
                     }
                 }
 
-                if (JOptionPane.showConfirmDialog(null, "Would you like to reindex the database.\n" +
+                if (reindex ||
+                        JOptionPane.showConfirmDialog(null, "Would you like to reindex the database?\n" +
                                 "This might cost a lot of time depending on the database content.", "Reindex database?",
                         JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                    System.out.println("Reindexing ...");
+                    listener.info("Reindexing ...");
                     try {
                         final Collection root = DatabaseManager.getCollection(uri.toString(), username, dbaPassword.orElse(password));
                         ClientFrame.reindexDatabase(root);
-                        System.out.println("Reindexing was successful.");
+                        listener.info("Reindexing was successful.");
                     } catch (final XMLDBException e) {
                         reportError(e);
-                        System.err.println("Reindexing failed!");
+                        listener.info("Reindexing failed! " + e.getMessage());
                     }
                 }
+
+                listener.enableDismissDialogButton();
+
             } catch (final Exception e) {
                 ClientFrame.showErrorMessage(e.getMessage(), null); //$NON-NLS-1$
             } finally {

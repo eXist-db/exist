@@ -28,7 +28,9 @@ import org.exist.backup.GuiRestoreServiceTaskListener;
 import org.exist.client.security.EditPropertiesDialog;
 import org.exist.client.security.ModeDisplay;
 import org.exist.client.security.UserManagerDialog;
-import org.exist.security.*;
+import org.exist.security.ACLPermission;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.SimpleACLPermissionAider;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -39,7 +41,17 @@ import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
-import org.exist.xmldb.*;
+import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.EXistBinaryResource;
+import org.exist.xmldb.EXistCollection;
+import org.exist.xmldb.EXistCollectionManagementService;
+import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.EXistRestoreService;
+import org.exist.xmldb.EXistXQueryService;
+import org.exist.xmldb.ExtendedResource;
+import org.exist.xmldb.IndexQueryService;
+import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.util.URIUtils;
 import org.xml.sax.SAXException;
@@ -63,9 +75,30 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -74,9 +107,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.TransferQueue;
 import java.util.function.Supplier;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
@@ -1136,6 +1173,13 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     setStatus(Messages.getString("ClientFrame.226"));
                 }
 
+                if (JOptionPane.showConfirmDialog(null, Messages.getString("ClientFrame.228"), Messages.getString("ClientFrame.229"),
+                        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    setStatus(Messages.getString("ClientFrame.230") + collection.getName());
+                    repairRepository(client.getCollection());
+                    setStatus(Messages.getString("ClientFrame.231"));
+                }
+
                 listener.enableDismissDialogButton();
 
                 if (properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER).equals(SecurityManager.DBA_USER) && dbaPassword != null) {
@@ -1171,7 +1215,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
     public static void reindexDatabase(Collection collection) throws XMLDBException {
         final EXistXQueryService service = (EXistXQueryService) collection.getService("XQueryService", "1.0");
-        service.query("xmldb:reindex()");
+        service.query("xmldb:reindex('" + collection.getName() + "')");
     }
 
     public UserManagementService getUserManagementService() throws XMLDBException {
