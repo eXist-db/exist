@@ -632,7 +632,7 @@ public final class Journal implements Closeable {
             return stream ->
                 attrs.isRegularFile() &&
                         FileUtils.fileName(path).endsWith(suffix) &&
-                        !FileUtils.fileName(path).endsWith(indexSuffix));
+                        !FileUtils.fileName(path).endsWith(indexSuffix);
         }
     }
 
