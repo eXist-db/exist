@@ -628,11 +628,12 @@ public final class Journal implements Closeable {
     public Stream<Path> getFiles() throws IOException {
         final String suffix = '.' + LOG_FILE_SUFFIX;
         final String indexSuffix = "_index" + suffix;
-
-        return Files.find(dir, 1, (path, attrs) ->
+        try (Stream<Path> stream = Files.find(dir, 1, (path, attrs))) {
+            return stream ->
                 attrs.isRegularFile() &&
                         FileUtils.fileName(path).endsWith(suffix) &&
-                        !FileUtils.fileName(path).endsWith(indexSuffix));
+                        !FileUtils.fileName(path).endsWith(indexSuffix);
+        }
     }
 
     /**
