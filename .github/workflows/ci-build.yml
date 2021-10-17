@@ -3,6 +3,8 @@ on: [push, pull_request]
 jobs:
   build:
     name: (JDK ${{ matrix.jdk }} / ${{ matrix.os }}) Build
+    env:
+      MAVEN_OPTS: -XX:+IgnoreUnrecognizedVMOptions --illegal-access=debug -XX:StartFlightRecording=maxsize=5g,disk=true,dumponexit=true,settings=default,filename=./
     strategy:
       fail-fast: false
       matrix:
@@ -26,12 +28,6 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 # NOTE(AR) The `-T 2C` enables multi-threaded builds below, faster, but may need to be disabled when diagnosing problems 
 # NOTE(DP): Reuse of build artefacts across workflows to (hopefully) limit network traffic
-      - name: Maven Build allow fail
-        if: ${{ matrix.jdk == '16' }}
-        run: mvn -V -B -q -T 2C -DskipTests=true "-Dmaven.javadoc.skip=true" install
-        continue-on-error: true
-        env:
-          JAVA_OPS: --illegal-access=debug
       - name: Maven Build
-        if: ${{ matrix.jdk != '16' }}
         run: mvn -V -B -q -T 2C -DskipTests=true "-Dmaven.javadoc.skip=true" install
+        continue-on-error: ${{ matrix.jdk == '16' }}
