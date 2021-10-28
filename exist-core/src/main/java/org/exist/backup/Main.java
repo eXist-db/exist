@@ -76,41 +76,42 @@ public class Main {
     /* general arguments */
     private static final Argument<?> helpArg = helpArgument("-h", "--help");
     private static final Argument<Boolean> guiArg = optionArgument("-U", "--gui")
-            .description("start in GUI mode")
+            .description("Start in GUI mode.")
             .defaultValue(false)
             .build();
     private static final Argument<Boolean> quietArg = optionArgument("-q", "--quiet")
-            .description("be quiet. Just print errors.")
+            .description("Be quiet. Just print errors.")
             .defaultValue(false)
             .build();
     private static final Argument<Map<String, String>> optionArg = stringArgument("-o", "--option")
-            .description("specify extra options: property=value. For available properties see client.properties.")
+            .description("Specify extra options: property=value. For available properties see client.properties.")
             .asKeyValuesWithKeyParser(StringParsers.stringParser())
             .build();
 
 
     /* database connection arguments */
     private static final Argument<String> userArg = stringArgument("-u", "--user")
-            .description("set user.")
+            .description("Set user.")
             .defaultValue(DEFAULT_USER)
             .build();
     private static final Argument<String> passwordArg = stringArgument("-p", "--password")
-            .description("set the password for connecting to the database.")
+            .description("Set the password for connecting to the database.")
             .build();
     private static final Argument<String> dbaPasswordArg = stringArgument("-P", "--dba-password")
-            .description("if the backup specifies a different password for the admin user, use this option to specify the new password. Otherwise you will get a permission denied")
+            .description("If the backup specifies a different password for the admin user, " +
+                    "use this option to specify the new password. Otherwise you will get a permission denied.")
             .build();
     private static final Argument<Boolean> useSslArg = optionArgument("-S", "--use-ssl")
-            .description("Use SSL by default for remote connections")
+            .description("Use SSL by default for remote connections.")
             .defaultValue(false)
             .build();
 
     /* backup arguments */
     private static final Argument<String> backupCollectionArg = stringArgument("-b", "--backup")
-            .description("backup the specified collection.")
+            .description("Backup the specified collection.")
             .build();
     private static final Argument<File> backupOutputDirArg = fileArgument("-d", "--dir")
-            .description("specify the directory to use for backups.")
+            .description("Specify the directory to use for backups.")
             .build();
     private static final Argument<Boolean> backupDeduplicateBlobs = booleanArgument("--deduplicate-blobs")
             .description("Deduplicate BLOBS in the backup.")
@@ -119,14 +120,15 @@ public class Main {
 
     /* restore arguments */
     private static final Argument<File> restoreArg = fileArgument("-r", "--restore")
-            .description("read the specified __contents__.xml file and restore the resources described there.")
+            .description("Restore from the specified 'full' backup file in ZIP format, or " +
+                    "read the specified __contents__.xml file and restore the resources described in there.")
             .build();
     private static final Argument<Boolean> rebuildExpathRepoArg = optionArgument("-R", "--rebuild")
-            .description("rebuild the EXpath app repository after restore.")
+            .description("Rebuild the EXpath app repository after restore.")
             .defaultValue(false)
             .build();
     private static final Argument<Boolean> overwriteAppsArg = optionArgument("-a", "--overwrite-apps")
-            .description("overwrite newer applications installed in the database.")
+            .description("Overwrite newer applications installed in the database.")
             .defaultValue(false)
             .build();
 
@@ -373,6 +375,8 @@ public class Main {
 
         final GuiRestoreServiceTaskListener listener = new GuiRestoreServiceTaskListener();
 
+        listener.info("Connecting ...");
+
         final Callable<Void> callable = () -> {
 
             try {
@@ -388,10 +392,10 @@ public class Main {
                     try {
                         final Collection root = DatabaseManager.getCollection(uri.toString(), username, dbaPassword.orElse(password));
                         ClientFrame.repairRepository(root);
-                        System.out.println("Application repository rebuilt successfully.");
+                        listener.info("Application repository rebuilt successfully.");
                     } catch (final XMLDBException e) {
                         reportError(e);
-                        System.err.println("Rebuilding application repository failed!");
+                        listener.info("Rebuilding application repository failed!");
                     }
                 }
             } catch (final Exception e) {
