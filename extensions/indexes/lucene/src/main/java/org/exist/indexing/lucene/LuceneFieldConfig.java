@@ -24,11 +24,13 @@ package org.exist.indexing.lucene;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.*;
+import org.apache.lucene.util.BytesRef;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.util.ByteConversion;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
@@ -38,7 +40,9 @@ import org.w3c.dom.Element;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 
@@ -59,12 +63,14 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
 
     private final static String ATTR_FIELD_NAME = "name";
     private final static String ATTR_TYPE = "type";
+    private final static String ATTR_BINARY = "binary";
     private final static String ATTR_STORE = "store";
     private final static String ATTR_ANALYZER = "analyzer";
     private final static String ATTR_IF = "if";
 
     protected String fieldName;
     protected int type = Type.STRING;
+    protected boolean binary = false;
     protected boolean store = true;
     protected Analyzer analyzer= null;
     protected Optional<String> condition = Optional.empty();
@@ -103,6 +109,11 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         final String cond = configElement.getAttribute(ATTR_IF);
         if (StringUtils.isNotEmpty(cond)) {
             this.condition = Optional.of(cond);
+        }
+
+        final String binaryStr = configElement.getAttribute(ATTR_BINARY);
+        if (StringUtils.isNotEmpty(binaryStr)) {
+            this.binary = StringUtils.equalsAnyIgnoreCase(binaryStr, "true", "yes");
         }
     }
 
@@ -160,7 +171,12 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     protected void processResult(Sequence result, Document luceneDoc) throws XPathException {
         for (SequenceIterator i = result.unorderedIterator(); i.hasNext(); ) {
             final String text = i.nextItem().getStringValue();
-            final Field field = convertToField(text);
+            final Field field;
+            if (binary) {
+                field = convertToDocValue(text);
+            } else {
+                field = convertToField(text);
+            }
             if (field != null) {
                 luceneDoc.add(field);
             }
@@ -169,7 +185,12 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
 
     @Override
     protected void processText(CharSequence text, Document luceneDoc) {
-        final Field field = convertToField(text.toString());
+        final Field field;
+        if (binary) {
+            field = convertToDocValue(text.toString());
+        } else {
+            field = convertToField(text.toString());
+        }
         if (field != null) {
             luceneDoc.add(field);
         }
@@ -214,6 +235,78 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         } catch (NumberFormatException | XPathException e) {
             // wrong type: ignore
             LOG.trace("Cannot convert field {} to type {}. Content was: {}", fieldName, Type.getTypeName(type), content);
+        }
+        return null;
+    }
+
+    private Field convertToDocValue(String content) {
+        try {
+            /* xs:dateTime */
+            if (Type.subTypeOf(type, Type.DATE_TIME)) {
+                final DateTimeValue dtv = new DateTimeValue(content);
+                final XMLGregorianCalendar utccal = dtv.calendar.normalize();
+                final byte[] data = new byte[11]; // allocate an appropriately sized
+                ByteConversion.intToByteH(utccal.getYear(), data, 0);
+                data[4] = (byte) utccal.getMonth();
+                data[5] = (byte) utccal.getDay();
+                data[6] = (byte) utccal.getHour();
+                data[7] = (byte) utccal.getMinute();
+                data[8] = (byte) utccal.getSecond();
+                final int ms = utccal.getMillisecond();
+                ByteConversion.shortToByteH((short) (ms == DatatypeConstants.FIELD_UNDEFINED ? 0 : ms),
+                        data, 9);
+                return new BinaryDocValuesField(fieldName, new BytesRef(data));
+            /* xs:date */
+            } else if (Type.subTypeOf(type, Type.DATE)) {
+                final DateValue dv = new DateValue(content);
+                final XMLGregorianCalendar utccal = dv.calendar.normalize();
+                final byte[] data = new byte[6]; // allocate an appropriately sized
+                ByteConversion.intToByteH(utccal.getYear(), data, 0);
+                data[4] = (byte) utccal.getMonth();
+                data[5] = (byte) utccal.getDay();
+                return new BinaryDocValuesField(fieldName, new BytesRef(data));
+            /* xs:time */
+            } else if (Type.subTypeOf(type, Type.TIME)) {
+                final TimeValue tv = new TimeValue(content);
+                final XMLGregorianCalendar utccal = tv.calendar.normalize();
+                final byte[] data = new byte[5]; // allocate an appropriately sized
+                data[0] = (byte) utccal.getHour();
+                data[1] = (byte) utccal.getMinute();
+                data[2] = (byte) utccal.getSecond();
+                final int ms = utccal.getMillisecond();
+                ByteConversion.shortToByteH((short) (ms == DatatypeConstants.FIELD_UNDEFINED ? 0 : ms),
+                        data, 3);
+                return new BinaryDocValuesField(fieldName, new BytesRef(data));
+            }
+            /* xs:integer */
+            else if (Type.subTypeOf(type, Type.INTEGER)) {
+                final IntegerValue iv = new IntegerValue(content, Type.INTEGER);
+                final byte[] data = new byte[8];
+                final long l = iv.getValue() - Long.MIN_VALUE;
+                ByteConversion.longToByte(l, data, 0);
+                return new BinaryDocValuesField(fieldName, new BytesRef(data));
+            }
+            /* xs:double */
+            else if (type == Type.DOUBLE) {
+                final DoubleValue dv = new DoubleValue(content);
+                final byte[] data = new byte[8];
+                final long bits = Double.doubleToLongBits(dv.getValue()) ^ 0x8000000000000000L;
+                ByteConversion.longToByte(bits, data, 0);
+                return new BinaryDocValuesField(fieldName, new BytesRef(data));
+            }
+            /* xs:float */
+            else if (type == Type.FLOAT) {
+                final FloatValue fv = new FloatValue(content);
+                final byte[] data = new byte[4];
+                final int bits = Float.floatToIntBits(fv.getValue()) ^ 0x80000000;
+                ByteConversion.intToByteH(bits, data, 0);
+                return new BinaryDocValuesField(fieldName, new BytesRef(data));
+            }
+            // everything else treated as string
+            return new BinaryDocValuesField(fieldName, new BytesRef(content.getBytes(StandardCharsets.UTF_8)));
+        } catch (NumberFormatException | XPathException e) {
+            // wrong type: ignore
+            LOG.error("Cannot convert field {} to type {}. Content was: {}", fieldName, Type.getTypeName(type), content);
         }
         return null;
     }
