@@ -222,7 +222,7 @@ public class SerializerUtils {
         try {
             final XMLStreamReader reader = parent.getContext().getXMLStreamReader(parameters);
             while (reader.hasNext() && (reader.next() != XMLStreamReader.START_ELEMENT)) {
-                //
+                /* advance to the first starting element (root node) of the options */
             }
 
             if (!Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(reader.getNamespaceURI())) {
@@ -295,12 +295,14 @@ public class SerializerUtils {
             final Properties properties = new Properties();
 
             for (final W3CParameterConvention w3cParameterConvention : W3CParameterConvention.values()) {
-                final Sequence parameterValue = getParameterValue(parent, entries, w3cParameterConvention, new StringValue(w3cParameterConvention.getParameterName()));
+                final Sequence parameterValue = getParameterValue(parent, entries, w3cParameterConvention,
+                        new StringValue(w3cParameterConvention.getParameterName()));
                 setPropertyForMap(properties, w3cParameterConvention, parameterValue);
             }
 
             for (final ExistParameterConvention existParameterConvention : ExistParameterConvention.values()) {
-                final Sequence parameterValue = getParameterValue(parent, entries, existParameterConvention, new QNameValue(null, existParameterConvention.getParameterName()));
+                final Sequence parameterValue = getParameterValue(parent, entries, existParameterConvention,
+                        new QNameValue(null, existParameterConvention.getParameterName()));
                 setPropertyForMap(properties, existParameterConvention, parameterValue);
             }
 
@@ -411,37 +413,44 @@ public class SerializerUtils {
             return;
         }
 
+        final String localParameterName = parameterConvention.getLocalParameterName();
+        final String value;
+
         switch (parameterConvention.getType()) {
             case Type.BOOLEAN:
-                properties.setProperty(
-                        parameterConvention.getLocalParameterName(),
-                        ((BooleanValue) parameterValue.itemAt(0)).getValue() ? "yes" : "no"
-                );
+                value = ((BooleanValue) parameterValue.itemAt(0)).getValue() ? "yes" : "no";
+                properties.setProperty(localParameterName, value);
                 break;
             case Type.STRING:
-                properties.setProperty(parameterConvention.getLocalParameterName(), ((StringValue) parameterValue.itemAt(0)).getStringValue());
+                value = ((StringValue) parameterValue.itemAt(0)).getStringValue();
+                properties.setProperty(localParameterName, value);
                 break;
             case Type.DECIMAL:
-                properties.setProperty(parameterConvention.getLocalParameterName(), ((DecimalValue) parameterValue.itemAt(0)).getStringValue());
+                value = ((DecimalValue) parameterValue.itemAt(0)).getStringValue();
+                properties.setProperty(localParameterName, value);
                 break;
             case Type.QNAME:
                 if (Cardinality._MANY.isSuperCardinalityOrEqualOf(parameterConvention.getCardinality())) {
                     final SequenceIterator iterator = parameterValue.iterate();
                     while (iterator.hasNext()) {
-                        final String existingValue = (String) properties.get(parameterConvention.getLocalParameterName());
+                        final String existingValue = (String) properties.get(localParameterName);
+                        final String nextValue = ((QNameValue) iterator.nextItem()).getQName().toURIQualifiedName();
+
                         if (existingValue == null || existingValue.isEmpty()) {
-                            properties.setProperty(parameterConvention.getLocalParameterName(), ((QNameValue) iterator.nextItem()).getQName().toURIQualifiedName());
+                            properties.setProperty(localParameterName, nextValue);
                         } else {
-                            properties.setProperty(parameterConvention.getLocalParameterName(), existingValue + " " + ((QNameValue) iterator.nextItem()).getQName().toURIQualifiedName());
+                            properties.setProperty(localParameterName, existingValue + " " + nextValue);
                         }
                     }
                 } else {
-                    properties.setProperty(parameterConvention.getLocalParameterName(), ((QNameValue) parameterValue.itemAt(0)).getQName().toURIQualifiedName());
+                    value = ((QNameValue) parameterValue.itemAt(0)).getQName().toURIQualifiedName();
+                    properties.setProperty(localParameterName, value);
                 }
                 break;
             case Type.MAP:
                 //TODO(AR) implement `use-character-maps`
-                throw new UnsupportedOperationException("Not yet implemented support for the map serialization parameter: " + parameterConvention.getLocalParameterName());
+                throw new UnsupportedOperationException(
+                        "Not yet implemented support for the map serialization parameter: " + localParameterName);
         }
     }
 
