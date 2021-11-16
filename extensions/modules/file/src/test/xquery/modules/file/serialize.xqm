@@ -19,9 +19,9 @@
  : License along with this library; if not, write to the Free Software
  : Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  :)
-xquery version "3.0";
+xquery version "3.1";
 
-module namespace serialization="http://exist-db.org/testsuite/modules/file/serialization";
+module namespace serialize="http://exist-db.org/testsuite/modules/file/serialize";
 
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
 import module namespace file="http://exist-db.org/xquery/file";
@@ -30,7 +30,7 @@ import module namespace file="http://exist-db.org/xquery/file";
 declare
     %test:pending("need to mechanism to setup a temporary file to work with")
     %test:assertEquals("datadata", "true", "true", "true")
-function serialization:append() {
+function serialize:append() {
 
     let $node-set := text {"data"}
     let $path := system:get-exist-home() || "/test.txt"
@@ -47,7 +47,7 @@ function serialization:append() {
 declare
     %test:pending("need to mechanism to setup a temporary file to work with")
     %test:assertEquals("data", "true", "true", "true")
-function serialization:overwrite() {
+function serialize:overwrite() {
 
     let $node-set := text {"data"}
     let $path := system:get-exist-home() || "/test.txt"
