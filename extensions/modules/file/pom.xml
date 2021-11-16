@@ -63,6 +63,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.evolvedbinary.multilock</groupId>
+            <artifactId>multilock</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+
+        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
         </dependency>
@@ -93,6 +99,7 @@
             <artifactId>jetty-deploy</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-jmx</artifactId>
