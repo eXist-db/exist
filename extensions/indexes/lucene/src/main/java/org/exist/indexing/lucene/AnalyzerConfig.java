@@ -440,6 +440,12 @@ public class AnalyzerConfig {
                     break;
                 }
 
+                case "char[]": {
+                    final char[] ary = getConstructorParameterCharArrayValues(param);
+                    parameter = new KeyTypedValue(name, ary, char[].class);
+                    break;
+                }
+
                 case "org.apache.lucene.analysis.util.CharArraySet":
                 case "set": {
                     // This is mandatory to use iso a normal Set since Lucene 4
@@ -530,6 +536,26 @@ public class AnalyzerConfig {
         for (int i = 0; i < values.getLength(); i++) {
             final Element value = (Element) values.item(i);
             ary[i] = value.getTextContent();
+        }
+        return ary;
+    }
+
+    /**
+     * Get parameter configuration data as a char[].
+     *
+     * @param param The parameter-configuration element.
+     * @return Parameter data as char[]
+     */
+    private static char[] getConstructorParameterCharArrayValues(final Element param) throws ParameterException {
+        final NodeList values = param.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, PARAM_VALUE_ENTRY);
+        final char[] ary = new char[values.getLength()];
+        for (int i = 0; i < values.getLength(); i++) {
+            final Element value = (Element) values.item(i);
+            final String s = value.getTextContent();
+            if (s == null || s.isEmpty()) {
+                throw new ParameterException("The 'value[" + (i + 1) + "]' must be a single character.");
+            }
+            ary[i] = s.charAt(0);
         }
         return ary;
     }
