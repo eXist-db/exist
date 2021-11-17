@@ -184,7 +184,7 @@ public class AnalyzerConfig {
             }
 
             // Get list of parameters
-            List<KeyTypedValue> cParams;
+            List<KeyTypedValue<?>> cParams;
             try {
                 cParams = getAllConstructorParameters(config);
 
@@ -199,7 +199,7 @@ public class AnalyzerConfig {
             final Class<?> cParamClasses[] = new Class<?>[cParams.size()];
             final Object cParamValues[] = new Object[cParams.size()];
             for (int i = 0; i < cParams.size(); i++) {
-                KeyTypedValue ktv = cParams.get(i);
+                KeyTypedValue<?> ktv = cParams.get(i);
                 cParamClasses[i] = ktv.getValueClass();
                 cParamValues[i] = ktv.getValue();
             }
@@ -318,8 +318,8 @@ public class AnalyzerConfig {
      * @return List of triples key-value-valueType
      * @throws org.exist.indexing.lucene.AnalyzerConfig.ParameterException
      */
-    private static List<KeyTypedValue> getAllConstructorParameters(Element config) throws ParameterException {
-        final List<KeyTypedValue> parameters = new ArrayList<>();
+    private static List<KeyTypedValue<?>> getAllConstructorParameters(Element config) throws ParameterException {
+        final List<KeyTypedValue<?>> parameters = new ArrayList<>();
         final NodeList params = config.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, PARAM_ELEMENT_NAME);
 
         // iterate over all <param/> elements
@@ -365,7 +365,7 @@ public class AnalyzerConfig {
                 throw new ParameterException("The 'value' attribute must exist and must contain String value.");
             }
 
-            parameter = new KeyTypedValue(name, value, String.class);
+            parameter = new KeyTypedValue<>(name, value, String.class);
 
         } else {
             switch (type) {
@@ -386,7 +386,7 @@ public class AnalyzerConfig {
                         final Field field = fieldClazz.getField(fieldName);
                         field.setAccessible(true);
                         final Object fValue = field.get(fieldClazz.newInstance());
-                        parameter = new KeyTypedValue(name, fValue, Object.class);
+                        parameter = new KeyTypedValue<>(name, fValue, Object.class);
 
                     } catch (final NoSuchFieldException | ClassNotFoundException | InstantiationException | IllegalAccessException nsfe) {
                         throw new ParameterException(nsfe.getMessage(), nsfe);
@@ -402,7 +402,7 @@ public class AnalyzerConfig {
                     LOG.info(String.format("Type '%s' has been deprecated in recent Lucene versions, "
                             + "please use 'java.io.FileReader' (short 'file') instead.", type));
 
-                    parameter = new KeyTypedValue(name, new java.io.File(value), java.io.File.class);
+                    parameter = new KeyTypedValue<>(name, new java.io.File(value), java.io.File.class);
                     break;
                 }
 
@@ -416,7 +416,7 @@ public class AnalyzerConfig {
                     try {
                         // ToDo: check where to close reade to prevent resource leakage
                         Reader fileReader = new java.io.FileReader(value);
-                        parameter = new KeyTypedValue(name, fileReader, Reader.class);
+                        parameter = new KeyTypedValue<>(name, fileReader, Reader.class);
 
                     } catch (java.io.FileNotFoundException ex) {
                         LOG.error(String.format("File '%s' could not be found.", value), ex);
@@ -430,19 +430,19 @@ public class AnalyzerConfig {
                             + "please use 'org.apache.lucene.analysis.util.CharArraySet' (short 'set') instead.", type));
 
                     final Set s = getConstructorParameterSetValues(param);
-                    parameter = new KeyTypedValue(name, s, Set.class);
+                    parameter = new KeyTypedValue<>(name, s, Set.class);
                     break;
                 }
 
                 case "java.lang.String[]": {
                     final String[] ary = getConstructorParameterStringArrayValues(param);
-                    parameter = new KeyTypedValue(name, ary, String[].class);
+                    parameter = new KeyTypedValue<>(name, ary, String[].class);
                     break;
                 }
 
                 case "char[]": {
                     final char[] ary = getConstructorParameterCharArrayValues(param);
-                    parameter = new KeyTypedValue(name, ary, char[].class);
+                    parameter = new KeyTypedValue<>(name, ary, char[].class);
                     break;
                 }
 
@@ -450,7 +450,7 @@ public class AnalyzerConfig {
                 case "set": {
                     // This is mandatory to use iso a normal Set since Lucene 4
                     final CharArraySet s = getConstructorParameterCharArraySetValues(param);
-                    parameter = new KeyTypedValue(name, s, CharArraySet.class);
+                    parameter = new KeyTypedValue<>(name, s, CharArraySet.class);
                     break;
                 }
 
@@ -463,7 +463,7 @@ public class AnalyzerConfig {
 
                     try {
                         final Integer n = Integer.parseInt(value);
-                        parameter = new KeyTypedValue(name, n, Integer.class);
+                        parameter = new KeyTypedValue<>(name, n, Integer.class);
                     } catch (NumberFormatException ex) {
                         LOG.error(String.format("Value %s could not be converted to an integer. %s", value, ex.getMessage()));
                     }
@@ -477,7 +477,7 @@ public class AnalyzerConfig {
                     }
 
                     final boolean b = Boolean.parseBoolean(value);
-                    parameter = new KeyTypedValue(name, b, boolean.class);
+                    parameter = new KeyTypedValue<>(name, b, boolean.class);
                     break;
 
                 default:
@@ -491,10 +491,10 @@ public class AnalyzerConfig {
                         //if the type is an Enum then use valueOf()
                         final Class clazz = Class.forName(type);
                         if (clazz.isEnum()) {
-                            parameter = new KeyTypedValue(name, Enum.valueOf(clazz, value), clazz);
+                            parameter = new KeyTypedValue<>(name, Enum.valueOf(clazz, value), clazz);
                         } else {
                             //default, assume java.lang.String
-                            parameter = new KeyTypedValue(name, value, String.class);
+                            parameter = new KeyTypedValue<>(name, value, String.class);
                         }
 
                     } catch (ClassNotFoundException cnfe) {
