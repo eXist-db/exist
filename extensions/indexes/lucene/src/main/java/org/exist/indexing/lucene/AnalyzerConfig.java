@@ -434,6 +434,12 @@ public class AnalyzerConfig {
                     break;
                 }
 
+                case "java.lang.String[]": {
+                    final String[] ary = getConstructorParameterStringArrayValues(param);
+                    parameter = new KeyTypedValue(name, ary, String[].class);
+                    break;
+                }
+
                 case "org.apache.lucene.analysis.util.CharArraySet":
                 case "set": {
                     // This is mandatory to use iso a normal Set since Lucene 4
@@ -510,6 +516,22 @@ public class AnalyzerConfig {
         }
 
         return set;
+    }
+
+    /**
+     * Get parameter configuration data as a String[].
+     *
+     * @param param The parameter-configuration element.
+     * @return Parameter data as String[]
+     */
+    private static String[] getConstructorParameterStringArrayValues(final Element param) throws ParameterException {
+        final NodeList values = param.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, PARAM_VALUE_ENTRY);
+        final String[] ary = new String[values.getLength()];
+        for (int i = 0; i < values.getLength(); i++) {
+            final Element value = (Element) values.item(i);
+            ary[i] = value.getTextContent();
+        }
+        return ary;
     }
 
     /**
