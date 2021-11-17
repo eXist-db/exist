@@ -338,7 +338,7 @@ public class AnalyzerConfig {
      * @return Triple key-value-value-type
      * @throws org.exist.indexing.lucene.AnalyzerConfig.ParameterException
      */
-    private static KeyTypedValue getConstructorParameter(Element param) throws ParameterException {
+    private static KeyTypedValue<?> getConstructorParameter(final Element param) throws ParameterException {
 
         // Get attributes
         final NamedNodeMap attrs = param.getAttributes();
@@ -356,7 +356,7 @@ public class AnalyzerConfig {
         final String value = (namedItem == null) ? null : namedItem.getNodeValue();
 
         // Place holder return value
-        KeyTypedValue parameter = null;
+        KeyTypedValue<?> parameter = null;
 
         if (StringUtils.isBlank(type) || "java.lang.String".equals(type)) {
             // String or no type is provided, assume string.
@@ -365,7 +365,7 @@ public class AnalyzerConfig {
                 throw new ParameterException("The 'value' attribute must exist and must contain String value.");
             }
 
-            parameter = new KeyTypedValue(name, value);
+            parameter = new KeyTypedValue(name, value, String.class);
 
         } else {
             switch (type) {
@@ -386,9 +386,9 @@ public class AnalyzerConfig {
                         final Field field = fieldClazz.getField(fieldName);
                         field.setAccessible(true);
                         final Object fValue = field.get(fieldClazz.newInstance());
-                        parameter = new KeyTypedValue(name, fValue);
+                        parameter = new KeyTypedValue(name, fValue, Object.class);
 
-                    } catch (NoSuchFieldException | ClassNotFoundException | InstantiationException | IllegalAccessException nsfe) {
+                    } catch (final NoSuchFieldException | ClassNotFoundException | InstantiationException | IllegalAccessException nsfe) {
                         throw new ParameterException(nsfe.getMessage(), nsfe);
                     }
                     break;
@@ -451,7 +451,7 @@ public class AnalyzerConfig {
 
                     try {
                         final Integer n = Integer.parseInt(value);
-                        parameter = new KeyTypedValue(name, n);
+                        parameter = new KeyTypedValue(name, n, Integer.class);
                     } catch (NumberFormatException ex) {
                         LOG.error(String.format("Value %s could not be converted to an integer. %s", value, ex.getMessage()));
                     }
@@ -465,7 +465,7 @@ public class AnalyzerConfig {
                     }
 
                     final boolean b = Boolean.parseBoolean(value);
-                    parameter = new KeyTypedValue(name, b);
+                    parameter = new KeyTypedValue(name, b, boolean.class);
                     break;
 
                 default:
@@ -482,7 +482,7 @@ public class AnalyzerConfig {
                             parameter = new KeyTypedValue(name, Enum.valueOf(clazz, value), clazz);
                         } else {
                             //default, assume java.lang.String
-                            parameter = new KeyTypedValue(name, value);
+                            parameter = new KeyTypedValue(name, value, String.class);
                         }
 
                     } catch (ClassNotFoundException cnfe) {
@@ -527,17 +527,13 @@ public class AnalyzerConfig {
      * CLass for containing the Triple : key (name), corresponding value and
      * class type of value.
      */
-    private static class KeyTypedValue {
+    private static class KeyTypedValue<T> {
 
         private final String key;
-        private final Object value;
-        private final Class<?> valueClass;
+        private final T value;
+        private final Class<T> valueClass;
 
-        public KeyTypedValue(String key, Object value) {
-            this(key, value, value.getClass());
-        }
-
-        public KeyTypedValue(String key, Object value, Class<?> valueClass) {
+        public KeyTypedValue(final String key, final T value, final Class<T> valueClass) {
             this.key = key;
             this.value = value;
             this.valueClass = valueClass;
@@ -547,11 +543,11 @@ public class AnalyzerConfig {
             return key;
         }
 
-        public Object getValue() {
+        public T getValue() {
             return value;
         }
 
-        public Class<?> getValueClass() {
+        public Class<T> getValueClass() {
             return valueClass;
         }
     }
