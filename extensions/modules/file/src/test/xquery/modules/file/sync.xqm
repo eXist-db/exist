@@ -24,9 +24,6 @@ xquery version "3.1";
 module namespace sync="http://exist-db.org/xquery/test/file/sync";
 import module namespace helper="http://exist-db.org/xquery/test/util/helper" at "resource:util/helper.xqm";
 import module namespace fixtures="http://exist-db.org/xquery/test/util/fixtures" at "resource:util/fixtures.xqm";
-import module namespace file="http://exist-db.org/xquery/file";
-import module namespace xmldb="http://exist-db.org/xquery/xmldb";
-import module namespace util="http://exist-db.org/xquery/util";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
