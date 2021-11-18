@@ -338,7 +338,7 @@ public class AnalyzerConfig {
      * @return Triple key-value-value-type
      * @throws org.exist.indexing.lucene.AnalyzerConfig.ParameterException
      */
-    private static KeyTypedValue<?> getConstructorParameter(final Element param) throws ParameterException {
+    static KeyTypedValue<?> getConstructorParameter(final Element param) throws ParameterException {
 
         // Get attributes
         final NamedNodeMap attrs = param.getAttributes();
@@ -575,7 +575,7 @@ public class AnalyzerConfig {
      * CLass for containing the Triple : key (name), corresponding value and
      * class type of value.
      */
-    private static class KeyTypedValue<T> {
+    static class KeyTypedValue<T> {
 
         private final String key;
         private final T value;
@@ -603,7 +603,7 @@ public class AnalyzerConfig {
     /**
      * Exception class to for reporting problems with the parameters.
      */
-    private static class ParameterException extends Exception {
+    static class ParameterException extends Exception {
 
         private static final long serialVersionUID = -4823392401966008877L;
 
