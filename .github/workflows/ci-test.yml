@@ -23,7 +23,7 @@ jobs:
           distribution: 'zulu'
           cache: maven
       - name: Maven Test
-        timeout-minutes: 60
+        timeout-minutes: 120
         run: mvn --show-version --batch-mode --update-snapshots -DtrimStackTrace=false verify
         continue-on-error: ${{ matrix.jdk == '16' }}
       - name: Maven Code Coverage
