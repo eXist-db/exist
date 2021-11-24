@@ -44,6 +44,7 @@ import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
@@ -301,7 +302,7 @@ public class Field extends BasicFunction {
                                 ByteConversion.byteToIntH(data, 0),
                                 data[4],
                                 data[5],
-                                0);
+                                DatatypeConstants.FIELD_UNDEFINED);
                 return new DateValue(xmlutccal);
             } catch (final DatatypeConfigurationException e) {
                 throw new XPathException(LuceneModule.EXXQDYFT0004, "Cannot convert binary field value to xs:date");
