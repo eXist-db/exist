@@ -72,6 +72,7 @@ public class DateValue extends AbstractDateTimeValue {
         calendar.setMinute(DatatypeConstants.FIELD_UNDEFINED);
         calendar.setSecond(DatatypeConstants.FIELD_UNDEFINED);
         calendar.setMillisecond(DatatypeConstants.FIELD_UNDEFINED);
+        calendar.setTimezone(DatatypeConstants.FIELD_UNDEFINED);
         return calendar;
     }
 
