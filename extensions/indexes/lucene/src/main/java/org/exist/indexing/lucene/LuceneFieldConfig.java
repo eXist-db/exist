@@ -241,69 +241,71 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
 
     private Field convertToDocValue(String content) {
         try {
-            /* xs:dateTime */
-            if (Type.subTypeOf(type, Type.DATE_TIME)) {
-                final DateTimeValue dtv = new DateTimeValue(content);
-                final XMLGregorianCalendar utccal = dtv.calendar.normalize();
-                final byte[] data = new byte[11]; // allocate an appropriately sized
-                ByteConversion.intToByteH(utccal.getYear(), data, 0);
-                data[4] = (byte) utccal.getMonth();
-                data[5] = (byte) utccal.getDay();
-                data[6] = (byte) utccal.getHour();
-                data[7] = (byte) utccal.getMinute();
-                data[8] = (byte) utccal.getSecond();
-                final int ms = utccal.getMillisecond();
-                ByteConversion.shortToByteH((short) (ms == DatatypeConstants.FIELD_UNDEFINED ? 0 : ms),
-                        data, 9);
-                return new BinaryDocValuesField(fieldName, new BytesRef(data));
-            /* xs:date */
-            } else if (Type.subTypeOf(type, Type.DATE)) {
-                final DateValue dv = new DateValue(content);
-                final XMLGregorianCalendar utccal = dv.calendar.normalize();
-                final byte[] data = new byte[6]; // allocate an appropriately sized
-                ByteConversion.intToByteH(utccal.getYear(), data, 0);
-                data[4] = (byte) utccal.getMonth();
-                data[5] = (byte) utccal.getDay();
-                return new BinaryDocValuesField(fieldName, new BytesRef(data));
-            /* xs:time */
-            } else if (Type.subTypeOf(type, Type.TIME)) {
-                final TimeValue tv = new TimeValue(content);
-                final XMLGregorianCalendar utccal = tv.calendar.normalize();
-                final byte[] data = new byte[5]; // allocate an appropriately sized
-                data[0] = (byte) utccal.getHour();
-                data[1] = (byte) utccal.getMinute();
-                data[2] = (byte) utccal.getSecond();
-                final int ms = utccal.getMillisecond();
-                ByteConversion.shortToByteH((short) (ms == DatatypeConstants.FIELD_UNDEFINED ? 0 : ms),
-                        data, 3);
-                return new BinaryDocValuesField(fieldName, new BytesRef(data));
+            final byte[] data;
+            final XMLGregorianCalendar normalizedCalendar;
+            final int ms;
+            switch(type) {
+                case Type.TIME:
+                    final TimeValue tv = new TimeValue(content);
+                    normalizedCalendar = tv.calendar.normalize();
+                    data = new byte[5]; // allocate an appropriately sized
+                    data[0] = (byte) normalizedCalendar.getHour();
+                    data[1] = (byte) normalizedCalendar.getMinute();
+                    data[2] = (byte) normalizedCalendar.getSecond();
+                    ms = normalizedCalendar.getMillisecond();
+                    ByteConversion.shortToByteH((short) (ms == DatatypeConstants.FIELD_UNDEFINED ? 0 : ms),
+                            data, 3);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(data));
+                case Type.DATE_TIME:
+                    final DateTimeValue dtv = new DateTimeValue(content);
+                    normalizedCalendar = dtv.calendar.normalize();
+                    data = new byte[11]; // allocate an appropriately sized
+                    ByteConversion.intToByteH(normalizedCalendar.getYear(), data, 0);
+                    data[4] = (byte) normalizedCalendar.getMonth();
+                    data[5] = (byte) normalizedCalendar.getDay();
+                    data[6] = (byte) normalizedCalendar.getHour();
+                    data[7] = (byte) normalizedCalendar.getMinute();
+                    data[8] = (byte) normalizedCalendar.getSecond();
+                    ms = normalizedCalendar.getMillisecond();
+                    ByteConversion.shortToByteH((short) (ms == DatatypeConstants.FIELD_UNDEFINED ? 0 : ms),
+                            data, 9);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(data));
+                case Type.DATE:
+                    final DateValue dv = new DateValue(content);
+                    normalizedCalendar = dv.calendar.normalize();
+                    data = new byte[6]; // allocate an appropriately sized
+                    ByteConversion.intToByteH(normalizedCalendar.getYear(), data, 0);
+                    data[4] = (byte) normalizedCalendar.getMonth();
+                    data[5] = (byte) normalizedCalendar.getDay();
+                    return new BinaryDocValuesField(fieldName, new BytesRef(data));
+                case Type.INTEGER:
+                case Type.LONG:
+                case Type.UNSIGNED_LONG:
+                case Type.INT:
+                case Type.UNSIGNED_INT:
+                case Type.SHORT:
+                case Type.UNSIGNED_SHORT:
+                    final IntegerValue iv = new IntegerValue(content, Type.INTEGER);
+                    data = new byte[8];
+                    final long l = iv.getValue() - Long.MIN_VALUE;
+                    ByteConversion.longToByte(l, data, 0);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(data));
+                case Type.DOUBLE:
+                    final DoubleValue dbv = new DoubleValue(content);
+                    data = new byte[8];
+                    final long dBits = Double.doubleToLongBits(dbv.getValue()) ^ 0x8000000000000000L;
+                    ByteConversion.longToByte(dBits, data, 0);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(data));
+                case Type.FLOAT:
+                    final FloatValue fv = new FloatValue(content);
+                    data = new byte[4];
+                    final int fBits = Float.floatToIntBits(fv.getValue()) ^ 0x80000000;
+                    ByteConversion.intToByteH(fBits, data, 0);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(data));
+                // everything else treated as string
+                default:
+                    return new BinaryDocValuesField(fieldName, new BytesRef(content.getBytes(StandardCharsets.UTF_8)));
             }
-            /* xs:integer */
-            else if (Type.subTypeOf(type, Type.INTEGER)) {
-                final IntegerValue iv = new IntegerValue(content, Type.INTEGER);
-                final byte[] data = new byte[8];
-                final long l = iv.getValue() - Long.MIN_VALUE;
-                ByteConversion.longToByte(l, data, 0);
-                return new BinaryDocValuesField(fieldName, new BytesRef(data));
-            }
-            /* xs:double */
-            else if (type == Type.DOUBLE) {
-                final DoubleValue dv = new DoubleValue(content);
-                final byte[] data = new byte[8];
-                final long bits = Double.doubleToLongBits(dv.getValue()) ^ 0x8000000000000000L;
-                ByteConversion.longToByte(bits, data, 0);
-                return new BinaryDocValuesField(fieldName, new BytesRef(data));
-            }
-            /* xs:float */
-            else if (type == Type.FLOAT) {
-                final FloatValue fv = new FloatValue(content);
-                final byte[] data = new byte[4];
-                final int bits = Float.floatToIntBits(fv.getValue()) ^ 0x80000000;
-                ByteConversion.intToByteH(bits, data, 0);
-                return new BinaryDocValuesField(fieldName, new BytesRef(data));
-            }
-            // everything else treated as string
-            return new BinaryDocValuesField(fieldName, new BytesRef(content.getBytes(StandardCharsets.UTF_8)));
         } catch (NumberFormatException | XPathException e) {
             // wrong type: ignore
             LOG.error("Cannot convert field {} to type {}. Content was: {}", fieldName, Type.getTypeName(type), content);
