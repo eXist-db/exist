@@ -295,50 +295,56 @@ public class Field extends BasicFunction {
 
     static AtomicValue bytesToAtomic(BytesRef field, int type) throws XPathException {
         final byte[] data = field.bytes;
-        if (Type.subTypeOf(type, Type.DATE)) {
-            try {
-                final XMLGregorianCalendar xmlutccal =
-                        DatatypeFactory.newInstance().newXMLGregorianCalendarDate(
-                                ByteConversion.byteToIntH(data, 0),
-                                data[4],
-                                data[5],
-                                DatatypeConstants.FIELD_UNDEFINED);
-                return new DateValue(xmlutccal);
-            } catch (final DatatypeConfigurationException e) {
-                throw new XPathException(LuceneModule.EXXQDYFT0004, "Cannot convert binary field value to xs:date");
-            }
-        } else if (Type.subTypeOf(type, Type.DATE_TIME)) {
-            try {
-                final XMLGregorianCalendar xmlutccal =
-                        DatatypeFactory.newInstance().newXMLGregorianCalendar(
-                                ByteConversion.byteToIntH(data, 0),
-                                data[4],
-                                data[5],
-                                data[6],
-                                data[7],
-                                data[8],
-                                ByteConversion.byteToShortH(data, 9),
-                                0);
-                return new DateTimeValue(xmlutccal);
-            } catch (final DatatypeConfigurationException dtce) {
-                throw new XPathException(LuceneModule.EXXQDYFT0004, "Cannot convert binary field value to xs:dateTime");
-            }
-        } else if (Type.subTypeOf(type, Type.TIME)) {
-            final TimeValue value = new TimeValue();
-            final XMLGregorianCalendar utccal = value.calendar;
-            utccal.setHour(data[0]);
-            utccal.setMinute(data[1]);
-            utccal.setSecond(data[2]);
-            utccal.setMillisecond(ByteConversion.byteToShortH(data, 3));
-            return value;
-        } else if (Type.subTypeOf(type, Type.INTEGER)) {
-            return new IntegerValue(ByteConversion.byteToLong(data, 0) ^ 0x8000000000000000L);
-        } else if (Type.subTypeOf(type, Type.DOUBLE)) {
-            final long bits = ByteConversion.byteToLong(data, 0) ^ 0x8000000000000000L;
-            final double d = Double.longBitsToDouble(bits);
-            return new DoubleValue(d);
+        switch(type) {
+            case Type.TIME:
+                final TimeValue value = new TimeValue();
+                final XMLGregorianCalendar utccal = value.calendar;
+                utccal.setHour(data[0]);
+                utccal.setMinute(data[1]);
+                utccal.setSecond(data[2]);
+                utccal.setMillisecond(ByteConversion.byteToShortH(data, 3));
+                return value;
+            case Type.DATE_TIME:
+                try {
+                    final XMLGregorianCalendar xmlutccal =
+                            DatatypeFactory.newInstance().newXMLGregorianCalendar(
+                                    ByteConversion.byteToIntH(data, 0),
+                                    data[4],
+                                    data[5],
+                                    data[6],
+                                    data[7],
+                                    data[8],
+                                    ByteConversion.byteToShortH(data, 9),
+                                    0);
+                    return new DateTimeValue(xmlutccal);
+                } catch (final DatatypeConfigurationException dtce) {
+                    throw new XPathException(LuceneModule.EXXQDYFT0004, "Cannot convert binary field value to xs:dateTime");
+                }
+            case Type.DATE:
+                try {
+                    final XMLGregorianCalendar xmlutccal =
+                            DatatypeFactory.newInstance().newXMLGregorianCalendarDate(
+                                    ByteConversion.byteToIntH(data, 0),
+                                    data[4],
+                                    data[5],
+                                    DatatypeConstants.FIELD_UNDEFINED);
+                    return new DateValue(xmlutccal);
+                } catch (final DatatypeConfigurationException e) {
+                    throw new XPathException(LuceneModule.EXXQDYFT0004, "Cannot convert binary field value to xs:date");
+                }
+            case Type.DOUBLE:
+                final long bits = ByteConversion.byteToLong(data, 0) ^ 0x8000000000000000L;
+                final double d = Double.longBitsToDouble(bits);
+                return new DoubleValue(d);
+            case Type.INTEGER:
+            case Type.INT:
+            case Type.UNSIGNED_INT:
+            case Type.LONG:
+            case Type.UNSIGNED_LONG:
+                return new IntegerValue(ByteConversion.byteToLong(data, 0) ^ 0x8000000000000000L);
+            default:
+                return new StringValue(new String(field.bytes));
         }
-        return new StringValue(new String(field.bytes));
     }
 
     static AtomicValue stringToAtomic(int type, String value) throws XPathException {
