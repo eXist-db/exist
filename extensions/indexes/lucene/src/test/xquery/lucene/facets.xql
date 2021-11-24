@@ -238,6 +238,7 @@ declare variable $facet:XCONF1 :=
                     <field name="score-binary" expression="score" type="xs:double" binary="true"/>
                     <field name="time" expression="time" type="xs:time"/>
                     <field name="time-binary" expression="time" type="xs:time" binary="true"/>
+                    <field name="date-binary" expression="date" type="xs:date" binary="true"/>
                     <field name="dateTime-binary" expression="dateTime" type="xs:dateTime" binary="true"/>
                 </text>
                 <text qname="document">
@@ -856,10 +857,31 @@ declare
     %test:assertEquals(6, 8.25, 14.25, 16, 16.5, 29.5)
 function facet:query-and-sort-by-binary-numeric($field as xs:string, $type as xs:string) {
     for $letter in collection("/db/lucenetest")//letter[ft:query(., ())]
-    let $likes := ft:binary-field($letter, $field, $type)
-    order by $likes
-    return
-        $likes
+    let $field-value := ft:binary-field($letter, $field, $type)
+    order by $field-value
+    return $field-value
+};
+
+declare
+    %test:args("time-binary", "xs:time")
+    %test:assertEquals("13:22:19.329+01:00", "14:22:19.329+01:00")
+    %test:args("date-binary", "xs:date")
+    %test:assertEquals("2013-06-22", "2015-06-22", "2017-03-11", "2017-03-13", "2019-03-14", "2019-04-01")
+function facet:query-and-sort-by-binary-dates-and-times($field as xs:string, $type as xs:string) {
+    for $letter in collection("/db/lucenetest")//letter[ft:query(., ())]
+    let $field-value := ft:binary-field($letter, $field, $type)
+    order by $field-value
+    return $field-value
+};
+
+declare
+    %test:args("dateTime-binary", "xs:dateTime")
+    %test:assertEquals("1970-07-03T00:00:00-05:00", "1972-06-08T10:00:00-05:00")
+function facet:query-and-sort-by-binary-dateTime($field as xs:string, $type as xs:string) {
+    for $letter in collection("/db/lucenetest")//letter[ft:query(., ())]
+    let $field-value := ft:binary-field($letter, $field, $type)
+    order by $field-value
+    return $field-value
 };
 
 declare
