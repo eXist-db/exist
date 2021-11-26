@@ -1975,6 +1975,9 @@ cdataSection : XML_CDATA;
 
 enclosedExpr throws XPathException
 :
+    ( LCURLY RCURLY ) => LCURLY! RCURLY!
+    { lexer.inElementContent= true; }
+    |
 	LCURLY^
 	{
 		globalStack.push(elementStack);
@@ -1990,6 +1993,9 @@ enclosedExpr throws XPathException
 
 attributeEnclosedExpr throws XPathException
 :
+    ( LCURLY RCURLY ) => LCURLY! RCURLY!
+    { lexer.inAttributeContent= true; }
+    |
 	LCURLY^
 	{
 		lexer.inAttributeContent= false;
