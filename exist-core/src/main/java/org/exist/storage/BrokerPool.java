@@ -490,7 +490,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.processMonitor = servicesManager.register(new ProcessMonitor());
         this.xqueryStats = servicesManager.register(new PerformanceStats(this));
         final XMLReaderObjectFactory xmlReaderObjectFactory = servicesManager.register(new XMLReaderObjectFactory());
-        this.xmlReaderPool = servicesManager.register(new XMLReaderPool(xmlReaderObjectFactory, 5, 0));
+        this.xmlReaderPool = servicesManager.register(new XMLReaderPool(xmlReaderObjectFactory, maxBrokers, 0));
         final int bufferSize = Optional.of(conf.getInteger(PROPERTY_COLLECTION_CACHE_SIZE))
                 .filter(size -> size != -1)
                 .orElse(DEFAULT_COLLECTION_BUFFER_SIZE);
@@ -1095,8 +1095,22 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      * Returns a pool in which the database instance's readers are stored.
      *
      * @return The pool
+     *
+     * @deprecated Use {@link #getXmlReaderPool()} instead
      */
+    @Deprecated
     public XMLReaderPool getParserPool() {
+        return xmlReaderPool;
+    }
+
+    /**
+     * Returns a pool in which the database instance's readers are stored.
+     *
+     * @return The pool
+     *
+     * @deprecated Use {@link #getXmlReaderPool()} instead
+     */
+    public XMLReaderPool getXmlReaderPool() {
         return xmlReaderPool;
     }
 

@@ -184,7 +184,7 @@ public class AnalyzerConfig {
             }
 
             // Get list of parameters
-            List<KeyTypedValue> cParams;
+            List<KeyTypedValue<?>> cParams;
             try {
                 cParams = getAllConstructorParameters(config);
 
@@ -199,7 +199,7 @@ public class AnalyzerConfig {
             final Class<?> cParamClasses[] = new Class<?>[cParams.size()];
             final Object cParamValues[] = new Object[cParams.size()];
             for (int i = 0; i < cParams.size(); i++) {
-                KeyTypedValue ktv = cParams.get(i);
+                KeyTypedValue<?> ktv = cParams.get(i);
                 cParamClasses[i] = ktv.getValueClass();
                 cParamValues[i] = ktv.getValue();
             }
@@ -318,8 +318,8 @@ public class AnalyzerConfig {
      * @return List of triples key-value-valueType
      * @throws org.exist.indexing.lucene.AnalyzerConfig.ParameterException
      */
-    private static List<KeyTypedValue> getAllConstructorParameters(Element config) throws ParameterException {
-        final List<KeyTypedValue> parameters = new ArrayList<>();
+    private static List<KeyTypedValue<?>> getAllConstructorParameters(Element config) throws ParameterException {
+        final List<KeyTypedValue<?>> parameters = new ArrayList<>();
         final NodeList params = config.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, PARAM_ELEMENT_NAME);
 
         // iterate over all <param/> elements
@@ -338,7 +338,7 @@ public class AnalyzerConfig {
      * @return Triple key-value-value-type
      * @throws org.exist.indexing.lucene.AnalyzerConfig.ParameterException
      */
-    private static KeyTypedValue getConstructorParameter(Element param) throws ParameterException {
+    static KeyTypedValue<?> getConstructorParameter(final Element param) throws ParameterException {
 
         // Get attributes
         final NamedNodeMap attrs = param.getAttributes();
@@ -356,7 +356,7 @@ public class AnalyzerConfig {
         final String value = (namedItem == null) ? null : namedItem.getNodeValue();
 
         // Place holder return value
-        KeyTypedValue parameter = null;
+        KeyTypedValue<?> parameter = null;
 
         if (StringUtils.isBlank(type) || "java.lang.String".equals(type)) {
             // String or no type is provided, assume string.
@@ -365,7 +365,7 @@ public class AnalyzerConfig {
                 throw new ParameterException("The 'value' attribute must exist and must contain String value.");
             }
 
-            parameter = new KeyTypedValue(name, value);
+            parameter = new KeyTypedValue<>(name, value, String.class);
 
         } else {
             switch (type) {
@@ -386,9 +386,9 @@ public class AnalyzerConfig {
                         final Field field = fieldClazz.getField(fieldName);
                         field.setAccessible(true);
                         final Object fValue = field.get(fieldClazz.newInstance());
-                        parameter = new KeyTypedValue(name, fValue);
+                        parameter = new KeyTypedValue<>(name, fValue, Object.class);
 
-                    } catch (NoSuchFieldException | ClassNotFoundException | InstantiationException | IllegalAccessException nsfe) {
+                    } catch (final NoSuchFieldException | ClassNotFoundException | InstantiationException | IllegalAccessException nsfe) {
                         throw new ParameterException(nsfe.getMessage(), nsfe);
                     }
                     break;
@@ -402,7 +402,7 @@ public class AnalyzerConfig {
                     LOG.info(String.format("Type '%s' has been deprecated in recent Lucene versions, "
                             + "please use 'java.io.FileReader' (short 'file') instead.", type));
 
-                    parameter = new KeyTypedValue(name, new java.io.File(value), java.io.File.class);
+                    parameter = new KeyTypedValue<>(name, new java.io.File(value), java.io.File.class);
                     break;
                 }
 
@@ -416,7 +416,7 @@ public class AnalyzerConfig {
                     try {
                         // ToDo: check where to close reade to prevent resource leakage
                         Reader fileReader = new java.io.FileReader(value);
-                        parameter = new KeyTypedValue(name, fileReader, Reader.class);
+                        parameter = new KeyTypedValue<>(name, fileReader, Reader.class);
 
                     } catch (java.io.FileNotFoundException ex) {
                         LOG.error(String.format("File '%s' could not be found.", value), ex);
@@ -430,7 +430,19 @@ public class AnalyzerConfig {
                             + "please use 'org.apache.lucene.analysis.util.CharArraySet' (short 'set') instead.", type));
 
                     final Set s = getConstructorParameterSetValues(param);
-                    parameter = new KeyTypedValue(name, s, Set.class);
+                    parameter = new KeyTypedValue<>(name, s, Set.class);
+                    break;
+                }
+
+                case "java.lang.String[]": {
+                    final String[] ary = getConstructorParameterStringArrayValues(param);
+                    parameter = new KeyTypedValue<>(name, ary, String[].class);
+                    break;
+                }
+
+                case "char[]": {
+                    final char[] ary = getConstructorParameterCharArrayValues(param);
+                    parameter = new KeyTypedValue<>(name, ary, char[].class);
                     break;
                 }
 
@@ -438,7 +450,7 @@ public class AnalyzerConfig {
                 case "set": {
                     // This is mandatory to use iso a normal Set since Lucene 4
                     final CharArraySet s = getConstructorParameterCharArraySetValues(param);
-                    parameter = new KeyTypedValue(name, s, CharArraySet.class);
+                    parameter = new KeyTypedValue<>(name, s, CharArraySet.class);
                     break;
                 }
 
@@ -451,7 +463,7 @@ public class AnalyzerConfig {
 
                     try {
                         final Integer n = Integer.parseInt(value);
-                        parameter = new KeyTypedValue(name, n);
+                        parameter = new KeyTypedValue<>(name, n, Integer.class);
                     } catch (NumberFormatException ex) {
                         LOG.error(String.format("Value %s could not be converted to an integer. %s", value, ex.getMessage()));
                     }
@@ -465,7 +477,7 @@ public class AnalyzerConfig {
                     }
 
                     final boolean b = Boolean.parseBoolean(value);
-                    parameter = new KeyTypedValue(name, b);
+                    parameter = new KeyTypedValue<>(name, b, boolean.class);
                     break;
 
                 default:
@@ -479,10 +491,10 @@ public class AnalyzerConfig {
                         //if the type is an Enum then use valueOf()
                         final Class clazz = Class.forName(type);
                         if (clazz.isEnum()) {
-                            parameter = new KeyTypedValue(name, Enum.valueOf(clazz, value), clazz);
+                            parameter = new KeyTypedValue<>(name, Enum.valueOf(clazz, value), clazz);
                         } else {
                             //default, assume java.lang.String
-                            parameter = new KeyTypedValue(name, value);
+                            parameter = new KeyTypedValue<>(name, value, String.class);
                         }
 
                     } catch (ClassNotFoundException cnfe) {
@@ -513,6 +525,42 @@ public class AnalyzerConfig {
     }
 
     /**
+     * Get parameter configuration data as a String[].
+     *
+     * @param param The parameter-configuration element.
+     * @return Parameter data as String[]
+     */
+    private static String[] getConstructorParameterStringArrayValues(final Element param) throws ParameterException {
+        final NodeList values = param.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, PARAM_VALUE_ENTRY);
+        final String[] ary = new String[values.getLength()];
+        for (int i = 0; i < values.getLength(); i++) {
+            final Element value = (Element) values.item(i);
+            ary[i] = value.getTextContent();
+        }
+        return ary;
+    }
+
+    /**
+     * Get parameter configuration data as a char[].
+     *
+     * @param param The parameter-configuration element.
+     * @return Parameter data as char[]
+     */
+    private static char[] getConstructorParameterCharArrayValues(final Element param) throws ParameterException {
+        final NodeList values = param.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, PARAM_VALUE_ENTRY);
+        final char[] ary = new char[values.getLength()];
+        for (int i = 0; i < values.getLength(); i++) {
+            final Element value = (Element) values.item(i);
+            final String s = value.getTextContent();
+            if (s == null || s.isEmpty()) {
+                throw new ParameterException("The 'value[" + (i + 1) + "]' must be a single character.");
+            }
+            ary[i] = s.charAt(0);
+        }
+        return ary;
+    }
+
+    /**
      * Get parameter configuration data as a Lucene CharArraySet.
      *
      * @param param The parameter-configuration element.
@@ -527,17 +575,13 @@ public class AnalyzerConfig {
      * CLass for containing the Triple : key (name), corresponding value and
      * class type of value.
      */
-    private static class KeyTypedValue {
+    static class KeyTypedValue<T> {
 
         private final String key;
-        private final Object value;
-        private final Class<?> valueClass;
+        private final T value;
+        private final Class<T> valueClass;
 
-        public KeyTypedValue(String key, Object value) {
-            this(key, value, value.getClass());
-        }
-
-        public KeyTypedValue(String key, Object value, Class<?> valueClass) {
+        public KeyTypedValue(final String key, final T value, final Class<T> valueClass) {
             this.key = key;
             this.value = value;
             this.valueClass = valueClass;
@@ -547,11 +591,11 @@ public class AnalyzerConfig {
             return key;
         }
 
-        public Object getValue() {
+        public T getValue() {
             return value;
         }
 
-        public Class<?> getValueClass() {
+        public Class<T> getValueClass() {
             return valueClass;
         }
     }
@@ -559,7 +603,7 @@ public class AnalyzerConfig {
     /**
      * Exception class to for reporting problems with the parameters.
      */
-    private static class ParameterException extends Exception {
+    static class ParameterException extends Exception {
 
         private static final long serialVersionUID = -4823392401966008877L;
 

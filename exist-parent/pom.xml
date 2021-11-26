@@ -100,7 +100,7 @@
 
         <contact.email>info@exist-db.org</contact.email>
 
-        <ant.version>1.10.11</ant.version>
+        <ant.version>1.10.12</ant.version>
         <apache.httpcomponents.version>4.5.13</apache.httpcomponents.version>
         <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
         <apache.xmlrpc.version>3.1.3</apache.xmlrpc.version>
@@ -110,15 +110,15 @@
         <izpack.version>5.1.3</izpack.version>
         <jaxb.api.version>3.0.1</jaxb.api.version>
         <jaxb.impl.version>3.0.2</jaxb.impl.version>
-        <jetty.version>9.4.43.v20210629</jetty.version>
+        <jetty.version>9.4.44.v20210927</jetty.version>
         <log4j.version>2.14.1</log4j.version>
         <lucene.version>4.10.4</lucene.version>
         <milton.version>1.8.1.3</milton.version>
-        <saxon.version>10.6</saxon.version>
-        <xmlunit.version>2.8.2</xmlunit.version>
+        <saxon.version>10.6</saxon.version>>
+        <xmlunit.version>2.8.3</xmlunit.version>
         <junit.version>4.13.2</junit.version>
-        <junit.jupiter.version>5.7.2</junit.jupiter.version>
-        <junit.vintage.version>5.7.2</junit.vintage.version>
+        <junit.jupiter.version>5.8.1</junit.jupiter.version>
+        <junit.vintage.version>5.8.1</junit.vintage.version>
         <easymock.version>4.3</easymock.version>
         <junit.toolbox.version>2.4</junit.toolbox.version>
         <hamcrest.version>2.2</hamcrest.version>
@@ -426,7 +426,7 @@
             <dependency>
                 <groupId>it.unimi.dsi</groupId>
                 <artifactId>fastutil</artifactId>
-                <version>8.5.4</version>
+                <version>8.5.6</version>
             </dependency>
 
             <dependency>
@@ -529,7 +529,7 @@
                 <plugin>
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
-                    <version>6.2.2</version>
+                    <version>6.5.0</version>
                     <configuration>
                         <!-- Use Evolved Binary's mirror of nvd.nist.gov -->
                         <cveUrlModified>https://nvd.mirror.evolvedbinary.com/feeds/json/cve/1.1/nvdcve-1.1-modified.json.gz</cveUrlModified>
@@ -723,7 +723,7 @@
                               However it can make it hard to diagnose problems if tests leak state; If you experience
                               such a problem you may want to set it to `false` whilst debugging -->
                         <reuseForks>true</reuseForks>
-                        <argLine>@{jacocoArgLine} -Dfile.encoding=${project.build.sourceEncoding}</argLine>
+                        <argLine>@{jacocoArgLine} -XX:+IgnoreUnrecognizedVMOptions --illegal-access=debug --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.ref=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED -XX:StartFlightRecording=maxsize=5g,disk=true,dumponexit=true,settings=default,filename=${project.build.directory}/ -Dfile.encoding=${project.build.sourceEncoding}</argLine>
                         <systemPropertyVariables>
                             <user.country>UK</user.country>
                             <user.language>en</user.language>
@@ -818,7 +818,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-scm-plugin</artifactId>
-                    <version>1.11.3</version>
+                    <version>1.12.0</version>
                     <configuration>
                         <sign>true</sign>
                     </configuration>

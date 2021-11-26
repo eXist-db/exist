@@ -90,8 +90,9 @@ public class NativeSerializer extends Serializer {
     			return;
     	}
     	setDocument(p.getOwnerDocument());
-    	if (generateDocEvent) {
+    	if (generateDocEvent && !documentStarted) {
             receiver.startDocument();
+            documentStarted = true;
         }
 
         try(final INodeIterator domIter = broker.getNodeIterator(p)) {
@@ -104,40 +105,42 @@ public class NativeSerializer extends Serializer {
             receiver.endDocument();
         }
     }
-    
+
     protected void serializeToReceiver(DocumentImpl doc, boolean generateDocEvent) throws SAXException {
-    	final long start = System.currentTimeMillis();
-    	
-    	setDocument(doc);
-    	final NodeList children = doc.getChildNodes();
-    	if (generateDocEvent) 
-    		{receiver.startDocument();}
-		
-    	if (doc.getDoctype() != null){
-			if ("yes".equals(getProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no"))) {
-				final DocumentTypeImpl docType = (DocumentTypeImpl)doc.getDoctype();
-				serializeToReceiver(docType, null, docType.getOwnerDocument(), true, null, new TreeSet<>());
-			}
-		}
-    	
-    	// iterate through children
-    	for (int i = 0; i < children.getLength(); i++) {
-    		final IStoredNode<?> node = (IStoredNode<?>) children.item(i);
-    		try(final INodeIterator domIter = broker.getNodeIterator(node)) {
+        final long start = System.currentTimeMillis();
+
+        setDocument(doc);
+        final NodeList children = doc.getChildNodes();
+        if (generateDocEvent && !documentStarted) {
+            receiver.startDocument();
+            documentStarted = true;
+        }
+
+        if (doc.getDoctype() != null){
+            if ("yes".equals(getProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no"))) {
+                final DocumentTypeImpl docType = (DocumentTypeImpl)doc.getDoctype();
+                serializeToReceiver(docType, null, docType.getOwnerDocument(), true, null, new TreeSet<>());
+            }
+        }
+
+        // iterate through children
+        for (int i = 0; i < children.getLength(); i++) {
+            final IStoredNode<?> node = (IStoredNode<?>) children.item(i);
+            try(final INodeIterator domIter = broker.getNodeIterator(node)) {
                 domIter.next();
                 final NodeProxy p = new NodeProxy(node);
                 serializeToReceiver(node, domIter, (DocumentImpl) node.getOwnerDocument(),
-                    true, p.getMatches(), new TreeSet<>());
+                        true, p.getMatches(), new TreeSet<>());
             } catch(final IOException ioe) {
                 LOG.warn("Unable to close node iterator", ioe);
             }
-    	}
+        }
 
-    	if (generateDocEvent) {receiver.endDocument();}
+        if (generateDocEvent) {receiver.endDocument();}
 
-    	if (LOG.isDebugEnabled())
-			{
-                LOG.debug("serializing document {} ({}) to SAX took {} msec", doc.getDocId(), doc.getURI(), System.currentTimeMillis() - start);}
+        if (LOG.isDebugEnabled())
+        {
+            LOG.debug("serializing document {} ({}) to SAX took {} msec", doc.getDocId(), doc.getURI(), System.currentTimeMillis() - start);}
 
     }
     

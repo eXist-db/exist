@@ -22,6 +22,7 @@
 package org.exist.xquery.util;
 
 import org.exist.Namespaces;
+import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -48,10 +49,49 @@ import java.util.function.Function;
  */
 public class SerializerUtils {
 
+    public interface ParameterConvention<T> {
+
+        /**
+         * Get the Parameter name.
+         *
+         * @return the parameter name
+         */
+        T getParameterName();
+
+        /**
+         * Get the Local name (i.e. without prefix or namespace)
+         * of the parameter.
+         *
+         * @return the local parameter name
+         */
+        String getLocalParameterName();
+
+        /**
+         * Get the Type of the parameter.
+         *
+         * @return the type
+         */
+        int getType();
+
+        /**
+         * Get the Cardinality of the parameter.
+         *
+         * @return the cardinality
+         */
+        Cardinality getCardinality();
+
+        /**
+         * Get the Default Value of the parameter.
+         *
+         * @return the default value
+         */
+        Sequence getDefaultValue();
+    }
+
     /**
      * See https://www.w3.org/TR/xpath-functions-31/#func-serialize
      */
-    public enum ParameterConvention {
+    public enum W3CParameterConvention implements ParameterConvention<String> {
         ALLOW_DUPLICATE_NAMES("allow-duplicate-names", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
         BYTE_ORDER_MARK("byte-order-mark", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
         CDATA_SECTION_ELEMENTS(OutputKeys.CDATA_SECTION_ELEMENTS, Type.QNAME, Cardinality.ZERO_OR_MORE, Sequence.EMPTY_SEQUENCE),
@@ -74,23 +114,98 @@ public class SerializerUtils {
         USE_CHARACTER_MAPS("use-character-maps", Type.MAP, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),
         VERSION(OutputKeys.VERSION, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("1.0"));
 
-        final String parameterName;
-        final int type;
-        final Cardinality cardinality;
-        final Sequence defaultValue;
+        private final String parameterName;
+        private final int type;
+        private final Cardinality cardinality;
+        private final Sequence defaultValue;
 
-        ParameterConvention(final String parameterName, final int type, final Cardinality cardinality, final Sequence defaultValue) {
+        W3CParameterConvention(final String parameterName, final int type, final Cardinality cardinality, final Sequence defaultValue) {
             this.parameterName = parameterName;
             this.type = type;
             this.cardinality = cardinality;
             this.defaultValue = defaultValue;
         }
+
+        @Override
+        public String getParameterName() {
+            return parameterName;
+        }
+
+        @Override
+        public String getLocalParameterName() {
+            return parameterName;
+        }
+
+        @Override
+        public int getType() {
+            return type;
+        }
+
+        @Override
+        public Cardinality getCardinality() {
+            return cardinality;
+        }
+
+        @Override
+        public Sequence getDefaultValue() {
+            return defaultValue;
+        }
     }
 
-    public final static Map<String, ParameterConvention> PARAMETER_CONVENTIONS_BY_NAME = new HashMap<>();
+    /**
+     * for Exist xquery specific functions
+     */
+    public enum ExistParameterConvention implements ParameterConvention<QName> {
+        EXPAND_XINCLUDE("expand-xincludes", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
+        PROCESS_XSL_PI("process-xsl-pi", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
+        JSON_IGNORE_WHITE_SPACE_TEXT_NODES("json-ignore-whitespace-text-nodes", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
+        HIGHLIGHT_MATCHES("highlight-matches", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none")),
+        JSONP("jsonp", Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),
+        ADD_EXIST_ID("add-exist-id", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none"));
+
+
+        private final QName parameterName;
+        private final int type;
+        private final Cardinality cardinality;
+        private final Sequence defaultValue;
+
+        ExistParameterConvention(final String parameterName, final int type, final Cardinality cardinality, final Sequence defaultValue) {
+            this.parameterName = new QName(parameterName,Namespaces.EXIST_NS,Namespaces.EXIST_NS_PREFIX);
+            this.type = type;
+            this.cardinality = cardinality;
+            this.defaultValue = defaultValue;
+        }
+
+        @Override
+        public QName getParameterName() {
+            return parameterName;
+        }
+
+        @Override
+        public String getLocalParameterName() {
+            return parameterName.getLocalPart();
+        }
+
+        @Override
+        public int getType() {
+            return type;
+        }
+
+        @Override
+        public Cardinality getCardinality() {
+            return cardinality;
+        }
+
+        @Override
+        public Sequence getDefaultValue() {
+            return defaultValue;
+        }
+    }
+
+    private static final Map<String, ParameterConvention<String>> W3C_PARAMETER_CONVENTIONS_BY_NAME = new HashMap<>();
     static {
-        for(final ParameterConvention parameterConvention : ParameterConvention.values()) {
-            PARAMETER_CONVENTIONS_BY_NAME.put(parameterConvention.parameterName, parameterConvention);
+        for (final W3CParameterConvention w3cParameterConvention : W3CParameterConvention.values()) {
+            W3C_PARAMETER_CONVENTIONS_BY_NAME.put(w3cParameterConvention.getParameterName(), w3cParameterConvention);
         }
     }
 
@@ -107,7 +222,9 @@ public class SerializerUtils {
         try {
             final XMLStreamReader reader = parent.getContext().getXMLStreamReader(parameters);
             while (reader.hasNext() && (reader.next() != XMLStreamReader.START_ELEMENT)) {
+                //
             }
+
             if (!Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(reader.getNamespaceURI())) {
                 throw new XPathException(parent, FnModule.SENR0001, "serialization parameter elements should be in the output namespace");
             }
@@ -146,9 +263,9 @@ public class SerializerUtils {
     }
 
     public static void setProperty(final String key, final String value, final Properties properties,
-            final Function<String, String> prefixToNs) {
-        final ParameterConvention parameterConvention = PARAMETER_CONVENTIONS_BY_NAME.get(key);
-        if (parameterConvention == null || parameterConvention.type != Type.QNAME) {
+                                   final Function<String, String> prefixToNs) {
+        final ParameterConvention<String> parameterConvention = W3C_PARAMETER_CONVENTIONS_BY_NAME.get(key);
+        if (parameterConvention == null || parameterConvention.getType() != Type.QNAME) {
             properties.setProperty(key, value);
         } else {
             final StringBuilder qnamesValue = new StringBuilder();
@@ -177,34 +294,14 @@ public class SerializerUtils {
         try {
             final Properties properties = new Properties();
 
-            for (final ParameterConvention parameterConvention : ParameterConvention.values()) {
-                final Sequence providedParameterValue = entries.get(new StringValue(parameterConvention.parameterName));
+            for (final W3CParameterConvention w3cParameterConvention : W3CParameterConvention.values()) {
+                final Sequence parameterValue = getParameterValue(parent, entries, w3cParameterConvention, new StringValue(w3cParameterConvention.getParameterName()));
+                setPropertyForMap(properties, w3cParameterConvention, parameterValue);
+            }
 
-                final Sequence parameterValue;
-
-                // should we use the default value
-                if (providedParameterValue == null || providedParameterValue.isEmpty() || (parameterConvention.type == Type.STRING && isEmptyStringValue(providedParameterValue))) {
-                    // use default value
-
-                    if (ParameterConvention.MEDIA_TYPE == parameterConvention) {
-                        // the default value of MEDIA_TYPE is dependent on the METHOD
-                        parameterValue = getDefaultMediaType(entries.get(new StringValue(ParameterConvention.METHOD.parameterName)));
-
-                    } else {
-                        parameterValue = parameterConvention.defaultValue;
-                    }
-
-                } else {
-                    // use provided value
-
-                    if (checkTypes(parameterConvention, providedParameterValue)) {
-                        parameterValue = providedParameterValue;
-                    } else {
-                        throw new XPathException(parent, ErrorCodes.XPTY0004, "The supplied value is of the wrong type for the particular parameter: " + parameterConvention.parameterName);
-                    }
-                }
-
-                setPropertyForMap(properties, parameterConvention, parameterValue);
+            for (final ExistParameterConvention existParameterConvention : ExistParameterConvention.values()) {
+                final Sequence parameterValue = getParameterValue(parent, entries, existParameterConvention, new QNameValue(null, existParameterConvention.getParameterName()));
+                setPropertyForMap(properties, existParameterConvention, parameterValue);
             }
 
             return properties;
@@ -213,13 +310,40 @@ public class SerializerUtils {
         }
     }
 
+    private static Sequence getParameterValue(final Expression parent, final AbstractMapType entries, final ParameterConvention<?> parameterConvention, final AtomicValue parameterConventionEntryKey)
+            throws XPathException {
+        final Sequence providedParameterValue = entries.get(parameterConventionEntryKey);
+
+        // should we use the default value
+        if (providedParameterValue == null || providedParameterValue.isEmpty() || (parameterConvention.getType() == Type.STRING && isEmptyStringValue(providedParameterValue))) {
+            // use default value
+
+            if (W3CParameterConvention.MEDIA_TYPE == parameterConvention) {
+                // the default value of MEDIA_TYPE is dependent on the METHOD
+                return getDefaultMediaType(entries.get(new StringValue(W3CParameterConvention.METHOD.getParameterName())));
+
+            } else {
+                return parameterConvention.getDefaultValue();
+            }
+
+        } else {
+            // use provided value
+
+            if (checkTypes(parameterConvention, providedParameterValue)) {
+                return providedParameterValue;
+            } else {
+                throw new XPathException(parent, ErrorCodes.XPTY0004, "The supplied value is of the wrong type for the particular parameter: " + parameterConvention.getParameterName());
+            }
+        }
+    }
+
     private static Sequence getDefaultMediaType(final Sequence providedMethod) throws XPathException {
         final Sequence methodValue;
 
         // should we use the default method
-        if(providedMethod == null || providedMethod.isEmpty()) {
+        if (providedMethod == null || providedMethod.isEmpty()) {
             //use default
-            methodValue = ParameterConvention.METHOD.defaultValue;
+            methodValue = W3CParameterConvention.METHOD.getDefaultValue();
 
         } else {
             //use provided
@@ -235,9 +359,6 @@ public class SerializerUtils {
             case "xhtml":
                 return new StringValue("application/xhtml+xml");
 
-            case "adaptive":
-                return new StringValue("text/plain");
-
             case "json":
                 return new StringValue("application/json");
 
@@ -247,6 +368,7 @@ public class SerializerUtils {
             case "html":
                 return new StringValue("text/html");
 
+            case "adaptive":
             case "text":
                 return new StringValue("text/plain");
 
@@ -267,12 +389,12 @@ public class SerializerUtils {
      *
      * @return true if the types are suitable, false otherwise
      */
-    private static boolean checkTypes(final ParameterConvention parameterConvention, final Sequence sequence) throws XPathException {
-        if(parameterConvention.cardinality.isSuperCardinalityOrEqualOf(sequence.getCardinality())) {
+    private static boolean checkTypes(final ParameterConvention<?> parameterConvention, final Sequence sequence) throws XPathException {
+        if (parameterConvention.getCardinality().isSuperCardinalityOrEqualOf(sequence.getCardinality())) {
             final SequenceIterator iterator = sequence.iterate();
-            while(iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 final Item item = iterator.nextItem();
-                if(parameterConvention.type != item.getType()) {
+                if (parameterConvention.getType() != item.getType()) {
                     return false;
                 }
             }
@@ -283,44 +405,43 @@ public class SerializerUtils {
         return false;
     }
 
-    private static void setPropertyForMap(final Properties properties, final ParameterConvention parameterConvention, final Sequence parameterValue) throws XPathException {
-        if(Type.BOOLEAN == parameterConvention.type) {
-            // ignore "admit" i.e. "standalone" empty sequence
-            if(!parameterValue.isEmpty()) {
-                if (((BooleanValue) parameterValue.itemAt(0)).getValue()) {
-                    properties.setProperty(parameterConvention.parameterName, "yes");
-                } else {
-                    properties.setProperty(parameterConvention.parameterName, "no");
-                }
-            }
-        } else if(Type.STRING == parameterConvention.type) {
-            // ignore "absent" i.e. empty sequence
-            if(!parameterValue.isEmpty()) {
-                properties.setProperty(parameterConvention.parameterName, ((StringValue) parameterValue.itemAt(0)).getStringValue());
-            }
-        } else if(Type.DECIMAL == parameterConvention.type) {
-            properties.setProperty(parameterConvention.parameterName, ((DecimalValue) parameterValue.itemAt(0)).getStringValue());
-        } else if(Type.QNAME == parameterConvention.type) {
-            if(!parameterValue.isEmpty()) {
-                if (Cardinality._MANY.isSuperCardinalityOrEqualOf(parameterConvention.cardinality)) {
+    private static void setPropertyForMap(final Properties properties, final ParameterConvention<?> parameterConvention, final Sequence parameterValue) throws XPathException {
+        // ignore "absent","admit" i.e. "standalone" empty sequence
+        if(parameterValue.isEmpty()) {
+            return;
+        }
+
+        switch (parameterConvention.getType()) {
+            case Type.BOOLEAN:
+                properties.setProperty(
+                        parameterConvention.getLocalParameterName(),
+                        ((BooleanValue) parameterValue.itemAt(0)).getValue() ? "yes" : "no"
+                );
+                break;
+            case Type.STRING:
+                properties.setProperty(parameterConvention.getLocalParameterName(), ((StringValue) parameterValue.itemAt(0)).getStringValue());
+                break;
+            case Type.DECIMAL:
+                properties.setProperty(parameterConvention.getLocalParameterName(), ((DecimalValue) parameterValue.itemAt(0)).getStringValue());
+                break;
+            case Type.QNAME:
+                if (Cardinality._MANY.isSuperCardinalityOrEqualOf(parameterConvention.getCardinality())) {
                     final SequenceIterator iterator = parameterValue.iterate();
                     while (iterator.hasNext()) {
-                        final String existingValue = (String) properties.get(parameterConvention.parameterName);
+                        final String existingValue = (String) properties.get(parameterConvention.getLocalParameterName());
                         if (existingValue == null || existingValue.isEmpty()) {
-                            properties.setProperty(parameterConvention.parameterName, ((QNameValue) iterator.nextItem()).getQName().toURIQualifiedName());
+                            properties.setProperty(parameterConvention.getLocalParameterName(), ((QNameValue) iterator.nextItem()).getQName().toURIQualifiedName());
                         } else {
-                            properties.setProperty(parameterConvention.parameterName, existingValue + " " + ((QNameValue) iterator.nextItem()).getQName().toURIQualifiedName());
+                            properties.setProperty(parameterConvention.getLocalParameterName(), existingValue + " " + ((QNameValue) iterator.nextItem()).getQName().toURIQualifiedName());
                         }
                     }
                 } else {
-                    properties.setProperty(parameterConvention.parameterName, ((QNameValue) parameterValue.itemAt(0)).getQName().toURIQualifiedName());
+                    properties.setProperty(parameterConvention.getLocalParameterName(), ((QNameValue) parameterValue.itemAt(0)).getQName().toURIQualifiedName());
                 }
-            }
-        } else if(Type.MAP == parameterConvention.type) {
-            if(!parameterValue.isEmpty()) {
+                break;
+            case Type.MAP:
                 //TODO(AR) implement `use-character-maps`
-                throw new UnsupportedOperationException("Not yet implemented support for the map serialization parameter: " + parameterConvention.parameterName);
-            }
+                throw new UnsupportedOperationException("Not yet implemented support for the map serialization parameter: " + parameterConvention.getLocalParameterName());
         }
     }
 

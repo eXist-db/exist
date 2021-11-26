@@ -35,9 +35,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Startup trigger for automatic deployment of application packages. Scans the "autodeploy" directory
@@ -81,11 +86,11 @@ public class AutoDeploymentTrigger implements StartupTrigger {
             return;
         }
 
-        try {
-            final List<Path> xars = Files
-                    .find(autodeployDir, 1, (path, attrs) -> (!attrs.isDirectory()) && FileUtils.fileName(path).endsWith(".xar"))
-                    .sorted(Comparator.comparing(Path::getFileName))
-                    .collect(Collectors.toList());
+        try (Stream<Path> xarsStream = Files
+                .find(autodeployDir, 1, (path, attrs) -> (!attrs.isDirectory()) && FileUtils.fileName(path).endsWith(".xar"))
+                .sorted(Comparator.comparing(Path::getFileName))) {
+            
+            final List<Path> xars = xarsStream.collect(Collectors.toList());
 
             LOG.info("Scanning autodeploy directory. Found {} app packages.", xars.size());
 

@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
 public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     
@@ -180,8 +181,8 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     public void remove() throws DBException {
         close();
         Path dir = getDataDir().resolve(getDirName());
-        try {
-            Files.list(dir).forEach(FileUtils::deleteQuietly);
+        try (Stream<Path> stream = Files.list(dir)) {
+            stream.forEach(FileUtils::deleteQuietly);
         } catch (Exception e) {
             // never abort at this point, so recovery can continue
             LOG.warn(e.getMessage(), e);

@@ -103,6 +103,18 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <atomic:idrefs atomic:attr="id1 id2">id1 id2</atomic:idrefs>
     </atomic:root>;
 
+
+declare variable $ser:test-xsl := document {
+    <?xml-stylesheet href="xmldb:exist:///db/serialization-test/test.xsl" type="text/xsl"?>,
+    <elem a="abc"><!--comment--><b>123</b></elem>
+};
+
+declare variable $ser:xsl := document {
+    <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="3.0">
+    <xsl:template match="b">processed</xsl:template>
+    </xsl:stylesheet>
+};
+
 declare variable $ser:test-xml := document {
     <?pi?>,
     <elem a="abc"><!--comment--><b>123</b></elem>
@@ -116,7 +128,9 @@ declare
     %test:setUp
 function ser:setup() {
     xmldb:create-collection("/db", $ser:collection-name),
-    xmldb:store($ser:collection, "test.xml", $ser:test-xml)
+    xmldb:store($ser:collection, "test.xml", $ser:test-xml),
+    xmldb:store($ser:collection, "test-xsl.xml", $ser:test-xsl),
+    xmldb:store($ser:collection, "test.xsl", $ser:xsl)
 };
 
 declare
@@ -673,4 +687,71 @@ function ser:adaptive-xs-strings-map-params() {
     let $input := (xs:normalizedString("en"), xs:token("en"), xs:language("en"), xs:ID("en"), xs:NCName("en"))
     return
         ser:adaptive-map-params($input, ",")
+};
+
+declare
+    %test:assertXPath("contains($result, 'include')")
+function ser:exist-expand-xinclude-false() {
+    let $doc := document{<article xmlns:xi="http://www.w3.org/2001/XInclude">
+                            <title>My Title</title>
+                            <xi:include href="{$ser:collection}/test.xml"/>
+                        </article>}
+    return
+        fn:serialize($doc, map { xs:QName("exist:expand-xincludes"): false() })
+};
+
+declare
+    %test:assertXPath("contains($result, 'comment')")
+function ser:exist-expand-xinclude-true() {
+    let $doc := document{<article xmlns:xi="http://www.w3.org/2001/XInclude">
+                            <title>My Title</title>
+                            <xi:include href="{$ser:collection}/test.xml"/>
+                        </article>}
+    return
+        fn:serialize($doc, map {  xs:QName("exist:expand-xincludes"): true() })
+};
+
+declare
+    %test:assertXPath("contains($result, 'true')")
+function ser:exist-add-exist-id-all() {
+    let $doc := doc($ser:collection || "/test.xml")
+    return fn:serialize($doc, map { xs:QName("exist:add-exist-id"): "all" }) eq '<?pi?><elem xmlns:exist="http://exist.sourceforge.net/NS/exist" exist:id="2" exist:source="test.xml" a="abc"><!--comment--><b exist:id="2.3">123</b></elem>'
+};
+
+declare
+    %test:assertXPath("contains($result, 'true')")
+function ser:exist-add-exist-id-element() {
+    let $doc := doc($ser:collection || "/test.xml")
+    return fn:serialize($doc, map { xs:QName("exist:add-exist-id"): "element" })  eq '<?pi?><elem xmlns:exist="http://exist.sourceforge.net/NS/exist" exist:id="2" exist:source="test.xml" a="abc"><!--comment--><b>123</b></elem>'
+};
+
+declare
+     %test:assertXPath("not(contains($result, 'exist:id'))")
+function ser:exist-add-exist-id-none() {
+    let $doc := doc($ser:collection || "/test.xml")
+    return fn:serialize($doc, map { xs:QName("exist:add-exist-id"): "none" })
+};
+
+declare
+    %test:assertXPath("contains($result, 'true')")
+function ser:exist-jsonp() {
+      let $node := <book>
+          <author>John Doe</author>
+          <author>Robert Smith</author>
+      </book>
+    return fn:serialize($node, map {"method":"json", "media-type":"application/json", xs:QName("exist:jsonp"):"functionName"}) eq 'functionName({"author":["John Doe","Robert Smith"]})'
+};
+
+declare
+    %test:assertEquals('processed')
+function ser:exist-process-xsl-pi-true() {
+    let $doc := doc($ser:collection || "/test-xsl.xml")
+    return fn:serialize($doc, map {xs:QName("exist:process-xsl-pi"): true()})
+};
+
+declare
+    %test:assertXPath("contains($result, 'stylesheet')")
+function ser:exist-process-xsl-pi-false() {
+    let $doc := doc($ser:collection || "/test-xsl.xml")
+    return fn:serialize($doc, map {xs:QName("exist:process-xsl-pi"): false()})
 };
