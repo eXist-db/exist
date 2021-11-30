@@ -61,11 +61,9 @@
             <groupId>com.evolvedbinary.j8fu</groupId>
             <artifactId>j8fu</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.evolvedbinary.multilock</groupId>
             <artifactId>multilock</artifactId>
-            <version>1.0.1</version>
         </dependency>
 
         <dependency>
