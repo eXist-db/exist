@@ -57,7 +57,7 @@ import static org.junit.Assert.fail;
 public class CollectionLocksTest {
 
     private static final int CONCURRENCY_LEVEL = Runtime.getRuntime().availableProcessors() * 3;
-    private static final int TEST_DEADLOCK_TIMEOUT = 12_000; // 12 seconds
+    private static final int TEST_DEADLOCK_TIMEOUT = 24_000; // 24 seconds
 
     /**
      * In the noDeadlock tests this is the maximum amount of time to wait for the second thread to acquire its lock
