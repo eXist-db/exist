@@ -28,7 +28,7 @@
         <Property name="rollover.max.size">10MB</Property>
         <Property name="rollover.max">14</Property>
         <Property name="rollover.file.pattern">%d{yyyyMMddHHmmss}</Property>
-        <Property name="exist.file.pattern">%d [%t] %-5p (%F [%M]:%L) - %m %n</Property>
+        <Property name="exist.file.pattern">%d [%t] %-5p (%F [%M]:%L) - %m{noLookups} %n</Property>
     </Properties>
     
     <Appenders>

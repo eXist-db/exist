@@ -5,13 +5,13 @@
         <Property name="rollover.max.size">10MB</Property>
         <Property name="rollover.max">14</Property>
         <Property name="rollover.file.pattern">%d{yyyyMMddHHmmss}</Property>
-        <Property name="exist.file.pattern">%d [%t] %-5p (%F [%M]:%L) - %m %n</Property>
+        <Property name="exist.file.pattern">%d [%t] %-5p (%F [%M]:%L) - %m{noLookups} %n</Property>
     </Properties>
     
     <Appenders>
         
         <Console name="STDOUT">
-            <PatternLayout pattern="%d{DATE} [%t] %-5p (%F [%M]:%L) - %m %n"/>
+            <PatternLayout pattern="%d{DATE} [%t] %-5p (%F [%M]:%L) - %m{noLookups} %n"/>
         </Console>
         
         <RollingRandomAccessFile name="exist.core" filePattern="${logs}/exist.${rollover.file.pattern}.log.gz" fileName="${logs}/exist.log">
@@ -27,7 +27,7 @@
                 <SizeBasedTriggeringPolicy size="${rollover.max.size}"/>
             </Policies>
             <DefaultRolloverStrategy max="${rollover.max}"/>
-            <PatternLayout pattern="%d %-5p - %m %n"/>
+            <PatternLayout pattern="%d %-5p - %m{noLookups} %n"/>
         </RollingRandomAccessFile>
 
         <RollingRandomAccessFile name="exist.ensurelocking" filePattern="${logs}/locks.${rollover.file.pattern}.log.gz" fileName="${logs}/ensure-locking.log">
@@ -35,7 +35,7 @@
                 <SizeBasedTriggeringPolicy size="${rollover.max.size}"/>
             </Policies>
             <DefaultRolloverStrategy max="${rollover.max}"/>
-            <PatternLayout pattern="%d %-5p - %m %n"/>
+            <PatternLayout pattern="%d %-5p - %m{noLookups} %n"/>
         </RollingRandomAccessFile>
 
         <RollingRandomAccessFile name="exist.xmldb" filePattern="${logs}/xmldb.${rollover.file.pattern}.log.gz" fileName="${logs}/xmldb.log">
