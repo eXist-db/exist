@@ -346,12 +346,6 @@
             <arg value="${dist}/${dmg.name}"/>
         </exec>
 
-        <exec executable="/usr/bin/hdiutil" os="Mac OS X" failonerror="true">
-            <arg value="internet-enable"/>
-            <arg value="-yes"/>
-            <arg value="${dist}/${dmg.name}"/>
-        </exec>
-
         <!-- Copy it to a new image (Linux) -->
         <exec executable="cp" os="Linux" failonerror="true">
             <arg value="${dist}/${app.name}-tmp.dmg"/>
