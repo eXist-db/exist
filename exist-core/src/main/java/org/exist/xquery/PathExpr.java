@@ -217,7 +217,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             DocumentSet contextDocs = null;
             Expression expr = steps.get(0);
             if (expr instanceof VariableReference) {
-                final Variable var = ((VariableReference) expr).getVariable();
+                final Variable var = ((VariableReference) expr).getVariable(new AnalyzeContextInfo(parent, 0));
                 //TOUNDERSTAND : how null could be possible here ? -pb
                 if (var != null) {
                     contextDocs = var.getContextDocs();

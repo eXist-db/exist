@@ -28,6 +28,8 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
+import javax.annotation.Nullable;
+
 /**
  * Represents a reference to an in-scope variable.
  *
@@ -52,7 +54,7 @@ public class VariableReference extends AbstractExpression {
         this.parent = contextInfo.getParent();
         Variable var = null;
         try {
-            var = getVariable();
+            var = getVariable(contextInfo);
         } catch (final XPathException e) {
             // ignore: variable might not be known yet
             return;
@@ -84,7 +86,7 @@ public class VariableReference extends AbstractExpression {
                         "CONTEXT ITEM", contextItem.toSequence());
             }
         }
-        final Variable var = getVariable();
+        final Variable var = getVariable(new AnalyzeContextInfo(parent, 0));
         if (var == null) {
             throw new XPathException(this, ErrorCodes.XPDY0002, "variable '$" + qname + "' is not set.");
         }
@@ -99,9 +101,9 @@ public class VariableReference extends AbstractExpression {
         return result;
     }
 
-    protected Variable getVariable() throws XPathException {
+    protected Variable getVariable(@Nullable final AnalyzeContextInfo contextInfo) throws XPathException {
         try {
-            return context.resolveVariable(qname);
+            return context.resolveVariable(contextInfo, qname);
         } catch (final XPathException e) {
             e.setLocation(line, column);
             throw e;

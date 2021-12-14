@@ -43,20 +43,10 @@ import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.util.hashtable.NamePool;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Expression;
+import org.exist.xquery.*;
 import org.exist.xquery.FunctionCall;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.LocalVariable;
-import org.exist.xquery.Module;
-import org.exist.xquery.Option;
-import org.exist.xquery.Pragma;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.TerminatedException;
-import org.exist.xquery.UserDefinedFunction;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.XQueryWatchDog;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.NodeValue;
@@ -507,8 +497,22 @@ public interface Context {
     /**
      * Try to resolve a variable.
      *
+     * @param contextInfo contextual information
      * @param qname the qualified name of the variable
+     *
      * @return the declared Variable object
+     *
+     * @throws XPathException if the variable is unknown
+     */
+    Variable resolveVariable(@Nullable AnalyzeContextInfo contextInfo, QName qname) throws XPathException;
+
+    /**
+     * Try to resolve a variable.
+     *
+     * @param qname the qualified name of the variable
+     *
+     * @return the declared Variable object
+     *
      * @throws XPathException if the variable is unknown
      */
     Variable resolveVariable(QName qname) throws XPathException;

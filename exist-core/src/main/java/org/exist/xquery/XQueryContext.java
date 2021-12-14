@@ -1869,6 +1869,11 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public Variable resolveVariable(final QName qname) throws XPathException {
+        return resolveVariable(null, qname);
+    }
+    
+    @Override
+    public Variable resolveVariable(@Nullable final AnalyzeContextInfo contextInfo, final QName qname) throws XPathException {
         // check if the variable is declared local
         Variable var = resolveLocalVariable(qname);
 
@@ -1878,7 +1883,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
             if (modules != null) {
                 for (final Module module : modules) {
-                    var = module.resolveVariable(qname);
+                    var = module.resolveVariable(contextInfo, qname);
                     if (var != null) {
                         break;
                     }
