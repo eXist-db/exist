@@ -58,7 +58,7 @@
         <echo message="Detected log4j2 version: ${log4j2.version}, downloading log4j-web-${log4j2.version}.jar..."/>
 
         <property name="log4j2.web.artifact" value="log4j-web-${log4j2.version}.jar"/>
-        <property name="log4j2.web.url" value="http://search.maven.org/remotecontent?filepath=org/apache/logging/log4j/log4j-web/${log4j2.version}/${log4j2.web.artifact}"/>
+        <property name="log4j2.web.url" value="https://search.maven.org/remotecontent?filepath=org/apache/logging/log4j/log4j-web/${log4j2.version}/${log4j2.web.artifact}"/>
 
         <mkdir dir="${war.tmp.libs}"/>
         <get src="${log4j2.web.url}" dest="${war.tmp.libs}/${log4j2.web.artifact}" verbose="true" usetimestamp="true" skipexisting="true" tryGzipEncoding="true"/>
