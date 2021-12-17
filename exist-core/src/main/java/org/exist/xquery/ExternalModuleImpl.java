@@ -28,6 +28,8 @@ import org.exist.source.Source;
 import org.exist.xquery.value.Sequence;
 import org.exist.storage.DBBroker;
 
+import javax.annotation.Nullable;
+
 /**
  * Default implementation of an {@link org.exist.xquery.ExternalModule}.
  * 
@@ -215,13 +217,26 @@ public class ExternalModuleImpl implements ExternalModule {
         return mStaticVariables.get(qname) != null;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#resolveVariable(org.exist.dom.QName)
-     */
-    public Variable resolveVariable(QName qname) throws XPathException {
+    @Override
+    @Nullable public Variable resolveVariable(final QName qname) throws XPathException {
+        return resolveVariable(null, qname);
+    }
+
+    @Override
+    @Nullable public Variable resolveVariable(@Nullable final AnalyzeContextInfo contextInfo, final QName qname) throws XPathException {
         final VariableDeclaration decl = mGlobalVariables.get(qname);
         Variable var = mStaticVariables.get(qname);
         if (isReady && decl != null && (var == null || var.getValue() == null)) {
+
+            // Make sure Analyze has been called, see - https://github.com/eXist-db/exist/issues/4096
+            final AnalyzeContextInfo declContextInfo;
+            if (contextInfo != null) {
+                declContextInfo = new AnalyzeContextInfo(contextInfo);
+            } else {
+                declContextInfo = new AnalyzeContextInfo();
+            }
+            decl.analyze(declContextInfo);
+
             decl.eval(getContext().getContextItem());
             var = mStaticVariables.get(qname);
         }

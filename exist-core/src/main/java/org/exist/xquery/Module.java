@@ -98,6 +98,7 @@ public interface Module {
 	 */
 	@Nullable Iterator<FunctionSignature> getSignaturesForFunction(QName qname);
 	
+	@Nullable Variable resolveVariable(@Nullable AnalyzeContextInfo contextInfo, QName qname) throws XPathException;
 	@Nullable Variable resolveVariable(QName qname) throws XPathException;
 	
 	public Variable declareVariable(QName qname, Object value) throws XPathException;
