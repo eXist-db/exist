@@ -451,6 +451,9 @@ public class SerializerUtils {
                 //TODO(AR) implement `use-character-maps`
                 throw new UnsupportedOperationException(
                         "Not yet implemented support for the map serialization parameter: " + localParameterName);
+            default:
+                throw new UnsupportedOperationException(
+                        "Unsupported type " + Type.getTypeName(parameterConvention.getType()) + " for parameter value: " + localParameterName);
         }
     }
 
