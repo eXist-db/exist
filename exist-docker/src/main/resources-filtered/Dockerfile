@@ -68,6 +68,7 @@ EXPOSE 8080 8443
 # make CACHE_MEM and MAX_BROKER available to users
 ARG CACHE_MEM
 ARG MAX_BROKER
+ARG JVM_MAX_RAM_PERCENTAGE
 
 ENV EXIST_HOME "/exist"
 ENV CLASSPATH=/exist/lib/${exist.uber.jar.filename}
@@ -83,11 +84,10 @@ ENV JAVA_TOOL_OPTIONS \
   -Dexist.configurationFile=/exist/etc/conf.xml \
   -Djetty.home=/exist \
   -Dexist.jetty.config=/exist/etc/jetty/standard.enabled-jetty-configs \
-  -XX:+UnlockExperimentalVMOptions \
-  -XX:+UseCGroupMemoryLimitForHeap \
   -XX:+UseG1GC \
   -XX:+UseStringDeduplication \
-  -XX:MaxRAMFraction=1 \
+  -XX:+UseContainerSupport \
+  -XX:MaxRAMPercentage=${JVM_MAX_RAM_PERCENTAGE:-75.0}  \
   -XX:+ExitOnOutOfMemoryError
 
 HEALTHCHECK CMD [ "java", \
