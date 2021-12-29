@@ -1,4 +1,5 @@
 # ${project.description}
+
 ${project.description}
 
 [![Build Status](https://travis-ci.com/eXist-db/exist.png?branch=develop)](https://travis-ci.com/eXist-db/exist)
@@ -14,10 +15,13 @@ The images are based on Google Cloud Platform's ["Distroless" Docker Images](htt
 
 
 ## Requirements
+
 *   [Docker](https://www.docker.com): `18-stable`
+
 ### For building
+
 *   [maven](https://maven.apache.org/): `^3.6.0`
-*   [java](https://www.java.com/): `8`
+*   [java](https://www.java.com/): `^1.8.0_205`
 *   [bats](https://github.com/bats-core/bats-core): `^1.1.0` (for testing)
 
 ## How to use
@@ -27,11 +31,13 @@ There are two continuously updated channels:
 *   `latest` for the latest commit to the [`develop` branch](https://github.com/eXist-db/exist/tree/develop).
 
 To download the image run:
+
 ```bash
 docker pull existdb/existdb:latest
 ```
 
 Once the download is complete, you can run the image
+
 ```bash
 docker run -dit -p 8080:8080 -p 8443:8443 --name exist existdb/existdb:latest
 ```
@@ -49,6 +55,7 @@ For a full list of available options see the official [Docker documentation](htt
 After running the `pull` and `run` commands, you can access eXist-db via [localhost:8080](localhost:8080) in your browser.
 
 To stop the container issue:
+
 ```bash
 docker stop exist
 ```
@@ -56,6 +63,7 @@ docker stop exist
 or if you omitted the `-d` flag earlier press `CTRL-C` inside the terminal showing the exist logs.
 
 ### Interacting with the running container
+
 You can interact with a running container as if it were a regular Linux host (without a shell in our case). 
 You can issue shell-like commands to the Java admin client, as we do throughout this readme, but you can't open the shell in interactive mode.
 
@@ -70,13 +78,16 @@ docker exec exist java -version
 ```
 
 Containers build from this image run periodical healthchecks to ensure that eXist-db is operating normally. 
-If `docker ps` reports `unhealthy` you can get a more detailed report with this command:  
+If `docker ps` reports `unhealthy` you can get a more detailed report with this command:
+
 ```bash
 docker inspect --format='{{json .State.Health}}' exist
 ```
 
 ### Logging
+
 There is a slight modification to eXist's logger to ease access to the logs via:
+
 ```bash
 docker logs exist
 ```
@@ -84,12 +95,15 @@ docker logs exist
 This works best when providing the `-t` flag when running an image.
 
 ## Use as base image
+
 A common usage of these images is as a base image for your own applications. 
 We'll take a quick look at three scenarios of increasing complexity, to demonstrate how to achieve common tasks from inside `Dockerfile`.
 
 ### A simple app image
+
 The simplest and straightforward case assumes that you have a `.xar` app inside a `build` folder on the same level as the `Dockerfile`. 
 To get an image of an eXist-db instance with your app installed and running, simply adopt the `docker cp ...` command to the appropriate `Dockerfile` syntax.
+
 ```docker
 FROM existdb/existdb:5.0.0
 
@@ -137,6 +151,7 @@ As for the sequence of the commands, those with the most frequent changes should
 Chances are, you wouldn't change the admin password very often, but the `.xar` might change more frequently.
 
 ### Multi-stage build with ant
+
 Lastly, you can eliminate external dependencies even further by using a multi-stage build. 
 To ensure compatibility between different Java engines we recommend sticking with debian based images for the builder stage.
 
@@ -192,6 +207,7 @@ only the files necessary to run your app should go into the final stage. The pos
 but with this example and the `Dockerfile` in this repo you should get a pretty good idea of how you might apply this idea to your own projects.
 
 ## Development use via `docker-compose`
+
 We highly recommend use of a `docker-compose.yml` for use with [docker-compose](https://docs.docker.com/compose/). 
 docker-compose for local development or integration into multi-container environments. 
 For options on how to configure your own compose file, follow the link at the beginning of this paragraph.
@@ -221,12 +237,15 @@ docker-compose pull
 ```
 
 ### Caveat
+
 As with normal installations, the password for the default dba user `admin` is empty. 
 Change it via the [usermanager](http://localhost:8080/exist/apps/usermanager/index.html) or from CLI \(s.a.\).
 
 ## Building the Image
+
 Building is integrated into maven via the [fabric8 plugin](https://dmp.fabric8.io): 
 To build a docker image from a local clone of exist:
+
 ```bash
 mvn -Pdocker -DskipTests -Ddependency-check.skip=true clean package
 ```
@@ -241,21 +260,27 @@ mvn docker:push
 For a full list see the plugin documentation. 
 
 ### Testing
+
 There are unit tests for our images that run on CI using the [bats](https://github.com/bats-core/bats-core) framework. The test are located in `exist-docker/src/test/bats`.
 
 To execute them run:
+
 ```bash
 bats exist-docker/src/test/bats/*.bats 
 ```
+
 The tests use fixtures and are creating a modified image call `ex-mod`. By default they expect a name container `exist-ci` to be up and running. When running test locally you must ensure that no previous image `ex-mod` exists, and that `exist-ci` is running before starting the testsuite. 
 
 ### Available Arguments and Defaults
+
 eXist-db's cache size and maximum brokers can be configured at build time using the following syntax.
+
 ```bash
 mvn -DskipTests clean package docker:build --build-arg MAX_CACHE=312 MAX_BROKER=15 .
 ```
 
 NOTE: Due to the fact that the final images does not provide a shell, setting ENV variables via docker does not work.
+
 ```bash
 # !This has no effect!
 docker run -dit -p8080:8080 -e MAX_BROKER=10 ae4d6d653d30
@@ -271,6 +296,7 @@ ARG MAX_BROKER=10
 Or modify eXist-db's configuration files via xslt scripts located at `exist-docker/src/main/xslt/`.
 For multi-stage builds e.g. [xmlstarlet](http://xmlstar.sourceforge.net) let's you modify the default config files from within the builder stage, 
 e.g.:
+
 ```docker
 # Config files are modified here
 RUN echo 'modifying conf files'\
@@ -283,15 +309,17 @@ RUN echo 'modifying conf files'\
 
 
 #### JVM configuration
+
 This image uses an advanced JVM configuration, via the  `JAVA_TOOL_OPTIONS` env variable inside the Dockerfile. 
 You should avoid the traditional way of setting the heap size via `-Xmx` arguments, 
 this can lead to frequent crashes since Java8 and Docker are (literally) not on the same page concerning available memory.
 
-Instead, use the `-XX:MaxRAMFraction=1` argument to modify the memory available to the JVM *inside* the container. 
-For production use we recommend to increase the value to `2` or even `4`. 
-This value expresses a ratio, so setting it to `2` means half the container's memory will be available to the JVM, '4' means ¼,  etc.
+Instead, use the `-XX:MaxRAMPercentage` argument to modify the memory available to the JVM *inside* the container. 
+The default of `75%` should be save for production use. 
+To allocate e.g. 600mb to the container *around* the JVM use, however, you can tweak this at buildtime via the `JVM_MAX_RAM_PERCENTAGE` argument. Note that percentages should include a decimal point `80.0` = `80%`.
 
-To allocate e.g. 600mb to the container *around* the JVM use:
+To allocate e.g. 600mb to the container around the JVM use:
+
 ```bash
 docker run -m 600m …
 ```
@@ -300,6 +328,4 @@ Lastly, this image uses a new garbage collection mechanism
 [garbage first (G1)](https://docs.oracle.com/javase/9/gctuning/garbage-first-garbage-collector.htm#JSGCT-GUID-ED3AB6D3-FD9B-4447-9EDF-983ED2F7A573) `-XX:+UseG1GC` 
 and [string deduplication](http://openjdk.java.net/jeps/192) `-XX:+UseStringDeduplication` to improve performance.
 
-To disable or further tweak these features edit the relevant parts of the `Dockerfile`, or when running the image. 
-As always when using the latest and greatest, YMMV. 
-Feedback about real world experiences with this features in connection with eXist-db is very much welcome.
+Customizing individual arguments is not possible at run time. To adjust individual parameters the the whole `JAVA_TOOL_OPTIONS` environment variable must be passed to `docker run …`
