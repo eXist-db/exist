@@ -13,7 +13,6 @@ This module holds the source files for building a minimal docker image of the [e
 database, images are automatically updated as part of the build-test life-cycle. 
 The images are based on Google Cloud Platform's ["Distroless" Docker Images](https://github.com/GoogleCloudPlatform/distroless).
 
-
 ## Requirements
 
 *   [Docker](https://www.docker.com): `18-stable`
@@ -25,6 +24,7 @@ The images are based on Google Cloud Platform's ["Distroless" Docker Images](htt
 *   [bats](https://github.com/bats-core/bats-core): `^1.1.0` (for testing)
 
 ## How to use
+
 Pre-build images are available on [DockerHub](https://hub.docker.com/r/existdb/existdb/). 
 There are two continuously updated channels:
 *   `release` for the stable releases based on the [`master` branch](https://github.com/eXist-db/exist/tree/master)
@@ -213,6 +213,7 @@ docker-compose for local development or integration into multi-container environ
 For options on how to configure your own compose file, follow the link at the beginning of this paragraph.
 
 To start exist using a compose file, type:
+
 ```bash
 # starting eXist-db
 docker-compose up -d
@@ -232,6 +233,7 @@ You can configure additional volumes e.g. for backups,
 or additional services such as an nginx reverse proxy via a `docker-compose.yml`, to suite your needs.
 
 To update the exist-docker image from a newer version
+
 ```bash
 docker-compose pull
 ```
@@ -306,7 +308,6 @@ RUN echo 'modifying conf files'\
  -r //AppenderRefTMP -v AppenderRef \
  log4j2.xml
 ```
-
 
 #### JVM configuration
 

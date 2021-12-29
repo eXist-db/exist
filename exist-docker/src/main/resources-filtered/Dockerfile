@@ -33,6 +33,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 FROM gcr.io/distroless/java:8
 
 # Copy over dependancies for Apache FOP, missing from gcr's JRE
+# TODO (DP): Arch specific paths e.g. /usr/lib/aarch64-linux-gnu
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libfreetype.so.6 /usr/lib/x86_64-linux-gnu/libfreetype.so.6
 COPY --from=builder /usr/lib/x86_64-linux-gnu/liblcms2.so.2 /usr/lib/x86_64-linux-gnu/liblcms2.so.2
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libpng16.so.16 /usr/lib/x86_64-linux-gnu/libpng16.so.16
