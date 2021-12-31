@@ -20,8 +20,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-FROM openjdk:8-jdk-slim as builder
-
+FROM openjdk:11-jdk-slim-bullseye as builder
+# TODO (DP) use dpgk to add both AMD and Intel arch
 # Install tools required by FOP
 WORKDIR /usr/local
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -30,18 +30,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   liblcms2-2 \
   fonts-dejavu-core
 
-FROM gcr.io/distroless/java:8
+FROM gcr.io/distroless/java11-debian11:latest
 
 # Copy over dependancies for Apache FOP, missing from gcr's JRE
 # TODO (DP): Arch specific paths e.g. /usr/lib/aarch64-linux-gnu
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libfreetype.so.6 /usr/lib/x86_64-linux-gnu/libfreetype.so.6
-COPY --from=builder /usr/lib/x86_64-linux-gnu/liblcms2.so.2 /usr/lib/x86_64-linux-gnu/liblcms2.so.2
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libpng16.so.16 /usr/lib/x86_64-linux-gnu/libpng16.so.16
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libfontconfig.so.1 /usr/lib/x86_64-linux-gnu/libfontconfig.so.1
+COPY --from=builder /usr/lib/aarch64-linux-gnu/libfreetype.so.6 /usr/lib/aarch64-linux-gnu/libfreetype.so.6
+COPY --from=builder /usr/lib/aarch64-linux-gnu/liblcms2.so.2 /usr/lib/aarch64-linux-gnu/liblcms2.so.2
+COPY --from=builder /usr/lib/aarch64-linux-gnu/libpng16.so.16 /usr/lib/aarch64-linux-gnu/libpng16.so.16
+COPY --from=builder /usr/lib/aarch64-linux-gnu/libfontconfig.so.1 /usr/lib/aarch64-linux-gnu/libfontconfig.so.1
 
 # Copy dependancies for Apache Batik (used by Apache FOP to handle SVG rendering)
 COPY --from=builder /etc/fonts /etc/fonts
-COPY --from=builder /lib/x86_64-linux-gnu/libexpat.so.1 /lib/x86_64-linux-gnu/libexpat.so.1
+COPY --from=builder /lib/aarch64-linux-gnu/libexpat.so.1 /lib/aarch64-linux-gnu/libexpat.so.1
 COPY --from=builder /usr/share/fontconfig /usr/share/fontconfig
 COPY --from=builder /usr/share/fonts/truetype/dejavu /usr/share/fonts/truetype/dejavu
 
