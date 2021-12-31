@@ -13,3 +13,6 @@ target/
 
 # OS specific files
 .DS_Store
+
+# Jenv
+.java-version
