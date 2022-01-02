@@ -29,7 +29,6 @@ import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
@@ -37,10 +36,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.FileUtils;
-import org.exist.util.LockException;
-import org.exist.util.XMLFilenameFilter;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Test;
@@ -96,9 +92,7 @@ public class RecoveryTest3 {
             for (int i = 0; i < files.size() && i < RESOURCE_COUNT; i++) {
                 final Path f = files.get(i);
                 try {
-                    final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
-                    assertNotNull(info);
-                    test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                    test2.storeDocument(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()), MimeType.XML_TYPE);
                 } catch (final SAXException e) {
                     fail("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
                 }
@@ -144,9 +138,7 @@ public class RecoveryTest3 {
                     for (int i = 0; i < files.size() && i < RESOURCE_COUNT; i++) {
                         final Path f = files.get(i);
                         try {
-                            final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
-                            assertNotNull(info);
-                            test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                            test2.storeDocument(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()), MimeType.XML_TYPE);
                         } catch (SAXException e) {
                             fail("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
                         }

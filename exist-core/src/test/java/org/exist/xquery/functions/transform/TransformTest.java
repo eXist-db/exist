@@ -24,7 +24,6 @@ package org.exist.xquery.functions.transform;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -34,6 +33,8 @@ import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -421,14 +422,9 @@ public class TransformTest {
             final Collection collection = broker.getOrCreateCollection(transaction, collectionUri);
             broker.saveCollection(transaction, collection);
             for (final Tuple2<XmldbURI, String> doc : docs) {
-                storeXml(broker, transaction, collection, doc._1, doc._2);
+                collection.storeDocument(transaction, broker, doc._1, new StringInputSource(doc._2), MimeType.XML_TYPE);
             }
         }
-    }
-
-    private static void storeXml(final DBBroker broker, final Txn transaction, final Collection collection, final XmldbURI name, final String xml) throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
-        final IndexInfo indexInfo = collection.validateXMLResource(transaction, broker, name, xml);
-        collection.store(transaction, broker, indexInfo, xml);
     }
 
     private static void deleteCollection(final DBBroker broker, final Txn transaction, final XmldbURI collectionUri) throws PermissionDeniedException, IOException, TriggerException {

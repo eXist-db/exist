@@ -54,15 +54,13 @@ import org.exist.EXistException;
 import org.exist.LifeCycle;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.config.annotation.*;
 import org.exist.config.annotation.ConfigurationFieldSettings.SettingKey;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.SAXAdapter;
-import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.PermissionFactory;
+import org.exist.security.*;
+import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.sync.Sync;
@@ -73,6 +71,7 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.exist.util.StringInputSource;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.FullXmldbURI;
 import org.exist.xmldb.XmldbURI;
@@ -1291,8 +1290,10 @@ public class Configurator {
         final TransactionManager transact = pool.getTransactionManager();
         LOG.info("Storing configuration {}/{}", collection.getURI(), uri);
 
+        final SecurityManager securityManager = pool.getSecurityManager();
         try {
-            broker.pushSubject(pool.getSecurityManager().getSystemSubject());
+            final Subject systemSubject = securityManager.getSystemSubject();
+            broker.pushSubject(systemSubject);
             Txn txn = broker.getCurrentTransaction();
             final boolean txnInProgress = txn != null;
             if(!txnInProgress) {
@@ -1301,14 +1302,18 @@ public class Configurator {
 
             try {
                 txn.acquireCollectionLock(() -> pool.getLockManager().acquireCollectionWriteLock(collection.getURI()));
-                final IndexInfo info = collection.validateXMLResource(txn, broker, uri, data);
-                final DocumentImpl doc = info.getDocument();
-                doc.setMimeType(MimeType.XML_TYPE.getName());
-                PermissionFactory.chmod(broker, doc.getPermissions(), Optional.of(Permission.DEFAULT_SYSTEM_RESOURCE_PERM), Optional.empty());
-                fullURI = getFullURI(pool, doc.getURI());
+
+                fullURI = getFullURI(pool, collection.getURI().append(uri));
                 saving.add(fullURI);
-                collection.store(txn, broker, info, data);
-                broker.saveCollection(txn, doc.getCollection());
+
+                final Permission systemResourcePermission = PermissionFactory.getDefaultResourcePermission(pool.getSecurityManager());
+                systemResourcePermission.setOwner(systemSubject);
+                systemResourcePermission.setGroup(systemSubject.getDefaultGroup());
+                systemResourcePermission.setMode(Permission.DEFAULT_SYSTEM_RESOURCE_PERM);
+
+                collection.storeDocument(txn, broker, uri, new StringInputSource(data), MimeType.XML_TYPE, null, null, systemResourcePermission, null, null);
+
+                broker.saveCollection(txn, collection);
                 if (!txnInProgress) {
                     transact.commit(txn);
                 }

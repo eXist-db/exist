@@ -22,11 +22,9 @@
 package org.exist.indexing.spatial;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -42,7 +40,6 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
@@ -56,7 +53,9 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.ExistSAXParserFactory;
+import org.exist.util.FileInputSource;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -122,17 +121,7 @@ public class GMLIndexTest {
 
             for (int i = 0; i < FILES.length; i++) {
                 final URL url = GMLIndexTest.class.getResource("/" + FILES[i]);
-                final IndexInfo indexInfo;
-                try (final InputStream is = Files.newInputStream(Paths.get(url.toURI()))) {
-                    final InputSource source = new InputSource();
-                    source.setByteStream(is);
-                    indexInfo = testCollection.validateXMLResource(transaction, broker, XmldbURI.create(FILES[i]), source);
-                }
-                try (final InputStream is = Files.newInputStream(Paths.get(url.toURI()))) {
-                    final InputSource source = new InputSource();
-                    source.setByteStream(is);
-                    testCollection.store(transaction, broker, indexInfo, source);
-                }
+                testCollection.storeDocument(transaction, broker, XmldbURI.create(FILES[i]), new FileInputSource(Paths.get(url.toURI())), MimeType.XML_TYPE);
             }
 
             transaction.commit();

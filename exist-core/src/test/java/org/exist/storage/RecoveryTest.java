@@ -29,7 +29,6 @@ import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
@@ -117,7 +116,8 @@ public class RecoveryTest {
                 test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
                 broker.saveCollection(transaction, test2);
 
-                binaryDocument = test2.addBinaryResource(transaction, broker, TestConstants.TEST_BINARY_URI, "Some text data".getBytes(), null);
+                test2.storeDocument(transaction, broker, TestConstants.TEST_BINARY_URI, new StringInputSource("Some text data".getBytes(UTF_8)), MimeType.BINARY_TYPE);
+                binaryDocument = (BinaryDocument) test2.getDocument(broker, TestConstants.TEST_BINARY_URI);
                 assertNotNull(binaryDocument);
 
                 // store some documents. Will be replaced below
@@ -126,9 +126,7 @@ public class RecoveryTest {
                     try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
                         sample = InputStreamUtil.readString(is, UTF_8);
                     }
-                    final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(sampleName), sample);
-                    assertNotNull(info);
-                    test2.store(transaction, broker, info, sample);
+                    test2.storeDocument(transaction, broker, XmldbURI.create(sampleName), new StringInputSource(sample), MimeType.XML_TYPE);
                 }
 
                 // replace some documents
@@ -137,16 +135,12 @@ public class RecoveryTest {
                     try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
                         sample = InputStreamUtil.readString(is, UTF_8);
                     }
-                    final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(sampleName), sample);
-                    assertNotNull(info);
-                    test2.store(transaction, broker, info, sample);
+                    test2.storeDocument(transaction, broker, XmldbURI.create(sampleName), new StringInputSource(sample), MimeType.XML_TYPE);
                 }
 
-                final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), TEST_XML);
-                assertNotNull(info);
-                //TODO : unlock the collection here ?
+                test2.storeDocument(transaction, broker, XmldbURI.create("test_string.xml"), new StringInputSource(TEST_XML), MimeType.XML_TYPE);
 
-                test2.store(transaction, broker, info, TEST_XML);
+                //TODO : unlock the collection here ?
 
                 // remove last document
                 final String lastSampleName = SAMPLES.getShakespeareXmlSampleNames()[SAMPLES.getShakespeareXmlSampleNames().length - 1];

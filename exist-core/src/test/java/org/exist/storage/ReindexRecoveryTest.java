@@ -25,7 +25,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
@@ -113,9 +112,7 @@ public class ReindexRecoveryTest {
     private void storeDocument(final DBBroker broker, final Txn transaction, final Collection collection,
             final XmldbURI docName, final String data) {
         try {
-            final IndexInfo info = collection.validateXMLResource(transaction, broker, docName, data);
-            assertNotNull(info);
-            collection.store(transaction, broker, info, data);
+            collection.storeDocument(transaction, broker, docName, new StringInputSource(data), MimeType.XML_TYPE);
         } catch (final SAXException | EXistException | PermissionDeniedException | LockException | IOException e) {
             fail("Error found while parsing document: " + docName + ": " + e.getMessage());
         }

@@ -22,10 +22,8 @@
 package org.exist.storage;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +42,8 @@ import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Test;
+import org.xml.sax.SAXException;
+
 import static org.junit.Assert.assertNotNull;
 
 public class RecoverBinaryTest2 {
@@ -54,7 +54,7 @@ public class RecoverBinaryTest2 {
     private static String directory = "webapp/resources";
 
     @Test
-    public void storeAndRead() throws TriggerException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
+    public void storeAndRead() throws SAXException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDb();
         store(pool);
@@ -72,7 +72,7 @@ public class RecoverBinaryTest2 {
         read2(pool);
     }
 
-    public void store(final BrokerPool pool) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException {
+    public void store(final BrokerPool pool) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, SAXException, LockException {
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -91,7 +91,7 @@ public class RecoverBinaryTest2 {
         }
     }
 
-    public void read(final BrokerPool pool) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, LockException, IOException, TriggerException {
+    public void read(final BrokerPool pool) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, LockException, IOException, SAXException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
             for (final Iterator<DocumentImpl> i = test2.iterator(broker); i.hasNext(); ) {
@@ -129,7 +129,7 @@ public class RecoverBinaryTest2 {
         }
     }
     
-    private void storeFiles(final DBBroker broker, final Txn transaction, final Collection test2) throws IOException, EXistException, PermissionDeniedException, LockException, TriggerException {
+    private void storeFiles(final DBBroker broker, final Txn transaction, final Collection test2) throws IOException, EXistException, PermissionDeniedException, LockException, SAXException {
         // Get files in directory
         final Path dir = FileUtils.resolve(ConfigurationHelper.getExistHome(), directory);
         final List<Path> files = FileUtils.list(dir);
@@ -141,12 +141,10 @@ public class RecoverBinaryTest2 {
                 assertNotNull(f);
                 if (Files.isRegularFile(f)) {
                     final XmldbURI uri = test2.getURI().append(j + "_" + FileUtils.fileName(f));
-                    try(final InputStream is = Files.newInputStream(f)) {
-                        final BinaryDocument doc =
-                            test2.addBinaryResource(transaction, broker, uri, is, MimeType.BINARY_TYPE.getName(),
-                                FileUtils.sizeQuietly(f), new Date(), new Date());
-                        assertNotNull(doc);
-                    }
+
+                    test2.storeDocument(transaction, broker, uri, new FileInputSource(f), MimeType.BINARY_TYPE);
+                    final BinaryDocument doc = (BinaryDocument) test2.getDocument(broker, uri);
+                    assertNotNull(doc);
                 }
             }
         }

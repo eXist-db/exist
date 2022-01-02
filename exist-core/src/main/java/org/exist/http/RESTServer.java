@@ -26,7 +26,6 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.debuggee.DebuggeeFactory;
 import org.exist.dom.QName;
@@ -1048,49 +1047,42 @@ public class RESTServer {
         try(final ManagedCollectionLock managedCollectionLock = broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(collUri)) {
             final Collection collection = broker.getOrCreateCollection(transaction, collUri);
 
-            MimeType mime;
+            final MimeType mime;
             String contentType = request.getContentType();
-            String charset = null;
             if (contentType != null) {
                 final int semicolon = contentType.indexOf(';');
                 if (semicolon > 0) {
                     contentType = contentType.substring(0, semicolon).trim();
-                    final int equals = contentType.indexOf('=', semicolon);
-                    if (equals > 0) {
-                        final String param = contentType.substring(semicolon + 1,
-                                equals).trim();
-                        if (param.compareToIgnoreCase("charset=") == 0) {
-                            charset = param.substring(equals + 1).trim();
-                        }
-                    }
                 }
                 mime = MimeTable.getInstance().getContentType(contentType);
             } else {
                 mime = MimeTable.getInstance().getContentTypeFor(docUri);
-                if (mime != null) {
-                    contentType = mime.getName();
-                }
-            }
-            if (mime == null) {
-                mime = MimeType.BINARY_TYPE;
-                contentType = mime.getName();
             }
 
-            try(final FilterInputStreamCache cache = FilterInputStreamCacheFactory.getCacheInstance(() -> (String) broker.getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), request.getInputStream());
-                final InputStream cfis = new CachingFilterInputStream(cache)) {
-
-                if (mime.isXMLType()) {
-                    cfis.mark(Integer.MAX_VALUE);
-                    final IndexInfo info = collection.validateXMLResource(transaction, broker, docUri, new InputSource(cfis));
-                    info.getDocument().setMimeType(contentType);
-                    cfis.reset();
-                    collection.store(transaction, broker, info, new InputSource(cfis));
-                    response.setStatus(HttpServletResponse.SC_CREATED);
-                } else {
-                    collection.addBinaryResource(transaction, broker, docUri, cfis, contentType, request.getContentLength());
-                    response.setStatus(HttpServletResponse.SC_CREATED);
-                }
+            // TODO(AR) in storeDocument need to handle mime == null and use MimeType.BINARY_TYPE
+            // TODO(AR) in storeDocument, if the input source has an InputStream (but is not a subclass: FileInputSource or ByteArrayInputSource), need to handle caching and reusing the input stream between validate and store
+            try (final FilterInputStreamCache cache = FilterInputStreamCacheFactory.getCacheInstance(()
+                    -> (String) broker.getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), request.getInputStream());
+                final CachingFilterInputStream cfis = new CachingFilterInputStream(cache)) {
+                collection.storeDocument(transaction, broker, docUri, new CachingFilterInputStreamInputSource(cfis), mime);
             }
+            response.setStatus(HttpServletResponse.SC_CREATED);
+
+//            try(final FilterInputStreamCache cache = FilterInputStreamCacheFactory.getCacheInstance(() -> (String) broker.getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), request.getInputStream());
+//                final InputStream cfis = new CachingFilterInputStream(cache)) {
+//
+//                if (mime.isXMLType()) {
+//                    cfis.mark(Integer.MAX_VALUE);
+//                    final IndexInfo info = collection.validateXMLResource(transaction, broker, docUri, new InputSource(cfis));
+//                    info.getDocument().setMimeType(contentType);
+//                    cfis.reset();
+//                    collection.store(transaction, broker, info, new InputSource(cfis));
+//                    response.setStatus(HttpServletResponse.SC_CREATED);
+//                } else {
+//                    collection.addBinaryResource(transaction, broker, docUri, cfis, contentType, request.getContentLength());
+//                    response.setStatus(HttpServletResponse.SC_CREATED);
+//                }
+//            }
 
         } catch (final SAXParseException e) {
             throw new BadRequestException("Parsing exception at "

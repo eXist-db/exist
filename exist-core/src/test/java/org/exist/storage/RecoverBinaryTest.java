@@ -40,18 +40,19 @@ import java.util.Arrays;
 import org.apache.commons.io.input.CountingInputStream;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.FileInputSource;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.rules.TemporaryFolder;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static org.junit.Assert.assertEquals;
@@ -89,12 +90,12 @@ public class RecoverBinaryTest extends AbstractRecoverTest {
     @Override
     protected void storeAndVerify(final DBBroker broker, final Txn transaction, final Collection collection,
             final InputSource data, final String dbFilename) throws EXistException, PermissionDeniedException, IOException,
-            TriggerException, LockException {
+            SAXException, LockException {
 
         final Path file = ((FileInputSource)data).getFile();
 
-        final byte[] content = Files.readAllBytes(file);
-        final BinaryDocument doc = collection.addBinaryResource(transaction, broker, XmldbURI.create(dbFilename), content, "application/octet-stream");
+        collection.storeDocument(transaction, broker, XmldbURI.create(dbFilename), new FileInputSource(file), MimeType.BINARY_TYPE);
+        final BinaryDocument doc = (BinaryDocument) collection.getDocument(broker, XmldbURI.create(dbFilename));
 
         assertNotNull(doc);
         assertEquals(Files.size(file), doc.getContentLength());

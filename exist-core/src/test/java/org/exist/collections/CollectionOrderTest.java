@@ -33,6 +33,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Before;
@@ -300,8 +302,7 @@ public class CollectionOrderTest {
                 for (final String documentName : documentNames) {
                     final String xml = "<document id='" + UUID.randomUUID().toString() + "'><name>" + documentName + "</name></document>";
 
-                    final IndexInfo indexInfo = testCollection.validateXMLResource(transaction, broker, XmldbURI.create(documentName), xml);
-                    testCollection.store(transaction, broker, indexInfo, xml);
+                    testCollection.storeDocument(transaction, broker, XmldbURI.create(documentName), new StringInputSource(xml), MimeType.XML_TYPE);
                 }
             }
 

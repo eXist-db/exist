@@ -49,17 +49,15 @@ import javax.xml.XMLConstants;
  */
 public class DOMStreamer {
 
-    private final static Logger LOG = LogManager.getLogger(DOMStreamer.class);
+    private static final Logger LOG = LogManager.getLogger(DOMStreamer.class);
 
     private ContentHandler contentHandler = null;
     private LexicalHandler lexicalHandler = null;
-    private NamespaceSupport nsSupport = new NamespaceSupport();
+    private final NamespaceSupport nsSupport = new NamespaceSupport();
     private final Map<String, String> namespaceDecls = new HashMap<>();
     private final Deque<ElementInfo> stack = new ArrayDeque<>();
 
     public DOMStreamer() {
-        //TODUNDERSTAND : what is this class ? java.lang.Object ?
-        super();
     }
 
     public DOMStreamer(final ContentHandler contentHandler, final LexicalHandler lexicalHandler) {

@@ -459,7 +459,7 @@ public class DebuggerTest implements ResponseListener {
 		//System.out.println("getResponse command = "+command);
 	}
 	
-    private static void store(String name,  String data) throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+    private static void store(final String name, final String data) throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
     	final Database pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
 
@@ -470,7 +470,7 @@ public class DebuggerTest implements ResponseListener {
 			broker.saveCollection(transaction, root);
 			assertNotNull(root);
 
-			root.addBinaryResource(transaction, broker, XmldbURI.create(name), data.getBytes(), "application/xquery");
+			root.storeDocument(transaction, broker, XmldbURI.create(name), new StringInputSource(data), MimeType.XML_TYPE);
 
 			transact.commit(transaction);
 		}

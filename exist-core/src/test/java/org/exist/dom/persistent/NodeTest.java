@@ -23,7 +23,6 @@ package org.exist.dom.persistent;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -33,6 +32,8 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
 import org.w3c.dom.*;
@@ -240,9 +241,7 @@ public class NodeTest {
             assertNotNull(root);
             broker.saveCollection(transaction, root);
             
-            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), XML);
-            assertNotNull(info);
-            root.store(transaction, broker, info, XML);
+            root.storeDocument(transaction, broker, XmldbURI.create("test.xml"), new StringInputSource(XML), MimeType.XML_TYPE);
             
             transact.commit(transaction);
         }

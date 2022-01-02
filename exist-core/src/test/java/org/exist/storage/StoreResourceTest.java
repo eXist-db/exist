@@ -24,7 +24,6 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
@@ -39,8 +38,9 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.LockException;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.hamcrest.Matcher;
 import org.junit.*;
@@ -93,7 +93,7 @@ public class StoreResourceTest {
      * As group member replace {@link #USER1_BIN_DOC1} from {@link TestConstants#TEST_COLLECTION_URI}
      */
     @Test
-    public void replaceBinaryAsGroupMember() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException, InterruptedException {
+    public void replaceBinaryAsGroupMember() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, SAXException, InterruptedException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalDoc1LastModified = getLastModified(USER1_BIN_DOC1);
         Thread.sleep(5);
@@ -110,8 +110,7 @@ public class StoreResourceTest {
              final Collection col = broker.openCollection(uri.removeLastSegment(), Lock.LockMode.WRITE_LOCK)) {
 
 
-            final IndexInfo indexInfo = col.validateXMLResource(transaction, broker, uri.lastSegment(), content);
-            col.store(transaction, broker, indexInfo, content);
+            col.storeDocument(transaction, broker, uri.lastSegment(), new StringInputSource(content), MimeType.XML_TYPE);
 
             transaction.commit();
         }
@@ -136,19 +135,15 @@ public class StoreResourceTest {
         }
     }
 
-    private void replaceBinDoc(final Subject execAsUser, final DBBroker.PreserveType preserve, final XmldbURI docName, final String content) throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
+    private void replaceBinDoc(final Subject execAsUser, final DBBroker.PreserveType preserve, final XmldbURI docName, final String content) throws EXistException, PermissionDeniedException, LockException, IOException, SAXException {
         final XmldbURI uri = TEST_COLLECTION_URI.append(docName);
-
-        final byte[] data = content.getBytes(UTF_8);
 
         final BrokerPool pool = existWebServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(execAsUser));
              final Txn transaction = pool.getTransactionManager().beginTransaction();
              final Collection col = broker.openCollection(uri.removeLastSegment(), Lock.LockMode.WRITE_LOCK)) {
 
-            try (final UnsynchronizedByteArrayInputStream is = new UnsynchronizedByteArrayInputStream(data)) {
-                col.addBinaryResource(transaction, broker, uri.lastSegment(), is, "application/octet-stream", data.length);
-            }
+            col.storeDocument(transaction, broker, uri.lastSegment(), new StringInputSource(content.getBytes(UTF_8)), MimeType.BINARY_TYPE);
 
             transaction.commit();
         }
@@ -161,7 +156,7 @@ public class StoreResourceTest {
 
             os.write(is);
 
-            assertArrayEquals(data, os.toByteArray());
+            assertArrayEquals(content.getBytes(UTF_8), os.toByteArray());
         }
     }
 
@@ -228,13 +223,12 @@ public class StoreResourceTest {
              final Collection collection = broker.openCollection(TEST_COLLECTION_URI, Lock.LockMode.WRITE_LOCK)) {
 
             final String u1d3xml = "<empty3/>";
-            final IndexInfo u1d3ii = collection.validateXMLResource(transaction, broker, USER1_DOC1, u1d3xml);
-            collection.store(transaction, broker, u1d3ii, u1d3xml);
+            collection.storeDocument(transaction, broker, USER1_DOC1, new StringInputSource(u1d3xml), MimeType.XML_TYPE);
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_DOC1), USER1_DOC1_MODE);
             chgrp(broker, transaction, TEST_COLLECTION_URI.append(USER1_DOC1), GROUP1_NAME);
 
             final String u1d3bin = "bin3";
-            collection.addBinaryResource(transaction, broker, USER1_BIN_DOC1, u1d3bin.getBytes(UTF_8), "text/plain");
+            collection.storeDocument(transaction, broker, USER1_BIN_DOC1, new StringInputSource(u1d3bin.getBytes(UTF_8)), MimeType.TEXT_TYPE);
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC1), USER1_BIN_DOC1_MODE);
             chgrp(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC1), GROUP1_NAME);
 

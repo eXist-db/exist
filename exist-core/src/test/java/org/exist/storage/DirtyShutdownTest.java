@@ -28,10 +28,11 @@ import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.test.TestConstants;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 
@@ -101,9 +102,7 @@ public class DirtyShutdownTest {
             for (int i = 0; i < 50; i++) {
                 try(final Txn transaction = transact.beginTransaction()) {
 
-                    final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), data);
-                    assertNotNull(info);
-                    root.store(transaction, broker, info, data);
+                    root.storeDocument(transaction, broker, XmldbURI.create("test.xml"), new StringInputSource(data), MimeType.XML_TYPE);
 
                     transact.commit(transaction);
                 }

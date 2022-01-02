@@ -27,19 +27,17 @@ import org.exist.Namespaces;
 import org.exist.backup.BackupDescriptor;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
-import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentTypeImpl;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
 import org.exist.security.SecurityManager;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
-import org.exist.util.EXistInputSource;
-import org.exist.util.ExistSAXParserFactory;
-import org.exist.util.XMLReaderPool;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.URIUtils;
@@ -221,7 +219,7 @@ public class SystemImportHandler extends DefaultHandler {
         		throw new SAXException(e);
     		}
 
-            currentCollection = mkcol(collUri, getDateFromXSDateTimeStringForItem(created, name));
+            currentCollection = mkcol(collUri);
             
             if(currentCollection == null) {
                 throw new SAXException("Collection not found: " + collUri);
@@ -291,66 +289,69 @@ public class SystemImportHandler extends DefaultHandler {
     }
     
     private DeferredPermission restoreResourceEntry(final Attributes atts) throws SAXException {
-        
-        final String skip = atts.getValue( "skip" );
+        @Nullable final String skip = atts.getValue( "skip" );
 
-        //dont process entries which should be skipped
-        if(skip != null && !"no".equals(skip)) {
+        // Don't process entries which should be skipped
+        if (skip != null && !"no".equals(skip)) {
             return new SkippedEntryDeferredPermission();
         }
-        
-        final String name = atts.getValue("name");
-        if(name == null) {
+
+        @Nullable final String name = atts.getValue("name");
+        if (name == null) {
             throw new SAXException("Resource requires a name attribute");
         }
-        
-        final String type;
-        if(atts.getValue("type") != null) {
-            type = atts.getValue("type");
-        } else {
-            type = "XMLResource";
+
+        final boolean xmlType = Optional.ofNullable(atts.getValue("type")).filter(s -> s.equals("XMLResource")).isPresent();
+
+        final String owner = getAttr(atts, "owner", SecurityManager.SYSTEM);
+        final String group = getAttr(atts, "group", SecurityManager.DBA_GROUP);
+        final String perms = getAttr(atts, "mode", "644");
+
+        final String filename = getAttr(atts, "filename", name);
+
+        @Nullable final String mimeTypeStr = atts.getValue("mimetype");
+        @Nullable final String dateCreatedStr = atts.getValue("created");
+        @Nullable final String dateModifiedStr = atts.getValue("modified");
+
+        @Nullable final String publicId = atts.getValue("publicid");
+        @Nullable final String systemId = atts.getValue("systemid");
+        @Nullable final String nameDocType = atts.getValue("namedoctype");
+
+
+        MimeType mimeType = null;
+        if (mimeTypeStr != null) {
+            mimeType = MimeTable.getInstance().getContentType(mimeTypeStr);
         }
-        
-        final String owner = atts.getValue("owner");
-        final String group = atts.getValue("group");
-        final String perms = atts.getValue("mode");
-
-        final String filename;
-        if(atts.getValue("filename") != null) {
-            filename = atts.getValue("filename");
-        } else  {
-            filename = name;
+        if (mimeType == null) {
+            mimeType = xmlType ? MimeType.XML_TYPE : MimeType.BINARY_TYPE;
         }
 
-        final String mimetype = atts.getValue("mimetype");
-        final String created = atts.getValue("created");
-        final String modified = atts.getValue("modified");
-
-        final String publicid = atts.getValue("publicid");
-        final String systemid = atts.getValue("systemid");
-        final String namedoctype = atts.getValue("namedoctype");
-
-
-        Date date_created = null;
-        Date date_modified = null;
-
-        if(created != null) {
+        Date dateCreated = null;
+        if (dateCreatedStr != null) {
             try {
-                date_created = (new DateTimeValue(created)).getDate();
-            } catch(final XPathException xpe) {
+                dateCreated = new DateTimeValue(dateCreatedStr).getDate();
+            } catch (final XPathException xpe) {
                 listener.warn("Illegal creation date. Ignoring date...");
             }
         }
-        if(modified != null) {
+
+        Date dateModified = null;
+        if (dateModifiedStr != null) {
             try {
-                date_modified = (new DateTimeValue(modified)).getDate();
-            } catch(final XPathException xpe) {
+                dateModified = new DateTimeValue(dateModifiedStr).getDate();
+            } catch (final XPathException xpe) {
                 listener.warn("Illegal modification date. Ignoring date...");
             }
         }
 
-        final XmldbURI docUri;
+        final DocumentType docType;
+        if (publicId != null || systemId != null) {
+            docType = new DocumentTypeImpl(nameDocType, publicId, systemId);
+        } else {
+            docType = null;
+        }
 
+        final XmldbURI docUri;
         if(version >= STRICT_URI_VERSION) {
             docUri = XmldbURI.create(name);
         } else {
@@ -365,65 +366,43 @@ public class SystemImportHandler extends DefaultHandler {
         }
 
 
-        try(EXistInputSource is = descriptor.getInputSource(filename)){
+        try (final EXistInputSource is = descriptor.getInputSource(filename)){
 
             if(is == null) {
                 final String msg = "Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath( name, false ) + "'.\nReason: Unable to obtain its EXistInputSource";
                 listener.warn(msg);
                 throw new RuntimeException(msg);
             }
-	
-			DocumentImpl resource = null;
-            try(final Txn transaction = beginTransaction()) {
-				if ("XMLResource".equals(type)) {
-					// store as xml resource
-					
-					final IndexInfo info = currentCollection.validateXMLResource(transaction, broker, docUri, is);
-					
-					resource = info.getDocument();
-					resource.setMimeType(mimetype);
-					resource.setCreated(date_created.getTime());
-					resource.setLastModified(date_modified.getTime());
-					
-	                if((publicid != null) || (systemid != null)) {
-	                	final DocumentType docType = new DocumentTypeImpl(namedoctype, publicid, systemid);
-	                	resource.setDocType(docType);
-	                }
 
-					rh.startDocumentRestore(resource, atts);
+            try (final Txn transaction = beginTransaction()) {
 
-					currentCollection.store(transaction, broker, info, is);
-	
-				} else {
-					// store as binary resource
-					resource = currentCollection.validateBinaryResource(transaction, broker, docUri);
-					
-					rh.startDocumentRestore(resource, atts);
+                currentCollection.storeDocument(transaction, broker, docUri, is, mimeType, dateCreated, dateModified, null, docType, null);
 
-					resource = currentCollection.addBinaryResource(transaction, broker, (BinaryDocument)resource, is.getByteStream(), mimetype, is.getByteStreamLength() , date_created, date_modified);
-				}
+
+                try (final LockedDocument doc = currentCollection.getDocumentWithLock(broker, docUri, Lock.LockMode.READ_LOCK)) {
+                    rh.startDocumentRestore(doc.getDocument(), atts);
+                }
 
                 transaction.commit();
 
                 final DeferredPermission deferredPermission;
-                if(name.startsWith(XmldbURI.SYSTEM_COLLECTION)) {
+                if (name.startsWith(XmldbURI.SYSTEM_COLLECTION)) {
                     //prevents restore of a backup from changing system collection resource ownership
-                    deferredPermission = new ResourceDeferredPermission(listener, resource.getURI(), SecurityManager.SYSTEM, SecurityManager.DBA_GROUP, Integer.parseInt(perms, 8));
+                    deferredPermission = new ResourceDeferredPermission(listener, currentCollection.getURI().append(name), SecurityManager.SYSTEM, SecurityManager.DBA_GROUP, Integer.parseInt(perms, 8));
                 } else {
-                    deferredPermission = new ResourceDeferredPermission(listener, resource.getURI(), owner, group, Integer.parseInt(perms, 8));
+                    deferredPermission = new ResourceDeferredPermission(listener, currentCollection.getURI().append(name), owner, group, Integer.parseInt(perms, 8));
                 }
-                
-                rh.endDocumentRestore(resource);
+
+                try (final LockedDocument doc = currentCollection.getDocumentWithLock(broker, docUri, Lock.LockMode.READ_LOCK)) {
+                    rh.endDocumentRestore(doc.getDocument());
+                }
 
                 listener.restoredResource(name);
                 
                 return deferredPermission;
 			} catch (final Exception e) {
-				throw new IOException(e);
-			} finally {
-//				if (resource != null)
-//					resource.getUpdateLock().release(LockMode.READ_LOCK);
-			}
+                throw new IOException(e);
+            }
 
         } catch(final Exception e) {
             listener.warn("Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath(name, false) + "'.\nReason: " + e.getMessage());
@@ -522,7 +501,7 @@ public class SystemImportHandler extends DefaultHandler {
         return date_created;
     }
     
-    private Collection mkcol(final XmldbURI collPath, final Date created) throws SAXException {
+    private Collection mkcol(final XmldbURI collPath) throws SAXException {
     	try(final Txn transaction = beginTransaction()) {
     		final Collection col = broker.getOrCreateCollection(transaction, collPath);
 
@@ -532,5 +511,13 @@ public class SystemImportHandler extends DefaultHandler {
     	} catch (final Exception e) {
     		throw new SAXException(e);
 		}
+    }
+
+    private static String getAttr(final Attributes atts, final String name, final String fallback) {
+        final String value = atts.getValue(name);
+        if (value == null) {
+            return fallback;
+        }
+        return value;
     }
 }

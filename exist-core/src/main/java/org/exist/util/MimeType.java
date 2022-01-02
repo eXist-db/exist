@@ -54,13 +54,15 @@ public class MimeType {
         new MimeType("text/plain", BINARY);
     public final static MimeType URL_ENCODED_TYPE =
     	new MimeType("application/x-www-form-urlencoded", BINARY);
+    public final static MimeType EXPATH_PKG_TYPE =
+        new MimeType("application/expath+xar", BINARY);
 
 
-    private String name;
+    private final String name;
     private String description;
-    private int type = MimeType.XML;
+    private final int type;
  
-    public MimeType(String name, int type) {
+    public MimeType(final String name, final int type) {
         this.name = name;
         this.type = type;
     }
@@ -84,7 +86,8 @@ public class MimeType {
     public boolean isXMLType() {
         return type == XML;
     }
-    
+
+    @Override
     public String toString() {
         return name + ": " + description;
     }

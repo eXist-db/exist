@@ -26,7 +26,6 @@ import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.memtree.ElementImpl;
 import org.exist.dom.persistent.DefaultDocumentSet;
@@ -40,6 +39,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -52,7 +53,6 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class SerializeAttrMatchesTest {
@@ -112,11 +112,9 @@ public class SerializeAttrMatchesTest {
                 mgr.addConfiguration(transaction, broker, test, configuration);
             }
 
-            final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create(docName), data);
-            assertNotNull(info);
-            test.store(transaction, broker, info, data);
+            test.storeDocument(transaction, broker, XmldbURI.create(docName), new StringInputSource(data), MimeType.XML_TYPE);
 
-            docs.add(info.getDocument());
+            docs.add(test.getDocument(broker, XmldbURI.create(docName)));
             transact.commit(transaction);
         }
 

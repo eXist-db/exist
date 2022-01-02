@@ -47,24 +47,26 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.Sequence;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
 
 import javax.annotation.Nullable;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
 
-import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.junit.Assert.*;
 
 /**
@@ -79,7 +81,7 @@ public class ImportModuleTest {
      * Checks that the prefix part of an `import module` statement cannot be the value "xml".
      */
     @Test
-    public void prefixXml() throws TriggerException, PermissionDeniedException, IOException, LockException, XPathException, EXistException {
+    public void prefixXml() throws SAXException, PermissionDeniedException, IOException, LockException, EXistException {
         final ErrorCodes.ErrorCode errorCode = prefixNot("xml");
         assertEquals(ErrorCodes.XQST0070, errorCode);
     }
@@ -88,7 +90,7 @@ public class ImportModuleTest {
      * Checks that the prefix part of an `import module` statement cannot be the value "xmlns".
      */
     @Test
-    public void prefixXmlNs() throws TriggerException, PermissionDeniedException, IOException, LockException, XPathException, EXistException {
+    public void prefixXmlNs() throws SAXException, PermissionDeniedException, IOException, LockException, EXistException {
         final ErrorCodes.ErrorCode errorCode = prefixNot("xmlns");
         assertEquals(ErrorCodes.XQST0070, errorCode);
     }
@@ -100,7 +102,7 @@ public class ImportModuleTest {
      *
      * @return the error code from executing the query, or null if there was no error.
      */
-    private @Nullable ErrorCodes.ErrorCode prefixNot(final String prefix) throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
+    private @Nullable ErrorCodes.ErrorCode prefixNot(final String prefix) throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl = \"http://example.com/impl\";\n" +
@@ -146,7 +148,7 @@ public class ImportModuleTest {
      * of another `import module` statement within the same module.
      */
     @Test
-    public void prefixSameAsOtherImport() throws EXistException, IOException, TriggerException, PermissionDeniedException, LockException {
+    public void prefixSameAsOtherImport() throws EXistException, IOException, SAXException, PermissionDeniedException, LockException {
         final String module1 =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl = \"http://example.com/impl\";\n" +
@@ -204,7 +206,7 @@ public class ImportModuleTest {
      * of a namespace declaration within the same module.
      */
     @Test
-    public void prefixSameAsOtherNamespaceDeclaration() throws EXistException, IOException, TriggerException, PermissionDeniedException, LockException {
+    public void prefixSameAsOtherNamespaceDeclaration() throws EXistException, IOException, SAXException, PermissionDeniedException, LockException {
         final String module =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl = \"http://example.com/impl\";\n" +
@@ -251,7 +253,7 @@ public class ImportModuleTest {
      * of the library module in which it resides.
      */
     @Test
-    public void prefixSameAsModuleDeclaration() throws EXistException, IOException, TriggerException, PermissionDeniedException, LockException {
+    public void prefixSameAsModuleDeclaration() throws EXistException, IOException, SAXException, PermissionDeniedException, LockException {
         final String module1 =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl = \"http://example.com/impl\";\n" +
@@ -308,7 +310,7 @@ public class ImportModuleTest {
      * Checks that XQST0088 is raised if the namespace part of an `import module` statement is empty.
      */
     @Test
-    public void emptyNamespace() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException {
+    public void emptyNamespace() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl = \"http://example.com/impl\";\n" +
@@ -354,7 +356,7 @@ public class ImportModuleTest {
      * of another `import module` statement within the same module.
      */
     @Test
-    public void namespaceSameAsOtherImport() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
+    public void namespaceSameAsOtherImport() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module1 =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl = \"http://example.com/impl\";\n" +
@@ -483,7 +485,7 @@ public class ImportModuleTest {
      * Checks that XQST0034 is raised if two modules contain a function of the same name and arity.
      */
     @Test
-    public void functionSameAsOtherModule() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
+    public void functionSameAsOtherModule() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module1 =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl = \"http://example.com/impl\";\n" +
@@ -632,7 +634,7 @@ public class ImportModuleTest {
      * Checks that XQST0034 is raised if an imported module and the importing module contain a function of the same name and arity.
      */
     @Test
-    public void functionSameAsImportingModule() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
+    public void functionSameAsImportingModule() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl = \"http://example.com/impl\";\n" +
@@ -684,7 +686,7 @@ public class ImportModuleTest {
      * Checks that XQST0049 is raised if two modules contain a variable of the same name.
      */
     @Test
-    public void variableSameAsOtherModule() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
+    public void variableSameAsOtherModule() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module1 =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl = \"http://example.com/impl\";\n" +
@@ -736,7 +738,7 @@ public class ImportModuleTest {
      * Checks that XQST0049 is raised if an imported module and the importing module contain a variable of the same name.
      */
     @Test
-    public void variableSameAsImportingModule() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
+    public void variableSameAsImportingModule() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl = \"http://example.com/impl\";\n" +
@@ -783,7 +785,7 @@ public class ImportModuleTest {
      * Imports a single XQuery Library Module containing functions into a target namespace.
      */
     @Test
-    public void functionsSingleLocationHint() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
+    public void functionsSingleLocationHint() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, XPathException {
         final String module =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl = \"http://example.com/impl\";\n" +
@@ -838,7 +840,7 @@ public class ImportModuleTest {
      * Imports multiple XQuery Library Modules containing functions into the same target namespace.
      */
     @Test
-    public void functionsCompositeFromMultipleLocationHints() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
+    public void functionsCompositeFromMultipleLocationHints() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, XPathException {
         final String module1 =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl = \"http://example.com/impl\";\n" +
@@ -918,7 +920,7 @@ public class ImportModuleTest {
      * Imports multiple XQuery Library Modules containing functions into the same target namespace.
      */
     @Test
-    public void functionsCompositeFromMultipleLocationHintsWithDifferingPrefixes() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
+    public void functionsCompositeFromMultipleLocationHintsWithDifferingPrefixes() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, XPathException {
         final String module1 =
                 "xquery version \"1.0\";\n" +
                         "module namespace impl1 = \"http://example.com/impl\";\n" +
@@ -998,7 +1000,7 @@ public class ImportModuleTest {
      * Imports a single XQuery Library Module containing variables into a target namespace.
      */
     @Test
-    public void variablesSingleLocationHint() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
+    public void variablesSingleLocationHint() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, XPathException {
         final String module =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl = \"http://example.com/impl\";\n" +
@@ -1051,7 +1053,7 @@ public class ImportModuleTest {
      * Imports multiple XQuery Library Modules containing variables into the same target namespace.
      */
     @Test
-    public void variablesCompositeFromMultipleLocationHints() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
+    public void variablesCompositeFromMultipleLocationHints() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, XPathException {
         final String module1 =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl = \"http://example.com/impl\";\n" +
@@ -1125,7 +1127,7 @@ public class ImportModuleTest {
      * Imports multiple XQuery Library Modules into the same target namespace.
      */
     @Test
-    public void variablesCompositeFromMultipleLocationHintsWithDifferingPrefixes() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
+    public void variablesCompositeFromMultipleLocationHintsWithDifferingPrefixes() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, XPathException {
         final String module1 =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl1 = \"http://example.com/impl\";\n" +
@@ -1196,7 +1198,7 @@ public class ImportModuleTest {
     }
 
     @Test
-    public void variablesBetweenModules() throws EXistException, PermissionDeniedException, IOException, LockException, TriggerException, XPathException {
+    public void variablesBetweenModules() throws EXistException, PermissionDeniedException, IOException, LockException, SAXException, XPathException {
         final String module1 =
                 "xquery version \"1.0\";\n" +
                 "module namespace mod1 = \"http://example.com/mod1\";\n" +
@@ -1281,7 +1283,7 @@ public class ImportModuleTest {
      */
     @Ignore("eXist-db does not have cyclic import checks, but it should!")
     @Test
-    public void cyclic1() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
+    public void cyclic1() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module1 =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl1 = \"http://example.com/impl1\";\n" +
@@ -1342,7 +1344,7 @@ public class ImportModuleTest {
      */
     @Ignore("eXist-db does not have cyclic import checks, but it should!")
     @Test
-    public void cyclic2() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
+    public void cyclic2() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module1 =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl1 = \"http://example.com/impl1\";\n" +
@@ -1408,16 +1410,14 @@ public class ImportModuleTest {
         }
     }
 
-    private void storeModules(final DBBroker broker, final Txn transaction, final String collectionUri, final Tuple2<String, String>... modules) throws PermissionDeniedException, IOException, TriggerException, LockException, EXistException {
+    private void storeModules(final DBBroker broker, final Txn transaction, final String collectionUri, final Tuple2<String, String>... modules) throws PermissionDeniedException, IOException, SAXException, LockException, EXistException {
         // store modules
         try (final Collection collection = broker.openCollection(XmldbURI.create(collectionUri), Lock.LockMode.WRITE_LOCK)) {
 
             for (final Tuple2<String, String> module : modules) {
                 final XmldbURI moduleName = XmldbURI.create(module._1);
-                final byte[] moduleData = module._2.getBytes(UTF_8);
-                try (final ByteArrayInputStream bais = new ByteArrayInputStream(moduleData)) {
-                    collection.addBinaryResource(transaction, broker, moduleName, bais, "application/xquery", moduleData.length);
-                }
+
+                collection.storeDocument(transaction, broker, moduleName, new StringInputSource(module._2.getBytes(UTF_8)), MimeType.XQUERY_TYPE);
             }
         }
     }

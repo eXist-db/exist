@@ -24,7 +24,6 @@ package org.exist.util;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -80,8 +79,7 @@ public class XMLReaderExpansionTest extends AbstractXMLReaderSecurityTest {
                 //debugReader("expandExternalEntities", broker, testCollection);
 
                 final String docContent = EXPANSION_DOC.replace(EXTERNAL_FILE_PLACEHOLDER, secret._2.toUri().toString());
-                final IndexInfo indexInfo = testCollection.validateXMLResource(transaction, broker, docName, docContent);
-                testCollection.store(transaction, broker, indexInfo, docContent);
+                testCollection.storeDocument(transaction, broker, docName, new StringInputSource(docContent), MimeType.XML_TYPE);
             }
 
             transaction.commit();

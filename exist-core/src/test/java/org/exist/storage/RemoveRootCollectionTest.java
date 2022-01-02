@@ -21,20 +21,18 @@
  */
 package org.exist.storage;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 import static org.exist.samples.Samples.SAMPLES;
 
-import java.io.InputStream;
 import java.util.Optional;
 
 import org.exist.collections.*;
 import org.exist.storage.txn.*;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.io.InputStreamUtil;
+import org.exist.util.InputStreamSupplierInputSource;
+import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
-
 
 public class RemoveRootCollectionTest {
 
@@ -100,13 +98,8 @@ public class RemoveRootCollectionTest {
     private void addDocumentToRoot() throws Exception {
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
-        try (final Txn transaction = transact.beginTransaction();
-             final InputStream is = SAMPLES.getHamletSample()) {
-            assertNotNull(is);
-            final String sample = InputStreamUtil.readString(is, UTF_8);
-            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), sample);
-            assertNotNull(info);
-            root.store(transaction, broker, info, sample);
+        try (final Txn transaction = transact.beginTransaction()) {
+            root.storeDocument(transaction, broker, XmldbURI.create("hamlet.xml"), new InputStreamSupplierInputSource(() -> SAMPLES.getHamletSample()), MimeType.XML_TYPE);
             transact.commit(transaction);
         }
     }

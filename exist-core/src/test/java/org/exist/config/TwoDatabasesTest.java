@@ -30,7 +30,6 @@ import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -41,9 +40,13 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
+import org.xml.sax.SAXException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -99,12 +102,12 @@ public class TwoDatabasesTest {
     }
 
     @Test
-    public void putGet() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    public void putGet() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
         put();
         get();
     }
 
-    private void put() throws EXistException, LockException, TriggerException, PermissionDeniedException, IOException {
+    private void put() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException {
         final BrokerPool pool1 = existEmbeddedServer1.getBrokerPool();
         try (final DBBroker broker1 = pool1.get(Optional.of(user1));
              final Txn transaction1 = pool1.getTransactionManager().beginTransaction()) {
@@ -136,10 +139,10 @@ public class TwoDatabasesTest {
 
     private static final String bin = "ABCDEFG";
 
-    private Collection storeBin(final DBBroker broker, final Txn txn, String suffix) throws PermissionDeniedException, LockException, TriggerException, EXistException, IOException {
+    private Collection storeBin(final DBBroker broker, final Txn txn, String suffix) throws PermissionDeniedException, LockException, SAXException, EXistException, IOException {
         String data = bin + suffix;
         Collection top = broker.openCollection(XmldbURI.create("xmldb:exist:///db"), LockMode.WRITE_LOCK);
-        top.addBinaryResource(txn, broker, XmldbURI.create("bin"), data.getBytes(), "text/plain");
+        top.storeDocument(txn, broker, XmldbURI.create("bin"), new StringInputSource(data.getBytes(UTF_8)), MimeType.TEXT_TYPE);
         return top;
     }
 

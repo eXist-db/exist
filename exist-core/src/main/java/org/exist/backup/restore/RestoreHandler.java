@@ -27,7 +27,6 @@ import org.exist.Namespaces;
 import org.exist.backup.BackupDescriptor;
 import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentTypeImpl;
@@ -43,9 +42,7 @@ import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
-import org.exist.util.EXistInputSource;
-import org.exist.util.LockException;
-import org.exist.util.XMLReaderPool;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.URIUtils;
@@ -59,7 +56,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.*;
 
@@ -242,15 +238,15 @@ public class RestoreHandler extends DefaultHandler {
     }
 
     private DeferredPermission restoreResourceEntry(final Attributes atts) throws SAXException {
-        final String skip = atts.getValue( "skip" );
+        @Nullable final String skip = atts.getValue( "skip" );
 
         // Don't process entries which should be skipped
-        if(skip != null && !"no".equals(skip)) {
+        if (skip != null && !"no".equals(skip)) {
             return new SkippedEntryDeferredPermission();
         }
 
-        final String name = atts.getValue("name");
-        if(name == null) {
+        @Nullable final String name = atts.getValue("name");
+        if (name == null) {
             throw new SAXException("Resource requires a name attribute");
         }
 
@@ -262,13 +258,13 @@ public class RestoreHandler extends DefaultHandler {
 
         final String filename = getAttr(atts, "filename", name);
 
-        final String mimeType = atts.getValue("mimetype");
-        final String created = atts.getValue("created");
-        final String modified = atts.getValue("modified");
+        @Nullable final String mimeTypeStr = atts.getValue("mimetype");
+        @Nullable final String dateCreatedStr = atts.getValue("created");
+        @Nullable final String dateModifiedStr = atts.getValue("modified");
 
-        final String publicId = atts.getValue("publicid");
-        final String systemId = atts.getValue("systemid");
-        final String nameDocType = atts.getValue("namedoctype");
+        @Nullable final String publicId = atts.getValue("publicid");
+        @Nullable final String systemId = atts.getValue("systemid");
+        @Nullable final String nameDocType = atts.getValue("namedoctype");
 
         final XmldbURI docName;
         if (version >= STRICT_URI_VERSION) {
@@ -304,21 +300,37 @@ public class RestoreHandler extends DefaultHandler {
             }
         }
 
+        MimeType mimeType = null;
+        if (mimeTypeStr != null) {
+            mimeType = MimeTable.getInstance().getContentType(mimeTypeStr);
+        }
+        if (mimeType == null) {
+            mimeType = xmlType ? MimeType.XML_TYPE : MimeType.BINARY_TYPE;
+        }
+
         Date dateCreated = null;
-        Date dateModified = null;
-        if (created != null) {
+        if (dateCreatedStr != null) {
             try {
-                dateCreated = (new DateTimeValue(created)).getDate();
-            } catch(final XPathException xpe) {
+                dateCreated = new DateTimeValue(dateCreatedStr).getDate();
+            } catch (final XPathException xpe) {
                 listener.warn("Illegal creation date. Ignoring date...");
             }
         }
-        if (modified != null) {
+
+        Date dateModified = null;
+        if (dateModifiedStr != null) {
             try {
-                dateModified = (new DateTimeValue(modified)).getDate();
-            } catch(final XPathException xpe) {
+                dateModified = new DateTimeValue(dateModifiedStr).getDate();
+            } catch (final XPathException xpe) {
                 listener.warn("Illegal modification date. Ignoring date...");
             }
+        }
+
+        final DocumentType docType;
+        if (publicId != null || systemId != null) {
+            docType = new DocumentTypeImpl(nameDocType, publicId, systemId);
+        } else {
+            docType = null;
         }
 
         final XmldbURI docUri = currentCollectionUri.append(docName);
@@ -330,28 +342,8 @@ public class RestoreHandler extends DefaultHandler {
                     try (final Collection collection = broker.openCollection(currentCollectionUri, Lock.LockMode.WRITE_LOCK);
                          final ManagedDocumentLock docLock = broker.getBrokerPool().getLockManager().acquireDocumentWriteLock(docUri)) {
 
-                        if (xmlType) {
-                            final IndexInfo info = collection.validateXMLResource(transaction, broker, docName, is);
-                            validated = true;
-
-                            info.getDocument().setMimeType(mimeType);
-                            if (dateCreated != null) {
-                                info.getDocument().setCreated(dateCreated.getTime());
-                            }
-                            if (dateModified != null) {
-                                info.getDocument().setLastModified(dateModified.getTime());
-                            }
-                            if (publicId != null || systemId != null) {
-                                final DocumentType docType = new DocumentTypeImpl(nameDocType, publicId, systemId);
-                                info.getDocument().setDocType(docType);
-                            }
-                            collection.store(transaction, broker, info, is);
-
-                        } else {
-                            try (final InputStream stream = is.getByteStream()) {
-                                collection.addBinaryResource(transaction, broker, docName, stream, mimeType, -1, dateCreated, dateModified);
-                            }
-                        }
+                        collection.storeDocument(transaction, broker, docName, is, mimeType, dateCreated, dateModified, null, docType, null);
+                        validated = true;
 
                         transaction.commit();
 
@@ -546,9 +538,9 @@ public class RestoreHandler extends DefaultHandler {
         return date_created;
     }
 
-    private String getAttr(final Attributes atts, final String name, final String fallback) {
+    private static String getAttr(final Attributes atts, final String name, final String fallback) {
         final String value = atts.getValue(name);
-        if(value == null) {
+        if (value == null) {
             return fallback;
         }
         return value;

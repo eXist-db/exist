@@ -24,7 +24,6 @@ package org.exist.repo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.CollectionTrigger;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.SAXTrigger;
@@ -33,11 +32,9 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
-import org.xml.sax.InputSource;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 
 public class ExampleTrigger extends SAXTrigger implements DocumentTrigger, CollectionTrigger {
 
@@ -107,13 +104,7 @@ public class ExampleTrigger extends SAXTrigger implements DocumentTrigger, Colle
         try (final Collection collection = broker.openCollection(document.getCollection().getURI(), Lock.LockMode.WRITE_LOCK)) {
 
             // Stream into database
-            try (final InputStream bais = new ByteArrayInputStream(data);) {
-                final IndexInfo info = collection.validateXMLResource(txn, broker, newDocumentURI, new InputSource(bais));
-                final DocumentImpl doc = info.getDocument();
-                doc.setMimeType("application/xml");
-                bais.reset();
-                collection.store(txn, broker, info, new InputSource(bais));
-            }
+            collection.storeDocument(txn, broker, newDocumentURI, new StringInputSource(data), MimeType.XML_TYPE);
 
         } catch (Exception e) {
             LOG.error(e);

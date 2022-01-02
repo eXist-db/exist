@@ -24,14 +24,16 @@ package org.exist.util;
 
 import com.evolvedbinary.j8fu.Either;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.xml.sax.InputSource;
 
 import java.io.*;
 
 import static com.evolvedbinary.j8fu.Either.Left;
 import static com.evolvedbinary.j8fu.Either.Right;
 
-public class StringInputSource extends InputSource {
+/**
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
+ */
+public class StringInputSource extends EXistInputSource {
 
     private final Either<byte[], String> source;
 
@@ -61,6 +63,8 @@ public class StringInputSource extends InputSource {
 
     @Override
     public Reader getCharacterStream() {
+        assertOpen();
+
         if (source.isLeft()) {
             return null;
         } else {
@@ -69,23 +73,39 @@ public class StringInputSource extends InputSource {
     }
 
     /**
-     * Set a character stream input.
+     * This method now does nothing, so collateral
+     * effects from superclass with this one are avoided
      *
-     * @param r the reader
-     *
-     * @throws IllegalStateException this class is immutable!
+     * @throws IllegalStateException if the InputSource was previously closed
      */
     @Override
     public void setCharacterStream(final Reader r) {
+        assertOpen();
         throw new IllegalStateException("StringInputSource is immutable");
     }
 
     @Override
     public InputStream getByteStream() {
+        assertOpen();
         if (source.isLeft()) {
             return new UnsynchronizedByteArrayInputStream(source.left().get());
         } else {
             return null;
+        }
+    }
+
+    /**
+     * @see EXistInputSource#getByteStreamLength()
+     *
+     * @throws IllegalStateException if the InputSource was previously closed
+     */
+    @Override
+    public long getByteStreamLength() {
+        assertOpen();
+        if (source.isLeft()) {
+            return source.left().get().length;
+        } else {
+            return -1;
         }
     }
 
@@ -98,6 +118,30 @@ public class StringInputSource extends InputSource {
      */
     @Override
     public void setByteStream(final InputStream is) {
+        assertOpen();
         throw new IllegalStateException("StringInputSource is immutable");
+    }
+
+    /**
+     * This method now does nothing, so collateral
+     * effects from superclass with this one are avoided
+     *
+     * @throws IllegalStateException if the InputSource was previously closed
+     */
+    @Override
+    public void setSystemId(final String systemId) {
+        assertOpen();
+        // Nothing, so collateral effects are avoided!
+    }
+
+    /**
+     * @see EXistInputSource#getSymbolicPath()
+     *
+     * @throws IllegalStateException if the InputSource was previously closed
+     */
+    @Override
+    public String getSymbolicPath() {
+        assertOpen();
+        return null;
     }
 }

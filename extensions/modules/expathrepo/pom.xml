@@ -89,12 +89,6 @@
         </dependency>
 
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <!-- needed for resolving the XAR for PackageTriggerTest -->
             <groupId>org.exist-db</groupId>
             <artifactId>exist-expathrepo-trigger-test</artifactId>

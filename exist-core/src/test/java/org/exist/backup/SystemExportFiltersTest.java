@@ -28,7 +28,6 @@ import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
@@ -40,6 +39,8 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
@@ -112,7 +113,7 @@ public class SystemExportFiltersTest {
             storeXMLDocument(txn, broker, test, doc02uri.lastSegment(), XML2);
             storeXMLDocument(txn, broker, test, doc03uri.lastSegment(), XML3);
 
-            test.addBinaryResource(txn, broker, doc11uri.lastSegment(), BINARY.getBytes(), null);
+            test.storeDocument(txn, broker, doc11uri.lastSegment(), new StringInputSource(BINARY.getBytes(UTF_8)), MimeType.BINARY_TYPE);
 
             txn.commit();
         }
@@ -204,12 +205,7 @@ public class SystemExportFiltersTest {
         return col;
     }
 
-    private static DocumentImpl storeXMLDocument(Txn txn, DBBroker broker, Collection col, XmldbURI name, String data) throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
-        IndexInfo info = col.validateXMLResource(txn, broker, name, data);
-        assertNotNull(info);
-
-        col.store(txn, broker, info, data);
-
-        return info.getDocument();
+    private static void storeXMLDocument(final Txn txn, final DBBroker broker, final Collection col, final XmldbURI name, final String data) throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
+        col.storeDocument(txn, broker, name, new StringInputSource(data), MimeType.XML_TYPE);
     }
 }

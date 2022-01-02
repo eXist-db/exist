@@ -32,11 +32,12 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.xmldb.XmldbURI;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
@@ -159,8 +160,7 @@ public class MarshallerTest {
             final Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
             broker.saveCollection(transaction, root);
 
-            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), TEST_DOC);
-            root.store(transaction, broker, info, TEST_DOC);
+            root.storeDocument(transaction, broker, XmldbURI.create("test.xml"), new StringInputSource(TEST_DOC), MimeType.XML_TYPE);
 
             transact.commit(transaction);
         }

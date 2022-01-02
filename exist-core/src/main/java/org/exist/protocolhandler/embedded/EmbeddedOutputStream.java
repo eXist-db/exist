@@ -34,8 +34,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -47,7 +45,6 @@ import org.exist.util.*;
 import org.exist.util.io.CloseNotifyingOutputStream;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.xmldb.XmldbURI;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
@@ -132,35 +129,10 @@ public class EmbeddedOutputStream extends OutputStream {
                     throw new IOException("Resource " + documentUri.toString() + " is a collection.");
                 }
 
-                MimeType mime = MimeTable.getInstance().getContentTypeFor(documentUri);
-                String contentType = null;
-                if (mime != null) {
-                    contentType = mime.getName();
-                } else {
-                    mime = MimeType.BINARY_TYPE;
-                }
-
+                final MimeType mime = MimeTable.getInstance().getContentTypeFor(documentUri);
                 final TransactionManager transact = pool.getTransactionManager();
                 try (final Txn txn = transact.beginTransaction()) {
-
-                    if (mime.isXMLType()) {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Storing XML resource");
-                        }
-                        final InputSource inputsource = new FileInputSource(tempFile);
-                        final IndexInfo info = collection.validateXMLResource(txn, broker, documentUri, inputsource);
-                        final DocumentImpl doc = info.getDocument();
-                        doc.setMimeType(contentType);
-                        collection.store(txn, broker, info, inputsource);
-
-                    } else {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Storing Binary resource");
-                        }
-                        try (final InputStream is = Files.newInputStream(tempFile)) {
-                            collection.addBinaryResource(txn, broker, documentUri, is, contentType, FileUtils.sizeQuietly(tempFile));
-                        }
-                    }
+                    collection.storeDocument(txn, broker, documentUri, new FileInputSource(tempFile), mime);
 
                     txn.commit();
                 }

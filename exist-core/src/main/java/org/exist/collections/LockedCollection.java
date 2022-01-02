@@ -35,12 +35,15 @@ import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
+import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
@@ -355,53 +358,88 @@ public class LockedCollection implements Collection {
     }
 
     @Override
+    public void storeDocument(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputSource source, @Nullable final MimeType mimeType) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
+        collection.storeDocument(transaction, broker, name, source, mimeType);
+    }
+
+    @Override
+    public void storeDocument(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputSource source, @Nullable final MimeType mimeType, @Nullable final Date createdDate, @Nullable final Date lastModifiedDate, @Nullable final Permission permission, @Nullable final DocumentType documentType, @Nullable final XMLReader xmlReader) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
+        collection.storeDocument(transaction, broker, name, source, mimeType, createdDate, lastModifiedDate, permission, documentType, xmlReader);
+    }
+
+    @Override
+    public void storeDocument(final Txn transaction, final DBBroker broker, final XmldbURI name, final Node node, @Nullable final MimeType mimeType) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
+        collection.storeDocument(transaction, broker, name, node, mimeType);
+    }
+
+    @Override
+    public void storeDocument(final Txn transaction, final DBBroker broker, final XmldbURI name, final Node node, @Nullable final MimeType mimeType, @Nullable final Date createdDate, @Nullable final Date lastModifiedDate, @Nullable final Permission permission, @Nullable final DocumentType documentType, @Nullable final XMLReader xmlReader) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
+        collection.storeDocument(transaction, broker, name, node, mimeType, createdDate, lastModifiedDate, permission, documentType, xmlReader);
+    }
+
+    @Deprecated
+    @Override
     public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputSource source) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         return collection.validateXMLResource(transaction, broker, name, source);
     }
 
+    @Deprecated
     @Override
     public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputSource source, final XMLReader reader) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         return collection.validateXMLResource(transaction, broker, name, source, reader);
     }
 
+    @Deprecated
     @Override
     public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final String data) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         return collection.validateXMLResource(transaction, broker, name, data);
     }
 
+    @Deprecated
     @Override
     public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final Node node) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         return collection.validateXMLResource(transaction, broker, name, node);
     }
 
+    @Deprecated
     @Override
     public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         collection.store(transaction, broker, info, source);
     }
 
+    @Deprecated
     @Override
     public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source, final XMLReader reader) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         collection.store(transaction, broker, info, source, reader);
     }
 
+    @Deprecated
     @Override
     public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final String data) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         collection.store(transaction, broker, info, data);
     }
 
+    @Deprecated
     @Override
     public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final Node node) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         collection.store(transaction, broker, info, node);
     }
 
+    @Deprecated
     @Override
     public BinaryDocument validateBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name) throws PermissionDeniedException, LockException, TriggerException, IOException {
         return collection.validateBinaryResource(transaction, broker, name);
     }
 
+    @Deprecated
     @Override
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputStream is, final String mimeType, final long size, final Date created, final Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
         return collection.addBinaryResource(transaction, broker, name, is, mimeType, size, created, modified);
+    }
+
+    @Override
+    public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputStream is, final String mimeType, final long size, final Date created, final Date modified, @Nullable final Permission permission) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
+        return collection.addBinaryResource(transaction, broker, name, is, mimeType, size, created, modified, permission);
     }
 
     @Override
@@ -416,16 +454,19 @@ public class LockedCollection implements Collection {
         return collection.addBinaryResource(transaction, broker, name, data, mimeType, created, modified);
     }
 
+    @Deprecated
     @Override
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputStream is, final String mimeType, final long size) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
         return collection.addBinaryResource(transaction, broker, name, is, mimeType, size);
     }
 
+    @Deprecated
     @Override
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final BinaryDocument blob, final InputStream is, final String mimeType, final long size, final Date created, final Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
         return collection.addBinaryResource(transaction, broker, blob, is, mimeType, size, created, modified);
     }
 
+    @Deprecated
     @Override
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final BinaryDocument blob, final InputStream is, final String mimeType, final long size, final Date created, final Date modified, final DBBroker.PreserveType preserve) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
         return collection.addBinaryResource(transaction, broker, blob, is, mimeType, size, created, modified, preserve);

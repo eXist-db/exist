@@ -29,11 +29,12 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.util.io.InputStreamUtil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
@@ -546,12 +547,10 @@ public class BasicNodeSetTest {
                 try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
                     sample = InputStreamUtil.readString(is, UTF_8);
                 }
-                final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(sampleName), sample);
-                root.store(transaction, broker, info, sample);
+                root.storeDocument(transaction, broker, XmldbURI.create(sampleName), new StringInputSource(sample), MimeType.XML_TYPE);
             }
 
-            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("nested.xml"), NESTED_XML);
-            root.store(transaction, broker, info, NESTED_XML);
+            root.storeDocument(transaction, broker, XmldbURI.create("nested.xml"), new StringInputSource(NESTED_XML), MimeType.XML_TYPE);
             transact.commit(transaction);
 
             //for the tests

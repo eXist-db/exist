@@ -32,14 +32,14 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.*;
 import org.junit.ClassRule;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Optional;
 
 /**
@@ -58,13 +58,10 @@ public class EmbeddedBinariesTest extends AbstractBinariesTest<Sequence, Item, I
 
             try(final ManagedCollectionLock collectionLock = brokerPool.getLockManager().acquireCollectionWriteLock(filePath.removeLastSegment())) {
                 final Collection collection = broker.getOrCreateCollection(transaction, filePath.removeLastSegment());
-                try(final InputStream is = new UnsynchronizedByteArrayInputStream(content)) {
 
-                    collection.addBinaryResource(transaction, broker, filePath.lastSegment(), is, "application/octet-stream", content.length);
+                collection.storeDocument(transaction, broker, filePath.lastSegment(), new StringInputSource(content), MimeType.BINARY_TYPE);
 
-                    broker.saveCollection(transaction, collection);
-
-                }
+                broker.saveCollection(transaction, collection);
             }
 
             transaction.commit();

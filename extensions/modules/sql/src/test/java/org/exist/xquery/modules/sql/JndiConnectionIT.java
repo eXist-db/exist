@@ -35,7 +35,6 @@ package org.exist.xquery.modules.sql;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
@@ -45,6 +44,8 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.modules.ModuleUtils;
@@ -58,17 +59,18 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.osjava.sj.loader.JndiLoader;
+import org.xml.sax.SAXException;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.xquery.modules.sql.Util.executeQuery;
 import static org.exist.xquery.modules.sql.Util.withCompiledQuery;
 import static org.junit.Assert.*;
@@ -148,14 +150,13 @@ public class JndiConnectionIT {
     }
 
     @Test
-    public void getJndiConnectionFromModuleIsAutomaticallyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException, LockException, TriggerException {
+    public void getJndiConnectionFromModuleIsAutomaticallyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException, LockException, SAXException {
         final String moduleQuery =
                 "module namespace mymodule = \"http://mymodule.com\";\n" +
                 "import module namespace sql = \"http://exist-db.org/xquery/sql\";\n" +
                 "declare function mymodule:get-handle() {\n" +
                 "    sql:get-jndi-connection(\"" + JNDI_DS_NAME + "\", \"" + h2Database.getUser() + "\", \"" + h2Database.getPassword() + "\")\n" +
                 "};\n";
-        final Source moduleQuerySource = new StringSource(moduleQuery);
 
         final String mainQuery =
                 "import module namespace mymodule = \"http://mymodule.com\" at \"xmldb:exist:///db/mymodule.xqm\";\n" +
@@ -167,10 +168,8 @@ public class JndiConnectionIT {
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             // store module
-            try (final InputStream is = moduleQuerySource.getInputStream()) {
-                try (final Collection collection = broker.openCollection(XmldbURI.create("/db"), Lock.LockMode.WRITE_LOCK)) {
-                    collection.addBinaryResource(transaction, broker, XmldbURI.create("mymodule.xqm"), is, "application/xquery", -1);
-                }
+            try (final Collection collection = broker.openCollection(XmldbURI.create("/db"), Lock.LockMode.WRITE_LOCK)) {
+                collection.storeDocument(transaction, broker, XmldbURI.create("mymodule.xqm"), new StringInputSource(moduleQuery.getBytes(UTF_8)), MimeType.XQUERY_TYPE);
             }
 
             final Tuple2<XQueryContext, ModuleContext> escapedContexts = withCompiledQuery(broker, mainQuerySource, mainCompiledQuery -> {

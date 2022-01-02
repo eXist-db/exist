@@ -30,15 +30,17 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
+import org.exist.util.BinaryValueInputSource;
 import org.exist.util.LockException;
 import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
+import org.xml.sax.SAXException;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Files;
@@ -282,13 +284,11 @@ public class EntryFunctions extends BasicFunction {
 
                             try (final Collection collection = context.getBroker().openCollection(destPath.removeLastSegment(), Lock.LockMode.WRITE_LOCK)) {
                                 final BinaryValue binaryValue = (BinaryValue) data.get();
-                                final String mediaType = MimeTable.getInstance().getContentTypeFor(destPath.lastSegment()).getName();
-                                try (final InputStream is = binaryValue.getInputStream()) {
-                                    collection.addBinaryResource(transaction, context.getBroker(), destPath.lastSegment(), is, mediaType, -1);
-                                }
+                                final MimeType mimeType = MimeTable.getInstance().getContentTypeFor(destPath.lastSegment());
+                                collection.storeDocument(transaction, context.getBroker(), destPath.lastSegment(), new BinaryValueInputSource(binaryValue), mimeType);
                             }
                             transaction.commit();
-                        } catch (final IOException | PermissionDeniedException | EXistException | LockException | TriggerException e) {
+                        } catch (final IOException | PermissionDeniedException | EXistException | LockException | SAXException e) {
                             throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the binary data: " + e.getMessage(), e);
                         }
                     }

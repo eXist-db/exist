@@ -28,7 +28,7 @@ import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
@@ -38,6 +38,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
@@ -90,7 +92,7 @@ public class CopyResourceRecoveryTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection testCollection;
-            IndexInfo info;
+            DocumentImpl doc;
             try (final Txn transaction = transact.beginTransaction()) {
 
                 final Collection root = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("test"));
@@ -110,16 +112,15 @@ public class CopyResourceRecoveryTest {
                     assertNotNull(is);
                     sample = InputStreamUtil.readString(is, UTF_8);
                 }
-                info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), sample);
-                assertNotNull(info);
-                subTestCollection.store(transaction, broker, info, sample);
+                subTestCollection.storeDocument(transaction, broker, XmldbURI.create("test.xml"), new StringInputSource(sample), MimeType.XML_TYPE);
+                doc = subTestCollection.getDocument(broker, XmldbURI.create("test.xml"));
 
                 transact.commit(transaction);
             }
 
             try (final Txn transaction = transact.beginTransaction()) {
 
-                broker.copyResource(transaction, info.getDocument(), testCollection, XmldbURI.create("new_test.xml"));
+                broker.copyResource(transaction, doc, testCollection, XmldbURI.create("new_test.xml"));
                 broker.saveCollection(transaction, testCollection);
 
                 transact.commit(transaction);
@@ -148,8 +149,7 @@ public class CopyResourceRecoveryTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             Collection testCollection;
-            IndexInfo info;
-
+            DocumentImpl doc;
             try(final Txn transaction = transact.beginTransaction()) {
 
                 final Collection root = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("test"));
@@ -169,16 +169,15 @@ public class CopyResourceRecoveryTest {
                     assertNotNull(is);
                     sample = InputStreamUtil.readString(is, UTF_8);
                 }
-                info = subTestCollection.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), sample);
-                assertNotNull(info);
-                subTestCollection.store(transaction, broker, info, sample);
+                subTestCollection.storeDocument(transaction, broker, XmldbURI.create("test2.xml"), new StringInputSource(sample), MimeType.XML_TYPE);
+                doc = subTestCollection.getDocument(broker, XmldbURI.create("test2.xml"));
 
                 transact.commit(transaction);
             }
 
             final Txn transaction = transact.beginTransaction();
 
-            broker.copyResource(transaction, info.getDocument(), testCollection, XmldbURI.create("new_test2.xml"));
+            broker.copyResource(transaction, doc, testCollection, XmldbURI.create("new_test2.xml"));
             broker.saveCollection(transaction, testCollection);
 
 //DO NOT COMMIT TRANSACTION

@@ -115,25 +115,16 @@ public class XMLDBModule extends AbstractInternalModule {
         super(functions, parameters, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getDescription()
-     */
     @Override
     public String getDescription() {
         return "A module for database manipulation functions.";
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getNamespaceURI()
-     */
     @Override
     public String getNamespaceURI() {
         return NAMESPACE_URI;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getDefaultPrefix()
-     */
     @Override
     public String getDefaultPrefix() {
         return PREFIX;

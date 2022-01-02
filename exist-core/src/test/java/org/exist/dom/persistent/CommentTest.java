@@ -24,7 +24,6 @@ package org.exist.dom.persistent;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -32,6 +31,8 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -60,8 +61,7 @@ public class CommentTest {
                 final Txn transaction = pool.getTransactionManager().beginTransaction();
              final Collection collection = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI, Lock.LockMode.WRITE_LOCK)) {
 
-            final IndexInfo indexInfo = collection.validateXMLResource(transaction, broker, docUri, xml);
-            collection.store(transaction, broker, indexInfo, xml);
+            collection.storeDocument(transaction, broker, docUri, new StringInputSource(xml), MimeType.XML_TYPE);
 
             transaction.commit();
         }

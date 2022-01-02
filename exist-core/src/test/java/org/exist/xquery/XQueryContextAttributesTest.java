@@ -36,12 +36,10 @@ import com.evolvedbinary.j8fu.function.Function2E;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
-import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
@@ -49,16 +47,20 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.Sequence;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Optional;
 import java.util.Properties;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.junit.Assert.*;
 
@@ -71,13 +73,13 @@ public class XQueryContextAttributesTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void attributesOfMainModuleContextCleared() throws EXistException, LockException, TriggerException, PermissionDeniedException, IOException, XPathException {
+    public void attributesOfMainModuleContextCleared() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, XPathException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
             final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
             final XmldbURI mainQueryUri = XmldbURI.create("/db/query1.xq");
-            final Source mainQuery = new StringSource("<not-important/>");
+            final InputSource mainQuery = new StringInputSource("<not-important/>".getBytes(UTF_8));
             final DBSource mainQuerySource = storeQuery(broker, transaction, mainQueryUri, mainQuery);
 
             final XQueryContext escapedMainQueryContext = withCompiledQuery(broker, mainQuerySource, mainCompiledQuery -> {
@@ -103,22 +105,22 @@ public class XQueryContextAttributesTest {
     }
 
     @Test
-    public void attributesOfLibraryModuleContextCleared() throws EXistException, LockException, TriggerException, PermissionDeniedException, IOException, XPathException {
+    public void attributesOfLibraryModuleContextCleared() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, XPathException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
              final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
             final XmldbURI libraryQueryUri = XmldbURI.create("/db/mod1.xqm");
-            final Source libraryQuery = new StringSource(
-                    "module namespace mod1 = 'http://mod1';\n" +
-                            "declare function mod1:f1() { <not-important/> };"
+            final InputSource libraryQuery = new StringInputSource(
+                    ("module namespace mod1 = 'http://mod1';\n" +
+                    "declare function mod1:f1() { <not-important/> };").getBytes(UTF_8)
             );
             storeQuery(broker, transaction, libraryQueryUri, libraryQuery);
 
             final XmldbURI mainQueryUri = XmldbURI.create("/db/query1.xq");
-            final Source mainQuery = new StringSource(
-                    "import module namespace mod1 = 'http://mod1' at 'xmldb:exist://" + libraryQueryUri + "';\n" +
-                            "mod1:f1()"
+            final InputSource mainQuery = new StringInputSource(
+                    ("import module namespace mod1 = 'http://mod1' at 'xmldb:exist://" + libraryQueryUri + "';\n" +
+                    "mod1:f1()").getBytes(UTF_8)
             );
             final DBSource mainQuerySource = storeQuery(broker, transaction, mainQueryUri, mainQuery);
 
@@ -160,13 +162,12 @@ public class XQueryContextAttributesTest {
         }
     }
 
-    private static DBSource storeQuery(final DBBroker broker, final Txn transaction, final XmldbURI uri, final Source source) throws IOException, PermissionDeniedException, TriggerException, LockException, EXistException {
-        try (final InputStream is = source.getInputStream()) {
-            try (final Collection collection = broker.openCollection(uri.removeLastSegment(), Lock.LockMode.WRITE_LOCK)) {
-                final BinaryDocument doc = collection.addBinaryResource(transaction, broker, uri.lastSegment(), is, "application/xquery", -1);
+    private static DBSource storeQuery(final DBBroker broker, final Txn transaction, final XmldbURI uri, final InputSource source) throws IOException, PermissionDeniedException, SAXException, LockException, EXistException {
+        try (final Collection collection = broker.openCollection(uri.removeLastSegment(), Lock.LockMode.WRITE_LOCK)) {
+            collection.storeDocument(transaction, broker, uri.lastSegment(), source, MimeType.XQUERY_TYPE);
+            final BinaryDocument doc = (BinaryDocument) collection.getDocument(broker, uri.lastSegment());
 
-                return new DBSource(broker, doc, false);
-            }
+            return new DBSource(broker, doc, false);
         }
     }
 
