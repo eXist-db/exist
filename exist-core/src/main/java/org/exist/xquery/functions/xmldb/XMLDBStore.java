@@ -35,7 +35,6 @@ import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
@@ -43,7 +42,6 @@ import org.exist.util.MimeType;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.EXistResource;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -54,7 +52,6 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.xml.sax.ContentHandler;
@@ -65,6 +62,10 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
+import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.functions.xmldb.XMLDBModule.functionSignature;
+import static org.exist.xquery.functions.xmldb.XMLDBModule.functionSignatures;
+
 /**
  * @author wolf
  */
@@ -72,77 +73,52 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 
     private static final Logger LOGGER = LogManager.getLogger(XMLDBStore.class);
 
-    protected static final FunctionParameterSequenceType ARG_COLLECTION = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI");
-    protected static final FunctionParameterSequenceType ARG_RESOURCE_NAME = new FunctionParameterSequenceType("resource-name", Type.STRING, Cardinality.ZERO_OR_ONE, "The resource name");
-    protected static final FunctionParameterSequenceType ARG_CONTENTS = new FunctionParameterSequenceType("contents", Type.ITEM, Cardinality.EXACTLY_ONE, "The contents");
-    protected static final FunctionParameterSequenceType ARG_MIME_TYPE = new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, "The mime type");
+    private static final FunctionParameterSequenceType FS_PARAM_COLLECTION_URI = param("collection-uri", Type.STRING, "The collection URI");
+    private static final FunctionParameterSequenceType FS_PARAM_RESOURCE_NAME = optParam("resource-name", Type.STRING, "The resource name");
+    private static final FunctionParameterSequenceType FS_PARAM_CONTENTS = param("contents", Type.ITEM, "The contents");
+    private static final FunctionParameterSequenceType FS_PARAM_MIME_TYPE = param("mime-type", Type.STRING,"The mime type");
 
-    protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the path to new resource if sucessfully stored, otherwise the emtpty sequence");
+    private static final FunctionReturnSequenceType FS_RETURN_PATH = returnsOpt(Type.STRING, "the path to new resource if sucessfully stored, otherwise the emtpty sequence");
 
-    protected static final Properties SERIALIZATION_PROPERTIES = new Properties();
-
+    private static final Properties SERIALIZATION_PROPERTIES = new Properties();
     static {
         SERIALIZATION_PROPERTIES.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
     }
 
-    public final static FunctionSignature[] signatures = {
-            new FunctionSignature(
-                    new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-                    "Stores a new resource into the database. The resource is stored  "
-                            + "in the collection $collection-uri with the name $resource-name. "
-                            + XMLDBModule.COLLECTION_URI
-                            // fixit! - security -  if URI and possibly also file object
-                            // DBA role should be required/ljo
-                            // Of course we need to think of the node case too but it has at
-                            // least been passed throught fn:doc() but since the retrieval
-                            // happens firstly who knows ...
-                            + " The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. "
-                            + "A node will be serialized to SAX. It becomes the root node of the new "
-                            + "document. If $contents is of type xs:anyURI, the resource is loaded "
-                            + "from that URI. "
-                            + "Returns the path to the new document if successfully stored, "
-                            + "otherwise an XPathException is thrown.",
-                    new SequenceType[]{ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS},
-                    RETURN_TYPE),
-            new FunctionSignature(
-                    new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-                    "Stores a new resource into the database. The resource is stored  "
-                            + "in the collection $collection-uri with the name $resource-name. "
-                            + XMLDBModule.COLLECTION_URI
-                            // fixit! - security -  if URI and possibly also file object
-                            // DBA role should be required/ljo
-                            // Of course we need to think of the node case too but it has at
-                            // least been passed through fn:doc() but since the retrieval
-                            // happens firstly who knows ...
-                            + " The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. "
-                            + "A node will be serialized to SAX. It becomes the root node of the new "
-                            + "document. If $contents is of type xs:anyURI, the resource is loaded "
-                            + "from that URI. The final argument $mime-type is used to specify "
-                            + "a mime type.  If the mime-type is not a xml based type, the "
-                            + "resource will be stored as a binary resource."
-                            + "Returns the path to the new document if successfully stored, "
-                            + "otherwise an XPathException is thrown.",
-                    new SequenceType[]{ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS, ARG_MIME_TYPE},
-                    RETURN_TYPE),
-            new FunctionSignature(
-                    new QName("store-as-binary", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-                    "Stores a new resource into the database. The resource is stored  "
-                            + "in the collection $collection-uri with the name $resource-name. "
-                            + XMLDBModule.COLLECTION_URI
-                            // fixit! - security -  if URI and possibly also file object
-                            // DBA role should be required/ljo
-                            // Of course we need to think of the node case too but it has at
-                            // least been passed throught fn:doc() but since the retrieval
-                            // happens firstly who knows ...
-                            + " The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. "
-                            + "A node will be serialized to SAX. It becomes the root node of the new "
-                            + "document. If $contents is of type xs:anyURI, the resource is loaded "
-                            + "from that URI. "
-                            + "Returns the path to the new document if successfully stored, "
-                            + "otherwise an XPathException is thrown.",
-                    new SequenceType[]{ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS},
-                    RETURN_TYPE)
-    };
+    private static final String FS_STORE_NAME = "store";
+    static final FunctionSignature[] FS_STORE = functionSignatures(
+            FS_STORE_NAME,
+            "Stores a new resource into the database. The resource is stored  "
+                    + "in the collection $collection-uri with the name $resource-name. "
+                    + XMLDBModule.COLLECTION_URI
+                    + " The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. "
+                    + "A node will be serialized to SAX. It becomes the root node of the new "
+                    + "document. If $contents is of type xs:anyURI, the resource is loaded "
+                    + "from that URI. "
+                    + "Returns the path to the new document if successfully stored, "
+                    + "otherwise an XPathException is thrown.",
+            FS_RETURN_PATH,
+            arities(
+                    arity(FS_PARAM_COLLECTION_URI, FS_PARAM_RESOURCE_NAME, FS_PARAM_CONTENTS),
+                    arity(FS_PARAM_COLLECTION_URI, FS_PARAM_RESOURCE_NAME, FS_PARAM_CONTENTS, FS_PARAM_MIME_TYPE)
+            )
+    );
+
+    private static final String FS_STORE_BINARY_NAME = "store-as-binary";
+    static final FunctionSignature FS_STORE_BINARY = functionSignature(
+            FS_STORE_BINARY_NAME,
+            "Stores a new resource into the database. The resource is stored  "
+                    + "in the collection $collection-uri with the name $resource-name. "
+                    + XMLDBModule.COLLECTION_URI
+                    + " The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. "
+                    + "A node will be serialized to SAX. It becomes the root node of the new "
+                    + "document. If $contents is of type xs:anyURI, the resource is loaded "
+                    + "from that URI. "
+                    + "Returns the path to the new document if successfully stored, "
+                    + "otherwise an XPathException is thrown.",
+            FS_RETURN_PATH,
+            FS_PARAM_COLLECTION_URI, FS_PARAM_RESOURCE_NAME, FS_PARAM_CONTENTS
+    );
 
     public XMLDBStore(XQueryContext context, FunctionSignature signature) {
         super(context, signature);

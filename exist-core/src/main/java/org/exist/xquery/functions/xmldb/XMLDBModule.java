@@ -57,9 +57,9 @@ public class XMLDBModule extends AbstractInternalModule {
     public final static FunctionDef[] functions = {
             new FunctionDef(XMLDBCreateCollection.signature, XMLDBCreateCollection.class),
             new FunctionDef(XMLDBRegisterDatabase.signature, XMLDBRegisterDatabase.class),
-            new FunctionDef(XMLDBStore.signatures[0], XMLDBStore.class),
-            new FunctionDef(XMLDBStore.signatures[1], XMLDBStore.class),
-            new FunctionDef(XMLDBStore.signatures[2], XMLDBStore.class),
+            new FunctionDef(XMLDBStore.FS_STORE[0], XMLDBStore.class),
+            new FunctionDef(XMLDBStore.FS_STORE[1], XMLDBStore.class),
+            new FunctionDef(XMLDBStore.FS_STORE_BINARY, XMLDBStore.class),
             new FunctionDef(XMLDBLoadFromPattern.signatures[0], XMLDBLoadFromPattern.class),
             new FunctionDef(XMLDBLoadFromPattern.signatures[1], XMLDBLoadFromPattern.class),
             new FunctionDef(XMLDBLoadFromPattern.signatures[2], XMLDBLoadFromPattern.class),
