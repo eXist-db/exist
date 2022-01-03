@@ -318,14 +318,26 @@ public class SendEmailFunction extends BasicFunction
      * Sends an email using SMTP
      *
      * @param mails A list of mail object representing the email to send
-     * @param SMTPServer The SMTP Server to send the email through
+     * @param smtpServerArg The SMTP Server to send the email through
      * @return boolean value of true of false indicating success or failure to send email
      *
      * @throws SMTPException if an I/O error occurs
      */
-    private List<Boolean> sendBySMTP(List<Mail> mails, String SMTPServer) throws SMTPException
+    private List<Boolean> sendBySMTP(List<Mail> mails, final String smtpServerArg) throws SMTPException
     {
-        final int TCP_PROTOCOL_SMTP = 25;   //SMTP Protocol
+        String smtpHost = "localhost";
+        int smtpPort = 25;
+
+        if (smtpServerArg != null && !smtpServerArg.isEmpty()) {
+            final int idx = smtpServerArg.indexOf(':');
+            if (idx > -1) {
+                smtpHost = smtpServerArg.substring(0, idx);
+                smtpPort = Integer.parseInt(smtpServerArg.substring(idx + 1));
+            } else {
+                smtpHost = smtpServerArg;
+            }
+        }
+
         String smtpResult = "";             //Holds the server Result code when an SMTP Command is executed
 
         List<Boolean> sendMailResults = new ArrayList<>();
@@ -333,7 +345,7 @@ public class SendEmailFunction extends BasicFunction
 
 
         try (//Create a Socket and connect to the SMTP Server
-             Socket smtpSock = new Socket(SMTPServer, TCP_PROTOCOL_SMTP);
+             Socket smtpSock = new Socket(smtpHost, smtpPort);
 
              //Create a Buffered Reader for the Socket
              InputStream smtpSockInputStream = smtpSock.getInputStream();
