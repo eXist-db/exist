@@ -64,12 +64,6 @@ import java.util.*;
  * @serial 2011-08-02
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
-
-/* TODO according to RFC 821, SMTP commands must end with <CR><LF>,
-Java uses platform native end-of-line characters for .println(...) functions and so
-this function may have issues on non-Windows platforms
-*/
-
 public class SendEmailFunction extends BasicFunction {
 
     private static final Logger LOGGER = LogManager.getLogger(SendEmailFunction.class);
@@ -246,7 +240,7 @@ public class SendEmailFunction extends BasicFunction {
             //Get a Buffered Print Writer to the Processes stdOut
             try (final PrintWriter out = new PrintWriter(new OutputStreamWriter(p.getOutputStream(), charset))) {
                 //Send the Message
-                writeMessage(out, mail);
+                writeMessage(out, mail, false);
             }
         } catch (final IOException e) {
             LOGGER.error(e.getMessage(), e);
@@ -318,7 +312,7 @@ public class SendEmailFunction extends BasicFunction {
             }
 
             //Say "HELO"
-            smtpOut.println("HELO " + InetAddress.getLocalHost().getHostName());
+            smtpOut.print("HELO " + InetAddress.getLocalHost().getHostName() + "\r\n");
             smtpOut.flush();
 
             //get "HELLO" response, should be "250 blah blah"
@@ -362,10 +356,10 @@ public class SendEmailFunction extends BasicFunction {
             //Check format of from address does it include a name as well as the email address?
             if (mail.getFrom().contains("<")) {
                 //yes, just send the email address
-                smtpOut.println("MAIL FROM:<" + mail.getFrom().substring(mail.getFrom().indexOf("<") + 1, mail.getFrom().indexOf(">")) + ">");
+                smtpOut.print("MAIL FROM:<" + mail.getFrom().substring(mail.getFrom().indexOf("<") + 1, mail.getFrom().indexOf(">")) + ">\r\n");
             } else {
                 //no, doesnt include a name so send the email address
-                smtpOut.println("MAIL FROM:<" + mail.getFrom() + ">");
+                smtpOut.print("MAIL FROM:<" + mail.getFrom() + ">\r\n");
             }
             smtpOut.flush();
 
@@ -391,9 +385,9 @@ public class SendEmailFunction extends BasicFunction {
                 //Check format of to address does it include a name as well as the email address?
                 if (recipient.contains("<")) {
                     //yes, just send the email address
-                    smtpOut.println("RCPT TO:<" + recipient.substring(recipient.indexOf("<") + 1, recipient.indexOf(">")) + ">");
+                    smtpOut.print("RCPT TO:<" + recipient.substring(recipient.indexOf("<") + 1, recipient.indexOf(">")) + ">\r\n");
                 } else {
-                    smtpOut.println("RCPT TO:<" + recipient + ">");
+                    smtpOut.print("RCPT TO:<" + recipient + ">\r\n");
                 }
                 smtpOut.flush();
                 //Get "RCPT TO:" response
@@ -404,7 +398,7 @@ public class SendEmailFunction extends BasicFunction {
             }
 
             //SEND "DATA"
-            smtpOut.println("DATA");
+            smtpOut.print("DATA\r\n");
             smtpOut.flush();
 
             //Get "DATA" response, should be "354 blah blah"
@@ -415,7 +409,7 @@ public class SendEmailFunction extends BasicFunction {
             }
 
             //Send the Message
-            writeMessage(smtpOut, mail);
+            writeMessage(smtpOut, mail, true);
 
             //Get end message response, should be "250 blah blah"
             smtpResult = smtpIn.readLine();
@@ -436,36 +430,39 @@ public class SendEmailFunction extends BasicFunction {
      *
      * @param out   A PrintWriter to receive the email
      * @param aMail A mail object representing the email to write out
+     * @param useCrLf true to use CRLF for line ending, false to use LF
      * @throws IOException if an I/O error occurs
      */
-    private void writeMessage(final PrintWriter out, final Mail aMail) throws IOException {
+    private void writeMessage(final PrintWriter out, final Mail aMail, final boolean useCrLf) throws IOException {
         final String version = Version.getVersion();                //Version of eXist
         final String MultipartBoundary = "eXist.multipart." + version;    //Multipart Boundary
 
+        final String eol = useCrLf ? "\r\n" : "\n";
+
         //write the message headers
 
-        out.println("From: " + encode64Address(aMail.getFrom()));
+        out.print("From: " + encode64Address(aMail.getFrom()) + eol);
 
         if (aMail.getReplyTo() != null) {
-            out.println("Reply-To: " + encode64Address(aMail.getReplyTo()));
+            out.print("Reply-To: " + encode64Address(aMail.getReplyTo()) + eol);
         }
 
         for (int x = 0; x < aMail.countTo(); x++) {
-            out.println("To: " + encode64Address(aMail.getTo(x)));
+            out.print("To: " + encode64Address(aMail.getTo(x)) + eol);
         }
 
         for (int x = 0; x < aMail.countCC(); x++) {
-            out.println("CC: " + encode64Address(aMail.getCC(x)));
+            out.print("CC: " + encode64Address(aMail.getCC(x)) + eol);
         }
 
         for (int x = 0; x < aMail.countBCC(); x++) {
-            out.println("BCC: " + encode64Address(aMail.getBCC(x)));
+            out.print("BCC: " + encode64Address(aMail.getBCC(x)) + eol);
         }
 
-        out.println("Date: " + getDateRFC822());
-        out.println("Subject: " + encode64(aMail.getSubject()));
-        out.println("X-Mailer: eXist " + version + " mail:send-email()");
-        out.println("MIME-Version: 1.0");
+        out.print("Date: " + getDateRFC822() + eol);
+        out.print("Subject: " + encode64(aMail.getSubject()) + eol);
+        out.print("X-Mailer: eXist " + version + " mail:send-email()" + eol);
+        out.print("MIME-Version: 1.0" + eol);
 
 
         boolean multipartAlternative = false;
@@ -487,42 +484,42 @@ public class SendEmailFunction extends BasicFunction {
         if (multipartBoundary != null) {
             //multipart message
 
-            out.println("Content-Type: " + (multipartAlternative ? "multipart/alternative" : "multipart/mixed") + "; boundary=\"" + multipartBoundary + "\";");
+            out.print("Content-Type: " + (multipartAlternative ? "multipart/alternative" : "multipart/mixed") + "; boundary=\"" + multipartBoundary + "\";" + eol);
 
             //Mime warning
-            out.println();
-            out.println("Error your mail client is not MIME Compatible");
+            out.print(eol);
+            out.print("Error your mail client is not MIME Compatible" + eol);
 
-            out.println("--" + multipartBoundary);
+            out.print("--" + multipartBoundary + eol);
         }
 
         // TODO - need to put out a multipart/mixed boundary here when HTML, text and attachment present
         if (!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext()) {
-            out.println("Content-Type: multipart/alternative; boundary=\"" + MultipartBoundary + "_alt\";");
-            out.println("--" + MultipartBoundary + "_alt");
+            out.print("Content-Type: multipart/alternative; boundary=\"" + MultipartBoundary + "_alt\";" + eol);
+            out.print("--" + MultipartBoundary + "_alt" + eol);
         }
 
         //text email
         if (!aMail.getText().isEmpty()) {
-            out.println("Content-Type: text/plain; charset=" + charset);
-            out.println("Content-Transfer-Encoding: 8bit");
+            out.print("Content-Type: text/plain; charset=" + charset + eol);
+            out.print("Content-Transfer-Encoding: 8bit" + eol);
 
             //now send the txt message
-            out.println();
-            out.println(aMail.getText());
+            out.print(eol);
+            out.print(aMail.getText() + eol);
 
             if (multipartBoundary != null) {
                 if (!aMail.getXHTML().isEmpty() || aMail.attachmentIterator().hasNext()) {
                     if (!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext()) {
-                        out.println("--" + MultipartBoundary + "_alt");
+                        out.print("--" + MultipartBoundary + "_alt" + eol);
                     } else {
-                        out.println("--" + multipartBoundary);
+                        out.print("--" + multipartBoundary + eol);
                     }
                 } else {
                     if (!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext()) {
-                        out.println("--" + MultipartBoundary + "_alt--");
+                        out.print("--" + MultipartBoundary + "_alt--" + eol);
                     } else {
-                        out.println("--" + multipartBoundary + "--");
+                        out.print("--" + multipartBoundary + "--" + eol);
                     }
                 }
             }
@@ -530,27 +527,27 @@ public class SendEmailFunction extends BasicFunction {
 
         //HTML email
         if (!aMail.getXHTML().isEmpty()) {
-            out.println("Content-Type: text/html; charset=" + charset);
-            out.println("Content-Transfer-Encoding: 8bit");
+            out.print("Content-Type: text/html; charset=" + charset + eol);
+            out.print("Content-Transfer-Encoding: 8bit" + eol);
 
             //now send the html message
-            out.println();
-            out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">");
-            out.println(aMail.getXHTML());
+            out.print(eol);
+            out.print("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">" + eol);
+            out.print(aMail.getXHTML() + eol);
 
             if (multipartBoundary != null) {
                 if (aMail.attachmentIterator().hasNext()) {
                     if (!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext()) {
-                        out.println("--" + MultipartBoundary + "_alt--");
-                        out.println("--" + multipartBoundary);
+                        out.print("--" + MultipartBoundary + "_alt--" + eol);
+                        out.print("--" + multipartBoundary + eol);
                     } else {
-                        out.println("--" + multipartBoundary);
+                        out.print("--" + multipartBoundary + eol);
                     }
                 } else {
                     if (!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext()) {
-                        out.println("--" + MultipartBoundary + "_alt--");
+                        out.print("--" + MultipartBoundary + "_alt--" + eol);
                     } else {
-                        out.println("--" + multipartBoundary + "--");
+                        out.print("--" + multipartBoundary + "--" + eol);
                     }
                 }
             }
@@ -561,11 +558,11 @@ public class SendEmailFunction extends BasicFunction {
             for (final Iterator<MailAttachment> itAttachment = aMail.attachmentIterator(); itAttachment.hasNext(); ) {
                 final MailAttachment ma = itAttachment.next();
 
-                out.println("Content-Type: " + ma.getMimeType() + "; name=\"" + ma.getFilename() + "\"");
-                out.println("Content-Transfer-Encoding: base64");
-                out.println("Content-Description: " + ma.getFilename());
-                out.println("Content-Disposition: attachment; filename=\"" + ma.getFilename() + "\"");
-                out.println();
+                out.print("Content-Type: " + ma.getMimeType() + "; name=\"" + ma.getFilename() + "\"" + eol);
+                out.print("Content-Transfer-Encoding: base64" + eol);
+                out.print("Content-Description: " + ma.getFilename() + eol);
+                out.print("Content-Disposition: attachment; filename=\"" + ma.getFilename() + "\"" + eol);
+                out.print(eol);
 
 
                 //write out the attachment encoded data in fixed width lines
@@ -573,21 +570,21 @@ public class SendEmailFunction extends BasicFunction {
                 int read = -1;
                 final Reader attachmentDataReader = new StringReader(ma.getData());
                 while ((read = attachmentDataReader.read(buf, 0, MIME_BASE64_MAX_LINE_LENGTH)) > -1) {
-                    out.println(String.valueOf(buf, 0, read));
+                    out.print(String.valueOf(buf, 0, read) + eol);
                 }
 
                 if (itAttachment.hasNext()) {
-                    out.println("--" + multipartBoundary);
+                    out.print("--" + multipartBoundary + eol);
                 }
             }
 
             //Emd multipart message
-            out.println("--" + multipartBoundary + "--");
+            out.print("--" + multipartBoundary + "--" + eol);
         }
 
         //end the message, <cr><lf>.<cr><lf>
-        out.println();
-        out.println(".");
+        out.print(eol);
+        out.print("." + eol);
         out.flush();
     }
 
