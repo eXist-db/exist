@@ -38,6 +38,7 @@ import jakarta.mail.*;
 import jakarta.mail.internet.*;
 import jakarta.mail.util.ByteArrayDataSource;
 
+import javax.annotation.Nullable;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -47,8 +48,6 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.*;
-
-//send-email specific imports
 
 /**
  * eXist Mail Module Extension SendEmailFunction
@@ -467,7 +466,11 @@ public class SendEmailFunction extends BasicFunction {
         }
 
         out.print("Date: " + getDateRFC822() + eol);
-        out.print("Subject: " + encode64(aMail.getSubject()) + eol);
+        String subject = aMail.getSubject();
+        if (subject == null) {
+            subject = "";
+        }
+        out.print("Subject: " + encode64(subject) + eol);
         out.print("X-Mailer: eXist " + version + " mail:send-email()" + eol);
         out.print("MIME-Version: 1.0" + eol);
 
@@ -478,8 +481,8 @@ public class SendEmailFunction extends BasicFunction {
         if (aMail.attachmentIterator().hasNext()) {
             // we have an attachment as well as text and/or html so we need a multipart/mixed message
             multipartBoundary = MultipartBoundary;
-        } else if (!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty()) {
-            // we have text and html so we need a multipart/alternative message and no attachment
+        } else if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML())) {
+            // we have text and html, so we need a multipart/alternative message and no attachment
             multipartAlternative = true;
             multipartBoundary = MultipartBoundary + "_alt";
         }
@@ -501,13 +504,13 @@ public class SendEmailFunction extends BasicFunction {
         }
 
         // TODO - need to put out a multipart/mixed boundary here when HTML, text and attachment present
-        if (!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext()) {
+        if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML()) && aMail.attachmentIterator().hasNext()) {
             out.print("Content-Type: multipart/alternative; boundary=\"" + MultipartBoundary + "_alt\";" + eol);
             out.print("--" + MultipartBoundary + "_alt" + eol);
         }
 
         //text email
-        if (!aMail.getText().isEmpty()) {
+        if (nonEmpty(aMail.getText())) {
             out.print("Content-Type: text/plain; charset=" + charset + eol);
             out.print("Content-Transfer-Encoding: 8bit" + eol);
 
@@ -516,14 +519,14 @@ public class SendEmailFunction extends BasicFunction {
             out.print(aMail.getText() + eol);
 
             if (multipartBoundary != null) {
-                if (!aMail.getXHTML().isEmpty() || aMail.attachmentIterator().hasNext()) {
-                    if (!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext()) {
+                if (nonEmpty(aMail.getXHTML()) || aMail.attachmentIterator().hasNext()) {
+                    if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML()) && aMail.attachmentIterator().hasNext()) {
                         out.print("--" + MultipartBoundary + "_alt" + eol);
                     } else {
                         out.print("--" + multipartBoundary + eol);
                     }
                 } else {
-                    if (!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext()) {
+                    if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML()) && aMail.attachmentIterator().hasNext()) {
                         out.print("--" + MultipartBoundary + "_alt--" + eol);
                     } else {
                         out.print("--" + multipartBoundary + "--" + eol);
@@ -533,7 +536,7 @@ public class SendEmailFunction extends BasicFunction {
         }
 
         //HTML email
-        if (!aMail.getXHTML().isEmpty()) {
+        if (nonEmpty(aMail.getXHTML())) {
             out.print("Content-Type: text/html; charset=" + charset + eol);
             out.print("Content-Transfer-Encoding: 8bit" + eol);
 
@@ -544,14 +547,14 @@ public class SendEmailFunction extends BasicFunction {
 
             if (multipartBoundary != null) {
                 if (aMail.attachmentIterator().hasNext()) {
-                    if (!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext()) {
+                    if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML()) && aMail.attachmentIterator().hasNext()) {
                         out.print("--" + MultipartBoundary + "_alt--" + eol);
                         out.print("--" + multipartBoundary + eol);
                     } else {
                         out.print("--" + multipartBoundary + eol);
                     }
                 } else {
-                    if (!aMail.getText().isEmpty() && !aMail.getXHTML().isEmpty() && aMail.attachmentIterator().hasNext()) {
+                    if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML()) && aMail.attachmentIterator().hasNext()) {
                         out.print("--" + MultipartBoundary + "_alt--" + eol);
                     } else {
                         out.print("--" + multipartBoundary + "--" + eol);
@@ -688,8 +691,8 @@ public class SendEmailFunction extends BasicFunction {
             }
         }
 
-        if (i != mailElements.length - 1) {
-            mails = Arrays.copyOf(mails, i + 1);
+        if (i != mailElements.length) {
+            mails = Arrays.copyOf(mails, i);
         }
 
         return mails;
@@ -930,8 +933,8 @@ public class SendEmailFunction extends BasicFunction {
             }
         }
 
-        if (i != mailElements.length - 1) {
-            mails = Arrays.copyOf(mails, i + 1);
+        if (i != mailElements.length) {
+            mails = Arrays.copyOf(mails, i);
         }
 
         return mails;
@@ -1179,15 +1182,15 @@ public class SendEmailFunction extends BasicFunction {
      * @version 1.2
      */
     private static class Mail {
-        private String from = "";                //Who is the mail from
-        private String replyTo = null;                          //Who should you reply to
-        private final List<String> to = new ArrayList<>();      //Who is the mail going to
-        private final List<String> cc = new ArrayList<>();    //Carbon Copy to
-        private final List<String> bcc = new ArrayList<>();    //Blind Carbon Copy to
-        private String subject = "";                //Subject of the mail
-        private String text = "";                //Body text of the mail
-        private String xhtml = "";                              //Body XHTML of the mail
-        private final List<MailAttachment> attachment = new ArrayList<>();    //Any attachments
+        private String from;                                                //Who is the mail from
+        private String replyTo;                                             //Who should you reply to
+        private final List<String> to = new ArrayList<>(1);    //Who is the mail going to
+        private List<String> cc;                                            //Carbon Copy to
+        private List<String> bcc;                                           //Blind Carbon Copy to
+        private String subject;                                             //Subject of the mail
+        private String text;                                                //Body text of the mail
+        private String xhtml;                                               //Body XHTML of the mail
+        private List<MailAttachment> attachments;                            //Any attachments
 
         //From
         public void setFrom(final String from) {
@@ -1195,7 +1198,7 @@ public class SendEmailFunction extends BasicFunction {
         }
 
         public String getFrom() {
-            return (this.from);
+            return this.from;
         }
 
         //reply-to
@@ -1213,7 +1216,7 @@ public class SendEmailFunction extends BasicFunction {
         }
 
         public int countTo() {
-            return (to.size());
+            return to.size();
         }
 
         public String getTo(final int index) {
@@ -1226,36 +1229,60 @@ public class SendEmailFunction extends BasicFunction {
 
         //CC
         public void addCC(final String cc) {
+            if (this.cc == null) {
+                this.cc = new ArrayList<>();
+            }
             this.cc.add(cc);
         }
 
         public int countCC() {
-            return (cc.size());
+            if (this.cc == null) {
+                return 0;
+            }
+            return cc.size();
         }
 
         public String getCC(final int index) {
+            if (this.cc == null) {
+                throw new IndexOutOfBoundsException();
+            }
             return cc.get(index);
         }
 
         public List<String> getCC() {
-            return (cc);
+            if (this.cc == null) {
+                return Collections.EMPTY_LIST;
+            }
+            return cc;
         }
 
         //BCC
         public void addBCC(final String bcc) {
+            if (this.bcc == null) {
+                this.bcc = new ArrayList<>();
+            }
             this.bcc.add(bcc);
         }
 
         public int countBCC() {
+            if (this.bcc == null) {
+                return 0;
+            }
             return bcc.size();
         }
 
         public String getBCC(final int index) {
+            if (this.bcc == null) {
+                throw new IndexOutOfBoundsException();
+            }
             return bcc.get(index);
         }
 
         public List<String> getBCC() {
-            return (bcc);
+            if (this.bcc == null) {
+                return Collections.EMPTY_LIST;
+            }
+            return bcc;
         }
 
         //Subject
@@ -1286,11 +1313,21 @@ public class SendEmailFunction extends BasicFunction {
         }
 
         public void addAttachment(final MailAttachment ma) {
-            attachment.add(ma);
+            if (this.attachments == null) {
+                this.attachments = new ArrayList<>();
+            }
+            attachments.add(ma);
         }
 
         public Iterator<MailAttachment> attachmentIterator() {
-            return attachment.iterator();
+            if (this.attachments == null) {
+                return Collections.EMPTY_LIST.iterator();
+            }
+            return attachments.iterator();
         }
+    }
+
+    private static boolean nonEmpty(@Nullable final String str) {
+        return str != null && !str.isEmpty();
     }
 }
