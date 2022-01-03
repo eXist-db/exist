@@ -401,8 +401,13 @@ public class SendEmailFunction extends BasicFunction {
             smtpOut.print("DATA\r\n");
             smtpOut.flush();
 
-            //Get "DATA" response, should be "354 blah blah"
+            //Get "DATA" response, should be "354 blah blah" (optionally preceded by "250 OK")
             smtpResult = smtpIn.readLine();
+            if (smtpResult.startsWith("250")) {
+                // should then be followed by "354 blah blah"
+                smtpResult = smtpIn.readLine();
+            }
+
             if (!smtpResult.startsWith("354")) {
                 LOGGER.error("Error - SMTP DATA failed: {}", smtpResult);
                 return false;
