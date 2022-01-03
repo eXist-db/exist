@@ -216,6 +216,4 @@ public interface EXistCollectionManagementService extends CollectionManagementSe
     void removeCollection(String collName) throws XMLDBException;
 
     void removeCollection(XmldbURI collName) throws XMLDBException;
-
-    void runCommand(String[] params) throws XMLDBException;
 }

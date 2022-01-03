@@ -23,7 +23,6 @@ package org.exist.storage;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.plugin.PluginsManagerImpl;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 
@@ -38,7 +37,7 @@ import java.util.List;
  */
 public class StartupTriggersManager implements BrokerPoolService {
 
-    private final static Logger LOG = LogManager.getLogger(PluginsManagerImpl.class);
+    private final static Logger LOG = LogManager.getLogger(StartupTriggersManager.class);
 
     private final List<Configuration.StartupTriggerConfig> startupTriggerConfigs = new ArrayList<>();
 
