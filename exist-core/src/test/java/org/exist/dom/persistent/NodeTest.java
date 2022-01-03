@@ -241,7 +241,7 @@ public class NodeTest {
             assertNotNull(root);
             broker.saveCollection(transaction, root);
             
-            root.storeDocument(transaction, broker, XmldbURI.create("test.xml"), new StringInputSource(XML), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create("test.xml"), new StringInputSource(XML), MimeType.XML_TYPE, root);
             
             transact.commit(transaction);
         }

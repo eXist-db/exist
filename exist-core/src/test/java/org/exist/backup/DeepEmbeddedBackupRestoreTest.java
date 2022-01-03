@@ -150,7 +150,7 @@ public class DeepEmbeddedBackupRestoreTest {
                                     // store XML document
                                     final XmldbURI xmlName = XmldbURI.create("doc_" + x + ".xml");
                                     final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + EOL + "<position id=\"" + x + "\" d=\"" + d + "\" w=\"" + w + "\"/>";
-                                    sibCollection.storeDocument(transaction, broker, xmlName, new StringInputSource(xml), MimeType.XML_TYPE);
+                                    broker.storeDocument(transaction, xmlName, new StringInputSource(xml), MimeType.XML_TYPE, sibCollection);
 
                                     final byte[] xmlData = xml.getBytes(UTF_8);
                                     final long xmlHash = hash64.hash(xmlData, 0, xmlData.length, XXHASH64_SEED);
@@ -159,7 +159,7 @@ public class DeepEmbeddedBackupRestoreTest {
                                     // store Binary document
                                     final XmldbURI binName = XmldbURI.create("doc_" + x + ".bin");
                                     final String bin = x + ":" + d + ":" + w;
-                                    sibCollection.storeDocument(transaction, broker, binName, new StringInputSource(bin.getBytes(UTF_8)), MimeType.BINARY_TYPE);
+                                    broker.storeDocument(transaction, binName, new StringInputSource(bin.getBytes(UTF_8)), MimeType.BINARY_TYPE, sibCollection);
 
                                     final byte[] binData = bin.getBytes(UTF_8);
                                     final long binHash = hash64.hash(binData, 0, binData.length, XXHASH64_SEED);

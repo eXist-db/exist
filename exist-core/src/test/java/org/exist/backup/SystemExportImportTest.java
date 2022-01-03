@@ -228,10 +228,10 @@ public class SystemExportImportTest {
             final CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
 
-            test.storeDocument(transaction, broker, doc01uri.lastSegment(), new StringInputSource(XML1), MimeType.XML_TYPE);
-            test.storeDocument(transaction, broker, doc02uri.lastSegment(), new StringInputSource(XML2), MimeType.XML_TYPE);
-            test.storeDocument(transaction, broker, doc03uri.lastSegment(), new StringInputSource(XML3), MimeType.XML_TYPE);
-            test.storeDocument(transaction, broker, doc11uri.lastSegment(), new StringInputSource(BINARY.getBytes(UTF_8)), MimeType.BINARY_TYPE);
+            broker.storeDocument(transaction, doc01uri.lastSegment(), new StringInputSource(XML1), MimeType.XML_TYPE, test);
+            broker.storeDocument(transaction, doc02uri.lastSegment(), new StringInputSource(XML2), MimeType.XML_TYPE, test);
+            broker.storeDocument(transaction, doc03uri.lastSegment(), new StringInputSource(XML3), MimeType.XML_TYPE, test);
+            broker.storeDocument(transaction, doc11uri.lastSegment(), new StringInputSource(BINARY.getBytes(UTF_8)), MimeType.BINARY_TYPE, test);
 
             transaction.commit();
         }

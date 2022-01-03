@@ -121,7 +121,7 @@ public class GMLIndexTest {
 
             for (int i = 0; i < FILES.length; i++) {
                 final URL url = GMLIndexTest.class.getResource("/" + FILES[i]);
-                testCollection.storeDocument(transaction, broker, XmldbURI.create(FILES[i]), new FileInputSource(Paths.get(url.toURI())), MimeType.XML_TYPE);
+                broker.storeDocument(transaction, XmldbURI.create(FILES[i]), new FileInputSource(Paths.get(url.toURI())), MimeType.XML_TYPE, testCollection);
             }
 
             transaction.commit();

@@ -115,9 +115,9 @@ public class MoveOverwriteCollectionTest {
             final Collection test2 = createCollection(transaction, broker, SUB_TEST_COLLECTION_URI);
             final Collection test3 = createCollection(transaction, broker, TEST3_COLLECTION_URI);
 
-            test1.storeDocument(transaction, broker, doc1Name, new StringInputSource(XML1), MimeType.XML_TYPE);
-            test2.storeDocument(transaction, broker, doc2Name, new StringInputSource(XML2), MimeType.XML_TYPE);
-            test3.storeDocument(transaction, broker, doc3Name, new StringInputSource(XML3), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, doc1Name, new StringInputSource(XML1), MimeType.XML_TYPE, test1);
+            broker.storeDocument(transaction, doc2Name, new StringInputSource(XML2), MimeType.XML_TYPE, test2);
+            broker.storeDocument(transaction, doc3Name, new StringInputSource(XML3), MimeType.XML_TYPE, test3);
 
             transaction.commit();
 

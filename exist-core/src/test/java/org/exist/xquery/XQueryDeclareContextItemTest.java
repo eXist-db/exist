@@ -82,7 +82,7 @@ public class XQueryDeclareContextItemTest {
             assertNotNull(root);
             broker.saveCollection(transaction, root);
 
-            root.storeDocument(transaction, broker, XmldbURI.create("sysevent.xml"), new StringInputSource(SYSEVENT_XML), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create("sysevent.xml"), new StringInputSource(SYSEVENT_XML), MimeType.XML_TYPE, root);
 
             transaction.commit();
         }

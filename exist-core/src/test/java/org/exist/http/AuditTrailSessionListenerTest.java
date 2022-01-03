@@ -136,8 +136,8 @@ public class AuditTrailSessionListenerTest {
                 final Txn transaction = existEmbeddedServer.getBrokerPool().getTransactionManager().beginTransaction()) {
 
             final Collection testCollection = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
-            testCollection.storeDocument(transaction, broker, XmldbURI.create(CREATE_SCRIPT), new StringInputSource("<create/>".getBytes(UTF_8)), MimeType.XQUERY_TYPE);
-            testCollection.storeDocument(transaction, broker, XmldbURI.create(DESTROYED_SCRIPT), new StringInputSource("</destroyed>".getBytes(UTF_8)), MimeType.XQUERY_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create(CREATE_SCRIPT), new StringInputSource("<create/>".getBytes(UTF_8)), MimeType.XQUERY_TYPE, testCollection);
+            broker.storeDocument(transaction, XmldbURI.create(DESTROYED_SCRIPT), new StringInputSource("</destroyed>".getBytes(UTF_8)), MimeType.XQUERY_TYPE, testCollection);
 
             transaction.commit();
         }

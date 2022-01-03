@@ -359,7 +359,7 @@ public class LockedCollection implements Collection {
 
     @Override
     public void storeDocument(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputSource source, @Nullable final MimeType mimeType) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
-        collection.storeDocument(transaction, broker, name, source, mimeType);
+        broker.storeDocument(transaction, name, source, mimeType, collection);
     }
 
     @Override
@@ -369,7 +369,7 @@ public class LockedCollection implements Collection {
 
     @Override
     public void storeDocument(final Txn transaction, final DBBroker broker, final XmldbURI name, final Node node, @Nullable final MimeType mimeType) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
-        collection.storeDocument(transaction, broker, name, node, mimeType);
+        broker.storeDocument(transaction, name, node, mimeType, collection);
     }
 
     @Override

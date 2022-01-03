@@ -164,7 +164,7 @@ public class XQueryContextAttributesTest {
 
     private static DBSource storeQuery(final DBBroker broker, final Txn transaction, final XmldbURI uri, final InputSource source) throws IOException, PermissionDeniedException, SAXException, LockException, EXistException {
         try (final Collection collection = broker.openCollection(uri.removeLastSegment(), Lock.LockMode.WRITE_LOCK)) {
-            collection.storeDocument(transaction, broker, uri.lastSegment(), source, MimeType.XQUERY_TYPE);
+            broker.storeDocument(transaction, uri.lastSegment(), source, MimeType.XQUERY_TYPE, collection);
             final BinaryDocument doc = (BinaryDocument) collection.getDocument(broker, uri.lastSegment());
 
             return new DBSource(broker, doc, false);

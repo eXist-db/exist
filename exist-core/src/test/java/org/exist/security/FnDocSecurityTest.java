@@ -264,7 +264,7 @@ public class FnDocSecurityTest {
 
     private static void createDocument(final DBBroker broker, final Txn transaction, final String collectionUri, final String docName, final String content, final String modeStr) throws PermissionDeniedException, LockException, SAXException, EXistException, IOException, SyntaxException {
         try (final Collection collection = broker.openCollection(XmldbURI.create(collectionUri), Lock.LockMode.WRITE_LOCK)) {
-            collection.storeDocument(transaction, broker, XmldbURI.create(docName), new StringInputSource(content), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create(docName), new StringInputSource(content), MimeType.XML_TYPE, collection);
 
             PermissionFactory.chmod_str(broker, transaction, XmldbURI.create(collectionUri).append(docName), Optional.of(modeStr), Optional.empty());
         }

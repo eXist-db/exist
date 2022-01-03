@@ -146,7 +146,7 @@ public class MoveCollectionRecoveryTest {
                 sample = InputStreamUtil.readString(is, UTF_8);
             }
 
-            test.storeDocument(transaction, broker, TestConstants.TEST_XML_URI, new StringInputSource(sample), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, TestConstants.TEST_XML_URI, new StringInputSource(sample), MimeType.XML_TYPE, test);
 
             final Collection dest = broker.getOrCreateCollection(transaction, TestConstants.DESTINATION_COLLECTION_URI);
             assertNotNull(dest);
@@ -194,7 +194,7 @@ public class MoveCollectionRecoveryTest {
                     assertNotNull(is);
                     sample = InputStreamUtil.readString(is, UTF_8);
                 }
-                test2.storeDocument(transaction, broker, TestConstants.TEST_XML_URI, new StringInputSource(sample), MimeType.XML_TYPE);
+                broker.storeDocument(transaction, TestConstants.TEST_XML_URI, new StringInputSource(sample), MimeType.XML_TYPE, test2);
 
                 transact.commit(transaction);
             }

@@ -142,7 +142,7 @@ public class RecoverBinaryTest2 {
                 if (Files.isRegularFile(f)) {
                     final XmldbURI uri = test2.getURI().append(j + "_" + FileUtils.fileName(f));
 
-                    test2.storeDocument(transaction, broker, uri, new FileInputSource(f), MimeType.BINARY_TYPE);
+                    broker.storeDocument(transaction, uri, new FileInputSource(f), MimeType.BINARY_TYPE, test2);
                     final BinaryDocument doc = (BinaryDocument) test2.getDocument(broker, uri);
                     assertNotNull(doc);
                 }

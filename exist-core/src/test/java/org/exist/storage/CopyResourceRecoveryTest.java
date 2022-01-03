@@ -112,7 +112,7 @@ public class CopyResourceRecoveryTest {
                     assertNotNull(is);
                     sample = InputStreamUtil.readString(is, UTF_8);
                 }
-                subTestCollection.storeDocument(transaction, broker, XmldbURI.create("test.xml"), new StringInputSource(sample), MimeType.XML_TYPE);
+                broker.storeDocument(transaction, XmldbURI.create("test.xml"), new StringInputSource(sample), MimeType.XML_TYPE, subTestCollection);
                 doc = subTestCollection.getDocument(broker, XmldbURI.create("test.xml"));
 
                 transact.commit(transaction);
@@ -169,7 +169,7 @@ public class CopyResourceRecoveryTest {
                     assertNotNull(is);
                     sample = InputStreamUtil.readString(is, UTF_8);
                 }
-                subTestCollection.storeDocument(transaction, broker, XmldbURI.create("test2.xml"), new StringInputSource(sample), MimeType.XML_TYPE);
+                broker.storeDocument(transaction, XmldbURI.create("test2.xml"), new StringInputSource(sample), MimeType.XML_TYPE, subTestCollection);
                 doc = subTestCollection.getDocument(broker, XmldbURI.create("test2.xml"));
 
                 transact.commit(transaction);

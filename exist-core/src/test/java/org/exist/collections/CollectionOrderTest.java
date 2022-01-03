@@ -302,7 +302,7 @@ public class CollectionOrderTest {
                 for (final String documentName : documentNames) {
                     final String xml = "<document id='" + UUID.randomUUID().toString() + "'><name>" + documentName + "</name></document>";
 
-                    testCollection.storeDocument(transaction, broker, XmldbURI.create(documentName), new StringInputSource(xml), MimeType.XML_TYPE);
+                    broker.storeDocument(transaction, XmldbURI.create(documentName), new StringInputSource(xml), MimeType.XML_TYPE, testCollection);
                 }
             }
 

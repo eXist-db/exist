@@ -285,7 +285,7 @@ public class EntryFunctions extends BasicFunction {
                             try (final Collection collection = context.getBroker().openCollection(destPath.removeLastSegment(), Lock.LockMode.WRITE_LOCK)) {
                                 final BinaryValue binaryValue = (BinaryValue) data.get();
                                 final MimeType mimeType = MimeTable.getInstance().getContentTypeFor(destPath.lastSegment());
-                                collection.storeDocument(transaction, context.getBroker(), destPath.lastSegment(), new BinaryValueInputSource(binaryValue), mimeType);
+                                context.getBroker().storeDocument(transaction, destPath.lastSegment(), new BinaryValueInputSource(binaryValue), mimeType, collection);
                             }
                             transaction.commit();
                         } catch (final IOException | PermissionDeniedException | EXistException | LockException | SAXException e) {

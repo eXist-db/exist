@@ -122,7 +122,7 @@ public abstract class AbstractUpdateTest {
 	        final Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append("test2"));
 	        broker.saveCollection(transaction, test);
 	        
-	        test.storeDocument(transaction, broker, XmldbURI.create("test.xml"), new StringInputSource(TEST_XML), MimeType.XML_TYPE);
+	        broker.storeDocument(transaction, XmldbURI.create("test.xml"), new StringInputSource(TEST_XML), MimeType.XML_TYPE, test);
             doc = test.getDocument(broker, XmldbURI.create("test.xml"));
 	        //TODO : unlock the collection here ?
 	

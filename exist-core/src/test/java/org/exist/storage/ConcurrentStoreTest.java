@@ -154,7 +154,7 @@ public class ConcurrentStoreTest {
                 for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
                     try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
                         final String sample = InputStreamUtil.readString(is, UTF_8);
-                        test.storeDocument(transaction, broker, XmldbURI.create(sampleName), new StringInputSource(sample), MimeType.XML_TYPE);
+                        broker.storeDocument(transaction, XmldbURI.create(sampleName), new StringInputSource(sample), MimeType.XML_TYPE, test);
                     } catch (SAXException e) {
                         System.err.println("Error found while parsing document: " + sampleName + ": " + e.getMessage());
                     }
@@ -195,7 +195,7 @@ public class ConcurrentStoreTest {
 
                 try (final InputStream is = SAMPLES.getHamletSample()) {
                     final String sample = InputStreamUtil.readString(is, UTF_8);
-                    test.storeDocument(transaction, broker, XmldbURI.create("test.xml"), new StringInputSource(sample), MimeType.XML_TYPE);
+                    broker.storeDocument(transaction, XmldbURI.create("test.xml"), new StringInputSource(sample), MimeType.XML_TYPE, test);
                 } catch (SAXException e) {
                     System.err.println("Error found while parsing document: hamlet.xml: " + e.getMessage());
                 }

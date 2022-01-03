@@ -99,7 +99,7 @@ public class RemoveRootCollectionTest {
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
         try (final Txn transaction = transact.beginTransaction()) {
-            root.storeDocument(transaction, broker, XmldbURI.create("hamlet.xml"), new InputStreamSupplierInputSource(() -> SAMPLES.getHamletSample()), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create("hamlet.xml"), new InputStreamSupplierInputSource(() -> SAMPLES.getHamletSample()), MimeType.XML_TYPE, root);
             transact.commit(transaction);
         }
     }

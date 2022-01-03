@@ -800,7 +800,7 @@ public class Deployment {
 
                     try (final FileInputSource is = new FileInputSource(file)) {
 
-                        targetCollection.storeDocument(transaction, broker, name, is, mime, null, null, permission, null, null);
+                        broker.storeDocument(transaction, name, is, mime, null, null, permission, null, null, targetCollection);
 
                     } catch (final EXistException | PermissionDeniedException | LockException | SAXException | IOException e) {
                         //check for .html ending
@@ -824,7 +824,7 @@ public class Deployment {
             IOException, EXistException, PermissionDeniedException, LockException, SAXException {
 
         final InputSource is = new FileInputSource(file);
-        targetCollection.storeDocument(transaction, broker, name, is, new MimeType(mime.getName(), MimeType.BINARY), null, null, permission, null, null);
+        broker.storeDocument(transaction, name, is, new MimeType(mime.getName(), MimeType.BINARY), null, null, permission, null, null, targetCollection);
     }
 
     private void storeBinaryResources(final DBBroker broker, final Txn transaction, final Path directory, final Collection targetCollection,

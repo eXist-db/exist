@@ -92,7 +92,7 @@ public class RecoveryTest3 {
             for (int i = 0; i < files.size() && i < RESOURCE_COUNT; i++) {
                 final Path f = files.get(i);
                 try {
-                    test2.storeDocument(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()), MimeType.XML_TYPE);
+                    broker.storeDocument(transaction, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()), MimeType.XML_TYPE, test2);
                 } catch (final SAXException e) {
                     fail("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
                 }
@@ -138,7 +138,7 @@ public class RecoveryTest3 {
                     for (int i = 0; i < files.size() && i < RESOURCE_COUNT; i++) {
                         final Path f = files.get(i);
                         try {
-                            test2.storeDocument(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()), MimeType.XML_TYPE);
+                            broker.storeDocument(transaction, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()), MimeType.XML_TYPE, test2);
                         } catch (SAXException e) {
                             fail("Error found while parsing document: " + FileUtils.fileName(f) + ": " + e.getMessage());
                         }

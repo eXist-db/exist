@@ -113,7 +113,7 @@ public class SystemExportFiltersTest {
             storeXMLDocument(txn, broker, test, doc02uri.lastSegment(), XML2);
             storeXMLDocument(txn, broker, test, doc03uri.lastSegment(), XML3);
 
-            test.storeDocument(txn, broker, doc11uri.lastSegment(), new StringInputSource(BINARY.getBytes(UTF_8)), MimeType.BINARY_TYPE);
+            broker.storeDocument(txn, doc11uri.lastSegment(), new StringInputSource(BINARY.getBytes(UTF_8)), MimeType.BINARY_TYPE, test);
 
             txn.commit();
         }
@@ -206,6 +206,6 @@ public class SystemExportFiltersTest {
     }
 
     private static void storeXMLDocument(final Txn txn, final DBBroker broker, final Collection col, final XmldbURI name, final String data) throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
-        col.storeDocument(txn, broker, name, new StringInputSource(data), MimeType.XML_TYPE);
+        broker.storeDocument(txn, name, new StringInputSource(data), MimeType.XML_TYPE, col);
     }
 }

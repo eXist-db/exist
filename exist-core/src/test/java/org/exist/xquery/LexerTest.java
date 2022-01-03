@@ -84,7 +84,7 @@ public class LexerTest {
 	            Collection collection = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
 	            broker.saveCollection(transaction, collection);
 	
-	            collection.storeDocument(transaction, broker, XmldbURI.create("test.xml"), new StringInputSource(xml), MimeType.XML_TYPE);
+	            broker.storeDocument(transaction, XmldbURI.create("test.xml"), new StringInputSource(xml), MimeType.XML_TYPE, collection);
 	            //TODO : unlock the collection here ?
 
 	            transact.commit(transaction);

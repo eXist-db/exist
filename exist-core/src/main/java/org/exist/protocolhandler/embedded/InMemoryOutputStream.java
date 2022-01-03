@@ -129,7 +129,7 @@ public class InMemoryOutputStream extends OutputStream {
 
           final MimeType mime = MimeTable.getInstance().getContentTypeFor(documentUri);
           try (final ManagedDocumentLock lock = lockManager.acquireDocumentWriteLock(documentUri)) {
-            collection.storeDocument(txn, broker, documentUri, new CachingFilterInputStreamInputSource(cfis), mime);
+            broker.storeDocument(txn, documentUri, new CachingFilterInputStreamInputSource(cfis), mime, collection);
           }
         }
 

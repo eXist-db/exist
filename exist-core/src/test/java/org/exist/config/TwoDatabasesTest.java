@@ -142,7 +142,7 @@ public class TwoDatabasesTest {
     private Collection storeBin(final DBBroker broker, final Txn txn, String suffix) throws PermissionDeniedException, LockException, SAXException, EXistException, IOException {
         String data = bin + suffix;
         Collection top = broker.openCollection(XmldbURI.create("xmldb:exist:///db"), LockMode.WRITE_LOCK);
-        top.storeDocument(txn, broker, XmldbURI.create("bin"), new StringInputSource(data.getBytes(UTF_8)), MimeType.TEXT_TYPE);
+        broker.storeDocument(txn, XmldbURI.create("bin"), new StringInputSource(data.getBytes(UTF_8)), MimeType.TEXT_TYPE, top);
         return top;
     }
 

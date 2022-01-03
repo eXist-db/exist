@@ -547,10 +547,10 @@ public class BasicNodeSetTest {
                 try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
                     sample = InputStreamUtil.readString(is, UTF_8);
                 }
-                root.storeDocument(transaction, broker, XmldbURI.create(sampleName), new StringInputSource(sample), MimeType.XML_TYPE);
+                broker.storeDocument(transaction, XmldbURI.create(sampleName), new StringInputSource(sample), MimeType.XML_TYPE, root);
             }
 
-            root.storeDocument(transaction, broker, XmldbURI.create("nested.xml"), new StringInputSource(NESTED_XML), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create("nested.xml"), new StringInputSource(NESTED_XML), MimeType.XML_TYPE, root);
             transact.commit(transaction);
 
             //for the tests

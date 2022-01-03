@@ -628,10 +628,10 @@ public class CustomIndexTest {
 
             docs = new DefaultDocumentSet();
 
-            root.storeDocument(transaction, broker, XmldbURI.create("test_string.xml"), new StringInputSource(XML), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create("test_string.xml"), new StringInputSource(XML), MimeType.XML_TYPE, root);
             docs.add(root.getDocument(broker, XmldbURI.create("test_string.xml")));
 
-            root.storeDocument(transaction, broker, XmldbURI.create("test_string2.xml"), new StringInputSource(XML2), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create("test_string2.xml"), new StringInputSource(XML2), MimeType.XML_TYPE, root);
             docs.add(root.getDocument(broker, XmldbURI.create("test_string2.xml")));
 
             transact.commit(transaction);

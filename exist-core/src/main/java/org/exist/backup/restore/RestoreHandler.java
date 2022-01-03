@@ -342,7 +342,7 @@ public class RestoreHandler extends DefaultHandler {
                     try (final Collection collection = broker.openCollection(currentCollectionUri, Lock.LockMode.WRITE_LOCK);
                          final ManagedDocumentLock docLock = broker.getBrokerPool().getLockManager().acquireDocumentWriteLock(docUri)) {
 
-                        collection.storeDocument(transaction, broker, docName, is, mimeType, dateCreated, dateModified, null, docType, null);
+                        broker.storeDocument(transaction, docName, is, mimeType, dateCreated, dateModified, null, docType, null, collection);
                         validated = true;
 
                         transaction.commit();

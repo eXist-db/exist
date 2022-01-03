@@ -132,7 +132,7 @@ public class EmbeddedOutputStream extends OutputStream {
                 final MimeType mime = MimeTable.getInstance().getContentTypeFor(documentUri);
                 final TransactionManager transact = pool.getTransactionManager();
                 try (final Txn txn = transact.beginTransaction()) {
-                    collection.storeDocument(txn, broker, documentUri, new FileInputSource(tempFile), mime);
+                    broker.storeDocument(txn, documentUri, new FileInputSource(tempFile), mime, collection);
 
                     txn.commit();
                 }

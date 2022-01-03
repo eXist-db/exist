@@ -129,7 +129,7 @@ public class DLNStorageTest {
             Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
             broker.saveCollection(transaction, test);
 
-            test.storeDocument(transaction, broker, XmldbURI.create("test_string.xml"), new StringInputSource(TEST_XML), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create("test_string.xml"), new StringInputSource(TEST_XML), MimeType.XML_TYPE, test);
             //TODO : unlock the collection here ?
 
             transact.commit(transaction);

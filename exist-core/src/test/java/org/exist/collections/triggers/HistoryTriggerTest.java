@@ -75,7 +75,7 @@ public class HistoryTriggerTest {
             // create and store the collection.xconf for the test collection
             Collection configCollection = broker.getOrCreateCollection(transaction, TEST_CONFIG_COLLECTION_URI);
             broker.saveCollection(transaction, configCollection);
-            configCollection.storeDocument(transaction, broker, CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI, new StringInputSource(COLLECTION_CONFIG), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI, new StringInputSource(COLLECTION_CONFIG), MimeType.XML_TYPE, configCollection);
 
             // create the test collection
             Collection testCollection = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
@@ -184,7 +184,7 @@ public class HistoryTriggerTest {
 
             assertNotNull(testCollection);
 
-            testCollection.storeDocument(transaction, broker, docName, new StringInputSource(docContent), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, docName, new StringInputSource(docContent), MimeType.XML_TYPE, testCollection);
         }
     }
 

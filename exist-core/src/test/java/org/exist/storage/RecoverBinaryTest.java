@@ -94,7 +94,7 @@ public class RecoverBinaryTest extends AbstractRecoverTest {
 
         final Path file = ((FileInputSource)data).getFile();
 
-        collection.storeDocument(transaction, broker, XmldbURI.create(dbFilename), new FileInputSource(file), MimeType.BINARY_TYPE);
+        broker.storeDocument(transaction, XmldbURI.create(dbFilename), new FileInputSource(file), MimeType.BINARY_TYPE, collection);
         final BinaryDocument doc = (BinaryDocument) collection.getDocument(broker, XmldbURI.create(dbFilename));
 
         assertNotNull(doc);

@@ -110,7 +110,7 @@ public class StoreResourceTest {
              final Collection col = broker.openCollection(uri.removeLastSegment(), Lock.LockMode.WRITE_LOCK)) {
 
 
-            col.storeDocument(transaction, broker, uri.lastSegment(), new StringInputSource(content), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, uri.lastSegment(), new StringInputSource(content), MimeType.XML_TYPE, col);
 
             transaction.commit();
         }
@@ -143,7 +143,7 @@ public class StoreResourceTest {
              final Txn transaction = pool.getTransactionManager().beginTransaction();
              final Collection col = broker.openCollection(uri.removeLastSegment(), Lock.LockMode.WRITE_LOCK)) {
 
-            col.storeDocument(transaction, broker, uri.lastSegment(), new StringInputSource(content.getBytes(UTF_8)), MimeType.BINARY_TYPE);
+            broker.storeDocument(transaction, uri.lastSegment(), new StringInputSource(content.getBytes(UTF_8)), MimeType.BINARY_TYPE, col);
 
             transaction.commit();
         }
@@ -223,12 +223,12 @@ public class StoreResourceTest {
              final Collection collection = broker.openCollection(TEST_COLLECTION_URI, Lock.LockMode.WRITE_LOCK)) {
 
             final String u1d3xml = "<empty3/>";
-            collection.storeDocument(transaction, broker, USER1_DOC1, new StringInputSource(u1d3xml), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, USER1_DOC1, new StringInputSource(u1d3xml), MimeType.XML_TYPE, collection);
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_DOC1), USER1_DOC1_MODE);
             chgrp(broker, transaction, TEST_COLLECTION_URI.append(USER1_DOC1), GROUP1_NAME);
 
             final String u1d3bin = "bin3";
-            collection.storeDocument(transaction, broker, USER1_BIN_DOC1, new StringInputSource(u1d3bin.getBytes(UTF_8)), MimeType.TEXT_TYPE);
+            broker.storeDocument(transaction, USER1_BIN_DOC1, new StringInputSource(u1d3bin.getBytes(UTF_8)), MimeType.TEXT_TYPE, collection);
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC1), USER1_BIN_DOC1_MODE);
             chgrp(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC1), GROUP1_NAME);
 

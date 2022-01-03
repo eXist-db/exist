@@ -129,7 +129,7 @@ public class ConstructedNodesRecoveryTest {
             broker.saveCollection(transaction, root);
 
             //store test document
-            root.storeDocument(transaction, broker, XmldbURI.create(documentName), new StringInputSource(testDocument), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create(documentName), new StringInputSource(testDocument), MimeType.XML_TYPE, root);
 
             //commit the transaction
             transact.commit(transaction);

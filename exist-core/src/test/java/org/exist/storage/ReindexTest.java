@@ -206,7 +206,7 @@ public class ReindexTest {
             assertNotNull(collection);
             broker.saveCollection(transaction, collection);
 
-            collection.storeDocument(transaction, broker, docName, new StringInputSource(doc), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, docName, new StringInputSource(doc), MimeType.XML_TYPE, collection);
 
             transaction.commit();
         }

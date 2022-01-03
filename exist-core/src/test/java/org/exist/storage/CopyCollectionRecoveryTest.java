@@ -137,7 +137,7 @@ public class CopyCollectionRecoveryTest {
             broker.saveCollection(transaction, test);
 
             final String sample = getSampleData();
-            test.storeDocument(transaction, broker, XmldbURI.create("test.xml"), new StringInputSource(sample), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create("test.xml"), new StringInputSource(sample), MimeType.XML_TYPE, test);
 
             final Collection dest = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("destination"));
             broker.saveCollection(transaction, dest);
@@ -180,7 +180,7 @@ public class CopyCollectionRecoveryTest {
 
                 final String sample = getSampleData();
 
-                test2.storeDocument(transaction, broker, XmldbURI.create("test.xml"), new StringInputSource(sample), MimeType.XML_TYPE);
+                broker.storeDocument(transaction, XmldbURI.create("test.xml"), new StringInputSource(sample), MimeType.XML_TYPE, test2);
 
                 transact.commit(transaction);
             }

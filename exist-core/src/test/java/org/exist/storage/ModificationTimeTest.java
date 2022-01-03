@@ -160,7 +160,7 @@ public class ModificationTimeTest {
         broker.saveCollection(transaction, root);
         assertNotNull(root);
 
-        root.storeDocument(transaction, broker, XmldbURI.create(name), new StringInputSource(xml), MimeType.XML_TYPE);
+        broker.storeDocument(transaction, XmldbURI.create(name), new StringInputSource(xml), MimeType.XML_TYPE, root);
     }
 
     private long getDocLastModified(final DBBroker broker, final Txn transaction, final String name) throws PermissionDeniedException {

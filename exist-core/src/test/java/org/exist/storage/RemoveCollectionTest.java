@@ -163,7 +163,7 @@ public class RemoveCollectionTest {
                 for (final Iterator<DocumentImpl> i = test.iterator(broker); i.hasNext() && j < files.length; j++) {
                     final DocumentImpl doc = i.next();
                     final InputSource is = new InputSource(files[j].toUri().toASCIIString());
-                    test.storeDocument(transaction, broker, doc.getURI(), is, MimeType.XML_TYPE);
+                    broker.storeDocument(transaction, doc.getURI(), is, MimeType.XML_TYPE, test);
                 }
                 generator.releaseAll();
                 transact.commit(transaction);
@@ -189,7 +189,7 @@ public class RemoveCollectionTest {
             for(final Path file : files) {
                 final InputSource is = new InputSource(file.toUri().toASCIIString());
 
-                test.storeDocument(transaction, broker, XmldbURI.create(file.getFileName().toString()), is, MimeType.XML_TYPE);
+                broker.storeDocument(transaction, XmldbURI.create(file.getFileName().toString()), is, MimeType.XML_TYPE, test);
             }
             generator.releaseAll();
             transact.commit(transaction);

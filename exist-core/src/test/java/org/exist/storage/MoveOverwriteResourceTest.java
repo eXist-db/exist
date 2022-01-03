@@ -110,8 +110,8 @@ public class MoveOverwriteResourceTest {
             test1 = createCollection(transaction, broker, TEST_COLLECTION_URI);
             test2 = createCollection(transaction, broker, SUB_TEST_COLLECTION_URI);
 
-            test1.storeDocument(transaction, broker, doc1Name, new StringInputSource(XML1), MimeType.XML_TYPE);
-            test2.storeDocument(transaction, broker, doc2Name,  new StringInputSource(XML2), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, doc1Name, new StringInputSource(XML1), MimeType.XML_TYPE, test1);
+            broker.storeDocument(transaction, doc2Name, new StringInputSource(XML2), MimeType.XML_TYPE, test2);
 
             transaction.commit();
         }

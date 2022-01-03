@@ -176,7 +176,7 @@ public class ConcurrentBrokerPoolTest {
 
                     final String docContent = docContent(uuid);
 
-                    collection.storeDocument(transaction, broker, docName(uuid), new StringInputSource(docContent), MimeType.XML_TYPE);
+                    broker.storeDocument(transaction, docName(uuid), new StringInputSource(docContent), MimeType.XML_TYPE, collection);
 
                     transaction.commit();
                 }

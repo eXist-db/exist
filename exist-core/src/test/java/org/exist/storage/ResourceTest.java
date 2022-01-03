@@ -90,7 +90,7 @@ public class ResourceTest {
             
             broker.saveCollection(transaction, collection);
 
-            collection.storeDocument(transaction, broker, DOCUMENT_NAME_URI, new StringInputSource(EMPTY_BINARY_FILE.getBytes(UTF_8)), MimeType.TEXT_TYPE);
+            broker.storeDocument(transaction, DOCUMENT_NAME_URI, new StringInputSource(EMPTY_BINARY_FILE.getBytes(UTF_8)), MimeType.TEXT_TYPE, collection);
             
             transact.commit(transaction);
         }

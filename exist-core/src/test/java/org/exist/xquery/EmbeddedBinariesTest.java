@@ -59,7 +59,7 @@ public class EmbeddedBinariesTest extends AbstractBinariesTest<Sequence, Item, I
             try(final ManagedCollectionLock collectionLock = brokerPool.getLockManager().acquireCollectionWriteLock(filePath.removeLastSegment())) {
                 final Collection collection = broker.getOrCreateCollection(transaction, filePath.removeLastSegment());
 
-                collection.storeDocument(transaction, broker, filePath.lastSegment(), new StringInputSource(content), MimeType.BINARY_TYPE);
+                broker.storeDocument(transaction, filePath.lastSegment(), new StringInputSource(content), MimeType.BINARY_TYPE, collection);
 
                 broker.saveCollection(transaction, collection);
             }

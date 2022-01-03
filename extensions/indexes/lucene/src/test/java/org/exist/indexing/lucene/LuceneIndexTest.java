@@ -1272,7 +1272,7 @@ public class LuceneIndexTest {
                 mgr.addConfiguration(transaction, broker, root, configuration);
             }
 
-            root.storeDocument(transaction, broker, XmldbURI.create(docName), new StringInputSource(data), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create(docName), new StringInputSource(data), MimeType.XML_TYPE, root);
 
             docs.add(root.getDocument(broker, XmldbURI.create(docName)));
             transact.commit(transaction);
@@ -1296,7 +1296,7 @@ public class LuceneIndexTest {
             }
 
             for (final String sampleName : sampleNames) {
-                root.storeDocument(transaction, broker, XmldbURI.create(sampleName), new InputStreamSupplierInputSource(() -> SAMPLES.getShakespeareSample(sampleName)), MimeType.XML_TYPE);
+                broker.storeDocument(transaction, XmldbURI.create(sampleName), new InputStreamSupplierInputSource(() -> SAMPLES.getShakespeareSample(sampleName)), MimeType.XML_TYPE, root);
                 docs.add(root.getDocument(broker, XmldbURI.create(sampleName)));
             }
             transact.commit(transaction);

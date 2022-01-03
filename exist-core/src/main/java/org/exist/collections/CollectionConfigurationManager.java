@@ -130,7 +130,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
 
             broker.saveCollection(txn, confCol);
 
-            confCol.storeDocument(txn, broker, configurationDocumentName, new StringInputSource(config), MimeType.XML_TYPE);
+            broker.storeDocument(txn, configurationDocumentName, new StringInputSource(config), MimeType.XML_TYPE, confCol);
 
             // broker.sync(Sync.MAJOR_SYNC);
         } catch (final CollectionConfigurationException e) {

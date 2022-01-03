@@ -120,7 +120,7 @@ public class UpdateRecoverTest {
                 assertNotNull(test2);
                 broker.saveCollection(transaction, test2);
 
-                test2.storeDocument(transaction, broker, TestConstants.TEST_XML_URI, new StringInputSource(TEST_XML), MimeType.XML_TYPE);
+                broker.storeDocument(transaction, TestConstants.TEST_XML_URI, new StringInputSource(TEST_XML), MimeType.XML_TYPE, test2);
                 doc = test2.getDocument(broker, TestConstants.TEST_XML_URI);
                 //TODO : unlock the collection here ?
 

@@ -313,7 +313,7 @@ public class ExistCollection extends ExistResource {
                 }
 
                 // Stream into database
-                collection.storeDocument(txn, broker, newNameUri, in, mime);
+                broker.storeDocument(txn, newNameUri, in, mime, collection);
 
                 // Commit change
                 txnManager.commit(txn);

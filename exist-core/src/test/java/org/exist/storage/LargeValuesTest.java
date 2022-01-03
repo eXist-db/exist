@@ -104,7 +104,7 @@ public class LargeValuesTest {
 
             final Path file = createDocument();
             try(final Txn transaction = transact.beginTransaction()) {
-                root.storeDocument(transaction, broker, XmldbURI.create("test.xml"), new InputSource(file.toUri().toASCIIString()), MimeType.XML_TYPE);
+                broker.storeDocument(transaction, XmldbURI.create("test.xml"), new InputSource(file.toUri().toASCIIString()), MimeType.XML_TYPE, root);
 
                 broker.saveCollection(transaction, root);
 

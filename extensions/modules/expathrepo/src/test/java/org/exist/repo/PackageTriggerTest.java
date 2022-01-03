@@ -78,7 +78,7 @@ public class PackageTriggerTest {
             try (final ManagedCollectionLock collectionLock = brokerPool.getLockManager().acquireCollectionWriteLock(xarUri.removeLastSegment())) {
                 final Collection collection = broker.getOrCreateCollection(transaction, xarUri.removeLastSegment());
 
-                collection.storeDocument(transaction, broker, xarUri.lastSegment(), new InputStreamSupplierInputSource(() -> PackageTriggerTest.class.getResourceAsStream("/" + xarFile)), MimeType.EXPATH_PKG_TYPE);
+                broker.storeDocument(transaction, xarUri.lastSegment(), new InputStreamSupplierInputSource(() -> PackageTriggerTest.class.getResourceAsStream("/" + xarFile)), MimeType.EXPATH_PKG_TYPE, collection);
                 broker.saveCollection(transaction, collection);
             }
 

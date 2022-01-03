@@ -566,7 +566,7 @@ public class MatchListenerTest {
             final CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, root, config);
 
-            root.storeDocument(transaction, broker, XmldbURI.create("test_matches.xml"), new StringInputSource(xml), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create("test_matches.xml"), new StringInputSource(xml), MimeType.XML_TYPE, root);
             
             transact.commit(transaction);
         }

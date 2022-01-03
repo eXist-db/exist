@@ -470,7 +470,7 @@ public class DebuggerTest implements ResponseListener {
 			broker.saveCollection(transaction, root);
 			assertNotNull(root);
 
-			root.storeDocument(transaction, broker, XmldbURI.create(name), new StringInputSource(data), MimeType.XML_TYPE);
+			broker.storeDocument(transaction, XmldbURI.create(name), new StringInputSource(data), MimeType.XML_TYPE, root);
 
 			transact.commit(transaction);
 		}

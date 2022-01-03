@@ -376,7 +376,7 @@ public class SystemImportHandler extends DefaultHandler {
 
             try (final Txn transaction = beginTransaction()) {
 
-                currentCollection.storeDocument(transaction, broker, docUri, is, mimeType, dateCreated, dateModified, null, docType, null);
+                broker.storeDocument(transaction, docUri, is, mimeType, dateCreated, dateModified, null, docType, null, currentCollection);
 
 
                 try (final LockedDocument doc = currentCollection.getDocumentWithLock(broker, docUri, Lock.LockMode.READ_LOCK)) {

@@ -337,7 +337,7 @@ public class IndexerTest3 {
                 final Txn txn = txnMgr.beginTransaction()) {
 
             try (final Collection collection = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI)) {
-                collection.storeDocument(txn, broker, TestConstants.TEST_XML_URI, new StringInputSource(xml), MimeType.XML_TYPE);
+                broker.storeDocument(txn, TestConstants.TEST_XML_URI, new StringInputSource(xml), MimeType.XML_TYPE, collection);
 
                 broker.flush();
                 broker.saveCollection(txn, collection);

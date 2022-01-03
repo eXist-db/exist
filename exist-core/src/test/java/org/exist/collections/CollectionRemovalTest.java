@@ -213,7 +213,7 @@ public class CollectionRemovalTest {
                 broker.saveCollection(transaction, collection);
 
                 // store document
-                collection.storeDocument(transaction, broker, XmldbURI.create("document.xml"), new StringInputSource(DATA), MimeType.XML_TYPE);
+                broker.storeDocument(transaction, XmldbURI.create("document.xml"), new StringInputSource(DATA), MimeType.XML_TYPE, collection);
             }
 
             transact.commit(transaction);

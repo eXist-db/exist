@@ -184,7 +184,7 @@ public class ConcurrentTransactionsTest {
             assertNotNull(test);
             broker.saveCollection(transaction, test);
 
-            test.storeDocument(transaction, broker, XmldbURI.create("hamlet.xml"), new InputStreamSupplierInputSource(() -> SAMPLES.getHamletSample()), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create("hamlet.xml"), new InputStreamSupplierInputSource(() -> SAMPLES.getHamletSample()), MimeType.XML_TYPE, test);
 
             transact.commit(transaction);
         }

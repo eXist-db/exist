@@ -1352,7 +1352,7 @@ public class RpcConnection implements RpcAPI {
                 final long startTime = System.currentTimeMillis();
 
                 final MimeType mime = MimeTable.getInstance().getContentTypeFor(docUri.lastSegment());
-                collection.storeDocument(transaction, broker, docUri.lastSegment(), source, mime, created, modified, null, null, null);
+                broker.storeDocument(transaction, docUri.lastSegment(), source, mime, created, modified, null, null, null, collection);
 
                 // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
                 collection.close();
@@ -1479,11 +1479,10 @@ public class RpcConnection implements RpcAPI {
                 try (final FileInputSource source = sourceSupplier.get()) {
                     final MimeType mime = Optional.ofNullable(MimeTable.getInstance().getContentType(mimeType)).orElse(MimeType.BINARY_TYPE);
 
-                    collection.storeDocument(transaction, broker, docUri.lastSegment(), source, mime, created, modified, null, null, null);
+                    broker.storeDocument(transaction, docUri.lastSegment(), source, mime, created, modified, null, null, null, collection);
 
                     // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
                     collection.close();
-
 
                     return true;
                 }
@@ -1530,7 +1529,7 @@ public class RpcConnection implements RpcAPI {
                     LOG.debug("Storing binary resource to collection {}", collection.getURI());
                 }
 
-                collection.storeDocument(transaction, broker, docUri.lastSegment(), new StringInputSource(data), MimeTable.getInstance().getContentType(mimeType), created, modified, null, null, null);
+                broker.storeDocument(transaction, docUri.lastSegment(), new StringInputSource(data), MimeTable.getInstance().getContentType(mimeType), created, modified, null, null, null, collection);
 
                 // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
                 collection.close();

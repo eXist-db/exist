@@ -61,7 +61,7 @@ public class CommentTest {
                 final Txn transaction = pool.getTransactionManager().beginTransaction();
              final Collection collection = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI, Lock.LockMode.WRITE_LOCK)) {
 
-            collection.storeDocument(transaction, broker, docUri, new StringInputSource(xml), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, docUri, new StringInputSource(xml), MimeType.XML_TYPE, collection);
 
             transaction.commit();
         }

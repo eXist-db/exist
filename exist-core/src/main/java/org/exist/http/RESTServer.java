@@ -1064,7 +1064,7 @@ public class RESTServer {
             try (final FilterInputStreamCache cache = FilterInputStreamCacheFactory.getCacheInstance(()
                     -> (String) broker.getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), request.getInputStream());
                 final CachingFilterInputStream cfis = new CachingFilterInputStream(cache)) {
-                collection.storeDocument(transaction, broker, docUri, new CachingFilterInputStreamInputSource(cfis), mime);
+                broker.storeDocument(transaction, docUri, new CachingFilterInputStreamInputSource(cfis), mime, collection);
             }
             response.setStatus(HttpServletResponse.SC_CREATED);
 

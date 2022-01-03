@@ -62,14 +62,14 @@ public class BinaryDocumentTest {
             broker.saveCollection(transaction, thingCollection);
 
             // add a binary document to the collection
-            thingCollection.storeDocument(transaction, broker, XmldbURI.create("file1.bin"), new StringInputSource("binary-file1".getBytes(UTF_8)), MimeType.BINARY_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create("file1.bin"), new StringInputSource("binary-file1".getBytes(UTF_8)), MimeType.BINARY_TYPE, thingCollection);
 
             // remove the collection
             assertTrue(broker.removeCollection(transaction, thingCollection));
 
             // try and store a binary doc with the same name as the thing collection (should succeed)
             final Collection testCollection = broker.getCollection(testCollectionUri);
-            testCollection.storeDocument(transaction, broker, XmldbURI.create("thing"), new StringInputSource("binary-file2".getBytes(UTF_8)), MimeType.BINARY_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create("thing"), new StringInputSource("binary-file2".getBytes(UTF_8)), MimeType.BINARY_TYPE, testCollection);
         }
     }
 
@@ -90,7 +90,7 @@ public class BinaryDocumentTest {
             final Collection testCollection = broker.getCollection(testCollectionUri);
 
             try {
-                testCollection.storeDocument(transaction, broker, thingUri.lastSegment(), new StringInputSource("binary-file".getBytes(UTF_8)), MimeType.BINARY_TYPE);
+                broker.storeDocument(transaction, thingUri.lastSegment(), new StringInputSource("binary-file".getBytes(UTF_8)), MimeType.BINARY_TYPE, testCollection);
                 fail("Should not have been able to overwrite Collection with Binary Document");
 
             } catch (final EXistException e) {

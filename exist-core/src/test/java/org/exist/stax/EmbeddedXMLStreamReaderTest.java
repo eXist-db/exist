@@ -418,7 +418,7 @@ public class EmbeddedXMLStreamReaderTest {
             final Collection collection = broker.getOrCreateCollection(transaction, collectionUri);
             broker.saveCollection(transaction, collection);
             for (final Tuple2<XmldbURI, String> doc : docs) {
-                collection.storeDocument(transaction, broker, doc._1, new StringInputSource(doc._2), MimeType.XML_TYPE);
+                broker.storeDocument(transaction, doc._1, new StringInputSource(doc._2), MimeType.XML_TYPE, collection);
             }
         }
     }

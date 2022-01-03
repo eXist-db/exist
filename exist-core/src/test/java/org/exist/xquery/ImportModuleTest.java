@@ -1417,7 +1417,7 @@ public class ImportModuleTest {
             for (final Tuple2<String, String> module : modules) {
                 final XmldbURI moduleName = XmldbURI.create(module._1);
 
-                collection.storeDocument(transaction, broker, moduleName, new StringInputSource(module._2.getBytes(UTF_8)), MimeType.XQUERY_TYPE);
+                broker.storeDocument(transaction, moduleName, new StringInputSource(module._2.getBytes(UTF_8)), MimeType.XQUERY_TYPE, collection);
             }
         }
     }

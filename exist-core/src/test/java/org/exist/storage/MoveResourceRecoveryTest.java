@@ -120,7 +120,7 @@ public class MoveResourceRecoveryTest {
                 sample = InputStreamUtil.readString(is, UTF_8);
             }
 
-            test2.storeDocument(transaction, broker, TestConstants.TEST_XML_URI, new StringInputSource(sample), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, TestConstants.TEST_XML_URI, new StringInputSource(sample), MimeType.XML_TYPE, test2);
 
             final DocumentImpl doc = test2.getDocument(broker, TestConstants.TEST_XML_URI);
             assertNotNull(doc);
@@ -172,7 +172,7 @@ public class MoveResourceRecoveryTest {
                     sample = InputStreamUtil.readString(is, UTF_8);
                 }
 
-                test2.storeDocument(transaction, broker, XmldbURI.create("new_test2.xml"), new StringInputSource(sample), MimeType.XML_TYPE);
+                broker.storeDocument(transaction, XmldbURI.create("new_test2.xml"), new StringInputSource(sample), MimeType.XML_TYPE, test2);
 
                 transact.commit(transaction);
             }

@@ -448,7 +448,7 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         assertTrue(data instanceof FileInputSource);
 
-        collection.storeDocument(transaction, broker, XmldbURI.create(dbFilename), data, MimeType.BINARY_TYPE);
+        broker.storeDocument(transaction, XmldbURI.create(dbFilename), data, MimeType.BINARY_TYPE, collection);
         final BinaryDocument doc = (BinaryDocument) collection.getDocument(broker, XmldbURI.create(dbFilename));
         assertNotNull(doc);
         assertEquals(Files.size(((FileInputSource)data).getFile()), doc.getContentLength());

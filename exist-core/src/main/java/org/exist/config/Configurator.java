@@ -1311,7 +1311,7 @@ public class Configurator {
                 systemResourcePermission.setGroup(systemSubject.getDefaultGroup());
                 systemResourcePermission.setMode(Permission.DEFAULT_SYSTEM_RESOURCE_PERM);
 
-                collection.storeDocument(txn, broker, uri, new StringInputSource(data), MimeType.XML_TYPE, null, null, systemResourcePermission, null, null);
+                broker.storeDocument(txn, uri, new StringInputSource(data), MimeType.XML_TYPE, null, null, systemResourcePermission, null, null, collection);
 
                 broker.saveCollection(txn, collection);
                 if (!txnInProgress) {

@@ -100,7 +100,7 @@ public class DocTypeTest {
 			final InputSource is = new FileInputSource(testFile);
 
 			try(final Txn transaction = transact.beginTransaction()) {
-                root.storeDocument(transaction, broker, XmldbURI.create("test2.xml"), is, MimeType.XML_TYPE);
+                broker.storeDocument(transaction, XmldbURI.create("test2.xml"), is, MimeType.XML_TYPE, root);
 
                 transact.commit(transaction);
             }
@@ -162,7 +162,7 @@ public class DocTypeTest {
             assertNotNull(root);
             broker.saveCollection(transaction, root);
             
-            root.storeDocument(transaction, broker, XmldbURI.create("test.xml"), new StringInputSource(XML), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create("test.xml"), new StringInputSource(XML), MimeType.XML_TYPE, root);
             //TODO : unlock the collection here ?
             
             transact.commit(transaction);

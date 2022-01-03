@@ -249,7 +249,7 @@ public class DeadlockTest {
                             final InputSource is = new InputSource(files[j].toUri()
                                     .toASCIIString());
 
-							coll.storeDocument(transaction, broker, XmldbURI.create("test" + fileCount + ".xml"), is, MimeType.XML_TYPE);
+							broker.storeDocument(transaction, XmldbURI.create("test" + fileCount + ".xml"), is, MimeType.XML_TYPE, coll);
                             transact.commit(transaction);
                         }
                     }

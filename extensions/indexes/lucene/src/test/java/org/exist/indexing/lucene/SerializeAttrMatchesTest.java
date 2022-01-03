@@ -112,7 +112,7 @@ public class SerializeAttrMatchesTest {
                 mgr.addConfiguration(transaction, broker, test, configuration);
             }
 
-            test.storeDocument(transaction, broker, XmldbURI.create(docName), new StringInputSource(data), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create(docName), new StringInputSource(data), MimeType.XML_TYPE, test);
 
             docs.add(test.getDocument(broker, XmldbURI.create(docName)));
             transact.commit(transaction);

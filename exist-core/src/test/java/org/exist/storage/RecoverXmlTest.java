@@ -124,7 +124,7 @@ public class RecoverXmlTest extends AbstractRecoverTest {
             IOException, LockException {
         final XmldbURI docUri = XmldbURI.create(dbFilename);
         try {
-            collection.storeDocument(transaction, broker, docUri, data, MimeType.XML_TYPE);
+            broker.storeDocument(transaction, docUri, data, MimeType.XML_TYPE, collection);
 
         } catch (final SAXException e) {
             throw new IOException(e);

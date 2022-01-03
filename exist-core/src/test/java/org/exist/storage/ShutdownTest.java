@@ -72,7 +72,7 @@ public class ShutdownTest {
 
                 // store some documents.
 	            for(final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
-                    test.storeDocument(transaction, broker, XmldbURI.create(sampleName), new InputStreamSupplierInputSource(() -> SAMPLES.getShakespeareSample(sampleName)), MimeType.XML_TYPE);
+                    broker.storeDocument(transaction, XmldbURI.create(sampleName), new InputStreamSupplierInputSource(() -> SAMPLES.getShakespeareSample(sampleName)), MimeType.XML_TYPE, test);
                 }
 
                 final XQuery xquery = pool.getXQueryService();

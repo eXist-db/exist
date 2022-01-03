@@ -271,12 +271,12 @@ public class PermissionsFunctionChmodTest {
             broker.saveCollection(transaction, u1c2);
 
             final String xml1 = "<empty1/>";
-            collection.storeDocument(transaction, broker, USER1_DOC1, new StringInputSource(xml1), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, USER1_DOC1, new StringInputSource(xml1), MimeType.XML_TYPE, collection);
 
             final String xquery1 =
                     "import module namespace sm = 'http://exist-db.org/xquery/securitymanager';\n" +
                             "sm:id()";
-            collection.storeDocument(transaction, broker, USER1_XQUERY1, new StringInputSource(xquery1.getBytes(UTF_8)), MimeType.XQUERY_TYPE);
+            broker.storeDocument(transaction, USER1_XQUERY1, new StringInputSource(xquery1.getBytes(UTF_8)), MimeType.XQUERY_TYPE, collection);
             PermissionFactory.chmod_str(broker, transaction, collection.getURI().append(USER1_XQUERY1), Optional.of("u+s,g+s"), Optional.empty());
 
             transaction.commit();

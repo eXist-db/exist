@@ -504,7 +504,7 @@ public class XQueryUpdateTest {
             root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
             broker.saveCollection(transaction, root);
 
-            root.storeDocument(transaction, broker, XmldbURI.create(docName), new StringInputSource(data), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create(docName), new StringInputSource(data), MimeType.XML_TYPE, root);
             //TODO : unlock the collection here ?
 
             mgr.commit(transaction);

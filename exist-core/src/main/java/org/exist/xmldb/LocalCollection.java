@@ -598,9 +598,9 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
                 final MimeType mimeType = strMimeType != null ? MimeTable.getInstance().getContentType(strMimeType) : null;
                 final long conLength = res.getStreamLength();
                 if (conLength != -1) {
-                    collection.storeDocument(transaction, broker, resURI, new InputStreamSupplierInputSource(() -> Try(() -> res.getStreamContent(broker, transaction)).getOrElse((InputStream) null)), mimeType, res.datecreated, res.datemodified, null, null, null);
+                    broker.storeDocument(transaction, resURI, new InputStreamSupplierInputSource(() -> Try(() -> res.getStreamContent(broker, transaction)).getOrElse((InputStream) null)), mimeType, res.datecreated, res.datemodified, null, null, null, collection);
                 } else {
-                    collection.storeDocument(transaction, broker, resURI, new StringInputSource((byte[]) res.getContent(broker, transaction)), mimeType, res.datecreated, res.datemodified, null, null, null);
+                    broker.storeDocument(transaction, resURI, new StringInputSource((byte[]) res.getContent(broker, transaction)), mimeType, res.datecreated, res.datemodified, null, null, null, collection);
                 }
             } catch(final EXistException | SAXException e) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -652,7 +652,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
                         reader = null;
                     }
 
-                    collection.storeDocument(transaction, broker, resURI, source, mimeType, res.datecreated, res.datemodified, null, null, reader);
+                    broker.storeDocument(transaction, resURI, source, mimeType, res.datecreated, res.datemodified, null, null, reader, collection);
                 }
 
                 // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme

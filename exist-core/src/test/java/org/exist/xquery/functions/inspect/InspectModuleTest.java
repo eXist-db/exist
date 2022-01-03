@@ -265,7 +265,7 @@ public class InspectModuleTest {
 
             final Collection testCollection = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
 
-            testCollection.storeDocument(transaction, broker, TEST_MODULE, new StringInputSource(MODULE.getBytes(UTF_8)), MimeType.XQUERY_TYPE);
+            broker.storeDocument(transaction, TEST_MODULE, new StringInputSource(MODULE.getBytes(UTF_8)), MimeType.XQUERY_TYPE, testCollection);
 
             broker.saveCollection(transaction, testCollection);
 

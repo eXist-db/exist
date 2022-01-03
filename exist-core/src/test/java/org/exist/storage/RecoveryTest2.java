@@ -101,7 +101,7 @@ public class RecoveryTest2 {
             final Path dir = Paths.get(xmlDir);
             final List<Path> docs = FileUtils.list(dir);
             for (final Path f : docs) {
-                test2.storeDocument(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()), MimeType.XML_TYPE);
+                broker.storeDocument(transaction, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()), MimeType.XML_TYPE, test2);
             }
 
             transact.commit(transaction);

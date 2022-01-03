@@ -102,7 +102,7 @@ public class DirtyShutdownTest {
             for (int i = 0; i < 50; i++) {
                 try(final Txn transaction = transact.beginTransaction()) {
 
-                    root.storeDocument(transaction, broker, XmldbURI.create("test.xml"), new StringInputSource(data), MimeType.XML_TYPE);
+                    broker.storeDocument(transaction, XmldbURI.create("test.xml"), new StringInputSource(data), MimeType.XML_TYPE, root);
 
                     transact.commit(transaction);
                 }

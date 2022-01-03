@@ -627,7 +627,7 @@ public class JournalXmlTest extends AbstractJournalTest<String> {
             final InputSource data, final String dbFilename) throws EXistException, PermissionDeniedException, IOException,
             SAXException, LockException {
 
-        collection.storeDocument(transaction, broker, XmldbURI.create(dbFilename), data, MimeType.XML_TYPE);
+        broker.storeDocument(transaction, XmldbURI.create(dbFilename), data, MimeType.XML_TYPE, collection);
 
         assertNotNull(collection.getDocument(broker, XmldbURI.create(dbFilename)));
 

@@ -160,7 +160,7 @@ public class MarshallerTest {
             final Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
             broker.saveCollection(transaction, root);
 
-            root.storeDocument(transaction, broker, XmldbURI.create("test.xml"), new StringInputSource(TEST_DOC), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, XmldbURI.create("test.xml"), new StringInputSource(TEST_DOC), MimeType.XML_TYPE, root);
 
             transact.commit(transaction);
         }

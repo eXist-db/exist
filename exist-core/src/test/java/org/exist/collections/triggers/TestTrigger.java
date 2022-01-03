@@ -62,7 +62,7 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
                 // IMPORTANT: temporarily disable triggers on the collection.
                 // We would end up in infinite recursion if we don't do that
                 broker.setTriggersEnabled(false);
-                parent.storeDocument(transaction, broker, docPath, new StringInputSource(TEMPLATE), MimeType.XML_TYPE);
+                broker.storeDocument(transaction, docPath, new StringInputSource(TEMPLATE), MimeType.XML_TYPE, parent);
                 this.doc = parent.getDocument(broker, docPath);
             }
 

@@ -112,7 +112,7 @@ public class ReindexRecoveryTest {
     private void storeDocument(final DBBroker broker, final Txn transaction, final Collection collection,
             final XmldbURI docName, final String data) {
         try {
-            collection.storeDocument(transaction, broker, docName, new StringInputSource(data), MimeType.XML_TYPE);
+            broker.storeDocument(transaction, docName, new StringInputSource(data), MimeType.XML_TYPE, collection);
         } catch (final SAXException | EXistException | PermissionDeniedException | LockException | IOException e) {
             fail("Error found while parsing document: " + docName + ": " + e.getMessage());
         }
