@@ -47,7 +47,7 @@
 
     <properties>
         <jakarta.activation.version>2.0.1</jakarta.activation.version>
-        <jakarta.mail.version>2.0.0</jakarta.mail.version>
+        <jakarta.mail.version>2.0.1</jakarta.mail.version>
         <greenmail.version>2.0.0-alpha-2</greenmail.version>
     </properties>
 
