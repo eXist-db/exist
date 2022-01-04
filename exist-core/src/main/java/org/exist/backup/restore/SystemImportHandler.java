@@ -21,6 +21,7 @@
  */
 package org.exist.backup.restore;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
@@ -32,6 +33,7 @@ import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
+import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -55,6 +57,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
 
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 // TODO(AR) consider merging with org.exist.backup.restore.RestoreHandler
@@ -219,7 +222,7 @@ public class SystemImportHandler extends DefaultHandler {
         		throw new SAXException(e);
     		}
 
-            currentCollection = mkcol(collUri);
+            currentCollection = mkcol(collUri, getDateFromXSDateTimeStringForItem(created, name));
             
             if(currentCollection == null) {
                 throw new SAXException("Collection not found: " + collUri);
@@ -500,10 +503,11 @@ public class SystemImportHandler extends DefaultHandler {
 
         return date_created;
     }
-    
-    private Collection mkcol(final XmldbURI collPath) throws SAXException {
+
+    private Collection mkcol(final XmldbURI collPath, final Date created) throws SAXException {
     	try(final Txn transaction = beginTransaction()) {
-    		final Collection col = broker.getOrCreateCollection(transaction, collPath);
+            final Tuple2<Permission, Long> creationAttributes = Tuple(null, created.getTime());
+            final Collection col = broker.getOrCreateCollection(transaction, collPath, Optional.of(creationAttributes));
 
             transaction.commit();
     		

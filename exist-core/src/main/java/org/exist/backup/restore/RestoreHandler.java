@@ -21,6 +21,7 @@
  */
 package org.exist.backup.restore;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
@@ -32,6 +33,7 @@ import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.ACLPermission;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.RealmImpl;
@@ -59,6 +61,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
 
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 // TODO(AR) consider merging with org.exist.backup.restore.SystemImportHandler
@@ -210,8 +213,8 @@ public class RestoreHandler extends DefaultHandler {
                     final ManagedCollectionLock colLock = lockManager.acquireCollectionWriteLock(collUri)) {
                 Collection collection = broker.getCollection(collUri);
                 if (collection == null) {
-                    collection = broker.getOrCreateCollection(transaction, collUri);
-                    collection.setCreated(getDateFromXSDateTimeStringForItem(created, name).getTime());
+                    final Tuple2<Permission, Long> creationAttributes = Tuple(null, getDateFromXSDateTimeStringForItem(created, name).getTime());
+                    collection = broker.getOrCreateCollection(transaction, collUri, Optional.of(creationAttributes));
                     broker.saveCollection(transaction, collection);
                 }
 
