@@ -673,6 +673,7 @@
                                 <exclude>src/main/java/org/exist/test/DiffMatcher.java</exclude>
                                 <exclude>src/main/java/org/exist/util/CollectionOfArrayIterator.java</exclude>
                                 <exclude>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</exclude>
+                                <exclude>src/main/java/org/exist/util/IPUtil.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/Cardinality.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/ImportModuleTest.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/XQueryContextAttributesTest.java</exclude>
@@ -814,6 +815,7 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/main/java/org/exist/test/DiffMatcher.java</include>
                                 <include>src/main/java/org/exist/util/CollectionOfArrayIterator.java</include>
                                 <include>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</include>
+                                <include>src/main/java/org/exist/util/IPUtil.java</include>
                                 <include>src/main/java/org/exist/xquery/Cardinality.java</include>
                                 <include>src/test/java/org/exist/xquery/ImportModuleTest.java</include>
                                 <include>src/test/java/org/exist/xquery/XQueryContextAttributesTest.java</include>
