@@ -359,7 +359,7 @@ public abstract class DBBroker implements AutoCloseable {
      *
      * @param transaction The transaction, which registers the acquired write locks. The locks should be released on commit/abort.
      * @param uri The collection's URI
-     * @param creationAttributes the attributes to use if the collection needs to be created.
+     * @param creationAttributes the attributes to use if the collection needs to be created, the first item is a Permission (or null for default), the second item is a Creation Date.
      * @return The collection or <code>null</code> if no collection matches the path
      * @throws PermissionDeniedException If the current user does not have appropriate permissions
      * @throws IOException If an error occurs whilst reading (get) or writing (create) a Collection to disk

@@ -634,6 +634,7 @@ public class NativeBroker extends DBBroker {
      *
      * @param transaction The current transaction
      * @param path The Collection's URI
+     * @param creationAttributes the attributes to use if the collection needs to be created, the first item is a Permission (or null for default), the second item is a Creation Date.
      *
      * @return A tuple whose first boolean value is set to true if the
      * collection was created, or false if the collection already existed. The
