@@ -27,48 +27,38 @@ import java.io.InputStream;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.Parser;
 import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.SAXToReceiver;
 import org.exist.xquery.value.BinaryValue;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-
-
 /**
  * @author <a href="mailto:dulip.withanage@gmail.com">Dulip Withanage</a>
  * @version 1.0
  */
 public class ContentExtraction {
-    final Parser parser = new AutoDetectParser();
-    final ParseContext parseContext = new ParseContext();
-
-    public ContentExtraction() {
-        parseContext.set(Parser.class, parser);
-    }
+    final AutoDetectParser parser = new AutoDetectParser();
 
     public Metadata extractContentAndMetadata(final BinaryValue binaryValue, final ContentHandler contentHandler) throws IOException, SAXException, ContentExtractionException {
         try (final InputStream is = binaryValue.getInputStream()) {
             final Metadata metadata = new Metadata();
-            parser.parse(is, contentHandler, metadata, parseContext);
+            parser.parse(is, contentHandler, metadata);
             return metadata;
         } catch (final TikaException e) {
             throw new ContentExtractionException("Problem with content extraction library: " + e.getMessage(), e);
         }
     }
 
-    public void extractContentAndMetadata(BinaryValue binaryValue, Receiver receiver) 
+    public void extractContentAndMetadata(final BinaryValue binaryValue, final Receiver receiver)
             throws IOException, SAXException, ContentExtractionException {
-        
         extractContentAndMetadata(binaryValue, new SAXToReceiver(receiver, false));
     }
 
     public Metadata extractMetadata(final BinaryValue binaryValue) throws IOException, SAXException, ContentExtractionException {
         try (final InputStream is = binaryValue.getInputStream()) {
             final Metadata metadata = new Metadata();
-            parser.parse(is, null, metadata, parseContext);
+            parser.parse(is, null, metadata);
             return metadata;
         } catch (final TikaException e) {
             throw new ContentExtractionException("Problem with content extraction library: " + e.getMessage(), e);
