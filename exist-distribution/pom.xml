@@ -1113,6 +1113,10 @@
                                     <executable>/usr/bin/codesign</executable>
                                     <arguments>
                                         <argument>--force</argument>
+                                        <argument>--options</argument>
+                                        <argument>runtime</argument>
+                                        <argument>--entitlements</argument>
+                                        <argument>${project.basedir}/src/app/entitlements.plist</argument>
                                         <argument>--sign</argument>
                                         <argument>${mac.codesign.identity}</argument>
                                         <argument>${mac.bundle.dir}</argument>
