@@ -48,6 +48,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.dom.QName.Validity.ILLEGAL_FORMAT;
@@ -88,12 +89,12 @@ import static org.exist.dom.QName.Validity.ILLEGAL_FORMAT;
  */
 public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
+    private static final AtomicLong nextDocId = new AtomicLong();
+
     private static final int NODE_SIZE = 16;
     private static final int ATTR_SIZE = 8;
     private static final int CHAR_BUF_SIZE = 256;
     private static final int REF_SIZE = 8;
-
-    private static long nextDocId = 0;
 
     // holds the node type of a node
     protected short[] nodeKind = null;
@@ -154,7 +155,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         super(null, 0);
         this.context = context;
         this.explicitlyCreated = explicitlyCreated;
-        this.docId = createDocId();
+        this.docId = nextDocId.incrementAndGet();
         if(context == null) {
             namePool = new NamePool();
         } else {
@@ -172,10 +173,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             }
         }
         return db;
-    }
-
-    private static long createDocId() {
-        return nextDocId++;
     }
 
     private void init() {
