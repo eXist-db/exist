@@ -1250,6 +1250,31 @@
                                     </arguments>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>mac-notarize-dmg</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <useMavenLogger>true</useMavenLogger>
+                                    <executable>/usr/bin/xcrun</executable>
+                                    <arguments>
+                                        <argument>altool</argument>
+                                        <argument>--notarize-app</argument>
+                                        <argument>--verbose</argument>
+                                        <argument>--primary-bundle-id</argument>
+                                        <argument>org.exist-db</argument>
+                                        <argument>--username</argument>
+                                        <argument>${existdb.release.notarize.username}</argument>
+                                        <argument>--password</argument>
+                                        <argument>${existdb.release.notarize.password}</argument>
+                                        <argument>--file</argument>
+                                        <argument>${mac.dmg}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+
                         </executions>
                     </plugin>
                 </plugins>
