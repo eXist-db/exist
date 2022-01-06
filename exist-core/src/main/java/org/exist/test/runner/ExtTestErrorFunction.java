@@ -119,10 +119,10 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
     }
 
     private static final Pattern PTN_CAUSED_BY = Pattern.compile("Caused by:\\s([a-zA-Z0-9_$\\.]+)(?::\\s(.+))?");
-    private static final Pattern PTN_AT = Pattern.compile("at\\s((?:[a-zA-Z0-9_$]+)(?:\\.[a-zA-Z0-9_$]+)*)\\.([a-zA-Z0-9_$-]+)\\(([a-zA-Z0-9_]+\\.java):([0-9]+)\\)");
+    private static final Pattern PTN_AT = Pattern.compile("at\\s((?:[a-zA-Z0-9_$]+)(?:\\.[a-zA-Z0-9_$]+)*)\\.((?:[a-zA-Z0-9_$-]+)|(?:<init>))\\(([a-zA-Z0-9_]+\\.java):([0-9]+)\\)");
 
     protected StackTraceElement[] convertStackTraceElements(final Sequence seqJavaStackTrace) throws XPathException {
-        StackTraceElement[] traceElements = new StackTraceElement[seqJavaStackTrace.getItemCount() - 1];
+        StackTraceElement[] traceElements = null;
 
         final Matcher matcherAt = PTN_AT.matcher("");
 
@@ -134,10 +134,14 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
             if (stackTraceElement == null) {
                 break;
             }
+
+            if (traceElements == null) {
+                traceElements = new StackTraceElement[seqJavaStackTrace.getItemCount() - 1];
+            }
             traceElements[i - 1] = stackTraceElement;
         }
 
-        if (i + 1 < seqJavaStackTrace.getItemCount()) {
+        if (traceElements != null && i + 1 < seqJavaStackTrace.getItemCount()) {
             traceElements = Arrays.copyOf(traceElements, i - 2);
         }
 
