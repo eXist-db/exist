@@ -108,6 +108,7 @@
         <exquery.distribution.version>0.2.0</exquery.distribution.version>
         <icu.version>59.1</icu.version>
         <izpack.version>5.1.3</izpack.version>
+        <jansi.version>2.4.0</jansi.version>
         <jaxb.api.version>3.0.1</jaxb.api.version>
         <jaxb.impl.version>3.0.2</jaxb.impl.version>
         <jetty.version>9.4.44.v20210927</jetty.version>
@@ -877,6 +878,7 @@
                         <form>XML_STYLE</form>
                         <g>SLASHSTAR_STYLE</g>
                         <java>SLASHSTAR_STYLE</java>
+                        <plist>XML_STYLE</plist>
                         <xconf>XML_STYLE</xconf>
                         <xconf.init>XML_STYLE</xconf.init>
                         <xq>XQUERY_STYLE</xq>

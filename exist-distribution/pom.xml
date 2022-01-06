@@ -52,6 +52,7 @@
         <expath.pkg.dir>${project.build.directory}/expath-pkgs</expath.pkg.dir>
         <mac.bundle.dir>${project.build.directory}/${project.artifactId}-${project.version}.app</mac.bundle.dir>
         <mac.bundle.resources.dir>${mac.bundle.dir}/Contents/Resources</mac.bundle.resources.dir>
+        <mac.bundle.java.dir>${mac.bundle.dir}/Contents/Java</mac.bundle.java.dir>
         <mac.dmg>${project.build.directory}/eXist-db-${project.version}.dmg</mac.dmg>
         <mac.codesign.identity>Developer ID Application: Evolved Binary Ltd</mac.codesign.identity>
     </properties>
@@ -332,9 +333,11 @@
                             <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
                             <excludes>
                                 <exclude>LGPL-21-license.txt</exclude>
+                                <exclude>src/app/entitlements.plist</exclude>
                                 <exclude>src/appbundler/**</exclude>
                                 <exclude>src/dmg/**</exclude>
                                 <exclude>src/main/config/**</exclude>  <!-- config files shipped with eXist-db don't need copyright headers -->
+                                <exclude>src/main/scripts/codesign-jansi-mac.sh</exclude>
                                 <exclude>src/main/xslt/configure_9_3.dtd</exclude>
                                 <exclude>src/main/xslt/web-app_3_1.xsd</exclude>
                                 <exclude>src/main/xslt/javaee_web_services_client_1_4.xsd</exclude>
@@ -344,6 +347,18 @@
                                 <exclude>src/main/xslt/javaee_7.xsd</exclude>
                             </excludes>
                         </licenseSet>
+
+                        <licenseSet>
+                            <!--
+                                FDB backport to LGPL 2.1-only licensed code
+                            -->
+                            <header>${project.parent.relativePath}/FDB-backport-LGPL-21-ONLY-license.template.txt</header>
+                            <includes>
+                                <include>src/app/entitlements.plist</include>
+                                <include>src/main/scripts/codesign-jansi-mac.sh</include>
+                            </includes>
+                        </licenseSet>
+
                     </licenseSets>
                 </configuration>
             </plugin>
@@ -1103,6 +1118,26 @@
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
                         <executions>
+                            <execution>
+                                <!--
+                                    Signs the jansi native binaries
+                                -->
+                                <id>mac-codesign-jansi-native</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <useMavenLogger>true</useMavenLogger>
+                                    <executable>${project.basedir}/src/main/scripts/codesign-jansi-mac.sh</executable>
+                                    <arguments>
+                                        <argument>${mac.bundle.java.dir}</argument>
+                                        <argument>${jansi.version}</argument>
+                                        <argument>${project.build.directory}/jansi-native</argument>
+                                        <argument>${mac.codesign.identity}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
                             <execution>
                                 <id>mac-codesign-app</id>
                                 <phase>package</phase>
