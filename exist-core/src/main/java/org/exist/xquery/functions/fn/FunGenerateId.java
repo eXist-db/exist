@@ -54,7 +54,7 @@ public class FunGenerateId extends BasicFunction {
                 throw new XPathException(this, ErrorCodes.XPDY0002, "No context item available in call to generate-id");
             }
             final Item contextItem = contextSequence.itemAt(0);
-            if (Type.subTypeOf(contextItem.getType(), Type.NODE)) {
+            if (!Type.subTypeOf(contextItem.getType(), Type.NODE)) {
                 throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node in call to generate-id");
             }
             node = (NodeValue) contextItem;
