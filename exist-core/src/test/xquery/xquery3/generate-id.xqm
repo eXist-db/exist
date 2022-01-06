@@ -29,16 +29,21 @@ declare namespace xmldb = "http://exist-db.org/xquery/xmldb";
 declare
     %test:setUp
 function gid:setup() {
-    xmldb:create-collection("/db", "generate-id-test"),
-    xmldb:store("/db/generate-id-test", "a.xml", <node>a</node>),
-    xmldb:store("/db/generate-id-test", "a.xml", <node>b</node>),
-    xmldb:store("/db/generate-id-test", "inner-a.xml", <node><inner>a</inner></node>)
+  xmldb:create-collection("/db", "generate-id-test"),
+  xmldb:store("/db/generate-id-test", "a.xml", <node>a</node>),
+  xmldb:store("/db/generate-id-test", "b.xml", <node>b</node>),
+  xmldb:store("/db/generate-id-test", "inner-a.xml", <node><inner>a</inner></node>),
+
+  if ((("a.xml", "b.xml", "inner-a.xml") ! doc-available("/db/generate-id-test/" || .)) = false())
+  then
+    error(xs:QName("gid:missing-documents"), "Missing setup documents")
+  else ()
 };
 
 declare
     %test:tearDown
 function gid:cleanup() {
-    xmldb:remove("/db/generate-id-test")
+  xmldb:remove("/db/generate-id-test")
 };
 
 
