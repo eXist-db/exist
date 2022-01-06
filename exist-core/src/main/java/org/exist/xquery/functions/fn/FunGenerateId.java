@@ -72,14 +72,21 @@ public class FunGenerateId extends BasicFunction {
 
         /*
          Calculates an ID for a Node that has the pattern:
-            <Implementation Type>:<Document ID>:<Node Id>
+            <Implementation Type>D<Document ID>N<Node Id>
 
          As implementation types are mutually exclusive at the moment
          i.e. just two types one for in-memory nodes, and one for
          persistent modes, this works fine without any collisions.
          */
 
-        final int nodeImplementationType = node.getImplementationType();
+        final char nodeImplementationType;
+        if (NodeValue.IN_MEMORY_NODE == node.getImplementationType()) {
+            nodeImplementationType = 'M';
+        } else if (NodeValue.PERSISTENT_NODE == node.getImplementationType()) {
+            nodeImplementationType = 'P';
+        } else {
+            nodeImplementationType = 'Z';
+        }
 
         String docId = null;
         final Document document;
@@ -104,7 +111,8 @@ public class FunGenerateId extends BasicFunction {
         }
 
         final NodeId nodeId = node.getNodeId();
+        final String nodeIdStr = nodeId.toString().replace('.', 'l').replace('/', 's');
 
-        return new StringValue(nodeImplementationType + ":" + docId + ":" + nodeId);
+        return new StringValue(nodeImplementationType + "D" + docId + "N" + nodeIdStr);
     }
 }

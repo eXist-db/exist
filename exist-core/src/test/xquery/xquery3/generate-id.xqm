@@ -31,7 +31,8 @@ declare
 function gid:setup() {
     xmldb:create-collection("/db", "generate-id-test"),
     xmldb:store("/db/generate-id-test", "a.xml", <node>a</node>),
-    xmldb:store("/db/generate-id-test", "a.xml", <node>b</node>)
+    xmldb:store("/db/generate-id-test", "a.xml", <node>b</node>),
+    xmldb:store("/db/generate-id-test", "inner-a.xml", <node><inner>a</inner></node>)
 };
 
 declare
@@ -90,6 +91,18 @@ function gid:in-memory-dom-document-element-identity() {
 };
 
 declare
+    %test:assertEquals("true", "true")
+function gid:in-memory-dom-element-identity-ascii-alphanum-only() {
+  let $node1 := <node><inner>a</inner></node>,
+      $id := generate-id($node1/inner)
+  return
+    (
+        starts-with($id, "M"),
+        matches($id, "[a-zA-Z0-9]+")
+    )
+};
+
+declare
     %test:assertEquals("false", "true", "true")
 function gid:persistent-dom-document-identity() {
   let $node1 := doc("/db/generate-id-test/a.xml"),
@@ -112,5 +125,17 @@ function gid:persistent-dom-document-element-identity() {
         codepoint-equal(generate-id($node1), generate-id($node2)),
         codepoint-equal(generate-id($node1), generate-id($node1)),
         codepoint-equal(generate-id($node2), generate-id($node2))
+    )
+};
+
+declare
+    %test:assertEquals("true", "true")
+function gid:persistent-dom-element-identity-ascii-alphanum-only() {
+  let $node1 := doc("/db/generate-id-test/inner-a.xml"),
+      $id := generate-id($node1/node/inner)
+  return
+    (
+        starts-with($id, "P"),
+        matches($id, "[a-zA-Z0-9]+")
     )
 };
