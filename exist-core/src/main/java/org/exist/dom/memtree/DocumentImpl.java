@@ -207,6 +207,10 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         return size;
     }
 
+    public long getDocId() {
+        return docId;
+    }
+
     public int addNode(final short kind, final short level, final QName qname) {
         if(nodeKind == null) {
             init();

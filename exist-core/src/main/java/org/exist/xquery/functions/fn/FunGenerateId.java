@@ -21,8 +21,12 @@
  */
 package org.exist.xquery.functions.fn;
 
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.numbering.NodeId;
+import org.exist.util.UUIDGenerator;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
+import org.w3c.dom.Document;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
@@ -66,7 +70,41 @@ public class FunGenerateId extends BasicFunction {
             node = (NodeValue) args[0].itemAt(0);
         }
 
-        final String id = node.getNodeId().toString();
-        return new StringValue("N" + id);
+        /*
+         Calculates an ID for a Node that has the pattern:
+            <Implementation Type>:<Document ID>:<Node Id>
+
+         As implementation types are mutually exclusive at the moment
+         i.e. just two types one for in-memory nodes, and one for
+         persistent modes, this works fine without any collisions.
+         */
+
+        final int nodeImplementationType = node.getImplementationType();
+
+        String docId = null;
+        final Document document;
+        if (Type.DOCUMENT == node.getType()) {
+            if (node instanceof NodeProxy) {
+                document = (Document) ((NodeProxy) node).getNode();
+            } else {
+                document = (Document) node;
+            }
+        } else {
+            document = node.getOwnerDocument();
+        }
+        if (document != null) {
+            if (document instanceof org.exist.dom.memtree.DocumentImpl) {
+                docId = Long.toString(((org.exist.dom.memtree.DocumentImpl) document).getDocId());
+            } else if (document instanceof org.exist.dom.persistent.DocumentImpl) {
+                docId = Integer.toString(((org.exist.dom.persistent.DocumentImpl) document).getDocId());
+            }
+        }
+        if (docId == null) {
+            docId = UUIDGenerator.getUUIDversion4();
+        }
+
+        final NodeId nodeId = node.getNodeId();
+
+        return new StringValue(nodeImplementationType + ":" + docId + ":" + nodeId);
     }
 }
