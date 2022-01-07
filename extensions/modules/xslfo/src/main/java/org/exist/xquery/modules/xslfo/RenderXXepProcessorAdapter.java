@@ -80,9 +80,9 @@ public class RenderXXepProcessorAdapter implements ProcessorAdapter {
 
 
     @Override
-    public ContentHandler getContentHandler(final DBBroker broker, final NodeValue configFile, final Properties parameters, final String mimeType, final OutputStream os) throws XPathException, SAXException {
+    public ContentHandler getContentHandler(final DBBroker broker, final NodeValue processorConfig, final Properties parameters, final String mediaType, final OutputStream os) throws XPathException, SAXException {
 
-        if (configFile == null) {
+        if (processorConfig == null) {
             throw new XPathException("XEP requires a configuration file");
         }
 
@@ -90,7 +90,7 @@ public class RenderXXepProcessorAdapter implements ProcessorAdapter {
 
             final Class formatterImplClazz = Class.forName("com.renderx.xep.FormatterImpl");
 
-            Node config = configFile.getNode();
+            Node config = processorConfig.getNode();
             if (Node.DOCUMENT_NODE == config.getNodeType()) {
                 config = ((Document) config).getDocumentElement();
                 if (config == null) {
@@ -105,7 +105,7 @@ public class RenderXXepProcessorAdapter implements ProcessorAdapter {
                 Constructor formatterImplCstr = formatterImplClazz.getConstructor(Source.class, Properties.class);
                 formatter = formatterImplCstr.newInstance(new DOMSource(config), parameters);
             }
-            final String backendType = mimeType.substring(mimeType.indexOf("/") + 1).toUpperCase();
+            final String backendType = mediaType.substring(mediaType.indexOf("/") + 1).toUpperCase();
 
             final Class foTargetClazz = Class.forName("com.renderx.xep.FOTarget");
             final Constructor foTargetCstr = foTargetClazz.getConstructor(OutputStream.class, String.class);

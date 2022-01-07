@@ -62,20 +62,20 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
     private static final String DEFAULT_BASE_URI = "exist://localhost/db/";
 
     @Override
-    public ContentHandler getContentHandler(final DBBroker broker, final NodeValue configFile, final Properties parameters, final String mimeType, final OutputStream os) throws SAXException {
+    public ContentHandler getContentHandler(final DBBroker broker, final NodeValue processorConfig, final Properties parameters, final String mediaType, final OutputStream os) throws SAXException {
 
         // setup the FopFactory
         final FopFactoryBuilder builder;
         try {
-            if (configFile != null) {
+            if (processorConfig != null) {
                 final FopConfigurationBuilder cfgBuilder = new FopConfigurationBuilder(broker);
-                final Configuration cfg = cfgBuilder.buildFromNode(configFile);
+                final Configuration cfg = cfgBuilder.buildFromNode(processorConfig);
                 final URI defaultBaseURI;
-                if (configFile instanceof org.exist.dom.memtree.NodeImpl) {
+                if (processorConfig instanceof org.exist.dom.memtree.NodeImpl) {
                     //in-memory documents don't have a BaseURI
                     defaultBaseURI = new URI(DEFAULT_BASE_URI);
                 } else {
-                    defaultBaseURI = new URI("exist://localhost" + configFile.getOwnerDocument().getBaseURI());
+                    defaultBaseURI = new URI("exist://localhost" + processorConfig.getOwnerDocument().getBaseURI());
                 }
                 final EnvironmentProfile environment = EnvironmentalProfileFactory.createDefault(defaultBaseURI, getResourceResolver(broker, defaultBaseURI.toString()));
                 builder = new FopFactoryBuilder(environment).setConfiguration(new FopAvalonConfigurationAdapter(cfg));
@@ -95,7 +95,7 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
 
             // create new instance of FOP using the mimetype, the created user
             // agent, and the output stream
-            final Fop fop = fopFactory.newFop(mimeType, foUserAgent, os);
+            final Fop fop = fopFactory.newFop(mediaType, foUserAgent, os);
             // Obtain FOP's DefaultHandler
             return fop.getDefaultHandler();
         } catch (final URISyntaxException e) {

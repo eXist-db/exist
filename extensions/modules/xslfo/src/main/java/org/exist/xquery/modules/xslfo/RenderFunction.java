@@ -57,7 +57,7 @@ public class RenderFunction extends BasicFunction {
     private static final Logger logger = LogManager.getLogger(RenderFunction.class);
 
     private static final FunctionParameterSequenceType FN_PARAM_DOCUMENT = param("document", Type.NODE, "FO document");
-    private static final FunctionParameterSequenceType FN_PARAM_MIME_TYPE = param("mime-type", Type.STRING, "The Internet Media Type of the desired result");
+    private static final FunctionParameterSequenceType FN_PARAM_MIME_TYPE = param("media-type", Type.STRING, "The Internet Media Type of the desired result");
     private static final FunctionParameterSequenceType FN_PARAM_PARAMETERS = optParam("parameters", Type.NODE, "parameters for the transform");
 
     private static final String FN_RENDER = "render";
@@ -80,7 +80,7 @@ public class RenderFunction extends BasicFunction {
                     FN_PARAM_DOCUMENT,
                     FN_PARAM_MIME_TYPE,
                     FN_PARAM_PARAMETERS,
-                    optParam("config-file", Type.NODE, "FOP Processor Configuration file")
+                    optParam("processor-config", Type.NODE, "FOP Processor Configuration file")
             )
         )
     );
@@ -110,8 +110,8 @@ public class RenderFunction extends BasicFunction {
 
         final Item inputNode = args[0].itemAt(0);
 
-        // get mime-type
-        final String mimeType = args[1].getStringValue();
+        // get media-type
+        final String mediaType = args[1].getStringValue();
 
         // get parameters
         final Properties parameters;
@@ -125,8 +125,8 @@ public class RenderFunction extends BasicFunction {
         try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             adapter = ((XSLFOModule) getParentModule()).getProcessorAdapter();
 
-            final NodeValue configFile = args.length == 4 ? (NodeValue) args[3].itemAt(0) : null;
-            final ContentHandler contentHandler = adapter.getContentHandler(context.getBroker(), configFile, parameters, mimeType, baos);
+            final NodeValue processorConfig = args.length == 4 ? (NodeValue) args[3].itemAt(0) : null;
+            final ContentHandler contentHandler = adapter.getContentHandler(context.getBroker(), processorConfig, parameters, mediaType, baos);
 
             // process the XSL-FO
             contentHandler.startDocument();
