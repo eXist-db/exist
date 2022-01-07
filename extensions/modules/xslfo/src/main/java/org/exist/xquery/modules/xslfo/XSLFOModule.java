@@ -26,8 +26,13 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
+import org.exist.xquery.FunctionDSL;
 import org.exist.xquery.FunctionDef;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 
 /**
  * @author <a href="mailto:craiggoodyer@gmail.com">Craig Goodyer</a>
@@ -90,5 +95,9 @@ public class XSLFOModule extends AbstractInternalModule {
             }
         }
         return adapter;
+    }
+
+    static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
+        return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, variableParamTypes);
     }
 }

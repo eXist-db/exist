@@ -28,11 +28,9 @@ import java.util.Properties;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import org.exist.dom.QName;
 import org.exist.util.ParametersExtractor;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -42,10 +40,12 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.modules.xslfo.XSLFOModule.functionSignatures;
 
 /**
  * @author <a href="mailto:craiggoodyer@gmail.com">Craig Goodyer</a>
@@ -55,41 +55,35 @@ public class RenderFunction extends BasicFunction {
 
     @SuppressWarnings("unused")
     private static final Logger logger = LogManager.getLogger(RenderFunction.class);
-    public final static FunctionSignature[] signatures = {
 
-            new FunctionSignature(
-                    new QName("render", XSLFOModule.NAMESPACE_URI, XSLFOModule.PREFIX),
-                    "Renders a given FO document. "
-                            + "Returns an xs:base64binary of the result. "
-                            + "Parameters are specified with the structure: "
-                            + "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
-                            + "</parameters>. "
-                            + "Recognised rendering parameters are: author, title, keywords and dpi. URL's in the FO can be resolved from: http, https, file and exist URI schemes. If you wish to access a resource in the local database then the URI 'exist://localhost/db' refers to the root collection.",
-                    new SequenceType[]{
-                            new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "FO document"),
-                            new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-                            new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "parameters for the transform")
-                    },
-                    new FunctionParameterSequenceType("result", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "result")
+    private static final FunctionParameterSequenceType FN_PARAM_DOCUMENT = param("document", Type.NODE, "FO document");
+    private static final FunctionParameterSequenceType FN_PARAM_MIME_TYPE = param("mime-type", Type.STRING, "The Internet Media Type of the desired result");
+    private static final FunctionParameterSequenceType FN_PARAM_PARAMETERS = optParam("parameters", Type.NODE, "parameters for the transform");
+
+    private static final String FN_RENDER = "render";
+    public final static FunctionSignature[] signatures = functionSignatures(
+        FN_RENDER,
+        "Renders a given FO document. "
+                + "Returns an xs:base64binary of the result. "
+                + "Parameters are specified with the structure: "
+                + "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
+                + "</parameters>. "
+                + "Recognised rendering parameters are: author, title, keywords and dpi. URL's in the FO can be resolved from: http, https, file and exist URI schemes. If you wish to access a resource in the local database then the URI 'exist://localhost/db' refers to the root collection.",
+        returnsOpt(Type.BASE64_BINARY, "The result of rendering the FO"),
+        arities(
+            arity(
+                    FN_PARAM_DOCUMENT,
+                    FN_PARAM_MIME_TYPE,
+                    FN_PARAM_PARAMETERS
             ),
-
-            new FunctionSignature(
-                    new QName("render", XSLFOModule.NAMESPACE_URI, XSLFOModule.PREFIX),
-                    "Renders a given FO document. "
-                            + "Returns an xs:base64binary of the result. "
-                            + "Parameters are specified with the structure: "
-                            + "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
-                            + "</parameters>. "
-                            + "Recognised rendering parameters are: author, title, keywords and dpi. URL's in the FO can be resolved from: http, https, file and exist URI schemes. If you wish to access a resource in the local database then the URI 'exist://localhost/db' refers to the root collection.",
-                    new SequenceType[]{
-                            new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "FO document"),
-                            new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-                            new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "parameters for the transform"),
-                            new FunctionParameterSequenceType("config-file", Type.NODE, Cardinality.ZERO_OR_ONE, "FOP Processor Configuration file")
-                    },
-                    new FunctionParameterSequenceType("result", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "result")
+            arity(
+                    FN_PARAM_DOCUMENT,
+                    FN_PARAM_MIME_TYPE,
+                    FN_PARAM_PARAMETERS,
+                    optParam("config-file", Type.NODE, "FOP Processor Configuration file")
             )
-    };
+        )
+    );
 
     public RenderFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
