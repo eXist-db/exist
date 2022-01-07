@@ -23,6 +23,7 @@ package org.exist.xquery.functions.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.INodeHandle;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.InMemoryNodeSet;
@@ -41,6 +42,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import java.util.Properties;
@@ -104,13 +106,24 @@ public class Expand extends BasicFunction {
         context.pushDocumentContext();
         try {
             final InMemoryNodeSet result = new InMemoryNodeSet();
-            final MemTreeBuilder builder = context.getDocumentBuilder();
+
+            final MemTreeBuilder builder = new MemTreeBuilder(getContext());
             final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
             for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
-                final int nodeNr = builder.getDocument().getLastNode();
                 final NodeValue next = (NodeValue) i.nextItem();
+
+                builder.startDocument();
                 next.toSAX(context.getBroker(), receiver, serializeOptions);
-                result.add(builder.getDocument().getNode(nodeNr + 1));
+                builder.endDocument();
+
+                final short nodeType = ((INodeHandle) next).getNodeType();
+                if (Node.DOCUMENT_NODE != nodeType) {
+                    result.add(builder.getDocument().getNode(1));
+                } else {
+                    result.add(builder.getDocument());
+                }
+
+                builder.reset(getContext());
             }
             return result;
         } catch (final SAXException e) {

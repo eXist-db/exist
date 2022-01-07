@@ -83,10 +83,11 @@ declare boundary-space preserve;
 
 let $doc := doc('/db/mycollection/sample.xml')
 let $uri := xmldb:store('/db/mycollection', 'tample.xml', $doc, "text/xml")
-return doc($uri)
+return doc($uri)/test
         ]]></code>
         <expected>
 <test>
+<!-- this is a test comment -->
 <test1>
 some value
 </test1>
