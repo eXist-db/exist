@@ -23,6 +23,7 @@ package org.exist.xquery.modules.xslfo;
 
 import java.util.List;
 import java.util.Map;
+
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.exist.xquery.AbstractInternalModule;
@@ -43,11 +44,11 @@ public class XSLFOModule extends AbstractInternalModule {
     public final static String RELEASED_IN_VERSION = "eXist-1.2";
 
     private final static FunctionDef[] functions = {
-        new FunctionDef(RenderFunction.signatures[0], RenderFunction.class),
-        new FunctionDef(RenderFunction.signatures[1], RenderFunction.class)
+            new FunctionDef(RenderFunction.signatures[0], RenderFunction.class),
+            new FunctionDef(RenderFunction.signatures[1], RenderFunction.class)
     };
 
-    public XSLFOModule(Map<String, List<? extends Object>> parameters) {
+    public XSLFOModule(final Map<String, List<? extends Object>> parameters) {
         super(functions, parameters);
     }
 
@@ -72,16 +73,16 @@ public class XSLFOModule extends AbstractInternalModule {
     }
 
     private ProcessorAdapter adapter = null;
-    
+
     public synchronized ProcessorAdapter getProcessorAdapter() {
-       
-        if(adapter == null) {
-            List<String> processorAdapterParamList = (List<String>)getParameter("processorAdapter");
-            if(!processorAdapterParamList.isEmpty()) {
-                String processorAdapter = processorAdapterParamList.get(0);
+
+        if (adapter == null) {
+            final List<String> processorAdapterParamList = (List<String>) getParameter("processorAdapter");
+            if (!processorAdapterParamList.isEmpty()) {
+                final String processorAdapter = processorAdapterParamList.get(0);
 
                 try {
-                    Class<ProcessorAdapter> clazzAdapter = (Class<ProcessorAdapter>)Class.forName(processorAdapter);
+                    final Class<ProcessorAdapter> clazzAdapter = (Class<ProcessorAdapter>) Class.forName(processorAdapter);
                     adapter = clazzAdapter.newInstance();
                 } catch (ClassNotFoundException | IllegalAccessException | InstantiationException cnfe) {
                     logger.error("Unable to instantiate FO Processor Adapter:{}", cnfe.getMessage(), cnfe);

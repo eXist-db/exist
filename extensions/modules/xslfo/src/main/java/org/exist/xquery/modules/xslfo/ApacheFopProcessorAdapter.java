@@ -43,19 +43,14 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.xmlgraphics.io.ResourceResolver;
 import org.apache.xmlgraphics.io.URIResolverAdapter;
-import org.exist.repo.PkgXsltModuleURIResolver;
 import org.exist.storage.DBBroker;
 import org.exist.util.EXistURISchemeURIResolver;
-import org.exist.util.URIResolverHierarchy;
-import org.exist.xslt.EXistURIResolver;
 import org.exist.xquery.value.NodeValue;
+import org.exist.xslt.EXistURIResolver;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
-import javax.xml.transform.Source;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.URIResolver;
 
 
 /**
@@ -76,7 +71,7 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
                 final FopConfigurationBuilder cfgBuilder = new FopConfigurationBuilder(broker);
                 final Configuration cfg = cfgBuilder.buildFromNode(configFile);
                 final URI defaultBaseURI;
-                if(configFile instanceof org.exist.dom.memtree.NodeImpl) {
+                if (configFile instanceof org.exist.dom.memtree.NodeImpl) {
                     //in-memory documents don't have a BaseURI
                     defaultBaseURI = new URI(DEFAULT_BASE_URI);
                 } else {
@@ -103,7 +98,7 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
             final Fop fop = fopFactory.newFop(mimeType, foUserAgent, os);
             // Obtain FOP's DefaultHandler
             return fop.getDefaultHandler();
-        } catch(final URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             throw new SAXException("Unable to parse baseURI", e);
         }
     }
@@ -116,20 +111,19 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
      * Setup the UserAgent for FOP, from given parameters *
      *
      * @param foUserAgent The user agent to set parameters for
-     * @param parameters
-     *            any user defined parameters to the XSL-FO process
+     * @param parameters  any user defined parameters to the XSL-FO process
      * @return FOUserAgent The generated FOUserAgent to include any parameters
-     *         passed in
+     * passed in
      */
     private FOUserAgent setupFOUserAgent(final FOUserAgent foUserAgent, final Properties parameters) {
 
         // setup the foUserAgent as per the parameters given
         foUserAgent.setProducer("eXist-db with Apache FOP");
 
-        if(parameters != null) {
-            for(final Entry paramEntry : parameters.entrySet()) {
-                final String key = (String)paramEntry.getKey();
-                final String value = (String)paramEntry.getValue();
+        if (parameters != null) {
+            for (final Entry paramEntry : parameters.entrySet()) {
+                final String key = (String) paramEntry.getKey();
+                final String value = (String) paramEntry.getValue();
 
                 switch (key) {
                     case "FOPauthor":
@@ -157,10 +151,10 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
 
     /**
      * Returns a scheme aware ResourceResolver which supports:
-     *   file://
-     *   exist:// (which will be translated to xmldb:exist://)
-     *   http://
-     *   https://
+     * file://
+     * exist:// (which will be translated to xmldb:exist://)
+     * http://
+     * https://
      *
      * @return The resource resolver
      */
@@ -206,7 +200,7 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
     /**
      * Adapter between Avalon config which lets us easily use a Node as the configuration
      * source, and Apache Fop configuration which does not.
-     *
+     * <p>
      * This was needed after the Fop API changed from version 2.3 to 2.4.
      */
     private static class FopAvalonConfigurationAdapter implements org.apache.fop.configuration.Configuration {
@@ -222,7 +216,8 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
         }
 
         @Override
-        public @Nullable org.apache.fop.configuration.Configuration getChild(final String child, boolean createNew) {
+        public @Nullable
+        org.apache.fop.configuration.Configuration getChild(final String child, boolean createNew) {
             final Configuration childConfig = avalonConfiguration.getChild(child, createNew);
             if (childConfig == null) {
                 return null;
@@ -231,7 +226,8 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
         }
 
         @Override
-        public @Nullable org.apache.fop.configuration.Configuration[] getChildren(final String name) {
+        public @Nullable
+        org.apache.fop.configuration.Configuration[] getChildren(final String name) {
             final Configuration[] children = avalonConfiguration.getChildren(name);
             if (children == null) {
                 return null;
@@ -359,8 +355,8 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
 
         @Override
         public void processEvent(final Event event) {
-            String msg = EventFormatter.format(event);
-            EventSeverity severity = event.getSeverity();
+            final String msg = EventFormatter.format(event);
+            final EventSeverity severity = event.getSeverity();
             if (severity == EventSeverity.INFO) {
                 log.info(msg);
             } else if (severity == EventSeverity.WARN) {
@@ -369,7 +365,7 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
                 // will be different) and as such we do not try to filter them here; on the other hand,
                 // font related warnings are very likely to repeat and we try to filter them out here;
                 // the same may happen with missing images (but not implemented yet).
-                String eventGroupID = event.getEventGroupID();
+                final String eventGroupID = event.getEventGroupID();
                 if (eventGroupID.equals("org.apache.fop.fonts.FontEventProducer")) {
                     if (!loggedMessages.contains(msg)) {
                         loggedMessages.add(msg);
@@ -380,17 +376,17 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
                 }
             } else if (severity == EventSeverity.ERROR) {
                 if (event.getParam("e") != null) {
-                    log.error(msg, (Throwable)event.getParam("e"));
+                    log.error(msg, (Throwable) event.getParam("e"));
                 } else {
                     log.error(msg);
                 }
             } else if (severity == EventSeverity.FATAL) {
 
-                    if (event.getParam("e") != null) {
-                        log.fatal(msg, (Throwable)event.getParam("e"));
-                    } else {
-                        log.fatal(msg);
-                    }
+                if (event.getParam("e") != null) {
+                    log.fatal(msg, (Throwable) event.getParam("e"));
+                } else {
+                    log.fatal(msg);
+                }
             } else {
                 assert false;
             }

@@ -55,43 +55,43 @@ public class RenderFunction extends BasicFunction {
 
     @SuppressWarnings("unused")
     private static final Logger logger = LogManager.getLogger(RenderFunction.class);
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
 
-        new FunctionSignature(
-            new QName("render", XSLFOModule.NAMESPACE_URI, XSLFOModule.PREFIX),
-            "Renders a given FO document. "
-            + "Returns an xs:base64binary of the result. "
-            + "Parameters are specified with the structure: "
-            + "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
-            + "</parameters>. "
-            + "Recognised rendering parameters are: author, title, keywords and dpi. URL's in the FO can be resolved from: http, https, file and exist URI schemes. If you wish to access a resource in the local database then the URI 'exist://localhost/db' refers to the root collection.",
-            new SequenceType[]{
-                new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "FO document"),
-                new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-                new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "parameters for the transform")
-            },
-            new FunctionParameterSequenceType("result", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "result")
-        ),
+            new FunctionSignature(
+                    new QName("render", XSLFOModule.NAMESPACE_URI, XSLFOModule.PREFIX),
+                    "Renders a given FO document. "
+                            + "Returns an xs:base64binary of the result. "
+                            + "Parameters are specified with the structure: "
+                            + "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
+                            + "</parameters>. "
+                            + "Recognised rendering parameters are: author, title, keywords and dpi. URL's in the FO can be resolved from: http, https, file and exist URI schemes. If you wish to access a resource in the local database then the URI 'exist://localhost/db' refers to the root collection.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "FO document"),
+                            new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+                            new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "parameters for the transform")
+                    },
+                    new FunctionParameterSequenceType("result", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "result")
+            ),
 
-        new FunctionSignature(
-            new QName("render", XSLFOModule.NAMESPACE_URI, XSLFOModule.PREFIX),
-            "Renders a given FO document. "
-            + "Returns an xs:base64binary of the result. "
-            + "Parameters are specified with the structure: "
-            + "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
-            + "</parameters>. "
-            + "Recognised rendering parameters are: author, title, keywords and dpi. URL's in the FO can be resolved from: http, https, file and exist URI schemes. If you wish to access a resource in the local database then the URI 'exist://localhost/db' refers to the root collection.",
-            new SequenceType[]{
-                new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "FO document"),
-                new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, ""),
-                new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "parameters for the transform"),
-                new FunctionParameterSequenceType("config-file", Type.NODE, Cardinality.ZERO_OR_ONE, "FOP Processor Configuration file")
-            },
-            new FunctionParameterSequenceType("result", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "result")
-        )
+            new FunctionSignature(
+                    new QName("render", XSLFOModule.NAMESPACE_URI, XSLFOModule.PREFIX),
+                    "Renders a given FO document. "
+                            + "Returns an xs:base64binary of the result. "
+                            + "Parameters are specified with the structure: "
+                            + "<parameters><param name=\"param-name1\" value=\"param-value1\"/>"
+                            + "</parameters>. "
+                            + "Recognised rendering parameters are: author, title, keywords and dpi. URL's in the FO can be resolved from: http, https, file and exist URI schemes. If you wish to access a resource in the local database then the URI 'exist://localhost/db' refers to the root collection.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("document", Type.NODE, Cardinality.EXACTLY_ONE, "FO document"),
+                            new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, ""),
+                            new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "parameters for the transform"),
+                            new FunctionParameterSequenceType("config-file", Type.NODE, Cardinality.ZERO_OR_ONE, "FOP Processor Configuration file")
+                    },
+                    new FunctionParameterSequenceType("result", Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "result")
+            )
     };
 
-    public RenderFunction(XQueryContext context, FunctionSignature signature) {
+    public RenderFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -105,32 +105,34 @@ public class RenderFunction extends BasicFunction {
      *      org.exist.xquery.value.Sequence)
      */
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
         // gather input XSL-FO document
         // if no input document (empty), return empty result as we need data to
         // process
-        if(args[0].isEmpty()) {
+        if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        Item inputNode = args[0].itemAt(0);
+        final Item inputNode = args[0].itemAt(0);
 
         // get mime-type
-        String mimeType = args[1].getStringValue();
+        final String mimeType = args[1].getStringValue();
 
         // get parameters
-        Properties parameters = new Properties();
-        if(!args[2].isEmpty()) {
+        final Properties parameters;
+        if (!args[2].isEmpty()) {
             parameters = ParametersExtractor.parseParameters(((NodeValue) args[2].itemAt(0)).getNode());
+        } else {
+            parameters = new Properties();
         }
 
         ProcessorAdapter adapter = null;
         try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
-            adapter = ((XSLFOModule)getParentModule()).getProcessorAdapter();
+            adapter = ((XSLFOModule) getParentModule()).getProcessorAdapter();
 
-            NodeValue configFile = args.length == 4 ? (NodeValue)args[3].itemAt(0) : null;
-            ContentHandler contentHandler = adapter.getContentHandler(context.getBroker(), configFile, parameters, mimeType, baos);
+            final NodeValue configFile = args.length == 4 ? (NodeValue) args[3].itemAt(0) : null;
+            final ContentHandler contentHandler = adapter.getContentHandler(context.getBroker(), configFile, parameters, mimeType, baos);
 
             // process the XSL-FO
             contentHandler.startDocument();
@@ -139,10 +141,10 @@ public class RenderFunction extends BasicFunction {
 
             // return the result
             return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
-        } catch(final IOException | SAXException se) {
+        } catch (final IOException | SAXException se) {
             throw new XPathException(this, se.getMessage(), se);
         } finally {
-            if(adapter != null) {
+            if (adapter != null) {
                 adapter.cleanup();
             }
         }

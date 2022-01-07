@@ -34,7 +34,7 @@ import org.xml.sax.SAXException;
  */
 public interface ProcessorAdapter {
 
-    public ContentHandler getContentHandler(DBBroker broker, NodeValue configFile, Properties parameters, String mimeType, OutputStream os) throws XPathException, SAXException;
+    ContentHandler getContentHandler(DBBroker broker, NodeValue configFile, Properties parameters, String mimeType, OutputStream os) throws XPathException, SAXException;
 
-    public void cleanup();
+    void cleanup();
 }

@@ -41,7 +41,6 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 /**
- *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class RenderXXepProcessorAdapter implements ProcessorAdapter {
@@ -49,7 +48,7 @@ public class RenderXXepProcessorAdapter implements ProcessorAdapter {
     private Object formatter = null;
 
     static {
-        System.setProperty("com.renderx.jaxp.uriresolver","org.exist.xquery.modules.xslfo.RenderXXepProcessorAdapter.EXistURISchemeAndURIResolver");
+        System.setProperty("com.renderx.jaxp.uriresolver", "org.exist.xquery.modules.xslfo.RenderXXepProcessorAdapter.EXistURISchemeAndURIResolver");
     }
 
     public static class EXistURISchemeAndURIResolver implements URIResolver {
@@ -79,47 +78,47 @@ public class RenderXXepProcessorAdapter implements ProcessorAdapter {
 
 
     @Override
-    public ContentHandler getContentHandler(DBBroker broker, NodeValue configFile, Properties parameters, String mimeType, OutputStream os) throws XPathException, SAXException {
+    public ContentHandler getContentHandler(final DBBroker broker, final NodeValue configFile, final Properties parameters, final String mimeType, final OutputStream os) throws XPathException, SAXException {
 
-        if(configFile == null) {
+        if (configFile == null) {
             throw new XPathException("XEP requires a configuration file");
         }
 
         try {
 
-            Class formatterImplClazz = Class.forName("com.renderx.xep.FormatterImpl");
+            final Class formatterImplClazz = Class.forName("com.renderx.xep.FormatterImpl");
 
-            if(parameters == null) {
+            if (parameters == null) {
                 Constructor formatterImplCstr = formatterImplClazz.getConstructor(Source.class);
                 formatter = formatterImplCstr.newInstance(new DOMSource(configFile.getNode()));
             } else {
                 Constructor formatterImplCstr = formatterImplClazz.getConstructor(Source.class, Properties.class);
                 formatter = formatterImplCstr.newInstance(new DOMSource(configFile.getNode()), parameters);
             }
-            String backendType = mimeType.substring(mimeType.indexOf("/")+1).toUpperCase();
+            final String backendType = mimeType.substring(mimeType.indexOf("/") + 1).toUpperCase();
 
-            Class foTargetClazz = Class.forName("com.renderx.xep.FOTarget");
-            Constructor foTargetCstr = foTargetClazz.getConstructor(OutputStream.class, String.class);
-            Object foTarget = foTargetCstr.newInstance(os, backendType);
+            final Class foTargetClazz = Class.forName("com.renderx.xep.FOTarget");
+            final Constructor foTargetCstr = foTargetClazz.getConstructor(OutputStream.class, String.class);
+            final Object foTarget = foTargetCstr.newInstance(os, backendType);
 
-            Method createContentHandlerMethod = formatterImplClazz.getMethod("createContentHandler", String.class, foTargetClazz);
+            final Method createContentHandlerMethod = formatterImplClazz.getMethod("createContentHandler", String.class, foTargetClazz);
 
             return (ContentHandler) createContentHandlerMethod.invoke(formatter, null, foTarget);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new SAXException(e.getMessage(), e);
         }
     }
 
     @Override
     public void cleanup() {
-        if(formatter != null) {
-            try{
-                Class formatterImplClazz = Class.forName("com.renderx.xep.FormatterImpl");
-                Method cleanupMethod = formatterImplClazz.getMethod("cleanup");
+        if (formatter != null) {
+            try {
+                final Class formatterImplClazz = Class.forName("com.renderx.xep.FormatterImpl");
+                final Method cleanupMethod = formatterImplClazz.getMethod("cleanup");
                 cleanupMethod.invoke(formatter);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 // do nothing
             }
         }
-     }
+    }
 }
