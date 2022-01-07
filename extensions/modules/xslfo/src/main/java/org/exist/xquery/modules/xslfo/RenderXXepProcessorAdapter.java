@@ -56,10 +56,10 @@ public class RenderXXepProcessorAdapter implements ProcessorAdapter {
 
             if(parameters == null) {
                 Constructor formatterImplCstr = formatterImplClazz.getConstructor(Source.class);
-                formatter = formatterImplCstr.newInstance(new DOMSource((Node)configFile));
+                formatter = formatterImplCstr.newInstance(new DOMSource(configFile.getNode()));
             } else {
                 Constructor formatterImplCstr = formatterImplClazz.getConstructor(Source.class, Properties.class);
-                formatter = formatterImplCstr.newInstance(new DOMSource((Node)configFile), parameters);
+                formatter = formatterImplCstr.newInstance(new DOMSource(configFile.getNode()), parameters);
             }
             String backendType = mimeType.substring(mimeType.indexOf("/")+1).toUpperCase();
 
