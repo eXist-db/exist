@@ -37,6 +37,8 @@ import org.exist.util.EXistURISchemeURIResolver;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xslt.EXistURIResolver;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -88,12 +90,20 @@ public class RenderXXepProcessorAdapter implements ProcessorAdapter {
 
             final Class formatterImplClazz = Class.forName("com.renderx.xep.FormatterImpl");
 
+            Node config = configFile.getNode();
+            if (Node.DOCUMENT_NODE == config.getNodeType()) {
+                config = ((Document) config).getDocumentElement();
+                if (config == null) {
+                    throw new XPathException("XEP requires a configuration file, but got an empty element");
+                }
+            }
+
             if (parameters == null) {
                 Constructor formatterImplCstr = formatterImplClazz.getConstructor(Source.class);
-                formatter = formatterImplCstr.newInstance(new DOMSource(configFile.getNode()));
+                formatter = formatterImplCstr.newInstance(new DOMSource(config));
             } else {
                 Constructor formatterImplCstr = formatterImplClazz.getConstructor(Source.class, Properties.class);
-                formatter = formatterImplCstr.newInstance(new DOMSource(configFile.getNode()), parameters);
+                formatter = formatterImplCstr.newInstance(new DOMSource(config), parameters);
             }
             final String backendType = mimeType.substring(mimeType.indexOf("/") + 1).toUpperCase();
 
