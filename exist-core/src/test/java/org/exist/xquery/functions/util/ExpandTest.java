@@ -21,27 +21,41 @@
  */
 package org.exist.xquery.functions.util;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.xquery.XPathException;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author Casey Jordan
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class ExpandTest {
+
+    private static final String EOL = System.getProperty("line.separator");
+
+    private static final String DOC1_CONTENT = "<doc1>doc1</doc1>";
+    private static final String DOC2_CONTENT = "<!-- comment 1 before --><!-- comment 2 before -->" + EOL + "<doc2>doc2</doc2>";
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
+    @BeforeClass
+    public static void setup() throws XMLDBException {
+        final Collection expandTestCol = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "expand-test");
+        ExistXmldbEmbeddedServer.storeResource(expandTestCol, "doc1.xml", DOC1_CONTENT.getBytes(UTF_8));
+        ExistXmldbEmbeddedServer.storeResource(expandTestCol, "doc2.xml", DOC2_CONTENT.getBytes(UTF_8));
+    }
+
     @Test
-    public void testExpandWithDefaultNS() throws XPathException, XMLDBException {
+    public void expandWithDefaultNS() throws XMLDBException {
     	final String expected = "<ok xmlns=\"some\">\n    <concept xmlns=\"\"/>\n</ok>";
 
         String query = "" +
@@ -65,5 +79,21 @@ public class ExpandTest {
         result = existEmbeddedServer.executeQuery(query);
         r = (String) result.getResource(0).getContent();
         assertEquals(expected, r);
+    }
+
+    @Test
+    public void expandPersistentDom() throws XMLDBException {
+        final String query = "util:expand(doc('/db/expand-test/doc1.xml'))";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals(DOC1_CONTENT, r);
+    }
+
+    @Test
+    public void expandPersistentDomCommentsFirst() throws XMLDBException {
+        final String query = "util:expand(doc('/db/expand-test/doc2.xml'))";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        final String r = (String) result.getResource(0).getContent();
+        assertEquals(DOC2_CONTENT, r);
     }
 }
