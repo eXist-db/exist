@@ -28,9 +28,12 @@ import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.w3c.dom.Node;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XMLResource;
 
 /**
  * @author Casey Jordan
@@ -43,6 +46,8 @@ public class ExpandTest {
 
     private static final String DOC1_CONTENT = "<doc1>doc1</doc1>";
     private static final String DOC2_CONTENT = "<!-- comment 1 before --><!-- comment 2 before -->" + EOL + "<doc2>doc2</doc2>";
+    private static final String DOC3_CONTENT = "<doc3 foo=\"bar\">doc3</doc3>";
+    private static final String DOC4_CONTENT = "<doc4 xmlns:x=\"http://x\" x:foo=\"bar\">doc4</doc4>";
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
@@ -52,6 +57,8 @@ public class ExpandTest {
         final Collection expandTestCol = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "expand-test");
         ExistXmldbEmbeddedServer.storeResource(expandTestCol, "doc1.xml", DOC1_CONTENT.getBytes(UTF_8));
         ExistXmldbEmbeddedServer.storeResource(expandTestCol, "doc2.xml", DOC2_CONTENT.getBytes(UTF_8));
+        ExistXmldbEmbeddedServer.storeResource(expandTestCol, "doc3.xml", DOC3_CONTENT.getBytes(UTF_8));
+        ExistXmldbEmbeddedServer.storeResource(expandTestCol, "doc4.xml", DOC4_CONTENT.getBytes(UTF_8));
     }
 
     @Test
@@ -95,5 +102,34 @@ public class ExpandTest {
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
         assertEquals(DOC2_CONTENT, r);
+    }
+
+    @Test
+    public void expandPersistentDomAttr() throws XMLDBException {
+        final String query = "util:expand(doc('/db/expand-test/doc3.xml')/doc3/@foo)";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        final Resource res = result.getResource(0);
+        assertEquals(XMLResource.RESOURCE_TYPE, res.getResourceType());
+        final XMLResource xmlRes = (XMLResource) res;
+        final Node node = xmlRes.getContentAsDOM();
+        assertEquals(Node.ATTRIBUTE_NODE, node.getNodeType());
+        assertNull(node.getNamespaceURI());
+        assertEquals("foo", node.getNodeName());
+        assertEquals("bar", node.getNodeValue());
+    }
+
+    @Test
+    public void expandPersistentDomAttrNs() throws XMLDBException {
+        final String query = "declare namespace x = \"http://x\";\n" +
+                "util:expand(doc('/db/expand-test/doc4.xml')/doc4/@x:foo)";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        final Resource res = result.getResource(0);
+        assertEquals(XMLResource.RESOURCE_TYPE, res.getResourceType());
+        final XMLResource xmlRes = (XMLResource) res;
+        final Node node = xmlRes.getContentAsDOM();
+        assertEquals(Node.ATTRIBUTE_NODE, node.getNodeType());
+        assertEquals("http://x", node.getNamespaceURI());
+        assertEquals("foo", node.getNodeName());
+        assertEquals("bar", node.getNodeValue());
     }
 }
