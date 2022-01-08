@@ -536,7 +536,7 @@
         </code>
         <expected>C2</expected>
     </test>
-    <test output="xml" ignore="yes"><!-- this fails on TC only -->
+    <test output="xml" ignore="yes">
         <task>Following sibling axis 15</task>
         <code>
             (doc("/db/axes-test/axes2.xml"), doc("/db/axes-test/axes3.xml"))//c[following-sibling::c]
@@ -640,7 +640,7 @@
         </code>
         <expected>C2</expected>
     </test>
-    <test output="xml" ignore="yes"><!-- this fails on TC only -->
+    <test output="xml" ignore="yes">
         <task>Preceding sibling axis 15</task>
         <code>
             (doc("/db/axes-test/axes2.xml"), doc("/db/axes-test/axes3.xml"))//c[preceding-sibling::c]

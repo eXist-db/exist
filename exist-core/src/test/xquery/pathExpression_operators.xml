@@ -41,7 +41,7 @@
     <tearDown>
         <remove-collection collection="/db/coll"/>
     </tearDown>
-    <test output="xml" ignore="yes">
+    <test output="xml">
         <task>union operator: should select context node (not its child nodes)</task>
         <code><![CDATA[
           let $a := collection('/db/coll')/test

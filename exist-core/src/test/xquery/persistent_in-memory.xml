@@ -218,7 +218,7 @@
             <el>test3</el>
         </expected>
     </test>
-    <test output="xml" ignore="yes">
+    <test output="xml">
         <task>[in-memory] last() in predicate refining another predicate</task>
         <code><![CDATA[
             let $els := $in-memory//el[@n]
