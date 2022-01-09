@@ -41,11 +41,8 @@ import org.xmldb.api.modules.XMLResource;
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class ExpandTest {
-
-    private static final String EOL = System.getProperty("line.separator");
-
     private static final String DOC1_CONTENT = "<doc1>doc1</doc1>";
-    private static final String DOC2_CONTENT = "<!-- comment 1 before --><!-- comment 2 before -->" + EOL + "<doc2>doc2</doc2>";
+    private static final String DOC2_CONTENT = "<!-- comment 1 before --><!-- comment 2 before -->\n<doc2>doc2</doc2>";
     private static final String DOC3_CONTENT = "<doc3 foo=\"bar\">doc3</doc3>";
     private static final String DOC4_CONTENT = "<doc4 xmlns:x=\"http://x\" x:foo=\"bar\">doc4</doc4>";
 
