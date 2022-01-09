@@ -22,7 +22,7 @@
     <info organisation="org.exist" module="memcached"/>
 
     <dependencies>
-        <dependency org="net.spy" name="spymemcached" rev="2.5" conf="*->*,!sources,!javadoc"/>
+        <dependency org="net.spy" name="spymemcached" rev="2.12.3" conf="*->*,!sources,!javadoc"/>
     </dependencies>
 
 </ivy-module>

@@ -2,10 +2,6 @@ package org.exist.storage;
 
 import org.easymock.Capture;
 import org.easymock.EasyMock;
-import static org.easymock.EasyMock.capture;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Permission;
@@ -21,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertEquals;
 
 
@@ -63,7 +60,7 @@ public class NativeBrokerTest {
 
         //grant EXECUTE and WRITE permission on the dest
         expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
@@ -126,7 +123,7 @@ public class NativeBrokerTest {
 
         //grant EXECUTE and WRITE permission on the dest
         expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
@@ -190,7 +187,7 @@ public class NativeBrokerTest {
 
         //grant EXECUTE and WRITE permission on the dest
         expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
@@ -262,7 +259,7 @@ public class NativeBrokerTest {
 
         //grant EXECUTE and WRITE permission on the dest
         expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
@@ -342,7 +339,7 @@ public class NativeBrokerTest {
 
         //grant EXECUTE and WRITE permission on the dest
         expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
@@ -406,7 +403,7 @@ public class NativeBrokerTest {
 
         //grant EXECUTE and WRITE permission on the dest
         expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
@@ -474,7 +471,7 @@ public class NativeBrokerTest {
 
         //grant EXECUTE and WRITE permission on the dest
         expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
@@ -550,7 +547,7 @@ public class NativeBrokerTest {
 
         //grant EXECUTE and WRITE permission on the dest
         expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
@@ -623,7 +620,7 @@ public class NativeBrokerTest {
 
         //grant EXECUTE and WRITE permission on the dest
         expect(broker.getCollection(dest)).andReturn(destCollection);
-        final Capture<XmldbURI> newDestURICapture = new Capture<XmldbURI>();
+        final Capture<XmldbURI> newDestURICapture = newCapture();
         expect(broker.getCollection(capture(newDestURICapture))).andReturn(newDestCollection);
         expect(destCollection.getPermissionsNoLock()).andReturn(destPermissions);
         expect(broker.getCurrentSubject()).andReturn(subject);
