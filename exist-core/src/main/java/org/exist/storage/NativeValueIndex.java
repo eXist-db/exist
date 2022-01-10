@@ -61,6 +61,7 @@ import org.exist.util.*;
 
 import org.w3c.dom.Node;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
@@ -1033,9 +1034,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
      *
      * @param xpathType The type to convert the value to
      * @param value     The value to atomize
-     * @return <code>null</null> if atomization fails or if the atomic value is not indexable
+     * @return The converted value, or <code>null</null> if atomization failed or if the atomic value is not indexable
      */
-    private AtomicValue convertToAtomic(final int xpathType, final String value) {
+    static @Nullable AtomicValue convertToAtomic(final int xpathType, @Nullable final String value) {
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+
         final AtomicValue atomic;
         if (Type.subTypeOf(xpathType, Type.STRING)) {
             try {
@@ -1048,7 +1053,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             try {
                 atomic = new StringValue(value).convertTo(xpathType);
             } catch (final XPathException e) {
-                LOG.error("Node value '{}' cannot be converted to {}", value, Type.getTypeName(xpathType));
+                LOG.warn("Node value '{}' cannot be converted to {}", value, Type.getTypeName(xpathType));
                 return null;
             }
         }
