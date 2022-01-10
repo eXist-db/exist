@@ -23,6 +23,7 @@ package org.exist.xquery.functions.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.INodeHandle;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.InMemoryNodeSet;
@@ -41,17 +42,22 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
 import java.util.Properties;
 
 public class Expand extends BasicFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(Expand.class);
 
+    private static final QName FQN_EXPAND = new QName("expand", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
+
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(
-            new QName("expand", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            FQN_EXPAND,
             "Creates an in-memory copy of the passed node set, using the specified " +
             "serialization options. By default, full-text match terms will be " +
             "tagged with &lt;exist:match&gt; and XIncludes will be expanded.",
@@ -60,7 +66,7 @@ public class Expand extends BasicFunction {
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the results")),
         new FunctionSignature(
-            new QName("expand", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            FQN_EXPAND,
             "Creates an in-memory copy of the passed node set, using the specified " +
             "serialization options. By default, full-text match terms will be " +
             "tagged with &lt;exist:match&gt; and XIncludes will be expanded. Serialization " +
@@ -104,13 +110,38 @@ public class Expand extends BasicFunction {
         context.pushDocumentContext();
         try {
             final InMemoryNodeSet result = new InMemoryNodeSet();
-            final MemTreeBuilder builder = context.getDocumentBuilder();
+
+            final MemTreeBuilder builder = new MemTreeBuilder(getContext());
             final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+
+            int attrNr = -1;
             for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
-                final int nodeNr = builder.getDocument().getLastNode();
                 final NodeValue next = (NodeValue) i.nextItem();
-                next.toSAX(context.getBroker(), receiver, serializeOptions);
-                result.add(builder.getDocument().getNode(nodeNr + 1));
+                final short nodeType = ((INodeHandle) next).getNodeType();
+
+                builder.startDocument();
+                if (nodeType == Node.ATTRIBUTE_NODE) {
+                    // NOTE: Attributes nodes need special handling as they cannot be directly serialized via SAX to a ContentHandler
+                    final Attr attr = (Attr) next.getNode();
+                    String ns = attr.getNamespaceURI();
+                    if (ns == null || ns.isEmpty()) {
+                        ns = XMLConstants.NULL_NS_URI;
+                    }
+                    attrNr = builder.addAttribute(new QName(attr.getLocalName(), ns), attr.getValue());
+                } else {
+                    next.toSAX(context.getBroker(), receiver, serializeOptions);
+                }
+                builder.endDocument();
+
+                if (Node.DOCUMENT_NODE == nodeType) {
+                    result.add(builder.getDocument());
+                } else if (Node.ATTRIBUTE_NODE == nodeType) {
+                    result.add(builder.getDocument().getAttribute(attrNr));
+                } else {
+                    result.add(builder.getDocument().getNode(1));
+                }
+
+                builder.reset(getContext());
             }
             return result;
         } catch (final SAXException e) {
