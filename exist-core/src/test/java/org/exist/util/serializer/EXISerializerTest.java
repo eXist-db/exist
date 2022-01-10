@@ -1,14 +1,5 @@
 package org.exist.util.serializer;
 
-import static org.easymock.EasyMock.aryEq;
-import static org.easymock.EasyMock.capture;
-import static org.easymock.EasyMock.eq;
-import static org.easymock.EasyMock.isNull;
-import static org.easymock.EasyMock.matches;
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
-
 import java.io.OutputStream;
 import java.util.List;
 
@@ -21,6 +12,8 @@ import org.junit.Test;
 import org.xml.sax.Attributes;
 
 import com.siemens.ct.exi.api.sax.SAXEncoder;
+
+import static org.easymock.EasyMock.*;
 
 public class EXISerializerTest {
 
@@ -73,7 +66,7 @@ public class EXISerializerTest {
 		QName testQName = new QName("local", "uri", "prefix");
 		AttrList testAttrList = new AttrList();
 		testAttrList.addAttribute(new QName("local", "uri"), "value");
-		Capture<Attributes> capturedAttributes = new Capture<Attributes>();
+		Capture<Attributes> capturedAttributes = newCapture();
 		mockEncoder.startElement(matches("uri"), matches("local"), (String)isNull(), capture(capturedAttributes));
 		replay(mockEncoder);
 		serializer.startElement(testQName, testAttrList);

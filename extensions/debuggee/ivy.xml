@@ -28,7 +28,7 @@
 
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.apache.mina/mina-core -->
-        <dependency org="org.apache.mina" name="mina-core" rev="2.0.5" conf="*->*,!sources,!javadoc"/>
+        <dependency org="org.apache.mina" name="mina-core" rev="2.0.22" conf="*->*,!sources,!javadoc"/>
         <exclude module="slf4j-api"/>
     </dependencies>
 
