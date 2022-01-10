@@ -20,29 +20,30 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-FROM openjdk:8-jdk-slim as builder
-
-# Install tools required by FOP
-WORKDIR /usr/local
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  expat \
-  fontconfig \
-  liblcms2-2 \
-  fonts-dejavu-core
+# Install latest JRE 8 in Debian Stretch (which is the base of gcr.io/distroless/java:8)
+FROM debian:stretch-slim as updated-jre
+RUN apt-get update && apt-get dist-upgrade
+RUN apt-get install -y openjdk-8-jre-headless
+RUN apt-get install -y expat fontconfig     # Install tools required by FOP
 
 FROM gcr.io/distroless/java:8
 
-# Copy over dependancies for Apache FOP, missing from gcr's JRE
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libfreetype.so.6 /usr/lib/x86_64-linux-gnu/libfreetype.so.6
-COPY --from=builder /usr/lib/x86_64-linux-gnu/liblcms2.so.2 /usr/lib/x86_64-linux-gnu/liblcms2.so.2
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libpng16.so.16 /usr/lib/x86_64-linux-gnu/libpng16.so.16
-COPY --from=builder /usr/lib/x86_64-linux-gnu/libfontconfig.so.1 /usr/lib/x86_64-linux-gnu/libfontconfig.so.1
+# Copy over updated JRE from Debian Stretch
+COPY --from=updated-jre /etc/java-8-openjdk /etc/java-8-openjdk
+COPY --from=updated-jre /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/java-8-openjdk-amd64
+COPY --from=updated-jre /usr/share/gdb/auto-load/usr/lib/jvm/java-8-openjdk-amd64 /usr/share/gdb/auto-load/usr/lib/jvm/java-8-openjdk-amd64
 
-# Copy dependancies for Apache Batik (used by Apache FOP to handle SVG rendering)
-COPY --from=builder /etc/fonts /etc/fonts
-COPY --from=builder /lib/x86_64-linux-gnu/libexpat.so.1 /lib/x86_64-linux-gnu/libexpat.so.1
-COPY --from=builder /usr/share/fontconfig /usr/share/fontconfig
-COPY --from=builder /usr/share/fonts/truetype/dejavu /usr/share/fonts/truetype/dejavu
+# Copy over dependencies for Apache FOP, missing from GCR's JRE
+COPY --from=updated-jre /usr/lib/x86_64-linux-gnu/libfreetype.so.6 /usr/lib/x86_64-linux-gnu/libfreetype.so.6
+COPY --from=updated-jre /usr/lib/x86_64-linux-gnu/liblcms2.so.2 /usr/lib/x86_64-linux-gnu/liblcms2.so.2
+COPY --from=updated-jre /usr/lib/x86_64-linux-gnu/libpng16.so.16 /usr/lib/x86_64-linux-gnu/libpng16.so.16
+COPY --from=updated-jre /usr/lib/x86_64-linux-gnu/libfontconfig.so.1 /usr/lib/x86_64-linux-gnu/libfontconfig.so.1
+
+# Copy dependencies for Apache Batik (used by Apache FOP to handle SVG rendering)
+COPY --from=updated-jre /etc/fonts /etc/fonts
+COPY --from=updated-jre /lib/x86_64-linux-gnu/libexpat.so.1 /lib/x86_64-linux-gnu/libexpat.so.1
+COPY --from=updated-jre /usr/share/fontconfig /usr/share/fontconfig
+COPY --from=updated-jre /usr/share/fonts/truetype/dejavu /usr/share/fonts/truetype/dejavu
 
 # Copy eXist-db
 COPY LICENSE /exist/LICENSE
