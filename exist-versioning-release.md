@@ -156,7 +156,7 @@ You will require a system with:
     </settings>
     ```
 
-2. You will need your GPG Key and Java KeyStore credentials for signing the release artifacts in the `<activeProfiles`> section on your machine in your local `~/.m2/settings.xml` file, e.g.:
+2. You will need your GPG Key, Java KeyStore, and Apple Notarization API credentials for signing the release artifacts in the `<activeProfiles`> section on your machine in your local `~/.m2/settings.xml` file, e.g.:
     ```xml
     <profiles>
    
@@ -172,6 +172,9 @@ You will require a system with:
                <existdb.release.keystore.pass>your-keystore-password</existdb.release.keystore.pass>
                <existdb.release.keystore.key.alias>your-alias</existdb.release.keystore.key.alias>
                <existdb.release.keystore.key.pass>your-key-password</existdb.release.keystore.key.pass>
+   
+                <existdb.release.notarize.username>your-apple-developer-email@your-dom.ain</existdb.release.notarize.username>
+                <existdb.release.notarize.password>your-apple-notarize-api-password</existdb.release.notarize.password>
            </properties>
        </profile>
    
