@@ -30,7 +30,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   liblcms2-2 \
   fonts-dejavu-core
 
+# Install latest JRE 8 in Debian Stretch (which is the base of gcr.io/distroless/java:8)
+FROM debian:stretch-slim as updated-jre
+RUN apt-get update && apt-get dist-upgrade
+RUN apt-get install -y openjdk-8-jre-headless
+
 FROM gcr.io/distroless/java:8
+
+# Copy over updated JRE from Debian Stretch
+COPY --from=updated-jre /etc/java-8-openjdk /etc/java-8-openjdk
+COPY --from=updated-jre /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/java-8-openjdk-amd64
+COPY --from=updated-jre /usr/share/gdb/auto-load/usr/lib/jvm/java-8-openjdk-amd64 /usr/share/gdb/auto-load/usr/lib/jvm/java-8-openjdk-amd64
 
 # Copy over dependancies for Apache FOP, missing from gcr's JRE
 COPY --from=builder /usr/lib/x86_64-linux-gnu/libfreetype.so.6 /usr/lib/x86_64-linux-gnu/libfreetype.so.6
