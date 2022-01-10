@@ -70,7 +70,6 @@ function ct:teardown() {
 };
 
 declare
-        %test:pending("https://github.com/eXist-db/exist/issues/1379")
         %test:assertEquals(1)
 function ct:element-contains-question-mark() {
     let $hits := doc("/db/test/test.xml")//tei:forename[fn:contains(., "?")]
@@ -79,7 +78,6 @@ function ct:element-contains-question-mark() {
 };
 
 declare
-        %test:pending("https://github.com/eXist-db/exist/issues/1379")
         %test:assertEquals(0)
 function ct:element-contains-escaped-question-mark() {
     let $hits := doc("/db/test/test.xml")//tei:forename[fn:contains(., "\?")]
@@ -88,7 +86,6 @@ function ct:element-contains-escaped-question-mark() {
 };
 
 declare
-        %test:pending("https://github.com/eXist-db/exist/issues/1379")
         %test:assertEquals(1)
 function ct:parent-element-contains-question-mark() {
     let $hits := doc("/db/test/test.xml")//tei:persName[fn:contains(., "?")]
@@ -97,7 +94,6 @@ function ct:parent-element-contains-question-mark() {
 };
 
 declare
-        %test:pending("https://github.com/eXist-db/exist/issues/1379")
         %test:assertEquals(0)
 function ct:parent-element-contains-escaped-question-mark() {
     let $hits := doc("/db/test/test.xml")//tei:persName[fn:contains(., "\?")]
