@@ -19,57 +19,38 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
 package org.exist.util;
 
-import com.evolvedbinary.j8fu.Either;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.CountingOutputStream;
+import org.apache.commons.io.output.NullOutputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.util.io.CachingFilterInputStream;
+import org.exist.util.io.InputStreamUtil;
 
-import java.io.*;
-
-import static com.evolvedbinary.j8fu.Either.Left;
-import static com.evolvedbinary.j8fu.Either.Right;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class StringInputSource extends EXistInputSource {
+public class CachingFilterInputStreamInputSource extends EXistInputSource {
+    private static final Logger LOG = LogManager.getLogger(CachingFilterInputStreamInputSource.class);
 
-    private final Either<byte[], String> source;
+    private CachingFilterInputStream cachingFilterInputStream;
+    private long length = -1;
 
-    /**
-     * Creates a String Source from a string
-     * the InputSource will be read using
-     * {@link #getCharacterStream()}.
-     *
-     * @param string the input string.
-     */
-    public StringInputSource(final String string) {
+    public CachingFilterInputStreamInputSource(final CachingFilterInputStream cachingFilterInputStream) {
         super();
-        this.source = Right(string);
-    }
-
-    /**
-     * Creates a String Source from bytes
-     * the InputSource will be read using
-     * {@link #getByteStream()}.
-     *
-     * @param string the input string.
-     */
-    public StringInputSource(final byte[] string) {
-        super();
-        this.source = Left(string);
+        this.cachingFilterInputStream = cachingFilterInputStream;
     }
 
     @Override
     public Reader getCharacterStream() {
         assertOpen();
 
-        if (source.isLeft()) {
-            return null;
-        } else {
-            return new StringReader(source.right().get());
-        }
+        return null;
     }
 
     /**
@@ -81,15 +62,17 @@ public class StringInputSource extends EXistInputSource {
     @Override
     public void setCharacterStream(final Reader r) {
         assertOpen();
-        throw new IllegalStateException("StringInputSource is immutable");
+        throw new IllegalStateException("CachingFilterInputStreamInputSource is immutable");
     }
 
     @Override
     public InputStream getByteStream() {
         assertOpen();
-        if (source.isLeft()) {
-            return new UnsynchronizedByteArrayInputStream(source.left().get());
-        } else {
+
+        try {
+            return new CachingFilterInputStream(cachingFilterInputStream);
+        } catch (final InstantiationException e) {
+            LOG.error(e.getMessage(), e);
             return null;
         }
     }
@@ -102,11 +85,16 @@ public class StringInputSource extends EXistInputSource {
     @Override
     public long getByteStreamLength() {
         assertOpen();
-        if (source.isLeft()) {
-            return source.left().get().length;
-        } else {
-            return -1;
+        if (length == -1) {
+            try (final CachingFilterInputStream is = new CachingFilterInputStream(cachingFilterInputStream);
+                 final CountingOutputStream cos = new CountingOutputStream(NullOutputStream.NULL_OUTPUT_STREAM)) {
+                InputStreamUtil.copy(is, cos);
+                length = cos.getByteCount();
+            } catch (final InstantiationException | IOException e) {
+                LOG.error(e.getMessage(), e);
+            }
         }
+        return -1;
     }
 
     /**
@@ -119,7 +107,7 @@ public class StringInputSource extends EXistInputSource {
     @Override
     public void setByteStream(final InputStream is) {
         assertOpen();
-        throw new IllegalStateException("StringInputSource is immutable");
+        throw new IllegalStateException("CachingFilterInputStreamInputSource is immutable");
     }
 
     /**

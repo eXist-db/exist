@@ -35,7 +35,6 @@ import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
@@ -43,7 +42,6 @@ import org.exist.util.MimeType;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.EXistResource;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -54,7 +52,6 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.xml.sax.ContentHandler;
@@ -65,84 +62,63 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
+import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.functions.xmldb.XMLDBModule.functionSignature;
+import static org.exist.xquery.functions.xmldb.XMLDBModule.functionSignatures;
+
 /**
  * @author wolf
  */
 public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 
-    protected static final Logger logger = LogManager.getLogger(XMLDBStore.class);
+    private static final Logger LOGGER = LogManager.getLogger(XMLDBStore.class);
 
-    protected static final FunctionParameterSequenceType ARG_COLLECTION = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI");
-    protected static final FunctionParameterSequenceType ARG_RESOURCE_NAME = new FunctionParameterSequenceType("resource-name", Type.STRING, Cardinality.ZERO_OR_ONE, "The resource name");
-    protected static final FunctionParameterSequenceType ARG_CONTENTS = new FunctionParameterSequenceType("contents", Type.ITEM, Cardinality.EXACTLY_ONE, "The contents");
-    protected static final FunctionParameterSequenceType ARG_MIME_TYPE = new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.EXACTLY_ONE, "The mime type");
+    private static final FunctionParameterSequenceType FS_PARAM_COLLECTION_URI = param("collection-uri", Type.STRING, "The collection URI");
+    private static final FunctionParameterSequenceType FS_PARAM_RESOURCE_NAME = optParam("resource-name", Type.STRING, "The resource name");
+    private static final FunctionParameterSequenceType FS_PARAM_CONTENTS = param("contents", Type.ITEM, "The contents");
+    private static final FunctionParameterSequenceType FS_PARAM_MIME_TYPE = param("mime-type", Type.STRING,"The mime type");
 
-    protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the path to new resource if sucessfully stored, otherwise the emtpty sequence");
+    private static final FunctionReturnSequenceType FS_RETURN_PATH = returnsOpt(Type.STRING, "the path to new resource if sucessfully stored, otherwise the emtpty sequence");
 
-    protected static final Properties SERIALIZATION_PROPERTIES = new Properties();
-
+    private static final Properties SERIALIZATION_PROPERTIES = new Properties();
     static {
         SERIALIZATION_PROPERTIES.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
     }
 
-    public final static FunctionSignature[] signatures = {
-            new FunctionSignature(
-                    new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-                    "Stores a new resource into the database. The resource is stored  "
-                            + "in the collection $collection-uri with the name $resource-name. "
-                            + XMLDBModule.COLLECTION_URI
-                            // fixit! - security -  if URI and possibly also file object
-                            // DBA role should be required/ljo
-                            // Of course we need to think of the node case too but it has at
-                            // least been passed throught fn:doc() but since the retrieval
-                            // happens firstly who knows ...
-                            + " The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. "
-                            + "A node will be serialized to SAX. It becomes the root node of the new "
-                            + "document. If $contents is of type xs:anyURI, the resource is loaded "
-                            + "from that URI. "
-                            + "Returns the path to the new document if successfully stored, "
-                            + "otherwise an XPathException is thrown.",
-                    new SequenceType[]{ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS},
-                    RETURN_TYPE),
-            new FunctionSignature(
-                    new QName("store", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-                    "Stores a new resource into the database. The resource is stored  "
-                            + "in the collection $collection-uri with the name $resource-name. "
-                            + XMLDBModule.COLLECTION_URI
-                            // fixit! - security -  if URI and possibly also file object
-                            // DBA role should be required/ljo
-                            // Of course we need to think of the node case too but it has at
-                            // least been passed through fn:doc() but since the retrieval
-                            // happens firstly who knows ...
-                            + " The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. "
-                            + "A node will be serialized to SAX. It becomes the root node of the new "
-                            + "document. If $contents is of type xs:anyURI, the resource is loaded "
-                            + "from that URI. The final argument $mime-type is used to specify "
-                            + "a mime type.  If the mime-type is not a xml based type, the "
-                            + "resource will be stored as a binary resource."
-                            + "Returns the path to the new document if successfully stored, "
-                            + "otherwise an XPathException is thrown.",
-                    new SequenceType[]{ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS, ARG_MIME_TYPE},
-                    RETURN_TYPE),
-            new FunctionSignature(
-                    new QName("store-as-binary", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-                    "Stores a new resource into the database. The resource is stored  "
-                            + "in the collection $collection-uri with the name $resource-name. "
-                            + XMLDBModule.COLLECTION_URI
-                            // fixit! - security -  if URI and possibly also file object
-                            // DBA role should be required/ljo
-                            // Of course we need to think of the node case too but it has at
-                            // least been passed throught fn:doc() but since the retrieval
-                            // happens firstly who knows ...
-                            + " The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. "
-                            + "A node will be serialized to SAX. It becomes the root node of the new "
-                            + "document. If $contents is of type xs:anyURI, the resource is loaded "
-                            + "from that URI. "
-                            + "Returns the path to the new document if successfully stored, "
-                            + "otherwise an XPathException is thrown.",
-                    new SequenceType[]{ARG_COLLECTION, ARG_RESOURCE_NAME, ARG_CONTENTS},
-                    RETURN_TYPE)
-    };
+    private static final String FS_STORE_NAME = "store";
+    static final FunctionSignature[] FS_STORE = functionSignatures(
+            FS_STORE_NAME,
+            "Stores a new resource into the database. The resource is stored  "
+                    + "in the collection $collection-uri with the name $resource-name. "
+                    + XMLDBModule.COLLECTION_URI
+                    + " The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. "
+                    + "A node will be serialized to SAX. It becomes the root node of the new "
+                    + "document. If $contents is of type xs:anyURI, the resource is loaded "
+                    + "from that URI. "
+                    + "Returns the path to the new document if successfully stored, "
+                    + "otherwise an XPathException is thrown.",
+            FS_RETURN_PATH,
+            arities(
+                    arity(FS_PARAM_COLLECTION_URI, FS_PARAM_RESOURCE_NAME, FS_PARAM_CONTENTS),
+                    arity(FS_PARAM_COLLECTION_URI, FS_PARAM_RESOURCE_NAME, FS_PARAM_CONTENTS, FS_PARAM_MIME_TYPE)
+            )
+    );
+
+    private static final String FS_STORE_BINARY_NAME = "store-as-binary";
+    static final FunctionSignature FS_STORE_BINARY = functionSignature(
+            FS_STORE_BINARY_NAME,
+            "Stores a new resource into the database. The resource is stored  "
+                    + "in the collection $collection-uri with the name $resource-name. "
+                    + XMLDBModule.COLLECTION_URI
+                    + " The contents $contents, is either a node, an xs:string, a Java file object or an xs:anyURI. "
+                    + "A node will be serialized to SAX. It becomes the root node of the new "
+                    + "document. If $contents is of type xs:anyURI, the resource is loaded "
+                    + "from that URI. "
+                    + "Returns the path to the new document if successfully stored, "
+                    + "otherwise an XPathException is thrown.",
+            FS_RETURN_PATH,
+            FS_PARAM_COLLECTION_URI, FS_PARAM_RESOURCE_NAME, FS_PARAM_CONTENTS
+    );
 
     public XMLDBStore(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -159,26 +135,23 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
         }
 
         final Item item = args[2].itemAt(0);
-        String mimeType = MimeType.XML_TYPE.getName();
-        boolean binary = !Type.subTypeOf(item.getType(), Type.NODE);
 
+        // determine the mime type
+        final boolean storeAsBinary = isCalledAs(FS_STORE_BINARY_NAME);
+        MimeType mimeType = null;
         if (getSignature().getArgumentCount() == 4) {
-            mimeType = args[3].getStringValue();
-            final MimeType mime = MimeTable.getInstance().getContentType(mimeType);
-            if (mime != null) {
-                binary = !mime.isXMLType();
-            }
-
-        } else if (docName != null) {
-            final MimeType mime = MimeTable.getInstance().getContentTypeFor(docName);
-            if (mime != null) {
-                mimeType = mime.getName();
-                binary = !mime.isXMLType();
-            }
+            final String strMimeType = args[3].getStringValue();
+            mimeType = MimeTable.getInstance().getContentType(strMimeType);
         }
 
-        if (getSignature().getName().getLocalPart().equals("store-as-binary")) {
-            binary = true;
+        if (mimeType == null && docName != null) {
+            mimeType = MimeTable.getInstance().getContentTypeFor(docName);
+        }
+
+        if (mimeType == null) {
+            mimeType = (storeAsBinary || !Type.subTypeOf(item.getType(), Type.NODE)) ? MimeType.BINARY_TYPE : MimeType.XML_TYPE;
+        } else if (storeAsBinary) {
+            mimeType = new MimeType(mimeType.getName(), MimeType.BINARY);
         }
 
         Resource resource;
@@ -186,29 +159,29 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
             if (Type.subTypeOf(item.getType(), Type.JAVA_OBJECT)) {
                 final Object obj = ((JavaObjectValue) item).getObject();
                 if(obj instanceof java.io.File) {
-                    resource = loadFromFile(collection, ((java.io.File)obj).toPath(), docName, binary, mimeType);
+                    resource = loadFromFile(collection, ((java.io.File)obj).toPath(), docName, mimeType);
                 } else if(obj instanceof java.nio.file.Path) {
-                    resource = loadFromFile(collection, (Path)obj, docName, binary, mimeType);
+                    resource = loadFromFile(collection, (Path)obj, docName, mimeType);
                 } else {
-                    logger.error("Passed java object should be either a java.nio.file.Path or java.io.File");
+                    LOGGER.error("Passed java object should be either a java.nio.file.Path or java.io.File");
                     throw new XPathException(this, "Passed java object should be either a java.nio.file.Path or java.io.File");
                 }
 
             } else if (Type.subTypeOf(item.getType(), Type.ANY_URI)) {
                 try {
                     final URI uri = new URI(item.getStringValue());
-                    resource = loadFromURI(collection, uri, docName, binary, mimeType);
+                    resource = loadFromURI(collection, uri, docName, mimeType);
 
                 } catch (final URISyntaxException e) {
-                    logger.error("Invalid URI: {}", item.getStringValue());
+                    LOGGER.error("Invalid URI: {}", item.getStringValue());
                     throw new XPathException(this, "Invalid URI: " + item.getStringValue(), e);
                 }
 
             } else {
-                if (binary) {
-                    resource = collection.createResource(docName, "BinaryResource");
-                } else {
+                if (mimeType.isXMLType()) {
                     resource = collection.createResource(docName, "XMLResource");
+                } else {
+                    resource = collection.createResource(docName, "BinaryResource");
                 }
 
                 if (Type.subTypeOf(item.getType(), Type.STRING)) {
@@ -218,35 +191,37 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
                     resource.setContent(((BinaryValue) item).toJavaObject());
 
                 } else if (Type.subTypeOf(item.getType(), Type.NODE)) {
-                    if (binary) {
-                        final StringWriter writer = new StringWriter();
-                        final SAXSerializer serializer = new SAXSerializer();
-                        serializer.setOutput(writer, null);
-                        item.toSAX(context.getBroker(), serializer, SERIALIZATION_PROPERTIES);
-                        resource.setContent(writer.toString());
-                    } else {
+                    if (mimeType.isXMLType()) {
                         final ContentHandler handler = ((XMLResource) resource).setContentAsSAX();
                         handler.startDocument();
-
                         item.toSAX(context.getBroker(), handler, SERIALIZATION_PROPERTIES);
                         handler.endDocument();
+                    } else {
+                        try (final StringWriter writer = new StringWriter()) {
+                            final SAXSerializer serializer = new SAXSerializer();
+                            serializer.setOutput(writer, null);
+                            item.toSAX(context.getBroker(), serializer, SERIALIZATION_PROPERTIES);
+                            resource.setContent(writer.toString());
+                        } catch (final IOException e) {
+                            LOGGER.error(e.getMessage(), e);
+                        }
                     }
                 } else {
-                    logger.error("Data should be either a node or a string");
+                    LOGGER.error("Data should be either a node or a string");
                     throw new XPathException(this, "Data should be either a node or a string");
                 }
 
-                ((EXistResource) resource).setMimeType(mimeType);
+                ((EXistResource) resource).setMimeType(mimeType.getName());
                 collection.storeResource(resource);
             }
 
         } catch (final XMLDBException e) {
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             throw new XPathException(this,
-                    "XMLDB reported an exception while storing document" + e, e);
+                    "XMLDB reported an exception while storing document: " + e.getMessage(), e);
 
         } catch (final SAXException e) {
-            logger.error(e.getMessage());
+            LOGGER.error(e.getMessage());
             throw new XPathException(this, "SAX reported an exception while storing document", e);
         }
 
@@ -258,7 +233,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
                 //TODO : use dedicated function in XmldbURI
                 return new StringValue(collection.getName() + "/" + resource.getId());
             } catch (final XMLDBException e) {
-                logger.error(e.getMessage());
+                LOGGER.error(e.getMessage());
                 throw new XPathException(this, "XMLDB reported an exception while retrieving the "
                         + "stored document", e);
             }
@@ -266,7 +241,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
         }
     }
 
-    private Resource loadFromURI(Collection collection, URI uri, String docName, boolean binary, String mimeType)
+    private Resource loadFromURI(final Collection collection, final URI uri, final String docName, final MimeType mimeType)
             throws XPathException {
         Resource resource;
         if ("file".equals(uri.getScheme())) {
@@ -278,7 +253,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
             if (!Files.isReadable(file)) {
                 throw new XPathException(this, "Cannot read path: " + path);
             }
-            resource = loadFromFile(collection, file, docName, binary, mimeType);
+            resource = loadFromFile(collection, file, docName, mimeType);
 
         } else {
             final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
@@ -287,7 +262,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
                 temp = temporaryFileManager.getTemporaryFile();
                 try(final InputStream is = uri.toURL().openStream()) {
                     Files.copy(is, temp);
-                    resource = loadFromFile(collection, temp, docName, binary, mimeType);
+                    resource = loadFromFile(collection, temp, docName, mimeType);
                 } finally {
                     if(temp != null) {
                         temporaryFileManager.returnTemporaryFile(temp);
@@ -304,7 +279,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
         return resource;
     }
 
-    private Resource loadFromFile(final Collection collection, final Path file, String docName, final boolean binary, final String mimeType)
+    private Resource loadFromFile(final Collection collection, final Path file, String docName, final MimeType mimeType)
             throws XPathException {
         if (!Files.isDirectory(file)) {
             if (docName == null) {
@@ -313,12 +288,12 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 
             try {
                 final Resource resource;
-                if (binary) {
-                    resource = collection.createResource(docName, BinaryResource.RESOURCE_TYPE);
-                } else {
+                if (mimeType.isXMLType()) {
                     resource = collection.createResource(docName, XMLResource.RESOURCE_TYPE);
+                } else {
+                    resource = collection.createResource(docName, BinaryResource.RESOURCE_TYPE);
                 }
-                ((EXistResource) resource).setMimeType(mimeType);
+                ((EXistResource) resource).setMimeType(mimeType.getName());
                 resource.setContent(file);
                 collection.storeResource(resource);
                 return resource;

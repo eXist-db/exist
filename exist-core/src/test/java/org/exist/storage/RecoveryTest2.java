@@ -31,7 +31,6 @@ import java.util.Optional;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.btree.BTreeException;
@@ -45,6 +44,7 @@ import org.exist.test.TestConstants;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Test;
@@ -101,9 +101,7 @@ public class RecoveryTest2 {
             final Path dir = Paths.get(xmlDir);
             final List<Path> docs = FileUtils.list(dir);
             for (final Path f : docs) {
-                final IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()));
-                assertNotNull(info);
-                test2.store(transaction, broker, info, new InputSource(f.toUri().toASCIIString()));
+                broker.storeDocument(transaction, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()), MimeType.XML_TYPE, test2);
             }
 
             transact.commit(transaction);

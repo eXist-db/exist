@@ -42,7 +42,6 @@ import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
@@ -57,6 +56,8 @@ import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
 
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
@@ -227,19 +228,10 @@ public class SystemExportImportTest {
             final CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, test, COLLECTION_CONFIG);
 
-            IndexInfo info = test.validateXMLResource(transaction, broker, doc01uri.lastSegment(), XML1);
-            assertNotNull(info);
-            test.store(transaction, broker, info, XML1);
-
-            info = test.validateXMLResource(transaction, broker, doc02uri.lastSegment(), XML2);
-            assertNotNull(info);
-            test.store(transaction, broker, info, XML2);
-
-            info = test.validateXMLResource(transaction, broker, doc03uri.lastSegment(), XML3);
-            assertNotNull(info);
-            test.store(transaction, broker, info, XML3);
-
-            test.addBinaryResource(transaction, broker, doc11uri.lastSegment(), BINARY.getBytes(), null);
+            broker.storeDocument(transaction, doc01uri.lastSegment(), new StringInputSource(XML1), MimeType.XML_TYPE, test);
+            broker.storeDocument(transaction, doc02uri.lastSegment(), new StringInputSource(XML2), MimeType.XML_TYPE, test);
+            broker.storeDocument(transaction, doc03uri.lastSegment(), new StringInputSource(XML3), MimeType.XML_TYPE, test);
+            broker.storeDocument(transaction, doc11uri.lastSegment(), new StringInputSource(BINARY.getBytes(UTF_8)), MimeType.BINARY_TYPE, test);
 
             transaction.commit();
         }

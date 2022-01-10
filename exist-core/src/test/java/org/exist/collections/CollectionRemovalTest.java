@@ -39,6 +39,8 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.EXistXPathQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
@@ -211,9 +213,7 @@ public class CollectionRemovalTest {
                 broker.saveCollection(transaction, collection);
 
                 // store document
-                final IndexInfo info = collection.validateXMLResource(transaction, broker, XmldbURI.create("document.xml"), DATA);
-                assertNotNull(info);
-                collection.store(transaction, broker, info, DATA);
+                broker.storeDocument(transaction, XmldbURI.create("document.xml"), new StringInputSource(DATA), MimeType.XML_TYPE, collection);
             }
 
             transact.commit(transaction);

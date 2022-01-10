@@ -28,7 +28,6 @@ import java.util.Optional;
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
@@ -40,6 +39,8 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.DatabaseImpl;
@@ -145,9 +146,7 @@ public class MoveCollectionRecoveryTest {
                 sample = InputStreamUtil.readString(is, UTF_8);
             }
 
-            final IndexInfo info = test.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, sample);
-            assertNotNull(info);
-            test.store(transaction, broker, info, sample);
+            broker.storeDocument(transaction, TestConstants.TEST_XML_URI, new StringInputSource(sample), MimeType.XML_TYPE, test);
 
             final Collection dest = broker.getOrCreateCollection(transaction, TestConstants.DESTINATION_COLLECTION_URI);
             assertNotNull(dest);
@@ -195,9 +194,7 @@ public class MoveCollectionRecoveryTest {
                     assertNotNull(is);
                     sample = InputStreamUtil.readString(is, UTF_8);
                 }
-                final IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, sample);
-                assertNotNull(info);
-                test2.store(transaction, broker, info, sample);
+                broker.storeDocument(transaction, TestConstants.TEST_XML_URI, new StringInputSource(sample), MimeType.XML_TYPE, test2);
 
                 transact.commit(transaction);
             }

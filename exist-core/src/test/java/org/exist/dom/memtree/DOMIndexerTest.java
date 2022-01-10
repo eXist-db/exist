@@ -31,7 +31,6 @@ import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
 
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -41,6 +40,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
@@ -105,14 +106,12 @@ public class DOMIndexerTest {
     	try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().authenticate("admin", "")));
                 final Txn txn = txnMgr.beginTransaction()) {
 
-            final Collection collection = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI);
-            final IndexInfo info = collection.validateXMLResource(txn, broker, TestConstants.TEST_XML_URI, XML);
-            //TODO : unlock the collection here ?
-            collection.store(txn, broker, info, XML);
-            @SuppressWarnings("unused")
-            final org.exist.dom.persistent.DocumentImpl doc = info.getDocument();
-            broker.flush();
-            broker.saveCollection(txn, collection);
+            try (final Collection collection = broker.getOrCreateCollection(txn, TestConstants.TEST_COLLECTION_URI)) {
+                broker.storeDocument(txn, TestConstants.TEST_XML_URI, new StringInputSource(XML), MimeType.XML_TYPE, collection);
+                broker.flush();
+                broker.saveCollection(txn, collection);
+            }
+
             txnMgr.commit(txn);
         }
     }

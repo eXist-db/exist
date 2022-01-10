@@ -29,8 +29,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -38,12 +36,16 @@ import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.util.CachingFilterInputStreamInputSource;
+import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.exist.util.io.CachingFilterInputStream;
+import org.exist.util.io.FilterInputStreamCache;
+import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.xmldb.XmldbURI;
-import org.xml.sax.InputSource;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -94,7 +96,7 @@ public class InMemoryOutputStream extends OutputStream {
     }
   }
 
-  public void stream(final XmldbURL xmldbURL, final InputStream is, final int length) throws IOException {
+  public void stream(final XmldbURL xmldbURL, final InputStream is, @Deprecated final int length) throws IOException {
     BrokerPool db;
     try {
       db = BrokerPool.getInstance();
@@ -121,23 +123,13 @@ public class InMemoryOutputStream extends OutputStream {
           throw new IOException("Resource " + documentUri.toString() + " is a collection.");
         }
 
-        MimeType mime = MimeTable.getInstance().getContentTypeFor(documentUri);
-        String contentType = null;
-        if (mime != null) {
-          contentType = mime.getName();
-        } else {
-          mime = MimeType.BINARY_TYPE;
-        }
+        try (final FilterInputStreamCache cache = FilterInputStreamCacheFactory.getCacheInstance(()
+                -> (String) broker.getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), is);
+             final CachingFilterInputStream cfis = new CachingFilterInputStream(cache)) {
 
-        try(final ManagedDocumentLock lock = lockManager.acquireDocumentWriteLock(documentUri)) {
-          if (mime.isXMLType()) {
-            final InputSource inputsource = new InputSource(is);
-            final IndexInfo info = collection.validateXMLResource(txn, broker, documentUri, inputsource);
-            final DocumentImpl doc = info.getDocument();
-            doc.setMimeType(contentType);
-            collection.store(txn, broker, info, inputsource);
-          } else {
-            collection.addBinaryResource(txn, broker, documentUri, is, contentType, length);
+          final MimeType mime = MimeTable.getInstance().getContentTypeFor(documentUri);
+          try (final ManagedDocumentLock lock = lockManager.acquireDocumentWriteLock(documentUri)) {
+            broker.storeDocument(txn, documentUri, new CachingFilterInputStreamInputSource(cfis), mime, collection);
           }
         }
 

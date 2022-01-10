@@ -25,7 +25,6 @@ package org.exist.storage;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
-import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
@@ -36,6 +35,7 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.exist.TestDataGenerator;
 import org.junit.After;
@@ -163,10 +163,7 @@ public class RemoveCollectionTest {
                 for (final Iterator<DocumentImpl> i = test.iterator(broker); i.hasNext() && j < files.length; j++) {
                     final DocumentImpl doc = i.next();
                     final InputSource is = new InputSource(files[j].toUri().toASCIIString());
-                    assertNotNull(is);
-                    final IndexInfo info = test.validateXMLResource(transaction, broker, doc.getURI(), is);
-                    assertNotNull(info);
-                    test.store(transaction, broker, info, is);
+                    broker.storeDocument(transaction, doc.getURI(), is, MimeType.XML_TYPE, test);
                 }
                 generator.releaseAll();
                 transact.commit(transaction);
@@ -191,10 +188,8 @@ public class RemoveCollectionTest {
             final Path[] files = generator.generate(broker, test, generateXQ);
             for(final Path file : files) {
                 final InputSource is = new InputSource(file.toUri().toASCIIString());
-                assertNotNull(is);
-                final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create(file.getFileName().toString()), is);
-                assertNotNull(info);
-                test.store(transaction, broker, info, is);
+
+                broker.storeDocument(transaction, XmldbURI.create(file.getFileName().toString()), is, MimeType.XML_TYPE, test);
             }
             generator.releaseAll();
             transact.commit(transaction);

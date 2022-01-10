@@ -33,7 +33,8 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -42,9 +43,9 @@ import org.exist.xquery.value.Sequence;
 import org.junit.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -257,16 +258,14 @@ public class InspectModuleTest {
     }
 
     @BeforeClass
-    public static void setup() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+    public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
 
             final Collection testCollection = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
 
-            try (final InputStream is = new UnsynchronizedByteArrayInputStream(MODULE.getBytes(UTF_8))) {
-                testCollection.addBinaryResource(transaction, broker, TEST_MODULE, is, "application/xquery", MODULE.getBytes(UTF_8).length);
-            }
+            broker.storeDocument(transaction, TEST_MODULE, new StringInputSource(MODULE.getBytes(UTF_8)), MimeType.XQUERY_TYPE, testCollection);
 
             broker.saveCollection(transaction, testCollection);
 

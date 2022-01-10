@@ -23,10 +23,7 @@ package org.exist.security;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
@@ -36,6 +33,8 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.util.SyntaxException;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xmldb.XmldbURI;
@@ -265,8 +264,7 @@ public class FnDocSecurityTest {
 
     private static void createDocument(final DBBroker broker, final Txn transaction, final String collectionUri, final String docName, final String content, final String modeStr) throws PermissionDeniedException, LockException, SAXException, EXistException, IOException, SyntaxException {
         try (final Collection collection = broker.openCollection(XmldbURI.create(collectionUri), Lock.LockMode.WRITE_LOCK)) {
-            final IndexInfo indexInfo = collection.validateXMLResource(transaction, broker, XmldbURI.create(docName), content);
-            collection.store(transaction, broker, indexInfo, content);
+            broker.storeDocument(transaction, XmldbURI.create(docName), new StringInputSource(content), MimeType.XML_TYPE, collection);
 
             PermissionFactory.chmod_str(broker, transaction, XmldbURI.create(collectionUri).append(docName), Optional.of(modeStr), Optional.empty());
         }

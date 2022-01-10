@@ -21,12 +21,13 @@
  */
 package org.exist.collections.triggers;
 
-import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
@@ -61,10 +62,8 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
                 // IMPORTANT: temporarily disable triggers on the collection.
                 // We would end up in infinite recursion if we don't do that
                 broker.setTriggersEnabled(false);
-                IndexInfo info = parent.validateXMLResource(transaction, broker, docPath, TEMPLATE);
-                //TODO : unlock the collection here ?
-                parent.store(transaction, broker, info, TEMPLATE);
-                this.doc = info.getDocument();
+                broker.storeDocument(transaction, docPath, new StringInputSource(TEMPLATE), MimeType.XML_TYPE, parent);
+                this.doc = parent.getDocument(broker, docPath);
             }
 
         } catch (Exception e) {

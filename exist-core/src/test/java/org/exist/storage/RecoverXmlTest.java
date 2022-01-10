@@ -34,17 +34,12 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.txn.Txn;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.FileInputSource;
-import org.exist.util.LockException;
-import org.exist.util.StringInputSource;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -89,7 +84,7 @@ public class RecoverXmlTest extends AbstractRecoverTest {
     }
 
     @Test
-    public void storeLargeAndLoad() throws LockException, TriggerException, PermissionDeniedException, EXistException,
+    public void storeLargeAndLoad() throws LockException, SAXException, PermissionDeniedException, EXistException,
             IOException, DatabaseConfigurationException, InterruptedException {
         // generate a string filled with random a-z characters which is larger than the journal buffer
         final byte[] buf = new byte[Journal.BUFFER_SIZE * 3]; // 3 * the journal buffer size
@@ -129,10 +124,7 @@ public class RecoverXmlTest extends AbstractRecoverTest {
             IOException, LockException {
         final XmldbURI docUri = XmldbURI.create(dbFilename);
         try {
-            final IndexInfo indexInfo =
-                    collection.validateXMLResource(transaction, broker, docUri, data);
-
-            collection.store(transaction, broker, indexInfo, data);
+            broker.storeDocument(transaction, docUri, data, MimeType.XML_TYPE, collection);
 
         } catch (final SAXException e) {
             throw new IOException(e);

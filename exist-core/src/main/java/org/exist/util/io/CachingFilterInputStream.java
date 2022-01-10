@@ -63,7 +63,7 @@ public class CachingFilterInputStream extends FilterInputStream {
      *
      * @throws InstantiationException if the construction fails
      */
-    public CachingFilterInputStream(InputStream inputStream) throws InstantiationException {
+    public CachingFilterInputStream(final InputStream inputStream) throws InstantiationException {
         super(null);
 
         if (inputStream instanceof CachingFilterInputStream) {

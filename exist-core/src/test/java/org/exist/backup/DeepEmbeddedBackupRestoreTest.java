@@ -26,13 +26,14 @@ import net.jpountz.xxhash.XXHashFactory;
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
 import org.junit.BeforeClass;
@@ -43,14 +44,12 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.XMLDBException;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
 /**
@@ -151,21 +150,18 @@ public class DeepEmbeddedBackupRestoreTest {
                                     // store XML document
                                     final XmldbURI xmlName = XmldbURI.create("doc_" + x + ".xml");
                                     final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + EOL + "<position id=\"" + x + "\" d=\"" + d + "\" w=\"" + w + "\"/>";
-                                    final IndexInfo indexInfo = sibCollection.validateXMLResource(transaction, broker, xmlName, xml);
-                                    sibCollection.store(transaction, broker, indexInfo, xml);
+                                    broker.storeDocument(transaction, xmlName, new StringInputSource(xml), MimeType.XML_TYPE, sibCollection);
 
-                                    final byte[] xmlData = xml.getBytes(StandardCharsets.UTF_8);
+                                    final byte[] xmlData = xml.getBytes(UTF_8);
                                     final long xmlHash = hash64.hash(xmlData, 0, xmlData.length, XXHASH64_SEED);
                                     documentInfos.add(new ResourceInfo(sibCollectionUri.append(xmlName), xmlHash));
 
                                     // store Binary document
                                     final XmldbURI binName = XmldbURI.create("doc_" + x + ".bin");
                                     final String bin = x + ":" + d + ":" + w;
-                                    try (final InputStream is = new ByteArrayInputStream(bin.getBytes(StandardCharsets.UTF_8))) {
-                                        sibCollection.addBinaryResource(transaction, broker, binName, is, "application/octet-stream", -1, null, null);
-                                    }
+                                    broker.storeDocument(transaction, binName, new StringInputSource(bin.getBytes(UTF_8)), MimeType.BINARY_TYPE, sibCollection);
 
-                                    final byte[] binData = bin.getBytes(StandardCharsets.UTF_8);
+                                    final byte[] binData = bin.getBytes(UTF_8);
                                     final long binHash = hash64.hash(binData, 0, binData.length, XXHASH64_SEED);
                                     documentInfos.add(new ResourceInfo(sibCollectionUri.append(binName), binHash));
                                 }

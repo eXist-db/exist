@@ -34,7 +34,6 @@ import org.exist.backup.Backup;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
-import org.exist.collections.IndexInfo;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
@@ -73,7 +72,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
@@ -1333,7 +1331,7 @@ public class RpcConnection implements RpcAPI {
     }
 
     private boolean parse(final byte[] xml, final XmldbURI docUri,
-                          final int overwrite, final Date created, final Date modified) throws EXistException, PermissionDeniedException {
+                          final int overwrite, @Nullable final Date created, @Nullable final Date modified) throws EXistException, PermissionDeniedException {
 
         return this.<Boolean>writeCollection(docUri.removeLastSegment()).apply((collection, broker, transaction) -> {
 
@@ -1349,33 +1347,19 @@ public class RpcConnection implements RpcAPI {
                     }
                 }
 
-            try (final InputStream is = new UnsynchronizedByteArrayInputStream(xml)) {
+                final InputSource source = new StringInputSource(xml);
 
-                    final InputSource source = new InputSource(is);
+                final long startTime = System.currentTimeMillis();
 
-                    final long startTime = System.currentTimeMillis();
+                final MimeType mime = MimeTable.getInstance().getContentTypeFor(docUri.lastSegment());
+                broker.storeDocument(transaction, docUri.lastSegment(), source, mime, created, modified, null, null, null, collection);
 
-                    final IndexInfo info = collection.validateXMLResource(transaction, broker, docUri.lastSegment(), source);
-                    final MimeType mime = MimeTable.getInstance().getContentTypeFor(docUri.lastSegment());
-                    if (mime != null && mime.isXMLType()) {
-                        info.getDocument().setMimeType(mime.getName());
-                    }
-                    if (created != null) {
-                        info.getDocument().setCreated(created.getTime());
-                    }
-                    if (modified != null) {
-                        info.getDocument().setLastModified(modified.getTime());
-                    }
-
-                    collection.store(transaction, broker, info, source);
-
-                    // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
-                    collection.close();
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug("parsing {} took {}ms.", docUri, System.currentTimeMillis() - startTime);
-                    }
-                    return true;
+                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                collection.close();
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("parsing {} took {}ms.", docUri, System.currentTimeMillis() - startTime);
                 }
+                return true;
             }
         });
     }
@@ -1489,41 +1473,16 @@ public class RpcConnection implements RpcAPI {
                     }
 
                     sourceSupplier = () -> new FileInputSource(path);
-            }
+                }
 
-            // parse the source
-            try (final FileInputSource source = sourceSupplier.get()) {
-                final MimeType mime = Optional.ofNullable(MimeTable.getInstance().getContentType(mimeType)).orElse(MimeType.BINARY_TYPE);
-                final boolean treatAsXML = (isXML != null && isXML) || (isXML == null && mime.isXMLType());
+                // parse the source
+                try (final FileInputSource source = sourceSupplier.get()) {
+                    final MimeType mime = Optional.ofNullable(MimeTable.getInstance().getContentType(mimeType)).orElse(MimeType.BINARY_TYPE);
 
-                    if (treatAsXML) {
-                        final IndexInfo info = collection.validateXMLResource(transaction, broker, docUri.lastSegment(), source);
-                        if (created != null) {
-                            info.getDocument().setCreated(created.getTime());
-                        }
-                        if (modified != null) {
-                            info.getDocument().setLastModified(modified.getTime());
-                        }
-                        collection.store(transaction, broker, info, source);
+                    broker.storeDocument(transaction, docUri.lastSegment(), source, mime, created, modified, null, null, null, collection);
 
-                        // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
-                        collection.close();
-
-                    } else {
-                        try (final InputStream is = source.getByteStream()) {
-                            final DocumentImpl doc = collection.addBinaryResource(transaction, broker, docUri.lastSegment(), is, mime.getName(), source.getByteStreamLength());
-
-                            // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
-                            collection.close();
-
-                            if (created != null) {
-                                doc.setCreated(created.getTime());
-                            }
-                            if (modified != null) {
-                                doc.setLastModified(modified.getTime());
-                            }
-                        }
-                    }
+                    // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                    collection.close();
 
                     return true;
                 }
@@ -1570,25 +1529,12 @@ public class RpcConnection implements RpcAPI {
                     LOG.debug("Storing binary resource to collection {}", collection.getURI());
                 }
 
-                final DocumentImpl doc = collection.addBinaryResource(transaction, broker, docUri.lastSegment(), data, mimeType);
-                if(doc != null) {
-                    if (created != null) {
-                        doc.setCreated(created.getTime());
-                    }
-                    if (modified != null) {
-                        doc.setLastModified(modified.getTime());
-                    }
+                broker.storeDocument(transaction, docUri.lastSegment(), new StringInputSource(data), MimeTable.getInstance().getContentType(mimeType), created, modified, null, null, null, collection);
 
-                    // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
-                    collection.close();
+                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
+                collection.close();
 
-                    return true;
-                } else {
-                    // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
-                    collection.close();
-
-                    return false;
-                }
+                return true;
             }
         });
     }

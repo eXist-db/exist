@@ -37,14 +37,14 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.util.Configuration;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.LockException;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
 
@@ -68,7 +68,7 @@ public class ResourceTest {
     }
 
     @Test
-    public void storeAndRead() throws TriggerException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
+    public void storeAndRead() throws SAXException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDb();
         store(pool);
@@ -79,7 +79,7 @@ public class ResourceTest {
         read(pool);
     }
 
-    private void store(final BrokerPool pool) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException {
+    private void store(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -89,17 +89,14 @@ public class ResourceTest {
                     .getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             
             broker.saveCollection(transaction, collection);
-            
-            @SuppressWarnings("unused")
-			final BinaryDocument doc =
-                    collection.addBinaryResource(transaction, broker,
-                    DOCUMENT_NAME_URI , EMPTY_BINARY_FILE.getBytes(), "text/text");
+
+            broker.storeDocument(transaction, DOCUMENT_NAME_URI, new StringInputSource(EMPTY_BINARY_FILE.getBytes(UTF_8)), MimeType.TEXT_TYPE, collection);
             
             transact.commit(transaction);
         }
     }
 
-    private void read(final BrokerPool pool) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, LockException, TriggerException {
+    private void read(final BrokerPool pool) throws EXistException,  PermissionDeniedException, IOException, LockException, TriggerException {
         final TransactionManager transact = pool.getTransactionManager();
         
         byte[] data = null;
@@ -139,7 +136,7 @@ public class ResourceTest {
     }
 
     @Test
-    public void storeAndRead2() throws TriggerException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
+    public void storeAndRead2() throws SAXException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDb();
     	store(pool);

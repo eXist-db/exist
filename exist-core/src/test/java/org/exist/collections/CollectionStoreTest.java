@@ -37,6 +37,8 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.LockException;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -74,8 +76,7 @@ public class CollectionStoreTest {
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = pool.getTransactionManager().beginTransaction()) {
             try (final Collection col = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI)) {
-                final IndexInfo indexInfo = col.validateXMLResource(transaction, broker, TEST_XML_DOC_URI, TEST_XML_DOC);
-                col.store(transaction, broker, indexInfo, TEST_XML_DOC);
+                broker.storeDocument(transaction, TEST_XML_DOC_URI, new StringInputSource(TEST_XML_DOC), MimeType.XML_TYPE, col);
                 broker.saveCollection(transaction, col);
             }
 

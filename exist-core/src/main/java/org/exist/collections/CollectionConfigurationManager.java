@@ -36,6 +36,8 @@ import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.util.XMLReaderPool;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xmldb.XmldbURI;
@@ -127,9 +129,9 @@ public class CollectionConfigurationManager implements BrokerPoolService {
             }
 
             broker.saveCollection(txn, confCol);
-            final IndexInfo info = confCol.validateXMLResource(txn, broker, configurationDocumentName, config);
-            // TODO : unlock the collection here ?
-            confCol.store(txn, broker, info, config);
+
+            broker.storeDocument(txn, configurationDocumentName, new StringInputSource(config), MimeType.XML_TYPE, confCol);
+
             // broker.sync(Sync.MAJOR_SYNC);
         } catch (final CollectionConfigurationException e) {
             throw e;

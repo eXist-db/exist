@@ -25,16 +25,13 @@ package org.exist.storage;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.FileUtils;
-import org.exist.util.LockException;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -177,11 +174,9 @@ public class ConcurrentBrokerPoolTest {
                     final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
                 try (final Collection collection = broker.openCollection(XmldbURI.DB, Lock.LockMode.WRITE_LOCK)){
 
-
                     final String docContent = docContent(uuid);
 
-                    final IndexInfo indexInfo = collection.validateXMLResource(transaction, broker, docName(uuid), docContent);
-                    collection.store(transaction, broker, indexInfo, docContent);
+                    broker.storeDocument(transaction, docName(uuid), new StringInputSource(docContent), MimeType.XML_TYPE, collection);
 
                     transaction.commit();
                 }

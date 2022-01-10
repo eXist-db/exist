@@ -36,7 +36,9 @@ import org.exist.test.TestConstants;
 import org.exist.collections.Collection;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.xml.sax.SAXException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
 /**
@@ -46,7 +48,7 @@ import static org.junit.Assert.*;
 public class StoreBinaryTest {
 
     @Test
-    public void check_MimeType_is_preserved() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException, DatabaseConfigurationException {
+    public void check_MimeType_is_preserved() throws EXistException, PermissionDeniedException, LockException, IOException, SAXException, DatabaseConfigurationException {
 
         final String xqueryMimeType = "application/xquery";
         final String xqueryFilename = "script.xql";
@@ -103,7 +105,7 @@ public class StoreBinaryTest {
         return binaryDoc;
     }
 
-    private BinaryDocument storeBinary(String name,  String data, String mimeType) throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+    private BinaryDocument storeBinary(final String name, final String data, final String mimeType) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
 
@@ -115,7 +117,8 @@ public class StoreBinaryTest {
     		broker.saveCollection(transaction, root);
             assertNotNull(root);
 
-            binaryDoc = root.addBinaryResource(transaction, broker, XmldbURI.create(name), data.getBytes(), mimeType);
+            root.storeDocument(transaction, broker, XmldbURI.create(name), new StringInputSource(data.getBytes(UTF_8)), new MimeType(mimeType, MimeType.BINARY));
+            binaryDoc = (BinaryDocument) root.getDocument(broker, XmldbURI.create(name));
 
             transact.commit(transaction);
         }

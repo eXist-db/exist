@@ -19,57 +19,28 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-
 package org.exist.util;
 
-import com.evolvedbinary.j8fu.Either;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-
-import java.io.*;
-
-import static com.evolvedbinary.j8fu.Either.Left;
-import static com.evolvedbinary.j8fu.Either.Right;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.function.Supplier;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class StringInputSource extends EXistInputSource {
+public class InputStreamSupplierInputSource extends EXistInputSource {
 
-    private final Either<byte[], String> source;
+    final Supplier<InputStream> inputStreamSupplier;
 
-    /**
-     * Creates a String Source from a string
-     * the InputSource will be read using
-     * {@link #getCharacterStream()}.
-     *
-     * @param string the input string.
-     */
-    public StringInputSource(final String string) {
+    public InputStreamSupplierInputSource(final Supplier<InputStream> inputStreamSupplier) {
         super();
-        this.source = Right(string);
-    }
-
-    /**
-     * Creates a String Source from bytes
-     * the InputSource will be read using
-     * {@link #getByteStream()}.
-     *
-     * @param string the input string.
-     */
-    public StringInputSource(final byte[] string) {
-        super();
-        this.source = Left(string);
+        this.inputStreamSupplier = inputStreamSupplier;
     }
 
     @Override
     public Reader getCharacterStream() {
         assertOpen();
-
-        if (source.isLeft()) {
-            return null;
-        } else {
-            return new StringReader(source.right().get());
-        }
+        return null;
     }
 
     /**
@@ -81,17 +52,13 @@ public class StringInputSource extends EXistInputSource {
     @Override
     public void setCharacterStream(final Reader r) {
         assertOpen();
-        throw new IllegalStateException("StringInputSource is immutable");
+        throw new IllegalStateException("InputStreamSupplierInputSource is immutable");
     }
 
     @Override
     public InputStream getByteStream() {
         assertOpen();
-        if (source.isLeft()) {
-            return new UnsynchronizedByteArrayInputStream(source.left().get());
-        } else {
-            return null;
-        }
+        return inputStreamSupplier.get();
     }
 
     /**
@@ -102,11 +69,7 @@ public class StringInputSource extends EXistInputSource {
     @Override
     public long getByteStreamLength() {
         assertOpen();
-        if (source.isLeft()) {
-            return source.left().get().length;
-        } else {
-            return -1;
-        }
+        return -1;
     }
 
     /**
@@ -119,7 +82,7 @@ public class StringInputSource extends EXistInputSource {
     @Override
     public void setByteStream(final InputStream is) {
         assertOpen();
-        throw new IllegalStateException("StringInputSource is immutable");
+        throw new IllegalStateException("InputStreamSupplierInputSource is immutable");
     }
 
     /**

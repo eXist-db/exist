@@ -23,30 +23,19 @@
 package org.exist.validation;
 
 import org.exist.EXistException;
-import org.exist.TestUtils;
-import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.txn.Txn;
-import org.exist.util.LockException;
 import org.exist.util.io.InputStreamUtil;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
-import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  *  A set of helper methods for the validation tests.
@@ -71,24 +60,6 @@ public class TestTools {
         final URLConnection connection = url.openConnection();
         try (final OutputStream os = connection.getOutputStream()) {
             InputStreamUtil.copy(document, os);
-        }
-    }
-
-    public static void storeDocument(final DBBroker broker, final Txn txn, final Collection collection, final String name, final Path data) throws EXistException, PermissionDeniedException, SAXException, LockException, IOException {
-        final String content = new String(TestUtils.readFile(data), UTF_8);
-        storeDocument(broker, txn, collection, name, content);
-    }
-
-    public static void storeDocument(final DBBroker broker, final Txn txn, final Collection collection, final String name, final String content) throws EXistException, PermissionDeniedException, SAXException, LockException, IOException {
-        final XmldbURI docUri  = XmldbURI.create(name);
-        final IndexInfo info = collection.validateXMLResource(txn, broker, docUri, content);
-        collection.store(txn, broker, info, content);
-    }
-
-    public static void storeTextDocument(final DBBroker broker, final Txn txn, final Collection collection, final String name, final Path data) throws EXistException, PermissionDeniedException, SAXException, LockException, IOException {
-        final XmldbURI docUri  = XmldbURI.create(name);
-        try(final InputStream is = Files.newInputStream(data)) {
-            collection.addBinaryResource(txn, broker, docUri, is, "text/plain", Files.size(data));
         }
     }
 

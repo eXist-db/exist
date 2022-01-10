@@ -23,8 +23,8 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.PermissionDeniedException;
@@ -36,6 +36,8 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
@@ -102,13 +104,12 @@ public class UpdateRecoverTest {
         xmldbRead(pool);
     }
 
-    private void store(final BrokerPool pool) throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException, PermissionDeniedException, IOException, SAXException, LockException, ParserConfigurationException, XPathException {
+    private void store(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, ParserConfigurationException, XPathException {
         final TransactionManager transact = pool.getTransactionManager();
 
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
-            IndexInfo info;
-
+            DocumentImpl doc;
             try(final Txn transaction = transact.beginTransaction()) {
 
                 final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -119,11 +120,9 @@ public class UpdateRecoverTest {
                 assertNotNull(test2);
                 broker.saveCollection(transaction, test2);
 
-                info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, TEST_XML);
-                assertNotNull(info);
+                broker.storeDocument(transaction, TestConstants.TEST_XML_URI, new StringInputSource(TEST_XML), MimeType.XML_TYPE, test2);
+                doc = test2.getDocument(broker, TestConstants.TEST_XML_URI);
                 //TODO : unlock the collection here ?
-
-                test2.store(transaction, broker, info, TEST_XML);
 
                 transact.commit(transaction);
             }
@@ -131,7 +130,7 @@ public class UpdateRecoverTest {
             try(final Txn transaction = transact.beginTransaction()) {
 
                 final MutableDocumentSet docs = new DefaultDocumentSet();
-                docs.add(info.getDocument());
+                docs.add(doc);
                 final XUpdateProcessor proc = new XUpdateProcessor(broker, docs);
                 assertNotNull(proc);
                 // insert some nodes

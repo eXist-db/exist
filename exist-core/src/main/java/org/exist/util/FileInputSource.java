@@ -33,7 +33,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 public class FileInputSource extends EXistInputSource {
-	private final static Logger LOG = LogManager.getLogger(FileInputSource.class);
+	private static final Logger LOG = LogManager.getLogger(FileInputSource.class);
 
 	private Optional<Path> file = Optional.empty();
 	private Optional<InputStream> inputStream = Optional.empty();
@@ -115,7 +115,7 @@ public class FileInputSource extends EXistInputSource {
 	@Override
 	public void setByteStream(final InputStream is) {
 		assertOpen();
-		// Nothing, so collateral effects are avoided!
+		throw new IllegalStateException("FileInputSource is immutable");
 	}
 	
 	/**
@@ -127,7 +127,7 @@ public class FileInputSource extends EXistInputSource {
 	@Override
 	public void setCharacterStream(final Reader r) {
 		assertOpen();
-		// Nothing, so collateral effects are avoided!
+		throw new IllegalStateException("FileInputSource is immutable");
 	}
 
 	/**
@@ -139,7 +139,7 @@ public class FileInputSource extends EXistInputSource {
 	@Override
 	public void setSystemId(final String systemId) {
 		assertOpen();
-		// Nothing, so collateral effects are avoided!
+		throw new IllegalStateException("FileInputSource is immutable");
 	}
 
 	/**

@@ -23,8 +23,6 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
@@ -32,10 +30,13 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
 import static org.junit.Assert.*;
 
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -43,7 +44,6 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.Optional;
-
 
 public class ModificationTimeTest {
 
@@ -60,7 +60,7 @@ public class ModificationTimeTest {
      * have been updated afterwards.
      */
     @Test
-    public void check_if_modification_time_is_updated_binary() throws EXistException, InterruptedException, PermissionDeniedException, LockException, IOException, TriggerException {
+    public void check_if_modification_time_is_updated_binary() throws EXistException, InterruptedException, PermissionDeniedException, LockException, IOException, SAXException {
 
         final String mimeType = "application/octet-stream";
         final String filename = "data.dat";
@@ -146,12 +146,13 @@ public class ModificationTimeTest {
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private BinaryDocument storeBinary(final DBBroker broker, final Txn transaction, final String name,  final String data, final String mimeType) throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+    private BinaryDocument storeBinary(final DBBroker broker, final Txn transaction, final String name,  final String data, final String mimeType) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
         broker.saveCollection(transaction, root);
         assertNotNull(root);
 
-        return root.addBinaryResource(transaction, broker, XmldbURI.create(name), data.getBytes(), mimeType);
+        root.storeDocument(transaction, broker, XmldbURI.create(name), new StringInputSource(data.getBytes(UTF_8)), new MimeType(mimeType, MimeType.BINARY));
+        return (BinaryDocument) root.getDocument(broker, XmldbURI.create(name));
     }
 
     private void storeXML(final DBBroker broker, final Txn transaction, final String name, final String xml) throws EXistException, PermissionDeniedException, IOException, LockException, SAXException {
@@ -159,12 +160,10 @@ public class ModificationTimeTest {
         broker.saveCollection(transaction, root);
         assertNotNull(root);
 
-        final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(name), xml);
-        root.store(transaction, broker, info, xml);
+        broker.storeDocument(transaction, XmldbURI.create(name), new StringInputSource(xml), MimeType.XML_TYPE, root);
     }
 
     private long getDocLastModified(final DBBroker broker, final Txn transaction, final String name) throws PermissionDeniedException {
-        final long modificationTimeBefore;
         try (final LockedDocument lockedDocument = broker.getXMLResource(TEST_COLLECTION_URI.append(name), Lock.LockMode.READ_LOCK)) {
             assertNotNull(lockedDocument);
             return lockedDocument.getDocument().getLastModified();
