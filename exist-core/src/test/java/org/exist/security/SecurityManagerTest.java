@@ -95,14 +95,18 @@ public class SecurityManagerTest {
                 document = broker.getXMLResource(ACCOUNTS_URI.append(TEST_USER_NAME + ".xml"), Lock.LockMode.READ_LOCK);
                 assertNotNull(document);
             } finally {
-                document.getUpdateLock().release(Lock.LockMode.READ_LOCK);
+                if (document != null) {
+                    document.getUpdateLock().release(Lock.LockMode.READ_LOCK);
+                }
             }
 
             try {
                 document = broker.getXMLResource(GROUPS_URI.append(TEST_GROUP_NAME + ".xml"), Lock.LockMode.READ_LOCK);
                 assertNotNull(document);
             } finally {
-                document.getUpdateLock().release(Lock.LockMode.READ_LOCK);
+                if (document != null) {
+                    document.getUpdateLock().release(Lock.LockMode.READ_LOCK);
+                }
             }
 
             // 3. pre-check - assert the XML document for any removed account or group does NOT exist
@@ -128,7 +132,9 @@ public class SecurityManagerTest {
                 document = broker.getXMLResource(GROUPS_URI.append(TEST_GROUP_NAME + ".xml"), Lock.LockMode.READ_LOCK);
                 assertNotNull(document);
             } finally {
-                document.getUpdateLock().release(Lock.LockMode.READ_LOCK);
+                if (document != null) {
+                    document.getUpdateLock().release(Lock.LockMode.READ_LOCK);
+                }
             }
 
             // 7. post-check - assert the XML document for the removed account does exist, but no such document exists for the group
