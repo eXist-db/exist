@@ -14,14 +14,13 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.*;
-import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.lang3.SystemUtils;
+import org.exist.collections.CollectionCache;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.CollectionCacheManager;
 import org.exist.storage.DefaultCacheManager;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
@@ -63,9 +62,9 @@ public class ConfigurationDialog extends JDialog {
             Configuration existConfig = new Configuration();
             final int cacheSizeProp = existConfig.getInteger(DefaultCacheManager.PROPERTY_CACHE_SIZE);
             cacheSize.setValue(Integer.valueOf(cacheSizeProp));
-            
-            final int collectionCacheProp = existConfig.getInteger(CollectionCacheManager.PROPERTY_CACHE_SIZE_BYTES);
-            collectionCache.setValue(Integer.valueOf(collectionCacheProp / 1024 / 1024)); // show in MB
+
+            final int collectionCacheProp = existConfig.getInteger(CollectionCache.PROPERTY_CACHE_SIZE_BYTES);
+            collectionCache.setValue(collectionCacheProp / 1024 / 1024); // show in MB
 
             final Path dir = (Path)existConfig.getProperty(BrokerPool.PROPERTY_DATA_DIR);
             dataDir.setText(dir.toAbsolutePath().toString());

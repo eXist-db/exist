@@ -50,6 +50,7 @@ import javax.xml.transform.TransformerException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
+import org.exist.management.impl.CollectionCache;
 import org.exist.management.impl.SanityReport;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.util.NamedThreadFactory;
@@ -69,6 +70,19 @@ public class JMXtoXML {
 
     private final static Map<String, ObjectName[]> CATEGORIES = new TreeMap<>();
 
+    private static void putCategory(final String categoryName, final String... objectNames) {
+        final ObjectName[] aryObjectNames = new ObjectName[objectNames.length];
+        try {
+            for (int i = 0; i < aryObjectNames.length; i++) {
+                aryObjectNames[i] = new ObjectName(objectNames[i]);
+            }
+        } catch (final MalformedObjectNameException | NullPointerException e) {
+            LOG.warn("Error in initialization: {}", e.getMessage(), e);
+        }
+
+        CATEGORIES.put(categoryName, aryObjectNames);
+    }
+
     static {
         try {
             // Java
@@ -81,6 +95,7 @@ public class JMXtoXML {
             // eXist
             CATEGORIES.put("instances", new ObjectName[]{new ObjectName("org.exist.management.*:type=Database")});
             CATEGORIES.put("disk", new ObjectName[]{new ObjectName("org.exist.management.*:type=DiskUsage")});
+            putCategory("collectioncaches", CollectionCache.getAllInstancesQuery());
             CATEGORIES.put("system", new ObjectName[]{new ObjectName("org.exist.management:type=SystemInfo")});
             CATEGORIES.put("caches", new ObjectName[]{
                 new ObjectName("org.exist.management.exist:type=CacheManager"),

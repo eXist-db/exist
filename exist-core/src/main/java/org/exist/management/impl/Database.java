@@ -99,7 +99,7 @@ public class Database implements DatabaseMXBean {
 
     @Override
     public long getCollectionCacheMem() {
-        return pool.getCollectionCacheMgr().getMaxTotal();
+        return pool.getCollectionsCache().getMaxCacheSize();
     }
 
     @Override
