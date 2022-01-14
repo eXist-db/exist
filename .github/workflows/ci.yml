@@ -1,0 +1,47 @@
+name: Test 4.x.x
+on: [push, pull_request]
+jobs:
+  test:
+    name: (JDK ${{ matrix.jdk }} / ${{ matrix.os }}) Test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        jdk: ['8']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK ${{ matrix.jdk }}
+        uses: actions/setup-java@v2
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.jdk }}
+      - name: Cache local Ivy repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.ivy/cache
+          key: ${{ runner.os }}-ivy-${{ hashFiles('**/ivy.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-ivy-
+      - name: Ant Build (build.bat)
+        if: matrix.os == 'windows-latest'
+        shell: cmd
+        run: build.bat
+      - name: Ant Build (build.sh)
+        if: matrix.os != 'windows-latest'
+        run: ./build.sh
+      - name: Ant Test (build.bat)
+        if: matrix.os == 'windows-latest'
+        shell: cmd
+        run: build.bat test -Dtest.haltonerror=true -Dtest.haltonfailure=true
+      - name: Ant Test (build.sh)
+        if: matrix.os != 'windows-latest'
+        run: ./build.sh test -Dtest.haltonerror=true -Dtest.haltonfailure=true
+      - name: Archive build logs
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ runner.os }}-jdk${{ matrix.jdk }}-build-logs
+          retention-days: 5
+          path: |
+            **/exist-core/target/junit-reports/*
