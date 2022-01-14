@@ -204,6 +204,7 @@
             <test name="org.exist.security.LocalSecurityManagerRoundtripTest" todir="${junit.reports.dat}"/>
             <test name="org.exist.security.RemoteSecurityManagerRoundtripTest" todir="${junit.reports.dat}"/>
             <test name="org.exist.security.RestApiSecurityTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.security.SecurityManagerTest" todir="${junit.reports.dat}"/>
             <test name="org.exist.security.SimpleACLPermissionTest" todir="${junit.reports.dat}"/>
             <test name="org.exist.security.UnixStylePermissionTest" todir="${junit.reports.dat}"/>
             <test name="org.exist.security.XmldbApiSecurityTest" todir="${junit.reports.dat}"/>
