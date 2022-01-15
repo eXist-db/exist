@@ -6,10 +6,25 @@
 
     <info organisation="org.exist" module="contentextraction"/>
 
-    <dependencies>
+    <configurations>
+        <conf name="core" visibility="private"/>
+        <conf name="compile" visibility="private" transitive="false" extends="core"/>
+        <conf name="runtime" visibility="public"  transitive="true" extends="compile"/>
+    </configurations>
 
-        <dependency org="org.apache.tika" name="tika-core" rev="1.28" conf="*->*,!sources,!javadoc"/>
-        <dependency org="org.apache.tika" name="tika-parsers" rev="1.28" conf="*->*,!sources,!javadoc"/>
+    <publications>
+        <artifact name="exist-contentextraction" type="jar" conf="runtime" ext="jar"/>
+    </publications>
+
+    <dependencies defaultconf="compile->default">
+
+        <dependency org="org.apache.tika" name="tika-core" rev="1.28">
+            <artifact name="tika-core" type="jar"/>
+        </dependency>
+
+        <dependency org="org.apache.tika" name="tika-parsers" rev="1.28">
+            <artifact name="tika-parsers" type="jar"/>
+        </dependency>
 
         <!-- identified as provided by eXist-db -->
         <exclude module="asm"/>

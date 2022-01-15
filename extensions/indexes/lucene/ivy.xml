@@ -7,13 +7,24 @@
 -->
 <ivy-module version="2.0">
     <info organisation="org.exist" module="indexes.lucene"/>
-    <dependencies>
-        <dependency org="org.apache.lucene" name="lucene-core" rev="&lucene.version;" conf="*->default"/>
-        <dependency org="org.apache.lucene" name="lucene-analyzers-common" rev="&lucene.version;" conf="*->default"/>
-        <dependency org="org.apache.lucene" name="lucene-analyzers-icu" rev="&lucene.version;" conf="*->default">
+
+    <configurations>
+        <conf name="core" visibility="private"/>
+        <conf name="compile" visibility="private" transitive="false" extends="core"/>
+        <conf name="runtime" visibility="public"  transitive="true" extends="compile"/>
+    </configurations>
+
+    <publications>
+        <artifact name="exist-index-lucene" type="jar" conf="runtime" ext="jar"/>
+    </publications>
+
+    <dependencies defaultconf="compile->default">
+        <dependency org="org.apache.lucene" name="lucene-core" rev="&lucene.version;"/>
+        <dependency org="org.apache.lucene" name="lucene-analyzers-common" rev="&lucene.version;"/>
+        <dependency org="org.apache.lucene" name="lucene-analyzers-icu" rev="&lucene.version;">
             <exclude module="icu4j"/>
         </dependency>
-        <dependency org="org.apache.lucene" name="lucene-queries" rev="&lucene.version;" conf="*->default"/>
-	<dependency org="org.apache.lucene" name="lucene-queryparser" rev="&lucene.version;" conf="*->default"/>
+        <dependency org="org.apache.lucene" name="lucene-queries" rev="&lucene.version;" conf="runtime->default"/>
+	    <dependency org="org.apache.lucene" name="lucene-queryparser" rev="&lucene.version;"/>
     </dependencies>
 </ivy-module>

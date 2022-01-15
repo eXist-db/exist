@@ -21,8 +21,18 @@
 
     <info organisation="org.exist" module="cqlparser"/>
 
-    <dependencies>
-        <dependency org="org.z3950.zing" name="cql-java" rev="1.10" conf="*->*,!sources,!javadoc"/>
+    <configurations>
+        <conf name="core" visibility="private"/>
+        <conf name="compile" visibility="private" transitive="false" extends="core"/>
+        <conf name="runtime" visibility="public"  transitive="true" extends="compile"/>
+    </configurations>
+
+    <publications>
+        <artifact name="exist-cqlparser" type="jar" conf="runtime" ext="jar"/>
+    </publications>
+
+    <dependencies defaultconf="compile->default">
+        <dependency org="org.z3950.zing" name="cql-java" rev="1.10"/>
     </dependencies>
 
 </ivy-module>

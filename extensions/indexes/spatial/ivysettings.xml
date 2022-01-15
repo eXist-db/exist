@@ -18,27 +18,13 @@
   ~ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   -->
 <ivysettings>
-    <properties file="build.properties"/>
-    <settings defaultResolver="local-chain"/>
+    <settings defaultResolver="chain"/>
     <resolvers>
-        <ibiblio name="ibiblio-maven2" m2compatible="true"/>
-        <ibiblio name="java-net-maven2" root="http://download.java.net/maven/2/" m2compatible="true"/>
-        <ibiblio name="maven" root="http://mvnrepository.com/artifact/" m2compatible="true"/>
-        <ibiblio name="exist-db" root="http://repo.evolvedbinary.com/repository/exist-db/" m2compatible="true"/>
-        <ibiblio name="osgeo" root="http://download.osgeo.org/webdav/geotools/" m2compatible="true"/>
-        <ibiblio name="atlassian" root="https://packages.atlassian.com/maven-3rdparty" m2compatible="true"/>
-        <!-- filesystem name="project-built" checksums="">
-            <ivy pattern="lib/ivy.xml"/>
-            <artifact pattern="lib/[artifact].[ext]"/>
-        </filesystem -->
-        <chain name="local-chain">
-            <resolver ref="maven"/>
-            <resolver ref="ibiblio-maven2"/>
-            <resolver ref="java-net-maven2"/>
-            <resolver ref="exist-db"/>
-            <resolver ref="osgeo"/>
-            <resolver ref="atlassian"/>
-            <!-- resolver ref="project-built"/ -->
+        <chain name="chain">
+            <ibiblio name="central" m2compatible="true"/>
+            <ibiblio name="exist-db" root="https://repo.evolvedbinary.com/repository/exist-db/" m2compatible="true"/>
+            <ibiblio name="osgeo" root="https://repo.osgeo.org/repository/geotools-releases/" m2compatible="true"/>
+            <ibiblio name="atlassian" root="https://packages.atlassian.com/maven-3rdparty/" m2compatible="true"/>
         </chain>
     </resolvers>
 </ivysettings>

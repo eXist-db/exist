@@ -21,18 +21,28 @@
 
     <info organisation="org.exist" module="xslfo"/>
 
-    <dependencies>
+    <configurations>
+        <conf name="core" visibility="private"/>
+        <conf name="compile" visibility="private" transitive="false" extends="core"/>
+        <conf name="runtime" visibility="public"  transitive="true" extends="compile"/>
+    </configurations>
 
-        <dependency org="org.apache.xmlgraphics" name="fop" rev="2.6" conf="*->*,!sources,!javadoc"/>
+    <publications>
+        <artifact name="exist-xslfo" type="jar" conf="runtime" ext="jar"/>
+    </publications>
+
+    <dependencies defaultconf="compile->default">
+
+        <dependency org="org.apache.xmlgraphics" name="fop" rev="2.6"/>
 
         <!-- override the version of fontbox used with fop to use the newer one required by eXist-db contentextraction module -->
-        <dependency org="org.apache.pdfbox" name="fontbox" rev="2.0.22" conf="*->*,!sources,!javadoc"/>
+        <dependency org="org.apache.pdfbox" name="fontbox" rev="2.0.22" conf="runtime->default"/>
+	
+	
+	<dependency org="org.apache.avalon.framework" name="avalon-framework-api" rev="4.3.1"/>
+	<dependency org="org.apache.avalon.framework" name="avalon-framework-impl" rev="4.3.1"/>
 
-
-	<dependency org="org.apache.avalon.framework" name="avalon-framework-api" rev="4.3.1" conf="*->*,!sources,!javadoc"/>
-	<dependency org="org.apache.avalon.framework" name="avalon-framework-impl" rev="4.3.1" conf="*->*,!sources,!javadoc"/>
-
-        <!-- provided by eXist-db -->
+        <!-- identified as provided by eXist-db -->
         <exclude module="xercesImpl"/>
         <exclude module="xml-apis"/>
         <exclude module="xml-apis-ext"/>
@@ -40,6 +50,7 @@
         <exclude module="commons-io"/>
         <exclude module="commons-logging"/>
         <exclude module="servlet-api"/>
+        <exclude module="hamcrest-core"/>
 
         <!-- not needed -->
         <exclude module="batik-anim"/>
@@ -51,6 +62,7 @@
         <exclude module="batik-script"/>
         <exclude module="batik-svg-dom"/>
         <exclude module="batik-xml"/>
+        <exclude module="junit"/>
 
     </dependencies>
 
