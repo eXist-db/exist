@@ -46,7 +46,7 @@ import java.io.IOException;
 public class AnnotationsTest {
 
     @ClassRule
-    public final static ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public final static ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeClass
     public static void setUp() throws XMLDBException, ClassNotFoundException, InstantiationException, IllegalAccessException {

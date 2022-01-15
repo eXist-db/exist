@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
 public abstract class AbstractDescendantOrSelfNodeKindTest {
 
     @ClassRule
-    public final static ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public final static ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     protected final static String TEST_DOCUMENT = "<doc xml:id=\"x\">\n"+
         "<?xml-stylesheet type=\"text/xsl\" href=\"test\"?>\n"+

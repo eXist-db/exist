@@ -33,7 +33,7 @@ import static org.junit.Assert.assertEquals;
 public class SAXStorageTest {
 
 	@ClassRule
-	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
 	private XMLResource doc;
 	private Collection testCollection;

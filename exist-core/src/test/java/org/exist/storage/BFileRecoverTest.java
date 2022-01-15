@@ -47,7 +47,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class BFileRecoverTest {
 
     @Rule
-    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
     public void add() throws EXistException, IOException, BTreeException {

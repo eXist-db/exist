@@ -34,7 +34,7 @@ public class BrokerPoolNoRecoveryTest {
 
     @Rule
     public final ExistEmbeddedServer existEmbeddedServer =
-            new ExistEmbeddedServer(createConfigProperties(), true, false);
+            new ExistEmbeddedServer(createConfigProperties(), true, true);
 
     @Test
     public void testSync_Recovery_Disabled() {

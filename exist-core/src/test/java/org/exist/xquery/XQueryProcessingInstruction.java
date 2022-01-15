@@ -18,7 +18,7 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 public class XQueryProcessingInstruction {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
     public void testPI() throws XPathException, SAXException, IOException, XMLDBException {

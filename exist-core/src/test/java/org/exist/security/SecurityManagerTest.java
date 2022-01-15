@@ -45,7 +45,7 @@ import static org.junit.Assert.*;
 public class SecurityManagerTest {
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static final XmldbURI ACCOUNTS_URI = SecurityManager.SECURITY_COLLECTION_URI.append(RealmImpl.ID).append("accounts");
     private static final XmldbURI REMOVED_ACCOUNTS_URI = ACCOUNTS_URI.append("removed");

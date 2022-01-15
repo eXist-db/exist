@@ -53,7 +53,7 @@ import static org.junit.Assert.assertTrue;
 public class InspectModuleTest {
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static final XmldbURI TEST_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("test-inspectModule");
     private static final XmldbURI TEST_MODULE = XmldbURI.create("test.xqm");

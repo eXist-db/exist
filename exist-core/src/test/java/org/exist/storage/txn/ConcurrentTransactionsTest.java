@@ -63,7 +63,7 @@ import static org.junit.Assert.assertNull;
 public class ConcurrentTransactionsTest {
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     // flip this to `true` if you want to see a trace of the transaction schedule execution on Standard Out
     private static final boolean DEBUG_TRACING = false;

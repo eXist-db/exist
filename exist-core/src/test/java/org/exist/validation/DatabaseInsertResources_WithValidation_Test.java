@@ -119,7 +119,7 @@ public class DatabaseInsertResources_WithValidation_Test {
             .set(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto")
             .build(),
         true,
-        false);
+        true);
 
     @BeforeClass
     public static void startup() throws Exception {

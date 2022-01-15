@@ -78,7 +78,7 @@ public class ValidationFunctions_DTD_Test {
                     .set(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto")
                     .build(),
             true,
-            false);
+            true);
 
     @Test
     public void validateUsingSystemCatalog() throws XPathException, PermissionDeniedException, EXistException {

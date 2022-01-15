@@ -63,7 +63,7 @@ import static org.junit.Assert.assertTrue;
 public class XQueryFunctionsTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
     
     private final static String ROOT_COLLECTION_URI = "xmldb:exist:///db";
 

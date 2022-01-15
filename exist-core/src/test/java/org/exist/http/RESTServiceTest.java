@@ -70,7 +70,7 @@ import static org.junit.Assume.assumeThat;
 public class RESTServiceTest {
 
     @ClassRule
-    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private static final String XML_DATA = "<test>"
             + "<para>\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC</para>"

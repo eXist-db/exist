@@ -1377,7 +1377,7 @@ public class LuceneIndexTest {
                 .put(Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE, Boolean.TRUE)
                 .build(),
             true,
-            false);
+            true);
 
     @AfterClass
     public static void cleanupDb() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {

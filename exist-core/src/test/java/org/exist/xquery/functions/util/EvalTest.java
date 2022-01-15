@@ -28,7 +28,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 public class EvalTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static Resource invokableQuery;
 

@@ -30,7 +30,7 @@ import org.xmldb.api.base.XMLDBException;
 public class DeclareVariableTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
     public void defaultNamespaceTest() throws XMLDBException {

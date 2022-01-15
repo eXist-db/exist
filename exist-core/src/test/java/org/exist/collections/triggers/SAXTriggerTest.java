@@ -40,7 +40,7 @@ import java.io.IOException;
 public class SAXTriggerTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String DOCUMENT1_CONTENT = 
         "<test>"

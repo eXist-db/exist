@@ -50,7 +50,7 @@ import org.xmldb.api.modules.XUpdateQueryService;
 public class XQueryTriggerTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
 	private final static String TEST_COLLECTION = "testXQueryTrigger";
 

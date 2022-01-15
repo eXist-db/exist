@@ -22,7 +22,7 @@ import org.xmldb.api.modules.XQueryService;
 public class UnionTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String TEST_COLLECTION_NAME = "test-pubmed";
     

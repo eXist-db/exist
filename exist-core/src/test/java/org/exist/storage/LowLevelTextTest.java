@@ -29,7 +29,7 @@ public class LowLevelTextTest {
 	private static final String TEST_XQUERY_SOURCE = "/test";
 
 	@ClassRule
-	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+	public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
 	private DBBroker broker;
 

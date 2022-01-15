@@ -63,7 +63,7 @@ public class IndexerTest {
             	.set(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none")
             	.build(),
 			true,
-			false);
+			true);
 
     private final static String XML =
         "<?xml version=\"1.0\"?>\n" +

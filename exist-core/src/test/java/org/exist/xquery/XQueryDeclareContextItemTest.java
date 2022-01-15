@@ -66,7 +66,7 @@ public class XQueryDeclareContextItemTest {
     private static final String SYSEVENT_XML = "<log xmlns=\"http://syslog\">some-event</log>";
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeClass
     public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {

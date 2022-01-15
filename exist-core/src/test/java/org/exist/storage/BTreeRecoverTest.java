@@ -56,7 +56,7 @@ import static org.junit.Assert.assertEquals;
 public class BTreeRecoverTest {
 
     @Rule
-    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
     private int count = 0;
 
     @Test
