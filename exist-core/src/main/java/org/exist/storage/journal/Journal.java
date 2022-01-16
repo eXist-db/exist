@@ -599,7 +599,8 @@ public final class Journal implements Closeable {
     public static int findLastFile(final Stream<Path> files) {
         return files
                 .map(Journal::journalFileNum)
-                .max(Integer::max)
+                .mapToInt(v -> v)
+                .max()
                 .orElse(-1);
     }
 
