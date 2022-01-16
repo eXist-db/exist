@@ -197,7 +197,7 @@ public class JournalManager implements BrokerPoolService {
     public RecoveryManager.JournalRecoveryAccessor getRecoveryAccessor(final RecoveryManager recoveryManager) {
         return recoveryManager.new JournalRecoveryAccessor(
                 journal::setInRecovery, journal::getFiles, journal::getFile, journal::setCurrentFileNum,
-                () -> { journal.switchFiles(); return null; }, () -> { journal.clearBackupFiles(); return null; });
+                () -> { journal.switchFiles(); return null; });
     }
 
     /**

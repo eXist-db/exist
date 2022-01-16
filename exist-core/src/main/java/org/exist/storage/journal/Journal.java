@@ -249,15 +249,12 @@ public final class Journal implements Closeable {
     private final static boolean DEFAULT_SYNC_ON_COMMIT = true;
     private final boolean syncOnCommit;
 
-    private final Path fsJournalDir;
-
     private volatile boolean initialised = false;
 
     private final XXHash64 xxHash64 = XXHashFactory.fastestInstance().hash64();
 
     public Journal(final BrokerPool pool, final Path directory) throws EXistException {
         this.pool = pool;
-        this.fsJournalDir = directory.resolve("fs.journal");
         this.currentBuffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
 
         this.syncOnCommit = pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SYNC_ON_COMMIT, DEFAULT_SYNC_ON_COMMIT);
@@ -493,7 +490,6 @@ public final class Journal implements Closeable {
                 final Thread removeThread = newInstanceThread(pool, "remove-journal", removeRunnable);
                 removeThread.start();
             }
-            clearBackupFiles();
         } catch (final IOException e) {
             LOG.warn("IOException while writing checkpoint", e);
         }
@@ -506,21 +502,6 @@ public final class Journal implements Closeable {
      */
     public void setCurrentFileNum(final int fileNum) {
         currentFile = fileNum;
-    }
-
-    public void clearBackupFiles() {
-        if (Files.exists(fsJournalDir)) {
-            try (final Stream<Path> backupFiles = Files.list(fsJournalDir)) {
-                backupFiles.forEach(p -> {
-                    LOG.info("Checkpoint deleting: {}", p.toAbsolutePath().toString());
-                    if (!FileUtils.deleteQuietly(p)) {
-                        LOG.fatal("Cannot delete file '{}' from backup journal.", p.toAbsolutePath().toString());
-                    }
-                });
-            } catch (final IOException ioe) {
-                LOG.error("Could not clear fs.journal backup files", ioe);
-            }
-        }
     }
 
     /**
