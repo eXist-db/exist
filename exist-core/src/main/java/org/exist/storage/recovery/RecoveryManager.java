@@ -27,7 +27,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -206,7 +205,6 @@ public class RecoveryManager {
 		}
         journalRecovery.setCurrentFileNum.accept(lastNum);
         journalRecovery.switchFiles.get();
-        journalRecovery.clearBackupFiles.get();
 
         return recoveryRun;
 	}
@@ -217,19 +215,16 @@ public class RecoveryManager {
         final Function<Integer, Path> getFile;
         final Consumer<Integer> setCurrentFileNum;
         final SupplierE<Void, LogException> switchFiles;
-        final Supplier<Void> clearBackupFiles;
 
 
         public JournalRecoveryAccessor(final Consumer<Boolean> setInRecovery,
                 final SupplierE<Stream<Path>, IOException> getFiles, final Function<Integer, Path> getFile,
-                final Consumer<Integer> setCurrentFileNum, final SupplierE<Void, LogException> switchFiles,
-                final Supplier<Void> clearBackupFiles) {
+                final Consumer<Integer> setCurrentFileNum, final SupplierE<Void, LogException> switchFiles) {
             this.setInRecovery = setInRecovery;
             this.getFiles = getFiles;
             this.getFile = getFile;
             this.setCurrentFileNum = setCurrentFileNum;
             this.switchFiles = switchFiles;
-            this.clearBackupFiles = clearBackupFiles;
         }
     }
 
