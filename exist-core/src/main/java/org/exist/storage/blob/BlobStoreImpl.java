@@ -156,7 +156,7 @@ import static org.exist.util.ThreadUtils.newInstanceSubThreadGroup;
  *
  *      On crash recovery, firstly:
  *          the StoreBlobFile will either be:
- *              1. undone, which copies the blob file from the blob store to to the staging area,
+ *              1. undone, which copies the blob file from the blob store to the staging area,
  *              2. redone, which copies the blob file from the staging area to the blob store,
  *              3. or both undone and redone.
  *          This is possible because the blob file in the staging area is ONLY deleted after
