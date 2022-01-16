@@ -209,7 +209,7 @@ public final class Journal implements Closeable {
     /**
      * the current file number
      */
-    private int currentFile = 0;
+    private int currentFile = -1;
 
     /**
      * temp buffer
@@ -592,7 +592,11 @@ public final class Journal implements Closeable {
         final String fileName = FileUtils.fileName(path);
         final int p = fileName.indexOf('.');
         final String baseName = fileName.substring(0, p);
-        return Integer.parseInt(baseName, 16);
+        final int fileNum = Integer.parseInt(baseName, 16);
+        if (fileNum < 0 || fileNum > Short.MAX_VALUE) {
+            throw new IllegalArgumentException("Path: " + fileNum + " has a file number that is out of range (0-" + Short.MAX_VALUE + ")");
+        }
+        return fileNum;
     }
 
     /**
@@ -723,11 +727,14 @@ public final class Journal implements Closeable {
      * @param fileNum the journal file number
      *
      * @return The file name
+     *
+     * @throws IllegalArgumentException if the file number is out of range
      */
-    static String getFileName(final int fileNum) {
-        String hex = Integer.toHexString(fileNum);
-        hex = "0000000000".substring(hex.length()) + hex;
-        return hex + '.' + LOG_FILE_SUFFIX;
+    static String getFileName(final int fileNum) throws IllegalArgumentException {
+        if (fileNum < 0 || fileNum > Short.MAX_VALUE) {
+            throw new IllegalArgumentException("File Number: " + fileNum + " is out of range (0-" + Short.MAX_VALUE + ")");
+        }
+        return String.format("%010x", fileNum) + '.' + LOG_FILE_SUFFIX;
     }
 
     private static class RemoveRunnable implements Runnable {
