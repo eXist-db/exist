@@ -205,9 +205,9 @@ public final class Journal implements Closeable {
     private FileLock fileLock;
 
     /**
-     * the current file number
+     * the current journal file number
      */
-    private int currentFile = -1;
+    private int currentJournalFileNumber = -1;
 
     /**
      * temp buffer
@@ -335,10 +335,11 @@ public final class Journal implements Closeable {
         }
 
         try {
-            if (currentFile > Short.MAX_VALUE) {
+            if (currentJournalFileNumber > Short.MAX_VALUE) {
                 throw new JournalException("Journal can only support " + Short.MAX_VALUE + " log files");
             }
-            currentLsn = new Lsn((short)currentFile, channel.position() + currentBuffer.position() + 1);
+
+            currentLsn = new Lsn((short) currentJournalFileNumber, channel.position() + currentBuffer.position() + 1);
         } catch (final IOException e) {
             throw new JournalException("Unable to create LSN for: " + entry.dump());
         }
@@ -473,7 +474,7 @@ public final class Journal implements Closeable {
         }
         try {
             if (switchLogFiles && channel != null && channel.position() > journalSizeMin) {
-                final Path oldFile = getFile(currentFile);
+                final Path oldFile = getFile(currentJournalFileNumber);
                 final RemoveRunnable removeRunnable = new RemoveRunnable(channel, oldFile);
                 try {
                     switchFiles();
@@ -490,12 +491,12 @@ public final class Journal implements Closeable {
     }
 
     /**
-     * Set the file number of the last file used.
+     * Set the file number of the current journal file.
      *
-     * @param fileNum the log file number
+     * @param currentJournalFileNumber the current journal file number
      */
-    public void setCurrentFileNum(final int fileNum) {
-        currentFile = fileNum;
+    public void setCurrentJournalFileNumber(final int currentJournalFileNumber) {
+        this.currentJournalFileNumber = currentJournalFileNumber;
     }
 
     /**
@@ -505,39 +506,44 @@ public final class Journal implements Closeable {
      * @throws LogException if the journal files could not be switched
      */
     public void switchFiles() throws LogException {
-        ++currentFile;
-        final String fname = getFileName(currentFile);
-        final Path file = dir.resolve(fname);
-        if (Files.exists(file)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Journal file " + file.toAbsolutePath() + " already exists. Moving it to a backup file.");
-            }
+        ++currentJournalFileNumber;
+        final String newJournalFileName = getFileName(currentFile);
+        final Path newJournalFile = dir.resolve(newJournalFileName);
+
+        /**
+         * If a file already exists in the same path as where we
+         * wish to write our new journal file, then we try and rename
+         * the existing file to give it a .bak file extension.
+         */
+        if (Files.exists(newJournalFile)) {
+            final Path backupFile = newJournalFile.resolveSibling(FileUtils.fileName(newJournalFile) + BAK_FILE_SUFFIX);
+            LOG.warn("Journal file: " + newJournalFile.toAbsolutePath() + " already exists. Moving it to a backup file: " + backupFile.toAbsolutePath());
 
             try {
-                final Path renamed = Files.move(file, file.resolveSibling(FileUtils.fileName(file) + BAK_FILE_SUFFIX), StandardCopyOption.ATOMIC_MOVE);
+                final Path backedUpJournalFile = Files.move(newJournalFile, backupFile, StandardCopyOption.ATOMIC_MOVE);
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Old Journal file renamed from '" + file.toAbsolutePath().toString() + "' to '" + renamed.toAbsolutePath().toString() + "'");
+                    LOG.debug("Old Journal file renamed from '" + newJournalFile.toAbsolutePath().toString() + "' to '" + backedUpJournalFile.toAbsolutePath().toString() + "'");
                 }
             } catch (final IOException ioe) {
-                LOG.warn(ioe); //TODO(AR) should probably be an LogException but wasn't previously!
+                LOG.warn(ioe); //TODO(AR) should probably throw a LogException!
             }
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Creating new journal: " + file.toAbsolutePath().toString());
+            LOG.debug("Creating new journal: " + newJournalFile.toAbsolutePath().toString());
         }
 
         synchronized (latch) {
             try {
-                // close current file
+                // close current journal file
                 close();
 
-                // open new file
-                channel = (FileChannel) Files.newByteChannel(file, CREATE_NEW, WRITE);
+                // open new journal file
+                channel = (FileChannel) Files.newByteChannel(newJournalFile, CREATE_NEW, WRITE);
                 writeJournalHeader(channel);
                 initialised = true;
             } catch (final IOException e) {
-                throw new LogException("Failed to open new journal: " + file.toAbsolutePath().toString(), e);
+                throw new LogException("Failed to open new journal: " + newJournalFile.toAbsolutePath().toString(), e);
             }
         }
     }
