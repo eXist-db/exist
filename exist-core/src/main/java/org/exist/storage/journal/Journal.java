@@ -567,7 +567,7 @@ public final class Journal implements Closeable {
         }
     }
 
-    private void writeJournalHeader(final SeekableByteChannel channel) throws IOException {
+    static void writeJournalHeader(final SeekableByteChannel channel) throws IOException {
         final ByteBuffer buf = ByteBuffer.allocateDirect(JOURNAL_HEADER_LEN);
 
         // write the magic number
@@ -597,7 +597,17 @@ public final class Journal implements Closeable {
         }
     }
 
-    private static int journalFileNum(final Path path) {
+    /**
+     * Get the journal file number from a journal file's name.
+     *
+     * @param path the journal file
+     *
+     * @return the journal file number
+     *
+     * @throws NumberFormatException if the file number cannot be parsed
+     * @throws IllegalArgumentException if the file name contains a file number which is out of range
+     */
+    static int journalFileNum(final Path path) throws NumberFormatException, IllegalArgumentException {
         final String fileName = FileUtils.fileName(path);
         final int p = fileName.indexOf('.');
         final String baseName = fileName.substring(0, p);
@@ -609,7 +619,7 @@ public final class Journal implements Closeable {
      *
      * @param files the journal files to consider.
      *
-     * @return the number of the last journal file
+     * @return the number of the last journal file, or -1 if the {@code files} stream was empty
      */
     public static int findLastFile(final Stream<Path> files) {
         return files
@@ -623,9 +633,24 @@ public final class Journal implements Closeable {
      *
      * @return A Stream of all journal files. NOTE - This is
      * an I/O Stream and so you are responsible for closing it!
+     *
      * @throws IOException if an I/O error occurs whilst finding journal files.
      */
     public Stream<Path> getFiles() throws IOException {
+        return getFiles(dir);
+    }
+
+    /**
+     * Returns a Stream of all journal files found in the directory.
+     *
+     * @param dir the journal directory
+     *
+     * @return A Stream of all journal files. NOTE - This is
+     * an I/O Stream and so you are responsible for closing it!
+     *
+     * @throws IOException if an I/O error occurs whilst finding journal files.
+     */
+    static Stream<Path> getFiles(final Path dir) throws IOException {
         final String suffix = '.' + LOG_FILE_SUFFIX;
         final String indexSuffix = "_index" + suffix;
 
@@ -644,6 +669,19 @@ public final class Journal implements Closeable {
      * @return the journal file
      */
     public Path getFile(final int fileNum) {
+        return getFile(dir, fileNum);
+    }
+
+    /**
+     * Returns the file corresponding to the specified
+     * file number.
+     *
+     * @param dir the journal directory.
+     * @param fileNum the journal file number.
+     *
+     * @return the journal file
+     */
+    static Path getFile(final Path dir, final int fileNum) {
         return dir.resolve(getFileName(fileNum));
     }
 
@@ -701,6 +739,7 @@ public final class Journal implements Closeable {
      * Translate a file number into a file name.
      *
      * @param fileNum the journal file number
+     *
      * @return The file name
      */
     static String getFileName(final int fileNum) {
