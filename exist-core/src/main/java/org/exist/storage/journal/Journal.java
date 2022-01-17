@@ -45,6 +45,7 @@ import org.exist.storage.lock.FileLock;
 import org.exist.storage.txn.Checkpoint;
 import org.exist.storage.txn.TxnStart;
 import org.exist.util.ByteConversion;
+import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.sanity.SanityCheck;
@@ -153,17 +154,17 @@ public final class Journal implements Closeable {
     /**
      * default maximum journal size
      */
-    public static final int DEFAULT_MAX_SIZE = 100;  //MB
+    static final int DEFAULT_MAX_SIZE = 100;  //MB
 
     /**
      * minimal size the journal needs to have to be replaced by a new file during a checkpoint
      */
-    private static final int DEFAULT_MIN_SIZE = 1;  // MB
+    static final int DEFAULT_MIN_SIZE = 1;  // MB
 
     /**
      * We use a 1 megabyte buffer.
      */
-    public static final int BUFFER_SIZE = 1024 * 1024;  // bytes
+    public static final int BUFFER_SIZE = 1024 * 1024;  // 1 MB in bytes
 
     /**
      * Seed used for xxhash-64 checksums calculated
@@ -246,7 +247,7 @@ public final class Journal implements Closeable {
      */
     @ConfigurationFieldAsAttribute("sync-on-commit")
     //TODO: conf.xml refactoring <recovery sync-on-commit=""> => <journal sync-on-commit="">
-    private final static boolean DEFAULT_SYNC_ON_COMMIT = true;
+    final static boolean DEFAULT_SYNC_ON_COMMIT = true;
     private final boolean syncOnCommit;
 
     private volatile boolean initialised = false;
@@ -257,18 +258,20 @@ public final class Journal implements Closeable {
         this.pool = pool;
         this.currentBuffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
 
-        this.syncOnCommit = pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SYNC_ON_COMMIT, DEFAULT_SYNC_ON_COMMIT);
+        final Configuration configuration = pool.getConfiguration();
+
+        this.syncOnCommit = configuration.getProperty(PROPERTY_RECOVERY_SYNC_ON_COMMIT, DEFAULT_SYNC_ON_COMMIT);
         if (LOG.isDebugEnabled()) {
             LOG.debug("SyncOnCommit = {}", syncOnCommit);
         }
 
-        final Optional<Path> logDir = Optional.ofNullable((Path) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_JOURNAL_DIR));
+        final Optional<Path> logDir = Optional.ofNullable((Path) configuration.getProperty(PROPERTY_RECOVERY_JOURNAL_DIR));
         if (logDir.isPresent()) {
             Path f = logDir.get();
             if (!f.isAbsolute()) {
-                f = pool.getConfiguration().getExistHome()
+                f = configuration.getExistHome()
                         .map(h -> Optional.of(h.resolve(logDir.get())))
-                        .orElse(pool.getConfiguration().getConfigFilePath().map(p -> p.getParent().resolve(logDir.get())))
+                        .orElse(configuration.getConfigFilePath().map(p -> p.getParent().resolve(logDir.get())))
                         .orElse(f);
             }
 
@@ -295,8 +298,8 @@ public final class Journal implements Closeable {
             LOG.debug("Using directory for the journal: {}", dir.toAbsolutePath().toString());
         }
 
-        this.journalSizeMin = 1024 * 1024 * pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SIZE_MIN, DEFAULT_MIN_SIZE);
-        this.journalSizeLimit = 1024 * 1024 * pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SIZE_LIMIT, DEFAULT_MAX_SIZE);
+        this.journalSizeMin = 1024 * 1024 * configuration.getProperty(PROPERTY_RECOVERY_SIZE_MIN, DEFAULT_MIN_SIZE);
+        this.journalSizeLimit = 1024 * 1024 * configuration.getProperty(PROPERTY_RECOVERY_SIZE_LIMIT, DEFAULT_MAX_SIZE);
     }
 
     public void initialize() throws EXistException, ReadOnlyException {
@@ -502,6 +505,15 @@ public final class Journal implements Closeable {
      */
     public void setCurrentJournalFileNumber(final int currentJournalFileNumber) {
         this.currentJournalFileNumber = currentJournalFileNumber;
+    }
+
+    /**
+     * Get the file number of the current journal file.
+     *
+     * @return the current journal file number
+     */
+    int getCurrentJournalFileNumber() {
+        return currentJournalFileNumber;
     }
 
     /**
