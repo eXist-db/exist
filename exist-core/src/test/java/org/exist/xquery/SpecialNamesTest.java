@@ -16,7 +16,7 @@ import static org.junit.Assert.assertNotNull;
 public class SpecialNamesTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private Collection testCollection;
     @SuppressWarnings("unused")

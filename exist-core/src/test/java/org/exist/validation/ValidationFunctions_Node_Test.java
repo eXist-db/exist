@@ -62,7 +62,7 @@ public class ValidationFunctions_Node_Test {
                     .set(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto")
                     .build(),
             true,
-            false);
+            true);
 
     private static final String TEST_COLLECTION = "testValidationFunctionsNode";
     private static final XmldbURI VALIDATION_HOME_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append(TEST_COLLECTION).append(TestTools.VALIDATION_HOME_COLLECTION);

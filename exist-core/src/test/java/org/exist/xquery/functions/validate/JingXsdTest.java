@@ -47,7 +47,7 @@ import org.xmldb.api.base.XMLDBException;
 public class JingXsdTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeClass
     public static void prepareResources() throws Exception {

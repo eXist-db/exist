@@ -18,14 +18,12 @@
   ~ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   -->
 
-<!-- http://knowitall.cs.washington.edu/maven2/ -->
-
 <ivysettings>
     <settings defaultResolver="chain"/>
     <resolvers>
         <chain name="chain">
             <ibiblio name="central" m2compatible="true"/>
-            <ibiblio name="custom" m2compatible="true" root="http://maven.indexdata.com"/>
+            <ibiblio name="custom" m2compatible="true" root="https://maven.indexdata.com"/>
         </chain>
     </resolvers>
 </ivysettings>

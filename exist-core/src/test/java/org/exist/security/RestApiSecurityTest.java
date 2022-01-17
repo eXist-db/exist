@@ -42,7 +42,7 @@ import org.junit.ClassRule;
 public class RestApiSecurityTest extends AbstractApiSecurityTest {
 
     @ClassRule
-    public static ExistWebServer existWebServer = new ExistWebServer(true, false, true);
+    public static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private final static String baseUri = "/db";
 

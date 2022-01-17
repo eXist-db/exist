@@ -2,5 +2,17 @@
     Ivy module to retrieve jar for iprange
 -->
 <ivy-module version="2.0">
+
     <info organisation="org.exist" module="security.iprange"/>
+
+    <configurations>
+        <conf name="core" visibility="private"/>
+        <conf name="compile" visibility="private" transitive="false" extends="core"/>
+        <conf name="runtime" visibility="public"  transitive="true" extends="compile"/>
+    </configurations>
+
+    <publications>
+        <artifact name="exist-security-iprange" type="jar" conf="runtime" ext="jar"/>
+    </publications>
+
 </ivy-module>

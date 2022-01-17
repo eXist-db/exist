@@ -330,7 +330,7 @@ public class BTreeTest {
     }
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();

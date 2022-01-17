@@ -201,13 +201,17 @@
             <test name="org.exist.collections.triggers.AllTriggerTests" todir="${junit.reports.dat}"/>
             <test name="org.exist.collections.AllCollectionTests" todir="${junit.reports.dat}"/>
             <test name="org.exist.security.AccountTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.security.FnCollectionSecurityTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.security.FnDocSecurityTest" todir="${junit.reports.dat}"/>
             <test name="org.exist.security.LocalSecurityManagerRoundtripTest" todir="${junit.reports.dat}"/>
             <test name="org.exist.security.RemoteSecurityManagerRoundtripTest" todir="${junit.reports.dat}"/>
             <test name="org.exist.security.RestApiSecurityTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.security.SecurityManagerTest" todir="${junit.reports.dat}"/>
             <test name="org.exist.security.SimpleACLPermissionTest" todir="${junit.reports.dat}"/>
             <test name="org.exist.security.UnixStylePermissionTest" todir="${junit.reports.dat}"/>
             <test name="org.exist.security.XmldbApiSecurityTest" todir="${junit.reports.dat}"/>
             <test name="org.exist.security.XMLDBSecurityTest" todir="${junit.reports.dat}"/>
+            <test name="org.exist.security.XqueryApiTest" todir="${junit.reports.dat}"/>
             <test name="org.exist.security.internal.aider.UnixStylePermissionAiderTest" todir="${junit.reports.dat}"/>
             <test name="org.exist.storage.NativeBrokerTest" todir="${junit.reports.dat}"/>
             <test name="org.exist.AllIndexerTests" todir="${junit.reports.dat}"/>

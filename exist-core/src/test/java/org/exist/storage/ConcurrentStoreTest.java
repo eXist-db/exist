@@ -56,7 +56,7 @@ public class ConcurrentStoreTest {
     private static Path dir = Paths.get(directory);
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private BrokerPool pool;
     private Collection test, test2;

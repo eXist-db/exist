@@ -46,7 +46,7 @@ import org.xmldb.api.base.XMLDBException;
 public class BaseConverterTest {
 
     @ClassRule
-    public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Test
     public void testBaseConverterOctalToInt() throws XMLDBException {

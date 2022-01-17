@@ -51,7 +51,7 @@ import static org.junit.Assert.assertNotNull;
 public class ValueIndexTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     protected static final String ITEMS_FILENAME = "items.xml";
     protected URL ITEMS_FILE = getClass().getResource(ITEMS_FILENAME);

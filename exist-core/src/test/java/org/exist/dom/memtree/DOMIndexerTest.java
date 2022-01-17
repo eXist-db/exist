@@ -62,7 +62,7 @@ import org.xml.sax.SAXException;
 public class DOMIndexerTest {
 
     @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private final static String XML =
         "<?xml version=\"1.0\"?>" +

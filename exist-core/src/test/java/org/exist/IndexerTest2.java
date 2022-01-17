@@ -150,7 +150,7 @@ public class IndexerTest2 {
                 .set(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none")
                 .build(),
             true,
-            false);
+            true);
 
     @BeforeClass
     public static void setUp() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, LockException, AuthenticationException {

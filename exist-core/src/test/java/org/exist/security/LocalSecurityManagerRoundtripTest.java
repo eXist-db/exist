@@ -33,7 +33,7 @@ import org.xmldb.api.base.XMLDBException;
 public class LocalSecurityManagerRoundtripTest extends AbstractSecurityManagerRoundtripTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, false);
 
     @Override
     protected String getBaseUri() {

@@ -47,7 +47,7 @@ import static org.junit.Assert.assertFalse;
 public class FilterInputStreamCacheMonitorTest {
 
     @ClassRule
-    public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static String TEST_COLLECTION_NAME = "testFilterInputStreamCacheMonitor";
 

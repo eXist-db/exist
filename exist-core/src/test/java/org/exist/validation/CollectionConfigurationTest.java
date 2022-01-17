@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
 public class CollectionConfigurationTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private static final String invalidConfig = "<invalid/>";
 
