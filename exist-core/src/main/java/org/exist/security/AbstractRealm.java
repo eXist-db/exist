@@ -143,16 +143,29 @@ public abstract class AbstractRealm implements Realm, Configurable {
         //load marked for remove groups information
         if (collectionRemovedGroups != null && collectionRemovedGroups.getDocumentCount(broker) > 0) {
             for(final Iterator<DocumentImpl> i = collectionRemovedGroups.iterator(broker); i.hasNext(); ) {
-                final Configuration conf = Configurator.parse(broker.getBrokerPool(), i.next());
-                final Integer id = conf.getPropertyInteger("id");
-                
-                if (id != null && !getSecurityManager().hasGroup(id)) {
-                    
-                    //G group = instantiateGroup(this, conf, true);
-                    final GroupImpl group = new GroupImpl(this, conf);
-                    group.removed = true;
-                    
-                    getSecurityManager().addGroup(group.getId(), group);
+                final DocumentImpl removedGroupDoc = i.next();
+                if (DocumentImpl.XML_FILE == removedGroupDoc.getResourceType()) {
+                    final Configuration conf = Configurator.parse(broker.getBrokerPool(), removedGroupDoc);
+                    if (conf != null) {
+                        final Integer id = conf.getPropertyInteger("id");
+
+                        if (id != null && !getSecurityManager().hasGroup(id)) {
+
+                            try {
+                                //G group = instantiateGroup(this, conf, true);
+                                final GroupImpl group = new GroupImpl(this, conf);
+                                group.removed = true;
+
+                                getSecurityManager().addGroup(group.getId(), group);
+                            } catch (final ConfigurationException e) {
+                                SecurityManagerImpl.LOG.warn("Unable to instantiate and configure Removed Group: " + removedGroupDoc.getURI() + ": '" + e.getMessage() + "'. Will ignore it...");
+                            }
+                        }
+                    } else {
+                        SecurityManagerImpl.LOG.warn("Unable to load and configure Removed Group: " + removedGroupDoc.getURI() + ", will ignore it...");
+                    }
+                } else {
+                    SecurityManagerImpl.LOG.warn("Found binary document: " + removedGroupDoc.getURI() + " in Removed Groups Collection, will ignore it...");
                 }
             }
         }
@@ -197,21 +210,33 @@ public abstract class AbstractRealm implements Realm, Configurable {
         //load marked for remove accounts information
         if (collectionRemovedAccounts != null && collectionRemovedAccounts.getDocumentCount(broker) > 0) {
             for(final Iterator<DocumentImpl> i = collectionRemovedAccounts.iterator(broker); i.hasNext(); ) {
-                final Configuration conf = Configurator.parse(broker.getBrokerPool(), i.next());
-	            	
-                final Integer id = conf.getPropertyInteger("id");
-                if (id != null && !getSecurityManager().hasUser(id)) {
-                    
-                    //A account = instantiateAccount(this, conf, true);
-	            final AccountImpl account = new AccountImpl( this, conf );
-	            account.removed = true;
-		    
-                    getSecurityManager().addUser(account.getId(), account);
+                final DocumentImpl removedAccountDoc = i.next();
+                if (DocumentImpl.XML_FILE == removedAccountDoc.getResourceType()) {
+                    final Configuration conf = Configurator.parse(broker.getBrokerPool(), removedAccountDoc);
+
+                    if (conf != null) {
+                        final Integer id = conf.getPropertyInteger("id");
+                        if (id != null && !getSecurityManager().hasUser(id)) {
+
+                            try {
+                                //A account = instantiateAccount(this, conf, true);
+                                final AccountImpl account = new AccountImpl(this, conf);
+                                account.removed = true;
+
+                                getSecurityManager().addUser(account.getId(), account);
+                            } catch (final ConfigurationException e) {
+                                SecurityManagerImpl.LOG.warn("Unable to instantiate and configure Removed Account: " + removedAccountDoc.getURI() + ": '" + e.getMessage() + "'. Will ignore it...");
+                            }
+                        }
+                    } else {
+                        SecurityManagerImpl.LOG.warn("Unable to load and configure Removed Account: " + removedAccountDoc.getURI() + ", will ignore it...");
+                    }
+                } else {
+                    SecurityManagerImpl.LOG.warn("Found binary document: " + removedAccountDoc.getURI() + " in Removed Accounts Collection, will ignore it...");
                 }
             }
         }
     }
-    
     
     @Override
     public void start(final DBBroker broker) throws EXistException {
