@@ -226,7 +226,7 @@ public final class Journal implements Closeable {
     /**
      * the current journal file number
      */
-    @GuardedBy("this") private int currentJournalFileNumber = -1;
+    @GuardedBy("this") private short currentJournalFileNumber = -1;
 
     /**
      * temp buffer
@@ -348,14 +348,10 @@ public final class Journal implements Closeable {
         }
 
         try {
-            if (currentJournalFileNumber > Short.MAX_VALUE) {
-                throw new JournalException("Journal can only support " + Short.MAX_VALUE + " log files");
-            }
-
             // TODO(AR) this is needed as the journal is initialised by starting a transaction for loading the SymbolTable... before recovery! which is likely wrong!!! as Recovery Cannot run if the Journal file has been switched!
             final long pos = channel != null ? channel.position() : 0;
 
-            currentLsn = new Lsn((short) currentJournalFileNumber, pos + currentBuffer.position() + 1);
+            currentLsn = new Lsn(currentJournalFileNumber, pos + currentBuffer.position() + 1);
         } catch (final IOException e) {
             throw new JournalException("Unable to create LSN for: " + entry.dump());
         }
@@ -510,7 +506,7 @@ public final class Journal implements Closeable {
      *
      * @param currentJournalFileNumber the current journal file number
      */
-    public synchronized void setCurrentJournalFileNumber(final int currentJournalFileNumber) {
+    public synchronized void setCurrentJournalFileNumber(final short currentJournalFileNumber) {
         this.currentJournalFileNumber = currentJournalFileNumber;
     }
 
@@ -519,7 +515,7 @@ public final class Journal implements Closeable {
      *
      * @return the current journal file number
      */
-    synchronized int getCurrentJournalFileNumber() {
+    synchronized short getCurrentJournalFileNumber() {
         return currentJournalFileNumber;
     }
 
@@ -533,12 +529,13 @@ public final class Journal implements Closeable {
      *
      * @return the next journal file number.
      */
-    static int getNextJournalFileNumber(final int currentJournalFileNumber) {
-        if (currentJournalFileNumber == Short.MAX_VALUE) {
+    static short getNextJournalFileNumber(final short currentJournalFileNumber) {
+        final int nextJournalFileNumber = currentJournalFileNumber + 1;
+        if (nextJournalFileNumber > Short.MAX_VALUE) {
             // wrap-around to zero once we hit the ceiling
             return 0;
         } else {
-            return currentJournalFileNumber + 1;
+            return (short) nextJournalFileNumber;
         }
     }
 
@@ -549,7 +546,7 @@ public final class Journal implements Closeable {
      * @throws LogException if the journal files could not be switched
      */
     public synchronized void switchFiles() throws LogException {
-        final int newJournalFileNumber = getNextJournalFileNumber(currentJournalFileNumber);
+        final short newJournalFileNumber = getNextJournalFileNumber(currentJournalFileNumber);
         final String newJournalFileName = getFileName(newJournalFileNumber);
         final Path newJournalFile = dir.resolve(newJournalFileName);
 
@@ -630,12 +627,12 @@ public final class Journal implements Closeable {
      * @throws NumberFormatException if the file number cannot be parsed
      * @throws IllegalArgumentException if the file name contains a file number which is out of range
      */
-    static int journalFileNum(final Path path) throws NumberFormatException, IllegalArgumentException {
+    static short journalFileNum(final Path path) throws NumberFormatException, IllegalArgumentException {
         final String fileName = FileUtils.fileName(path);
         final int p = fileName.indexOf('.');
         final String baseName = fileName.substring(0, p);
-        final int fileNum = Integer.parseInt(baseName, 16);
-        if (fileNum < 0 || fileNum > Short.MAX_VALUE) {
+        final short fileNum = Short.parseShort(baseName, 16);
+        if (fileNum < 0) {
             throw new IllegalArgumentException("Path: " + fileNum + " has a file number that is out of range (0-" + Short.MAX_VALUE + ")");
         }
         return fileNum;
@@ -648,8 +645,8 @@ public final class Journal implements Closeable {
      *
      * @return the number of the last journal file, or -1 if the {@code files} stream was empty
      */
-    public static int findLastFile(final Stream<Path> files) {
-        return files
+    public static short findLastFile(final Stream<Path> files) {
+        return (short) files
                 .map(Journal::journalFileNum)
                 .mapToInt(v -> v)
                 .max()
@@ -696,7 +693,7 @@ public final class Journal implements Closeable {
      *
      * @return the journal file
      */
-    public Path getFile(final int fileNum) {
+    public Path getFile(final short fileNum) {
         return getFile(dir, fileNum);
     }
 
@@ -709,7 +706,7 @@ public final class Journal implements Closeable {
      *
      * @return the journal file
      */
-    static Path getFile(final Path dir, final int fileNum) {
+    static Path getFile(final Path dir, final short fileNum) {
         return dir.resolve(getFileName(fileNum));
     }
 
@@ -772,8 +769,8 @@ public final class Journal implements Closeable {
      *
      * @throws IllegalArgumentException if the file number is out of range
      */
-    static String getFileName(final int fileNum) throws IllegalArgumentException {
-        if (fileNum < 0 || fileNum > Short.MAX_VALUE) {
+    static String getFileName(final short fileNum) throws IllegalArgumentException {
+        if (fileNum < 0) {
             throw new IllegalArgumentException("File Number: " + fileNum + " is out of range (0-" + Short.MAX_VALUE + ")");
         }
         return String.format("%010x", fileNum) + '.' + LOG_FILE_SUFFIX;

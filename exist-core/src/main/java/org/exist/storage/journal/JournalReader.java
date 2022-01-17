@@ -50,7 +50,7 @@ public class JournalReader implements AutoCloseable {
     private static final Logger LOG = LogManager.getLogger(JournalReader.class);
 
     private final DBBroker broker;
-    private final int fileNumber;
+    private final short fileNumber;
     private final ByteBuffer header = ByteBuffer.allocateDirect(LOG_ENTRY_HEADER_LEN);
     private ByteBuffer payload = ByteBuffer.allocateDirect(8192);  // 8 KB
     @Nullable
@@ -66,7 +66,7 @@ public class JournalReader implements AutoCloseable {
      * @param fileNumber the number of the journal file
      * @throws LogException if the journal cannot be opened
      */
-    public JournalReader(final DBBroker broker, final Path file, final int fileNumber) throws LogException {
+    public JournalReader(final DBBroker broker, final Path file, final short fileNumber) throws LogException {
         this.broker = broker;
         this.fileNumber = fileNumber;
         try {
@@ -192,11 +192,7 @@ public class JournalReader implements AutoCloseable {
     private @Nullable
     Loggable readEntry() throws LogException {
         try {
-            if (fileNumber > Short.MAX_VALUE) {
-                throw new LogException("Journal can only support " + Short.MAX_VALUE + " log files");
-            }
-
-            final Lsn lsn = new Lsn((short)fileNumber, fc.position() + 1);
+            final Lsn lsn = new Lsn(fileNumber, fc.position() + 1);
 
             // read the entry header
             header.clear();

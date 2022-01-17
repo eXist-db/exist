@@ -58,17 +58,17 @@ public class JournalTest {
 
     @Test
     public void getFileName() {
-        assertEquals("0000000000.log", Journal.getFileName(0));
-        assertEquals("0000000001.log", Journal.getFileName(1));
-        assertEquals("0000000002.log", Journal.getFileName(2));
-        assertEquals("000000000a.log", Journal.getFileName(10));
-        assertEquals("000000000b.log", Journal.getFileName(11));
-        assertEquals("0000000014.log", Journal.getFileName(20));
-        assertEquals("0000000015.log", Journal.getFileName(21));
-        assertEquals("000000001e.log", Journal.getFileName(30));
-        assertEquals("000000001f.log", Journal.getFileName(31));
+        assertEquals("0000000000.log", Journal.getFileName((short)0));
+        assertEquals("0000000001.log", Journal.getFileName((short)1));
+        assertEquals("0000000002.log", Journal.getFileName((short)2));
+        assertEquals("000000000a.log", Journal.getFileName((short)10));
+        assertEquals("000000000b.log", Journal.getFileName((short)11));
+        assertEquals("0000000014.log", Journal.getFileName((short)20));
+        assertEquals("0000000015.log", Journal.getFileName((short)21));
+        assertEquals("000000001e.log", Journal.getFileName((short)30));
+        assertEquals("000000001f.log", Journal.getFileName((short)31));
 
-        assertEquals("0000007ffe.log", Journal.getFileName(Short.MAX_VALUE - 1));
+        assertEquals("0000007ffe.log", Journal.getFileName((short)(Short.MAX_VALUE - 1)));
         assertEquals("0000007fff.log", Journal.getFileName(Short.MAX_VALUE));
     }
 
@@ -79,7 +79,7 @@ public class JournalTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void getFileNameWithFileNumMinusOneRaisesException() {
-        Journal.getFileName(-1);
+        Journal.getFileName((short)-1);
     }
 
     @Test
@@ -113,51 +113,51 @@ public class JournalTest {
     @Test
     public void findLastFile() {
         try (final Stream<Path> paths = Stream.of(
-                Paths.get(Journal.getFileName(1)),
-                Paths.get(Journal.getFileName(31)),
-                Paths.get(Journal.getFileName(11)),
-                Paths.get(Journal.getFileName(10)),
-                Paths.get(Journal.getFileName(2)),
+                Paths.get(Journal.getFileName((short)1)),
+                Paths.get(Journal.getFileName((short)31)),
+                Paths.get(Journal.getFileName((short)11)),
+                Paths.get(Journal.getFileName((short)10)),
+                Paths.get(Journal.getFileName((short)2)),
                 Paths.get(Journal.getFileName(Short.MAX_VALUE)),
-                Paths.get(Journal.getFileName(20)),
-                Paths.get(Journal.getFileName(Short.MAX_VALUE - 1)),
-                Paths.get(Journal.getFileName(21)),
-                Paths.get(Journal.getFileName(30))
+                Paths.get(Journal.getFileName((short)20)),
+                Paths.get(Journal.getFileName((short)(Short.MAX_VALUE - 1))),
+                Paths.get(Journal.getFileName((short)21)),
+                Paths.get(Journal.getFileName((short)30))
         )) {
             assertEquals(Short.MAX_VALUE, Journal.findLastFile(paths));
         }
 
         try (final Stream<Path> paths = Stream.of(
-                Paths.get(Journal.getFileName(1)),
-                Paths.get(Journal.getFileName(31)),
-                Paths.get(Journal.getFileName(11)),
-                Paths.get(Journal.getFileName(10)),
-                Paths.get(Journal.getFileName(2)),
-                Paths.get(Journal.getFileName(20)),
-                Paths.get(Journal.getFileName(Short.MAX_VALUE - 1)),
-                Paths.get(Journal.getFileName(21)),
-                Paths.get(Journal.getFileName(30))
+                Paths.get(Journal.getFileName((short)1)),
+                Paths.get(Journal.getFileName((short)31)),
+                Paths.get(Journal.getFileName((short)11)),
+                Paths.get(Journal.getFileName((short)10)),
+                Paths.get(Journal.getFileName((short)2)),
+                Paths.get(Journal.getFileName((short)20)),
+                Paths.get(Journal.getFileName((short)(Short.MAX_VALUE - 1))),
+                Paths.get(Journal.getFileName((short)21)),
+                Paths.get(Journal.getFileName((short)30))
         )) {
             assertEquals(Short.MAX_VALUE - 1, Journal.findLastFile(paths));
         }
 
         try (final Stream<Path> paths = Stream.of(
-                Paths.get(Journal.getFileName(1)),
-                Paths.get(Journal.getFileName(11)),
-                Paths.get(Journal.getFileName(2))
+                Paths.get(Journal.getFileName((short)1)),
+                Paths.get(Journal.getFileName((short)11)),
+                Paths.get(Journal.getFileName((short)2))
         )) {
             assertEquals(11, Journal.findLastFile(paths));
         }
 
         try (final Stream<Path> paths = Stream.of(
-                Paths.get(Journal.getFileName(1))
+                Paths.get(Journal.getFileName((short)1))
         )) {
             assertEquals(1, Journal.findLastFile(paths));
         }
 
         try (final Stream<Path> paths = Stream.of(
-                Paths.get(Journal.getFileName(111)),
-                Paths.get(Journal.getFileName(1))
+                Paths.get(Journal.getFileName((short)111)),
+                Paths.get(Journal.getFileName((short)1))
         )) {
             assertEquals(111, Journal.findLastFile(paths));
         }
@@ -192,27 +192,27 @@ public class JournalTest {
         List<String> input = Arrays.asList(new String[]{ "0000000001.log" });
         Path mockJournalDir = createTempDirWithFiles(input);
 
-        Path journalFile = Journal.getFile(mockJournalDir, 0);
+        Path journalFile = Journal.getFile(mockJournalDir, (short)0);
         assertFalse(Files.exists(journalFile));  // no such file!
         assertEquals("0000000000.log", FileUtils.fileName(journalFile));
 
-        journalFile = Journal.getFile(mockJournalDir, 1);
+        journalFile = Journal.getFile(mockJournalDir, (short)1);
         assertTrue(Files.exists(journalFile));
         assertEquals(input.get(0), FileUtils.fileName(journalFile));
 
-        journalFile = Journal.getFile(mockJournalDir, 2);
+        journalFile = Journal.getFile(mockJournalDir, (short)2);
         assertFalse(Files.exists(journalFile));  // no such file!
         assertEquals("0000000002.log", FileUtils.fileName(journalFile));
 
-        journalFile = Journal.getFile(mockJournalDir, 30);
+        journalFile = Journal.getFile(mockJournalDir, (short)30);
         assertFalse(Files.exists(journalFile));  // no such file!
         assertEquals("000000001e.log", FileUtils.fileName(journalFile));
 
-        journalFile = Journal.getFile(mockJournalDir, 31);
+        journalFile = Journal.getFile(mockJournalDir, (short)31);
         assertFalse(Files.exists(journalFile));  // no such file!
         assertEquals("000000001f.log", FileUtils.fileName(journalFile));
 
-        journalFile = Journal.getFile(mockJournalDir, Short.MAX_VALUE - 1);
+        journalFile = Journal.getFile(mockJournalDir, (short)(Short.MAX_VALUE - 1));
         assertFalse(Files.exists(journalFile));  // no such file!
         assertEquals("0000007ffe.log", FileUtils.fileName(journalFile));
 
@@ -223,19 +223,19 @@ public class JournalTest {
         input = Arrays.asList(new String[]{ "0000000001.log", "00000000af.log", "000000000a.log", "000000000f.log" });
         mockJournalDir = createTempDirWithFiles(input);
 
-        journalFile = Journal.getFile(mockJournalDir, 1);
+        journalFile = Journal.getFile(mockJournalDir, (short)1);
         assertTrue(Files.exists(journalFile));
         assertEquals(input.get(0), FileUtils.fileName(journalFile));
 
-        journalFile = Journal.getFile(mockJournalDir, 175);
+        journalFile = Journal.getFile(mockJournalDir, (short)175);
         assertTrue(Files.exists(journalFile));
         assertEquals(input.get(1), FileUtils.fileName(journalFile));
 
-        journalFile = Journal.getFile(mockJournalDir, 10);
+        journalFile = Journal.getFile(mockJournalDir, (short)10);
         assertTrue(Files.exists(journalFile));
         assertEquals(input.get(2), FileUtils.fileName(journalFile));
 
-        journalFile = Journal.getFile(mockJournalDir, 15);
+        journalFile = Journal.getFile(mockJournalDir, (short)15);
         assertTrue(Files.exists(journalFile));
         assertEquals(input.get(3), FileUtils.fileName(journalFile));
     }
@@ -247,7 +247,7 @@ public class JournalTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void getFileWithFileNumMinusOneRaisesException() throws IOException {
-        Journal.getFile(TEMPORARY_FOLDER.newFolder().toPath(), -1);
+        Journal.getFile(TEMPORARY_FOLDER.newFolder().toPath(), (short)-1);
     }
 
 
@@ -303,7 +303,7 @@ public class JournalTest {
         // start the journal by calling switch files
         journal.switchFiles();
 
-        int currentJournalFileNumber = journal.getCurrentJournalFileNumber();
+        short currentJournalFileNumber = journal.getCurrentJournalFileNumber();
         assertEquals(0, currentJournalFileNumber);
         final Path journalFile0 = journal.getFile(currentJournalFileNumber);
         assertNotNull(journalFile0);
@@ -345,13 +345,13 @@ public class JournalTest {
         assertEquals(-1, journal.getCurrentJournalFileNumber());  // journal is not yet operating!
 
         // create an existing (old) journal file first
-        final Path existingJournalFile = Files.createFile(tempJournalDir.resolve(Journal.getFileName(0)));
+        final Path existingJournalFile = Files.createFile(tempJournalDir.resolve(Journal.getFileName((short)0)));
         assertTrue(Files.exists(existingJournalFile));
 
         // start the journal by calling switch files
         journal.switchFiles();
 
-        int currentJournalFileNumber = journal.getCurrentJournalFileNumber();
+        short currentJournalFileNumber = journal.getCurrentJournalFileNumber();
         assertEquals(0, currentJournalFileNumber);
         final Path journalFile0 = journal.getFile(currentJournalFileNumber);
         assertNotNull(journalFile0);
@@ -387,8 +387,8 @@ public class JournalTest {
         assertEquals(-1, journal.getCurrentJournalFileNumber());  // journal is not yet operating!
 
         // set the current journal file number to one less than the maximum
-        journal.setCurrentJournalFileNumber(Short.MAX_VALUE - 1);
-        int currentJournalFileNumber = journal.getCurrentJournalFileNumber();
+        journal.setCurrentJournalFileNumber((short)(Short.MAX_VALUE - 1));
+        short currentJournalFileNumber = journal.getCurrentJournalFileNumber();
         assertEquals(Short.MAX_VALUE - 1, currentJournalFileNumber);  // journal is not yet operating!
 
         // start the journal by calling switch files

@@ -86,7 +86,7 @@ public class RecoveryManager {
             throw new LogException("Unable to find journal files in data dir", ioe);
         }
         // find the last log file in the data directory
-		final int lastNum = Journal.findLastFile(files.stream());
+		final short lastNum = Journal.findLastFile(files.stream());
 		if (-1 < lastNum) {
             // load the last log file
 			final Path last = journalRecovery.getFile.apply(lastNum);
@@ -210,14 +210,14 @@ public class RecoveryManager {
     public class JournalRecoveryAccessor {
         final Consumer<Boolean> setInRecovery;
         final SupplierE<Stream<Path>, IOException> getFiles;
-        final Function<Integer, Path> getFile;
-        final Consumer<Integer> setCurrentFileNum;
+        final Function<Short, Path> getFile;
+        final Consumer<Short> setCurrentFileNum;
         final SupplierE<Void, LogException> switchFiles;
 
 
         public JournalRecoveryAccessor(final Consumer<Boolean> setInRecovery,
-                final SupplierE<Stream<Path>, IOException> getFiles, final Function<Integer, Path> getFile,
-                final Consumer<Integer> setCurrentFileNum, final SupplierE<Void, LogException> switchFiles) {
+                final SupplierE<Stream<Path>, IOException> getFiles, final Function<Short, Path> getFile,
+                final Consumer<Short> setCurrentFileNum, final SupplierE<Void, LogException> switchFiles) {
             this.setInRecovery = setInRecovery;
             this.getFiles = getFiles;
             this.getFile = getFile;
