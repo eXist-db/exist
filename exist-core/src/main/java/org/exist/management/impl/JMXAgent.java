@@ -98,7 +98,10 @@ public final class JMXAgent implements Agent {
 
             addMBean(instanceId, "org.exist.management." + instanceId + ":type=BinaryValues",
                     new BinaryValues());
-                        
+
+            final CollectionCache collectionCache = new CollectionCache(instance);
+            addMBean(instanceId, CollectionCache.getName(instanceId), collectionCache);
+
         } catch (final DatabaseConfigurationException e) {
             LOG.warn("Exception while registering database mbean.", e);
         }

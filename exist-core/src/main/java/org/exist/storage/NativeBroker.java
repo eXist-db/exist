@@ -664,7 +664,7 @@ public class NativeBroker extends DBBroker {
                     created = true;
 
                     //adding to make it available @ afterCreateCollection
-                    collectionsCache.add(current);
+                    collectionsCache.put(current);
 
                     trigger.afterCreateCollection(this, transaction, current);
 
@@ -745,7 +745,7 @@ public class NativeBroker extends DBBroker {
                         created = true;
 
                         //adding to make it available @ afterCreateCollection
-                        collectionsCache.add(sub);
+                        collectionsCache.put(sub);
 
                         trigger.afterCreateCollection(this, transaction, sub);
 
@@ -819,7 +819,7 @@ public class NativeBroker extends DBBroker {
         Collection collection;
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         synchronized(collectionsCache) {
-            collection = collectionsCache.get(uri);
+            collection = collectionsCache.getIfPresent(uri);
             if(collection == null) {
                 final Lock lock = collectionsDb.getLock();
                 try {
@@ -854,7 +854,7 @@ public class NativeBroker extends DBBroker {
 
                 entry.read(collection);
 
-                collectionsCache.add(collection);
+                collectionsCache.put(collection);
             }
         }
     }
@@ -901,7 +901,7 @@ public class NativeBroker extends DBBroker {
 
     private @Nullable Collection getCollectionForOpen(final CollectionCache collectionsCache, final XmldbURI uri) throws PermissionDeniedException {
         synchronized (collectionsCache) {
-            Collection collection = collectionsCache.get(uri);
+            Collection collection = collectionsCache.getIfPresent(uri);
             if (collection == null) {
                 final Lock lock = collectionsDb.getLock();
                 try {
@@ -916,7 +916,7 @@ public class NativeBroker extends DBBroker {
                     // NOTE: MutableCollection.load via. Collection#deserialize will perform the Permission.EXECUTE security check
                     collection = MutableCollection.load(this, uri, is);
 
-                    collectionsCache.add(collection);
+                    collectionsCache.put(collection);
 
                     //TODO : rethrow exceptions ? -pb
                 } catch(final UnsupportedEncodingException e) {
@@ -936,7 +936,7 @@ public class NativeBroker extends DBBroker {
                     LOG.error("The collection received from the cache is not the requested: " + uri +
                             "; received: " + collection.getURI());
                 }
-                collectionsCache.add(collection);
+                collectionsCache.put(collection);
 
                 if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE)) {
                     throw new PermissionDeniedException("Permission denied to open collection: " + collection.getURI().toString() + " by " + getCurrentSubject().getName());
@@ -1308,7 +1308,7 @@ public class NativeBroker extends DBBroker {
             final Lock lock = collectionsDb.getLock();
             try {
                 lock.acquire(LockMode.WRITE_LOCK);
-                collectionsCache.remove(collection);
+                collectionsCache.invalidate(collection.getURI());
                 final Value key = new CollectionStore.CollectionKey(srcURI.toString());
                 collectionsDb.remove(transaction, key);
                 //TODO : resolve URIs destination.getURI().resolve(newName)
@@ -1490,7 +1490,7 @@ public class NativeBroker extends DBBroker {
                         //... from the disk
                         collectionsDb.remove(transaction, key);
                         //... from the cache
-                        collectionsCache.remove(collection);
+                        collectionsCache.invalidate(collection.getURI());
                         //and free its id for any further use
                         collectionsDb.freeCollectionId(collection.getId());
                     } else {
@@ -1607,7 +1607,7 @@ public class NativeBroker extends DBBroker {
             throw new IOException(DATABASE_IS_READ_ONLY);
         }
 
-        pool.getCollectionsCache().add(collection);
+        pool.getCollectionsCache().put(collection);
 
         final Lock lock = collectionsDb.getLock();
         try {
