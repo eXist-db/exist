@@ -19,6 +19,8 @@
  */
 package org.exist.storage.journal;
 
+import net.jcip.annotations.GuardedBy;
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -38,19 +40,20 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Journal Manager just adds some light-weight
  * wrapping around {@link Journal}
  */
+@ThreadSafe
 public class JournalManager implements BrokerPoolService {
     private static final Logger LOG = LogManager.getLogger(JournalManager.class);
 
-    private Path journalDir;
-    private boolean groupCommits;
-    private Journal journal;
-    private boolean journallingDisabled = false;
-    private boolean initialized = false;
+    @GuardedBy("this") private Path journalDir;
+    @GuardedBy("this") private boolean groupCommits;
+    @GuardedBy("this") private Journal journal;
+    @GuardedBy("this") private boolean journallingDisabled = false;
+    @GuardedBy("this") private boolean initialized = false;
 
     private final List<JournalListener> journalListeners = new CopyOnWriteArrayList<>();
 
     @Override
-    public void configure(final Configuration configuration) {
+    public synchronized void configure(final Configuration configuration) {
         this.journalDir = (Path) Optional.ofNullable(configuration.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR))
                 .orElse(configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR));
         this.groupCommits = configuration.getProperty(BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT, false);
@@ -60,8 +63,8 @@ public class JournalManager implements BrokerPoolService {
     }
 
     @Override
-    public void prepare(final BrokerPool pool) throws BrokerPoolServiceException {
-        if(!journallingDisabled) {
+    public synchronized void prepare(final BrokerPool pool) throws BrokerPoolServiceException {
+        if (!journallingDisabled) {
             try {
                 this.journal = new Journal(pool, journalDir);
                 this.journal.initialize();
@@ -72,7 +75,7 @@ public class JournalManager implements BrokerPoolService {
         }
     }
 
-    public void disableJournalling() {
+    public synchronized void disableJournalling() {
         this.journallingDisabled = true;
     }
 
@@ -84,7 +87,7 @@ public class JournalManager implements BrokerPoolService {
      * @param loggable The entry to write in the journal
      */
     public synchronized void journal(final Loggable loggable) throws JournalException {
-        if(!journallingDisabled) {
+        if (!journallingDisabled) {
             journal.writeToLog(loggable);
         }
     }
@@ -98,7 +101,7 @@ public class JournalManager implements BrokerPoolService {
      * @param loggable The entry to write in the journalGroup
      */
     public synchronized void journalGroup(final Loggable loggable) throws JournalException {
-        if(!journallingDisabled) {
+        if (!journallingDisabled) {
             journal.writeToLog(loggable);
             if (!groupCommits) {
                 journal.flushToLog(true);
@@ -123,7 +126,7 @@ public class JournalManager implements BrokerPoolService {
      * @throws JournalException
      */
     public synchronized void checkpoint(final long transactionId, final boolean switchFiles) throws JournalException {
-        if(!journallingDisabled) {
+        if (!journallingDisabled) {
             journal.checkpoint(transactionId, switchFiles);
 
             // notify each listener, de-registering those who want no further events
@@ -162,7 +165,7 @@ public class JournalManager implements BrokerPoolService {
     /**
      * @see Journal#lastWrittenLsn()
      */
-    public Lsn lastWrittenLsn() {
+    public synchronized Lsn lastWrittenLsn() {
         return journal.lastWrittenLsn();
     }
 
