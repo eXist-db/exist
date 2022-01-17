@@ -24,7 +24,12 @@ package org.exist.storage.journal;
 import edu.emory.mathcs.backport.java.util.Arrays;
 import org.easymock.Capture;
 import org.easymock.CaptureType;
+import org.exist.EXistException;
+import org.exist.scheduler.Scheduler;
+import org.exist.storage.BrokerPool;
+import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
+import org.exist.util.ReadOnlyException;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -267,6 +272,141 @@ public class JournalTest {
 
         // verify the mocks
         verify(mockSeekableByteChannel);
+    }
+
+    @Test
+    public void switchFiles() throws EXistException, IOException, ReadOnlyException, InterruptedException {
+        final BrokerPool mockBrokerPool = mock(BrokerPool.class);
+        final Configuration mockConfiguration = mock(Configuration.class);
+        final Scheduler mockScheduler = createNiceMock(Scheduler.class);
+        expect(mockBrokerPool.getConfiguration()).andReturn(mockConfiguration);
+        expect(mockConfiguration.getProperty(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT, Journal.DEFAULT_SYNC_ON_COMMIT)).andReturn(Journal.DEFAULT_SYNC_ON_COMMIT);
+        expect(mockConfiguration.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR)).andReturn(null);
+        expect(mockConfiguration.getProperty(Journal.PROPERTY_RECOVERY_SIZE_MIN, Journal.DEFAULT_MIN_SIZE)).andReturn(Journal.DEFAULT_MIN_SIZE);
+        expect(mockConfiguration.getProperty(Journal.PROPERTY_RECOVERY_SIZE_LIMIT, Journal.DEFAULT_MAX_SIZE)).andReturn(Journal.DEFAULT_MAX_SIZE);
+        expect(mockBrokerPool.getScheduler()).andReturn(mockScheduler);
+
+        replay(mockBrokerPool, mockConfiguration);
+
+        final Path tempJournalDir = TEMPORARY_FOLDER.newFolder().toPath();
+        Files.createDirectories(tempJournalDir);
+        assertTrue(Files.exists(tempJournalDir));
+
+        final Journal journal = new Journal(mockBrokerPool, tempJournalDir);
+        journal.initialize();
+
+        assertEquals(-1, journal.getCurrentJournalFileNumber());  // journal is not yet operating!
+
+        // start the journal by calling switch files
+        journal.switchFiles();
+
+        int currentJournalFileNumber = journal.getCurrentJournalFileNumber();
+        assertEquals(0, currentJournalFileNumber);
+        final Path journalFile0 = journal.getFile(currentJournalFileNumber);
+        assertNotNull(journalFile0);
+        assertTrue(Files.exists(journalFile0));
+
+        // advance to a new journal by calling switch files
+        journal.switchFiles();
+        currentJournalFileNumber = journal.getCurrentJournalFileNumber();
+        assertEquals(1, currentJournalFileNumber);
+        final Path journalFile1 = journal.getFile(currentJournalFileNumber);
+        assertNotNull(journalFile1);
+        assertNotEquals(journalFile0.toAbsolutePath().toString(), journalFile1.toAbsolutePath().toString());
+        assertTrue(Files.exists(journalFile1));
+
+        verify(mockBrokerPool, mockConfiguration);
+    }
+
+    @Test
+    public void switchFilesBacksUpOldFileFirst() throws EXistException, IOException, ReadOnlyException {
+        final BrokerPool mockBrokerPool = mock(BrokerPool.class);
+        final Configuration mockConfiguration = mock(Configuration.class);
+        final Scheduler mockScheduler = createNiceMock(Scheduler.class);
+        expect(mockBrokerPool.getConfiguration()).andReturn(mockConfiguration);
+        expect(mockConfiguration.getProperty(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT, Journal.DEFAULT_SYNC_ON_COMMIT)).andReturn(Journal.DEFAULT_SYNC_ON_COMMIT);
+        expect(mockConfiguration.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR)).andReturn(null);
+        expect(mockConfiguration.getProperty(Journal.PROPERTY_RECOVERY_SIZE_MIN, Journal.DEFAULT_MIN_SIZE)).andReturn(Journal.DEFAULT_MIN_SIZE);
+        expect(mockConfiguration.getProperty(Journal.PROPERTY_RECOVERY_SIZE_LIMIT, Journal.DEFAULT_MAX_SIZE)).andReturn(Journal.DEFAULT_MAX_SIZE);
+        expect(mockBrokerPool.getScheduler()).andReturn(mockScheduler);
+
+        replay(mockBrokerPool, mockConfiguration);
+
+        final Path tempJournalDir = TEMPORARY_FOLDER.newFolder().toPath();
+        Files.createDirectories(tempJournalDir);
+        assertTrue(Files.exists(tempJournalDir));
+
+        final Journal journal = new Journal(mockBrokerPool, tempJournalDir);
+        journal.initialize();
+
+        assertEquals(-1, journal.getCurrentJournalFileNumber());  // journal is not yet operating!
+
+        // create an existing (old) journal file first
+        final Path existingJournalFile = Files.createFile(tempJournalDir.resolve(Journal.getFileName(0)));
+        assertTrue(Files.exists(existingJournalFile));
+
+        // start the journal by calling switch files
+        journal.switchFiles();
+
+        int currentJournalFileNumber = journal.getCurrentJournalFileNumber();
+        assertEquals(0, currentJournalFileNumber);
+        final Path journalFile0 = journal.getFile(currentJournalFileNumber);
+        assertNotNull(journalFile0);
+        assertTrue(Files.exists(journalFile0));
+
+        // check that the existingJournalFile was moved to a backup
+        assertTrue(Files.exists(existingJournalFile.resolveSibling(FileUtils.fileName(existingJournalFile) + Journal.BAK_FILE_SUFFIX)));
+
+        verify(mockBrokerPool, mockConfiguration);
+    }
+
+    @Test
+    public void switchFilesWrapsCurrentJournalFileNumberAround() throws EXistException, IOException, ReadOnlyException {
+        final BrokerPool mockBrokerPool = mock(BrokerPool.class);
+        final Configuration mockConfiguration = mock(Configuration.class);
+        final Scheduler mockScheduler = createNiceMock(Scheduler.class);
+        expect(mockBrokerPool.getConfiguration()).andReturn(mockConfiguration);
+        expect(mockConfiguration.getProperty(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT, Journal.DEFAULT_SYNC_ON_COMMIT)).andReturn(Journal.DEFAULT_SYNC_ON_COMMIT);
+        expect(mockConfiguration.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR)).andReturn(null);
+        expect(mockConfiguration.getProperty(Journal.PROPERTY_RECOVERY_SIZE_MIN, Journal.DEFAULT_MIN_SIZE)).andReturn(Journal.DEFAULT_MIN_SIZE);
+        expect(mockConfiguration.getProperty(Journal.PROPERTY_RECOVERY_SIZE_LIMIT, Journal.DEFAULT_MAX_SIZE)).andReturn(Journal.DEFAULT_MAX_SIZE);
+        expect(mockBrokerPool.getScheduler()).andReturn(mockScheduler);
+
+        replay(mockBrokerPool, mockConfiguration);
+
+        final Path tempJournalDir = TEMPORARY_FOLDER.newFolder().toPath();
+        Files.createDirectories(tempJournalDir);
+        assertTrue(Files.exists(tempJournalDir));
+
+        final Journal journal = new Journal(mockBrokerPool, tempJournalDir);
+        journal.initialize();
+
+        assertEquals(-1, journal.getCurrentJournalFileNumber());  // journal is not yet operating!
+
+        // set the current journal file number to one less than the maximum
+        journal.setCurrentJournalFileNumber(Short.MAX_VALUE - 1);
+        int currentJournalFileNumber = journal.getCurrentJournalFileNumber();
+        assertEquals(Short.MAX_VALUE - 1, currentJournalFileNumber);  // journal is not yet operating!
+
+        // start the journal by calling switch files
+        journal.switchFiles();
+
+        currentJournalFileNumber = journal.getCurrentJournalFileNumber();
+        assertEquals(Short.MAX_VALUE, currentJournalFileNumber);        // we should now be at the maximum
+        final Path journalFileMax = journal.getFile(currentJournalFileNumber);
+        assertNotNull(journalFileMax);
+        assertTrue(Files.exists(journalFileMax));
+
+        // advance to a new journal by calling switch files, this should cause the journal file number to wrap around
+        journal.switchFiles();
+        currentJournalFileNumber = journal.getCurrentJournalFileNumber();
+        assertEquals(0, currentJournalFileNumber);  // should be back at the start of the range for journal file numbers
+        final Path journalFile0 = journal.getFile(currentJournalFileNumber);
+        assertNotNull(journalFile0);
+        assertNotEquals(journalFileMax.toAbsolutePath().toString(), journalFile0.toAbsolutePath().toString());
+        assertTrue(Files.exists(journalFile0));
+
+        verify(mockBrokerPool, mockConfiguration);
     }
 
     private static Path createTempDirWithFiles(final List<String> fileNames) throws IOException {
