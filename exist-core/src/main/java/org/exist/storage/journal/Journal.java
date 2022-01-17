@@ -517,14 +517,33 @@ public final class Journal implements Closeable {
     }
 
     /**
+     * Get the next Journal File Number.
+     *
+     * The number will always be in the range 0 to 32767 (inclusive).
+     * Once 32767 is reached, we begin again at 0.
+     *
+     * @param currentJournalFileNumber the current journal file number
+     *
+     * @return the next journal file number.
+     */
+    static int getNextJournalFileNumber(final int currentJournalFileNumber) {
+        if (currentJournalFileNumber == Short.MAX_VALUE) {
+            // wrap-around to zero once we hit the ceiling
+            return 0;
+        } else {
+            return currentJournalFileNumber + 1;
+        }
+    }
+
+    /**
      * Create a new journal with a larger file number
      * than the previous file.
      *
      * @throws LogException if the journal files could not be switched
      */
     public void switchFiles() throws LogException {
-        ++currentJournalFileNumber;
-        final String newJournalFileName = getFileName(currentFile);
+        final int newJournalFileNumber = getNextJournalFileNumber(currentJournalFileNumber);
+        final String newJournalFileName = getFileName(newJournalFileNumber);
         final Path newJournalFile = dir.resolve(newJournalFileName);
 
         /**
@@ -559,6 +578,7 @@ public final class Journal implements Closeable {
                 channel = (FileChannel) Files.newByteChannel(newJournalFile, CREATE_NEW, WRITE);
                 writeJournalHeader(channel);
                 initialised = true;
+                currentJournalFileNumber = newJournalFileNumber;
             } catch (final IOException e) {
                 throw new LogException("Failed to open new journal: " + newJournalFile.toAbsolutePath().toString(), e);
             }
