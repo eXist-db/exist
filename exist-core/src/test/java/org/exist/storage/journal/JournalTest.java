@@ -40,6 +40,7 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -176,6 +177,8 @@ public class JournalTest {
         input = Arrays.asList(new String[]{ "0000000001.log", "0000000002.log", "000000000a.log" });
         mockJournalDir = createTempDirWithFiles(input);
         actual = Journal.getFiles(mockJournalDir).map(FileUtils::fileName).collect(Collectors.toList());
+        Collections.sort(input);
+        Collections.sort(actual);
         assertEquals(input, actual);
 
         input = Arrays.asList(new String[]{ "0000000001.log", "0000000001.log" + Journal.BAK_FILE_SUFFIX, "0000000001_index.log", "journal.lck" });
