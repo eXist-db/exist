@@ -34,8 +34,8 @@
             </Item>
           </Array>
         </Arg>
-        <Set name="host"><Property name="jetty.http.host" deprecated="jetty.host" /></Set>
-        <Set name="port"><Property name="jetty.http.port" deprecated="jetty.port"><Default><SystemProperty name="jetty.port" default="8088"/></Default></Property></Set>
+        <Set name="host"><Property name="jetty.http.host" deprecated="jetty.host"><Default><SystemProperty name="jetty.http.host" deprecated="jetty.host"/></Default></Property></Set>
+        <Set name="port"><Property name="jetty.http.port" deprecated="jetty.port"><Default><SystemProperty name="jetty.http.port" deprecated="jetty.port" default="8088"/></Default></Property></Set>
         <Set name="idleTimeout"><Property name="jetty.http.idleTimeout" deprecated="http.timeout" default="30000"/></Set>
         <Set name="acceptorPriorityDelta"><Property name="jetty.http.acceptorPriorityDelta" deprecated="http.acceptorPriorityDelta" default="0"/></Set>
         <Set name="acceptQueueSize"><Property name="jetty.http.acceptQueueSize" deprecated="http.acceptQueueSize" default="0"/></Set>
