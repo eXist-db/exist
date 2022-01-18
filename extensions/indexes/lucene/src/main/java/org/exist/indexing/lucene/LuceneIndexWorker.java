@@ -37,7 +37,10 @@ import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyReader;
 import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.*;
-import org.apache.lucene.util.*;
+import org.apache.lucene.util.Bits;
+import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.BytesRefBuilder;
+import org.apache.lucene.util.NumericUtils;
 import org.exist.collections.Collection;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
@@ -59,9 +62,13 @@ import org.exist.util.LockException;
 import org.exist.util.Occurrences;
 import org.exist.util.pool.NodePool;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.*;
+import org.exist.xquery.Expression;
+import org.exist.xquery.QueryRewriter;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.lucene.QueryOptions;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.NodeValue;
 import org.w3c.dom.*;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -856,13 +863,16 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     public @Nullable BytesRef getBinaryField(final int docId, final String field) throws IOException {
         return index.withReader(reader -> {
-            List<AtomicReaderContext> leaves = reader.leaves();
-            for (AtomicReaderContext context : leaves) {
-                BinaryDocValues values = context.reader().getBinaryDocValues(field);
-                if (values != null && docId < context.reader().numDocs()) {
-                    BytesRef bytes = values.get(docId);
-                    if (bytes != null && bytes.length > 0) {
-                        return bytes;
+            final List<AtomicReaderContext> leaves = reader.leaves();
+            for (final AtomicReaderContext context : leaves) {
+                final int id = docId - context.docBase;
+                if (id >= 0 && id < context.reader().numDocs()) {
+                    final BinaryDocValues values = context.reader().getBinaryDocValues(field);
+                    if (values != null) {
+                        final BytesRef bytes = values.get(id);
+                        if (bytes != null && bytes.length > 0) {
+                            return bytes;
+                        }
                     }
                 }
             }
