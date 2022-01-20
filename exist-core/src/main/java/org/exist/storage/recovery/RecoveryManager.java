@@ -27,7 +27,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -87,7 +86,7 @@ public class RecoveryManager {
             throw new LogException("Unable to find journal files in data dir", ioe);
         }
         // find the last log file in the data directory
-		final int lastNum = Journal.findLastFile(files.stream());
+		final short lastNum = Journal.findLastFile(files.stream());
 		if (-1 < lastNum) {
             // load the last log file
 			final Path last = journalRecovery.getFile.apply(lastNum);
@@ -204,7 +203,6 @@ public class RecoveryManager {
 		}
         journalRecovery.setCurrentFileNum.accept(lastNum);
         journalRecovery.switchFiles.get();
-        journalRecovery.clearBackupFiles.get();
 
         return recoveryRun;
 	}
@@ -212,22 +210,19 @@ public class RecoveryManager {
     public class JournalRecoveryAccessor {
         final Consumer<Boolean> setInRecovery;
         final SupplierE<Stream<Path>, IOException> getFiles;
-        final Function<Integer, Path> getFile;
-        final Consumer<Integer> setCurrentFileNum;
+        final Function<Short, Path> getFile;
+        final Consumer<Short> setCurrentFileNum;
         final SupplierE<Void, LogException> switchFiles;
-        final Supplier<Void> clearBackupFiles;
 
 
         public JournalRecoveryAccessor(final Consumer<Boolean> setInRecovery,
-                final SupplierE<Stream<Path>, IOException> getFiles, final Function<Integer, Path> getFile,
-                final Consumer<Integer> setCurrentFileNum, final SupplierE<Void, LogException> switchFiles,
-                final Supplier<Void> clearBackupFiles) {
+                final SupplierE<Stream<Path>, IOException> getFiles, final Function<Short, Path> getFile,
+                final Consumer<Short> setCurrentFileNum, final SupplierE<Void, LogException> switchFiles) {
             this.setInRecovery = setInRecovery;
             this.getFiles = getFiles;
             this.getFile = getFile;
             this.setCurrentFileNum = setCurrentFileNum;
             this.switchFiles = switchFiles;
-            this.clearBackupFiles = clearBackupFiles;
         }
     }
 

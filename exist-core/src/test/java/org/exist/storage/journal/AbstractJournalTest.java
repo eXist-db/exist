@@ -1443,7 +1443,7 @@ public abstract class AbstractJournalTest<T> {
         final Path journalDir = (Path) Optional.ofNullable(configuration.getProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR))
                 .orElse(configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR));
 
-        final int lastNum;
+        final short lastNum;
         try (final Stream<Path> files = Files.list(journalDir).filter(f -> f.getFileName().toString().endsWith("." + Journal.LOG_FILE_SUFFIX))) {
             lastNum = Journal.findLastFile(files);
         }
