@@ -995,8 +995,9 @@ public class NativeBroker extends DBBroker {
             c = getCollectionForOpen(collectionsCache, parentUri);
 
             if (c == null) {
-                LOG.error("Parent collection {} was null for collection {} ", parentUri, collection.getURI());
-                throw new IllegalStateException();
+                final String message = "Parent collection: " + parentUri + " was null for collection: " + collection.getURI();
+                LOG.error(message);
+                throw new IllegalStateException(message);
             }
 
             parentUri = c.getParentURI();
@@ -1006,7 +1007,7 @@ public class NativeBroker extends DBBroker {
     /**
      * Checks all permissions in the tree to ensure that a copy operation will succeed
      */
-    protected void checkPermissionsForCopy(final Collection src, final XmldbURI destUri, final XmldbURI newName) throws PermissionDeniedException, LockException {
+    protected void checkPermissionsForCopy(final Collection src, final XmldbURI destUri, final XmldbURI newName) throws IllegalStateException, PermissionDeniedException, LockException {
 
         if(!src.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " by " + getCurrentSubject().getName());
@@ -1016,7 +1017,7 @@ public class NativeBroker extends DBBroker {
         final XmldbURI newDestUri = destUri.append(newName);
         final Collection newDest = getCollection(newDestUri);
 
-        if(dest != null) {
+        if (dest != null) {
             //if(!dest.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.WRITE | Permission.READ)) {
             //TODO do we really need WRITE permission on the dest?
             if(!dest.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.WRITE)) {
@@ -1034,6 +1035,13 @@ public class NativeBroker extends DBBroker {
                     throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " to " + newDest.getURI() + " by " + getCurrentSubject().getName());
                 }
                 //}
+            }
+        } else {
+            if (newDest != null) {
+                // this is an error state, i.e. we have a sub-collection newDest, but not its parent collection - we should throw an error
+                final String message = "Parent collection: " + destUri + " was null for collection: " + newDestUri.getURI();
+                LOG.error(message);
+                throw new IllegalStateException(message);
             }
         }
 
