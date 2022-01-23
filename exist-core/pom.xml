@@ -676,6 +676,7 @@
                                 <exclude>src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java</exclude>
                                 <exclude>src/test/java/org/exist/storage/txn/TxnTest.java</exclude>
                                 <exclude>src/main/java/org/exist/test/DiffMatcher.java</exclude>
+                                <exclude>src/test/java/org/exist/test/Util.java</exclude>
                                 <exclude>src/main/java/org/exist/util/CollectionOfArrayIterator.java</exclude>
                                 <exclude>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</exclude>
                                 <exclude>src/main/java/org/exist/util/IPUtil.java</exclude>
@@ -818,6 +819,7 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java</include>
                                 <include>src/test/java/org/exist/storage/txn/TxnTest.java</include>
                                 <include>src/main/java/org/exist/test/DiffMatcher.java</include>
+                                <include>src/test/java/org/exist/test/Util.java</include>
                                 <include>src/main/java/org/exist/util/CollectionOfArrayIterator.java</include>
                                 <include>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</include>
                                 <include>src/main/java/org/exist/util/IPUtil.java</include>

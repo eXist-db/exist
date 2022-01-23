@@ -23,14 +23,13 @@ package org.exist.xquery;
 
 import java.util.Arrays;
 import java.util.List;
+
+import org.exist.Namespaces;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.xquery.util.Error;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * Represents a call to a user-defined function 
@@ -42,6 +41,8 @@ import org.exist.xquery.value.Type;
  * @author wolf
  */
 public class FunctionCall extends Function {
+
+    private static final QName DEFERRED_FORWARD_REFERENCE_NAME = new QName("forward-reference", Namespaces.EXIST_NS);
 
     protected UserDefinedFunction functionDef;
     protected Expression expression;
@@ -56,10 +57,20 @@ public class FunctionCall extends Function {
     protected VariableReference varDeps[];
 
     public FunctionCall(final XQueryContext context, final QName name, final List<Expression> arguments) {
-        super(context);
-        // TODO(AR) can we calculate a mySignature here?
+        super(context, signatureForForwardReference(name, arguments));
         this.name = name;
         this.arguments = arguments;
+    }
+
+    private static FunctionSignature signatureForForwardReference(final QName name, final List<Expression> arguments) {
+        final SequenceType functionSignatureArgs[] = new SequenceType[arguments.size() + 1];
+        functionSignatureArgs[0] = new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "forward-reference: " + name.getStringValue());
+        for (int i = 0; i < arguments.size(); i++) {
+            final Expression argument = arguments.get(i);
+            functionSignatureArgs[1 + i] = new SequenceType(argument.returnsType(), argument.getCardinality());
+        }
+        final FunctionReturnSequenceType functionReturnSequenceType = new FunctionParameterSequenceType("Return type is unknown for a forward-reference until it is evaluated");
+        return new FunctionSignature(DEFERRED_FORWARD_REFERENCE_NAME, functionSignatureArgs, functionReturnSequenceType);
     }
 	
     public FunctionCall(final XQueryContext context, final UserDefinedFunction functionDef) {
@@ -102,31 +113,33 @@ public class FunctionCall extends Function {
         return functionDef;
     }
         
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Function#analyze(org.exist.xquery.AnalyzeContextInfo)
-	 */
-	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+	@Override
+	public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
 		//updateFunction();
-         final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
-         newContextInfo.setParent(this);
-         newContextInfo.removeFlag(IN_NODE_CONSTRUCTOR);
-         super.analyze(newContextInfo);
-		if (context.tailRecursiveCall(functionDef.getSignature())) {
-			setRecursive(true);
-		}
-		context.functionStart(functionDef.getSignature());
-		try {
-			expression.analyze(newContextInfo);
-		} finally {
-			context.functionEnd();
-		}
 
-        varDeps = new VariableReference[getArgumentCount()];
-        for(int i = 0; i < getArgumentCount(); i++) {
-            final Expression arg = getArgument(i);
-            final VariableReference varRef = BasicExpressionVisitor.findVariableRef(arg);
-            if(varRef != null) {
-                varDeps[i] = varRef;
+        // check that FunctionCall#resolveForwardReference(UserDefinedFunction) has been called first!
+        if (functionDef != null) {
+            final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+            newContextInfo.setParent(this);
+            newContextInfo.removeFlag(IN_NODE_CONSTRUCTOR);
+            super.analyze(newContextInfo);
+            if (context.tailRecursiveCall(functionDef.getSignature())) {
+                setRecursive(true);
+            }
+            context.functionStart(functionDef.getSignature());
+            try {
+                expression.analyze(newContextInfo);
+            } finally {
+                context.functionEnd();
+            }
+
+            varDeps = new VariableReference[getArgumentCount()];
+            for (int i = 0; i < getArgumentCount(); i++) {
+                final Expression arg = getArgument(i);
+                final VariableReference varRef = BasicExpressionVisitor.findVariableRef(arg);
+                if (varRef != null) {
+                    varDeps[i] = varRef;
+                }
             }
         }
     }
@@ -431,5 +444,36 @@ public class FunctionCall extends Function {
     
     public boolean isRecursive(){
     	return recursive;
+    }
+
+    @Override
+    public String toString() {
+        // check that FunctionCall#resolveForwardReference(UserDefinedFunction) has been called first!
+        if (functionDef != null) {
+            return super.toString();
+
+        } else {
+            final StringBuilder result = new StringBuilder();
+            result.append(DEFERRED_FORWARD_REFERENCE_NAME);
+            result.append('(');
+
+            if (name != null) {
+                result.append(name);
+            }
+
+            if (arguments != null) {
+                for (final Expression step : arguments) {
+                    result.append(", ?");
+                }
+            } else {
+                for (final Expression step : steps) {
+                    result.append(", ");
+                    result.append(step.toString());
+                }
+            }
+
+            result.append(')');
+            return result.toString();
+        }
     }
 }

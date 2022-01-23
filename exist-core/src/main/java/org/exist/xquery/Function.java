@@ -93,11 +93,6 @@ public abstract class Function extends PathExpr {
         super(context);
         this.mySignature = signature;
     }
-
-    protected Function(final XQueryContext context) {
-        super(context);
-    }
-
     /**
      * Returns the module to which this function belongs.
      *
@@ -408,17 +403,19 @@ public abstract class Function extends PathExpr {
         for (int i = 0; i < getArgumentCount(); i++) {
             final Expression arg = getArgument(i);
 
-            // call analyze for each argument
-            final AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
-            arg.analyze(argContextInfo);
+            if (arg != null) {
+                // call analyze for each argument
+                final AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
+                arg.analyze(argContextInfo);
 
-            if (!argumentsChecked) {
-                // statically check the argument
-                SequenceType argType = null;
-                if (argumentTypes != null && i < argumentTypes.length) {
-                    argType = argumentTypes[i];
+                if (!argumentsChecked) {
+                    // statically check the argument
+                    SequenceType argType = null;
+                    if (argumentTypes != null && i < argumentTypes.length) {
+                        argType = argumentTypes[i];
+                    }
+                    checkArgument(arg, argType, argContextInfo, i + 1);
                 }
-                checkArgument(arg, argType, argContextInfo, i + 1);
             }
         }
         argumentsChecked = true;
