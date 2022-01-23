@@ -468,6 +468,9 @@ public abstract class Function extends PathExpr {
      * @return name of this function
      */
     public QName getName() {
+        if (mySignature == null) {
+            return null;
+        }
         return mySignature.getName();
     }
 
@@ -516,7 +519,8 @@ public abstract class Function extends PathExpr {
     @Override
     public String toString() {
         final StringBuilder result = new StringBuilder();
-        result.append(getName());
+        final String name = getName() != null ? getName().getStringValue() : "<UNKNOWN>";
+        result.append(name);
         result.append('(');
         boolean moreThanOne = false;
         for (final Expression step : steps) {
