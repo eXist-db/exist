@@ -115,21 +115,21 @@ public class FunReplace extends FunMatches {
 	    steps.clear();
         Expression arg = arguments.get(0);
         arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, arg,
-                new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));    
+                new Error(Error.FUNC_PARAM_CARDINALITY, "1", getSignature()));
         if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
             {arg = new Atomize(context, arg);}
         steps.add(arg);
         
         arg = arguments.get(1);
         arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
-                new Error(Error.FUNC_PARAM_CARDINALITY, "2", mySignature)); 
+                new Error(Error.FUNC_PARAM_CARDINALITY, "2", getSignature()));
         if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
             {arg = new Atomize(context, arg);}
         steps.add(arg);
         
         arg = arguments.get(2);
         arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
-                new Error(Error.FUNC_PARAM_CARDINALITY, "3", mySignature)); 
+                new Error(Error.FUNC_PARAM_CARDINALITY, "3", getSignature()));
         if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
             {arg = new Atomize(context, arg);}
         steps.add(arg);
@@ -137,7 +137,7 @@ public class FunReplace extends FunMatches {
         if (arguments.size() == 4) {
             arg = arguments.get(3);
             arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
-                    new Error(Error.FUNC_PARAM_CARDINALITY, "4", mySignature)); 
+                    new Error(Error.FUNC_PARAM_CARDINALITY, "4", getSignature()));
             if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
                 {arg = new Atomize(context, arg);}
             steps.add(arg);            

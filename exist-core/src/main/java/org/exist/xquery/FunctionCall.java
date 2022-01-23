@@ -55,29 +55,29 @@ public class FunctionCall extends Function {
 
     protected VariableReference varDeps[];
 
-    public FunctionCall(XQueryContext context, QName name, List<Expression> arguments) {
+    public FunctionCall(final XQueryContext context, final QName name, final List<Expression> arguments) {
         super(context);
+        // TODO(AR) can we calculate a mySignature here?
         this.name = name;
         this.arguments = arguments;
     }
 	
-    public FunctionCall(XQueryContext context, UserDefinedFunction functionDef) {
-        super(context);
+    public FunctionCall(final XQueryContext context, final UserDefinedFunction functionDef) {
+        super(context, functionDef.getSignature());
         setFunction(functionDef);
     }
     
-    public FunctionCall(FunctionCall other) {
-        super(other.getContext());
+    public FunctionCall(final FunctionCall other) {
+        super(other.getContext(), other.getSignature());
         this.name = other.name;
         this.recursive = other.recursive;
         this.functionDef = other.functionDef;
         this.expression = other.expression;
-        this.mySignature = other.mySignature;
     }
 
-    private void setFunction(UserDefinedFunction functionDef) {
+    private void setFunction(final UserDefinedFunction functionDef) {
         this.functionDef = (UserDefinedFunction) functionDef.clone();
-        this.mySignature = this.functionDef.getSignature();
+        setSignature(functionDef.getSignature());
         this.expression = this.functionDef;
         this.functionDef.setCaller(this);
         final SequenceType returnType = this.functionDef.getSignature().getReturnType();
@@ -348,7 +348,7 @@ public class FunctionCall extends Function {
         private final DocumentSet[] contextDocs;
 
         private DeferredFunctionCallImpl(FunctionCall call, Sequence contextSequence, Item contextItem, Sequence[] seq, DocumentSet[] contextDocs) {
-            super(call.mySignature);
+            super(call.getSignature());
             this.contextSequence = contextSequence;
             this.contextItem = contextItem;
             if (seq != null) {

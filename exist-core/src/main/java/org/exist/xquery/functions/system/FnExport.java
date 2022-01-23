@@ -114,7 +114,7 @@ public class FnExport extends BasicFunction {
 
         try {
             MemTreeBuilder builder = null;
-            if (NAME.equals(mySignature.getName())) {
+            if (NAME.equals(getName())) {
                 context.pushDocumentContext();
                 builder = context.getDocumentBuilder();
                 builder.startDocument();
@@ -138,7 +138,7 @@ public class FnExport extends BasicFunction {
             }
 
         } finally {
-            if (NAME.equals(mySignature.getName())) {
+            if (NAME.equals(getName())) {
                 context.popDocumentContext();
             }
         }

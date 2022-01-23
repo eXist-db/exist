@@ -56,7 +56,7 @@ public class FunReverse extends Function {
         contextId = contextInfo.getContextId();
         contextInfo.setParent(this);
 
-        final SequenceType[] argumentTypes = mySignature.getArgumentTypes();
+        final SequenceType[] argumentTypes = getSignature().getArgumentTypes();
         for (int i = 0; i < getArgumentCount(); i++) {
             final Expression arg = getArgument(i);
 

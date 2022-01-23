@@ -67,7 +67,7 @@ public abstract class Function extends PathExpr {
     /**
      * The signature of the function.
      */
-    protected FunctionSignature mySignature;
+    private FunctionSignature mySignature;
 
     /**
      * The parent expression from which this function is called.
@@ -478,6 +478,15 @@ public abstract class Function extends PathExpr {
      */
     public FunctionSignature getSignature() {
         return mySignature;
+    }
+
+    /**
+     * Set the signature of this function.
+     *
+     * @param functionSignature the signature of this function
+     */
+    protected void setSignature(final FunctionSignature functionSignature) {
+        this.mySignature = functionSignature;
     }
 
     public boolean isCalledAs(final String localName) {

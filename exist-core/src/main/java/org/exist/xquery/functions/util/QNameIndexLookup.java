@@ -106,18 +106,18 @@ public class QNameIndexLookup extends Function {
         // one of the arguments returns an empty sequence
         Expression arg = arguments.get(0);
         arg = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, arg,
-                new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));
+                new Error(Error.FUNC_PARAM_CARDINALITY, "1", getSignature()));
         steps.add(arg);
         
         arg = arguments.get(1);
         arg = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, arg,
-                new Error(Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
+                new Error(Error.FUNC_PARAM_CARDINALITY, "2", getSignature()));
         steps.add(arg);
 
         if (arguments.size() == 3) {
             arg = arguments.get(2);
             arg = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, arg,
-                    new Error(Error.FUNC_PARAM_CARDINALITY, "3", mySignature));
+                    new Error(Error.FUNC_PARAM_CARDINALITY, "3", getSignature()));
             steps.add(arg);
         }
     }
@@ -150,7 +150,7 @@ public class QNameIndexLookup extends Function {
             // wrong type: generate a diagnostic error
             throw new XPathException(this,
                     Messages.formatMessage(Error.FUNC_PARAM_TYPE, 
-                            new Object[] { "1", mySignature.toString(), null,
+                            new Object[] { "1", getSignature().toString(), null,
                             Type.getTypeName(Type.QNAME), Type.getTypeName(item.getType()) }
                     ));
         }

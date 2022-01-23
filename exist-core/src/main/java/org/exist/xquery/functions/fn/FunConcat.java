@@ -93,7 +93,7 @@ public class FunConcat extends Function {
         	if (!(argument instanceof Placeholder)) {
 	            argument = new DynamicCardinalityCheck(context,
 	                Cardinality.ZERO_OR_ONE, argument,
-	                new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));
+	                new Error(Error.FUNC_PARAM_CARDINALITY, "1", getSignature()));
 	            if (!Type.subTypeOf(argument.returnsType(), Type.ATOMIC))
 	                {argument = new Atomize(context, argument);}
         	}

@@ -161,21 +161,21 @@ public class FieldLookup extends Function implements Optimizable {
         steps.clear();
         Expression path = arguments.get(0);
         path = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, path,
-                new Error(Error.FUNC_PARAM_CARDINALITY, "1", mySignature));
+                new Error(Error.FUNC_PARAM_CARDINALITY, "1", getSignature()));
         steps.add(path);
 
         int j = 1;
         if (isCalledAs("field")) {
             Expression fields = arguments.get(1);
             fields = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, fields,
-                    new Error(Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
+                    new Error(Error.FUNC_PARAM_CARDINALITY, "2", getSignature()));
             steps.add(fields);
             j++;
         }
         for (int i = j; i < arguments.size(); i++) {
             Expression arg = arguments.get(i).simplify();
             arg = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, arg,
-                    new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "1", mySignature));
+                    new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "1", getSignature()));
             steps.add(arg);
         }
     }
