@@ -80,8 +80,6 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/range/src/test/xquery" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/sort/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/sort/src/test/xquery" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/spatial/src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/extensions/indexes/spatial/src/test/java" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/security/activedirectory/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/security/iprange/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/extensions/security/ldap/src/test/java" isTestSource="true" />
