@@ -22,12 +22,14 @@
 xquery version "3.1";
 
 module namespace readbinary="http://exist-db.org/testsuite/modules/file/read-binary";
-import module namespace helper="http://exist-db.org/xquery/test/util/helper" at "resource:util/helper.xqm";
-import module namespace fixtures="http://exist-db.org/xquery/test/util/fixtures" at "resource:util/fixtures.xqm";
 
-import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
+
 import module namespace file="http://exist-db.org/xquery/file";
 import module namespace util="http://exist-db.org/xquery/util";
+import module namespace helper="http://exist-db.org/xquery/test/util/helper" at "resource:util/helper.xqm";
+
+declare namespace test="http://exist-db.org/xquery/xqsuite";
+
 
 declare variable $readbinary:suite := "read-binary";
 
@@ -45,9 +47,11 @@ function readbinary:tear-down() as empty-sequence() {
 declare
     %test:assertEquals("SERVER_SECRET=123!")
 function readbinary:without-serialization() {
-    helper:get-test-directory($readbinary:suite)
-    => helper:setup-fs-extra()
-    => concat("/.env")
-    => file:read-binary()
-    => util:binary-to-string()
+    let $directory := helper:get-test-directory($readbinary:suite)
+    let $_ := helper:setup-fs-extra($directory)
+
+    return
+        concat($directory, "/.env")
+        => file:read-binary()
+        => util:binary-to-string()
 };

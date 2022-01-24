@@ -22,6 +22,8 @@
 xquery version "3.1";
 
 module namespace sync="http://exist-db.org/xquery/test/file/sync";
+
+
 import module namespace helper="http://exist-db.org/xquery/test/util/helper" at "resource:util/helper.xqm";
 import module namespace fixtures="http://exist-db.org/xquery/test/util/fixtures" at "resource:util/fixtures.xqm";
 
@@ -45,8 +47,11 @@ function sync:tear-down() {
 declare
     %test:assertTrue
 function sync:simple() {
-    helper:get-test-directory($sync:suite)
-    => helper:sync-with-options(())
+    file:sync(
+        $fixtures:collection,
+        helper:get-test-directory($sync:suite),
+        ()
+    )
     => helper:assert-sync-result(map {
         "updated": $fixtures:ALL-UPDATED,
         "deleted": (),
@@ -57,8 +62,11 @@ function sync:simple() {
 declare
     %test:assertTrue
 function sync:empty-options-map() {
-    helper:get-test-directory($sync:suite)
-    => helper:sync-with-options(map{})
+    file:sync(
+        $fixtures:collection,
+        helper:get-test-directory($sync:suite),
+        map{}
+    )
     => helper:assert-sync-result(map {
         "updated": $fixtures:ALL-UPDATED,
         "deleted": (),
@@ -69,8 +77,11 @@ function sync:empty-options-map() {
 declare
     %test:assertError
 function sync:deprecated-options() {
-    helper:get-test-directory($sync:suite)
-    => helper:sync-with-options($fixtures:mod-date)
+    file:sync(
+        $fixtures:collection,
+        helper:get-test-directory($sync:suite),
+        $fixtures:mod-date
+    )
     => helper:assert-sync-result(map {
         "updated": $fixtures:ALL-UPDATED,
         "deleted": (),
@@ -81,29 +92,41 @@ function sync:deprecated-options() {
 declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-1() {
-    helper:get-test-directory($sync:suite)
-    => helper:sync-with-options(xs:date("2012-12-21"))
+    file:sync(
+        $fixtures:collection,
+        helper:get-test-directory($sync:suite),
+        xs:date("2012-12-21")
+    )
 };
 
 declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-2() {
-    helper:get-test-directory($sync:suite)
-    => helper:sync-with-options("2012-12-21T10:12:21")
+    file:sync(
+        $fixtures:collection,
+        helper:get-test-directory($sync:suite),
+        "2012-12-21T10:12:21"
+    )
 };
 
 declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-3() {
-    helper:get-test-directory($sync:suite)
-    => helper:sync-with-options("lizard")
+    file:sync(
+        $fixtures:collection,
+        helper:get-test-directory($sync:suite),
+        "lizard"
+    )
 };
 
 declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-4() {
-    helper:get-test-directory($sync:suite)
-    => helper:sync-with-options("")
+    file:sync(
+        $fixtures:collection,
+        helper:get-test-directory($sync:suite),
+        ""
+    )
 };
 
 (:
@@ -113,173 +136,239 @@ function sync:bad-options-4() {
 declare
     %test:assertError
 function sync:bad-options-5() {
-    helper:get-test-directory($sync:suite)
-    => helper:sync-with-options((1, map{}, ""))
+    file:sync(
+        $fixtures:collection,
+        helper:get-test-directory($sync:suite),
+        (1, map{}, "")
+    )
 };
 
 declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-6() {
-    helper:get-test-directory($sync:suite)
-    => helper:sync-with-options(map{ "prune": "true" })
+    file:sync(
+        $fixtures:collection,
+        helper:get-test-directory($sync:suite),
+        map{ "prune": "true" }
+    )
 };
 
 declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-7() {
-    helper:get-test-directory($sync:suite)
-    => helper:sync-with-options(map{ "prune": "no" })
+    file:sync(
+        $fixtures:collection,
+        helper:get-test-directory($sync:suite),
+        map{ "prune": "no" }
+    )
 };
 
 declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-8() {
-    helper:get-test-directory($sync:suite)
-    => helper:sync-with-options(map{ "after": 1234325 })
+    file:sync(
+        $fixtures:collection,
+        helper:get-test-directory($sync:suite),
+        map{ "after": 1234325 }
+    )
 };
 
 declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-9() {
-    helper:get-test-directory($sync:suite)
-    => helper:sync-with-options(map{ "excludes": [] })
+    file:sync(
+        $fixtures:collection,
+        helper:get-test-directory($sync:suite),
+        map{ "excludes": [] }
+    )
 };
 
 declare
     %test:assertTrue
 function sync:do-not-prune() {
-    helper:get-test-directory($sync:suite)
-    => helper:setup-fs-extra()
-    => helper:sync-with-options(map{ "prune": false() })
-    => helper:assert-sync-result(map {
-        "updated": $fixtures:ALL-UPDATED,
-        "deleted": (),
-        "fs": $fixtures:ROOT-FS-EXTRA
-    })
+    let $directory := helper:get-test-directory($sync:suite)
+    let $_ := helper:setup-fs-extra($directory)
+
+    return
+        file:sync(
+            $fixtures:collection,
+            $directory,
+            map{ "prune": false() }
+        )
+        => helper:assert-sync-result(map {
+            "updated": $fixtures:ALL-UPDATED,
+            "deleted": (),
+            "fs": $fixtures:ROOT-FS-EXTRA
+        })
 };
 
 declare
     %test:assertTrue
 function sync:prune() {
-    helper:get-test-directory($sync:suite)
-    => helper:setup-fs-extra()
-    => helper:sync-with-options(map{ "prune": true() })
-    => helper:assert-sync-result(map {
-        "updated": $fixtures:ALL-UPDATED,
-        "deleted": ("test", "three.s", ".env"),
-        "fs": $fixtures:ROOT-FS
-    })
+    let $directory := helper:get-test-directory($sync:suite)
+    let $_ := helper:setup-fs-extra($directory)
+
+    return
+        file:sync(
+            $fixtures:collection,
+            $directory,
+            map{ "prune": true() }
+        )
+        => helper:assert-sync-result(map {
+            "updated": $fixtures:ALL-UPDATED,
+            "deleted": ("test", "three.s", ".env"),
+            "fs": $fixtures:ROOT-FS
+        })
 };
 
 declare
     %test:assertTrue
 function sync:prune-with-excludes-matching-none() {
-    helper:get-test-directory($sync:suite)
-    => helper:setup-fs-extra()
-    => helper:sync-with-options(map{ "prune": true(), "excludes": "*.txt" })
-    => helper:assert-sync-result(map {
-        "updated": $fixtures:ALL-UPDATED,
-        "deleted": ("test", "three.s", ".env"),
-        "fs": $fixtures:ROOT-FS
-    })
+    let $directory := helper:get-test-directory($sync:suite)
+    let $_ := helper:setup-fs-extra($directory)
+
+    return
+        file:sync(
+            $fixtures:collection,
+            $directory,
+            map{ "prune": true(), "excludes": "*.txt" }
+        )
+        => helper:assert-sync-result(map {
+            "updated": $fixtures:ALL-UPDATED,
+            "deleted": ("test", "three.s", ".env"),
+            "fs": $fixtures:ROOT-FS
+        })
 };
 
 declare
     %test:assertTrue
 function sync:after() {
-    helper:get-test-directory($sync:suite)
-    => helper:setup-fs-extra()
-    => helper:sync-with-options(map{ "after": $fixtures:mod-date })
-    => helper:assert-sync-result(map {
-        "updated": (),
-        "deleted": (),
-        "fs": ($fixtures:EXTRA-DATA, "data") (: TODO: data should not be here! :)
-    })
+    let $directory := helper:get-test-directory($sync:suite)
+    let $_ := helper:setup-fs-extra($directory)
+
+    return
+        file:sync(
+            $fixtures:collection,
+            $directory,
+            map{ "after": $fixtures:mod-date }
+        )
+        => helper:assert-sync-result(map {
+            "updated": (),
+            "deleted": (),
+            "fs": ($fixtures:EXTRA-DATA, "data") (: TODO: data should not be here! :)
+        })
 };
 
 declare
     %test:assertTrue
 function sync:after-mod-date-2() {
-    helper:get-test-directory($sync:suite)
-    => helper:setup-fs-extra()
-    => helper:sync-with-options(map{ "after": $fixtures:mod-date-2 })
-    => helper:assert-sync-result(map {
-        "updated": (),
-        "deleted": (),
-        "fs": ($fixtures:EXTRA-DATA, "data") (: TODO: data should not be here! :)
-    })
+    let $directory := helper:get-test-directory($sync:suite)
+    let $_ := helper:setup-fs-extra($directory)
+
+    return
+        file:sync(
+            $fixtures:collection,
+            $directory,
+            map{ "after": $fixtures:mod-date-2 }
+        )
+        => helper:assert-sync-result(map {
+            "updated": (),
+            "deleted": (),
+            "fs": ($fixtures:EXTRA-DATA, "data") (: TODO: data should not be here! :)
+        })
 };
 
 declare
     %test:assertTrue
 function sync:after-with-excludes() {
-    helper:get-test-directory($sync:suite)
-    => helper:setup-fs-extra()
-    => helper:sync-with-options(map{ "after": $fixtures:mod-date, "excludes": ".env" })
-    => helper:assert-sync-result(map {
-        "updated": (),
-        "deleted": (),
-        "fs": ($fixtures:EXTRA-DATA, "data") (: TODO: data should not be here! :)
-    })
+    let $directory := helper:get-test-directory($sync:suite)
+    let $_ := helper:setup-fs-extra($directory)
+
+    return
+        file:sync(
+            $fixtures:collection,
+            $directory,
+            map{ "after": $fixtures:mod-date, "excludes": ".env" }
+        )
+        => helper:assert-sync-result(map {
+            "updated": (),
+            "deleted": (),
+            "fs": ($fixtures:EXTRA-DATA, "data") (: TODO: data should not be here! :)
+        })
 };
 
 declare
     %test:assertTrue
 function sync:prune-with-after-and-excludes() {
-    helper:get-test-directory($sync:suite)
-    => helper:setup-fs-extra()
-    => (function ($directory as xs:string) {
-        let $action := (
-            file:serialize-binary(
-                util:string-to-binary("1"),
-                $directory || "/excluded.xq"
-            ),
-            file:serialize-binary(
-                util:string-to-binary("1"),
-                $directory || "/pruned.xql"
-            ),
-            file:serialize-binary(
-                util:string-to-binary("oh oh"),
-                $directory || "/readme.md"
-            )
+    let $directory := helper:get-test-directory($sync:suite)
+    let $_ := helper:setup-fs-extra($directory)
+    let $_ := (
+        file:serialize-binary(
+            util:string-to-binary("1"),
+            $directory || "/excluded.xq"
+        ),
+        file:serialize-binary(
+            util:string-to-binary("1"),
+            $directory || "/pruned.xql"
+        ),
+        file:serialize-binary(
+            util:string-to-binary("oh oh"),
+            $directory || "/readme.md"
         )
-        return $directory
-    })()
-    => helper:sync-with-options(map{
-        "after": $fixtures:mod-date,
-        "excludes": "*.xq",
-        "prune": true()
-    })
-    => helper:assert-sync-result(map {
-        "updated": (),
-        "deleted": ("three.s", "test", ".env", "pruned.xql", "readme.md"),
-        "fs": ("excluded.xq", "data") (: TODO: data should not be here! :)
-    })
+    )
+
+    return
+        file:sync(
+            $fixtures:collection,
+            $directory,
+            map{
+                "after": $fixtures:mod-date,
+                "excludes": "*.xq",
+                "prune": true()
+            }
+        )
+        => helper:assert-sync-result(map {
+            "updated": (),
+            "deleted": ("three.s", "test", ".env", "pruned.xql", "readme.md"),
+            "fs": ("excluded.xq", "data") (: TODO: data should not be here! :)
+        })
 };
 
 declare
     %test:assertTrue
 function sync:prunes-a-directory() {
-    helper:get-test-directory($sync:suite)
-    => helper:setup-fs-extra()
-    => helper:sync-with-options(map{ "prune": true(), "excludes": ".*" })
-    => helper:assert-sync-result(map {
-        "updated": (),
-        "deleted": ("test", "three.s"),
-        "fs": ($fixtures:ROOT-FS, ".env")
-    })
+    let $directory := helper:get-test-directory($sync:suite)
+    let $_ := helper:setup-fs-extra($directory)
+
+    return
+        file:sync(
+            $fixtures:collection,
+            $directory,
+            map{ "prune": true(), "excludes": ".*" }
+        )
+        => helper:assert-sync-result(map {
+            "updated": (),
+            "deleted": ("test", "three.s"),
+            "fs": ($fixtures:ROOT-FS, ".env")
+        })
 };
 
 declare
     %test:pending
     %test:assertTrue
 function sync:prunes-a-file() {
-    helper:get-test-directory($sync:suite)
-    => helper:setup-fs-extra()
-    => helper:sync-with-options(map{ "prune": true(), "excludes": "test/*" })
-    => helper:assert-sync-result(map {
-        "updated": (),
-        "deleted": (".env"),
-        "fs": ($fixtures:ROOT-FS, "test")
-    })
+    let $directory := helper:get-test-directory($sync:suite)
+    let $_ := helper:setup-fs-extra($directory)
+
+    return
+        file:sync(
+            $fixtures:collection,
+            $directory,
+            map{ "prune": true(), "excludes": "test/*" }
+        )
+        => helper:assert-sync-result(map {
+            "updated": (),
+            "deleted": (".env"),
+            "fs": ($fixtures:ROOT-FS, "test")
+        })
 };

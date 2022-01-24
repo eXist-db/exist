@@ -39,7 +39,7 @@ declare variable $helper:error := xs:QName("helper:assert-sync-error");
         bin
 :)
 declare function helper:setup-db() as empty-sequence() {
-    (
+    let $_ := (
         xmldb:create-collection("/db", $fixtures:collection-name),
         helper:create-db-resource($fixtures:collection, "test-text.txt", $fixtures:TXT),
         helper:create-db-resource($fixtures:collection, "test-query.xq", $fixtures:XQY),
@@ -48,7 +48,7 @@ declare function helper:setup-db() as empty-sequence() {
         xmldb:create-collection($fixtures:collection, $fixtures:child-collection-name),
         helper:create-db-resource($fixtures:child-collection, "test-data.xml", $fixtures:XML)
     )
-    => helper:to-empty-sequence()
+    return ()
 };
 
 declare function helper:clear-db() {
@@ -56,29 +56,29 @@ declare function helper:clear-db() {
 };
 
 declare function helper:create-db-resource($collection as xs:string, $resource as xs:string, $content as item()) as empty-sequence() {
-    (
+    let $_ := (
         xmldb:store($collection, $resource, $content),
         xmldb:touch($collection, $resource, $fixtures:mod-date)
     )
-    => helper:to-empty-sequence()
+    return ()
 };
 
 declare function helper:modify-db-resource($collection as xs:string, $resource as xs:string) as empty-sequence() {
-    xmldb:touch($collection, $resource, $fixtures:mod-date-2)
-    => helper:to-empty-sequence()
+    let $_ := xmldb:touch($collection, $resource, $fixtures:mod-date-2)
+    return ()
 };
 
 declare function helper:clear-suite-fs ($suite as xs:string) as empty-sequence() {
-    helper:glue-path((
+    let $_ := helper:glue-path((
         util:system-property("java.io.tmpdir"),
         $suite
     ))
-    => helper:clear-fs()
+    return ()
 };
 
 declare function helper:clear-fs ($directory as xs:string) as empty-sequence() {
-    file:delete($directory)
-    => helper:to-empty-sequence()
+    let $_ := file:delete($directory)
+    return ()
 };
 
 declare function helper:get-test-directory ($suite as xs:string) as xs:string {
@@ -134,22 +134,22 @@ declare function helper:sync-with-options ($directory as xs:string, $options as 
 };
 
 declare function helper:assert-sync-result (
-    $result as element(file:sync),
+    $result as document-node(element(file:sync)),
     $expected as map(xs:string, xs:string*)
 ) as xs:boolean {
     helper:assert-permutation-of(
         $expected?updated,
-        helper:get-updated-from-sync-result($result)
+        helper:get-updated-from-sync-result($result/*)
     )
     and
     helper:assert-permutation-of(
         $expected?deleted,
-        helper:get-deleted-from-sync-result($result)
+        helper:get-deleted-from-sync-result($result/*)
     )
     and
     helper:assert-permutation-of(
         $expected?fs,
-        helper:get-dir-from-sync-result($result)
+        helper:get-dir-from-sync-result($result/*)
         => helper:list-files-and-directories()
     )
 };
@@ -188,5 +188,3 @@ declare function helper:maybe-remove-item-at-index($sequence as xs:anyAtomicType
     )
     else $sequence (: do nothing - will be handled later :)
 };
-
-declare function helper:to-empty-sequence($_ as item()*) as empty-sequence() {};
