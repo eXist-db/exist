@@ -29,6 +29,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
@@ -204,6 +205,157 @@ public class CopyCollectionTest {
         final long originalCol2Created = getCreated(USER2_COL2);
         copyCol(user2, PRESERVE, USER1_COL1, USER2_COL2);
         checkAttributes(USER2_COL2, USER2_NAME, USER2_NAME, USER1_COL1_MODE, equalTo(originalCol2Created));
+    }
+
+    /**
+     * Test copy collection /db/a/b/c/d/e/f/g/h/i/j/k to /db/z/y/x/w/v/u/k
+     */
+    @Test
+    public void copyDeep() throws EXistException, IOException, PermissionDeniedException, TriggerException, LockException {
+        final XmldbURI srcUri = XmldbURI.create("/db/a/b/c/d/e/f/g/h/i/j/k");
+        final XmldbURI destUri = XmldbURI.create("/db/z/y/x/w/v/u");
+        final XmldbURI newName = srcUri.lastSegment();
+
+        final BrokerPool pool = existWebServer.getBrokerPool();
+        final TransactionManager transact = pool.getTransactionManager();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = transact.beginTransaction()) {
+
+            try (final Collection src = broker.getOrCreateCollection(transaction, srcUri)) {
+                assertNotNull(src);
+                broker.saveCollection(transaction, src);
+            }
+
+            try (final Collection dst = broker.getOrCreateCollection(transaction, destUri)) {
+                assertNotNull(dst);
+                broker.saveCollection(transaction, dst);
+            }
+
+            try(final Collection src = broker.openCollection(srcUri, LockMode.WRITE_LOCK);
+                final Collection dst = broker.openCollection(destUri, LockMode.WRITE_LOCK)) {
+
+                broker.copyCollection(transaction, src, dst, newName);
+            }
+
+            transact.commit(transaction);
+        }
+
+        // check that the source still exists
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = transact.beginTransaction()) {
+
+            try (final Collection src = broker.openCollection(srcUri, LockMode.READ_LOCK)) {
+                assertNotNull(src);
+            }
+
+            transaction.commit();
+        }
+
+        // check that the new copy exists
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = transact.beginTransaction()) {
+
+            final XmldbURI copyUri = destUri.append(newName);
+
+            try (final Collection copy = broker.openCollection(copyUri, LockMode.READ_LOCK)) {
+                assertNotNull(copy);
+            }
+
+            transaction.commit();
+        }
+    }
+
+    /**
+     * Test copy collection /db/a/b/c/d/e/f/g/h/i/j/k to /db/z/y/x/w/v/u/k
+     *
+     * Note that the collection /db/a/b/c/d/e/f/g/h/i/j/k has the sub-collections (sub-1 and sub-2),
+     * this test checks that the sub-collections are correctly preserved.
+     */
+    @Test
+    public void copyDeepWithSubCollections() throws EXistException, IOException, PermissionDeniedException, TriggerException, LockException {
+        final XmldbURI srcUri = XmldbURI.create("/db/a/b/c/d/e/f/g/h/i/j/k");
+        final XmldbURI srcSubCol1Uri = srcUri.append("sub-1");
+        final XmldbURI srcSubCol2Uri = srcUri.append("sub-2");
+        final XmldbURI destUri = XmldbURI.create("/db/z/y/x/w/v/u");
+        final XmldbURI newName = srcUri.lastSegment();
+
+        final BrokerPool pool = existWebServer.getBrokerPool();
+        final TransactionManager transact = pool.getTransactionManager();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = transact.beginTransaction()) {
+
+            // create src collection
+            try (final Collection src = broker.getOrCreateCollection(transaction, srcUri)) {
+                assertNotNull(src);
+                broker.saveCollection(transaction, src);
+            }
+
+            // create src sub-collections
+            try (final Collection srcColSubCol1 = broker.getOrCreateCollection(transaction, srcSubCol1Uri)) {
+                assertNotNull(srcColSubCol1);
+                broker.saveCollection(transaction, srcColSubCol1);
+            }
+            try (final Collection srcColSubCol2 = broker.getOrCreateCollection(transaction, srcSubCol2Uri)) {
+                assertNotNull(srcColSubCol2);
+                broker.saveCollection(transaction, srcColSubCol2);
+            }
+
+            // create dst collection
+            try (Collection dst = broker.getOrCreateCollection(transaction, destUri)) {
+                assertNotNull(dst);
+                broker.saveCollection(transaction, dst);
+            }
+
+            try (final Collection src = broker.openCollection(srcUri, LockMode.WRITE_LOCK);
+                final Collection dst = broker.openCollection(destUri, LockMode.WRITE_LOCK)) {
+
+                broker.copyCollection(transaction, src, dst, newName);
+            }
+
+            transact.commit(transaction);
+        }
+
+        // check that the source still exists
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = transact.beginTransaction()) {
+
+            try (final Collection src = broker.openCollection(srcUri, LockMode.READ_LOCK)) {
+                assertNotNull(src);
+            }
+
+            // check that the source sub-collections still exist
+            try (final Collection srcSubCol1 = broker.openCollection(srcSubCol1Uri, LockMode.READ_LOCK)) {
+                assertNotNull(srcSubCol1);
+            }
+            try (final Collection srcSubCol2 = broker.openCollection(srcSubCol2Uri, LockMode.READ_LOCK)) {
+                assertNotNull(srcSubCol2);
+            }
+
+            transaction.commit();
+        }
+
+        // check that the new copy exists
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = transact.beginTransaction()) {
+
+            final XmldbURI copyUri = destUri.append(newName);
+
+            try (final Collection copy = broker.openCollection(copyUri, LockMode.READ_LOCK)) {
+                assertNotNull(copy);
+            }
+
+            // check that the new copy has sub-collection copies
+            final XmldbURI copySubCol1Uri = copyUri.append(srcSubCol1Uri.lastSegment());
+            try (final Collection copySubCol1 = broker.openCollection(copySubCol1Uri, LockMode.READ_LOCK)) {
+                assertNotNull(copySubCol1);
+            }
+            final XmldbURI copySubCol2Uri = copyUri.append(srcSubCol2Uri.lastSegment());
+            try (final Collection copySubCol2 = broker.openCollection(copySubCol2Uri, LockMode.READ_LOCK)) {
+                assertNotNull(copySubCol2);
+            }
+
+            transaction.commit();
+        }
     }
 
     private void copyCol(final Subject execAsUser, final DBBroker.PreserveType preserve, final XmldbURI srcColName, final XmldbURI destColName) throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
