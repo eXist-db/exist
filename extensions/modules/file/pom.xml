@@ -61,6 +61,10 @@
             <groupId>com.evolvedbinary.j8fu</groupId>
             <artifactId>j8fu</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.evolvedbinary.multilock</groupId>
+            <artifactId>multilock</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>commons-io</groupId>
@@ -93,6 +97,7 @@
             <artifactId>jetty-deploy</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-jmx</artifactId>

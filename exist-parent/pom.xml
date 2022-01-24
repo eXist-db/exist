@@ -190,6 +190,11 @@
                 <artifactId>j8fu</artifactId>
                 <version>1.23.0</version>
             </dependency>
+            <dependency>
+                <groupId>com.evolvedbinary.multilock</groupId>
+                <artifactId>multilock</artifactId>
+                <version>1.0.1</version>
+            </dependency>
 
             <dependency>
                 <groupId>com.google.code.findbugs</groupId>
