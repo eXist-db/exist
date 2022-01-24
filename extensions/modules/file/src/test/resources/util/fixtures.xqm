@@ -22,7 +22,6 @@
 xquery version "3.1";
 
 module namespace fixtures="http://exist-db.org/xquery/test/util/fixtures";
-import module namespace util="http://exist-db.org/xquery/util";
 
 (: file contents :)
 

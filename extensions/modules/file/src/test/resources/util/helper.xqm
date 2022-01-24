@@ -154,7 +154,7 @@ declare function helper:assert-sync-result (
     )
 };
 
-declare function helper:assert-permutation-of($expected as xs:anyAtomicType*, $actual as xs:anyAtomicType*) {
+declare function helper:assert-permutation-of($expected as xs:anyAtomicType*, $actual as xs:anyAtomicType*) as xs:boolean {
     let $test := fold-left(
         $expected,
         [true(), $actual],
@@ -170,7 +170,7 @@ declare function helper:assert-permutation-of($expected as xs:anyAtomicType*, $a
         else true()
 };
 
-declare function helper:permutation-reducer ($result, $next) {
+declare function helper:permutation-reducer ($result, $next) as array(*) {
     let $first-index := index-of($result?2, $next)[1]
     return [
         $result?1 and $first-index > 0,
@@ -178,7 +178,7 @@ declare function helper:permutation-reducer ($result, $next) {
     ]
 };
 
-declare function helper:maybe-remove-item-at-index($sequence as xs:anyAtomicType*, $index as xs:integer?) {
+declare function helper:maybe-remove-item-at-index($sequence as xs:anyAtomicType*, $index as xs:integer?) as xs:anyAtomicType* {
     if ($index = 1)
     then subsequence($sequence, 2)
     else if ($index > 1)
