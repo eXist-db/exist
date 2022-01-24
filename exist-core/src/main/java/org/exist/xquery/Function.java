@@ -67,7 +67,7 @@ public abstract class Function extends PathExpr {
     /**
      * The signature of the function.
      */
-    protected FunctionSignature mySignature;
+    private FunctionSignature mySignature;
 
     /**
      * The parent expression from which this function is called.
@@ -93,11 +93,6 @@ public abstract class Function extends PathExpr {
         super(context);
         this.mySignature = signature;
     }
-
-    protected Function(final XQueryContext context) {
-        super(context);
-    }
-
     /**
      * Returns the module to which this function belongs.
      *
@@ -408,17 +403,19 @@ public abstract class Function extends PathExpr {
         for (int i = 0; i < getArgumentCount(); i++) {
             final Expression arg = getArgument(i);
 
-            // call analyze for each argument
-            final AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
-            arg.analyze(argContextInfo);
+            if (arg != null) {
+                // call analyze for each argument
+                final AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
+                arg.analyze(argContextInfo);
 
-            if (!argumentsChecked) {
-                // statically check the argument
-                SequenceType argType = null;
-                if (argumentTypes != null && i < argumentTypes.length) {
-                    argType = argumentTypes[i];
+                if (!argumentsChecked) {
+                    // statically check the argument
+                    SequenceType argType = null;
+                    if (argumentTypes != null && i < argumentTypes.length) {
+                        argType = argumentTypes[i];
+                    }
+                    checkArgument(arg, argType, argContextInfo, i + 1);
                 }
-                checkArgument(arg, argType, argContextInfo, i + 1);
             }
         }
         argumentsChecked = true;
@@ -468,6 +465,9 @@ public abstract class Function extends PathExpr {
      * @return name of this function
      */
     public QName getName() {
+        if (mySignature == null) {
+            return null;
+        }
         return mySignature.getName();
     }
 
@@ -478,6 +478,15 @@ public abstract class Function extends PathExpr {
      */
     public FunctionSignature getSignature() {
         return mySignature;
+    }
+
+    /**
+     * Set the signature of this function.
+     *
+     * @param functionSignature the signature of this function
+     */
+    protected void setSignature(final FunctionSignature functionSignature) {
+        this.mySignature = functionSignature;
     }
 
     public boolean isCalledAs(final String localName) {
@@ -507,7 +516,8 @@ public abstract class Function extends PathExpr {
     @Override
     public String toString() {
         final StringBuilder result = new StringBuilder();
-        result.append(getName());
+        final String name = getName() != null ? getName().getStringValue() : "<UNKNOWN>";
+        result.append(name);
         result.append('(');
         boolean moreThanOne = false;
         for (final Expression step : steps) {

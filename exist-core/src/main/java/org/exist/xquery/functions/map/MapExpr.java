@@ -116,7 +116,11 @@ public class MapExpr extends AbstractExpression {
     @Override
     public void dump(final ExpressionDumper dumper) {
         dumper.display("map {");
-        for (final Mapping mapping : this.mappings) {
+        for (int i = 0; i < this.mappings.size(); i++) {
+            final Mapping mapping = this.mappings.get(i);
+            if (i > 0) {
+                dumper.display(", ");
+            }
             mapping.key.dump(dumper);
             dumper.display(" : ");
             mapping.value.dump(dumper);

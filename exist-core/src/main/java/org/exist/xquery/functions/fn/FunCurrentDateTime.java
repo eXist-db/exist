@@ -103,7 +103,7 @@ public class FunCurrentDateTime extends Function {
         } else if (isCalledAs("current-time")) {
             result = result.convertTo(Type.TIME);
         } else {
-            throw new Error("Can't handle function " + mySignature.getName().getLocalPart());
+            throw new Error("Can't handle function " + getName().getLocalPart());
         }
         if (context.getProfiler().isEnabled()) {context.getProfiler().end(this, "", result);}
         return result;

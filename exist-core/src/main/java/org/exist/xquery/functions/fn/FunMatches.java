@@ -127,7 +127,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         if (arguments.size() >= 2) {
             Expression arg = arguments.get(1);
             arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
-                    new Error(Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
+                    new Error(Error.FUNC_PARAM_CARDINALITY, "2", getSignature()));
             if (!Type.subTypeOf(arg.returnsType(), Type.ATOMIC)) {
                 arg = new Atomize(context, arg);
             }
@@ -137,7 +137,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
         if (arguments.size() >= 3) {
             Expression arg = arguments.get(2);
             arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
-                    new Error(Error.FUNC_PARAM_CARDINALITY, "3", mySignature));
+                    new Error(Error.FUNC_PARAM_CARDINALITY, "3", getSignature()));
             if (!Type.subTypeOf(arg.returnsType(), Type.ATOMIC)) {
                 arg = new Atomize(context, arg);
             }
