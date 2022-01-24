@@ -79,20 +79,21 @@ public class Sync extends BasicFunction {
     public static final String AFTER_OPT = "after";
     public static final String EXCLUDES_OPT = "excludes";
 
-    public static final QName FileSyncElement = new QName("sync", FileModule.NAMESPACE_URI);
-    public static final QName FileUpdateElement = new QName("update", FileModule.NAMESPACE_URI);
-    public static final QName FileDeleteElement = new QName("delete", FileModule.NAMESPACE_URI);
-    public static final QName FileErrorElement = new QName("error", FileModule.NAMESPACE_URI);
+    public static final QName FILE_SYNC_ELEMENT = new QName("sync", FileModule.NAMESPACE_URI);
+    public static final QName FILE_UPDATE_ELEMENT = new QName("update", FileModule.NAMESPACE_URI);
+    public static final QName FILE_DELETE_ELEMENT = new QName("delete", FileModule.NAMESPACE_URI);
+    public static final QName FILE_ERROR_ELEMENT = new QName("error", FileModule.NAMESPACE_URI);
 
     // TODO(JL) Figure out which namespace all attributes should be in (possible breaking change)
-    public static final QName FileCollectionAttribute = new QName("collection", FileModule.NAMESPACE_URI);
-    public static final QName FileDirAttribute = new QName("dir", FileModule.NAMESPACE_URI);
+    // https://github.com/eXist-db/exist/issues/4207
+    public static final QName FILE_COLLECTION_ATTRIBUTE = new QName("collection", FileModule.NAMESPACE_URI);
+    public static final QName FILE_DIR_ATTRIBUTE = new QName("dir", FileModule.NAMESPACE_URI);
 
-    public static final QName FileAttribute = new QName("file", XMLConstants.NULL_NS_URI);
-    public static final QName NameAttribute = new QName("name", XMLConstants.NULL_NS_URI);
-    public static final QName CollectionAttribute = new QName("collection", XMLConstants.NULL_NS_URI);
-    public static final QName TypeAttribute = new QName("type", XMLConstants.NULL_NS_URI);
-    public static final QName ModifiedAttribute = new QName("modified", XMLConstants.NULL_NS_URI);
+    public static final QName FILE_ATTRIBUTE = new QName("file", XMLConstants.NULL_NS_URI);
+    public static final QName NAME_ATTRIBUTE = new QName("name", XMLConstants.NULL_NS_URI);
+    public static final QName COLLECTION_ATTRIBUTE = new QName("collection", XMLConstants.NULL_NS_URI);
+    public static final QName TYPE_ATTRIBUTE = new QName("type", XMLConstants.NULL_NS_URI);
+    public static final QName MODIFIED_ATTRIBUTE = new QName("modified", XMLConstants.NULL_NS_URI);
 
     public static final FunctionSignature signature =
             new FunctionSignature(
@@ -135,13 +136,13 @@ public class Sync extends BasicFunction {
 
         final String collectionPath = args[0].getStringValue();
         final String target = args[1].getStringValue();
-        final HashMap<String, Sequence> options = getOptions(args[2]);
+        final Map<String, Sequence> options = getOptions(args[2]);
 
         return startSync(target, collectionPath, options);
     }
 
-    private HashMap<String, Sequence> getOptions(final Sequence parameter) throws XPathException {
-        HashMap<String, Sequence> options = new HashMap<>();
+    private Map<String, Sequence> getOptions(final Sequence parameter) throws XPathException {
+        final Map<String, Sequence> options = new HashMap<>();
         options.put(AFTER_OPT, Sequence.EMPTY_SEQUENCE);
         options.put(PRUNE_OPT, new BooleanValue(false));
         options.put(EXCLUDES_OPT, Sequence.EMPTY_SEQUENCE);
@@ -166,11 +167,10 @@ public class Sync extends BasicFunction {
             checkOption(optionsMap, PRUNE_OPT, Type.BOOLEAN, options);
             checkOption(optionsMap, AFTER_OPT, Type.DATE_TIME, options);
         } else if (parameter.itemAt(0).getType() == Type.DATE_TIME) {
-            // QUESTION(JL) LOG deprecation warning?
             options.put(AFTER_OPT, parameter);
         } else {
             throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "Invalid 3rd parameter, allowed are xs:dateTime or map(*) got " + Type.getTypeName(item.getType()));
+                    "Invalid 3rd parameter, allowed parameter types are xs:dateTime or map(*) got " + Type.getTypeName(item.getType()));
         }
         return options;
     }
@@ -179,7 +179,7 @@ public class Sync extends BasicFunction {
             final AbstractMapType optionsMap,
             final String name,
             final int expectedType,
-            final HashMap<String, Sequence> options
+            final Map<String, Sequence> options
     ) throws XPathException {
         final Sequence p = optionsMap.get(new StringValue(name));
 
@@ -189,7 +189,7 @@ public class Sync extends BasicFunction {
 
         if (p.hasMany() || p.getItemType() != expectedType) {
             throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "Invalid value for option \"" + name + "\", expected " +
+                    "Invalid value type for option \"" + name + "\", expected " +
                             Type.getTypeName(expectedType) + " got " +
                             Type.getTypeName(p.itemAt(0).getType()));
         }
@@ -200,11 +200,11 @@ public class Sync extends BasicFunction {
     private Sequence startSync(
             final String target,
             final String collectionPath,
-            final HashMap<String, Sequence> options
+            final Map<String, Sequence> options
     ) throws XPathException {
         final Date startDate = options.get(AFTER_OPT).hasOne() ? ((DateTimeValue) options.get(AFTER_OPT)).getDate() : null;
 
-        boolean prune = ((BooleanValue) options.get(PRUNE_OPT)).getValue();
+        final boolean prune = ((BooleanValue) options.get(PRUNE_OPT)).getValue();
 
         final List<String> excludes = new ArrayList<>(Collections.emptyList());
         for (final SequenceIterator si = options.get(EXCLUDES_OPT).iterate(); si.hasNext(); ) {
@@ -224,9 +224,9 @@ public class Sync extends BasicFunction {
             }
 
             output.startDocument();
-            output.startElement(Sync.FileSyncElement, null);
-            output.addAttribute(Sync.FileCollectionAttribute, collectionPath);
-            output.addAttribute(Sync.FileDirAttribute, targetDir.toAbsolutePath().toString());
+            output.startElement(FILE_SYNC_ELEMENT, null);
+            output.addAttribute(FILE_COLLECTION_ATTRIBUTE, collectionPath);
+            output.addAttribute(FILE_DIR_ATTRIBUTE, targetDir.toAbsolutePath().toString());
 
             final String rootTargetAbsPath = targetDir.toAbsolutePath().toString();
             final String separator = rootTargetAbsPath.endsWith(File.separator) ? "" : File.separator;
@@ -265,7 +265,7 @@ public class Sync extends BasicFunction {
             return;
         }
 
-        List<XmldbURI> subCollections = handleCollection(collectionPath, rootTargetAbsPath, targetDirectory, startDate, prune, excludes, output);
+        final List<XmldbURI> subCollections = handleCollection(collectionPath, rootTargetAbsPath, targetDirectory, startDate, prune, excludes, output);
 
         for (final XmldbURI childURI : subCollections) {
             final Path childDir = targetDirectory.resolve(childURI.lastSegment().toString());
@@ -282,7 +282,6 @@ public class Sync extends BasicFunction {
             final List<String> excludes,
             final MemTreeBuilder output
     ) throws PermissionDeniedException, LockException {
-        List<XmldbURI> subCollections;
         try (final Collection collection = context.getBroker().openCollection(collectionPath, LockMode.READ_LOCK)) {
             if (collection == null) {
                 reportError(output, "Collection not found: " + collectionPath);
@@ -299,12 +298,12 @@ public class Sync extends BasicFunction {
                 saveFile(targetFile, doc, startDate, output);
             }
 
-            subCollections = new ArrayList<>(collection.getChildCollectionCount(context.getBroker()));
+            final List<XmldbURI> subCollections = new ArrayList<>(collection.getChildCollectionCount(context.getBroker()));
             for (final Iterator<XmldbURI> i = collection.collectionIterator(context.getBroker()); i.hasNext(); ) {
                 subCollections.add(i.next());
             }
+            return subCollections;
         }
-        return subCollections;
     }
 
     private void pruneCollectionEntries(
@@ -341,18 +340,18 @@ public class Sync extends BasicFunction {
                     } else {
                         Files.deleteIfExists(path);
                         // reporting
-                        output.startElement(Sync.FileDeleteElement, null);
-                        output.addAttribute(Sync.FileAttribute, path.toAbsolutePath().toString());
-                        output.addAttribute(Sync.NameAttribute, fileName);
+                        output.startElement(FILE_DELETE_ELEMENT, null);
+                        output.addAttribute(FILE_ATTRIBUTE, path.toAbsolutePath().toString());
+                        output.addAttribute(NAME_ATTRIBUTE, fileName);
                         output.endElement();
                     }
 
-                } catch (IOException | URISyntaxException
+                } catch (final IOException | URISyntaxException
                         | PermissionDeniedException | LockException e) {
                     reportError(output, e.getMessage());
                 }
             });
-        } catch (IOException e) {
+        } catch (final IOException e) {
             reportError(output, e.getMessage());
         }
     }
@@ -364,18 +363,18 @@ public class Sync extends BasicFunction {
                             !Files.exists(targetFile) ||
                                     Files.getLastModifiedTime(targetFile).compareTo(FileTime.fromMillis(doc.getLastModified())) >= 0
                     ))) {
-                output.startElement(Sync.FileUpdateElement, null);
-                output.addAttribute(Sync.FileAttribute, targetFile.toAbsolutePath().toString());
-                output.addAttribute(Sync.NameAttribute, doc.getFileURI().toString());
-                output.addAttribute(Sync.CollectionAttribute, doc.getCollection().getURI().toString());
-                output.addAttribute(Sync.ModifiedAttribute, new DateTimeValue(new Date(doc.getLastModified())).getStringValue());
+                output.startElement(FILE_UPDATE_ELEMENT, null);
+                output.addAttribute(FILE_ATTRIBUTE, targetFile.toAbsolutePath().toString());
+                output.addAttribute(NAME_ATTRIBUTE, doc.getFileURI().toString());
+                output.addAttribute(COLLECTION_ATTRIBUTE, doc.getCollection().getURI().toString());
+                output.addAttribute(MODIFIED_ATTRIBUTE, new DateTimeValue(new Date(doc.getLastModified())).getStringValue());
 
                 if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                    output.addAttribute(Sync.TypeAttribute, "binary");
+                    output.addAttribute(TYPE_ATTRIBUTE, "binary");
                     output.endElement();
                     saveBinary(targetFile, (BinaryDocument) doc, output);
                 } else {
-                    output.addAttribute(Sync.TypeAttribute, "xml");
+                    output.addAttribute(TYPE_ATTRIBUTE, "xml");
                     output.endElement();
                     saveXML(targetFile, doc, output);
                 }
@@ -390,7 +389,7 @@ public class Sync extends BasicFunction {
     private void saveXML(final Path targetFile, final DocumentImpl doc, final MemTreeBuilder output) throws IOException {
         final SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
         try {
-            boolean isRepoXML = Files.exists(targetFile) && FileUtils.fileName(targetFile).equals("repo.xml");
+            final boolean isRepoXML = Files.exists(targetFile) && FileUtils.fileName(targetFile).equals("repo.xml");
 
             if (isRepoXML) {
                 processRepoDesc(targetFile, doc, sax, output);
@@ -428,10 +427,10 @@ public class Sync extends BasicFunction {
             try (final Writer writer = new OutputStreamWriter(new BufferedOutputStream(Files.newOutputStream(targetFile)), StandardCharsets.UTF_8)) {
                 sax.setOutput(writer, DEFAULT_PROPERTIES);
 
-                final StreamSource stylesource = new StreamSource(Sync.class.getResourceAsStream("repo.xsl"));
+                final StreamSource styleSource = new StreamSource(Sync.class.getResourceAsStream("repo.xsl"));
 
                 final SAXTransformerFactory factory = TransformerFactoryAllocator.getTransformerFactory(context.getBroker().getBrokerPool());
-                final TransformerHandler handler = factory.newTransformerHandler(stylesource);
+                final TransformerHandler handler = factory.newTransformerHandler(styleSource);
                 handler.getTransformer().setParameter("original", original.getDocumentElement());
                 handler.setResult(new SAXResult(sax));
 
@@ -463,7 +462,7 @@ public class Sync extends BasicFunction {
     }
 
     private void reportError(final MemTreeBuilder output, final String msg) {
-        output.startElement(Sync.FileErrorElement, null);
+        output.startElement(FILE_ERROR_ELEMENT, null);
         output.characters(msg);
         output.endElement();
     }
@@ -477,7 +476,7 @@ public class Sync extends BasicFunction {
      * @param excludes          exclude patterns (in the convention of DirectoryScanner.match)
      * @return true if the (rel)path in question is matched by some of the exclusion patterns
      */
-    private static boolean isExcludedPath(String rootTargetAbsPath, Path path, List<String> excludes) {
+    private static boolean isExcludedPath(final String rootTargetAbsPath, final Path path, final List<String> excludes) {
         if (excludes.isEmpty()) {
             return false;
         }
@@ -509,7 +508,7 @@ public class Sync extends BasicFunction {
         return false;
     }
 
-    private static void deleteWithExcludes(String root, final Path path, List<String> excludes, final MemTreeBuilder output) throws IOException {
+    private static void deleteWithExcludes(final String root, final Path path, final List<String> excludes, final MemTreeBuilder output) throws IOException {
         if (Files.isDirectory(path)) {
             Files.walkFileTree(path, new DeleteDirWithExcludesVisitor(root, excludes, output));
         } else {
@@ -547,9 +546,9 @@ public class Sync extends BasicFunction {
             }
             Files.deleteIfExists(file);
 
-            output.startElement(Sync.FileDeleteElement, null);
-            output.addAttribute(Sync.FileAttribute, file.toAbsolutePath().toString());
-            output.addAttribute(Sync.NameAttribute, file.getFileName().toString());
+            output.startElement(FILE_DELETE_ELEMENT, null);
+            output.addAttribute(FILE_ATTRIBUTE, file.toAbsolutePath().toString());
+            output.addAttribute(NAME_ATTRIBUTE, file.getFileName().toString());
             output.endElement();
 
             return FileVisitResult.CONTINUE;
@@ -566,9 +565,9 @@ public class Sync extends BasicFunction {
             }
             Files.deleteIfExists(dir);
 
-            output.startElement(Sync.FileDeleteElement, null);
-            output.addAttribute(Sync.FileAttribute, dir.toAbsolutePath().toString());
-            output.addAttribute(Sync.NameAttribute, dir.getFileName().toString());
+            output.startElement(FILE_DELETE_ELEMENT, null);
+            output.addAttribute(FILE_ATTRIBUTE, dir.toAbsolutePath().toString());
+            output.addAttribute(NAME_ATTRIBUTE, dir.getFileName().toString());
             output.endElement();
 
             return FileVisitResult.CONTINUE;
