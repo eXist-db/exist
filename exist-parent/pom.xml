@@ -873,6 +873,7 @@
                             <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
                             <excludes>
                                 <exclude>FDB-backport-LGPL-21-ONLY-license.template.txt</exclude>
+                                <exclude>FDB-backport-LGPL-21-ONLY-license.xml.template.txt</exclude>
                             </excludes>
                         </licenseSet>
                     </licenseSets>

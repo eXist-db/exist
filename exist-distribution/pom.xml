@@ -354,8 +354,17 @@
                             -->
                             <header>${project.parent.relativePath}/FDB-backport-LGPL-21-ONLY-license.template.txt</header>
                             <includes>
-                                <include>src/app/entitlements.plist</include>
                                 <include>src/main/scripts/codesign-jansi-mac.sh</include>
+                            </includes>
+                        </licenseSet>
+
+                        <licenseSet>
+                            <!--
+                                FDB backport to LGPL 2.1-only licensed code (XML)
+                            -->
+                            <header>${project.parent.relativePath}/FDB-backport-LGPL-21-ONLY-license.xml.template.txt</header>
+                            <includes>
+                                <include>src/app/entitlements.plist</include>
                             </includes>
                         </licenseSet>
 
