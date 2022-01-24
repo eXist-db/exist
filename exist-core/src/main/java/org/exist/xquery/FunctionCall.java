@@ -63,7 +63,7 @@ public class FunctionCall extends Function {
     }
 
     private static FunctionSignature signatureForForwardReference(final QName name, final List<Expression> arguments) {
-        final SequenceType functionSignatureArgs[] = new SequenceType[arguments.size() + 1];
+        final SequenceType[] functionSignatureArgs = new SequenceType[arguments.size() + 1];
         functionSignatureArgs[0] = new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "forward-reference: " + name.getStringValue());
         for (int i = 0; i < arguments.size(); i++) {
             final Expression argument = arguments.get(i);
@@ -462,7 +462,7 @@ public class FunctionCall extends Function {
             }
 
             if (arguments != null) {
-                for (final Expression step : arguments) {
+                for (int i = 0; i < arguments.size(); i++) {
                     result.append(", ?");
                 }
             } else {
