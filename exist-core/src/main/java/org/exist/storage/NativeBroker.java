@@ -870,6 +870,22 @@ public class NativeBroker extends DBBroker {
      */
     @Override
     public @Nullable Collection openCollection(XmldbURI uri, final LockMode lockMode) throws PermissionDeniedException {
+        return openCollection(uri, null, lockMode);
+    }
+
+    /**
+     * Get collection object. If the collection does not exist, null is
+     * returned.
+     *
+     * @param uri collection URI
+     * @param movedToParentUri only used if we are opening a collection during a Collection move operation,
+     *                         if that is the case, this should be set to the URI of the parent to which
+     *                         the Collection {@code uri} was moved. Otherwise, this should be set to null.
+     * @param lockMode the mode to lock the collection with
+     *
+     * @return The collection or null
+     */
+    private @Nullable Collection openCollection(XmldbURI uri, @Nullable final XmldbURI movedToParentUri, final LockMode lockMode) throws PermissionDeniedException {
         uri = prepend(uri.toCollectionPathURI());
         //We *must* declare it here (see below)
         final CollectionCache collectionsCache = pool.getCollectionsCache();
@@ -880,7 +896,7 @@ public class NativeBroker extends DBBroker {
 
         // Must ALSO perform a security check up the collection hierarchy to ensure that we have Permission.EXECUTE all the way
         try {
-            checkCollectionAncestorPermissions(collectionsCache, collection);
+            checkCollectionAncestorPermissions(collectionsCache, collection, movedToParentUri);
         } catch (final IllegalStateException | PermissionDeniedException e) {
             throw e;
         } catch (final LockException e) {
@@ -947,7 +963,18 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    private void checkCollectionAncestorPermissions(final CollectionCache collectionsCache, final Collection collection)
+    /**
+     * @param collectionsCache the collections cache
+     * @param collection the collection to check the ancestor permissions of
+     * @param movedToParentUri only used if we are opening a collection during a Collection move operation,
+     *                         if that is the case, this should be set to the URI of the parent to which
+     *                         the Collection {@code uri} was moved. Otherwise, this should be set to null.
+     *
+     * @throws IllegalStateException if the collection hierarchy is corrupted
+     * @throws PermissionDeniedException if the caller doesn't have permission to open the collection ancestors
+     * @throws LockException if a locking error occurs
+     */
+    private void checkCollectionAncestorPermissions(final CollectionCache collectionsCache, final Collection collection, @Nullable final XmldbURI movedToParentUri)
             throws IllegalStateException, PermissionDeniedException, LockException {
 
         /*
@@ -962,14 +989,15 @@ public class NativeBroker extends DBBroker {
          */
 
         Collection c = collection;
-        XmldbURI parentUri = c.getParentURI();
+        XmldbURI parentUri = movedToParentUri == null ? c.getParentURI() : movedToParentUri;
         while (parentUri != null) {
             // this will throw a PermissionDeniedException if the user does not have Permission.EXECUTE on the Collection at the parentUri
             c = getCollectionForOpen(collectionsCache, parentUri);
 
             if (c == null) {
-                LOG.error("Parent collection {} was null for collection {} ", parentUri, collection.getURI());
-                throw new IllegalStateException();
+                final String message = "Parent collection: " + parentUri + " was null for collection: " + collection.getURI();
+                LOG.error(message);
+                throw new IllegalStateException(message);
             }
 
             parentUri = c.getParentURI();
@@ -979,7 +1007,7 @@ public class NativeBroker extends DBBroker {
     /**
      * Checks all permissions in the tree to ensure that a copy operation will succeed
      */
-    protected void checkPermissionsForCopy(final Collection src, final XmldbURI destUri, final XmldbURI newName) throws PermissionDeniedException, LockException {
+    protected void checkPermissionsForCopy(final Collection src, final XmldbURI destUri, final XmldbURI newName) throws IllegalStateException, PermissionDeniedException, LockException {
 
         if(!src.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.READ)) {
             throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " by " + getCurrentSubject().getName());
@@ -989,7 +1017,7 @@ public class NativeBroker extends DBBroker {
         final XmldbURI newDestUri = destUri.append(newName);
         final Collection newDest = getCollection(newDestUri);
 
-        if(dest != null) {
+        if (dest != null) {
             //if(!dest.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.WRITE | Permission.READ)) {
             //TODO do we really need WRITE permission on the dest?
             if(!dest.getPermissionsNoLock().validate(getCurrentSubject(), Permission.EXECUTE | Permission.WRITE)) {
@@ -1007,6 +1035,13 @@ public class NativeBroker extends DBBroker {
                     throw new PermissionDeniedException("Permission denied to copy collection " + src.getURI() + " to " + newDest.getURI() + " by " + getCurrentSubject().getName());
                 }
                 //}
+            }
+        } else {
+            if (newDest != null) {
+                // this is an error state, i.e. we have a sub-collection newDest, but not its parent collection - we should throw an error
+                final String message = "Parent collection: " + destUri + " was null for collection: " + newDestUri.getURI();
+                LOG.error(message);
+                throw new IllegalStateException(message);
             }
         }
 
@@ -1334,8 +1369,8 @@ public class NativeBroker extends DBBroker {
 
             for(final Iterator<XmldbURI> i = collection.collectionIterator(this); i.hasNext(); ) {
                 final XmldbURI childName = i.next();
-                //TODO : resolve URIs !!! name.resolve(childName)
-                final Collection child = openCollection(srcURI.append(childName), LockMode.WRITE_LOCK);
+                final XmldbURI childUri = srcURI.append(childName);
+                final Collection child = openCollection(childUri, collection.getURI(), LockMode.WRITE_LOCK);
                 if(child == null) {
                     LOG.error("Child collection " + childName + " not found");
                 } else {
