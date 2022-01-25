@@ -21,7 +21,6 @@
  */
 package org.exist.security.internal.aider;
 
-import java.io.Serializable;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
 
@@ -29,7 +28,7 @@ import org.exist.security.ACLPermission.ACE_TARGET;
  *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
-public class ACEAider implements Serializable {
+public class ACEAider {
     private ACE_ACCESS_TYPE accessType;
     private ACE_TARGET target;
     private String who;

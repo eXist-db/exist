@@ -90,22 +90,22 @@ class TupleParser extends RecursiveTypeParserImpl {
     public void startElement(final String uri, final String localName, final String qname, final Attributes attrs) throws SAXException {
         switch (level++) {
             case 0:
-                if (!XMLConstants.NULL_NS_URI.equals(uri)  ||  !TupleSerializer.TUPLE_TAG.equals(localName)) {
+                if (!XMLConstants.NULL_NS_URI.equals(uri) || !TupleSerializer.TUPLE_TAG.equals(localName)) {
                     throw new SAXParseException("Expected tuple element, got "
                             + new QName(uri, localName),
                             getDocumentLocator());
                 }
                 break;
             case 1:
-                if (!XMLConstants.NULL_NS_URI.equals(uri)  ||  !TupleSerializer.DATA_TAG.equals(localName)) {
+                if (!XMLConstants.NULL_NS_URI.equals(uri) || !TupleSerializer.DATA_TAG.equals(localName)) {
                     throw new SAXParseException("Expected data element, got "
                             + new QName(uri, localName),
                             getDocumentLocator());
                 }
                 break;
             case 2:
-                if (!XMLConstants.NULL_NS_URI.equals(uri)  ||  !TypeSerializerImpl.VALUE_TAG.equals(localName)) {
-                    throw new SAXParseException("Expected data element, got "
+                if (!XMLConstants.NULL_NS_URI.equals(uri) || !TypeSerializerImpl.VALUE_TAG.equals(localName)) {
+                    throw new SAXParseException("Expected value element, got "
                             + new QName(uri, localName),
                             getDocumentLocator());
                 }

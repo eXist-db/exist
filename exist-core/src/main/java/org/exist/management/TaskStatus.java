@@ -21,7 +21,6 @@
  */
 package org.exist.management;
 
-import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,9 +31,7 @@ import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.SimpleType;
 
-public class TaskStatus implements Serializable {
-
-    private static final long serialVersionUID = -8405783622910875893L;
+public class TaskStatus {
 
     public enum Status {
         NA, NEVER_RUN, INIT, PAUSED, STOPPED_OK, STOPPED_ERROR, RUNNING_CHECK, RUNNING_BACKUP,
