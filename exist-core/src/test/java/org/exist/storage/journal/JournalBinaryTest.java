@@ -47,6 +47,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.FileInputSource;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.StreamableDigest;
 import org.exist.xmldb.XmldbURI;
@@ -54,6 +55,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.rules.TemporaryFolder;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -442,16 +444,14 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
     @Override
     protected BinaryDocLocator storeAndVerify(final DBBroker broker, final Txn transaction, final Collection collection,
             final InputSource data, final String dbFilename) throws EXistException, PermissionDeniedException, IOException,
-            TriggerException, LockException {
+            SAXException, LockException {
 
         assertTrue(data instanceof FileInputSource);
-        final Path file = ((FileInputSource)data).getFile();
 
-        final byte[] content = Files.readAllBytes(file);
-        final BinaryDocument doc = collection.addBinaryResource(transaction, broker, XmldbURI.create(dbFilename), content, "application/octet-stream");
-
+        broker.storeDocument(transaction, XmldbURI.create(dbFilename), data, MimeType.BINARY_TYPE, collection);
+        final BinaryDocument doc = (BinaryDocument) collection.getDocument(broker, XmldbURI.create(dbFilename));
         assertNotNull(doc);
-        assertEquals(Files.size(file), doc.getContentLength());
+        assertEquals(Files.size(((FileInputSource)data).getFile()), doc.getContentLength());
 
         return new BinaryDocLocator(collection.getURI().append(dbFilename).getRawCollectionPath(), doc.getBlobId());
     }

@@ -50,7 +50,7 @@ import org.xmldb.api.modules.CollectionManagementService;
  */
 public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 
-    protected static final Logger logger = LogManager.getLogger(XMLDBAbstractCollectionManipulator.class);
+    private static final Logger LOGGER = LogManager.getLogger(XMLDBAbstractCollectionManipulator.class);
 
     private final boolean errorIfAbsent;
 
@@ -121,19 +121,19 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         final Item item = args[paramNumber].itemAt(0);
         if (Type.subTypeOf(item.getType(), Type.NODE)) {
             final NodeValue node = (NodeValue) item;
-            if (logger.isDebugEnabled()) {
-                logger.debug("Found node");
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Found node");
             }
             if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                 final org.exist.collections.Collection internalCol = ((NodeProxy) node).getOwnerDocument().getCollection();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Found node");
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Found node");
                 }
                 try {
                     //TODO: use xmldbURI
                     collection = getLocalCollection(context, internalCol.getURI().toString());
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Loaded collection {}", collection.getName());
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Loaded collection {}", collection.getName());
                     }
                 } catch (final XMLDBException e) {
                     throw new XPathException(this, "Failed to access collection: " + internalCol.getURI(), e);

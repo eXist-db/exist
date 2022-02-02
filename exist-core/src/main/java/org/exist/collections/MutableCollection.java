@@ -21,9 +21,11 @@
  */
 package org.exist.collections;
 
+import com.evolvedbinary.j8fu.function.BiConsumer2E;
 import com.evolvedbinary.j8fu.function.Consumer2E;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.NotThreadSafe;
+import org.apache.commons.io.input.CloseShieldReader;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.*;
 
@@ -61,6 +63,7 @@ import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
+import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -1109,6 +1112,130 @@ public class MutableCollection implements Collection {
     }
 
     @Override
+    public void storeDocument(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputSource source, @Nullable MimeType mimeType) throws EXistException, PermissionDeniedException, SAXException, LockException, IOException {
+        storeDocument(transaction, broker, name, source, mimeType, null, null, null, null, null);
+    }
+
+    @Override
+    public void storeDocument(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputSource source, @Nullable MimeType mimeType, final @Nullable Date createdDate, final @Nullable Date lastModifiedDate, final @Nullable Permission permission, final @Nullable DocumentType documentType, @Nullable final XMLReader xmlReader) throws EXistException, PermissionDeniedException, SAXException, LockException, IOException {
+        if (mimeType == null) {
+            mimeType = MimeType.BINARY_TYPE;
+        }
+
+        if (mimeType.isXMLType()) {
+            // Store XML Document
+
+            final BiConsumer2E<XMLReader, IndexInfo, SAXException, EXistException> validatorFn = (xmlReader1, validateIndexInfo) -> {
+                validateIndexInfo.setReader(xmlReader1, null);
+                try {
+                      xmlReader1.parse(source);
+                } catch(final SAXException e) {
+                    throw new SAXException("The XML parser reported a problem: " + e.getMessage(), e);
+                } catch(final IOException e) {
+                    throw new EXistException(e);
+                }
+            };
+
+            final BiConsumer2E<XMLReader, IndexInfo, SAXException, EXistException> parserFn = (xmlReader1, storeIndexInfo) -> {
+                try {
+                    storeIndexInfo.setReader(xmlReader1, null);
+                    xmlReader1.parse(source);
+                } catch(final IOException e) {
+                    throw new EXistException(e);
+                }
+            };
+
+            storeXmlDocument(transaction, broker, name, mimeType, createdDate, lastModifiedDate, permission, documentType, xmlReader, validatorFn, parserFn);
+
+        } else {
+            // Store Binary Document
+            try (final InputStream is = source.getByteStream()) {
+                if (is == null) {
+                    throw new IOException("storeDocument received a null InputStream when trying to store a Binary Document");
+                }
+                addBinaryResource(transaction, broker, name, is, mimeType.getName(), -1, createdDate, lastModifiedDate, permission);
+            }
+        }
+    }
+
+    @Override
+    public void storeDocument(final Txn transaction, final DBBroker broker, final XmldbURI name, final Node node, @Nullable MimeType mimeType) throws EXistException, PermissionDeniedException, SAXException, LockException, IOException {
+        storeDocument(transaction, broker, name, node, mimeType);
+    }
+
+    @Override
+    public void storeDocument(final Txn transaction, final DBBroker broker, final XmldbURI name, final Node node, @Nullable MimeType mimeType, final @Nullable Date createdDate, final @Nullable Date lastModifiedDate, final @Nullable Permission permission, final @Nullable DocumentType documentType, @Nullable final XMLReader xmlReader) throws EXistException, PermissionDeniedException, SAXException, LockException, IOException {
+        if (mimeType == null) {
+            mimeType = MimeType.BINARY_TYPE;
+        }
+
+        if (mimeType.isXMLType()) {
+            // Store XML Document
+            final BiConsumer2E<XMLReader, IndexInfo, SAXException, EXistException> validatorFn = (xmlReader1, validateIndexInfo) -> {
+                validateIndexInfo.setReader(xmlReader1, null);
+                validateIndexInfo.setDOMStreamer(new DOMStreamer());
+                validateIndexInfo.getDOMStreamer().serialize(node, true);
+            };
+
+            final BiConsumer2E<XMLReader, IndexInfo, SAXException, EXistException> parserFn = (xmlReader1, storeIndexInfo) -> {
+                storeIndexInfo.setReader(xmlReader1, null);
+                storeIndexInfo.getDOMStreamer().serialize(node, true);
+            };
+
+            storeXmlDocument(transaction, broker, name, mimeType, createdDate, lastModifiedDate, permission, documentType, xmlReader, validatorFn, parserFn);
+
+        } else {
+            throw new EXistException("Cannot store DOM Node as a Binary Document to URI: " + getURI().append(name));
+        }
+    }
+
+    private void storeXmlDocument(final Txn transaction, final DBBroker broker, final XmldbURI name, final MimeType mimeType, final @Nullable Date createdDate, final @Nullable Date lastModifiedDate, final @Nullable Permission permission, final @Nullable DocumentType documentType, @Nullable final XMLReader xmlReader, final BiConsumer2E<XMLReader, IndexInfo, SAXException, EXistException> validatorFn, final BiConsumer2E<XMLReader, IndexInfo, SAXException, EXistException> parserFn) throws EXistException, PermissionDeniedException, SAXException, LockException, IOException {
+        final CollectionConfiguration colconf = getConfiguration(broker);
+
+        // borrow a default XML Reader if needed
+        boolean borrowed = false;
+        final XMLReader xmlReader1;
+        if (xmlReader != null) {
+            xmlReader1 = xmlReader;
+        } else {
+            xmlReader1 = getReader(broker, true, colconf);
+            borrowed = true;
+        }
+
+        try {
+            // Phase 1 of 3 - Validate the Document
+            final IndexInfo indexInfo = validateXMLResourceInternal(transaction, broker, name, colconf, validatorIndexInfo -> validatorFn.accept(xmlReader1, validatorIndexInfo));
+
+            // Phase 2 of 3 - Set the metadata for the document
+            final DocumentImpl document = indexInfo.getDocument();
+            document.setMimeType(mimeType.getName());
+            if (createdDate != null) {
+                document.setCreated(createdDate.getTime());
+                if (lastModifiedDate == null) {
+                    document.setLastModified(createdDate.getTime());
+                }
+            }
+            if (lastModifiedDate != null) {
+                document.setLastModified(lastModifiedDate.getTime());
+            }
+            if (permission != null) {
+                document.setPermissions(permission);
+            }
+            if (documentType != null) {
+                document.setDocumentType(documentType);
+            }
+
+            // Phase 3 of 3 - Store the Document
+            storeXMLInternal(transaction, broker, indexInfo, storeIndexInfo -> parserFn.accept(xmlReader1, storeIndexInfo));
+        } finally {
+            if (borrowed) {
+                releaseReader(broker, xmlReader1);
+            }
+        }
+    }
+
+    @Deprecated
+    @Override
     public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         final XMLReader reader = getReader(broker, false, info.getCollectionConfig());
@@ -1119,6 +1246,7 @@ public class MutableCollection implements Collection {
         }
     }
 
+    @Deprecated
     @Override
     public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source, final XMLReader reader)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
@@ -1146,6 +1274,7 @@ public class MutableCollection implements Collection {
         });
     }
 
+    @Deprecated
     @Override
     public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final String data)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
@@ -1163,6 +1292,7 @@ public class MutableCollection implements Collection {
         });
     }
 
+    @Deprecated
     @Override
     public void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final Node node)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
@@ -1287,11 +1417,13 @@ public class MutableCollection implements Collection {
         }
     }
 
+    @Deprecated
     @Override
     public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final String data) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         return validateXMLResource(transaction, broker, name, new InputSource(new StringReader(data)));
     }
 
+    @Deprecated
     @Override
     public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputSource source) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         final CollectionConfiguration colconf = getConfiguration(broker);
@@ -1303,6 +1435,7 @@ public class MutableCollection implements Collection {
         }
     }
 
+    @Deprecated
     @Override
     public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputSource source, final XMLReader reader) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         final CollectionConfiguration colconf = getConfiguration(broker);
@@ -1330,46 +1463,37 @@ public class MutableCollection implements Collection {
             }
         });
     }
-    
-    //stops streams on the input source from being closed
+
+    /**
+     * Creates a new InputSource that prevents the streams
+     * and readers of the InputSource from being closed.
+     *
+     * @param source the input source
+     *
+     * @return a new input source
+     */
     private InputSource closeShieldInputSource(final InputSource source) {
         final InputSource protectedInputSource = new InputSource();
         protectedInputSource.setEncoding(source.getEncoding());
         protectedInputSource.setSystemId(source.getSystemId());
         protectedInputSource.setPublicId(source.getPublicId());
         
-        if(source.getByteStream() != null) {
-            //TODO consider AutoCloseInputStream
-            final InputStream closeShieldByteStream = new CloseShieldInputStream(source.getByteStream());
+        if (source.getByteStream() != null) {
+            //TODO(AR) consider AutoCloseInputStream
+            final InputStream closeShieldByteStream = CloseShieldInputStream.wrap(source.getByteStream());
             protectedInputSource.setByteStream(closeShieldByteStream);
         }
         
-        if(source.getCharacterStream() != null) {
-            //TODO consider AutoCloseReader
-            final Reader closeShieldReader = new CloseShieldReader(source.getCharacterStream());
+        if (source.getCharacterStream() != null) {
+            //TODO(AR) consider AutoCloseReader
+            final Reader closeShieldReader = CloseShieldReader.wrap(source.getCharacterStream());
             protectedInputSource.setCharacterStream(closeShieldReader);
         }
         
         return protectedInputSource;
     }
 
-    private static class CloseShieldReader extends Reader {
-        private final Reader reader;
-        public CloseShieldReader(final Reader reader) {
-            this.reader = reader;
-        }
-
-        @Override
-        public int read(final char[] cbuf, final int off, final int len) throws IOException {
-            return reader.read(cbuf, off, len);
-        }
-
-        @Override
-        public void close() throws IOException {
-            //do nothing as we are close shield
-        }
-    }
-
+    @Deprecated
     @Override
     public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final Node node) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
         return validateXMLResourceInternal(transaction, broker, name, getConfiguration(broker), (info) -> {
@@ -1600,25 +1724,38 @@ public class MutableCollection implements Collection {
         }
     }
 
+    @Deprecated
     @Override
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final byte[] data, final String mimeType) throws EXistException, PermissionDeniedException, LockException, TriggerException,IOException {
         return addBinaryResource(transaction, broker, name, data, mimeType, null, null);
     }
 
+    @Deprecated
     @Override
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final byte[] data, final String mimeType, final Date created, final Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException,IOException {
         return addBinaryResource(transaction, broker, name, new UnsynchronizedByteArrayInputStream(data), mimeType, data.length, created, modified);
     }
 
+    @Deprecated
     @Override
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final InputStream is, final String mimeType, final long size) throws EXistException, PermissionDeniedException, LockException, TriggerException,IOException {
         return addBinaryResource(transaction, broker, name, is, mimeType, size, null, null);
     }
 
+    @Deprecated
     @Override
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name,
             final InputStream is, final String mimeType, final long size, final Date created, final Date modified)
             throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
+        return addBinaryResource(transaction, broker, name, is, mimeType, size, created, modified, null);
+    }
+
+    @Deprecated
+    @Override
+    public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name,
+            final InputStream is, final String mimeType, final long size, final Date created, final Date modified,
+            @Nullable final Permission permission) throws EXistException, PermissionDeniedException, LockException,
+            TriggerException, IOException {
 
         final Database db = broker.getBrokerPool();
         if (db.isReadOnly()) {
@@ -1640,11 +1777,12 @@ public class MutableCollection implements Collection {
                 blob = new BinaryDocument(broker.getBrokerPool(), this, docId, name);
             }
 
-            return addBinaryResource(db, transaction, broker, blob, is, mimeType, size, created, modified,
+            return addBinaryResource(db, transaction, broker, blob, is, mimeType, size, created, modified, permission,
                     DBBroker.PreserveType.DEFAULT, oldDoc, collectionLock);
         }
     }
 
+    @Deprecated
     @Override
     public BinaryDocument validateBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name) throws PermissionDeniedException, LockException, TriggerException, IOException {
         try {
@@ -1655,11 +1793,13 @@ public class MutableCollection implements Collection {
         }
     }
 
+    @Deprecated
     @Override
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final BinaryDocument blob, final InputStream is, final String mimeType, final long size, final Date created, final Date modified) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
         return addBinaryResource(transaction, broker, blob, is, mimeType, size, created, modified, DBBroker.PreserveType.DEFAULT);
     }
 
+    @Deprecated
     @Override
     public BinaryDocument addBinaryResource(final Txn transaction, final DBBroker broker, final BinaryDocument blob, final InputStream is, final String mimeType, final long size, final Date created, final Date modified, final DBBroker.PreserveType preserve) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
         final Database db = broker.getBrokerPool();
@@ -1674,14 +1814,14 @@ public class MutableCollection implements Collection {
 
             final DocumentImpl oldDoc = getDocument(broker, docUri);
 
-            return addBinaryResource(db, transaction, broker, blob, is, mimeType, size, created, modified, preserve,
+            return addBinaryResource(db, transaction, broker, blob, is, mimeType, size, created, modified, null, preserve,
                     oldDoc, collectionLock);
         }
     }
 
     private BinaryDocument addBinaryResource(final Database db, final Txn transaction, final DBBroker broker,
-            final BinaryDocument blob, final InputStream is, final String mimeType, final long size, final Date created,
-            final Date modified, final DBBroker.PreserveType preserve, final DocumentImpl oldDoc,
+            final BinaryDocument blob, final InputStream is, final String mimeType, @Deprecated final long size, final Date created,
+            final Date modified, @Nullable final Permission permission, final DBBroker.PreserveType preserve, final DocumentImpl oldDoc,
             final ManagedCollectionLock collectionLock) throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException {
 
         final DocumentTriggers trigger = new DocumentTriggers(broker, transaction, null, this, broker.isTriggersEnabled() ? getConfiguration(broker) : null);
@@ -1701,7 +1841,7 @@ public class MutableCollection implements Collection {
             if (modified != null) {
                 blob.setLastModified(modified.getTime());
             }
-            blob.setContentLength(size);
+//            blob.setContentLength(size);
 
             if (oldDoc == null) {
                 trigger.beforeCreateDocument(broker, transaction, blob.getURI());
@@ -1720,6 +1860,10 @@ public class MutableCollection implements Collection {
 
                 // remove the old document
                 broker.removeResource(transaction, oldDoc);
+            }
+
+            if (permission != null) {
+                blob.setPermissions(permission);
             }
 
             // store the binary content (create/replace)
@@ -1788,14 +1932,14 @@ public class MutableCollection implements Collection {
      */
     private XMLReader getReader(final DBBroker broker, final boolean validation, final CollectionConfiguration collectionConf) {
         // Get reader from readerpool.
-        final XMLReader reader = broker.getBrokerPool().getParserPool().borrowXMLReader();
+        final XMLReader reader = broker.getBrokerPool().getXmlReaderPool().borrowXMLReader();
         
         // If Collection configuration exists (try to) get validation mode
         // and setup reader with this information.
         if (!validation) {
             XMLReaderObjectFactory.setReaderValidationMode(XMLReaderObjectFactory.VALIDATION_SETTING.DISABLED, reader);
             
-        } else if( collectionConf!=null ) {
+        } else if(collectionConf != null) {
             final VALIDATION_SETTING mode = collectionConf.getValidationMode();
             XMLReaderObjectFactory.setReaderValidationMode(mode, reader);
         }

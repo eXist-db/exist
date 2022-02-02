@@ -51,6 +51,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -231,7 +233,6 @@ public class GetThumbnailsFunction extends BasicFunction {
             DocumentImpl docImage = null;
             BinaryDocument binImage = null;
             @SuppressWarnings("unused")
-            BinaryDocument doc = null;
             BufferedImage bImage = null;
             @SuppressWarnings("unused")
             byte[] imgData = null;
@@ -275,13 +276,12 @@ public class GetThumbnailsFunction extends BasicFunction {
                                     } catch (Exception e) {
                                         throw new XPathException(this, e.getMessage());
                                     }
-                                    try {
-                                        doc = thumbCollection.addBinaryResource(
+                                    try (final StringInputSource sis = new StringInputSource(os.toByteArray())) {
+                                        thumbCollection.storeDocument(
                                                 transaction, dbbroker,
                                                 XmldbURI.create(prefix
-                                                        + docImage.getFileURI()), os
-                                                        .toByteArray(), "image/jpeg");
-                                    } catch (Exception e) {
+                                                        + docImage.getFileURI()), sis, new MimeType("image/jpeg", MimeType.BINARY));
+                                    } catch (final Exception e) {
                                         throw new XPathException(this, e.getMessage());
                                     }
                                     // result.add(new

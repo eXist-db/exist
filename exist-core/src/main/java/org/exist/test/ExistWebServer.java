@@ -21,7 +21,6 @@
  */
 package org.exist.test;
 
-import net.jcip.annotations.GuardedBy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -34,12 +33,11 @@ import org.exist.util.LockException;
 import org.junit.rules.ExternalResource;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.Random;
 
+import static org.exist.util.IPUtil.nextFreePort;
 import static org.junit.Assert.fail;
 import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
 
@@ -60,7 +58,6 @@ public class ExistWebServer extends ExternalResource {
     private static final int MIN_RANDOM_PORT = 49152;
     private static final int MAX_RANDOM_PORT = 65535;
     private static final int MAX_RANDOM_PORT_ATTEMPTS = 10;
-    @GuardedBy("class") private static final Random random = new Random();
 
     private JettyStart server = null;
     private String prevAutoDeploy = "off";
@@ -126,9 +123,9 @@ public class ExistWebServer extends ExternalResource {
 
             if(useRandomPort) {
                 synchronized(ExistWebServer.class) {
-                    System.setProperty(PROP_JETTY_PORT, Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT)));
-                    System.setProperty(PROP_JETTY_SECURE_PORT, Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT)));
-                    System.setProperty(PROP_JETTY_SSL_PORT, Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT)));
+                    System.setProperty(PROP_JETTY_PORT, Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT, MAX_RANDOM_PORT_ATTEMPTS)));
+                    System.setProperty(PROP_JETTY_SECURE_PORT, Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT, MAX_RANDOM_PORT_ATTEMPTS)));
+                    System.setProperty(PROP_JETTY_SSL_PORT, Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT, MAX_RANDOM_PORT_ATTEMPTS)));
 
                     server = new JettyStart();
                     server.run(jettyStandaloneMode);
@@ -193,29 +190,5 @@ public class ExistWebServer extends ExternalResource {
         }
 
         super.after();
-    }
-
-    public int nextFreePort(final int from, final int to) {
-        for (int attempts = 0; attempts < MAX_RANDOM_PORT_ATTEMPTS; attempts++) {
-            final int port = random(from, to);
-            if (isLocalPortFree(port)) {
-                return port;
-            }
-        }
-
-        throw new IllegalStateException("Exceeded MAX_RANDOM_PORT_ATTEMPTS");
-    }
-
-    private int random(final int min, final int max) {
-        return random.nextInt((max - min) + 1) + min;
-    }
-
-    private boolean isLocalPortFree(final int port) {
-        try {
-            new ServerSocket(port).close();
-            return true;
-        } catch (final IOException e) {
-            return false;
-        }
     }
 }

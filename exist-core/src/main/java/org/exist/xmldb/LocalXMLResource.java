@@ -485,9 +485,9 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 
     @Override
     public void setContentAsDOM(final Node root) throws XMLDBException {
-        if (root instanceof AttrImpl) {
-            throw new XMLDBException(ErrorCodes.WRONG_CONTENT_TYPE, "SENR0001: can not serialize a standalone attribute");
-        }
+//        if (root instanceof AttrImpl) {
+//            throw new XMLDBException(ErrorCodes.WRONG_CONTENT_TYPE, "SENR0001: can not serialize a standalone attribute");
+//        }
 
         content = null;
         file = null;

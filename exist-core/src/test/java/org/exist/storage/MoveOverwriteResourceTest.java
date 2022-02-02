@@ -22,9 +22,7 @@
 package org.exist.storage;
 
 import org.exist.Database;
-import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.*;
@@ -34,9 +32,7 @@ import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.LockException;
-import org.exist.util.Occurrences;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.NodeSelector;
 import org.exist.xquery.QueryRewriter;
@@ -45,7 +41,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -115,8 +110,8 @@ public class MoveOverwriteResourceTest {
             test1 = createCollection(transaction, broker, TEST_COLLECTION_URI);
             test2 = createCollection(transaction, broker, SUB_TEST_COLLECTION_URI);
 
-            store(transaction, broker, test1, doc1Name, XML1);
-            store(transaction, broker, test2, doc2Name, XML2);
+            broker.storeDocument(transaction, doc1Name, new StringInputSource(XML1), MimeType.XML_TYPE, test1);
+            broker.storeDocument(transaction, doc2Name, new StringInputSource(XML2), MimeType.XML_TYPE, test2);
 
             transaction.commit();
         }
@@ -126,11 +121,6 @@ public class MoveOverwriteResourceTest {
         Collection col = broker.getOrCreateCollection(txn, uri);
         broker.saveCollection(txn, col);
         return col;
-    }
-
-    private void store(Txn txn, DBBroker broker, Collection col, XmldbURI name, String data) throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
-        IndexInfo info = col.validateXMLResource(txn, broker, name, data);
-        col.store(txn, broker, info, data);
     }
 
     private void move(final Database db) throws Exception {

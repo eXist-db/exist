@@ -33,6 +33,8 @@ import java.text.DateFormat;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import net.jcip.annotations.GuardedBy;
+import net.jcip.annotations.ThreadSafe;
 import net.jpountz.xxhash.XXHash64;
 import net.jpountz.xxhash.XXHashFactory;
 import org.apache.logging.log4j.LogManager;
@@ -45,6 +47,7 @@ import org.exist.storage.lock.FileLock;
 import org.exist.storage.txn.Checkpoint;
 import org.exist.storage.txn.TxnStart;
 import org.exist.util.ByteConversion;
+import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.sanity.SanityCheck;
@@ -99,8 +102,8 @@ import static org.exist.util.ThreadUtils.newInstanceThread;
  * @author wolf
  * @author aretter
  */
+@ThreadSafe
 @ConfigurationClass("journal")
-//TODO: conf.xml refactoring <recovery> => <recovery><journal/></recovery>
 public final class Journal implements Closeable {
     /**
      * Logger for this class
@@ -151,25 +154,49 @@ public final class Journal implements Closeable {
     public static final int LOG_ENTRY_BASE_LEN = LOG_ENTRY_HEADER_LEN + LOG_ENTRY_BACK_LINK_LEN + LOG_ENTRY_CHECKSUM_LEN;
 
     /**
-     * default maximum journal size
+     * default sync on commit setting: true
      */
-    public static final int DEFAULT_MAX_SIZE = 100;  //MB
+    final static boolean DEFAULT_SYNC_ON_COMMIT = true;
 
     /**
-     * minimal size the journal needs to have to be replaced by a new file during a checkpoint
+     * default maximum journal size: 100 MB
      */
-    private static final int DEFAULT_MIN_SIZE = 1;  // MB
+    static final int DEFAULT_MAX_SIZE = 100;  //MB
+
+    /**
+     * minimal size the journal needs to have to be replaced by a new file during a checkpoint: 1 MB
+     */
+    static final int DEFAULT_MIN_SIZE = 1;  // MB
 
     /**
      * We use a 1 megabyte buffer.
      */
-    public static final int BUFFER_SIZE = 1024 * 1024;  // bytes
+    public static final int BUFFER_SIZE = 1024 * 1024;  // 1 MB in bytes
 
     /**
      * Seed used for xxhash-64 checksums calculated
      * by the journal.
      */
     public static final long XXHASH64_SEED = 0x9747b28c;
+
+    /**
+     * the {@link BrokerPool} that created this manager
+     */
+    private final BrokerPool pool;
+
+    /**
+     * if set to true, a sync will be triggered on the log file after every commit
+     */
+    @ConfigurationFieldAsAttribute("sync-on-commit")
+    //TODO: conf.xml refactoring <recovery sync-on-commit=""> => <journal sync-on-commit="">
+    private final boolean syncOnCommit;
+
+    /**
+     * the data directory where journal files are written to
+     */
+    @ConfigurationFieldAsAttribute("journal-dir")
+    //TODO: conf.xml refactoring <recovery journal-dir=""> => <journal dir="">
+    private final Path dir;
 
     /**
      * Minimum size limit for the journal file before it is replaced by a new file.
@@ -186,92 +213,70 @@ public final class Journal implements Closeable {
     //TODO: conf.xml refactoring <recovery size=""> => <journal size="">
     private final long journalSizeLimit;
 
+    private final FileLock fileLock;
+
+    private final XXHash64 xxHash64 = XXHashFactory.fastestInstance().hash64();
+
     /**
      * the current output channel
      * Only valid after switchFiles() was called at least once!
      */
-    private FileChannel channel;
+    @GuardedBy("this") private FileChannel channel;
 
     /**
-     * latch used to synchronize writes to the channel
+     * the current journal file number
      */
-    private final Object latch = new Object();
-
-    /**
-     * the data directory where journal files are written to
-     */
-    @ConfigurationFieldAsAttribute("journal-dir")
-    //TODO: conf.xml refactoring <recovery journal-dir=""> => <journal dir="">
-    private final Path dir;
-
-    private FileLock fileLock;
-
-    /**
-     * the current file number
-     */
-    private int currentFile = 0;
+    @GuardedBy("this") private short currentJournalFileNumber = -1;
 
     /**
      * temp buffer
      */
-    private ByteBuffer currentBuffer;
+    @GuardedBy("this") private ByteBuffer currentBuffer;
 
     /**
      * the last LSN written by the JournalManager
      */
-    private Lsn currentLsn = Lsn.LSN_INVALID;
+    @GuardedBy("this") private Lsn currentLsn = Lsn.LSN_INVALID;
 
     /**
      * the last LSN actually written to the file
      */
-    private Lsn lastLsnWritten = Lsn.LSN_INVALID;
+    @GuardedBy("this") private Lsn lastLsnWritten = Lsn.LSN_INVALID;
 
     /**
      * stores the current LSN of the last file sync on the file
      */
-    private Lsn lastSyncLsn = Lsn.LSN_INVALID;
+    @GuardedBy("this") private Lsn lastSyncLsn = Lsn.LSN_INVALID;
 
     /**
      * set to true while recovery is in progress
      */
-    private boolean inRecovery = false;
+    @GuardedBy("this") private boolean inRecovery = false;
 
     /**
-     * the {@link BrokerPool} that created this manager
+     * true if the journal has been initialised
      */
-    private final BrokerPool pool;
+    @GuardedBy("this") private boolean initialised = false;
 
-    /**
-     * if set to true, a sync will be triggered on the log file after every commit
-     */
-    @ConfigurationFieldAsAttribute("sync-on-commit")
-    //TODO: conf.xml refactoring <recovery sync-on-commit=""> => <journal sync-on-commit="">
-    private final static boolean DEFAULT_SYNC_ON_COMMIT = true;
-    private final boolean syncOnCommit;
 
-    private final Path fsJournalDir;
-
-    private volatile boolean initialised = false;
-
-    private final XXHash64 xxHash64 = XXHashFactory.fastestInstance().hash64();
-
+    // NOTE(AR) called from BrokerPool.prepare -- single thread!
     public Journal(final BrokerPool pool, final Path directory) throws EXistException {
         this.pool = pool;
-        this.fsJournalDir = directory.resolve("fs.journal");
-        this.currentBuffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
 
-        this.syncOnCommit = pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SYNC_ON_COMMIT, DEFAULT_SYNC_ON_COMMIT);
+        final Configuration configuration = pool.getConfiguration();
+
+        this.syncOnCommit = configuration.getProperty(PROPERTY_RECOVERY_SYNC_ON_COMMIT, DEFAULT_SYNC_ON_COMMIT);
         if (LOG.isDebugEnabled()) {
             LOG.debug("SyncOnCommit = {}", syncOnCommit);
         }
 
-        final Optional<Path> logDir = Optional.ofNullable((Path) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_JOURNAL_DIR));
+        final Optional<Path> logDir = Optional.ofNullable((Path) configuration.getProperty(PROPERTY_RECOVERY_JOURNAL_DIR));
         if (logDir.isPresent()) {
             Path f = logDir.get();
             if (!f.isAbsolute()) {
-                f = pool.getConfiguration().getExistHome()
+                f = configuration.getExistHome()
                         .map(h -> Optional.of(h.resolve(logDir.get())))
-                        .orElse(pool.getConfiguration().getConfigFilePath().map(p -> p.getParent().resolve(logDir.get())))
+                        .orElse(configuration.getConfigFilePath().map(p -> p.getParent().resolve(logDir.get())))
                         .orElse(f);
             }
 
@@ -298,20 +303,23 @@ public final class Journal implements Closeable {
             LOG.debug("Using directory for the journal: {}", dir.toAbsolutePath().toString());
         }
 
-        this.journalSizeMin = 1024 * 1024 * pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SIZE_MIN, DEFAULT_MIN_SIZE);
-        this.journalSizeLimit = 1024 * 1024 * pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SIZE_LIMIT, DEFAULT_MAX_SIZE);
+        this.journalSizeMin = 1024 * 1024 * configuration.getProperty(PROPERTY_RECOVERY_SIZE_MIN, DEFAULT_MIN_SIZE);
+        this.journalSizeLimit = 1024 * 1024 * configuration.getProperty(PROPERTY_RECOVERY_SIZE_LIMIT, DEFAULT_MAX_SIZE);
+
+        final Path lck = dir.resolve(LCK_FILE);
+        this.fileLock = new FileLock(pool, lck);
+
+        this.currentBuffer = ByteBuffer.allocateDirect(BUFFER_SIZE);
     }
 
-    public void initialize() throws EXistException, ReadOnlyException {
-        final Path lck = dir.resolve(LCK_FILE);
-        fileLock = new FileLock(pool, lck);
+    public synchronized void initialize() throws EXistException, ReadOnlyException {
         final boolean locked = fileLock.tryLock();
         if (!locked) {
             final String lastHeartbeat =
                     DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM)
                             .format(fileLock.getLastHeartbeat());
             throw new EXistException("The journal log directory seems to be locked by another " +
-                    "eXist process. A lock file: " + lck.toAbsolutePath().toString() + " is present in the " +
+                    "eXist process. A lock file: " + fileLock.getFile().toAbsolutePath() + " is present in the " +
                     "log directory. Last access to the lock file: " + lastHeartbeat);
         }
     }
@@ -340,14 +348,10 @@ public final class Journal implements Closeable {
         }
 
         try {
-            if (currentFile > Short.MAX_VALUE) {
-                throw new JournalException("Journal can only support " + Short.MAX_VALUE + " log files");
-            }
-
             // TODO(AR) this is needed as the journal is initialised by starting a transaction for loading the SymbolTable... before recovery! which is likely wrong!!! as Recovery Cannot run if the Journal file has been switched!
             final long pos = channel != null ? channel.position() : 0;
 
-            currentLsn = new Lsn((short)currentFile, pos + currentBuffer.position() + 1);
+            currentLsn = new Lsn(currentJournalFileNumber, pos + currentBuffer.position() + 1);
         } catch (final IOException e) {
             throw new JournalException("Unable to create LSN for: " + entry.dump());
         }
@@ -385,7 +389,7 @@ public final class Journal implements Closeable {
      *
      * @return last written LSN
      */
-    public Lsn lastWrittenLsn() {
+    public synchronized Lsn lastWrittenLsn() {
         return lastLsnWritten;
     }
 
@@ -395,7 +399,7 @@ public final class Journal implements Closeable {
      *
      * @param fsync forces all changes to disk if true and syncMode is set to SYNC_ON_COMMIT.
      */
-    public void flushToLog(final boolean fsync) {
+    public synchronized void flushToLog(final boolean fsync) {
         flushToLog(fsync, false);
     }
 
@@ -442,22 +446,21 @@ public final class Journal implements Closeable {
         if (currentBuffer == null || channel == null) {
             return; // the db has probably been shut down already or not fully initialized
         }
-        synchronized (latch) {
-            try {
-                if (currentBuffer.position() > 0) {
-                    currentBuffer.flip();
-                    final int size = currentBuffer.remaining();
-                    while (currentBuffer.hasRemaining()) {
-                        channel.write(currentBuffer);
-                    }
 
-                    lastLsnWritten = currentLsn;
+        try {
+            if (currentBuffer.position() > 0) {
+                currentBuffer.flip();
+                final int size = currentBuffer.remaining();
+                while (currentBuffer.hasRemaining()) {
+                    channel.write(currentBuffer);
                 }
-            } catch (final IOException e) {
-                LOG.warn("Flushing log file failed!", e);
-            } finally {
-                currentBuffer.clear();
+
+                lastLsnWritten = currentLsn;
             }
+        } catch (final IOException e) {
+            LOG.warn("Flushing log file failed!", e);
+        } finally {
+            currentBuffer.clear();
         }
     }
 
@@ -470,7 +473,7 @@ public final class Journal implements Closeable {
      * @param switchLogFiles Indicates whether a new journal file should be started
      * @throws JournalException if the checkpoint could not be written to the journal.
      */
-    public void checkpoint(final long txnId, final boolean switchLogFiles) throws JournalException {
+    public synchronized void checkpoint(final long txnId, final boolean switchLogFiles) throws JournalException {
         LOG.debug("Checkpoint reached");
         writeToLog(new Checkpoint(txnId));
         if (switchLogFiles) {
@@ -482,8 +485,8 @@ public final class Journal implements Closeable {
         }
         try {
             if (switchLogFiles && channel != null && channel.position() > journalSizeMin) {
-                final Path oldFile = getFile(currentFile);
-                final RemoveRunnable removeRunnable = new RemoveRunnable(channel, oldFile);
+                final Path oldFile = getFile(currentJournalFileNumber);
+                final RemoveRunnable removeRunnable = new RemoveRunnable(channel, oldFile); // takes ownership of channel and oldFile when `start` is called
                 try {
                     switchFiles();
                 } catch (final LogException e) {
@@ -493,33 +496,46 @@ public final class Journal implements Closeable {
                 final Thread removeThread = newInstanceThread(pool, "remove-journal", removeRunnable);
                 removeThread.start();
             }
-            clearBackupFiles();
         } catch (final IOException e) {
             LOG.warn("IOException while writing checkpoint", e);
         }
     }
 
     /**
-     * Set the file number of the last file used.
+     * Set the file number of the current journal file.
      *
-     * @param fileNum the log file number
+     * @param currentJournalFileNumber the current journal file number
      */
-    public void setCurrentFileNum(final int fileNum) {
-        currentFile = fileNum;
+    public synchronized void setCurrentJournalFileNumber(final short currentJournalFileNumber) {
+        this.currentJournalFileNumber = currentJournalFileNumber;
     }
 
-    public void clearBackupFiles() {
-        if (Files.exists(fsJournalDir)) {
-            try (final Stream<Path> backupFiles = Files.list(fsJournalDir)) {
-                backupFiles.forEach(p -> {
-                    LOG.info("Checkpoint deleting: {}", p.toAbsolutePath().toString());
-                    if (!FileUtils.deleteQuietly(p)) {
-                        LOG.fatal("Cannot delete file '{}' from backup journal.", p.toAbsolutePath().toString());
-                    }
-                });
-            } catch (final IOException ioe) {
-                LOG.error("Could not clear fs.journal backup files", ioe);
-            }
+    /**
+     * Get the file number of the current journal file.
+     *
+     * @return the current journal file number
+     */
+    synchronized short getCurrentJournalFileNumber() {
+        return currentJournalFileNumber;
+    }
+
+    /**
+     * Get the next Journal File Number.
+     *
+     * The number will always be in the range 0 to 32767 (inclusive).
+     * Once 32767 is reached, we begin again at 0.
+     *
+     * @param currentJournalFileNumber the current journal file number
+     *
+     * @return the next journal file number.
+     */
+    static short getNextJournalFileNumber(final short currentJournalFileNumber) {
+        final int nextJournalFileNumber = currentJournalFileNumber + 1;
+        if (nextJournalFileNumber > Short.MAX_VALUE) {
+            // wrap-around to zero once we hit the ceiling
+            return 0;
+        } else {
+            return (short) nextJournalFileNumber;
         }
     }
 
@@ -529,45 +545,49 @@ public final class Journal implements Closeable {
      *
      * @throws LogException if the journal files could not be switched
      */
-    public void switchFiles() throws LogException {
-        ++currentFile;
-        final String fname = getFileName(currentFile);
-        final Path file = dir.resolve(fname);
-        if (Files.exists(file)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Journal file {} already exists. Moving it to a backup file.", file.toAbsolutePath());
-            }
+    public synchronized void switchFiles() throws LogException {
+        final short newJournalFileNumber = getNextJournalFileNumber(currentJournalFileNumber);
+        final String newJournalFileName = getFileName(newJournalFileNumber);
+        final Path newJournalFile = dir.resolve(newJournalFileName);
+
+        /**
+         * If a file already exists in the same path as where we
+         * wish to write our new journal file, then we try and rename
+         * the existing file to give it a .bak file extension.
+         */
+        if (Files.exists(newJournalFile)) {
+            final Path backupFile = newJournalFile.resolveSibling(FileUtils.fileName(newJournalFile) + BAK_FILE_SUFFIX);
+            LOG.warn("Journal file: {} already exists. Moving it to a backup file: {}", newJournalFile.toAbsolutePath(), backupFile.toAbsolutePath());
 
             try {
-                final Path renamed = Files.move(file, file.resolveSibling(FileUtils.fileName(file) + BAK_FILE_SUFFIX), StandardCopyOption.ATOMIC_MOVE);
+                final Path backedUpJournalFile = Files.move(newJournalFile, backupFile, StandardCopyOption.ATOMIC_MOVE);
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Old Journal file renamed from '{}' to '{}'", file.toAbsolutePath().toString(), renamed.toAbsolutePath().toString());
+                    LOG.debug("Old Journal file renamed from '{}' to '{}'", newJournalFile.toAbsolutePath().toString(), backedUpJournalFile.toAbsolutePath().toString());
                 }
             } catch (final IOException ioe) {
-                LOG.warn(ioe); //TODO(AR) should probably be an LogException but wasn't previously!
+                LOG.warn(ioe); //TODO(AR) should probably throw a LogException!
             }
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Creating new journal: {}", file.toAbsolutePath().toString());
+            LOG.debug("Creating new journal: {}", newJournalFile.toAbsolutePath().toString());
         }
 
-        synchronized (latch) {
-            try {
-                // close current file
-                close();
+        try {
+            // close current journal file
+            close();
 
-                // open new file
-                channel = (FileChannel) Files.newByteChannel(file, CREATE_NEW, WRITE);
-                writeJournalHeader(channel);
-                initialised = true;
-            } catch (final IOException e) {
-                throw new LogException("Failed to open new journal: " + file.toAbsolutePath().toString(), e);
-            }
+            // open new journal file
+            channel = (FileChannel) Files.newByteChannel(newJournalFile, CREATE_NEW, WRITE);
+            writeJournalHeader(channel);
+            initialised = true;
+            currentJournalFileNumber = newJournalFileNumber;
+        } catch (final IOException e) {
+            throw new LogException("Failed to open new journal: " + newJournalFile.toAbsolutePath().toString(), e);
         }
     }
 
-    private void writeJournalHeader(final SeekableByteChannel channel) throws IOException {
+    static void writeJournalHeader(final SeekableByteChannel channel) throws IOException {
         final ByteBuffer buf = ByteBuffer.allocateDirect(JOURNAL_HEADER_LEN);
 
         // write the magic number
@@ -586,7 +606,7 @@ public final class Journal implements Closeable {
      * Close the journal.
      */
     @Override
-    public void close() throws IOException {
+    public synchronized void close() throws IOException {
         if (channel != null) {
             try {
                 sync();
@@ -597,11 +617,25 @@ public final class Journal implements Closeable {
         }
     }
 
-    private static int journalFileNum(final Path path) {
+    /**
+     * Get the journal file number from a journal file's name.
+     *
+     * @param path the journal file
+     *
+     * @return the journal file number
+     *
+     * @throws NumberFormatException if the file number cannot be parsed
+     * @throws IllegalArgumentException if the file name contains a file number which is out of range
+     */
+    static short journalFileNum(final Path path) throws NumberFormatException, IllegalArgumentException {
         final String fileName = FileUtils.fileName(path);
         final int p = fileName.indexOf('.');
         final String baseName = fileName.substring(0, p);
-        return Integer.parseInt(baseName, 16);
+        final short fileNum = Short.parseShort(baseName, 16);
+        if (fileNum < 0) {
+            throw new IllegalArgumentException("Path: " + fileNum + " has a file number that is out of range (0-" + Short.MAX_VALUE + ")");
+        }
+        return fileNum;
     }
 
     /**
@@ -609,12 +643,13 @@ public final class Journal implements Closeable {
      *
      * @param files the journal files to consider.
      *
-     * @return the number of the last journal file
+     * @return the number of the last journal file, or -1 if the {@code files} stream was empty
      */
-    public static int findLastFile(final Stream<Path> files) {
-        return files
+    public static short findLastFile(final Stream<Path> files) {
+        return (short) files
                 .map(Journal::journalFileNum)
-                .max(Integer::max)
+                .mapToInt(v -> v)
+                .max()
                 .orElse(-1);
     }
 
@@ -623,9 +658,24 @@ public final class Journal implements Closeable {
      *
      * @return A Stream of all journal files. NOTE - This is
      * an I/O Stream and so you are responsible for closing it!
+     *
      * @throws IOException if an I/O error occurs whilst finding journal files.
      */
     public Stream<Path> getFiles() throws IOException {
+        return getFiles(dir);
+    }
+
+    /**
+     * Returns a Stream of all journal files found in the directory.
+     *
+     * @param dir the journal directory
+     *
+     * @return A Stream of all journal files. NOTE - This is
+     * an I/O Stream and so you are responsible for closing it!
+     *
+     * @throws IOException if an I/O error occurs whilst finding journal files.
+     */
+    static Stream<Path> getFiles(final Path dir) throws IOException {
         final String suffix = '.' + LOG_FILE_SUFFIX;
         final String indexSuffix = "_index" + suffix;
 
@@ -643,7 +693,20 @@ public final class Journal implements Closeable {
      *
      * @return the journal file
      */
-    public Path getFile(final int fileNum) {
+    public Path getFile(final short fileNum) {
+        return getFile(dir, fileNum);
+    }
+
+    /**
+     * Returns the file corresponding to the specified
+     * file number.
+     *
+     * @param dir the journal directory.
+     * @param fileNum the journal file number.
+     *
+     * @return the journal file
+     */
+    static Path getFile(final Path dir, final short fileNum) {
         return dir.resolve(getFileName(fileNum));
     }
 
@@ -655,7 +718,7 @@ public final class Journal implements Closeable {
      * @param txnId      the transaction id.
      * @param checkpoint true if a checkpoint should be written before shitdown
      */
-    public void shutdown(final long txnId, final boolean checkpoint) {
+    public synchronized void shutdown(final long txnId, final boolean checkpoint) {
         if (!initialised) {
             // no journal is initialized
             return;
@@ -693,7 +756,7 @@ public final class Journal implements Closeable {
      *
      * @param inRecovery true when the database is in recovery, false otherwise.
      */
-    public void setInRecovery(final boolean inRecovery) {
+    public synchronized void setInRecovery(final boolean inRecovery) {
         this.inRecovery = inRecovery;
     }
 
@@ -701,12 +764,16 @@ public final class Journal implements Closeable {
      * Translate a file number into a file name.
      *
      * @param fileNum the journal file number
+     *
      * @return The file name
+     *
+     * @throws IllegalArgumentException if the file number is out of range
      */
-    static String getFileName(final int fileNum) {
-        String hex = Integer.toHexString(fileNum);
-        hex = "0000000000".substring(hex.length()) + hex;
-        return hex + '.' + LOG_FILE_SUFFIX;
+    static String getFileName(final short fileNum) throws IllegalArgumentException {
+        if (fileNum < 0) {
+            throw new IllegalArgumentException("File Number: " + fileNum + " is out of range (0-" + Short.MAX_VALUE + ")");
+        }
+        return String.format("%010x", fileNum) + '.' + LOG_FILE_SUFFIX;
     }
 
     private static class RemoveRunnable implements Runnable {

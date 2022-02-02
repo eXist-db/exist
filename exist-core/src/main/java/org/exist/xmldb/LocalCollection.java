@@ -22,7 +22,6 @@
 package org.exist.xmldb;
 
 import java.io.InputStream;
-import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.util.*;
 import javax.xml.transform.OutputKeys;
@@ -30,7 +29,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockToken;
 import org.exist.dom.persistent.LockedDocument;
@@ -44,7 +42,7 @@ import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
-import org.exist.util.HtmlToXmlParser;
+import org.exist.util.*;
 import com.evolvedbinary.j8fu.Either;
 import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.xmldb.function.LocalXmldbCollectionFunction;
@@ -58,8 +56,10 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
+import static com.evolvedbinary.j8fu.Try.Try;
+
 /**
- *  A local implementation of the Collection interface. This
+ * A local implementation of the Collection interface. This
  * is used when the database is running in embedded mode.
  *
  * Extends Observable to allow status callbacks during indexing.
@@ -71,7 +71,7 @@ import org.xmldb.api.modules.XMLResource;
  */
 public class LocalCollection extends AbstractLocal implements EXistCollection {
 
-    private static Logger LOG = LogManager.getLogger(LocalCollection.class);
+    private static final Logger LOG = LogManager.getLogger(LocalCollection.class);
 
     /**
      * Property to be passed to {@link #setProperty(String, String)}.
@@ -594,15 +594,15 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
 
         modify().apply((collection, broker, transaction) -> {
             try {
+                final String strMimeType = res.getMimeType(broker, transaction);
+                final MimeType mimeType = strMimeType != null ? MimeTable.getInstance().getContentType(strMimeType) : null;
                 final long conLength = res.getStreamLength();
                 if (conLength != -1) {
-                    try (InputStream is = res.getStreamContent(broker, transaction)) {
-                        collection.addBinaryResource(transaction, broker, resURI, is, res.getMimeType(broker, transaction), conLength, res.datecreated, res.datemodified);
-                    }
+                    broker.storeDocument(transaction, resURI, new InputStreamSupplierInputSource(() -> Try(() -> res.getStreamContent(broker, transaction)).getOrElse((InputStream) null)), mimeType, res.datecreated, res.datemodified, null, null, null, collection);
                 } else {
-                    collection.addBinaryResource(transaction, broker, resURI, (byte[]) res.getContent(broker, transaction), res.getMimeType(broker, transaction), res.datecreated, res.datemodified);
+                    broker.storeDocument(transaction, resURI, new StringInputSource((byte[]) res.getContent(broker, transaction)), mimeType, res.datecreated, res.datemodified, null, null, null, collection);
                 }
-            } catch(final EXistException e) {
+            } catch(final EXistException | SAXException e) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
             }
             return null;
@@ -628,12 +628,13 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
 //          }
 
             try(final ManagedDocumentLock documentLock = broker.getBrokerPool().getLockManager().acquireDocumentWriteLock(collection.getURI().append(resURI))) {
-                XMLReader reader = null;
 
-                /* validate */
-                final IndexInfo info;
+                final String strMimeType = res.getMimeType(broker, transaction);
+                final MimeType mimeType = strMimeType != null ? MimeTable.getInstance().getContentType(strMimeType) : null;
+
                 if (res.root != null) {
-                    info = collection.validateXMLResource(transaction, broker, resURI, res.root);
+                    collection.storeDocument(transaction, broker, resURI, res.root, mimeType, res.datecreated, res.datemodified, null, null, null);
+
                 } else {
                     final InputSource source;
                     if (uri != null) {
@@ -641,54 +642,24 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
                     } else if (res.inputSource != null) {
                         source = res.inputSource;
                     } else {
-                        source = new InputSource(new StringReader(res.content));
+                        source = new StringInputSource(res.content);
                     }
 
+                    final XMLReader reader;
                     if (useHtmlReader(broker, transaction, res)) {
                         reader = getHtmlReader();
-                        info = collection.validateXMLResource(transaction, broker, resURI, source, reader);
                     } else {
-                        info = collection.validateXMLResource(transaction, broker, resURI, source);
-                    }
-                }
-
-                //Notice : the document should now have a LockMode.WRITE_LOCK update lock
-                //TODO : check that no exception occurs in order to allow it to be released
-                info.getDocument().setMimeType(res.getMimeType(broker, transaction));
-                if (res.datecreated != null) {
-                    info.getDocument().setCreated(res.datecreated.getTime());
-                }
-                if (res.datemodified != null) {
-                    info.getDocument().setLastModified(res.datemodified.getTime());
-                }
-
-
-                /* store */
-                if (res.root != null) {
-                    collection.store(transaction, broker, info, res.root);
-                } else {
-                    final InputSource source;
-                    if (uri != null) {
-                        source = new InputSource(uri);
-                    } else if (res.inputSource != null) {
-                        source = res.inputSource;
-                    } else {
-                        source = new InputSource(new StringReader(res.content));
+                        reader = null;
                     }
 
-                    if (reader != null) {
-                        collection.store(transaction, broker, info, source, reader);
-                    } else {
-                        collection.store(transaction, broker, info, source);
-                    }
+                    broker.storeDocument(transaction, resURI, source, mimeType, res.datecreated, res.datemodified, null, null, reader, collection);
                 }
 
                 // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
                 collection.close();
 
                 return null;
-            
-//              collection.deleteObservers();
+
             } catch(final EXistException | SAXException e) {
 
                 // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme

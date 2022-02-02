@@ -23,8 +23,8 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.PermissionDeniedException;
@@ -35,6 +35,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -69,9 +71,9 @@ public abstract class AbstractUpdateTest {
             final TransactionManager transact = pool.getTransactionManager();
 
             try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-                final IndexInfo info = init(broker, transact);
+                final DocumentImpl doc = init(broker, transact);
                 final MutableDocumentSet docs = new DefaultDocumentSet();
-                docs.add(info.getDocument());
+                docs.add(doc);
 
                 doUpdate(broker, transact, docs);
 
@@ -110,9 +112,9 @@ public abstract class AbstractUpdateTest {
         }
     }
 
-    protected IndexInfo init(final DBBroker broker, final TransactionManager transact) throws PermissionDeniedException, IOException, SAXException, LockException, EXistException {
-    	IndexInfo info = null;
-    	try(final Txn transaction = transact.beginTransaction()) {
+    protected DocumentImpl init(final DBBroker broker, final TransactionManager transact) throws PermissionDeniedException, IOException, SAXException, LockException, EXistException {
+    	DocumentImpl doc = null;
+        try(final Txn transaction = transact.beginTransaction()) {
 	        
 	        final Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
 	        broker.saveCollection(transaction, root);
@@ -120,13 +122,13 @@ public abstract class AbstractUpdateTest {
 	        final Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append("test2"));
 	        broker.saveCollection(transaction, test);
 	        
-	        info = test.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), TEST_XML);
+	        broker.storeDocument(transaction, XmldbURI.create("test.xml"), new StringInputSource(TEST_XML), MimeType.XML_TYPE, test);
+            doc = test.getDocument(broker, XmldbURI.create("test.xml"));
 	        //TODO : unlock the collection here ?
-	        test.store(transaction, broker, info, TEST_XML);
 	
 	        transact.commit(transaction);	
 	    }
-	    return info;
+	    return doc;
     }
     
     protected BrokerPool startDb() throws DatabaseConfigurationException, EXistException, IOException {

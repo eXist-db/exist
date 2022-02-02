@@ -25,7 +25,6 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentSet;
@@ -629,17 +628,11 @@ public class CustomIndexTest {
 
             docs = new DefaultDocumentSet();
 
-            IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), XML);
-            assertNotNull(info);
-            root.store(transaction, broker, info, XML);
+            broker.storeDocument(transaction, XmldbURI.create("test_string.xml"), new StringInputSource(XML), MimeType.XML_TYPE, root);
+            docs.add(root.getDocument(broker, XmldbURI.create("test_string.xml")));
 
-            docs.add(info.getDocument());
-
-            info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_string2.xml"), XML2);
-            assertNotNull(info);
-            root.store(transaction, broker, info, XML2);
-
-            docs.add(info.getDocument());
+            broker.storeDocument(transaction, XmldbURI.create("test_string2.xml"), new StringInputSource(XML2), MimeType.XML_TYPE, root);
+            docs.add(root.getDocument(broker, XmldbURI.create("test_string2.xml")));
 
             transact.commit(transaction);
         }

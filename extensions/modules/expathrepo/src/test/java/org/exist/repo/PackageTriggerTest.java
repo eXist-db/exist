@@ -21,19 +21,18 @@
  */
 package org.exist.repo;
 
-import org.apache.commons.io.IOUtils;
 import org.exist.EXistException;
 import org.exist.Version;
 import org.exist.collections.Collection;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
+import org.exist.util.InputStreamSupplierInputSource;
 import org.exist.util.LockException;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -42,9 +41,9 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Optional;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
@@ -59,7 +58,7 @@ public class PackageTriggerTest {
     public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(false, true);
 
     @BeforeClass
-    public static void setup() throws PermissionDeniedException, IOException, TriggerException, EXistException, IOException, LockException, XPathException {
+    public static void setup() throws PermissionDeniedException, SAXException, EXistException, IOException, LockException, XPathException {
 
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
 
@@ -72,24 +71,15 @@ public class PackageTriggerTest {
             transaction.commit();
         }
 
-        // Load XAR file
-        byte[] content;
-        try (InputStream resourceAsStream = PackageTriggerTest.class.getResourceAsStream("/" + xarFile)) {
-            Assert.assertNotNull(resourceAsStream);
-            content = IOUtils.toByteArray(resourceAsStream);
-        }
-
         // Store XAR in database
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
              final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
             try (final ManagedCollectionLock collectionLock = brokerPool.getLockManager().acquireCollectionWriteLock(xarUri.removeLastSegment())) {
                 final Collection collection = broker.getOrCreateCollection(transaction, xarUri.removeLastSegment());
-                try (final InputStream is = new UnsynchronizedByteArrayInputStream(content)) {
 
-                    collection.addBinaryResource(transaction, broker, xarUri.lastSegment(), is, "application/expath+xar", content.length);
-                    broker.saveCollection(transaction, collection);
-                }
+                broker.storeDocument(transaction, xarUri.lastSegment(), new InputStreamSupplierInputSource(() -> PackageTriggerTest.class.getResourceAsStream("/" + xarFile)), MimeType.EXPATH_PKG_TYPE, collection);
+                broker.saveCollection(transaction, collection);
             }
 
             transaction.commit();

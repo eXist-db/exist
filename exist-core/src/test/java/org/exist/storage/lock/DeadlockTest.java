@@ -36,7 +36,6 @@ import org.exist.EXistException;
 import org.exist.TestDataGenerator;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
-import org.exist.collections.IndexInfo;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -46,6 +45,7 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
 import org.exist.xmldb.EXistXPathQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
@@ -246,14 +246,10 @@ public class DeadlockTest {
                     final Path[] files = generator.generate(broker, coll, generateXQ);
                     for (int j = 0; j < files.length; j++, fileCount++) {
                         try(final Txn transaction = transact.beginTransaction()) {
-                            InputSource is = new InputSource(files[j].toUri()
+                            final InputSource is = new InputSource(files[j].toUri()
                                     .toASCIIString());
-                            assertNotNull(is);
-                            IndexInfo info = coll.validateXMLResource(transaction,
-                                    broker, XmldbURI.create("test" + fileCount
-                                            + ".xml"), is);
-                            assertNotNull(info);
-                            coll.store(transaction, broker, info, is);
+
+							broker.storeDocument(transaction, XmldbURI.create("test" + fileCount + ".xml"), is, MimeType.XML_TYPE, coll);
                             transact.commit(transaction);
                         }
                     }

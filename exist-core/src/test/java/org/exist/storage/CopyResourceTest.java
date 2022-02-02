@@ -23,7 +23,6 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
@@ -36,6 +35,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.hamcrest.Matcher;
 import org.junit.*;
@@ -504,31 +505,28 @@ public class CopyResourceTest {
                 final Collection collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
 
             final String u1d1xml = "<empty1/>";
-            final IndexInfo u1d1ii = collection.validateXMLResource(transaction, broker, USER1_DOC1, u1d1xml);
-            collection.store(transaction, broker, u1d1ii, u1d1xml);
+            broker.storeDocument(transaction, USER1_DOC1, new StringInputSource(u1d1xml), MimeType.XML_TYPE, collection);
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_DOC1), USER1_DOC1_MODE);
 
             final String u1d2xml = "<empty2/>";
-            final IndexInfo u1d2ii = collection.validateXMLResource(transaction, broker, USER1_DOC2, u1d2xml);
-            collection.store(transaction, broker, u1d2ii, u1d2xml);
+            broker.storeDocument(transaction, USER1_DOC2, new StringInputSource(u1d2xml), MimeType.XML_TYPE, collection);
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_DOC2), USER1_DOC2_MODE);
 
             final String u1d3xml = "<empty3/>";
-            final IndexInfo u1d3ii = collection.validateXMLResource(transaction, broker, USER1_DOC3, u1d3xml);
-            collection.store(transaction, broker, u1d3ii, u1d3xml);
+            broker.storeDocument(transaction, USER1_DOC3, new StringInputSource(u1d3xml), MimeType.XML_TYPE, collection);
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_DOC3), USER1_DOC3_MODE);
             chgrp(broker, transaction, TEST_COLLECTION_URI.append(USER1_DOC3), GROUP1_NAME);
 
             final String u1d1bin = "bin1";
-            collection.addBinaryResource(transaction, broker, USER1_BIN_DOC1, u1d1bin.getBytes(UTF_8), "text/plain");
+            broker.storeDocument(transaction, USER1_BIN_DOC1, new StringInputSource(u1d1bin.getBytes(UTF_8)), MimeType.TEXT_TYPE, collection);
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC1), USER1_BIN_DOC1_MODE);
 
             final String u1d2bin = "bin2";
-            collection.addBinaryResource(transaction, broker, USER1_BIN_DOC2, u1d2bin.getBytes(UTF_8), "text/plain");
+            broker.storeDocument(transaction, USER1_BIN_DOC2, new StringInputSource(u1d2bin.getBytes(UTF_8)), MimeType.TEXT_TYPE, collection);
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC2), USER1_BIN_DOC2_MODE);
 
             final String u1d3bin = "bin3";
-            collection.addBinaryResource(transaction, broker, USER1_BIN_DOC3, u1d3bin.getBytes(UTF_8), "text/plain");
+            broker.storeDocument(transaction, USER1_BIN_DOC3, new StringInputSource(u1d3bin.getBytes(UTF_8)), MimeType.TEXT_TYPE, collection);
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC3), USER1_BIN_DOC3_MODE);
             chgrp(broker, transaction, TEST_COLLECTION_URI.append(USER1_BIN_DOC3), GROUP1_NAME);
 
@@ -542,22 +540,20 @@ public class CopyResourceTest {
                 final Collection collection = broker.openCollection(TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
 
             final String u2d2xml = "<empty2/>";
-            final IndexInfo u2d2ii = collection.validateXMLResource(transaction, broker, USER2_DOC2, u2d2xml);
-            collection.store(transaction, broker, u2d2ii, u2d2xml);
+            broker.storeDocument(transaction, USER2_DOC2, new StringInputSource(u2d2xml), MimeType.XML_TYPE, collection);
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER2_DOC2), USER2_DOC2_MODE);
 
             final String u2d3xml = "<empty3/>";
-            final IndexInfo u2d3ii = collection.validateXMLResource(transaction, broker, USER2_DOC3, u2d3xml);
-            collection.store(transaction, broker, u2d3ii, u2d3xml);
+            broker.storeDocument(transaction, USER2_DOC3, new StringInputSource(u2d3xml), MimeType.XML_TYPE, collection);
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER2_DOC3), USER2_DOC3_MODE);
             chgrp(broker, transaction, TEST_COLLECTION_URI.append(USER2_DOC3), GROUP1_NAME);
 
             final String u2d2bin = "bin2";
-            collection.addBinaryResource(transaction, broker, USER2_BIN_DOC2, u2d2bin.getBytes(UTF_8), "text/plain");
+            broker.storeDocument(transaction, USER2_BIN_DOC2, new StringInputSource(u2d2bin.getBytes(UTF_8)), MimeType.TEXT_TYPE, collection);
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER2_BIN_DOC2), USER2_BIN_DOC2_MODE);
 
             final String u2d3bin = "bin3";
-            collection.addBinaryResource(transaction, broker, USER2_BIN_DOC3, u2d3bin.getBytes(UTF_8), "text/plain");
+            broker.storeDocument(transaction, USER2_BIN_DOC3, new StringInputSource(u2d3bin.getBytes(UTF_8)), MimeType.TEXT_TYPE, collection);
             chmod(broker, transaction, TEST_COLLECTION_URI.append(USER2_BIN_DOC3), USER2_BIN_DOC3_MODE);
             chgrp(broker, transaction, TEST_COLLECTION_URI.append(USER2_BIN_DOC3), GROUP1_NAME);
 

@@ -43,6 +43,7 @@ import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.util.hashtable.NamePool;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Expression;
 import org.exist.xquery.FunctionCall;
 import org.exist.xquery.FunctionSignature;
@@ -507,8 +508,22 @@ public interface Context {
     /**
      * Try to resolve a variable.
      *
+     * @param contextInfo contextual information
      * @param qname the qualified name of the variable
+     *
      * @return the declared Variable object
+     *
+     * @throws XPathException if the variable is unknown
+     */
+    Variable resolveVariable(@Nullable AnalyzeContextInfo contextInfo, QName qname) throws XPathException;
+
+    /**
+     * Try to resolve a variable.
+     *
+     * @param qname the qualified name of the variable
+     *
+     * @return the declared Variable object
+     *
      * @throws XPathException if the variable is unknown
      */
     Variable resolveVariable(QName qname) throws XPathException;

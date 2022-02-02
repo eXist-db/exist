@@ -26,9 +26,7 @@ import com.evolvedbinary.j8fu.function.Runnable4E;
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.*;
@@ -42,6 +40,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -271,14 +271,13 @@ public class PermissionsFunctionChmodTest {
             broker.saveCollection(transaction, u1c2);
 
             final String xml1 = "<empty1/>";
-            final IndexInfo indexInfo1 = collection.validateXMLResource(transaction, broker, USER1_DOC1, xml1);
-            collection.store(transaction, broker, indexInfo1, xml1);
+            broker.storeDocument(transaction, USER1_DOC1, new StringInputSource(xml1), MimeType.XML_TYPE, collection);
 
             final String xquery1 =
                     "import module namespace sm = 'http://exist-db.org/xquery/securitymanager';\n" +
                             "sm:id()";
-            final BinaryDocument uqxq1 = collection.addBinaryResource(transaction, broker, USER1_XQUERY1, xquery1.getBytes(UTF_8), "application/xquery");
-            PermissionFactory.chmod_str(broker, transaction, uqxq1.getURI(), Optional.of("u+s,g+s"), Optional.empty());
+            broker.storeDocument(transaction, USER1_XQUERY1, new StringInputSource(xquery1.getBytes(UTF_8)), MimeType.XQUERY_TYPE, collection);
+            PermissionFactory.chmod_str(broker, transaction, collection.getURI().append(USER1_XQUERY1), Optional.of("u+s,g+s"), Optional.empty());
 
             transaction.commit();
         }

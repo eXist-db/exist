@@ -117,7 +117,7 @@ public class FnImport extends BasicFunction {
         MemTreeBuilder builder = null;
         context.pushDocumentContext();
         try {
-			if (NAME.equals(mySignature.getName())) {
+			if (NAME.equals(getName())) {
 				builder = context.getDocumentBuilder();
 				builder.startDocument();
 				builder.startElement(IMPORT_ELEMENT, null);

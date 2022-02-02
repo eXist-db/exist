@@ -115,13 +115,13 @@ public class Query extends Function implements Optimizable {
 
         Expression arg = arguments.get(1).simplify();
         arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, arg,
-                new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
+                new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "2", getSignature()));
         add(arg);
 
         if (arguments.size() == 3) {
             arg = arguments.get(2).simplify();
             arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
-                new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "2", mySignature));
+                new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "2", getSignature()));
             steps.add(arg);
         }
     }

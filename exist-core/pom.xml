@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.exist-db</groupId>
         <artifactId>exist-parent</artifactId>
-        <version>5.4.0-SNAPSHOT</version>
+        <version>6.1.0-SNAPSHOT</version>
         <relativePath>../exist-parent</relativePath>
     </parent>
 
@@ -59,7 +59,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.13.0</version>
+            <version>2.13.1</version>
         </dependency>
 
         <!-- dependency>
@@ -77,7 +77,6 @@
         <dependency>
             <groupId>com.evolvedbinary.multilock</groupId>
             <artifactId>multilock</artifactId>
-            <version>1.0.1</version>
         </dependency>
 
         <dependency>
@@ -146,7 +145,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.69</version>
+            <version>1.70</version>
         </dependency>
 
         <dependency>
@@ -198,7 +197,11 @@
         <dependency>
             <groupId>org.fusesource.jansi</groupId>
             <artifactId>jansi</artifactId>
-            <version>2.4.0</version>
+            <version>${jansi.version}</version>
+            <!--
+                Optionally used by jline at runtime on Linux and macOS,
+                and required by jline at runtime on Windows.
+            -->
             <scope>runtime</scope>
         </dependency>
 
@@ -215,12 +218,6 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-configuration2</artifactId>
-            <version>2.7</version>
         </dependency>
 
         <dependency>
@@ -349,7 +346,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.xmlrpc</groupId>
+            <groupId>com.evolvedbinary.thirdparty.org.apache.xmlrpc</groupId>
             <artifactId>xmlrpc-common</artifactId>
             <exclusions>
                 <exclusion> <!-- conflicts with xerces 2.12.0 dependency on xml-apis version 1.4.01 -->
@@ -359,12 +356,12 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.apache.xmlrpc</groupId>
+            <groupId>com.evolvedbinary.thirdparty.org.apache.xmlrpc</groupId>
             <artifactId>xmlrpc-client</artifactId>
             <version>${apache.xmlrpc.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.xmlrpc</groupId>
+            <groupId>com.evolvedbinary.thirdparty.org.apache.xmlrpc</groupId>
             <artifactId>xmlrpc-server</artifactId>
             <version>${apache.xmlrpc.version}</version>
         </dependency>
@@ -379,6 +376,7 @@
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-jaas</artifactId>
             <version>${jetty.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
@@ -407,7 +405,7 @@
         <dependency>
             <groupId>com.fifesoft</groupId>
             <artifactId>rsyntaxtextarea</artifactId>
-            <version>3.1.3</version>
+            <version>3.1.6</version>
         </dependency>
 
         <dependency>
@@ -455,15 +453,11 @@
             <artifactId>ant</artifactId>
         </dependency>
 
+
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <scope>test</scope>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -482,6 +476,21 @@
             <groupId>org.exist-db</groupId>
             <artifactId>exist-samples</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -505,6 +514,11 @@
         <dependency>
             <groupId>com.googlecode.junit-toolbox</groupId>
             <artifactId>junit-toolbox</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -537,16 +551,16 @@
             <version>1.4</version>
         </dependency>
         <dependency>
+            <!--
+                 NOTE(AR) This is needed to enable loading of Servlets etc
+                          that use Java Annotations for configuration.
+                          This is less than ideal as it allows any extension to
+                          serve arbitary Web requests, and should ultimately be
+                          removed. Unfortunately, at this time, it is required for
+                          Monex's Remote Console to function.
+            -->
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-jndi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-plus</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
@@ -673,8 +687,12 @@
                                 <exclude>src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java</exclude>
                                 <exclude>src/test/java/org/exist/storage/txn/TxnTest.java</exclude>
                                 <exclude>src/main/java/org/exist/test/DiffMatcher.java</exclude>
+                                <exclude>src/test/java/org/exist/test/Util.java</exclude>
                                 <exclude>src/main/java/org/exist/util/CollectionOfArrayIterator.java</exclude>
                                 <exclude>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</exclude>
+                                <exclude>src/main/java/org/exist/util/IPUtil.java</exclude>
+                                <exclude>src/main/java/org/exist/xmlrpc/ACEAiderParser.java</exclude>
+                                <exclude>src/main/java/org/exist/xmlrpc/ACEAiderSerializer.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/Cardinality.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/ImportModuleTest.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/XQueryContextAttributesTest.java</exclude>
@@ -814,8 +832,12 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java</include>
                                 <include>src/test/java/org/exist/storage/txn/TxnTest.java</include>
                                 <include>src/main/java/org/exist/test/DiffMatcher.java</include>
+                                <include>src/test/java/org/exist/test/Util.java</include>
                                 <include>src/main/java/org/exist/util/CollectionOfArrayIterator.java</include>
                                 <include>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</include>
+                                <include>src/main/java/org/exist/util/IPUtil.java</include>
+                                <include>src/main/java/org/exist/xmlrpc/ACEAiderParser.java</include>
+                                <include>src/main/java/org/exist/xmlrpc/ACEAiderSerializer.java</include>
                                 <include>src/main/java/org/exist/xquery/Cardinality.java</include>
                                 <include>src/test/java/org/exist/xquery/ImportModuleTest.java</include>
                                 <include>src/test/java/org/exist/xquery/XQueryContextAttributesTest.java</include>
@@ -889,7 +911,26 @@ The BaseX Team. The original license statement is also included below.]]></pream
                             <goal>analyze-only</goal>
                         </goals>
                         <configuration>
-                            <failOnWarning>false</failOnWarning>  <!-- TODO(AR) this temporarily overrides the setting in exist-parent and this plugin should be removed from here -->
+                            <failOnWarning>true</failOnWarning>
+                            <ignoredUnusedDeclaredDependencies>
+                                <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-core:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-jcl:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-slf4j-impl:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
+
+                                <ignoredUnusedDeclaredDependency>org.glassfish.jaxb:jaxb-runtime:jar:${jaxb.impl.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.fusesource.jansi:jansi:jar:2.4.0</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>net.sourceforge.nekohtml:nekohtml:jar:1.9.22</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>xml-resolver:xml-resolver:jar:1.2</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.exist-db.thirdparty.org.eclipse.wst.xml:xpath2:jar:1.2.0</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>edu.princeton.cup:java-cup:jar:10k</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-jaas:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-deploy:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-jmx:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-annotations:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>${project.groupId}:exist-jetty-config:jar:${project.version}</ignoredUnusedDeclaredDependency>
+
+                                <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine:jar:${junit.vintage.version}</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
                 </executions>
@@ -1075,7 +1116,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                             </dependency>
                         </dependencies>
                         <configuration>
-                            <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
+                            <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory" />
                             <forkCount>1C</forkCount>
                             <reuseForks>false</reuseForks>
                             <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>

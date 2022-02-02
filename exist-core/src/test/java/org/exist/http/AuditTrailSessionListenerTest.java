@@ -34,12 +34,15 @@ import org.exist.storage.lock.LockManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xml.sax.SAXException;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
@@ -47,6 +50,7 @@ import javax.servlet.http.HttpSessionEvent;
 import java.io.IOException;
 import java.util.Optional;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertFalse;
 
@@ -121,19 +125,19 @@ public class AuditTrailSessionListenerTest {
     }
 
     @BeforeClass
-    public static void setup() throws EXistException, LockException, TriggerException, PermissionDeniedException, IOException {
+    public static void setup() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException {
         storeScripts();
         System.setProperty(AuditTrailSessionListener.REGISTER_CREATE_XQUERY_SCRIPT_PROPERTY, CREATE_SCRIPT_PATH);
         System.setProperty(AuditTrailSessionListener.REGISTER_DESTROY_XQUERY_SCRIPT_PROPERTY, DESTROYED_SCRIPT_PATH);
     }
 
-    private static void storeScripts() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+    private static void storeScripts() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         try(final DBBroker broker = existEmbeddedServer.getBrokerPool().get(Optional.of(existEmbeddedServer.getBrokerPool().getSecurityManager().getSystemSubject()));
                 final Txn transaction = existEmbeddedServer.getBrokerPool().getTransactionManager().beginTransaction()) {
 
             final Collection testCollection = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
-            testCollection.addBinaryResource(transaction, broker, XmldbURI.create(CREATE_SCRIPT), "<create/>".getBytes(), "application/xquery");
-            testCollection.addBinaryResource(transaction, broker, XmldbURI.create(DESTROYED_SCRIPT), "</destroyed>".getBytes(), "application/xquery");
+            broker.storeDocument(transaction, XmldbURI.create(CREATE_SCRIPT), new StringInputSource("<create/>".getBytes(UTF_8)), MimeType.XQUERY_TYPE, testCollection);
+            broker.storeDocument(transaction, XmldbURI.create(DESTROYED_SCRIPT), new StringInputSource("</destroyed>".getBytes(UTF_8)), MimeType.XQUERY_TYPE, testCollection);
 
             transaction.commit();
         }

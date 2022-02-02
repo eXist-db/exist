@@ -22,8 +22,8 @@
 
 package org.exist.util;
 
+import org.easymock.EasyMock;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -33,7 +33,7 @@ public class LeasableTest {
 
     @Test
     public void fromCloseable() {
-        AutoCloseable autoCloseable = Mockito.mock(AutoCloseable.class);
+        AutoCloseable autoCloseable = EasyMock.mock(AutoCloseable.class);
 
         Leasable<AutoCloseable> leasable = Leasable.fromCloseable(autoCloseable);
 

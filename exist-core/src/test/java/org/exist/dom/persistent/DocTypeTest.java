@@ -36,7 +36,6 @@ import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -101,10 +100,7 @@ public class DocTypeTest {
 			final InputSource is = new FileInputSource(testFile);
 
 			try(final Txn transaction = transact.beginTransaction()) {
-                final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), is);
-
-                assertNotNull(info);
-                root.store(transaction, broker, info, is);
+                broker.storeDocument(transaction, XmldbURI.create("test2.xml"), is, MimeType.XML_TYPE, root);
 
                 transact.commit(transaction);
             }
@@ -166,10 +162,8 @@ public class DocTypeTest {
             assertNotNull(root);
             broker.saveCollection(transaction, root);
             
-            IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), XML);
+            broker.storeDocument(transaction, XmldbURI.create("test.xml"), new StringInputSource(XML), MimeType.XML_TYPE, root);
             //TODO : unlock the collection here ?
-            assertNotNull(info);
-            root.store(transaction, broker, info, XML);
             
             transact.commit(transaction);
         }

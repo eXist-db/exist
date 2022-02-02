@@ -89,8 +89,7 @@ public class XMLReaderSecurityTest extends AbstractXMLReaderSecurityTest {
                 //debugReader("cannotExpandExternalEntitiesWhenDisabled", broker, testCollection);
 
                 final String docContent = EXPANSION_DOC.replace(EXTERNAL_FILE_PLACEHOLDER, secret._2.toUri().toString());
-                final IndexInfo indexInfo = testCollection.validateXMLResource(transaction, broker, docName, docContent);
-                testCollection.store(transaction, broker, indexInfo, docContent);
+                broker.storeDocument(transaction, docName, new StringInputSource(docContent), MimeType.XML_TYPE, testCollection);
             }
 
             transaction.commit();

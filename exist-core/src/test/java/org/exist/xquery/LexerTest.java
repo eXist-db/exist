@@ -29,7 +29,6 @@ import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -38,6 +37,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
@@ -83,9 +84,9 @@ public class LexerTest {
 	            Collection collection = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
 	            broker.saveCollection(transaction, collection);
 	
-	            IndexInfo info = collection.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), xml);
+	            broker.storeDocument(transaction, XmldbURI.create("test.xml"), new StringInputSource(xml), MimeType.XML_TYPE, collection);
 	            //TODO : unlock the collection here ?
-	            collection.store(transaction, broker, info, xml);
+
 	            transact.commit(transaction);
 			}
 

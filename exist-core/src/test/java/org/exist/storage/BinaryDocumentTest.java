@@ -24,18 +24,18 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -49,7 +49,7 @@ public class BinaryDocumentTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void removeCollection() throws PermissionDeniedException, IOException, TriggerException, LockException, EXistException {
+    public void removeCollection() throws PermissionDeniedException, IOException, SAXException, LockException, EXistException {
         final XmldbURI testCollectionUri = XmldbURI.create("/db/remove-collection-test");
         final XmldbURI thingUri = testCollectionUri.append("thing");
 
@@ -62,25 +62,19 @@ public class BinaryDocumentTest {
             broker.saveCollection(transaction, thingCollection);
 
             // add a binary document to the collection
-            final byte[] binaryData1 = "binary-file1".getBytes(UTF_8);
-            try (final InputStream is = new UnsynchronizedByteArrayInputStream(binaryData1)) {
-                thingCollection.addBinaryResource(transaction, broker, XmldbURI.create("file1.bin"), is, "application/octet-stream", binaryData1.length);
-            }
+            broker.storeDocument(transaction, XmldbURI.create("file1.bin"), new StringInputSource("binary-file1".getBytes(UTF_8)), MimeType.BINARY_TYPE, thingCollection);
 
             // remove the collection
             assertTrue(broker.removeCollection(transaction, thingCollection));
 
             // try and store a binary doc with the same name as the thing collection (should succeed)
             final Collection testCollection = broker.getCollection(testCollectionUri);
-            final byte[] binaryData2 = "binary-file2".getBytes(UTF_8);
-            try (final InputStream is = new UnsynchronizedByteArrayInputStream(binaryData2)) {
-                testCollection.addBinaryResource(transaction, broker, XmldbURI.create("thing"), is, "application/octet-stream", binaryData2.length);
-            }
+            broker.storeDocument(transaction, XmldbURI.create("thing"), new StringInputSource("binary-file2".getBytes(UTF_8)), MimeType.BINARY_TYPE, testCollection);
         }
     }
 
     @Test
-    public void overwriteCollection() throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+    public void overwriteCollection() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
         final XmldbURI testCollectionUri = XmldbURI.create("/db/overwrite-collection-test");
         final XmldbURI thingUri = testCollectionUri.append("thing");
 
@@ -95,19 +89,15 @@ public class BinaryDocumentTest {
             // attempt to create a binary document with the same uri as the thingCollection (should fail)
             final Collection testCollection = broker.getCollection(testCollectionUri);
 
-            final byte[] binaryData = "binary-file".getBytes(UTF_8);
-            try (final InputStream is = new UnsynchronizedByteArrayInputStream(binaryData)) {
+            try {
+                broker.storeDocument(transaction, thingUri.lastSegment(), new StringInputSource("binary-file".getBytes(UTF_8)), MimeType.BINARY_TYPE, testCollection);
+                fail("Should not have been able to overwrite Collection with Binary Document");
 
-                try {
-                    testCollection.addBinaryResource(transaction, broker, thingUri.lastSegment(), is, "application/octet-stream", binaryData.length);
-                    fail("Should not have been able to overwrite Collection with Binary Document");
-
-                } catch (final EXistException e) {
-                    assertEquals(
-                            "The collection '" + testCollectionUri.getRawCollectionPath() + "' already has a sub-collection named '" + thingUri.lastSegment().toString() + "', you cannot create a Document with the same name as an existing collection.",
-                            e.getMessage()
-                    );
-                }
+            } catch (final EXistException e) {
+                assertEquals(
+                        "The collection '" + testCollectionUri.getRawCollectionPath() + "' already has a sub-collection named '" + thingUri.lastSegment().toString() + "', you cannot create a Document with the same name as an existing collection.",
+                        e.getMessage()
+                );
             }
         }
     }

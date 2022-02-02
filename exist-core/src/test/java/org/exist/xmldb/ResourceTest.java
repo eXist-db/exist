@@ -37,6 +37,7 @@ import org.exist.dom.QName;
 import org.exist.security.Account;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.ExistSAXParserFactory;
+import org.exist.util.StringInputSource;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.SAXSerializer;
@@ -45,9 +46,7 @@ import org.junit.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.TestUtils.GUEST_DB_USER;
 import static org.exist.xmldb.AbstractLocal.PROP_JOIN_TRANSACTION_IF_PRESENT;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -59,11 +58,13 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.Assert.*;
 
 public class ResourceTest {
 
@@ -221,28 +222,45 @@ public class ResourceTest {
     }
     
     @Test
-    public void setContentAsSource_Reader() throws XMLDBException, SAXException, IOException, XpathException {
-        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
+    public void setContentAsSourceXml() throws XMLDBException, SAXException, IOException, XpathException {
+        final Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
 
-        XMLResource doc = (XMLResource) testCollection.createResource("source.xml", "XMLResource");
+        final XMLResource doc = (XMLResource) testCollection.createResource("source.xml", "XMLResource");
         final String xml =
                 "<test><title>Title1</title>"
                         + "<para>Paragraph3</para>"
                         + "<para>Paragraph4</para>"
                         + "</test>";
         
-        
-        doc.setContent(new InputSource(new StringReader(xml)));
+
+        doc.setContent(new StringInputSource(xml));
         testCollection.storeResource(doc);
         
-        XMLResource newDoc = (XMLResource)testCollection.getResource("source.xml");
-        String newDocXml = (String)newDoc.getContent();
+        final XMLResource newDoc = (XMLResource) testCollection.getResource("source.xml");
+        final String newDocXml = (String) newDoc.getContent();
         
         assertXpathEvaluatesTo("Title1", "/test/title/text()", newDocXml);
         assertXpathEvaluatesTo("2", "count(/test/para)", newDocXml);
         assertXpathEvaluatesTo("Paragraph3", "/test/para[1]/text()", newDocXml);
         assertXpathEvaluatesTo("Paragraph4", "/test/para[2]/text()", newDocXml);
+    }
+
+    @Test
+    public void setContentAsSourceBinary() throws XMLDBException {
+        final Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
+        assertNotNull(testCollection);
+
+        final BinaryResource doc = (BinaryResource) testCollection.createResource("source.bin", "BinaryResource");
+        final byte[] bin = "Stuff And Things".getBytes(UTF_8);
+
+        doc.setContent(new StringInputSource(bin));
+        testCollection.storeResource(doc);
+
+        final BinaryResource newDoc = (BinaryResource) testCollection.getResource("source.bin");
+        final byte[] newDocBin = (byte[]) newDoc.getContent();
+
+        assertArrayEquals(bin, newDocBin);
     }
 
     @Test

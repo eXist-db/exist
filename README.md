@@ -7,7 +7,6 @@
 ## eXist-db Native XML Database
 
 [![Build Status](https://github.com/eXist-db/exist/actions/workflows/ci-build.yml/badge.svg?branch=develop)](https://github.com/eXist-db/exist/actions/workflows/ci-build.yml)
-[![Build status](https://ci.appveyor.com/api/projects/status/ngpppvnnfu8ehjw3/branch/develop?svg=true)](https://ci.appveyor.com/project/eXistdbci/exist/branch/develop)
 [![Coverage Status](https://coveralls.io/repos/github/eXist-db/exist/badge.svg?branch=develop)](https://coveralls.io/github/eXist-db/exist?branch=develop)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/ae1c8a7eb1164e919b0ac3c8588560c6)](https://www.codacy.com/gh/eXist-db/exist/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=eXist-db/exist&amp;utm_campaign=Badge_Grade)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=eXist-db_exist&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=eXist-db_exist)

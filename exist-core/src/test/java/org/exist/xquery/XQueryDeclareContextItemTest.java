@@ -25,7 +25,6 @@ package org.exist.xquery;
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.ElementImpl;
@@ -38,6 +37,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
@@ -81,10 +82,7 @@ public class XQueryDeclareContextItemTest {
             assertNotNull(root);
             broker.saveCollection(transaction, root);
 
-            final IndexInfo info = root.validateXMLResource(transaction, broker,
-                    XmldbURI.create("sysevent.xml"), SYSEVENT_XML);
-            assertNotNull(info);
-            root.store(transaction, broker, info, SYSEVENT_XML);
+            broker.storeDocument(transaction, XmldbURI.create("sysevent.xml"), new StringInputSource(SYSEVENT_XML), MimeType.XML_TYPE, root);
 
             transaction.commit();
         }

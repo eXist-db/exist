@@ -34,7 +34,6 @@ package org.exist.storage.journal;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.numbering.DLN;
@@ -43,6 +42,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.junit.BeforeClass;
@@ -627,8 +627,7 @@ public class JournalXmlTest extends AbstractJournalTest<String> {
             final InputSource data, final String dbFilename) throws EXistException, PermissionDeniedException, IOException,
             SAXException, LockException {
 
-        final IndexInfo indexInfo = collection.validateXMLResource(transaction, broker, XmldbURI.create(dbFilename), data);
-        collection.store(transaction, broker, indexInfo, data);
+        broker.storeDocument(transaction, XmldbURI.create(dbFilename), data, MimeType.XML_TYPE, collection);
 
         assertNotNull(collection.getDocument(broker, XmldbURI.create(dbFilename)));
 

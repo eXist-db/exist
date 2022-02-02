@@ -26,6 +26,8 @@ import java.util.*;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 
+import javax.annotation.Nullable;
+
 /**
  * Abstract base class for an {@link org.exist.xquery.InternalModule}. 
  * Functions are defined in an array of {@link org.exist.xquery.FunctionDef}, which
@@ -213,7 +215,12 @@ public abstract class AbstractInternalModule implements InternalModule {
     }
 
     @Override
-    public Variable resolveVariable(final QName qname) throws XPathException {
+    @Nullable public Variable resolveVariable(final QName qname) throws XPathException {
+        return resolveVariable(null, qname);
+    }
+
+    @Override
+    @Nullable public Variable resolveVariable(@Nullable final AnalyzeContextInfo contextInfo, final QName qname) throws XPathException {
         return mGlobalVariables.get(qname);
     }
 

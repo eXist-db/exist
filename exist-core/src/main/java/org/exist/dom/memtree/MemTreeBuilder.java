@@ -26,11 +26,13 @@ import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.xquery.Constants;
+import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
 
+import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import java.util.Arrays;
 
@@ -42,7 +44,7 @@ import java.util.Arrays;
  */
 public class MemTreeBuilder {
 
-    private final XQueryContext context;
+    private XQueryContext context;
     private DocumentImpl doc;
     private short level = 1;
     private int[] prevNodeInLevel;
@@ -54,11 +56,20 @@ public class MemTreeBuilder {
 
 
     public MemTreeBuilder(final XQueryContext context) {
-        super();
         this.context = context;
         prevNodeInLevel = new int[15];
         Arrays.fill(prevNodeInLevel, -1);
         prevNodeInLevel[0] = 0;
+    }
+
+    public void reset(@Nullable final XQueryContext context) {
+        this.context = context;
+        doc = null;
+        level = 1;
+        prevNodeInLevel = new int[15];
+        Arrays.fill(prevNodeInLevel, -1);
+        prevNodeInLevel[0] = 0;
+        defaultNamespaceURI = XMLConstants.NULL_NS_URI;
     }
 
     /**

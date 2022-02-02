@@ -35,7 +35,9 @@ import org.exist.storage.lock.*;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
+import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -634,6 +636,106 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
             throws PermissionDeniedException, LockException, TriggerException;
 
     /**
+     * Stores a document.
+     * Since the process is dependent on the collection configuration,
+     * the collection acquires a write lock during the process.
+     *
+     * NOTE: This should only be called from {@link NativeBroker#storeDocument(Txn, XmldbURI, InputSource, MimeType, Date, Date, Permission, DocumentType, XMLReader, Collection)}
+     *
+     * @param transaction The database transaction
+     * @param broker      The database broker
+     * @param name        The name (without path) of the document
+     * @param source      The source of the content for the new document to store
+     * @param mimeType    The mimeType of the document to store, or null if unknown.
+     *
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception
+     * @throws SAXException internal SAXException
+     */
+    void storeDocument(Txn transaction, DBBroker broker, XmldbURI name, InputSource source, @Nullable MimeType mimeType) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException;
+
+    /**
+     * Stores a document.
+     * Since the process is dependent on the collection configuration,
+     * the collection acquires a write lock during the process.
+     *
+     * NOTE: This should only be called from {@link NativeBroker#storeDocument(Txn, XmldbURI, InputSource, MimeType, Date, Date, Permission, DocumentType, XMLReader, Collection)}
+     *
+     * @param transaction The database transaction
+     * @param broker      The database broker
+     * @param name        The name (without path) of the document
+     * @param source      The source of the content for the new document to store
+     * @param mimeType    The mimeType of the document to store, or null if unknown.
+     *                    If null, application/octet-stream will be used to store a binary document.
+     * @param createdDate The created date to set for the document, or if null the date is set to 'now'
+     * @param lastModifiedDate The lastModified date to set for the document, or if null the date is set to the {@code createdDate}
+     * @param permission A specific permission to set on the document, or null for the default permission
+     * @param documentType A document type declaration, or null if absent or a binary document is being stored
+     * @param xmlReader A custom XML Reader (e.g. a HTML to XHTML converting reader), or null to use the default XML reader or if a binary document is being stored
+     *
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception
+     * @throws SAXException internal SAXException
+     */
+    void storeDocument(Txn transaction, DBBroker broker, XmldbURI name, InputSource source, @Nullable MimeType mimeType, @Nullable Date createdDate, @Nullable Date lastModifiedDate, @Nullable Permission permission, @Nullable DocumentType documentType, @Nullable XMLReader xmlReader) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException;
+
+    /**
+     * Stores a document.
+     * Since the process is dependent on the collection configuration,
+     * the collection acquires a write lock during the process.
+     *
+     * NOTE: This should only be called from {@link NativeBroker#storeDocument(Txn, XmldbURI, Node, MimeType, Collection)}
+     *
+     * @param transaction The database transaction
+     * @param broker      The database broker
+     * @param name        The name (without path) of the document
+     * @param node        The DOM Node to store as a new document
+     * @param mimeType    The mimeType of the document to store, or null if unknown.
+     *
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception
+     * @throws SAXException internal SAXException
+     */
+    void storeDocument(Txn transaction, DBBroker broker, XmldbURI name, Node node, @Nullable MimeType mimeType) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException;
+
+    /**
+     * Stores a document.
+     * Since the process is dependent on the collection configuration,
+     * the collection acquires a write lock during the process.
+     *
+     * NOTE: This should only be called from {@link NativeBroker#storeDocument(Txn, XmldbURI, Node, MimeType, Date, Date, Permission, DocumentType, XMLReader, Collection)}
+     *
+     * @param transaction The database transaction
+     * @param broker      The database broker
+     * @param name        The name (without path) of the document
+     * @param node        The DOM Node to store as a new document
+     * @param mimeType    The mimeType of the document to store, or null if unknown.
+     *                    If null, application/octet-stream will be used to store a binary document.
+     * @param createdDate The created date to set for the document, or if null the date is set to 'now'
+     * @param lastModifiedDate The lastModified date to set for the document, or if null the date is set to the {@code createdDate}
+     * @param permission A specific permission to set on the document, or null for the default permission
+     * @param documentType A document type declaration, or null if absent or a binary document is being stored
+     * @param xmlReader A custom XML Reader (e.g. a HTML to XHTML converting reader), or null to use the default XML reader or if a binary document is being stored
+     *
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception
+     * @throws SAXException internal SAXException
+     */
+    void storeDocument(Txn transaction, DBBroker broker, XmldbURI name, Node node, @Nullable MimeType mimeType, @Nullable Date createdDate, @Nullable Date lastModifiedDate, @Nullable Permission permission, @Nullable DocumentType documentType, @Nullable XMLReader xmlReader) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException;
+
+    /**
      * Validates an XML document and prepares it for further storage.
      * Launches prepare and postValidate triggers.
      * Since the process is dependent from the collection configuration,
@@ -643,7 +745,9 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker      The database broker
      * @param name        the name (without path) of the document
      * @param source      The source of the document to store
+     *
      * @return An {@link IndexInfo} with a write lock on the document
+     *
      * @throws PermissionDeniedException if user has not sufficient rights
      * @throws LockException if broker is locked
      * @throws IOException in case of I/O errors
@@ -651,7 +755,9 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @throws EXistException general eXist-db exception
      * @throws SAXException internal SAXException
      *
+     * @deprecated Use {@link DBBroker#storeDocument(Txn, XmldbURI, InputSource, MimeType, Date, Date, Permission, DocumentType, XMLReader, Collection)} instead.
      */
+    @Deprecated
     IndexInfo validateXMLResource(Txn transaction, DBBroker broker, XmldbURI name, InputSource source)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException;
 
@@ -667,14 +773,19 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param name        the name (without path) of the document
      * @param source      The source of the document to store
      * @param reader      The XML reader to use for reading the {@code source}
+     *
      * @return An {@link IndexInfo} with a write lock on the document
+     *
      * @throws PermissionDeniedException if user has not sufficient rights
      * @throws LockException if broker is locked
      * @throws IOException in case of I/O errors
      * @throws TriggerException in case of eXist-db trigger error
      * @throws EXistException general eXist-db exception
      * @throws SAXException internal SAXException
+     *
+     * @deprecated Use {@link DBBroker#storeDocument(Txn, XmldbURI, InputSource, MimeType, Date, Date, Permission, DocumentType, XMLReader, Collection)} instead.
      */
+    @Deprecated
     IndexInfo validateXMLResource(Txn transaction, DBBroker broker, XmldbURI name, InputSource source, XMLReader reader)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException;
 
@@ -688,14 +799,19 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker      The database broker
      * @param name        the name (without path) of the document
      * @param data        The data of the document to store
+     *
      * @return An {@link IndexInfo} with a write lock on the document
+     *
      * @throws PermissionDeniedException if user has not sufficient rights
      * @throws LockException if broker is locked
      * @throws IOException in case of I/O errors
      * @throws TriggerException in case of eXist-db trigger error
      * @throws EXistException general eXist-db exception
      * @throws SAXException internal SAXException
+     *
+     * @deprecated Use {@link DBBroker#storeDocument(Txn, XmldbURI, InputSource, MimeType, Date, Date, Permission, DocumentType, XMLReader, Collection)} instead.
      */
+    @Deprecated
     IndexInfo validateXMLResource(Txn transaction, DBBroker broker, XmldbURI name, String data)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException;
 
@@ -709,14 +825,19 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker      The database broker
      * @param name        the name (without path) of the document
      * @param node        The document node of the document to store
+     *
      * @return An {@link IndexInfo} with a write lock on the document
+     *
      * @throws PermissionDeniedException if user has not sufficient rights
      * @throws LockException if broker is locked
      * @throws IOException in case of I/O errors
      * @throws TriggerException in case of eXist-db trigger error
      * @throws EXistException general eXist-db exception
      * @throws SAXException internal SAXException
+     *
+     * @deprecated Use {@link DBBroker#storeDocument(Txn, XmldbURI, Node, MimeType, Date, Date, Permission, DocumentType, XMLReader, Collection)} instead.
      */
+    @Deprecated
     IndexInfo validateXMLResource(Txn transaction, DBBroker broker, XmldbURI name, Node node)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException;
 
@@ -730,12 +851,16 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker      The database broker
      * @param info        Tracks information between validate and store phases
      * @param source      The source of the document to store
+     *
      * @throws PermissionDeniedException if user has not sufficient rights
      * @throws LockException if broker is locked
      * @throws TriggerException in case of eXist-db trigger error
      * @throws EXistException general eXist-db exception
      * @throws SAXException internal SAXException
+     *
+     * @deprecated Use {@link DBBroker#storeDocument(Txn, XmldbURI, InputSource, MimeType, Date, Date, Permission, DocumentType, XMLReader, Collection)} instead.
      */
+    @Deprecated
     void store(Txn transaction, DBBroker broker, IndexInfo info, InputSource source)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException;
 
@@ -750,12 +875,16 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param info        Tracks information between validate and store phases
      * @param source      The source of the document to store
      * @param reader      The XML reader to use for reading the {@code source}
+     *
      * @throws PermissionDeniedException if user has not sufficient rights
      * @throws LockException if broker is locked*
      * @throws TriggerException in case of eXist-db trigger error
      * @throws EXistException general eXist-db exception
      * @throws SAXException internal SAXException
+     *
+     * @deprecated Use {@link DBBroker#storeDocument(Txn, XmldbURI, InputSource, MimeType, Date, Date, Permission, DocumentType, XMLReader, Collection)} instead.
      */
+    @Deprecated
     void store(final Txn transaction, final DBBroker broker, final IndexInfo info, final InputSource source, final XMLReader reader)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException;
 
@@ -769,12 +898,16 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker      The database broker
      * @param info        Tracks information between validate and store phases
      * @param data        The data of the document to store
+     *
      * @throws PermissionDeniedException if user has not sufficient rights
      * @throws LockException if broker is locked
      * @throws TriggerException in case of eXist-db trigger error
      * @throws EXistException general eXist-db exception
      * @throws SAXException internal SAXException
+     *
+     * @deprecated Use {@link DBBroker#storeDocument(Txn, XmldbURI, InputSource, MimeType, Date, Date, Permission, DocumentType, XMLReader, Collection)} instead.
      */
+    @Deprecated
     void store(Txn transaction, DBBroker broker, IndexInfo info, String data)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException;
 
@@ -788,12 +921,16 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param broker      The database broker
      * @param info        Tracks information between validate and store phases
      * @param node        The document node of the document to store
+     *
      * @throws PermissionDeniedException if user has not sufficient rights
      * @throws LockException if broker is locked
      * @throws TriggerException in case of eXist-db trigger error
      * @throws EXistException general eXist-db exception
      * @throws SAXException internal SAXException
+     *
+     * @deprecated Use {@link DBBroker#storeDocument(Txn, XmldbURI, Node, MimeType, Date, Date, Permission, DocumentType, XMLReader, Collection)} instead.
      */
+    @Deprecated
     void store(Txn transaction, DBBroker broker, IndexInfo info, Node node)
             throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException;
 
@@ -803,12 +940,17 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param transaction The database transaction
      * @param broker      The database broker
      * @param name        the name (without path) of the document
+     *
+     * @return The Binary Document object
+     *
      * @throws PermissionDeniedException if user has not sufficient rights
      * @throws LockException if broker is locked
      * @throws IOException in case of I/O errors
      * @throws TriggerException in case of eXist-db trigger error
-     * @return The Binary Document object
+     *
+     * @deprecated Use {@link DBBroker#storeDocument(Txn, XmldbURI, InputSource, MimeType, Date, Date, Permission, DocumentType, XMLReader, Collection)} instead.
      */
+    @Deprecated
     BinaryDocument validateBinaryResource(Txn transaction, DBBroker broker, XmldbURI name)
             throws PermissionDeniedException, LockException, TriggerException, IOException;
 
@@ -825,19 +967,56 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param name        the name (without path) of the document
      * @param is          The content for the document
      * @param mimeType    The Internet Media Type of the document
-     * @param size        The size in bytes of the document
+     * @param size        The size in bytes of the document (unused - size is calculated during storage)
      * @param created     The created timestamp of the document
      * @param modified    The modified timestamp of the document
+     *
+     * @return The stored Binary Document object
+     *
      * @throws PermissionDeniedException if user has not sufficient rights
      * @throws LockException if broker is locked
      * @throws IOException in case of I/O errors
      * @throws TriggerException in case of eXist-db trigger error
      * @throws EXistException general eXist-db exception*
      *
-     * @return The stored Binary Document object
+     * @deprecated Use {@link DBBroker#storeDocument(Txn, XmldbURI, InputSource, MimeType, Date, Date, Permission, DocumentType, XMLReader, Collection)} instead.
      */
+    @Deprecated
     BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, XmldbURI name, InputStream is, String mimeType,
-            long size, Date created, Date modified) throws EXistException, PermissionDeniedException, LockException,
+            @Deprecated long size, Date created, Date modified) throws EXistException, PermissionDeniedException, LockException,
+            TriggerException, IOException;
+
+    /**
+     * Store a binary document into the Collection (streaming)
+     *
+     * Locks the collection while the resource is being saved. Triggers will be called after the collection
+     * has been unlocked while keeping a lock on the resource to prevent modification.
+     *
+     * Callers should not lock the collection before calling this method as this may lead to deadlocks.
+     *
+     * @param transaction The database transaction
+     * @param broker      The database broker
+     * @param name        the name (without path) of the document
+     * @param is          The content for the document
+     * @param mimeType    The Internet Media Type of the document
+     * @param size        The size in bytes of the document (unused - size is calculated during storage)
+     * @param created     The created timestamp of the document
+     * @param modified    The modified timestamp of the document
+     * @param permission A specific permission to set on the document, or null for the default permission
+     *
+     * @return The stored Binary Document object
+     *
+     * @throws PermissionDeniedException if user has not sufficient rights
+     * @throws LockException if broker is locked
+     * @throws IOException in case of I/O errors
+     * @throws TriggerException in case of eXist-db trigger error
+     * @throws EXistException general eXist-db exception*
+     *
+     * @deprecated Use {@link DBBroker#storeDocument(Txn, XmldbURI, InputSource, MimeType, Date, Date, Permission, DocumentType, XMLReader, Collection)} instead.
+     */
+    @Deprecated
+    BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, XmldbURI name, InputStream is, String mimeType,
+            @Deprecated long size, Date created, Date modified, @Nullable Permission permission) throws EXistException, PermissionDeniedException, LockException,
             TriggerException, IOException;
 
     /**
@@ -853,12 +1032,14 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param name        the name (without path) of the document
      * @param data        The content for the document
      * @param mimeType    The Internet Media Type of the document
+     *
+     * @return The stored Binary Document object
+     *
      * @throws PermissionDeniedException if user has not sufficient rights
      * @throws LockException if broker is locked
      * @throws IOException in case of I/O errors
      * @throws TriggerException in case of eXist-db trigger error
      * @throws EXistException general eXist-db exception
-     * @return The stored Binary Document object
      *
      * @deprecated Use {@link #addBinaryResource(Txn, DBBroker, XmldbURI, InputStream, String, long)}
      */
@@ -881,13 +1062,14 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param mimeType    The Internet Media Type of the document
      * @param created     The created timestamp of the document
      * @param modified    The modified timestamp of the document
+     *
+     * @return The stored Binary Document object
+     *
      * @throws PermissionDeniedException if user has not sufficient rights
      * @throws LockException if broker is locked
      * @throws IOException in case of I/O errors
      * @throws TriggerException in case of eXist-db trigger error
      * @throws EXistException general eXist-db exception
-     *
-     * @return The stored Binary Document object
      *
      * @deprecated Use {@link #addBinaryResource(Txn, DBBroker, BinaryDocument, InputStream, String, long, Date, Date)}
      */
@@ -909,18 +1091,21 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param name        the name (without path) of the document
      * @param is          The content for the document
      * @param mimeType    The Internet Media Type of the document
-     * @param size        The size in bytes of the document
+     * @param size        The size in bytes of the document (unused - size is calculated during storage)
+     *
+     * @return The stored Binary Document object
+     *
      * @throws PermissionDeniedException if user has not sufficient rights
      * @throws LockException if broker is locked
      * @throws IOException in case of I/O errors
      * @throws TriggerException in case of eXist-db trigger error
      * @throws EXistException general eXist-db exception
-
      *
-     * @return The stored Binary Document object
+     * @deprecated Use {@link DBBroker#storeDocument(Txn, XmldbURI, InputSource, MimeType, Date, Date, Permission, DocumentType, XMLReader, Collection)} instead.
      */
+    @Deprecated
     BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, XmldbURI name, InputStream is,
-            String mimeType, long size) throws EXistException, PermissionDeniedException, LockException,
+            String mimeType, @Deprecated long size) throws EXistException, PermissionDeniedException, LockException,
             TriggerException, IOException;
 
     /**
@@ -936,20 +1121,23 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param blob        the binary resource to store the data into
      * @param is          The content for the document
      * @param mimeType    The Internet Media Type of the document
-     * @param size        The size in bytes of the document
+     * @param size        The size in bytes of the document (unused - size is calculated during storage)
      * @param created     The created timestamp of the document
      * @param modified    The modified timestamp of the document
+     *
+     * @return The stored Binary Document object
+     *
      * @throws PermissionDeniedException if user has not sufficient rights
      * @throws LockException if broker is locked
      * @throws IOException in case of I/O errors
      * @throws TriggerException in case of eXist-db trigger error
      * @throws EXistException general eXist-db exception
-
      *
-     * @return The stored Binary Document object
+     * @deprecated Use {@link DBBroker#storeDocument(Txn, XmldbURI, InputSource, MimeType, Date, Date, Permission, DocumentType, XMLReader, Collection)} instead.
      */
+    @Deprecated
     BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, BinaryDocument blob, InputStream is,
-            String mimeType, long size, Date created, Date modified) throws EXistException, PermissionDeniedException,
+            String mimeType, @Deprecated long size, Date created, Date modified) throws EXistException, PermissionDeniedException,
             LockException, TriggerException, IOException;
 
     /**
@@ -965,23 +1153,26 @@ public interface Collection extends Resource, Comparable<Collection>, AutoClosea
      * @param blob        the binary resource to store the data into
      * @param is          The content for the document
      * @param mimeType    The Internet Media Type of the document
-     * @param size        The size in bytes of the document
+     * @param size        The size in bytes of the document (unused - size is calculated during storage)
      * @param created     The created timestamp of the document
      * @param modified    The modified timestamp of the document
      * @param preserve    In the case of a copy, cause the copy process to preserve the following attributes of each
      *                    source in the copy: modification time, file mode, user ID, and group ID, as allowed by
      *                    permissions. Access Control Lists (ACLs) will also be preserved.
+     *
+     * @return The stored Binary Document object
+     *
      * @throws PermissionDeniedException if user has not sufficient rights
      * @throws LockException if broker is locked
      * @throws IOException in case of I/O errors
      * @throws TriggerException in case of eXist-db trigger error
      * @throws EXistException general eXist-db exception
-
      *
-     * @return The stored Binary Document object
+     * @deprecated Use {@link DBBroker#storeDocument(Txn, XmldbURI, InputSource, MimeType, Date, Date, Permission, DocumentType, XMLReader, Collection)} instead.
      */
+    @Deprecated
     BinaryDocument addBinaryResource(Txn transaction, DBBroker broker, BinaryDocument blob, InputStream is,
-            String mimeType, long size, Date created, Date modified, DBBroker.PreserveType preserve)
+            String mimeType, @Deprecated long size, Date created, Date modified, DBBroker.PreserveType preserve)
             throws EXistException, PermissionDeniedException, LockException, TriggerException, IOException;
 
     /**

@@ -37,7 +37,6 @@ import com.evolvedbinary.j8fu.function.Runnable5E;
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.collections.Collection;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
@@ -56,6 +55,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -90,7 +90,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void storeAndLoad() throws LockException, TriggerException, PermissionDeniedException, EXistException,
+    public void storeAndLoad() throws LockException, SAXException, PermissionDeniedException, EXistException,
             IOException, DatabaseConfigurationException, InterruptedException {
         final Path testFile = getTestFile1();
 
@@ -105,7 +105,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void storeAndLoad_isRepeatable() throws LockException, TriggerException, PermissionDeniedException,
+    public void storeAndLoad_isRepeatable() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         storeAndLoad();
         existEmbeddedServer.restart();
@@ -117,7 +117,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void storeWithoutCommitAndLoad() throws LockException, TriggerException, PermissionDeniedException,
+    public void storeWithoutCommitAndLoad() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         final Path testFile = getTestFile1();
 
@@ -132,7 +132,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void storeWithoutCommitAndLoad_isRepeatable() throws LockException, TriggerException,
+    public void storeWithoutCommitAndLoad_isRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         storeWithoutCommitAndLoad();
         existEmbeddedServer.restart();
@@ -144,7 +144,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void storeThenDeleteAndLoad() throws LockException, TriggerException, PermissionDeniedException,
+    public void storeThenDeleteAndLoad() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         final Path testFile = getTestFile1();
 
@@ -160,7 +160,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void storeThenDeleteAndLoad_isRepeatable() throws LockException, TriggerException, PermissionDeniedException,
+    public void storeThenDeleteAndLoad_isRepeatable() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         storeThenDeleteAndLoad();
         existEmbeddedServer.restart();
@@ -172,7 +172,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void storeWithoutCommitThenDeleteAndLoad() throws LockException, TriggerException, PermissionDeniedException,
+    public void storeWithoutCommitThenDeleteAndLoad() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         final Path testFile = getTestFile1();
 
@@ -188,7 +188,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void storeWithoutCommitThenDeleteAndLoad_isRepeatable() throws LockException, TriggerException,
+    public void storeWithoutCommitThenDeleteAndLoad_isRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         storeWithoutCommitThenDeleteAndLoad();
         existEmbeddedServer.restart();
@@ -200,7 +200,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void storeThenDeleteWithoutCommitAndLoad() throws LockException, TriggerException, PermissionDeniedException,
+    public void storeThenDeleteWithoutCommitAndLoad() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         final Path testFile = getTestFile1();
 
@@ -216,7 +216,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void storeThenDeleteWithoutCommitAndLoad_isRepeatable() throws LockException, TriggerException,
+    public void storeThenDeleteWithoutCommitAndLoad_isRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         storeThenDeleteWithoutCommitAndLoad();
         existEmbeddedServer.restart();
@@ -228,7 +228,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void storeWithoutCommitThenDeleteWithoutCommitAndLoad() throws LockException, TriggerException,
+    public void storeWithoutCommitThenDeleteWithoutCommitAndLoad() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         final Path testFile = getTestFile1();
 
@@ -244,7 +244,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void storeWithoutCommitThenDeleteWithoutCommitAndLoad_isRepeatable() throws LockException, TriggerException,
+    public void storeWithoutCommitThenDeleteWithoutCommitAndLoad_isRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         storeWithoutCommitThenDeleteWithoutCommitAndLoad();
         existEmbeddedServer.restart();
@@ -256,7 +256,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void deleteAndLoad() throws LockException, TriggerException, PermissionDeniedException, EXistException,
+    public void deleteAndLoad() throws LockException, SAXException, PermissionDeniedException, EXistException,
             IOException, DatabaseConfigurationException, InterruptedException {
         final Path testFile = getTestFile1();
 
@@ -276,7 +276,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void deleteAndLoad_isRepeatable() throws LockException, TriggerException, PermissionDeniedException,
+    public void deleteAndLoad_isRepeatable() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         deleteAndLoad();
         existEmbeddedServer.restart();
@@ -288,7 +288,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void deleteWithoutCommitAndLoad() throws LockException, TriggerException, PermissionDeniedException,
+    public void deleteWithoutCommitAndLoad() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         final Path testFile = getTestFile1();
 
@@ -308,7 +308,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void deleteWithoutCommitAndLoad_isRepeatable() throws LockException, TriggerException,
+    public void deleteWithoutCommitAndLoad_isRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         deleteWithoutCommitAndLoad();
         existEmbeddedServer.restart();
@@ -320,7 +320,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void replaceAndLoad() throws LockException, TriggerException, PermissionDeniedException, EXistException,
+    public void replaceAndLoad() throws LockException, SAXException, PermissionDeniedException, EXistException,
             IOException, DatabaseConfigurationException, InterruptedException {
         final Path testFile = getTestFile1();
         final String testFilename = FileUtils.fileName(testFile);
@@ -344,7 +344,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void replaceAndLoad_isRepeatable() throws LockException, TriggerException, PermissionDeniedException,
+    public void replaceAndLoad_isRepeatable() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         replaceAndLoad();
         existEmbeddedServer.restart();
@@ -356,7 +356,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void replaceWithoutCommitAndLoad() throws LockException, TriggerException, PermissionDeniedException,
+    public void replaceWithoutCommitAndLoad() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         final Path testFile = getTestFile1();
         final String testFilename = FileUtils.fileName(testFile);
@@ -380,7 +380,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void replaceWithoutCommitAndLoad_isRepeatable() throws LockException, TriggerException,
+    public void replaceWithoutCommitAndLoad_isRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         replaceWithoutCommitAndLoad();
         existEmbeddedServer.restart();
@@ -392,7 +392,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void replaceThenDeleteAndLoad() throws LockException, TriggerException, PermissionDeniedException,
+    public void replaceThenDeleteAndLoad() throws LockException, SAXException, PermissionDeniedException,
             EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         final Path testFile = getTestFile1();
         final String testFilename = FileUtils.fileName(testFile);
@@ -417,7 +417,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void replaceThenDeleteAndLoad_isRepeatable() throws LockException, TriggerException,
+    public void replaceThenDeleteAndLoad_isRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         replaceThenDeleteAndLoad();
         existEmbeddedServer.restart();
@@ -466,7 +466,7 @@ public abstract class AbstractRecoverTest {
      */
     @Ignore("Only possible from a single-thread by programming error. Journal is not expected to recover such cases!")
     @Test
-    public void replaceWithoutCommitThenDeleteAndLoad() throws LockException, TriggerException,
+    public void replaceWithoutCommitThenDeleteAndLoad() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         final Path testFile = getTestFile1();
         final String testFilename = FileUtils.fileName(testFile);
@@ -528,7 +528,7 @@ public abstract class AbstractRecoverTest {
      */
     @Ignore("Only possible from a single-thread by programming error. Journal is not expected to recover such cases!")
     @Test
-    public void replaceWithoutCommitThenDeleteAndLoad_isRepeatable() throws LockException, TriggerException,
+    public void replaceWithoutCommitThenDeleteAndLoad_isRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         replaceWithoutCommitThenDeleteAndLoad();
         existEmbeddedServer.restart();
@@ -540,7 +540,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void replaceThenDeleteWithoutCommitAndLoad() throws LockException, TriggerException,
+    public void replaceThenDeleteWithoutCommitAndLoad() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         final Path testFile = getTestFile1();
         final String testFilename = FileUtils.fileName(testFile);
@@ -565,7 +565,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void replaceThenDeleteWithoutCommitAndLoad_isRepeatable() throws LockException, TriggerException,
+    public void replaceThenDeleteWithoutCommitAndLoad_isRepeatable() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         replaceThenDeleteWithoutCommitAndLoad();
         existEmbeddedServer.restart();
@@ -577,7 +577,7 @@ public abstract class AbstractRecoverTest {
     }
 
     @Test
-    public void replaceWithoutCommitThenDeleteWithoutCommitAndLoad() throws LockException, TriggerException,
+    public void replaceWithoutCommitThenDeleteWithoutCommitAndLoad() throws LockException, SAXException,
             PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         final Path testFile = getTestFile1();
         final String testFilename = FileUtils.fileName(testFile);
@@ -603,7 +603,7 @@ public abstract class AbstractRecoverTest {
 
     @Test
     public void replaceWithoutCommitThenDeleteWithoutCommitAndLoad_isRepeatable() throws LockException,
-            TriggerException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
+            SAXException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException, InterruptedException {
         replaceWithoutCommitThenDeleteWithoutCommitAndLoad();
         existEmbeddedServer.restart();
 
@@ -624,7 +624,7 @@ public abstract class AbstractRecoverTest {
      * @param file The file that to store
      */
     protected void store(final boolean commitAndClose, final Path file) throws EXistException, PermissionDeniedException,
-            IOException, TriggerException, LockException, InterruptedException {
+            IOException, SAXException, LockException, InterruptedException {
         store(commitAndClose, file, FileUtils.fileName(file));
     }
 
@@ -637,7 +637,7 @@ public abstract class AbstractRecoverTest {
      * @param dbFilename the name to use when storing the file in the database
      */
     private void store(final boolean commitAndClose, final Path file, final String dbFilename) throws EXistException,
-            PermissionDeniedException, IOException, TriggerException, LockException, InterruptedException {
+            PermissionDeniedException, IOException, SAXException, LockException, InterruptedException {
         store(commitAndClose, new FileInputSource(file), dbFilename);
     }
 
@@ -650,7 +650,7 @@ public abstract class AbstractRecoverTest {
      * @param dbFilename the name to use when storing the file in the database
      */
     protected void store(final boolean commitAndClose, final InputSource data, final String dbFilename) throws EXistException,
-            PermissionDeniedException, IOException, TriggerException, LockException, InterruptedException {
+            PermissionDeniedException, IOException, SAXException, LockException, InterruptedException {
 
 
         runSync(new BrokerTask(existEmbeddedServer.getBrokerPool(), (broker, transaction) -> {
@@ -680,7 +680,7 @@ public abstract class AbstractRecoverTest {
      */
     protected abstract void storeAndVerify(final DBBroker broker, final Txn transaction, final Collection collection,
             final InputSource data, final String dbFilename) throws EXistException, PermissionDeniedException,
-            IOException, TriggerException, LockException;
+            IOException, SAXException, LockException;
 
     /**
      * Read a document from the database.
@@ -750,7 +750,7 @@ public abstract class AbstractRecoverTest {
      * @param file The file that was previously stored, that should be deleted
      */
     private void delete(final boolean commitAndClose, final Path file)
-            throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException, InterruptedException {
+            throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, InterruptedException {
         delete(commitAndClose, FileUtils.fileName(file));
     }
 
@@ -762,7 +762,7 @@ public abstract class AbstractRecoverTest {
      * @param dbFilename The name of the file that was previously stored, that should be deleted
      */
     private void delete(final boolean commitAndClose, final String dbFilename)
-            throws EXistException, PermissionDeniedException, IOException, TriggerException, LockException, InterruptedException {
+            throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, InterruptedException {
 
         runSync(new BrokerTask(existEmbeddedServer.getBrokerPool(), (broker, transaction) -> {
             final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -797,7 +797,7 @@ public abstract class AbstractRecoverTest {
     }
 
     private int runSyncId = 0;
-    private void runSync(final BrokerTask brokerTask) throws InterruptedException, LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+    private void runSync(final BrokerTask brokerTask) throws InterruptedException, LockException, SAXException, PermissionDeniedException, EXistException, IOException {
         final String brokerTaskName = "AbstractRecoveryTest#runSync-" + runSyncId++;
         final Thread thread = new Thread(brokerTask, brokerTaskName);
         thread.start();
@@ -806,11 +806,11 @@ public abstract class AbstractRecoverTest {
     }
 
     private static class BrokerTask implements Runnable {
-        private final BiConsumer5E<DBBroker, Txn, EXistException, PermissionDeniedException, IOException, TriggerException, LockException> task;
+        private final BiConsumer5E<DBBroker, Txn, EXistException, PermissionDeniedException, IOException, SAXException, LockException> task;
         private final BrokerPool pool;
-        private volatile Runnable5E<EXistException, PermissionDeniedException, IOException, TriggerException, LockException> exception = null;
+        private volatile Runnable5E<EXistException, PermissionDeniedException, IOException, SAXException, LockException> exception = null;
 
-        public BrokerTask(final BrokerPool pool, final BiConsumer5E<DBBroker, Txn, EXistException, PermissionDeniedException, IOException, TriggerException, LockException> task) {
+        public BrokerTask(final BrokerPool pool, final BiConsumer5E<DBBroker, Txn, EXistException, PermissionDeniedException, IOException, SAXException, LockException> task) {
             this.pool = pool;
             this.task = task;
         }
@@ -822,7 +822,7 @@ public abstract class AbstractRecoverTest {
                 final Txn transaction = transact.beginTransaction();
 
                 task.accept(broker, transaction);
-            } catch (final EXistException | PermissionDeniedException | IOException | TriggerException | LockException e) {
+            } catch (final EXistException | PermissionDeniedException | IOException | SAXException | LockException e) {
                 this.exception = () -> { throw e; };
             }
         }
@@ -830,7 +830,7 @@ public abstract class AbstractRecoverTest {
         /**
          * If an exception is present, throw it
          */
-        public void throwIfException() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
+        public void throwIfException() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
             if (exception != null) {
                 exception.run();
             }

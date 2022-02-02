@@ -35,7 +35,6 @@ package org.exist.storage.txn;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
@@ -43,21 +42,18 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TransactionTestDSL;
-import org.exist.util.FileInputSource;
+import org.exist.util.InputStreamSupplierInputSource;
 import org.exist.util.LockException;
-import org.exist.util.io.InputStreamUtil;
+import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.concurrent.*;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.test.TransactionTestDSL.ExecutionListener;
 import static org.exist.test.TransactionTestDSL.NULL_SCHEDULE_LISTENER;
 import static org.exist.test.TransactionTestDSL.STD_OUT_SCHEDULE_LISTENER;
@@ -188,15 +184,7 @@ public class ConcurrentTransactionsTest {
             assertNotNull(test);
             broker.saveCollection(transaction, test);
 
-            final String sample;
-            try (final InputStream is = SAMPLES.getHamletSample()) {
-                assertNotNull(is);
-                sample = InputStreamUtil.readString(is, UTF_8);
-            }
-
-            final IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("hamlet.xml"), sample);
-            assertNotNull(info);
-            test.store(transaction, broker, info, sample);
+            broker.storeDocument(transaction, XmldbURI.create("hamlet.xml"), new InputStreamSupplierInputSource(() -> SAMPLES.getHamletSample()), MimeType.XML_TYPE, test);
 
             transact.commit(transaction);
         }

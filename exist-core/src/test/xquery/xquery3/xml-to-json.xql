@@ -296,7 +296,6 @@ function xtj:xml-to-json-toplevelElementKey($arg1) {
 };
 
 declare
-    %test:pending
     %test:assertEquals('"<test> \\ </test>"')
 function xtj:xml-to-json-xmlInJsonString() {
     let $node := <string>&lt;test&gt; \ &lt;/test&gt;</string>

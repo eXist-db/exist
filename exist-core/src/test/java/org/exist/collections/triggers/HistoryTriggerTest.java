@@ -25,7 +25,6 @@ package org.exist.collections.triggers;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
-import org.exist.collections.IndexInfo;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
@@ -37,6 +36,8 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
 import org.xml.sax.SAXException;
@@ -74,8 +75,7 @@ public class HistoryTriggerTest {
             // create and store the collection.xconf for the test collection
             Collection configCollection = broker.getOrCreateCollection(transaction, TEST_CONFIG_COLLECTION_URI);
             broker.saveCollection(transaction, configCollection);
-            final IndexInfo indexInfo = configCollection.validateXMLResource(transaction, broker, CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI, COLLECTION_CONFIG);
-            configCollection.store(transaction, broker, indexInfo, COLLECTION_CONFIG);
+            broker.storeDocument(transaction, CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI, new StringInputSource(COLLECTION_CONFIG), MimeType.XML_TYPE, configCollection);
 
             // create the test collection
             Collection testCollection = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
@@ -184,9 +184,7 @@ public class HistoryTriggerTest {
 
             assertNotNull(testCollection);
 
-            final IndexInfo indexInfo = testCollection.validateXMLResource(transaction, broker, docName, docContent);
-            testCollection.store(transaction, broker, indexInfo, docContent);
-
+            broker.storeDocument(transaction, docName, new StringInputSource(docContent), MimeType.XML_TYPE, testCollection);
         }
     }
 

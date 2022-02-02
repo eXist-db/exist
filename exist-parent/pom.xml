@@ -27,7 +27,7 @@
 
     <groupId>org.exist-db</groupId>
     <artifactId>exist-parent</artifactId>
-    <version>5.4.0-SNAPSHOT</version>
+    <version>6.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>eXist-db Parent</name>
@@ -102,23 +102,24 @@
 
         <ant.version>1.10.12</ant.version>
         <apache.httpcomponents.version>4.5.13</apache.httpcomponents.version>
-        <apache.httpcomponents.core.version>4.4.14</apache.httpcomponents.core.version>
-        <apache.xmlrpc.version>3.1.3</apache.xmlrpc.version>
-        <aspectj.version>1.9.4</aspectj.version>
+        <apache.httpcomponents.core.version>4.4.15</apache.httpcomponents.core.version>
+        <apache.xmlrpc.version>4.0.0</apache.xmlrpc.version>
+        <aspectj.version>1.9.8.M1</aspectj.version>
         <exquery.distribution.version>0.2.0</exquery.distribution.version>
         <icu.version>59.1</icu.version>
         <izpack.version>5.1.3</izpack.version>
+        <jansi.version>2.4.0</jansi.version>
         <jaxb.api.version>3.0.1</jaxb.api.version>
         <jaxb.impl.version>3.0.2</jaxb.impl.version>
         <jetty.version>9.4.44.v20210927</jetty.version>
-        <log4j.version>2.14.1</log4j.version>
+        <log4j.version>2.17.1</log4j.version>
         <lucene.version>4.10.4</lucene.version>
         <milton.version>1.8.1.3</milton.version>
         <saxon.version>11.1</saxon.version>
-        <xmlunit.version>2.8.3</xmlunit.version>
+        <xmlunit.version>2.9.0</xmlunit.version>
         <junit.version>4.13.2</junit.version>
-        <junit.jupiter.version>5.8.1</junit.jupiter.version>
-        <junit.vintage.version>5.8.1</junit.vintage.version>
+        <junit.jupiter.version>5.8.2</junit.jupiter.version>
+        <junit.vintage.version>5.8.2</junit.vintage.version>
         <easymock.version>4.3</easymock.version>
         <junit.toolbox.version>2.4</junit.toolbox.version>
         <hamcrest.version>2.2</hamcrest.version>
@@ -163,7 +164,7 @@
             <dependency>
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
-                <version>2.9.2</version>
+                <version>2.9.3</version>
             </dependency>
 
             <dependency>
@@ -188,6 +189,11 @@
                 <groupId>com.evolvedbinary.j8fu</groupId>
                 <artifactId>j8fu</artifactId>
                 <version>1.23.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.evolvedbinary.multilock</groupId>
+                <artifactId>multilock</artifactId>
+                <version>1.0.1</version>
             </dependency>
 
             <dependency>
@@ -247,7 +253,7 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.7.32</version>
+                <version>1.7.35</version>
             </dependency>
 
             <dependency>
@@ -257,7 +263,7 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.xmlrpc</groupId>
+                <groupId>com.evolvedbinary.thirdparty.org.apache.xmlrpc</groupId>
                 <artifactId>xmlrpc-common</artifactId>
                 <version>${apache.xmlrpc.version}</version>
                 <exclusions>
@@ -477,6 +483,18 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit.jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.vintage</groupId>
+                <artifactId>junit-vintage-engine</artifactId>
+                <version>${junit.vintage.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
@@ -529,7 +547,7 @@
                 <plugin>
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
-                    <version>6.5.0</version>
+                    <version>6.5.3</version>
                     <configuration>
                         <!-- Use Evolved Binary's mirror of nvd.nist.gov -->
                         <cveUrlModified>https://nvd.mirror.evolvedbinary.com/feeds/json/cve/1.1/nvdcve-1.1-modified.json.gz</cveUrlModified>
@@ -588,7 +606,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
+                    <version>3.9.0</version>
                     <configuration>
                         <source>${project.build.source}</source>
                         <target>${project.build.target}</target>
@@ -598,7 +616,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.2.2</version>
                     <configuration>
                         <archive>
                             <manifest>
@@ -754,12 +772,12 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>versions-maven-plugin</artifactId>
-                    <version>2.8.1</version>
+                    <version>2.9.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.9.1</version>
+                    <version>3.10.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -802,7 +820,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>3.0.0-M1</version>
+                    <version>3.0.0-M2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -818,7 +836,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-scm-plugin</artifactId>
-                    <version>1.12.0</version>
+                    <version>1.12.2</version>
                     <configuration>
                         <sign>true</sign>
                     </configuration>
@@ -855,6 +873,7 @@
                             <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
                             <excludes>
                                 <exclude>FDB-backport-LGPL-21-ONLY-license.template.txt</exclude>
+                                <exclude>FDB-backport-LGPL-21-ONLY-license.xml.template.txt</exclude>
                             </excludes>
                         </licenseSet>
                     </licenseSets>
@@ -865,6 +884,7 @@
                         <form>XML_STYLE</form>
                         <g>SLASHSTAR_STYLE</g>
                         <java>SLASHSTAR_STYLE</java>
+                        <plist>XML_STYLE</plist>
                         <xconf>XML_STYLE</xconf>
                         <xconf.init>XML_STYLE</xconf.init>
                         <xq>XQUERY_STYLE</xq>
@@ -929,9 +949,9 @@
                         </goals>
                         <configuration>
                             <failOnWarning>true</failOnWarning>
-                            <ignoredDependencies>
-                                <ignoredDependency>org.junit.jupiter:junit-jupiter-api</ignoredDependency>
-                            </ignoredDependencies>
+                            <ignoredUnusedDeclaredDependencies>
+                                <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine:jar:${junit.vintage.version}</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
                 </executions>

@@ -32,11 +32,10 @@
  */
 package org.exist.util;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 

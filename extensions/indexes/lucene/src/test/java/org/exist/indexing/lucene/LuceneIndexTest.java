@@ -21,13 +21,11 @@
  */
 package org.exist.indexing.lucene;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.util.*;
 import javax.xml.XMLConstants;
@@ -39,7 +37,6 @@ import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.CollectionConfigurationException;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DefaultDocumentSet;
@@ -56,7 +53,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.*;
-import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -1276,11 +1272,9 @@ public class LuceneIndexTest {
                 mgr.addConfiguration(transaction, broker, root, configuration);
             }
 
-            final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(docName), data);
-            assertNotNull(info);
-            root.store(transaction, broker, info, data);
+            broker.storeDocument(transaction, XmldbURI.create(docName), new StringInputSource(data), MimeType.XML_TYPE, root);
 
-            docs.add(info.getDocument());
+            docs.add(root.getDocument(broker, XmldbURI.create(docName)));
             transact.commit(transaction);
         }
 
@@ -1302,13 +1296,8 @@ public class LuceneIndexTest {
             }
 
             for (final String sampleName : sampleNames) {
-                try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
-                    final String sample = InputStreamUtil.readString(is, UTF_8);
-                    final IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(sampleName), sample);
-                    assertNotNull(info);
-                    root.store(transaction, broker, info, sample);
-                    docs.add(info.getDocument());
-                }
+                broker.storeDocument(transaction, XmldbURI.create(sampleName), new InputStreamSupplierInputSource(() -> SAMPLES.getShakespeareSample(sampleName)), MimeType.XML_TYPE, root);
+                docs.add(root.getDocument(broker, XmldbURI.create(sampleName)));
             }
             transact.commit(transaction);
         }

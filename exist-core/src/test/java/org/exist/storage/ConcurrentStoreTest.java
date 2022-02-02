@@ -31,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.ConcurrencyTest;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
@@ -151,13 +150,11 @@ public class ConcurrentStoreTest {
             try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                     final Txn transaction = transact.beginTransaction()) {
 
-                IndexInfo info;
                 // store some documents into the test collection
                 for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
                     try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
                         final String sample = InputStreamUtil.readString(is, UTF_8);
-                        info = test.validateXMLResource(transaction, broker, XmldbURI.create(sampleName), sample);
-                        test.store(transaction, broker, info, sample);
+                        broker.storeDocument(transaction, XmldbURI.create(sampleName), new StringInputSource(sample), MimeType.XML_TYPE, test);
                     } catch (SAXException e) {
                         System.err.println("Error found while parsing document: " + sampleName + ": " + e.getMessage());
                     }
@@ -198,8 +195,7 @@ public class ConcurrentStoreTest {
 
                 try (final InputStream is = SAMPLES.getHamletSample()) {
                     final String sample = InputStreamUtil.readString(is, UTF_8);
-                    IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), sample);
-                    test.store(transaction, broker, info, sample);
+                    broker.storeDocument(transaction, XmldbURI.create("test.xml"), new StringInputSource(sample), MimeType.XML_TYPE, test);
                 } catch (SAXException e) {
                     System.err.println("Error found while parsing document: hamlet.xml: " + e.getMessage());
                 }

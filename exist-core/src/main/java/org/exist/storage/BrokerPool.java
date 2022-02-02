@@ -1107,8 +1107,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      * Returns a pool in which the database instance's readers are stored.
      *
      * @return The pool
-     *
-     * @deprecated Use {@link #getXmlReaderPool()} instead
      */
     public XMLReaderPool getXmlReaderPool() {
         return xmlReaderPool;

@@ -27,11 +27,9 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.SystemProperties;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.*;
-import org.exist.dom.persistent.BinaryDocument;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
@@ -59,6 +57,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -619,11 +618,12 @@ public class Deployment {
         try {
             final Collection collection = broker.getOrCreateCollection(transaction, targetCollection);
             final XmldbURI name = XmldbURI.createInternal("repo.xml");
-            final IndexInfo info = collection.validateXMLResource(transaction, broker, name, updatedXML);
-            final Permission permission = info.getDocument().getPermissions();
+
+            final Permission permission = PermissionFactory.getDefaultResourcePermission(broker.getBrokerPool().getSecurityManager());
             setPermissions(broker, requestedPerms, false, MimeType.XML_TYPE, permission);
 
-            collection.store(transaction, broker, info, updatedXML);
+            collection.storeDocument(transaction, broker, name, updatedXML, MimeType.XML_TYPE, null, null, permission, null, null);
+
         } catch (final PermissionDeniedException | IOException | SAXException | LockException | EXistException e) {
             throw new PackageException("Error while storing updated repo.xml: " + e.getMessage(), e);
         }
@@ -795,38 +795,21 @@ public class Deployment {
                 final XmldbURI name = XmldbURI.create(FileUtils.fileName(file));
 
                 try {
-                    if (mime.isXMLType()) {
-                        final InputSource is = new FileInputSource(file);
-                        IndexInfo info = null;
-                        try {
-                            info = targetCollection.validateXMLResource(transaction, broker, name, is);
-                        } catch (EXistException | PermissionDeniedException | LockException | SAXException | IOException e) {
-                            //check for .html ending
-                            if(mime.getName().equals(MimeType.HTML_TYPE.getName())){
-                                //store it as binary resource
-                                storeBinary(broker, transaction, targetCollection, file, mime, name, requestedPerms);
-                            } else {
-                                // could neither store as xml nor binary: give up and report failure in outer catch
-                                throw new EXistException(FileUtils.fileName(file) + " cannot be stored");
-                            }
-                        }
-                        if (info != null) {
-                            info.getDocument().setMimeType(mime.getName());
-                            final Permission permission = info.getDocument().getPermissions();
-                            setPermissions(broker, requestedPerms, false, mime, permission);
+                    final Permission permission = PermissionFactory.getDefaultResourcePermission(broker.getBrokerPool().getSecurityManager());
+                    setPermissions(broker, requestedPerms, false, mime, permission);
 
-                            targetCollection.store(transaction, broker, info, is);
-                        }
-                    } else {
-                        final long size = Files.size(file);
-                        try(final InputStream is = new BufferedInputStream(Files.newInputStream(file))) {
-                            final BinaryDocument doc =
-                                    targetCollection.addBinaryResource(transaction, broker, name, is, mime.getName(), size);
+                    try (final FileInputSource is = new FileInputSource(file)) {
 
-                            final Permission permission = doc.getPermissions();
-                            setPermissions(broker, requestedPerms, false, mime, permission);
-                            doc.setMimeType(mime.getName());
-                            broker.storeXMLResource(transaction, doc);
+                        broker.storeDocument(transaction, name, is, mime, null, null, permission, null, null, targetCollection);
+
+                    } catch (final EXistException | PermissionDeniedException | LockException | SAXException | IOException e) {
+                        //check for .html ending
+                        if (mime.getName().equals(MimeType.HTML_TYPE.getName())) {
+                            //store it as binary resource
+                            storeBinary(broker, transaction, targetCollection, file, mime, name, permission);
+                        } else {
+                            // could neither store as xml nor binary: give up and report failure in outer catch
+                            throw new EXistException(FileUtils.fileName(file) + " cannot be stored");
                         }
                     }
                 } catch (final SAXException | EXistException | PermissionDeniedException | LockException | IOException e) {
@@ -837,29 +820,25 @@ public class Deployment {
         }
     }
 
-    private void storeBinary(final DBBroker broker, final Txn transaction, final Collection targetCollection, final Path file, final MimeType mime, final XmldbURI name, final Optional<RequestedPerms> requestedPerms) throws
-            IOException, EXistException, PermissionDeniedException, LockException, TriggerException {
-        final long size = Files.size(file);
-        try (final InputStream is = new BufferedInputStream(Files.newInputStream(file))) {
-            final BinaryDocument doc =
-                    targetCollection.addBinaryResource(transaction, broker, name, is, mime.getName(), size);
+    private void storeBinary(final DBBroker broker, final Txn transaction, final Collection targetCollection, final Path file, final MimeType mime, final XmldbURI name, @Nullable final Permission permission) throws
+            IOException, EXistException, PermissionDeniedException, LockException, SAXException {
 
-            final Permission permission = doc.getPermissions();
-            setPermissions(broker, requestedPerms, false, mime, permission);
-            doc.setMimeType(mime.getName());
-            broker.storeXMLResource(transaction, doc);
-        }
+        final InputSource is = new FileInputSource(file);
+        broker.storeDocument(transaction, name, is, new MimeType(mime.getName(), MimeType.BINARY), null, null, permission, null, null, targetCollection);
     }
 
     private void storeBinaryResources(final DBBroker broker, final Txn transaction, final Path directory, final Collection targetCollection,
             final Optional<RequestedPerms> requestedPerms, final List<String> errors) throws IOException, EXistException,
             PermissionDeniedException, LockException, TriggerException {
-        try(DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+        try (final DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
             for (final Path entry: stream) {
                 if (!Files.isDirectory(entry)) {
                     final XmldbURI name = XmldbURI.create(FileUtils.fileName(entry));
                     try {
-                        storeBinary(broker, transaction, targetCollection, entry, MimeType.BINARY_TYPE, name, requestedPerms);
+                        final Permission permission = PermissionFactory.getDefaultResourcePermission(broker.getBrokerPool().getSecurityManager());
+                        setPermissions(broker, requestedPerms, false, MimeType.BINARY_TYPE, permission);
+
+                        storeBinary(broker, transaction, targetCollection, entry, MimeType.BINARY_TYPE, name, permission);
                     } catch (final Exception e) {
                         LOG.error(e.getMessage(), e);
                         errors.add(e.getMessage());

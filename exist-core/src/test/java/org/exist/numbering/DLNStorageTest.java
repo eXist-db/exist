@@ -23,7 +23,6 @@ package org.exist.numbering;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
@@ -34,6 +33,8 @@ import org.exist.storage.StorageAddress;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
@@ -128,12 +129,8 @@ public class DLNStorageTest {
             Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
             broker.saveCollection(transaction, test);
 
-            IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"),
-                    TEST_XML);
+            broker.storeDocument(transaction, XmldbURI.create("test_string.xml"), new StringInputSource(TEST_XML), MimeType.XML_TYPE, test);
             //TODO : unlock the collection here ?
-            assertNotNull(info);
-
-            test.store(transaction, broker, info, TEST_XML);
 
             transact.commit(transaction);
         }

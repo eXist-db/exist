@@ -22,9 +22,7 @@
 package org.exist.storage;
 
 import com.evolvedbinary.j8fu.tuple.Tuple3;
-import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.*;
@@ -32,12 +30,12 @@ import org.exist.indexing.StructuralIndex;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.NodeSelector;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -117,9 +115,9 @@ public class MoveOverwriteCollectionTest {
             final Collection test2 = createCollection(transaction, broker, SUB_TEST_COLLECTION_URI);
             final Collection test3 = createCollection(transaction, broker, TEST3_COLLECTION_URI);
 
-            store(transaction, broker, test1, doc1Name, XML1);
-            store(transaction, broker, test2, doc2Name, XML2);
-            store(transaction, broker, test3, doc3Name, XML3);
+            broker.storeDocument(transaction, doc1Name, new StringInputSource(XML1), MimeType.XML_TYPE, test1);
+            broker.storeDocument(transaction, doc2Name, new StringInputSource(XML2), MimeType.XML_TYPE, test2);
+            broker.storeDocument(transaction, doc3Name, new StringInputSource(XML3), MimeType.XML_TYPE, test3);
 
             transaction.commit();
 
@@ -131,11 +129,6 @@ public class MoveOverwriteCollectionTest {
         final Collection col = broker.getOrCreateCollection(txn, uri);
         broker.saveCollection(txn, col);
         return col;
-    }
-
-    private void store(final Txn txn, final DBBroker broker, final Collection col, final XmldbURI name, final String data) throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
-        final IndexInfo info = col.validateXMLResource(txn, broker, name, data);
-        col.store(txn, broker, info, data);
     }
 
     private void moveToRoot(final DBBroker broker, final Collection sourceCollection) throws Exception {

@@ -24,13 +24,14 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -205,9 +206,7 @@ public class ReindexTest {
             assertNotNull(collection);
             broker.saveCollection(transaction, collection);
 
-            final IndexInfo info = collection.validateXMLResource(transaction, broker, docName, doc);
-            assertNotNull(info);
-            collection.store(transaction, broker, info, doc);
+            broker.storeDocument(transaction, docName, new StringInputSource(doc), MimeType.XML_TYPE, collection);
 
             transaction.commit();
         }
