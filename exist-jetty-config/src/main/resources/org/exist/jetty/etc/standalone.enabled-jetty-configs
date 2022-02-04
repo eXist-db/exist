@@ -43,3 +43,7 @@ jetty-https.xml
 
 ### Webapp deployment
 standalone-jetty-deploy.xml
+
+
+### Annotation support 
+jetty-annotations.xml
