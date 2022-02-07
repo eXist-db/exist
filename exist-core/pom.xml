@@ -521,16 +521,6 @@
             <artifactId>httpclient</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.exist-db.thirdparty.com.ettrema</groupId>
-            <artifactId>milton-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.exist-db.thirdparty.com.ettrema</groupId>
-            <artifactId>milton-client</artifactId>
-            <scope>test</scope>
-        </dependency>
 
         <!-- needed for starting up a jetty server -->
         <dependency>
