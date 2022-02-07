@@ -41,26 +41,34 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
 /**
- * Tests for retrieving a document containing CDATA via
- * WebDAV.
+ * Tests for storing and retrieving a document via WebDAV.
  */
-public class CDataIntergationTest {
+public class StoreAndRetrieveTest {
 
     @ClassRule
-    public static final ExistWebServer EXIST_WEB_SERVER = new ExistWebServer(true, false, true, true);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     @ClassRule
-    public static final TemporaryFolder TEMP_FOLDER = new TemporaryFolder();
-
-    private static final String CDATA_CONTENT = "Hello there, \"Bob?\"";
-    private static final String CDATA_XML = "<elem1><![CDATA[" + CDATA_CONTENT + "]]></elem1>";
+    public static final TemporaryFolder tempFolder = new TemporaryFolder();
 
     @Test
-    public void cdataWebDavApi() throws IOException, NotAuthorizedException, BadRequestException, HttpException, ConflictException, NotFoundException {
-        final String docName = "webdav-cdata-test.xml";
+    public void storeAndRetrieveXmlDocument() throws IOException, NotAuthorizedException, BadRequestException, HttpException, ConflictException, NotFoundException {
+        final String srcDocName = "webdav-store-and-retrieve-test.xml";
+        final String srcDocContent = "<elem1>Hello there</elem1>";
+        storeAndRetrieve(srcDocName, srcDocContent, "application/xml");
+    }
+
+    @Test
+    public void storeAndRetrieveBinDocument() throws IOException, NotAuthorizedException, BadRequestException, HttpException, ConflictException, NotFoundException {
+        final String srcDocName = "webdav-store-and-retrieve-test.bin";
+        final String srcDocContent = "0123456789";
+        storeAndRetrieve(srcDocName, srcDocContent, "application/octet-stream");
+    }
+
+    private void storeAndRetrieve(final String srcDocName, final String srcDocContent, final String expectedMediaType) throws BadRequestException, HttpException, IOException, NotAuthorizedException, ConflictException, NotFoundException {
         final HostBuilder builder = new HostBuilder();
         builder.setServer("localhost");
-        final int port = EXIST_WEB_SERVER.getPort();
+        final int port = existWebServer.getPort();
         builder.setPort(port);
         builder.setRootPath("webdav/db");
         final Host host = builder.buildHost();
@@ -73,18 +81,18 @@ public class CDataIntergationTest {
         assertNotNull(folder);
 
         // store document
-        final byte data[] = CDATA_XML.getBytes(UTF_8);
-        final java.io.File tmpStoreFile = TEMP_FOLDER.newFile();
+        final byte data[] = srcDocContent.getBytes(UTF_8);
+        final java.io.File tmpStoreFile = tempFolder.newFile();
         Files.write(tmpStoreFile.toPath(), data);
-        assertNotNull(folder.uploadFile(docName, tmpStoreFile, null));
+        assertNotNull(folder.uploadFile(srcDocName, tmpStoreFile, null));
 
         // retrieve document
-        final com.ettrema.httpclient.Resource resource = folder.child(docName);
-        assertNotNull(resource);
-        assertTrue(resource instanceof File);
-        assertEquals("application/xml", ((File) resource).contentType);
-        final java.io.File tempRetrieveFile = TEMP_FOLDER.newFile();
-        resource.downloadTo(tempRetrieveFile, null);
-        assertEquals(CDATA_XML, new String(Files.readAllBytes(tempRetrieveFile.toPath()), UTF_8));
+        final Resource srcResource = folder.child(srcDocName);
+        assertNotNull(srcResource);
+        assertTrue(srcResource instanceof File);
+        assertEquals(expectedMediaType, ((File) srcResource).contentType);
+        final java.io.File tempRetrievedSrcFile = tempFolder.newFile();
+        srcResource.downloadTo(tempRetrievedSrcFile, null);
+        assertEquals(srcDocContent, new String(Files.readAllBytes(tempRetrievedSrcFile.toPath()), UTF_8));
     }
 }
