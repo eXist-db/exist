@@ -41,9 +41,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
 /**
- * Tests for copying a document via WebDAV.
+ * Tests for replacing a document via WebDAV.
  */
-public class CopyTest {
+public class ReplaceTest {
 
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
@@ -52,22 +52,22 @@ public class CopyTest {
     public static final TemporaryFolder tempFolder = new TemporaryFolder();
 
     @Test
-    public void copyXmlDocument() throws IOException, NotAuthorizedException, BadRequestException, HttpException, ConflictException, NotFoundException {
-        final String srcDocName = "webdav-copy-test.xml";
-        final String srcDocContent = "<elem1>Hello there</elem1>";
-        final String destDocName = "webdav-copied-test.xml";
-        copyDocument(srcDocName, srcDocContent, destDocName, "application/xml");
+    public void replaceXmlDocument() throws IOException, NotAuthorizedException, BadRequestException, HttpException, ConflictException, NotFoundException {
+        final String docName = "webdav-copy-test.xml";
+        final String docContent = "<elem1>Hello there</elem1>";
+        final String replacementDocContent = "<elem2>Goodbye friend</elem2>";
+        replaceDocument(docName, docContent, replacementDocContent, "application/xml");
     }
 
     @Test
-    public void copyBinDocument() throws IOException, NotAuthorizedException, BadRequestException, HttpException, ConflictException, NotFoundException {
-        final String srcDocName = "webdav-copy-test.bin";
-        final String srcDocContent = "0123456789";
-        final String destDocName = "webdav-copied-test.bin";
-        copyDocument(srcDocName, srcDocContent, destDocName, "application/octet-stream");
+    public void replaceBinDocument() throws IOException, NotAuthorizedException, BadRequestException, HttpException, ConflictException, NotFoundException {
+        final String docName = "webdav-copy-test.bin";
+        final String docContent = "0123456789";
+        final String replacementDocContent = "9876543210";
+        replaceDocument(docName, docContent, replacementDocContent, "application/octet-stream");
     }
 
-    private void copyDocument(final String srcDocName, final String srcDocContent, final String destDocName, final String expectedMediaType) throws BadRequestException, HttpException, IOException, NotAuthorizedException, ConflictException, NotFoundException {
+    private void replaceDocument(final String docName, final String docContent, final String replacementDocContent, final String expectedMediaType) throws BadRequestException, HttpException, IOException, NotAuthorizedException, ConflictException, NotFoundException {
         final HostBuilder builder = new HostBuilder();
         builder.setServer("localhost");
         final int port = existWebServer.getPort();
@@ -83,30 +83,33 @@ public class CopyTest {
         assertNotNull(folder);
 
         // store document
-        final byte data[] = srcDocContent.getBytes(UTF_8);
+        final byte data[] = docContent.getBytes(UTF_8);
         final java.io.File tmpStoreFile = tempFolder.newFile();
         Files.write(tmpStoreFile.toPath(), data);
-        assertNotNull(folder.uploadFile(srcDocName, tmpStoreFile, null));
+        assertNotNull(folder.uploadFile(docName, tmpStoreFile, null));
 
         // retrieve document
-        final com.ettrema.httpclient.Resource srcResource = folder.child(srcDocName);
+        final Resource srcResource = folder.child(docName);
         assertNotNull(srcResource);
         assertTrue(srcResource instanceof File);
         assertEquals(expectedMediaType, ((File) srcResource).contentType);
         final java.io.File tempRetrievedSrcFile = tempFolder.newFile();
         srcResource.downloadTo(tempRetrievedSrcFile, null);
-        assertEquals(srcDocContent, new String(Files.readAllBytes(tempRetrievedSrcFile.toPath()), UTF_8));
+        assertEquals(docContent, new String(Files.readAllBytes(tempRetrievedSrcFile.toPath()), UTF_8));
 
-        // copy document
-        srcResource.copyTo(folder, destDocName);
+        // replace document
+        final byte replacementData[] = replacementDocContent.getBytes(UTF_8);
+        final java.io.File tmpReplacementFile = tempFolder.newFile();
+        Files.write(tmpReplacementFile.toPath(), replacementData);
+        assertNotNull(folder.uploadFile(docName, tmpReplacementFile, null));
 
-        // retrieve copied document
-        final com.ettrema.httpclient.Resource destResource = folder.child(destDocName);
-        assertNotNull(destResource);
-        assertTrue(destResource instanceof File);
-        assertEquals(expectedMediaType, ((File) destResource).contentType);
-        final java.io.File tempRetrievedDestFile = tempFolder.newFile();
-        destResource.downloadTo(tempRetrievedDestFile, null);
-        assertEquals(srcDocContent, new String(Files.readAllBytes(tempRetrievedDestFile.toPath()), UTF_8));
+        // retrieve replaced document
+        final Resource replacedResource = folder.child(docName);
+        assertNotNull(replacedResource);
+        assertTrue(replacedResource instanceof File);
+        assertEquals(expectedMediaType, ((File) replacedResource).contentType);
+        final java.io.File tempRetrievedReplacedFile = tempFolder.newFile();
+        replacedResource.downloadTo(tempRetrievedReplacedFile, null);
+        assertEquals(replacementDocContent, new String(Files.readAllBytes(tempRetrievedReplacedFile.toPath()), UTF_8));
     }
 }
