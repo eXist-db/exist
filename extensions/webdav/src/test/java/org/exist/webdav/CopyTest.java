@@ -30,6 +30,8 @@ import com.ettrema.httpclient.*;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -50,6 +52,22 @@ public class CopyTest {
 
     @ClassRule
     public static final TemporaryFolder tempFolder = new TemporaryFolder();
+
+    private static String PREV_PROPFIND_METHOD_XML_SIZE = null;
+
+    @BeforeClass
+    public static void setup() {
+        PREV_PROPFIND_METHOD_XML_SIZE = System.setProperty(MiltonDocument.PROPFIND_METHOD_XML_SIZE, "exact");
+    }
+
+    @AfterClass
+    public static void cleanup() {
+        if (PREV_PROPFIND_METHOD_XML_SIZE == null) {
+            System.clearProperty(MiltonDocument.PROPFIND_METHOD_XML_SIZE);
+        } else {
+            System.setProperty(MiltonDocument.PROPFIND_METHOD_XML_SIZE, PREV_PROPFIND_METHOD_XML_SIZE);
+        }
+    }
 
     @Test
     public void copyXmlDocument() throws IOException, NotAuthorizedException, BadRequestException, HttpException, ConflictException, NotFoundException {
