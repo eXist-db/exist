@@ -215,7 +215,7 @@ public class MiltonCollection extends MiltonResource
 
         } catch (CollectionExistsException | EXistException ex) {
             LOG.debug(ex.getMessage());
-            throw new ConflictException(this);
+            throw new ConflictException(this, "Create Collection '" + getXmldbUri().append(name) + "' failed: " + ex.getMessage());
 
         }
 
@@ -243,8 +243,7 @@ public class MiltonCollection extends MiltonResource
 
         } catch (PermissionDeniedException | CollectionDoesNotExistException | IOException e) {
             LOG.debug(e.getMessage());
-            throw new ConflictException(this);
-
+            throw new ConflictException(this, "Create New '" + getXmldbUri().append(newName) + "' failed: " + e.getMessage());
         }
         return resource;
     }
@@ -326,7 +325,7 @@ public class MiltonCollection extends MiltonResource
             existCollection.resourceCopyMove(destCollection, newName, Mode.MOVE);
 
         } catch (EXistException ex) {
-            throw new ConflictException(this);
+            throw new ConflictException(this, "Move '" + getXmldbUri() + "' to '" + destCollection.append(newName) + "' failed: " + ex.getMessage());
         }
     }
 
