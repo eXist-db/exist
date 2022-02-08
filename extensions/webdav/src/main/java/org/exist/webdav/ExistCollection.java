@@ -21,6 +21,7 @@
  */
 package org.exist.webdav;
 
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -33,6 +34,9 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
+import org.exist.util.io.CachingFilterInputStream;
+import org.exist.util.io.FilterInputStreamCache;
+import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.webdav.exceptions.CollectionDoesNotExistException;
 import org.exist.webdav.exceptions.CollectionExistsException;
 import org.exist.xmldb.XmldbURI;
@@ -42,6 +46,7 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -277,72 +282,65 @@ public class ExistCollection extends ExistResource {
 
         // To support LockNullResource, a 0-byte XML document can be received. Since 0-byte
         // XML documents are not supported a small file will be created.
+        if (mime.isXMLType() && length == 0) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Creating dummy XML file for null resource lock '{}'", newNameUri);
+            }
+            is = new UnsynchronizedByteArrayInputStream("<null_resource/>".getBytes(StandardCharsets.UTF_8));
+        }
 
-        InputSource in = null;
-        try {
-            if (mime.isXMLType() && length == 0) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Creating dummy XML file for null resource lock '{}'", newNameUri);
-                }
+        final TransactionManager txnManager = brokerPool.getTransactionManager();
 
-                in = new StringInputSource("<null_resource/>");
-            } else {
-                in = new InputSource(is);
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
+             final Txn txn = txnManager.beginTransaction();
+             final Collection collection = broker.openCollection(xmldbUri, LockMode.WRITE_LOCK)) {
+
+            // Check if collection exists. not likely to happen since availability is checked
+            // by ResourceFactory
+            if (collection == null) {
+                LOG.debug("Collection {} does not exist", xmldbUri);
+                txnManager.abort(txn);
+                throw new CollectionDoesNotExistException(xmldbUri + "");
             }
 
-            final TransactionManager txnManager = brokerPool.getTransactionManager();
-
-            try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject));
-                 final Txn txn = txnManager.beginTransaction();
-                 final Collection collection = broker.openCollection(xmldbUri, LockMode.WRITE_LOCK)) {
-
-                // Check if collection exists. not likely to happen since availability is checked
-                // by ResourceFactory
-                if (collection == null) {
-                    LOG.debug("Collection {} does not exist", xmldbUri);
-                    txnManager.abort(txn);
-                    throw new CollectionDoesNotExistException(xmldbUri + "");
-                }
-
-                if (LOG.isDebugEnabled()) {
-                    if (mime.isXMLType()) {
-                        LOG.debug("Inserting XML document '{}'", mime.getName());
-                    } else {
-                        LOG.debug("Inserting BINARY document '{}'", mime.getName());
-                    }
-                }
-
-                // Stream into database
-                broker.storeDocument(txn, newNameUri, in, mime, collection);
-
-                // Commit change
-                txnManager.commit(txn);
-
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Document created sucessfully");
-                }
-
-
-            } catch (EXistException | SAXException e) {
-                LOG.error(e);
-                throw new IOException(e);
-
-            } catch (LockException e) {
-                LOG.error(e);
-                throw new PermissionDeniedException(xmldbUri + "");
-
-            } catch (IOException | PermissionDeniedException e) {
-                LOG.error(e);
-                throw e;
-
-            } finally {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Finished creation");
+            if (LOG.isDebugEnabled()) {
+                if (mime.isXMLType()) {
+                    LOG.debug("Inserting XML document '{}'", mime.getName());
+                } else {
+                    LOG.debug("Inserting BINARY document '{}'", mime.getName());
                 }
             }
+
+            // Stream into database
+            try (final FilterInputStreamCache cache = FilterInputStreamCacheFactory.getCacheInstance(()
+                    -> (String) broker.getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), is);
+                 final CachingFilterInputStream cfis = new CachingFilterInputStream(cache);
+                 final EXistInputSource eis = new CachingFilterInputStreamInputSource(cfis)) {
+                broker.storeDocument(txn, newNameUri, eis, mime, collection);
+            }
+
+            // Commit change
+            txnManager.commit(txn);
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Document created successfully");
+            }
+
+        } catch (EXistException | SAXException e) {
+            LOG.error(e);
+            throw new IOException(e);
+
+        } catch (LockException e) {
+            LOG.error(e);
+            throw new PermissionDeniedException(xmldbUri + "");
+
+        } catch (IOException | PermissionDeniedException e) {
+            LOG.error(e);
+            throw e;
+
         } finally {
-            if (in != null && in instanceof EXistInputSource) {
-                ((EXistInputSource) in).close();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Finished creation");
             }
         }
 
