@@ -122,6 +122,24 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- needed for starting up a jetty server -->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
