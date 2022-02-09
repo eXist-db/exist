@@ -126,9 +126,9 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
         final Path jettyConfig;
         if (standalone) {
-            jettyConfig = Paths.get(jettyProperty).resolve("etc").resolve(Main.STANDALONE_ENABLED_JETTY_CONFIGS);
+            jettyConfig = Paths.get(jettyProperty).normalize().resolve("etc").resolve(Main.STANDALONE_ENABLED_JETTY_CONFIGS);
         } else {
-            jettyConfig = Paths.get(jettyProperty).resolve("etc").resolve(Main.STANDARD_ENABLED_JETTY_CONFIGS);
+            jettyConfig = Paths.get(jettyProperty).normalize().resolve("etc").resolve(Main.STANDARD_ENABLED_JETTY_CONFIGS);
         }
         run(new String[] { jettyConfig.toAbsolutePath().toString() }, null);
     }
@@ -139,18 +139,18 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             return;
         }
 
-        Path jettyConfig = Paths.get(args[0]);
+        Path jettyConfig = Paths.get(args[0]).normalize();
         boolean configFromClasspath = false;
         if (Files.notExists(jettyConfig)) {
             logger.warn("Configuration file: {} does not exist!", jettyConfig.toAbsolutePath().toString());
 
             final String jettyConfigFileName = FileUtils.fileName(jettyConfig.getFileName());
-            logger.warn("Fallback... searching for configuration file on classpath: {}.etc/{}", getClass().getPackage().getName(), jettyConfigFileName);
+            logger.warn("Fallback... searching for configuration file on classpath: {}!etc/{}", getClass().getPackage().getName(), jettyConfigFileName);
 
             final URL jettyConfigUrl = getClass().getResource("etc/" + jettyConfigFileName);
             if (jettyConfigUrl != null) {
                 try {
-                    jettyConfig = Paths.get(jettyConfigUrl.toURI());
+                    jettyConfig = Paths.get(jettyConfigUrl.toURI()).normalize();
                     configFromClasspath = true;
                 } catch (final URISyntaxException e) {
                     logger.error("Unable to retrieve configuration file from classpath: {}", e.getMessage(), e);

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    eXist-db Open Source Native XML Database
+    Copyright (C) 2001 The eXist-db Authors
+
+    info@exist-db.org
+    http://www.exist-db.org
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+-->
+<web-app 
+    xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+    metadata-complete="false"
+    version="3.1">
+
+    <description>eXist-db – Open Source Native XML Database</description>
+    <display-name>eXist-db XML Database</display-name>
+
+    <servlet>
+        <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
+        <servlet-class>org.exist.xmlrpc.RpcServlet</servlet-class>
+        <init-param>
+          <param-name>enabledForExtensions</param-name>
+          <param-value>true</param-value>
+        </init-param>
+    </servlet>
+
+    <servlet>
+        <servlet-name>EXistServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.EXistServlet</servlet-class>
+        <init-param>
+            <param-name>configuration</param-name>
+            <param-value>conf.xml</param-value>
+        </init-param>
+        <init-param>
+            <param-name>basedir</param-name>
+            <param-value>WEB-INF/</param-value>
+        </init-param>
+        <init-param>
+            <param-name>start</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+
+    <!--
+        Milton provides the WebDAV interface
+    -->
+    <servlet>
+        <servlet-name>milton</servlet-name>
+        <servlet-class>org.exist.webdav.MiltonWebDAVServlet</servlet-class>
+
+        <!-- Don't change this value -->
+        <init-param>
+            <param-name>resource.factory.class</param-name>
+            <param-value>org.exist.webdav.ExistResourceFactory</param-value>
+        </init-param>
+
+        <!--
+            Some WebDAV clients send a "Expect: 100-continue" header before
+            uploading body data. Servlet containers (like tomcat and jetty) handle
+            the header in a wrong way, making a client not work OK.
+            Set value to TRUE to restore old behavior (FALSE is the new default
+            value, hardcoded in MiltonWebDAVServlet).
+        -->
+        <!--
+            <init-param>
+            <param-name>enable.expect.continue</param-name>
+            <param-value>false</param-value>
+            </init-param>
+        -->
+
+        <!-- Uncomment to enable debugging -->
+        <!--
+            <init-param>
+            <param-name>filter_0</param-name>
+            <param-value>com.bradmcevoy.http.DebugFilter</param-value>
+            </init-param>
+        -->
+    </servlet>
+	
+    <servlet>
+        <servlet-name>XQueryURLRewrite</servlet-name>
+        <servlet-class>org.exist.http.urlrewrite.XQueryURLRewrite</servlet-class>
+        <init-param>
+            <param-name>config</param-name>
+            <param-value>WEB-INF/controller-config.xml</param-value>
+        </init-param>
+    </servlet>
+
+    <servlet>
+        <servlet-name>XSLTServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.XSLTServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>XQueryURLRewrite</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+</web-app>
