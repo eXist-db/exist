@@ -22,23 +22,16 @@
 
 package org.exist.dom.persistent;
 
-import com.bradmcevoy.http.exceptions.BadRequestException;
-import com.bradmcevoy.http.exceptions.ConflictException;
-import com.bradmcevoy.http.exceptions.NotAuthorizedException;
-import com.bradmcevoy.http.exceptions.NotFoundException;
-import com.ettrema.httpclient.*;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.xmldb.api.DatabaseManager;
@@ -49,7 +42,6 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 import java.io.IOException;
-import java.nio.file.Files;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.http.HttpStatus.SC_CREATED;
@@ -62,7 +54,7 @@ import static org.junit.Assert.*;
 public class CDataIntergationTest {
 
     @ClassRule
-    public static final ExistWebServer existWebServer = new ExistWebServer(true, true, true, true);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     @ClassRule
     public static final TemporaryFolder tempFolder = new TemporaryFolder();
@@ -125,34 +117,5 @@ public class CDataIntergationTest {
         } finally {
             root.close();
         }
-    }
-
-    @Ignore("Cannot get the Milton WebDav client to work with eXist-db?!?")
-    @Test
-    public void cdataWebDavApi() throws XMLDBException, IOException, NotAuthorizedException, BadRequestException, HttpException, ConflictException, NotFoundException {
-        final String docName = "webdav-cdata-test.xml";
-        final HostBuilder builder = new HostBuilder();
-        builder.setServer("localhost");
-        builder.setPort(existWebServer.getPort());
-        builder.setRootPath("exist/webdav/db");
-        builder.setUser(TestUtils.ADMIN_DB_USER);
-        builder.setPassword(TestUtils.ADMIN_DB_PWD);
-        final Host host = builder.buildHost();
-        final Folder folder = host.getFolder("/");
-
-        // store document
-        final byte data[] = cdata_xml.getBytes(UTF_8);
-        final java.io.File tmpStoreFile = tempFolder.newFile();
-        Files.write(tmpStoreFile.toPath(), data);
-        folder.upload(tmpStoreFile);
-
-        // retrieve document
-        final com.ettrema.httpclient.Resource resource = folder.child(docName);
-        assertNotNull(resource);
-        assertTrue(resource instanceof File);
-        final java.io.File tempRetrieveFile = tempFolder.newFile();
-        resource.downloadTo(tempRetrieveFile, null);
-
-        assertEquals(cdata_xml, new String(Files.readAllBytes(tempRetrieveFile.toPath()), UTF_8));
     }
 }
