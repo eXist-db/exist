@@ -48,6 +48,9 @@ import static org.junit.Assert.*;
  */
 public class CDataIntergationTest {
 
+    private static final String CDATA_CONTENT = "Hello there, \"Bob?\"";
+    private static final String CDATA_XML = "<elem1><![CDATA[" + CDATA_CONTENT + "]]></elem1>";
+
     @ClassRule
     public static final ExistWebServer EXIST_WEB_SERVER = new ExistWebServer(true, false, true, true);
 
@@ -69,9 +72,6 @@ public class CDataIntergationTest {
             System.setProperty(MiltonDocument.PROPFIND_METHOD_XML_SIZE, PREV_PROPFIND_METHOD_XML_SIZE);
         }
     }
-
-    private static final String CDATA_CONTENT = "Hello there, \"Bob?\"";
-    private static final String CDATA_XML = "<elem1><![CDATA[" + CDATA_CONTENT + "]]></elem1>";
 
     @Test
     public void cdataWebDavApi() throws IOException, NotAuthorizedException, BadRequestException, HttpException, ConflictException, NotFoundException {
@@ -97,7 +97,7 @@ public class CDataIntergationTest {
         assertNotNull(folder.uploadFile(docName, tmpStoreFile, null));
 
         // retrieve document
-        final com.ettrema.httpclient.Resource resource = folder.child(docName);
+        final Resource resource = folder.child(docName);
         assertNotNull(resource);
         assertTrue(resource instanceof File);
         assertEquals("application/xml", ((File) resource).contentType);

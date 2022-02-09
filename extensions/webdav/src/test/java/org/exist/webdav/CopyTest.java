@@ -107,7 +107,7 @@ public class CopyTest {
         assertNotNull(folder.uploadFile(srcDocName, tmpStoreFile, null));
 
         // retrieve document
-        final com.ettrema.httpclient.Resource srcResource = folder.child(srcDocName);
+        final Resource srcResource = folder.child(srcDocName);
         assertNotNull(srcResource);
         assertTrue(srcResource instanceof File);
         assertEquals(expectedMediaType, ((File) srcResource).contentType);
@@ -119,7 +119,7 @@ public class CopyTest {
         srcResource.copyTo(folder, destDocName);
 
         // retrieve copied document
-        final com.ettrema.httpclient.Resource destResource = folder.child(destDocName);
+        final Resource destResource = folder.child(destDocName);
         assertNotNull(destResource);
         assertTrue(destResource instanceof File);
         assertEquals(expectedMediaType, ((File) destResource).contentType);
