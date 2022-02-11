@@ -121,6 +121,8 @@
         <junit.jupiter.version>5.8.2</junit.jupiter.version>
         <junit.vintage.version>5.8.2</junit.vintage.version>
         <easymock.version>4.3</easymock.version>
+        <objenesis.version>3.2</objenesis.version>
+        <assertj.version>3.22.0</assertj.version>
         <junit.toolbox.version>2.4</junit.toolbox.version>
         <hamcrest.version>2.2</hamcrest.version>
 
@@ -516,15 +518,27 @@
 
             <!-- test dependencies -->
             <dependency>
+                <groupId>com.googlecode.junit-toolbox</groupId>
+                <artifactId>junit-toolbox</artifactId>
+                <version>${junit.toolbox.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.easymock</groupId>
                 <artifactId>easymock</artifactId>
                 <version>${easymock.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>com.googlecode.junit-toolbox</groupId>
-                <artifactId>junit-toolbox</artifactId>
-                <version>${junit.toolbox.version}</version>
+                <groupId>org.objenesis</groupId>
+                <artifactId>objenesis</artifactId>
+                <version>${objenesis.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
@@ -733,6 +747,11 @@
                             <groupId>org.glassfish.jaxb</groupId>
                             <artifactId>jaxb-runtime</artifactId>
                             <version>${jaxb.impl.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.objenesis</groupId>
+                            <artifactId>objenesis</artifactId>
+                            <version>${objenesis.version}</version>
                         </dependency>
                     </dependencies>
                     <configuration>
@@ -949,9 +968,6 @@
                         </goals>
                         <configuration>
                             <failOnWarning>true</failOnWarning>
-                            <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine:jar:${junit.vintage.version}</ignoredUnusedDeclaredDependency>
-                            </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
                 </executions>
