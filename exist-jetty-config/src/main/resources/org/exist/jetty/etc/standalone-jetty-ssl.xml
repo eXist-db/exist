@@ -26,7 +26,7 @@
           </Array>
         </Arg>
 
-        <Set name="host"><Property name="jetty.ssl.host" deprecated="jetty.host" /></Set>
+        <Set name="host"><Property name="jetty.ssl.host" deprecated="jetty.host"><Default><SystemProperty name="jetty.ssl.host" deprecated="jetty.host"/></Default></Property></Set>
         <Set name="port"><Property name="jetty.ssl.port" deprecated="ssl.port"><Default><SystemProperty name="jetty.ssl.port" deprecated="ssl.port" default="8451"/></Default></Property></Set>
         <Set name="idleTimeout"><Property name="jetty.ssl.idleTimeout" deprecated="ssl.timeout" default="30000"/></Set>
         <Set name="acceptorPriorityDelta"><Property name="jetty.ssl.acceptorPriorityDelta" deprecated="ssl.acceptorPriorityDelta" default="0"/></Set>
