@@ -67,6 +67,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.map.AbstractMapType;
+import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.exist.xslt.TransformerFactoryAllocator;
 import org.w3c.dom.Document;
@@ -123,6 +124,8 @@ public class Sync extends BasicFunction {
         DEFAULT_PROPERTIES.put(EXistOutputKeys.EXPAND_XINCLUDES, "no");
     }
 
+    private Properties outputProperties = new Properties();
+
     public Sync(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
@@ -148,6 +151,7 @@ public class Sync extends BasicFunction {
         options.put(EXCLUDES_OPT, Sequence.EMPTY_SEQUENCE);
 
         if (parameter.isEmpty()) {
+            outputProperties = DEFAULT_PROPERTIES;
             return options;
         }
 
@@ -155,6 +159,15 @@ public class Sync extends BasicFunction {
 
         if (item.getType() == Type.MAP) {
             final AbstractMapType optionsMap = (AbstractMapType) item;
+
+            outputProperties = SerializerUtils.getSerializationOptions(this, optionsMap);
+
+            // override defaults set in SerializerUtils
+            for(String p : DEFAULT_PROPERTIES.stringPropertyNames()) {
+                if (optionsMap.get(new StringValue(p)).isEmpty()) {
+                    outputProperties.setProperty(p, DEFAULT_PROPERTIES.getProperty(p));
+                }
+            }
 
             final Sequence seq = optionsMap.get(new StringValue(EXCLUDES_OPT));
             if (!seq.isEmpty() && seq.getItemType() != Type.STRING) {
@@ -396,8 +409,8 @@ public class Sync extends BasicFunction {
             } else {
                 final Serializer serializer = context.getBroker().borrowSerializer();
                 try (final Writer writer = new OutputStreamWriter(new BufferedOutputStream(Files.newOutputStream(targetFile)), StandardCharsets.UTF_8)) {
-                    sax.setOutput(writer, DEFAULT_PROPERTIES);
-                    serializer.setProperties(DEFAULT_PROPERTIES);
+                    sax.setOutput(writer, outputProperties);
+                    serializer.setProperties(outputProperties);
 
                     serializer.setSAXHandlers(sax, sax);
                     serializer.toSAX(doc);
@@ -425,7 +438,7 @@ public class Sync extends BasicFunction {
             final Serializer serializer = context.getBroker().borrowSerializer();
 
             try (final Writer writer = new OutputStreamWriter(new BufferedOutputStream(Files.newOutputStream(targetFile)), StandardCharsets.UTF_8)) {
-                sax.setOutput(writer, DEFAULT_PROPERTIES);
+                sax.setOutput(writer, outputProperties);
 
                 final StreamSource styleSource = new StreamSource(Sync.class.getResourceAsStream("repo.xsl"));
 
@@ -435,7 +448,7 @@ public class Sync extends BasicFunction {
                 handler.setResult(new SAXResult(sax));
 
                 serializer.reset();
-                serializer.setProperties(DEFAULT_PROPERTIES);
+                serializer.setProperties(outputProperties);
                 serializer.setSAXHandlers(handler, handler);
 
                 serializer.toSAX(doc);
