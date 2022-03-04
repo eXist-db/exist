@@ -141,6 +141,14 @@ public class IndentingXMLWriter extends XMLWriter {
     }
 
     @Override
+    public void endDocument() throws TransformerException {
+        super.endDocument();
+        if ("yes".equals(outputProperties.getProperty(EXistOutputKeys.INSERT_FINAL_NEWLINE, "no"))) {
+            super.characters("\n");
+        }
+    }
+
+    @Override
     public void endDocumentType() throws TransformerException {
         super.endDocumentType();
         super.characters("\n");
