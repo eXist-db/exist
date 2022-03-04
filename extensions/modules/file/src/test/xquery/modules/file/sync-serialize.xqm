@@ -199,3 +199,51 @@ function syse:unindented-no-declaration() {
         )
     )
 };
+
+declare
+    %test:assertEquals("true", "true")
+function syse:insert-final-newline-yes() {
+    let $directory := helper:get-test-directory($syse:suite)
+    let $sync := file:sync(
+        $fixtures:collection,
+        $directory,
+        map{ "exist:insert-final-newline": true() }
+    )
+
+    return (
+        helper:assert-file-contents(
+            $fixtures:XML_DECLARATION || $fixtures:NL ||
+            $fixtures:SIMPLE_XML_INDENTED || $fixtures:NL,
+            ($directory, $syse:simple-file-name)
+        ),
+        helper:assert-file-contents(
+            $fixtures:XML_DECLARATION || $fixtures:NL ||
+            $fixtures:COMPLEX_XML_INDENTED || $fixtures:NL,
+            ($directory, $syse:complex-file-name)
+        )
+    )
+};
+
+declare
+    %test:assertEquals("true", "true")
+function syse:insert-final-newline-no() {
+    let $directory := helper:get-test-directory($syse:suite)
+    let $sync := file:sync(
+        $fixtures:collection,
+        $directory,
+        map{ "exist:insert-final-newline": false() }
+    )
+
+    return (
+        helper:assert-file-contents(
+            $fixtures:XML_DECLARATION || $fixtures:NL ||
+            $fixtures:SIMPLE_XML_INDENTED,
+            ($directory, $syse:simple-file-name)
+        ),
+        helper:assert-file-contents(
+            $fixtures:XML_DECLARATION || $fixtures:NL ||
+            $fixtures:COMPLEX_XML_INDENTED,
+            ($directory, $syse:complex-file-name)
+        )
+    )
+};
