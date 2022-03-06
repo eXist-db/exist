@@ -43,9 +43,7 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
-import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
-import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
 import java.io.Reader;
@@ -297,41 +295,30 @@ public class Field extends BasicFunction {
         final byte[] data = field.bytes;
         switch(type) {
             case Type.TIME:
-                final TimeValue value = new TimeValue();
-                final XMLGregorianCalendar utccal = value.calendar;
-                utccal.setHour(data[0]);
-                utccal.setMinute(data[1]);
-                utccal.setSecond(data[2]);
-                utccal.setMillisecond(ByteConversion.byteToShortH(data, 3));
-                return value;
+                return new TimeValue(
+                        data[0],
+                        data[1],
+                        data[2],
+                        ByteConversion.byteToShortH(data, 3),
+                        DatatypeConstants.FIELD_UNDEFINED
+                );
             case Type.DATE_TIME:
-                try {
-                    final XMLGregorianCalendar xmlutccal =
-                            DatatypeFactory.newInstance().newXMLGregorianCalendar(
-                                    ByteConversion.byteToIntH(data, 0),
-                                    data[4],
-                                    data[5],
-                                    data[6],
-                                    data[7],
-                                    data[8],
-                                    ByteConversion.byteToShortH(data, 9),
-                                    0);
-                    return new DateTimeValue(xmlutccal);
-                } catch (final DatatypeConfigurationException dtce) {
-                    throw new XPathException(LuceneModule.EXXQDYFT0004, "Cannot convert binary field value to xs:dateTime");
-                }
+                return new DateTimeValue(
+                    ByteConversion.byteToIntH(data, 0),
+                    data[4],
+                    data[5],
+                    data[6],
+                    data[7],
+                    data[8],
+                    ByteConversion.byteToShortH(data, 9),
+                    DatatypeConstants.FIELD_UNDEFINED
+                );
             case Type.DATE:
-                try {
-                    final XMLGregorianCalendar xmlutccal =
-                            DatatypeFactory.newInstance().newXMLGregorianCalendarDate(
-                                    ByteConversion.byteToIntH(data, 0),
-                                    data[4],
-                                    data[5],
-                                    DatatypeConstants.FIELD_UNDEFINED);
-                    return new DateValue(xmlutccal);
-                } catch (final DatatypeConfigurationException e) {
-                    throw new XPathException(LuceneModule.EXXQDYFT0004, "Cannot convert binary field value to xs:date");
-                }
+                return new DateValue(
+                    ByteConversion.byteToIntH(data, 0),
+                    data[4],
+                    data[5],
+                    DatatypeConstants.FIELD_UNDEFINED);
             case Type.DOUBLE:
                 final long bits = ByteConversion.byteToLong(data, 0) ^ 0x8000000000000000L;
                 final double d = Double.longBitsToDouble(bits);
