@@ -293,16 +293,19 @@ public class Field extends BasicFunction {
 
     static AtomicValue bytesToAtomic(BytesRef field, int type) throws XPathException {
         final byte[] data = field.bytes;
+        final int timezone;
         switch(type) {
             case Type.TIME:
+                timezone = ByteConversion.byteToShortH(data, 5);
                 return new TimeValue(
                         data[0],
                         data[1],
                         data[2],
                         ByteConversion.byteToShortH(data, 3),
-                        DatatypeConstants.FIELD_UNDEFINED
+                        timezone == Short.MAX_VALUE ? DatatypeConstants.FIELD_UNDEFINED : timezone
                 );
             case Type.DATE_TIME:
+                timezone = ByteConversion.byteToShortH(data, 11);
                 return new DateTimeValue(
                     ByteConversion.byteToIntH(data, 0),
                     data[4],
@@ -311,14 +314,16 @@ public class Field extends BasicFunction {
                     data[7],
                     data[8],
                     ByteConversion.byteToShortH(data, 9),
-                    DatatypeConstants.FIELD_UNDEFINED
+                    timezone == Short.MAX_VALUE ? DatatypeConstants.FIELD_UNDEFINED : timezone
                 );
             case Type.DATE:
+                timezone = ByteConversion.byteToShortH(data, 6);
                 return new DateValue(
                     ByteConversion.byteToIntH(data, 0),
                     data[4],
                     data[5],
-                    DatatypeConstants.FIELD_UNDEFINED);
+                    timezone == Short.MAX_VALUE ? DatatypeConstants.FIELD_UNDEFINED : timezone
+                );
             case Type.DOUBLE:
                 final long bits = ByteConversion.byteToLong(data, 0) ^ 0x8000000000000000L;
                 final double d = Double.longBitsToDouble(bits);

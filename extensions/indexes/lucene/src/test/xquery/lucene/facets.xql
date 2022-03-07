@@ -864,7 +864,7 @@ function facet:query-and-sort-by-binary-numeric($field as xs:string, $type as xs
 
 declare
     %test:args("time-binary", "xs:time")
-    %test:assertEquals("13:22:19.329+01:00", "14:22:19.329+01:00")
+    %test:assertEquals("14:22:19.329+01:00", "15:22:19.329+01:00")
     %test:args("date-binary", "xs:date")
     %test:assertEquals("2013-06-22", "2015-06-22", "2017-03-11", "2017-03-13", "2019-03-14", "2019-04-01")
 function facet:query-and-sort-by-binary-dates-and-times($field as xs:string, $type as xs:string) {
@@ -876,7 +876,7 @@ function facet:query-and-sort-by-binary-dates-and-times($field as xs:string, $ty
 
 declare
     %test:args("dateTime-binary", "xs:dateTime")
-    %test:assertEquals("1970-07-03T05:00:00", "1972-06-08T15:00:00")
+    %test:assertEquals("1970-07-03T00:00:00-05:00", "1972-06-08T10:00:00-05:00")
 function facet:query-and-sort-by-binary-dateTime($field as xs:string, $type as xs:string) {
     for $letter in collection("/db/lucenetest")//letter[ft:query(., ())]
     let $field-value := ft:binary-field($letter, $field, $type)
