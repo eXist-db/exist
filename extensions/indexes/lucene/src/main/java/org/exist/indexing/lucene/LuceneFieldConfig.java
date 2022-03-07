@@ -242,41 +242,50 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     private Field convertToDocValue(String content) {
         try {
             final byte[] data;
-            final XMLGregorianCalendar normalizedCalendar;
+            final XMLGregorianCalendar calendar;
             final int ms;
+            final int timezone;
             switch(type) {
                 case Type.TIME:
                     final TimeValue tv = new TimeValue(content);
-                    normalizedCalendar = tv.calendar.normalize();
-                    data = new byte[5]; // allocate an appropriately sized
-                    data[0] = (byte) normalizedCalendar.getHour();
-                    data[1] = (byte) normalizedCalendar.getMinute();
-                    data[2] = (byte) normalizedCalendar.getSecond();
-                    ms = normalizedCalendar.getMillisecond();
+                    calendar = tv.calendar;
+                    data = new byte[7]; // allocate an appropriately sized
+                    data[0] = (byte) calendar.getHour();
+                    data[1] = (byte) calendar.getMinute();
+                    data[2] = (byte) calendar.getSecond();
+                    ms = calendar.getMillisecond();
                     ByteConversion.shortToByteH((short) (ms == DatatypeConstants.FIELD_UNDEFINED ? 0 : ms),
                             data, 3);
+                    // values for timezone range from -14*60 to 14*60, so we can use a short, but
+                    // need to choose a different value for FIELD_UNDEFINED, which is not the same as 0 (= UTC)
+                    timezone = calendar.getTimezone();
+                    ByteConversion.shortToByteH((short) (timezone == DatatypeConstants.FIELD_UNDEFINED ? Short.MAX_VALUE : timezone), data, 5);
                     return new BinaryDocValuesField(fieldName, new BytesRef(data));
                 case Type.DATE_TIME:
                     final DateTimeValue dtv = new DateTimeValue(content);
-                    normalizedCalendar = dtv.calendar.normalize();
-                    data = new byte[11]; // allocate an appropriately sized
-                    ByteConversion.intToByteH(normalizedCalendar.getYear(), data, 0);
-                    data[4] = (byte) normalizedCalendar.getMonth();
-                    data[5] = (byte) normalizedCalendar.getDay();
-                    data[6] = (byte) normalizedCalendar.getHour();
-                    data[7] = (byte) normalizedCalendar.getMinute();
-                    data[8] = (byte) normalizedCalendar.getSecond();
-                    ms = normalizedCalendar.getMillisecond();
+                    calendar = dtv.calendar;
+                    data = new byte[13]; // allocate an appropriately sized
+                    ByteConversion.intToByteH(calendar.getYear(), data, 0);
+                    data[4] = (byte) calendar.getMonth();
+                    data[5] = (byte) calendar.getDay();
+                    data[6] = (byte) calendar.getHour();
+                    data[7] = (byte) calendar.getMinute();
+                    data[8] = (byte) calendar.getSecond();
+                    ms = calendar.getMillisecond();
                     ByteConversion.shortToByteH((short) (ms == DatatypeConstants.FIELD_UNDEFINED ? 0 : ms),
                             data, 9);
+                    timezone = calendar.getTimezone();
+                    ByteConversion.shortToByteH((short) (timezone == DatatypeConstants.FIELD_UNDEFINED ? Short.MAX_VALUE : timezone), data, 11);
                     return new BinaryDocValuesField(fieldName, new BytesRef(data));
                 case Type.DATE:
                     final DateValue dv = new DateValue(content);
-                    normalizedCalendar = dv.calendar.normalize();
-                    data = new byte[6]; // allocate an appropriately sized
-                    ByteConversion.intToByteH(normalizedCalendar.getYear(), data, 0);
-                    data[4] = (byte) normalizedCalendar.getMonth();
-                    data[5] = (byte) normalizedCalendar.getDay();
+                    calendar = dv.calendar;
+                    data = new byte[8]; // allocate an appropriately sized
+                    ByteConversion.intToByteH(calendar.getYear(), data, 0);
+                    data[4] = (byte) calendar.getMonth();
+                    data[5] = (byte) calendar.getDay();
+                    timezone = calendar.getTimezone();
+                    ByteConversion.shortToByteH((short) (timezone == DatatypeConstants.FIELD_UNDEFINED ? Short.MAX_VALUE : timezone), data, 6);
                     return new BinaryDocValuesField(fieldName, new BytesRef(data));
                 case Type.INTEGER:
                 case Type.LONG:
