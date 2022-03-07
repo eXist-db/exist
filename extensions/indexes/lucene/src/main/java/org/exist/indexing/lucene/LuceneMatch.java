@@ -22,19 +22,16 @@
 package org.exist.indexing.lucene;
 
 import org.apache.lucene.facet.Facets;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.util.BytesRef;
 import org.exist.dom.persistent.Match;
 import org.exist.numbering.NodeId;
-import org.exist.storage.Indexable;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.modules.lucene.LuceneModule;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.ValueSequence;
 
 import javax.annotation.Nullable;
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.util.*;
+import java.util.Map;
 
 /**
  * Match class containing the score of a match and a reference to
