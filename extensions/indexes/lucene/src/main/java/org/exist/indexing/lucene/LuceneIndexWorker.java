@@ -881,70 +881,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public IndexableField[] getField(final int docId, final NodeId nodeId, final String field) throws IOException, XPathException {
-//        final byte[] refdata = LuceneUtil.createId(docId, nodeId);
-//        final Term rterm = new Term("docNodeId", new BytesRef(refdata));
-
         Set<String> fields = new HashSet<>();
         fields.add(field);
         return index.withReader(reader -> {
-//            List<AtomicReaderContext> leaves = reader.leaves();
-//            for (AtomicReaderContext context : leaves) {
-//                BinaryDocValues values = context.reader().getBinaryDocValues(field);
-//                if (values != null && docId < context.reader().numDocs()) {
-//                    BytesRef bytes = values.get(docId);
-//                    if (bytes != null && bytes.length > 0) {
-//                        return bytes;
-//                    }
-//                }
-//            }
             Document doc = reader.document(docId, fields);
             return doc.getFields(field);
-//            Terms terms = reader.getTermVector(docId, field);
-//            if (terms != null) {
-//                TermsEnum termsEnum = terms.iterator((TermsEnum)null);
-//                BytesRef data;
-//                if ((data = termsEnum.next()) != null) {
-//
-//                }
-//            }
-//            List<AtomicReaderContext> leaves = reader.leaves();
-//            for (AtomicReaderContext context : leaves) {
-//                    Terms terms = context.reader().getTermVector(docId, field);
-//                    if (terms != null) {
-//                        TermsEnum termsEnum = terms.iterator((TermsEnum)null);
-//                        BytesRef data;
-//                        if ((data = termsEnum.next()) != null) {
-//
-//                        }
-//                    }
-//            }
-//            return null;
         });
-//        final BytesRefBuilder bytes = new BytesRefBuilder();
-//        NumericUtils.intToPrefixCoded(docId, 0, bytes);
-//        Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
-//        TermQuery tq = new TermQuery(dt);
-//
-//        int nodeIdLen = nodeId.size();
-//        byte[] data = new byte[nodeIdLen + 2];
-//        ByteConversion.shortToByte((short) nodeId.units(), data, 0);
-//        nodeId.serialize(data, 2);
-//
-//        Term it = new Term(LuceneUtil.FIELD_NODE_ID, new BytesRef(data));
-//
-//        TermQuery iq = new TermQuery(it);
-//        BooleanQuery q = new BooleanQuery();
-//        q.add(tq, BooleanClause.Occur.MUST);
-//        q.add(iq, BooleanClause.Occur.MUST);
-//
-//        Set<String> fields = new HashSet<>();
-//        fields.add(field);
-//        return index.withSearcher(searcher -> {
-//            TopDocs docs = searcher.searcher.search(q, 1);
-//            ScoreDoc scoreDoc = docs.scoreDocs[0];
-//            Document doc = searcher.searcher.doc(scoreDoc.doc);
-//            return doc.getField(field);
-//        });
     }
 
     public boolean hasIndex(int docId) throws IOException {
