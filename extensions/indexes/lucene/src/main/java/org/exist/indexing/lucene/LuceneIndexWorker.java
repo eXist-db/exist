@@ -868,11 +868,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 final int id = docId - context.docBase;
                 if (id >= 0 && id < context.reader().numDocs()) {
                     final BinaryDocValues values = context.reader().getBinaryDocValues(field);
-                    if (values != null) {
-                        final BytesRef bytes = values.get(id);
-                        if (bytes != null && bytes.length > 0) {
-                            return bytes;
-                        }
+                    if (values == null) {
+                        continue;
+                    }
+                    final BytesRef bytes = values.get(id);
+                    if (bytes != null && bytes.length > 0) {
+                        return bytes;
                     }
                 }
             }
@@ -880,7 +881,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         });
     }
 
-    public IndexableField[] getField(final int docId, final NodeId nodeId, final String field) throws IOException, XPathException {
+    public IndexableField[] getField(final int docId, final String field) throws IOException {
         Set<String> fields = new HashSet<>();
         fields.add(field);
         return index.withReader(reader -> {
@@ -941,7 +942,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         private Scorer scorer;
 
-        private AtomicReader reader;
         private NumericDocValues docIdValues;
         private BinaryDocValues nodeIdValues;
         private int docBase;
@@ -954,7 +954,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private final Query query;
         private final LuceneFacets facets;
         private final FacetsCollector chainedCollector;
-        private final Set<String> fields;
 
         private LuceneHitCollector(QName qname, Query query, DocumentSet docs, NodeSet contextSet, NodeSet resultSet, boolean returnAncestor, int contextId, LuceneFacets facets, FacetsCollector nextCollector, @Nullable Set<String> fields) {
             this.qname = qname;
@@ -966,7 +965,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             this.query = query;
             this.facets = facets;
             this.chainedCollector = nextCollector;
-            this.fields = fields;
         }
 
         @Override
@@ -977,10 +975,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         @Override
         public void setNextReader(AtomicReaderContext atomicReaderContext) throws IOException {
-            this.reader = atomicReaderContext.reader();
+            AtomicReader reader = atomicReaderContext.reader();
             this.docBase = atomicReaderContext.docBase;
-            this.docIdValues = this.reader.getNumericDocValues(FIELD_DOC_ID);
-            this.nodeIdValues = this.reader.getBinaryDocValues(LuceneUtil.FIELD_NODE_ID);
+            this.docIdValues = reader.getNumericDocValues(FIELD_DOC_ID);
+            this.nodeIdValues = reader.getBinaryDocValues(LuceneUtil.FIELD_NODE_ID);
             chainedCollector.setNextReader(atomicReaderContext);
         }
 
@@ -1040,7 +1038,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
         }
 
-        private LuceneMatch createMatch(int docId, float score, NodeId nodeId) throws IOException {
+        private LuceneMatch createMatch(int docId, float score, NodeId nodeId) {
             final LuceneMatch match = new LuceneMatch(contextId, docId + docBase, nodeId, query, facets);
             match.setScore(score);
             return match;

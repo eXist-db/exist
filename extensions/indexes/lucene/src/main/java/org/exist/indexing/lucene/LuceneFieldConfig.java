@@ -171,12 +171,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     protected void processResult(Sequence result, Document luceneDoc) throws XPathException {
         for (SequenceIterator i = result.unorderedIterator(); i.hasNext(); ) {
             final String text = i.nextItem().getStringValue();
-            final Field field;
-            if (binary) {
-                field = convertToDocValue(text);
-            } else {
-                field = convertToField(text);
-            }
+            final Field field = binary ? convertToDocValue(text) : convertToField(text);
             if (field != null) {
                 luceneDoc.add(field);
             }
