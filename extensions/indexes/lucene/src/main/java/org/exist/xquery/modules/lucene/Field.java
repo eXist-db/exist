@@ -148,7 +148,7 @@ public class Field extends BasicFunction {
             Sequence result;
             if (isCalledAs("field") || isCalledAs("highlight-field-matches")) {
                 // field is a normal lucene field
-                final IndexableField[] fields = index.getField(match.getLuceneDocId(), match.getNodeId(), fieldName);
+                final IndexableField[] fields = index.getField(match.getLuceneDocId(), fieldName);
                 result = new ValueSequence(fields.length);
                 for (final IndexableField field : fields) {
                     if (field.numericValue() != null) {
