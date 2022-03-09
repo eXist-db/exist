@@ -846,3 +846,25 @@ function ser:serialize-xml-134() {
     }
     return serialize((1 to 4)!text{.}, $params)
 };
+
+declare
+    %test:assertTrue
+function ser:exist-insert-final-newline-false() {
+    let $doc := <root>
+    <nested />
+    </root>
+    let $serialized := fn:serialize($doc,
+        map {xs:QName("exist:insert-final-newline"): false()})
+    return fn:ends-with($serialized, ">")
+};
+
+declare
+    %test:assertTrue
+function ser:exist-insert-final-newline-true() {
+    let $doc := <root>
+    <nested />
+    </root>
+    let $serialized := fn:serialize($doc,
+        map {xs:QName("exist:insert-final-newline"): true()})
+    return fn:ends-with($serialized, "&#x0A;")
+};
