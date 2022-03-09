@@ -70,6 +70,9 @@ public class JSONSerializer {
                 generator.disable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
             }
             serializeSequence(sequence, generator);
+            if ("yes".equals(outputProperties.getProperty(EXistOutputKeys.INSERT_FINAL_NEWLINE, "no"))) {
+                generator.writeRaw('\n');
+            }
             generator.close();
         } catch (IOException | XPathException e) {
             throw new SAXException(e.getMessage(), e);

@@ -868,3 +868,29 @@ function ser:exist-insert-final-newline-true() {
         map {xs:QName("exist:insert-final-newline"): true()})
     return fn:ends-with($serialized, "&#x0A;")
 };
+
+declare
+    %test:assertTrue
+function ser:exist-insert-final-newline-false-json() {
+    let $doc := map { "a": 1 }
+    let $serialized := fn:serialize($doc,
+        map {
+            "method": "json",
+            "exist:insert-final-newline": false()
+        }
+    )
+    return fn:ends-with($serialized, "}")
+};
+
+declare
+    %test:assertTrue
+function ser:exist-insert-final-newline-true-json() {
+    let $doc := map { "a": 1 }
+    let $serialized := fn:serialize($doc,
+        map {
+            "method": "json",
+            "exist:insert-final-newline": true()
+        }
+    )
+    return fn:ends-with($serialized, "&#x0A;")
+};
