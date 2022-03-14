@@ -44,7 +44,7 @@ function docid:teardown() {
 
 declare
     %test:assertEquals('<doc>/db</doc>')
-function docid:by-id-root() {
+function docid:by-resource-id-root() {
     let $doc := doc("/db/docid.xml")
     let $id := util:absolute-resource-id($doc)
     return
@@ -53,7 +53,7 @@ function docid:by-id-root() {
 
 declare
     %test:assertEquals('<doc>/db/test-docid</doc>')
-function docid:by-id() {
+function docid:by-resource-id() {
     let $doc := doc("/db/test-docid/docid.xml")
     let $id := util:absolute-resource-id($doc)
     return
@@ -69,4 +69,48 @@ declare
     %test:assertEmpty
 function docid:node-by-id($id as xs:string) {
     util:node-by-id(doc("/db/docid.xml"), $id)
+};
+
+declare
+    %test:args("/db/docid.xml")
+    %test:assertEquals("docid.xml")
+    %test:args("/db/test-docid/docid.xml")
+    %test:assertEquals("docid.xml")
+function docid:document-name-from-node($doc-path as xs:string) {
+  let $doc := doc($doc-path)
+  return
+    util:document-name($doc)
+};
+
+declare
+    %test:args("/db/docid.xml")
+    %test:assertEquals("docid.xml")
+    %test:args("/db/test-docid/docid.xml")
+    %test:assertEquals("docid.xml")
+    %test:args("/db/no-such-document.xml")
+    %test:assertEmpty
+function docid:document-name-from-path($doc-path as xs:string) {
+  util:document-name($doc-path)
+};
+
+declare
+    %test:args("/db/docid.xml")
+    %test:assertExists
+    %test:args("/db/test-docid/docid.xml")
+    %test:assertExists
+function docid:document-id-from-node($doc-path as xs:string) {
+  let $doc := doc($doc-path)
+  return
+    util:document-id($doc)
+};
+
+declare
+    %test:args("/db/docid.xml")
+    %test:assertExists
+    %test:args("/db/test-docid/docid.xml")
+    %test:assertExists
+    %test:args("/db/no-such-document.xml")
+    %test:assertEmpty
+function docid:document-id-from-path($doc-path as xs:string) {
+  util:document-id($doc-path)
 };
