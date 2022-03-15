@@ -54,55 +54,62 @@ import java.util.Map;
 
 public class Field extends BasicFunction {
 
-    public final static FunctionSignature[] signatures = {
+    public static final String FN_FIELD = "field";
+    public static final String FN_BINARY_FIELD = "binary-field";
+    public static final String FN_HIGHLIGHT_FIELD_MATCHES = "highlight-field-matches";
+
+    public static final FunctionParameterSequenceType CONTEXT_NODE_PARAMETER =
+            new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE,
+                    "the context node to check for attached fields");
+
+    public static final FunctionParameterSequenceType FIELD_NAME_PARAMETER =
+            new FunctionParameterSequenceType("field", Type.STRING, Cardinality.EXACTLY_ONE,
+                    "name of the field");
+    public static final FunctionParameterSequenceType TYPE_CAST_PARAMETER =
+            new FunctionParameterSequenceType("type", Type.STRING, Cardinality.EXACTLY_ONE,
+                "intended target type to cast the field value to. Casting may fail with a dynamic error.");
+
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
-                new QName("field", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
+                new QName(FN_FIELD, LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
                 "Returns the value of a field attached to a particular node obtained via a full text search.",
                 new SequenceType[]{
-                        new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE,
-                                "the context node to check for attached fields"),
-                        new FunctionParameterSequenceType("field", Type.STRING, Cardinality.EXACTLY_ONE,
-                                "name of the field")
+                        CONTEXT_NODE_PARAMETER,
+                        FIELD_NAME_PARAMETER
                 },
                 new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE,
                         "One or more string values corresponding to the values of the field attached")
             ),
             new FunctionSignature(
-                    new QName("field", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
+                    new QName(FN_FIELD, LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
                     "Returns the value of a field attached to a particular node obtained via a full text search." +
                             "Accepts an additional parameter to name the target type into which the field " +
                             "value should be cast. This is mainly relevant for fields having a different type than xs:string. " +
                             "As lucene does not record type information, numbers or dates would be returned as strings by default.",
                     new SequenceType[]{
-                            new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE,
-                                    "the context node to check for attached fields"),
-                            new FunctionParameterSequenceType("field", Type.STRING, Cardinality.EXACTLY_ONE,
-                                    "name of the field"),
-                            new FunctionParameterSequenceType("type", Type.STRING, Cardinality.EXACTLY_ONE,
-                                    "intended target type to cast the field value to. Casting may fail with a dynamic error.")
+                            CONTEXT_NODE_PARAMETER,
+                            FIELD_NAME_PARAMETER,
+                            TYPE_CAST_PARAMETER
                     },
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE,
                             "Sequence corresponding to the values of the field attached, cast to the desired target type")
             ),
             new FunctionSignature(
-                    new QName("binary-field", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
+                    new QName(FN_BINARY_FIELD, LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
                     "Returns the value of a binary field attached to a particular node obtained via a full text search." +
                             "Accepts an additional parameter to name the target type into which the field " +
                             "value should be cast. This is mainly relevant for fields having a different type than xs:string. " +
                             "As lucene does not record type information, numbers or dates would be returned as strings by default.",
                     new SequenceType[]{
-                            new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE,
-                                    "the context node to check for attached fields"),
-                            new FunctionParameterSequenceType("field", Type.STRING, Cardinality.EXACTLY_ONE,
-                                    "name of the field"),
-                            new FunctionParameterSequenceType("type", Type.STRING, Cardinality.EXACTLY_ONE,
-                                    "intended target type to cast the field value to. Casting may fail with a dynamic error.")
+                            CONTEXT_NODE_PARAMETER,
+                            FIELD_NAME_PARAMETER,
+                            TYPE_CAST_PARAMETER
                     },
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE,
                             "Sequence corresponding to the values of the field attached, cast to the desired target type")
             ),
             new FunctionSignature(
-                    new QName("highlight-field-matches", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
+                    new QName(FN_HIGHLIGHT_FIELD_MATCHES, LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
                     "Highlights matches for the last executed lucene query within the value of a field " +
                     "attached to a particular node obtained via a full text search. Only fields listed in the 'fields' option of ft:query will be " +
                     "available to highlighting.",
@@ -146,7 +153,7 @@ public class Field extends BasicFunction {
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         try {
             Sequence result;
-            if (isCalledAs("field") || isCalledAs("highlight-field-matches")) {
+            if (isCalledAs(FN_FIELD) || isCalledAs(FN_HIGHLIGHT_FIELD_MATCHES)) {
                 // field is a normal lucene field
                 final IndexableField[] fields = index.getField(match.getLuceneDocId(), fieldName);
                 result = new ValueSequence(fields.length);
@@ -165,7 +172,7 @@ public class Field extends BasicFunction {
                 }
                 result = bytesToAtomic(fieldValue, type);
             }
-            if (isCalledAs("highlight-field-matches")) {
+            if (isCalledAs(FN_HIGHLIGHT_FIELD_MATCHES)) {
                 return highlightMatches(fieldName, proxy, match, result);
             }
             return result;
