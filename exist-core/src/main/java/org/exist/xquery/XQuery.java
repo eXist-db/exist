@@ -29,10 +29,14 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.text.NumberFormat;
+import java.util.List;
 import java.util.Properties;
+
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.debuggee.Debuggee;
+import org.exist.dom.QName;
 import org.exist.security.EffectiveSubject;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -48,6 +52,8 @@ import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.HTTPUtils;
 import org.exist.xquery.value.Sequence;
+
+import javax.annotation.Nullable;
 
 
 /**
@@ -104,7 +110,7 @@ public class XQuery {
         final XQueryParser parser = new XQueryParser(lexer);
         final XQueryTreeParser treeParser = new XQueryTreeParser(context);
         try {
-            if(xpointer) {
+            if (xpointer) {
                 parser.xpointer();
             } else {
                 parser.xpath();
@@ -116,19 +122,26 @@ public class XQuery {
             }
 
             final AST ast = parser.getAST();
-            if(ast == null) {
+            if (ast == null) {
                 throw new XPathException("Unknown XQuery parser error: the parser returned an empty syntax tree.");
             }
             
 //            LOG.debug("Generated AST: " + ast.toStringTree());
-            final PathExpr expr = new PathExpr(context);
-            if(xpointer) {
+            final PathExpr expr;
+            if (XQueryTreeParser.MODULE_DECL == ast.getType()) {
+                // return new LibraryModuleRoot instead!
+                expr = new LibraryModuleRoot(context);
+            } else {
+                expr = new PathExpr(context);
+            }
+
+            if (xpointer) {
                 treeParser.xpointer(ast, expr);
             } else {
                 treeParser.xpath(ast, expr);
             }
             
-            if(treeParser.foundErrors()) {
+            if (treeParser.foundErrors()) {
                 //AST treeAst = treeParser.getAST();
                 throw new StaticXQueryException(ast.getLine(), ast.getColumn(), treeParser.getErrorMessage(), treeParser.getLastException());
             }
@@ -138,7 +151,7 @@ public class XQuery {
 
             // Log the query if it is not too large, but avoid
             // dumping huge queries to the log
-            if(LOG.isDebugEnabled()){
+            if (LOG.isDebugEnabled()){
                 if (context.getExpressionCount() < 150) {
                     LOG.debug("Query diagnostics:\n" + ExpressionDumper.dump(expr));
                 } else {
@@ -153,7 +166,9 @@ public class XQuery {
             
             return expr;
         } catch(final RecognitionException e) {
-            LOG.debug("Error compiling query: " + e.getMessage(), e);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Error compiling query: " + e.getMessage(), e);
+            }
             String msg = e.getMessage();
             if (msg.endsWith(", found 'null'")) {
                 msg = msg.substring(0, msg.length() - ", found 'null'".length());
@@ -162,13 +177,17 @@ public class XQuery {
         } catch(final TokenStreamException e) {
             final String es = e.toString();
             if(es.matches("^line \\d+:\\d+:.+")) {
-                LOG.debug("Error compiling query: " + e.getMessage(), e);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Error compiling query: " + e.getMessage(), e);
+                }
                 final int line = Integer.parseInt(es.substring(5, es.indexOf(':')));
                 final String tmpColumn = es.substring(es.indexOf(':') + 1);
                 final int column = Integer.parseInt(tmpColumn.substring(0, tmpColumn.indexOf(':')));
                 throw new StaticXQueryException(line, column, e.getMessage(), e);
             } else {
-                LOG.debug("Error compiling query: " + e.getMessage(), e);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Error compiling query: " + e.getMessage(), e);
+                }
                 throw new StaticXQueryException(e.getMessage(), e);
             }
             
@@ -195,6 +214,10 @@ public class XQuery {
     }
     
     public Sequence execute(final DBBroker broker, final CompiledXQuery expression, Sequence contextSequence, final Properties outputProperties, final boolean resetContext) throws XPathException, PermissionDeniedException {
+        return execute(broker, expression, null, contextSequence, outputProperties, resetContext);
+    }
+
+    public Sequence execute(final DBBroker broker, final CompiledXQuery expression, @Nullable final Tuple2<QName, List<Expression>> functionCall, @Nullable Sequence contextSequence, final Properties outputProperties, final boolean resetContext) throws XPathException, PermissionDeniedException {
     	
         //check execute permissions
         expression.getContext().getSource().validate(broker.getCurrentSubject(), Permission.EXECUTE);
@@ -249,6 +272,8 @@ public class XQuery {
             
             context.getProfiler().traceQueryStart();
             broker.getBrokerPool().getProcessMonitor().queryStarted(context.getWatchDog());
+
+            FunctionCall call = null;
             try {
 
                 // support for XQuery 3.0 - declare context item :=
@@ -258,7 +283,30 @@ public class XQuery {
                     }
                 }
 
-                final Sequence result = expression.eval(contextSequence);
+                final Sequence result;
+                if (expression instanceof LibraryModuleRoot) {
+                    if (functionCall == null) {
+                        throw new XPathException(ErrorCodes.XPST0017, "No function call details were provided when trying to execute a Library Module");
+                    }
+
+                    final QName functionName = functionCall._1;
+                    final List<Expression> functionArgs = functionCall._2;
+                    final int functionArity = functionArgs.size();
+                    final UserDefinedFunction function = context.resolveFunction(functionName, functionArity);
+                    if (function == null) {
+                        throw new XPathException(ErrorCodes.XPST0017, "No such function: " + functionName.getStringValue() + "#" + functionArity);
+                    }
+
+                    call = new FunctionCall(context, function);
+                    call.setArguments(functionArgs);
+                    call.analyze(new AnalyzeContextInfo());
+
+                    result = call.eval(contextSequence);
+
+                } else {
+                    result = expression.eval(contextSequence);
+                }
+
                 if(LOG.isDebugEnabled()) {
                     final NumberFormat nf = NumberFormat.getNumberInstance();
                     LOG.debug("Execution took "  +  nf.format(System.currentTimeMillis() - start) + " ms");
@@ -274,6 +322,11 @@ public class XQuery {
                 // track query stats before context is reset
                 broker.getBrokerPool().getProcessMonitor().queryCompleted(context.getWatchDog());
                 expression.reset();
+
+                if (call != null) {
+                    call.reset();
+                }
+
                 if(resetContext) {
                     context.reset();
                 }
