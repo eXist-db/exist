@@ -61,12 +61,12 @@ import java.util.Optional;
  */
 public class LuceneFieldConfig extends AbstractFieldConfig {
 
-    private final static String ATTR_FIELD_NAME = "name";
-    private final static String ATTR_TYPE = "type";
-    private final static String ATTR_BINARY = "binary";
-    private final static String ATTR_STORE = "store";
-    private final static String ATTR_ANALYZER = "analyzer";
-    private final static String ATTR_IF = "if";
+    private static final String ATTR_FIELD_NAME = "name";
+    private static final String ATTR_TYPE = "type";
+    private static final String ATTR_BINARY = "binary";
+    private static final String ATTR_STORE = "store";
+    private static final String ATTR_ANALYZER = "analyzer";
+    private static final String ATTR_IF = "if";
 
     protected String fieldName;
     protected int type = Type.STRING;
