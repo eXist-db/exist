@@ -69,7 +69,7 @@ public class Field extends BasicFunction {
             new FunctionParameterSequenceType("type", Type.STRING, Cardinality.EXACTLY_ONE,
                 "intended target type to cast the field value to. Casting may fail with a dynamic error.");
 
-    public static final FunctionSignature[] signatures = {
+    protected static final FunctionSignature[] signatures = {
             new FunctionSignature(
                 new QName(FN_FIELD, LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
                 "Returns the value of a field attached to a particular node obtained via a full text search.",
@@ -308,7 +308,7 @@ public class Field extends BasicFunction {
         return null;
     }
 
-    static AtomicValue bytesToAtomic(BytesRef field, int type) throws XPathException {
+    static AtomicValue bytesToAtomic(BytesRef field, int type) {
         final byte[] data = field.bytes;
         final int timezone;
         switch(type) {
