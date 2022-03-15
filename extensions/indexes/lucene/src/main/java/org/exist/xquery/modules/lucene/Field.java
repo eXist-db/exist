@@ -149,36 +149,46 @@ public class Field extends BasicFunction {
         if (match == null) {
             return Sequence.EMPTY_SEQUENCE;
         }
+        final String called = getSignature().getName().getLocalPart();
 
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         try {
-            Sequence result;
-            if (isCalledAs(FN_FIELD) || isCalledAs(FN_HIGHLIGHT_FIELD_MATCHES)) {
-                // field is a normal lucene field
-                final IndexableField[] fields = index.getField(match.getLuceneDocId(), fieldName);
-                result = new ValueSequence(fields.length);
-                for (final IndexableField field : fields) {
-                    if (field.numericValue() != null) {
-                        result.add(numberToAtomic(type, field.numericValue()));
-                    } else {
-                        result.add(stringToAtomic(type, field.stringValue()));
-                    }
-                }
-            } else {
-                // field is a binary doc value
-                final BytesRef fieldValue = index.getBinaryField(match.getLuceneDocId(), fieldName);
-                if (fieldValue == null) {
-                    return Sequence.EMPTY_SEQUENCE;
-                }
-                result = bytesToAtomic(fieldValue, type);
+            switch (called) {
+                case FN_FIELD:
+                    return getFieldValues(fieldName, type, match, index);
+                case FN_HIGHLIGHT_FIELD_MATCHES:
+                    final Sequence result = getFieldValues(fieldName, type, match, index);
+                    return highlightMatches(fieldName, proxy, match, result);
+                case FN_BINARY_FIELD:
+                    return getBinaryFieldValue(fieldName, type, match, index);
+                default:
+                    throw new XPathException(this, ErrorCodes.FOER0000, "Unknown function: " + getName());
             }
-            if (isCalledAs(FN_HIGHLIGHT_FIELD_MATCHES)) {
-                return highlightMatches(fieldName, proxy, match, result);
-            }
-            return result;
         } catch (IOException e) {
             throw new XPathException(this, LuceneModule.EXXQDYFT0002, "Error retrieving field: " + e.getMessage());
         }
+    }
+
+    private Sequence getBinaryFieldValue(final String fieldName, final int type, final LuceneMatch match, final LuceneIndexWorker index) throws IOException, XPathException {
+        final BytesRef fieldValue = index.getBinaryField(match.getLuceneDocId(), fieldName);
+        if (fieldValue == null) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        return bytesToAtomic(fieldValue, type);
+    }
+
+    private Sequence getFieldValues(final String fieldName, final int type, final LuceneMatch match, final LuceneIndexWorker index) throws IOException, XPathException {
+        Sequence result;
+        final IndexableField[] fields = index.getField(match.getLuceneDocId(), fieldName);
+        result = new ValueSequence(fields.length);
+        for (final IndexableField field : fields) {
+            if (field.numericValue() != null) {
+                result.add(numberToAtomic(type, field.numericValue()));
+            } else {
+                result.add(stringToAtomic(type, field.stringValue()));
+            }
+        }
+        return result;
     }
 
     /**
