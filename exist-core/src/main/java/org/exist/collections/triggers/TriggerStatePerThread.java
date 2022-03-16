@@ -22,136 +22,291 @@
 package org.exist.collections.triggers;
 
 import org.exist.xmldb.XmldbURI;
-import org.exist.storage.txn.Txn;
 
-/** Finite State Machine, managing the state of a Running trigger;
- * allows to avoid infinite recursions by forbidding another trigger to run
- * where there is already one; feature trigger_update .
- * I implemented that when a trigger is running , another trigger in the same
- * Thread cannot be fired .
- * There is a second condition that  when a trigger is running triggered by 
- * some document d, even the same trigger cannot run on a different document .
+import javax.annotation.Nullable;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Iterator;
 
- * maybe TODO: apply "state" design pattern */
+/**
+ * Avoid infinite recursions in Triggers by preventing the same trigger
+ * from running in the same phase on the same event for the same URIs.
+ *
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
+ */
 public class TriggerStatePerThread {
-
-	public static final int NO_TRIGGER_RUNNING = (0);
-	public static final int TRIGGER_RUNNING_PREPARE = (1);
-	public static final int TRIGGER_RUNNING_FINISH = (2);
 	
-	private static ThreadLocal<TriggerState> triggerRunningState = new ThreadLocal<TriggerState>() {
-	    protected synchronized TriggerState initialValue() {
-	        return new TriggerState(NO_TRIGGER_RUNNING);
-	    }
-	};
+	private final static ThreadLocal<Deque<TriggerState>> THEAD_LOCAL_STATES = ThreadLocal.withInitial(ArrayDeque::new);
 
-	public static boolean verifyUniqueTriggerPerThreadBeforePrepare(
-			DocumentTrigger trigger, XmldbURI modifiedDocument) {
-		if (getTriggerRunningState() == NO_TRIGGER_RUNNING) {
-			setTriggerRunningState(TRIGGER_RUNNING_PREPARE, trigger,
-					modifiedDocument);
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	/**
-	 * @param trigger the trigger that got modified
-	 * @param modifiedDocument the document whose modification triggered the trigger
-	 * @return true if successfully validated otherwise false
-	 */
-	public static boolean verifyUniqueTriggerPerThreadBeforeFinish(
-			DocumentTrigger trigger, XmldbURI modifiedDocument) {
+	public static void setAndTest(final Trigger trigger, final TriggerPhase triggerPhase, final TriggerEvent triggerEvent, final XmldbURI src, final @Nullable XmldbURI dst) throws CyclicTriggerException {
+		final Deque<TriggerState> states = THEAD_LOCAL_STATES.get();
 
-		// another trigger is already running
-		final DocumentTrigger runningTrigger = getRunningTrigger();
-		if ( runningTrigger != null && 
-			trigger != runningTrigger ) {
-			return false;
+		if (states.isEmpty()) {
+			if (triggerPhase != TriggerPhase.BEFORE) {
+				throw new IllegalStateException("The Before phase of a trigger must occur before the After phase");
+			}
+			states.addFirst(new TriggerState(trigger, triggerPhase, triggerEvent, src, dst));
+			return;
 		}
 
-		// current trigger is busy with another document
-		if(getModifiedDocument() != null && !modifiedDocument.equals(getModifiedDocument()))
-		{
-			return false;
-		}
-		
-		if (getTriggerRunningState() == TRIGGER_RUNNING_PREPARE) {
-			setTriggerRunningState(TRIGGER_RUNNING_FINISH, trigger,
-					modifiedDocument);
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	public static class TriggerState {
-		private int state;
-		private DocumentTrigger currentTrigger;
-		private Txn txn;
-		private XmldbURI modifiedDocument;
-		public TriggerState(int state) {
-			super();
-			this.setState(state, null, null);
-		}
-		
-		private void setState(int state, DocumentTrigger trigger, XmldbURI modifiedDocument) {
-			this.state = state;
-			if (state == NO_TRIGGER_RUNNING) {
-				this.currentTrigger = null;
-				this.setModifiedDocument(null);
+		TriggerState prevState = states.peekFirst();
+
+		// is the new state the same as the previous state (excluding the phase)
+		if (prevState.equalsIgnoringPhase(trigger, triggerEvent, src, dst)) {
+
+			// is this the after phase (i.e. matching completion) of a previous non-cyclic before phase?
+			if (triggerPhase == TriggerPhase.AFTER) {
+
+				int skipBefores = 0;
+
+				for (final Iterator<TriggerState> it = states.iterator(); it.hasNext(); ) {
+					prevState = it.next();
+
+					// travel up, first "Before" we encounter - we should check if (a) that we complete it, and/or (b) is non-cyclic (if not we are also cyclic)
+					if (prevState.triggerPhase == TriggerPhase.BEFORE) {
+
+						if (skipBefores > 0) {
+							skipBefores--;
+
+						} else {
+							if (prevState.isCompletedBy(trigger, triggerPhase, triggerEvent, src, dst)) {
+								if (prevState instanceof PossibleCyclicTriggerState) {
+									// if the Before phase is a PossibleCyclicTriggerState then this completing After phase must also be a PossibleCyclicTriggerState
+									final TriggerState newState = new PossibleCyclicTriggerState(trigger, triggerPhase, triggerEvent, src, dst);
+									states.addFirst(newState);
+
+									throw new CyclicTriggerException("Detected Matching possible cyclic trigger event for After phase (" + newState + ") of previous Before phase (" + prevState + ")");
+
+								} else {
+									// if the Before Phase is NOT a PossibleCyclicTriggerState, then neither is this completing After phase...
+									states.addFirst(new TriggerState(trigger, triggerPhase, triggerEvent, src, dst));
+									return;
+								}
+
+							} else {
+								throw new IllegalStateException("Cannot interleave Trigger states");
+							}
+						}
+					} else if (prevState.triggerPhase == TriggerPhase.AFTER) {
+						skipBefores++;
+					}
+				}
+
+				throw new IllegalStateException("Could not find a matching Before phase for After phase");
+
 			} else {
-				this.currentTrigger = trigger;
-				this.setModifiedDocument(modifiedDocument);
+				// it's a cyclic exception!
+				final TriggerState newState = new PossibleCyclicTriggerState(trigger, triggerPhase, triggerEvent, src, dst);
+				states.addFirst(newState);
+
+				throw new CyclicTriggerException("Detected possible cyclic trigger events: " + newState);
 			}
 		}
 
-		private int getState() {
-			return state;
+		states.addFirst(new TriggerState(trigger, triggerPhase, triggerEvent, src, dst));
+	}
+
+	public static class CyclicTriggerException extends Exception {
+		public CyclicTriggerException(final String message) {
+			super(message);
+		}
+	}
+
+	public static void clearIfFinished(final TriggerPhase phase) {
+		if (phase == TriggerPhase.AFTER) {
+
+			int depth = 0;
+			final Deque<TriggerState> states = THEAD_LOCAL_STATES.get();
+			for (final Iterator<TriggerState> it = states.descendingIterator(); it.hasNext(); ) {
+				final TriggerState state = it.next();
+				switch (state.triggerPhase) {
+					case BEFORE:
+						depth++;
+						break;
+					case AFTER:
+						depth--;
+						break;
+					default:
+						throw new IllegalStateException("Unknown phase: " + state.triggerPhase + "for trigger state: " + state);
+				}
+			}
+
+			if (depth == 0) {
+				clear();
+			}
+		}
+	}
+
+	public static void clear() {
+		THEAD_LOCAL_STATES.get().clear();
+	}
+
+	public static boolean isEmpty() {
+		return THEAD_LOCAL_STATES.get().isEmpty();
+	}
+
+	private static class PossibleCyclicTriggerState extends TriggerState {
+		public PossibleCyclicTriggerState(final TriggerState triggerState) {
+			super(triggerState.trigger, triggerState.triggerPhase, triggerState.triggerEvent, triggerState.src, triggerState.dst);
 		}
 
-		void setTransaction(Txn txn) {
-			this.txn = txn;
+		public PossibleCyclicTriggerState(final Trigger trigger, final TriggerPhase triggerPhase, final TriggerEvent triggerEvent, final XmldbURI src, final @Nullable XmldbURI dst) {
+			super(trigger, triggerPhase, triggerEvent, src, dst);
 		}
-		Txn getTransaction() {
-			return txn;
+	}
+
+	private static class TriggerState {
+		private final Trigger trigger;
+		private final TriggerPhase triggerPhase;
+		private final TriggerEvent triggerEvent;
+		private final XmldbURI src;
+		private final @Nullable XmldbURI dst;
+
+		public TriggerState(final Trigger trigger, final TriggerPhase triggerPhase, final TriggerEvent triggerEvent, final XmldbURI src, final @Nullable XmldbURI dst) {
+			this.trigger = trigger;
+			this.triggerPhase = triggerPhase;
+			this.triggerEvent = triggerEvent;
+			this.src = src;
+			this.dst = dst;
 		}
 
-		public DocumentTrigger getTrigger() {
-			return currentTrigger;
+		@Override
+		public String toString() {
+			final StringBuilder builder = new StringBuilder();
+			builder.append(triggerPhase);
+			builder.append(' ');
+			builder.append(triggerEvent);
+			builder.append('(');
+			if (triggerPhase == TriggerPhase.AFTER && dst != null) {
+				builder.append(dst);
+				builder.append(", ");
+			}
+			builder.append(src);
+			if (triggerPhase == TriggerPhase.BEFORE && dst != null) {
+				builder.append(", ");
+				builder.append(dst);
+			}
+			builder.append(')');
+			builder.append(": ");
+			builder.append(trigger.getClass().getSimpleName());
+			if (trigger instanceof XQueryTrigger) {
+				final String urlQuery = ((XQueryTrigger) trigger).getUrlQuery();
+				if (urlQuery != null && !urlQuery.isEmpty()) {
+					builder.append('(');
+					builder.append(urlQuery);
+					builder.append(')');
+				}
+			}
+			return builder.toString();
 		}
 
-		private void setModifiedDocument(XmldbURI modifiedDocument) {
-			this.modifiedDocument = modifiedDocument;
+		@Override
+		public boolean equals(final Object o) {
+			return equals(o, false);
 		}
 
-		private XmldbURI getModifiedDocument() {
-			return modifiedDocument;
-		}	
-	}
-	
-	public static int getTriggerRunningState() {
-		return triggerRunningState.get().getState();
-	}
+		public boolean equalsIgnoringPhase(final Object o) {
+			return equals(o, true);
+		}
 
-	public static DocumentTrigger getRunningTrigger() {
-		return triggerRunningState.get().getTrigger();
-	}
-	
-	public static void setTriggerRunningState( int state, DocumentTrigger trigger, XmldbURI modifiedDocument ) {
-		triggerRunningState.get().setState(state, trigger, modifiedDocument);
-	}
+		private boolean equals(final Object o, final boolean ignorePhase) {
+			if (this == o) {
+				return true;
+			}
 
-	public static Txn getTransaction() {
-		return triggerRunningState.get().getTransaction();
-	}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
 
-	public static void setTransaction(Txn txn) {
-        triggerRunningState.get().setTransaction(txn);
-	}
-	
-	public static XmldbURI getModifiedDocument() {
-		return triggerRunningState.get().getModifiedDocument();		
+			final TriggerState that = (TriggerState) o;
+
+			if (!trigger.equals(that.trigger)) {
+				return false;
+			}
+
+			if (!ignorePhase) {
+				if (triggerPhase != that.triggerPhase) {
+					return false;
+				}
+			}
+
+			if (triggerEvent != that.triggerEvent) {
+				return false;
+			}
+
+			if (!src.equals(that.src)) {
+				return false;
+			}
+
+			return dst != null ? dst.equals(that.dst) : that.dst == null;
+		}
+
+		private boolean equalsIgnoringPhase(final Trigger otherTrigger, final TriggerEvent otherTriggerEvent, final XmldbURI otherSrc, @Nullable final XmldbURI otherDst) {
+			if (!trigger.equals(otherTrigger)) {
+				return false;
+			}
+
+			if (triggerEvent != otherTriggerEvent) {
+				return false;
+			}
+
+			if (!src.equals(otherSrc)) {
+				return false;
+			}
+
+			return dst != null ? dst.equals(otherDst) : otherDst == null;
+		}
+
+		public boolean isCompletedBy(final Trigger otherTrigger, final TriggerPhase otherTriggerPhase, final TriggerEvent otherTriggerEvent, final XmldbURI otherSrc, @Nullable final XmldbURI otherDst) {
+			if (this.triggerPhase != TriggerPhase.BEFORE
+					|| otherTriggerPhase != TriggerPhase.AFTER) {
+				return false;
+			}
+
+			if (!trigger.equals(otherTrigger)) {
+				return false;
+			}
+
+			if (triggerEvent != otherTriggerEvent) {
+				return false;
+			}
+
+			if (!src.equals(otherSrc)) {
+				return false;
+			}
+
+			return dst != null ? dst.equals(otherDst) : otherDst == null;
+		}
+
+		public boolean completes(final Object o) {
+			if (this == o) {
+				return false;
+			}
+
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+
+			final TriggerState that = (TriggerState) o;
+
+			if (this.triggerPhase != TriggerPhase.AFTER
+					|| that.triggerPhase != TriggerPhase.BEFORE) {
+				return false;
+			}
+
+			if (!trigger.equals(that.trigger)) {
+				return false;
+			}
+
+			if (triggerEvent != that.triggerEvent) {
+				return false;
+			}
+
+			if (!src.equals(that.src)) {
+				return false;
+			}
+
+			return dst != null ? dst.equals(that.dst) : that.dst == null;
+		}
 	}
 }
