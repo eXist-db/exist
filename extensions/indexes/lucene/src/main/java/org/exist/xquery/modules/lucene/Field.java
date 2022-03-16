@@ -169,7 +169,7 @@ public class Field extends BasicFunction {
         }
     }
 
-    private Sequence getBinaryFieldValue(final String fieldName, final int type, final LuceneMatch match, final LuceneIndexWorker index) throws IOException, XPathException {
+    private Sequence getBinaryFieldValue(final String fieldName, final int type, final LuceneMatch match, final LuceneIndexWorker index) throws IOException {
         final BytesRef fieldValue = index.getBinaryField(match.getLuceneDocId(), fieldName);
         if (fieldValue == null) {
             return Sequence.EMPTY_SEQUENCE;
