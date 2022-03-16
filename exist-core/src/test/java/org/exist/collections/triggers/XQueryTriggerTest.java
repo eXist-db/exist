@@ -60,10 +60,7 @@ public class XQueryTriggerTest {
     	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
 	    "  <exist:triggers>" +
 		"     <exist:trigger class='org.exist.collections.triggers.XQueryTrigger'>" +
-		"	     <exist:parameter " +
-		"			name='url' " +
-		"			value='" +XmldbURI.LOCAL_DB +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "' " +
-		"        />" +
+		"	     <exist:parameter name='url' value='" + XmldbURI.LOCAL_DB +  "/" + TEST_COLLECTION + "/" + MODULE_NAME + "'/>" +
 		"     </exist:trigger>" +
 		"  </exist:triggers>" +
         "</exist:collection>";    
@@ -111,7 +108,7 @@ public class XQueryTriggerTest {
         "" +
     	"declare function trigger:logEvent($type as xs:string, $event as xs:string, $objectType as xs:string, $uri as xs:anyURI) {" +
         "let $log := util:log(\"INFO\", concat($type, ' ', $event, ' ', $objectType, ' ', $uri))" +
-    	"let $isLoggedIn := xmldb:login('" + XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION + "', 'admin', '') return " +
+    	"let $isLoggedIn := xmldb:login('" + XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION + "', '" + TestUtils.ADMIN_DB_USER + "', '" + TestUtils.ADMIN_DB_PWD + "') return " +
     	  "xmldb:update(" +
     	    "'" + XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION + "', " +
             "<xu:modifications xmlns:xu='http://www.xmldb.org/xupdate' version='1.0'>" +
@@ -281,7 +278,7 @@ public class XQueryTriggerTest {
         idxConf.configureCollection(COLLECTION_CONFIG);
 
         // this will fire the trigger
-        final XMLResource doc = (XMLResource) testCollection.createResource(DOCUMENT_NAME, "XMLResource" );
+        final XMLResource doc = (XMLResource) testCollection.createResource(DOCUMENT_NAME, "XMLResource");
         doc.setContent(DOCUMENT_CONTENT);
         testCollection.storeResource(doc);
 
