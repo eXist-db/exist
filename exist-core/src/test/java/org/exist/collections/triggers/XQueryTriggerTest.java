@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 
 import javax.xml.transform.OutputKeys;
 
+import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.Base64Decoder;
 import org.exist.xmldb.EXistCollectionManagementService;
