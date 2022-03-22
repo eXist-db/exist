@@ -24,6 +24,8 @@ package org.exist.security;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.apache.commons.lang3.ArrayUtils;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
@@ -146,9 +148,9 @@ public class EffectiveSubject implements Subject {
     @Override
     public int[] getGroupIds() {
         if(group != null) {
-            final Set<Integer> groupIds = new HashSet<>(Arrays.asList(ArrayUtils.toObject(account.getGroupIds())));
+            final IntOpenHashSet groupIds = new IntOpenHashSet(account.getGroupIds());
             groupIds.add(group.getId());
-            return ArrayUtils.toPrimitive(groupIds.toArray(new Integer[0]));
+            return groupIds.toIntArray();
         } else {
             return account.getGroupIds();
         }

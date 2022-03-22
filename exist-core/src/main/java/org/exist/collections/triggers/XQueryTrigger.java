@@ -41,13 +41,14 @@ import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
-import org.exist.storage.ProcessMonitor;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
+
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
 /**
  * A trigger that executes a user XQuery statement when invoked.
@@ -71,7 +72,7 @@ import org.exist.xquery.value.StringValue;
 */
 public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, CollectionTrigger {
 
-    protected Logger LOG = LogManager.getLogger(getClass());
+    private static final Logger LOG = LogManager.getLogger(XQueryTrigger.class);
     
 	private final static String NAMESPACE = "http://exist-db.org/xquery/trigger";
 
@@ -434,71 +435,58 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         	throw new TriggerException(PREPARE_EXCEPTION_MESSAGE, e);
 	    }
     }
-	
-	private void execute(boolean isBefore, DBBroker broker, Txn transaction, QName functionName, XmldbURI src, XmldbURI dst) throws TriggerException {
+
+	private void execute(final boolean isBefore, final DBBroker broker, final Txn transaction, final QName functionName, final XmldbURI src, final XmldbURI dst) throws TriggerException {
 		final CompiledXQuery compiledQuery = getScript(isBefore, broker, transaction, src);
-		
-		if (compiledQuery == null) {return;}
-		
-		ProcessMonitor pm = null;
-		
+		if (compiledQuery == null) {
+			return;
+		}
+
 		final XQueryContext context = compiledQuery.getContext();
-        //execute the XQuery
+
+		//execute the XQuery
         try {
-            int nParams = 1;
-            if (dst != null)
-                nParams = 2;
+            final int nParams;
+            if (dst != null) {
+				nParams = 2;
+			} else {
+				nParams = 1;
+			}
 
-            final UserDefinedFunction function = context.resolveFunction(functionName, nParams);
-            if (function != null) {
-                final List<Expression> args = new ArrayList<>(nParams);
-                if (isBefore) {
-                    args.add(new LiteralValue(context, new AnyURIValue(src)));
-                    if (dst != null)
-                        args.add(new LiteralValue(context, new AnyURIValue(dst)));
-                } else {
-                    if (dst != null)
-                        args.add(new LiteralValue(context, new AnyURIValue(dst)));
-                    args.add(new LiteralValue(context, new AnyURIValue(src)));
-                }
-
-	    		pm = broker.getBrokerPool().getProcessMonitor();
-	    		
-	            context.getProfiler().traceQueryStart();
-	            pm.queryStarted(context.getWatchDog());
-	            
-	            final FunctionCall call = new FunctionCall(context, function);
-	            call.setArguments(args);
-	            call.analyze(new AnalyzeContextInfo());
-
-				final Sequence contextSequence;
-				final ContextItemDeclaration cid = call.getContext().getContextItemDeclartion();
-				if(cid != null) {
-					contextSequence = cid.eval(null);
-				} else {
-					contextSequence = NodeSet.EMPTY_SET;
+			final List<Expression> args = new ArrayList<>(nParams);
+			if (isBefore) {
+				args.add(new LiteralValue(context, new AnyURIValue(src)));
+				if (dst != null) {
+					args.add(new LiteralValue(context, new AnyURIValue(dst)));
 				}
-	    		call.eval(contextSequence);
-    		}
-        } catch(final XPathException e) {
+			} else {
+				if (dst != null) {
+					args.add(new LiteralValue(context, new AnyURIValue(dst)));
+				}
+				args.add(new LiteralValue(context, new AnyURIValue(src)));
+			}
+
+			service.execute(broker, compiledQuery, Tuple(functionName, args), null, null, true);
+
+        } catch (final XPathException | PermissionDeniedException e) {
     		TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
     		TriggerStatePerThread.setTransaction(null);
         	throw new TriggerException(PREPARE_EXCEPTION_MESSAGE, e);
         } finally {
-        	if (pm != null) {
-        		context.getProfiler().traceQueryEnd(context);
-        		pm.queryCompleted(context.getWatchDog());
-        	}
     		compiledQuery.reset();
-    		context.reset();
         }
 
         if (!isBefore) {
         	TriggerStatePerThread.setTriggerRunningState(TriggerStatePerThread.NO_TRIGGER_RUNNING, this, null);
         	TriggerStatePerThread.setTransaction(null);
-        	LOG.debug("Trigger fired 'after'");
-        } else
-        	{LOG.debug("Trigger fired 'before'");}
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Trigger fired 'after'");
+			}
+        } else {
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Trigger fired 'before'");
+			}
+		}
 	}
 
 //	public void startDocument() throws SAXException
