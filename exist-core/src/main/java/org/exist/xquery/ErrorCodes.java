@@ -244,6 +244,8 @@ public class ErrorCodes {
     public static final ErrorCode EXXQDY0002 = new EXistErrorCode("EXXQDY0002", "Error parsing XML.");
     public static final ErrorCode EXXQDY0003 = new EXistErrorCode("EXXQDY0003", "Only Supported for xquery version \"3.0\" and later.");
     public static final ErrorCode EXXQDY0004 = new EXistErrorCode("EXXQDY0004", "Only Supported for xquery version \"3.1\" and later.");
+    public static final ErrorCode EXXQDY0005 = new EXistErrorCode("EXXQDY0005", "No function call details were provided when trying to execute a Library Module.");
+    public static final ErrorCode EXXQDY0006 = new EXistErrorCode("EXXQDY0006", "Unable to find named function when trying to execute a Library Module.");
 
     public static final ErrorCode ERROR = new EXistErrorCode("ERROR", "Error.");
 

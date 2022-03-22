@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -437,9 +438,20 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 				args.add(new LiteralValue(context, new AnyURIValue(src)));
 			}
 
-			service.execute(broker, compiledQuery, Tuple(functionName, args), null, null, true);
+			service.execute(broker, compiledQuery, Tuple(functionName, args, Optional.empty()), null, null, true);
         } catch (final XPathException | PermissionDeniedException e) {
-    		TriggerStatePerThread.clear();
+			// if the exception just indicates that there is no function in the trigger to call, then we can just log and return
+			if (e instanceof XPathException) {
+				final XPathException xpe = (XPathException) e;
+				if (xpe.getErrorCode() == ErrorCodes.EXXQDY0005 || xpe.getErrorCode() == ErrorCodes.EXXQDY0006) {
+					if (LOG.isDebugEnabled()) {
+						LOG.debug("No such function '" + functionName + "' in XQueryTrigger: " + compiledQuery.getSource());
+					}
+					return;
+				}
+			}
+
+			TriggerStatePerThread.clear();
         	throw new TriggerException(PREPARE_EXCEPTION_MESSAGE, e);
         } finally {
     		compiledQuery.reset();
