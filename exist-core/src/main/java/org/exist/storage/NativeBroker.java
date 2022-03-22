@@ -585,7 +585,7 @@ public class NativeBroker extends DBBroker {
         throws LockException, PermissionDeniedException, IOException, TriggerException {
         try {
             pushSubject(pool.getSecurityManager().getSystemSubject());
-            final Tuple2<Boolean, Collection> temp = getOrCreateCollectionExplicit(transaction, XmldbURI.TEMP_COLLECTION_URI);
+            final Tuple2<Boolean, Collection> temp = getOrCreateCollectionExplicit(transaction, XmldbURI.TEMP_COLLECTION_URI, true);
             if (temp._1) {
                 temp._2.setPermissions(0771);
                 saveCollection(transaction, temp._2);
@@ -622,14 +622,20 @@ public class NativeBroker extends DBBroker {
 
     @Override
     public Collection getOrCreateCollection(final Txn transaction, XmldbURI name) throws PermissionDeniedException, IOException, TriggerException {
-        return getOrCreateCollectionExplicit(transaction, name)._2;
+        return getOrCreateCollectionExplicit(transaction, name, true)._2;
     }
 
     /**
+     * @param transaction The current transaction
+     * @param name The Collection's URI
+     * @param fireTrigger Indicates whether the CollectionTrigger should be fired.
+     *                    Typically true, but can be set to false when creating a collection is
+     *                    part of a composite operation like `copy`.
+     *
      * @return A tuple whose first boolean value is set to true if the
      * collection was created, or false if the collection already existed
      */
-    private Tuple2<Boolean, Collection> getOrCreateCollectionExplicit(final Txn transaction, XmldbURI name) throws PermissionDeniedException, IOException, TriggerException {
+    private Tuple2<Boolean, Collection> getOrCreateCollectionExplicit(final Txn transaction, XmldbURI name, final boolean fireTrigger) throws PermissionDeniedException, IOException, TriggerException {
         name = prepend(name.normalizeCollectionPath());
 
         final CollectionCache collectionsCache = pool.getCollectionsCache();
@@ -648,8 +654,13 @@ public class NativeBroker extends DBBroker {
                         LOG.debug("Creating root collection '" + XmldbURI.ROOT_COLLECTION_URI + "'");
                     }
 
-                    final CollectionTrigger trigger = new CollectionTriggers(this);
-                    trigger.beforeCreateCollection(this, transaction, XmldbURI.ROOT_COLLECTION_URI);
+                    final CollectionTrigger trigger;
+                    if (fireTrigger) {
+                        trigger = new CollectionTriggers(this);
+                        trigger.beforeCreateCollection(this, transaction, XmldbURI.ROOT_COLLECTION_URI);
+                    } else {
+                        trigger = null;
+                    }
 
                     current = new MutableCollection(this, XmldbURI.ROOT_COLLECTION_URI);
                     current.setId(getNextCollectionId(transaction));
@@ -666,7 +677,9 @@ public class NativeBroker extends DBBroker {
                     //adding to make it available @ afterCreateCollection
                     collectionsCache.put(current);
 
-                    trigger.afterCreateCollection(this, transaction, current);
+                    if (fireTrigger) {
+                        trigger.afterCreateCollection(this, transaction, current);
+                    }
 
                     //import an initial collection configuration
                     try {
@@ -724,8 +737,13 @@ public class NativeBroker extends DBBroker {
                             LOG.debug("Creating collection '" + path + "'...");
                         }
 
-                        final CollectionTrigger trigger = new CollectionTriggers(this, current);
-                        trigger.beforeCreateCollection(this, transaction, path);
+                        final CollectionTrigger trigger;
+                        if (fireTrigger) {
+                            trigger = new CollectionTriggers(this, current);
+                            trigger.beforeCreateCollection(this, transaction, path);
+                        } else {
+                            trigger = null;
+                        }
 
                         sub = new MutableCollection(this, path);
                         //inherit the group to the sub-collection if current collection is setGid
@@ -747,7 +765,9 @@ public class NativeBroker extends DBBroker {
                         //adding to make it available @ afterCreateCollection
                         collectionsCache.put(sub);
 
-                        trigger.afterCreateCollection(this, transaction, sub);
+                        if (fireTrigger) {
+                            trigger.afterCreateCollection(this, transaction, sub);
+                        }
 
                         current = sub;
                     }
@@ -1139,7 +1159,7 @@ public class NativeBroker extends DBBroker {
             LOG.debug("Copying collection to '" + newName + "'");
         }
 
-        final Tuple2<Boolean, Collection> destCollection = getOrCreateCollectionExplicit(transaction, newName);
+        final Tuple2<Boolean, Collection> destCollection = getOrCreateCollectionExplicit(transaction, newName, false);
 
         //if required, copy just the mode and acl of the permissions to the dest collection
         if(copyCollectionMode && destCollection._1) {
