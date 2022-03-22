@@ -22,7 +22,7 @@
 
 # Install latest JRE 8 in Debian Stretch (which is the base of gcr.io/distroless/java:8)
 FROM debian:stretch-slim as updated-jre
-RUN apt-get update && apt-get dist-upgrade
+RUN apt-get update && apt-get -y dist-upgrade
 RUN apt-get install -y openjdk-8-jre-headless
 RUN apt-get install -y expat fontconfig     # Install tools required by FOP
 
@@ -66,9 +66,10 @@ LABEL org.label-schema.build-date=${build-tstamp} \
 
 EXPOSE 8080 8443
 
-# make CACHE_MEM and MAX_BROKER available to users
+# make CACHE_MEM, MAX_BROKER, and JVM_MAX_RAM_PERCENTAGE available to users
 ARG CACHE_MEM
 ARG MAX_BROKER
+ARG JVM_MAX_RAM_PERCENTAGE
 
 ENV EXIST_HOME "/exist"
 ENV CLASSPATH=/exist/lib/${exist.uber.jar.filename}
@@ -84,11 +85,10 @@ ENV JAVA_TOOL_OPTIONS \
   -Dexist.configurationFile=/exist/etc/conf.xml \
   -Djetty.home=/exist \
   -Dexist.jetty.config=/exist/etc/jetty/standard.enabled-jetty-configs \
-  -XX:+UnlockExperimentalVMOptions \
-  -XX:+UseCGroupMemoryLimitForHeap \
   -XX:+UseG1GC \
   -XX:+UseStringDeduplication \
-  -XX:MaxRAMFraction=1 \
+  -XX:+UseContainerSupport \
+  -XX:MaxRAMPercentage=${JVM_MAX_RAM_PERCENTAGE:-75.0} \
   -XX:+ExitOnOutOfMemoryError
 
 HEALTHCHECK CMD [ "java", \
