@@ -33,6 +33,8 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
+import java.util.Arrays;
+
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  *
@@ -67,7 +69,7 @@ public class IdFunction extends BasicFunction {
      * 
      * @return An in-memory document describing the accounts
      */
-    private org.exist.dom.memtree.DocumentImpl functionId() throws XPathException {
+    private org.exist.dom.memtree.DocumentImpl functionId() {
         context.pushDocumentContext();
         try {
             final MemTreeBuilder builder = context.getDocumentBuilder();
@@ -79,7 +81,7 @@ public class IdFunction extends BasicFunction {
             subjectToXml(builder, context.getRealUser());
             builder.endElement();
 
-            if (context.getRealUser().getId() != context.getEffectiveUser().getId()) {
+            if (!sameUserWithSameGroups(context.getRealUser(), context.getEffectiveUser())) {
                 builder.startElement(new QName("effective", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
                 subjectToXml(builder, context.getEffectiveUser());
                 builder.endElement();
@@ -93,6 +95,29 @@ public class IdFunction extends BasicFunction {
         } finally {
             context.popDocumentContext();
         }
+    }
+
+    private static boolean sameUserWithSameGroups(final Subject user1, final Subject user2) {
+        if (user1.getId() != user2.getId()) {
+            return false;
+        }
+
+        final int[] user1GroupsIds = user1.getGroupIds();
+        final int[] user2GroupsIds = user2.getGroupIds();
+        if (user1GroupsIds.length != user2GroupsIds.length) {
+            return false;
+        }
+
+        Arrays.sort(user1GroupsIds);
+        Arrays.sort(user2GroupsIds);
+
+        for (int i = 0; i < user1GroupsIds.length; i++) {
+            if (user1GroupsIds[i] != user2GroupsIds[i]) {
+                return false;
+            }
+        }
+
+        return true;
     }
     
     private void subjectToXml(final MemTreeBuilder builder, final Subject subject) {
