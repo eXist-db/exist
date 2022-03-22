@@ -30,9 +30,10 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.text.NumberFormat;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
-import com.evolvedbinary.j8fu.tuple.Tuple2;
+import com.evolvedbinary.j8fu.tuple.Tuple3;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.debuggee.Debuggee;
@@ -217,7 +218,7 @@ public class XQuery {
         return execute(broker, expression, null, contextSequence, outputProperties, resetContext);
     }
 
-    public Sequence execute(final DBBroker broker, final CompiledXQuery expression, @Nullable final Tuple2<QName, List<Expression>> functionCall, @Nullable Sequence contextSequence, final Properties outputProperties, final boolean resetContext) throws XPathException, PermissionDeniedException {
+    public Sequence execute(final DBBroker broker, final CompiledXQuery expression, @Nullable final Tuple3<QName, List<Expression>, Optional<ErrorCodes.ErrorCode>> functionCall, @Nullable Sequence contextSequence, final Properties outputProperties, final boolean resetContext) throws XPathException, PermissionDeniedException {
     	
         //check execute permissions
         expression.getContext().getSource().validate(broker.getCurrentSubject(), Permission.EXECUTE);
@@ -286,7 +287,7 @@ public class XQuery {
                 final Sequence result;
                 if (expression instanceof LibraryModuleRoot) {
                     if (functionCall == null) {
-                        throw new XPathException(ErrorCodes.XPST0017, "No function call details were provided when trying to execute a Library Module");
+                        throw new XPathException(ErrorCodes.EXXQDY0005, "No function call details were provided when trying to execute a Library Module.");
                     }
 
                     final QName functionName = functionCall._1;
@@ -294,7 +295,8 @@ public class XQuery {
                     final int functionArity = functionArgs.size();
                     final UserDefinedFunction function = context.resolveFunction(functionName, functionArity);
                     if (function == null) {
-                        throw new XPathException(ErrorCodes.XPST0017, "No such function: " + functionName.getStringValue() + "#" + functionArity);
+                        final ErrorCodes.ErrorCode errorCode = functionCall._3.orElse(ErrorCodes.EXXQDY0006);
+                        throw new XPathException(errorCode, "No such function: " + functionName.getStringValue() + "#" + functionArity);
                     }
 
                     call = new FunctionCall(context, function);
