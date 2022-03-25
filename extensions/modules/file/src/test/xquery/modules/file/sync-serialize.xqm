@@ -49,45 +49,27 @@ declare variable $syse:indented-XML :=
             />
             The next word <hi>is</hi> highlighted.
         </item>
-        <p>
-            <y>
-                <r>
-                    <a>
-                        <mid />
-                    </a>
-                </r>
-            </y>
-        </p>
+        <p/>
     </root>
 ;
 
 declare variable $syse:default-serialization-XML :=
-``[<root>
-    <item>This is a very long line. Certainly longer than eighty characters. It is here to see what happens to lines longer than a certain limit. Let's see.</item>
-    <empty-item/>
-    <unary/>
-    <item>
-
-            MIXED CONTENT
-
-            <nested attr="with lots of whitespace"/>
-            The next word <hi>is</hi> highlighted.
-        </item>
-    <p>
-        <y>
-            <r>
-                <a>
-                    <mid/>
-                </a>
-            </r>
-        </y>
-    </p>
-</root>]``
+"<root>&#10;" ||
+"    <item>This is a very long line. Certainly longer than eighty characters. It is here to see what happens to lines longer than a certain limit. Let's see.</item>&#10;" ||
+"    <empty-item/>&#10;" ||
+"    <unary/>&#10;" ||
+"    <item>&#10;" ||
+"&#10;" ||
+"            MIXED CONTENT&#10;" ||
+"&#10;" ||
+"            <nested attr=""with lots of whitespace""/>&#10;" ||
+"            The next word <hi>is</hi> highlighted.&#10;" ||
+"        </item>&#10;" ||
+"    <p/>&#10;" ||
+"</root>"
 ;
 
-(: TODO(JL) the encoding value capitalization changes when reading default values :)
 declare variable $syse:exist-xml-declaration := '<?xml version="1.0" encoding="UTF-8"?>';
-declare variable $syse:exist-xml-declaration-lower-case := '<?xml version="1.0" encoding="utf-8"?>';
 
 declare variable $syse:newline := "&#10;";
 
@@ -118,7 +100,8 @@ function syse:tear-down() {
 };
 
 declare
-    %test:assertTrue
+    %test:pending
+    %test:assertEquals("true")
 function syse:defaults() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
@@ -127,11 +110,38 @@ function syse:defaults() {
         ()
     )
 
-    return file:read($directory || "/indented-data.xml")
-        = $syse:exist-xml-declaration || $syse:newline || $syse:default-serialization-XML
+    let $file-contents :=
+        helper:glue-path(($directory, "indented-data.xml"))
+        => file:read()
+
+    let $expected :=
+        $syse:exist-xml-declaration || $syse:newline || $syse:default-serialization-XML
+
+    return
+        if ($file-contents eq $expected)
+        then "true"
+        else $file-contents
 };
 
+
 declare
+    %test:assertEquals("<?xml version=""1.0"" encoding=""UTF-8""?>&#10;<root>&#10;    <item>This is a very long line. Certainly longer than eighty characters. It is here to see what happens to lines longer than a certain limit. Let's see.</item>&#10;    <empty-item/>&#10;    <unary/>&#10;    <item>&#10;&#10;            MIXED CONTENT&#10;&#10;            <nested attr=""with lots of whitespace""/>&#10;            The next word <hi>is</hi> highlighted.&#10;        </item>&#10;    <p/>&#10;</root>")
+function syse:defaults-diff() {
+    let $directory := helper:get-test-directory($syse:suite)
+    let $sync := file:sync(
+        $fixtures:collection,
+        $directory,
+        ()
+    )
+
+    return
+        helper:glue-path(($directory, "indented-data.xml"))
+        => file:read()
+};
+
+
+declare
+    %test:pending
     %test:assertTrue
 function syse:indent-no() {
     let $directory := helper:get-test-directory($syse:suite)
@@ -141,12 +151,13 @@ function syse:indent-no() {
         map{"indent": false()}
     )
 
-    return file:read($directory || "/indented-data.xml") =
-         $syse:exist-xml-declaration-lower-case || $syse:newline || $syse:expected-indented-XML-unindented
+    return file:read(helper:glue-path(($directory, "indented-data.xml"))) =
+         $syse:exist-xml-declaration || $syse:newline || $syse:expected-indented-XML-unindented
 };
 
 declare
-    %test:assertTrue
+    %test:pending
+    %test:assertEquals("true", "true")
 function syse:indent-yes() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
@@ -155,13 +166,13 @@ function syse:indent-yes() {
         map{"indent": true()}
     )
 
-    return
-        file:read($directory || "/minified-data.xml") =
-             $syse:exist-xml-declaration-lower-case || $syse:newline || $syse:expected-minified-XML-indented
-
-        and
-            file:read($directory || "/indented-data.xml") =
-                $syse:exist-xml-declaration-lower-case || $syse:newline || $syse:default-serialization-XML
+    return (
+        file:read(helper:glue-path(($directory, "minified-data.xml"))) =
+             $syse:exist-xml-declaration || $syse:newline || $syse:expected-minified-XML-indented
+        ,
+        file:read(helper:glue-path(($directory, "indented-data.xml"))) =
+            $syse:exist-xml-declaration || $syse:newline || $syse:default-serialization-XML
+   )
 };
 
 declare
@@ -175,12 +186,12 @@ function syse:omit-xml-declaration-no() {
     )
 
     return
-        file:read($directory || "/indented-data.xml")
-            => starts-with($syse:exist-xml-declaration-lower-case || $syse:newline)
+        file:read(helper:glue-path(($directory, "indented-data.xml")))
+            => starts-with($syse:exist-xml-declaration || $syse:newline)
 };
 
 declare
-    %test:assertFalse
+    %test:assertEquals("true")
 function syse:omit-xml-declaration-yes() {
     let $directory := helper:get-test-directory($syse:suite)
     let $sync := file:sync(
@@ -189,7 +200,11 @@ function syse:omit-xml-declaration-yes() {
         map{"omit-xml-declaration": true()}
     )
 
+    let $file-contents :=
+        file:read(helper:glue-path(($directory, "indented-data.xml")))
+
     return
-        file:read($directory || "/indented-data.xml")
-            => starts-with($syse:exist-xml-declaration || $syse:newline)
+        if ($file-contents eq $syse:default-serialization-XML)
+        then "true"
+        else $file-contents
 };
