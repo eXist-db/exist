@@ -343,7 +343,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 		}
 	}
 
-	private CompiledXQuery getScript(final TriggerPhase phase, final DBBroker broker, final Txn transaction, final XmldbURI src) throws TriggerException {
+	private CompiledXQuery getScript(final DBBroker broker, final Txn transaction) throws TriggerException {
 		
 		//get the query
 		final Source query = getQuerySource(broker);
@@ -402,7 +402,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 
 		final CompiledXQuery compiledQuery;
 		try {
-			compiledQuery = getScript(phase, broker, transaction, src);
+			compiledQuery = getScript(broker, transaction);
 			if (compiledQuery == null) {
 				// NOTE: can occur if there is no such XQueryTrigger library module available in the database
 				return;
@@ -674,9 +674,11 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 
 	@Override
 	public void beforeUpdateDocumentMetadata(final DBBroker broker, final Txn txn, final DocumentImpl document) throws TriggerException {
+		// NOTE: not yet implemented
 	}
 
 	@Override
 	public void afterUpdateDocumentMetadata(final DBBroker broker, final Txn txn, final DocumentImpl document) throws TriggerException {
+		// NOTE: not yet implemented
 	}
 }
