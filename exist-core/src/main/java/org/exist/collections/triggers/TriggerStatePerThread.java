@@ -36,10 +36,10 @@ import java.util.Iterator;
  */
 public class TriggerStatePerThread {
 	
-	private final static ThreadLocal<Deque<TriggerState>> THEAD_LOCAL_STATES = ThreadLocal.withInitial(ArrayDeque::new);
+	private final static ThreadLocal<Deque<TriggerState>> THREAD_LOCAL_STATES = ThreadLocal.withInitial(ArrayDeque::new);
 
 	public static void setAndTest(final Trigger trigger, final TriggerPhase triggerPhase, final TriggerEvent triggerEvent, final XmldbURI src, final @Nullable XmldbURI dst) throws CyclicTriggerException {
-		final Deque<TriggerState> states = THEAD_LOCAL_STATES.get();
+		final Deque<TriggerState> states = THREAD_LOCAL_STATES.get();
 
 		if (states.isEmpty()) {
 			if (triggerPhase != TriggerPhase.BEFORE) {
@@ -116,7 +116,7 @@ public class TriggerStatePerThread {
 		if (phase == TriggerPhase.AFTER) {
 
 			int depth = 0;
-			final Deque<TriggerState> states = THEAD_LOCAL_STATES.get();
+			final Deque<TriggerState> states = THREAD_LOCAL_STATES.get();
 			for (final Iterator<TriggerState> it = states.descendingIterator(); it.hasNext(); ) {
 				final TriggerState state = it.next();
 				switch (state.triggerPhase) {
@@ -138,11 +138,11 @@ public class TriggerStatePerThread {
 	}
 
 	public static void clear() {
-		THEAD_LOCAL_STATES.remove();
+		THREAD_LOCAL_STATES.remove();
 	}
 
 	public static boolean isEmpty() {
-		return THEAD_LOCAL_STATES.get().isEmpty();
+		return THREAD_LOCAL_STATES.get().isEmpty();
 	}
 
 	private static class PossibleCyclicTriggerState extends TriggerState {
