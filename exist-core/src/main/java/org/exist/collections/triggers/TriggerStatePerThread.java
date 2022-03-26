@@ -138,7 +138,7 @@ public class TriggerStatePerThread {
 	}
 
 	public static void clear() {
-		THEAD_LOCAL_STATES.get().clear();
+		THEAD_LOCAL_STATES.remove();
 	}
 
 	public static boolean isEmpty() {
