@@ -590,7 +590,7 @@ public class XQueryTrigger2Test {
     }
 
     @Test
-    public void storeDocument_invalidTriggerForPrepare() throws XMLDBException {
+    public void storeDocumentInvalidTriggerForPrepare() throws XMLDBException {
         final BinaryResource invalidModule = (BinaryResource) testCollection.createResource(MODULE_NAME, "BinaryResource" );
         ((EXistResource)invalidModule).setMimeType("application/xquery");
         invalidModule.setContent(INVALID_MODULE.getBytes());
@@ -609,10 +609,8 @@ public class XQueryTrigger2Test {
                 doc.setContent(DOCUMENT_CONTENT);
                 triggeredCollection.storeResource(doc);
             } catch(XMLDBException xdbe) {
-               if(xdbe.getCause() instanceof TriggerException) {
-                   if(xdbe.getCause().getMessage().equals(XQueryTrigger.PREPARE_EXCEPTION_MESSAGE)) {
-                        count_prepare_exceptions++;
-                   }
+               if (xdbe.getCause() instanceof TriggerException && xdbe.getCause().getMessage().equals(XQueryTrigger.PREPARE_EXCEPTION_MESSAGE)) {
+                    count_prepare_exceptions++;
                }
             }
         }

@@ -21,12 +21,16 @@
  */
 package org.exist.collections.triggers;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.annotation.Nullable;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.StringTokenizer;
 
 public enum TriggerEvent {
+
 	CREATE_COLLECTION,
 	UPDATE_COLLECTION,
 	COPY_COLLECTION,
@@ -38,6 +42,8 @@ public enum TriggerEvent {
 	COPY_DOCUMENT,
 	MOVE_DOCUMENT,
 	DELETE_DOCUMENT;
+
+	private static final Logger LOG = LogManager.getLogger(TriggerEvent.class);
 
 	@Deprecated
 	public String legacyEventName() {
@@ -63,6 +69,7 @@ public enum TriggerEvent {
 			final TriggerEvent event = TriggerEvent.forLegacyEventName(eventStr);
 			if (event == null) {
 //	        	throw new TriggerException("Unknown event type: " + eventStr);
+				LOG.warn("Unknown event when converting from legacy event names string: " + eventStr);
 			} else {
 				result.add(event);
 			}
@@ -89,6 +96,7 @@ public enum TriggerEvent {
 					break;
 
 				default:
+					LOG.warn("Unknown event when converting from old design event names string: " + eventStr);
 //					throw new TriggerException("Unknown event type: " + eventStr);
 			}
 		}
