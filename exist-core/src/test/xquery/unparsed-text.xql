@@ -163,7 +163,7 @@ function upt:unsupported-scheme() {
 declare
     %test:assertError("FOUT1170")
 function upt:windows-path() {
-    unparsed-text-lines("C:\file-might-exist.txt", "utf-8")
+    unparsed-text-lines("C:\file-might-exist.txt", "UTF-8")
 };
 
 declare
