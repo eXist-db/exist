@@ -24,7 +24,6 @@ package org.exist.source;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 
 import java.io.IOException;
@@ -50,6 +49,8 @@ public class URLSource extends AbstractSource {
     private static final Pattern URL_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
 
     private static final Logger LOG = LogManager.getLogger(URLSource.class);
+
+    private static final String ACCEPT_HEADER = "application/xml,application/xhtml+xml;q=0.9,*/*;q=0.2";
 
     protected final URL url;
     private URLConnection connection = null;
@@ -145,6 +146,7 @@ public class URLSource extends AbstractSource {
                 connection = url.openConnection();
                 lastModified = connection.getLastModified();
                 if (connection instanceof HttpURLConnection) {
+                    ((HttpURLConnection) connection).setRequestProperty("Accept", ACCEPT_HEADER);
                     responseCode = ((HttpURLConnection) connection).getResponseCode();
                 }
             }
@@ -167,6 +169,7 @@ public class URLSource extends AbstractSource {
                 connection = url.openConnection();
                 lastModified = connection.getLastModified();
                 if (connection instanceof HttpURLConnection) {
+                    ((HttpURLConnection) connection).setRequestProperty("Accept", ACCEPT_HEADER);
                     responseCode = ((HttpURLConnection) connection).getResponseCode();
                 }
             }
@@ -194,6 +197,7 @@ public class URLSource extends AbstractSource {
                 connection = url.openConnection();
                 lastModified = connection.getLastModified();
                 if (connection instanceof HttpURLConnection) {
+                    ((HttpURLConnection) connection).setRequestProperty("Accept", ACCEPT_HEADER);
                     responseCode = ((HttpURLConnection) connection).getResponseCode();
                 }
             }
