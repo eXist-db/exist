@@ -122,6 +122,7 @@ public class Sync extends BasicFunction {
         DEFAULT_PROPERTIES.put(OutputKeys.INDENT, "yes");
         DEFAULT_PROPERTIES.put(OutputKeys.OMIT_XML_DECLARATION, "no");
         DEFAULT_PROPERTIES.put(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+        DEFAULT_PROPERTIES.put(OutputKeys.ENCODING, "UTF-8");
     }
 
     private Properties outputProperties = new Properties();
