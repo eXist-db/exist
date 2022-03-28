@@ -191,3 +191,21 @@ declare function helper:maybe-remove-item-at-index($sequence as xs:anyAtomicType
     )
     else $sequence (: do nothing - will be handled later :)
 };
+
+declare function helper:assert-file-contents($expected as xs:string, $path-parts as xs:string+) as xs:boolean {
+    let $path := helper:glue-path($path-parts)
+    let $actual := file:read($path)
+
+    return
+        if (
+            exists($actual) and
+            count($actual) = 1 and
+            $actual eq $expected)
+        then true()
+        else error(
+            $helper:error,
+            "File Content Assertion failed:&#10;expected file " || $path || "&#10;" ||
+             "to contain string&#10;" || "<[" || $expected || "]>" ||
+             " but was&#10;<["  || $actual || "]>"
+        )
+};
