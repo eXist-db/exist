@@ -37,9 +37,6 @@ import org.exist.xmldb.XmldbURI;
 
 public class URIUtils {
 
-	private static final char[] ENCODED_ASTERISK = new char[]{'%', '2', 'A'};
-	private static final char[] ENCODED_PLUS = new char[]{'%', '2', '0'};
-
 	private final static class CharArray {
 		char[] buf;
 		int count;
@@ -75,15 +72,6 @@ public class URIUtils {
 			buf[count] = c;
 			buf[count+1] = c1;
 			buf[count+2] = c2;
-			count = newcount;
-		}
-
-		public void append(final char[] cc) {
-			final int newcount = count + cc.length;
-			if (newcount > buf.length) {
-				buf = Arrays.copyOf(buf, Math.max(buf.length << 1, newcount));
-			}
-			System.arraycopy(cc, 0, buf, count, cc.length);
 			count = newcount;
 		}
 	}
@@ -160,10 +148,10 @@ public class URIUtils {
 				}
 
 			} else if (c == '*') {
-				result.append(ENCODED_ASTERISK);
+				result.append('%', '2', 'A');
 
 			} else if (c == '+') {
-				result.append(ENCODED_PLUS);
+				result.append('%', '2', '0');
 
 			} else {
 				result.append(c);
