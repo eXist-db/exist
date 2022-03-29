@@ -27,6 +27,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Arrays;
 
+import org.exist.util.CodePointString;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -76,6 +77,12 @@ public class URIUtils {
 		}
 	}
 
+	private static final char[][] table = new char[][] {
+		new char[] { 'a' }
+	};
+
+	private static final char[] HEX_TABLE = { '0','1','2','3','4','5','6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
 	/**
 	 * Encodes reserved characters in a string that is intended to be used in the path segment of a URI.
 	 *
@@ -92,73 +99,71 @@ public class URIUtils {
 	 * @return the URI encoded path component.
 	 */
 	public static String encodeForURI(final String pathComponent) {
-		final String src;
-		try {
-			src = URLEncoder.encode(pathComponent, "UTF-8");
-		} catch(final UnsupportedEncodingException e) {
-			//wrap with a runtime Exception
-			throw new RuntimeException(e);
-		}
 
-		final CharArray result = new CharArray(src.length());
+		final CodePointString codePoints = new CodePointString(pathComponent);
+		final CharArray buf = new CharArray(pathComponent.length());
 
-		for (int i = 0; i < src.length(); i++) {
-			final char c = src.charAt(i);
-
-			if (c == '%') {
-				if (i + 2 < src.length()) {
-					final char c1 = src.charAt(i + 1);
-					final char c2 = src.charAt(i + 2);
-
-					if (c1 =='2') {
-						if (c2 == 'D') {
-							result.append('-');
-							i += 2;
-						} else if (c2 == 'E') {
-							result.append('.');
-							i += 2;
-						} else {
-							result.append(c, c1);
-							i++;
-						}
-
-					} else if (c1 == '5') {
-						if (c2 == 'F') {
-							result.append('_');
-							i += 2;
-						} else {
-							result.append(c, c1);
-							i++;
-						}
-
-					} else if (c1 == '7') {
-						if (c2 == 'E') {
-							result.append('~');
-							i += 2;
-						} else {
-							result.append(c, c1);
-							i++;
-						}
-
-					} else {
-						result.append(c); //TODO(AR) should this be % encoded
-					}
-				} else {
-					result.append(c);
-				}
-
-			} else if (c == '*') {
-				result.append('%', '2', 'A');
-
-			} else if (c == '+') {
-				result.append('%', '2', '0');
+		for (int i = 0; i < codePoints.length(); i++) {
+			final int c = codePoints.codePointAt(i);
+			if (c== '-' || c == '.'
+					|| (c >= '0' && c <= '9')
+					|| (c >= 'A' && c <= 'Z')
+					|| c == '_'
+					|| (c >= 'a' && c <= 'z')
+					|| c == '~') {
+				buf.append((char)c);
 
 			} else {
-				result.append(c);
+				buf.append('%');
+
+				if (c <= 0x7F) {
+					buf.append(HEX_TABLE[c >> 4], HEX_TABLE[c & 0xF]);
+
+				} else if (c <= 0x7FF) {
+					final int c1 = 0xC0 | c >> 6;
+					buf.append(HEX_TABLE[c1 >> 4], HEX_TABLE[c1 & 0xF]);
+
+					buf.append('%');
+					final int c2 = 0x80 | (c & 0x3F);
+					buf.append(HEX_TABLE[c2 >> 4], HEX_TABLE[c2 & 0xF]);
+
+					// unicode code point to utf8
+//					u8 = 0xC000 | ((c >> 6) << 8);
+//					u8 |= 0x80 | (c & 0x3F);
+
+				} else if (c <= 0xFFFF) {
+					final int c1 = 0xE0 | c >> 12;
+					buf.append(HEX_TABLE[c1 >> 4], HEX_TABLE[c1 & 0xF]);
+
+					buf.append('%');
+					final int c2 = 0x80 | ((c >> 6) & 0x3F);
+					buf.append(HEX_TABLE[c2 >> 4], HEX_TABLE[c2 & 0xF]);
+
+					buf.append('%');
+					final int c3 = 0x80 | (c & 0x3F);
+					buf.append(HEX_TABLE[c3 >> 4], HEX_TABLE[c3 & 0xF]);
+
+				} else {
+					final int c1 = 0xF0 | c >> 18;
+					buf.append(HEX_TABLE[c1 >> 4], HEX_TABLE[c1 & 0xF]);
+
+					buf.append('%');
+
+					final int c2 = 0x80 | ((c >> 12) & 0x3F);
+					buf.append(HEX_TABLE[c2 >> 4], HEX_TABLE[c2 & 0xF]);
+
+					buf.append('%');
+					final int c3 = 0x80 | ((c >> 6) & 0x3F);
+					buf.append(HEX_TABLE[c3 >> 4], HEX_TABLE[c3 & 0xF]);
+
+					buf.append('%');
+					final int c4 = 0x80 | (c & 0x3F);
+					buf.append(HEX_TABLE[c4 >> 4], HEX_TABLE[c4 & 0xF]);
+				}
 			}
 		}
 
-		return new String(result.buf, 0, result.count);
+		return new String(buf.buf, 0, buf.count);
 	}
 	
 	public static String iriToURI(String uriPart) {
