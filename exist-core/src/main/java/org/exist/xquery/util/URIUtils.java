@@ -32,7 +32,8 @@ import org.exist.xmldb.XmldbURI;
 
 /**
  * Utilities for URI related functions
- * 
+ *
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  */
 public class URIUtils {
@@ -235,6 +236,8 @@ public class URIUtils {
 	 * @param pathComponent the path component to URI encode.
 	 *
 	 * @return the URI encoded path component.
+	 *
+	 * Author: <a href="adam@evolvedbinary.com">Adam Retter</a>
 	 */
 	public static String encodeForURI(final String pathComponent) {
 
@@ -255,10 +258,6 @@ public class URIUtils {
 				buf.append('%');
 				final int c2 = 0x80 | (c & 0x3F);
 				buf.append(HEX_TABLE[c2 >> 4], HEX_TABLE[c2 & 0xF]);
-
-				// unicode code point to utf8
-//					u8 = 0xC000 | ((c >> 6) << 8);
-//					u8 |= 0x80 | (c & 0x3F);
 
 			} else if (c <= 0xFFFF) {
 				buf.append('%');

@@ -64,6 +64,40 @@
 
     <build>
         <plugins>
+
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <licenseSets>
+
+                        <licenseSet>
+                            <!--
+                                eXist-db's License
+                            -->
+                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <excludes>
+                                <exclude>src/main/java/org/exist/storage/lock/LockTableBenchmark.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/utils/URIUtilsBenchmark.java</exclude>
+                            </excludes>
+                        </licenseSet>
+
+                        <licenseSet>
+                            <!--
+                                FDB backport to LGPL 2.1-only licensed code
+                            -->
+                            <header>${project.parent.relativePath}/FDB-backport-LGPL-21-ONLY-license.template.txt</header>
+                            <includes>
+                                <include>src/main/java/org/exist/storage/lock/LockTableBenchmark.java</include>
+                                <include>src/main/java/org/exist/xquery/utils/URIUtilsBenchmark.java</include>
+                            </includes>
+
+                        </licenseSet>
+
+                    </licenseSets>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
