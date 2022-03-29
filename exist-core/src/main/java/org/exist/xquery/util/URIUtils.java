@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.util;
 
+import java.io.CharArrayWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
@@ -35,6 +36,9 @@ import org.exist.xmldb.XmldbURI;
  */
 
 public class URIUtils {
+
+	private static final char[] ENCODED_ASTERISK = new char[]{'%', '2', 'A'};
+	private static final char[] ENCODED_PLUS = new char[]{'%', '2', '0'};
 
 	/**
 	 * Encodes reserved characters in a string that is intended to be used in the path segment of a URI.
@@ -53,18 +57,88 @@ public class URIUtils {
 	 */
 	public static String encodeForURI(String pathComponent) {
 		String result = urlEncodeUtf8(pathComponent);
-		result = result.replaceAll("\\+", "%20");
-		//result = result.replaceAll("%23", "#");		
-		result = result.replaceAll("%2D", "-");
-		result = result.replaceAll("%5F", "_");
-		result = result.replaceAll("%2E", ".");
-		//result = result.replaceAll("%21", "!");
-		result = result.replaceAll("%7E", "~");
-		result = result.replaceAll("\\*", "%2A");
-		//result = result.replaceAll("%27", "'");
-		//result = result.replaceAll("%28", "(");
-		//result = result.replaceAll("%29", ")");
-		return result;
+		final CharArrayWriter writer = new CharArrayWriter(result.length());
+
+		for (int i = 0; i < result.length(); i++) {
+			final char c = result.charAt(i);
+
+			switch (c) {
+				case '%':
+					if (i + 2 < result.length()) {
+						final char c1 = result.charAt(i+1);
+						final char c2 = result.charAt(i+2);
+
+						switch (c1) {
+							case '2':
+								switch (c2) {
+									case 'D':
+										writer.write('-');
+										i+=2;
+										break;
+									case 'E':
+										writer.write('.');
+										i+=2;
+										break;
+									default:
+										writer.write(c);
+										writer.write(c1);
+										i++;
+										break;
+								}
+								break;
+
+							case '5':
+								switch (c2) {
+									case 'F':
+										writer.write('_');
+										i+=2;
+										break;
+									default:
+										writer.write(c);
+										writer.write(c1);
+										i++;
+										break;
+								}
+								break;
+
+							case '7':
+								switch (c2) {
+									case 'E':
+										writer.write('~');
+										i+=2;
+										break;
+									default:
+										writer.write(c);
+										writer.write(c1);
+										i++;
+										break;
+								}
+								break;
+
+							default:
+								writer.write(c); //TODO(AR) should this be % encoded
+								break;
+						}
+					} else {
+						writer.write(c);
+					}
+					break;
+
+				case '*':
+					writer.write(ENCODED_ASTERISK, 0, 3);
+					break;
+
+				case '+':
+					writer.write(ENCODED_PLUS, 0, 3);
+					break;
+
+				default:
+					writer.write(c);
+			}
+
+		}
+
+		return writer.toString();
 	}
 	
 	public static String iriToURI(String uriPart) {
