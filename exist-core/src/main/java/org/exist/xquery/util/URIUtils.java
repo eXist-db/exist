@@ -104,7 +104,13 @@ public class URIUtils {
 	 * @return the URI encoded path component.
 	 */
 	public static String encodeForURI(final String pathComponent) {
-		final String src = urlEncodeUtf8(pathComponent);
+		final String src;
+		try {
+			src = URLEncoder.encode(pathComponent, "UTF-8");
+		} catch(final UnsupportedEncodingException e) {
+			//wrap with a runtime Exception
+			throw new RuntimeException(e);
+		}
 
 		final CharArray result = new CharArray(src.length());
 
