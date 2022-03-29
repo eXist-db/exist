@@ -117,77 +117,57 @@ public class URIUtils {
 		for (int i = 0; i < src.length(); i++) {
 			final char c = src.charAt(i);
 
-			switch (c) {
-				case '%':
-					if (i + 2 < src.length()) {
-						final char c1 = src.charAt(i+1);
-						final char c2 = src.charAt(i+2);
+			if (c == '%') {
+				if (i + 2 < src.length()) {
+					final char c1 = src.charAt(i + 1);
+					final char c2 = src.charAt(i + 2);
 
-						switch (c1) {
-							case '2':
-								switch (c2) {
-									case 'D':
-										result.append('-');
-										i+=2;
-										break;
-									case 'E':
-										result.append('.');
-										i+=2;
-										break;
-									default:
-										result.append(c, c1);
-										i++;
-										break;
-								}
-								break;
-
-							case '5':
-								switch (c2) {
-									case 'F':
-										result.append('_');
-										i+=2;
-										break;
-									default:
-										result.append(c, c1);
-										i++;
-										break;
-								}
-								break;
-
-							case '7':
-								switch (c2) {
-									case 'E':
-										result.append('~');
-										i+=2;
-										break;
-									default:
-										result.append(c, c1);
-										i++;
-										break;
-								}
-								break;
-
-							default:
-								result.append(c); //TODO(AR) should this be % encoded
-								break;
+					if (c1 =='2') {
+						if (c2 == 'D') {
+							result.append('-');
+							i += 2;
+						} else if (c2 == 'E') {
+							result.append('.');
+							i += 2;
+						} else {
+							result.append(c, c1);
+							i++;
 						}
+
+					} else if (c1 == '5') {
+						if (c2 == 'F') {
+							result.append('_');
+							i += 2;
+						} else {
+							result.append(c, c1);
+							i++;
+						}
+
+					} else if (c1 == '7') {
+						if (c2 == 'E') {
+							result.append('~');
+							i += 2;
+						} else {
+							result.append(c, c1);
+							i++;
+						}
+
 					} else {
-						result.append(c);
+						result.append(c); //TODO(AR) should this be % encoded
 					}
-					break;
-
-				case '*':
-					result.append(ENCODED_ASTERISK);
-					break;
-
-				case '+':
-					result.append(ENCODED_PLUS);
-					break;
-
-				default:
+				} else {
 					result.append(c);
-			}
+				}
 
+			} else if (c == '*') {
+				result.append(ENCODED_ASTERISK);
+
+			} else if (c == '+') {
+				result.append(ENCODED_PLUS);
+
+			} else {
+				result.append(c);
+			}
 		}
 
 		return new String(result.buf, 0, result.count);
