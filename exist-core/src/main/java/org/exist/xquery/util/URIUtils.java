@@ -21,11 +21,11 @@
  */
 package org.exist.xquery.util;
 
-import java.io.CharArrayWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.Arrays;
 
 import org.exist.xmldb.XmldbURI;
 
@@ -39,6 +39,54 @@ public class URIUtils {
 
 	private static final char[] ENCODED_ASTERISK = new char[]{'%', '2', 'A'};
 	private static final char[] ENCODED_PLUS = new char[]{'%', '2', '0'};
+
+	private final static class CharArray {
+		char[] buf;
+		int count;
+
+		public CharArray(final int initalSize) {
+			buf = new char[initalSize];
+		}
+
+		void append(final char c) {
+			final int newcount = count + 1;
+			if (newcount > buf.length) {
+				buf = Arrays.copyOf(buf, Math.max(buf.length << 1, newcount));
+			}
+			buf[count] = c;
+			count = newcount;
+		}
+
+		public void append(final char c, final char c1) {
+			final int newcount = count + 2;
+			if (newcount > buf.length) {
+				buf = Arrays.copyOf(buf, Math.max(buf.length << 1, newcount));
+			}
+			buf[count] = c;
+			buf[count+1] = c1;
+			count = newcount;
+		}
+
+		public void append(final char c, final char c1, final char c2) {
+			final int newcount = count + 3;
+			if (newcount > buf.length) {
+				buf = Arrays.copyOf(buf, Math.max(buf.length << 1, newcount));
+			}
+			buf[count] = c;
+			buf[count+1] = c1;
+			buf[count+2] = c2;
+			count = newcount;
+		}
+
+		public void append(final char[] cc) {
+			final int newcount = count + cc.length;
+			if (newcount > buf.length) {
+				buf = Arrays.copyOf(buf, Math.max(buf.length << 1, newcount));
+			}
+			System.arraycopy(cc, 0, buf, count, cc.length);
+			count = newcount;
+		}
+	}
 
 	/**
 	 * Encodes reserved characters in a string that is intended to be used in the path segment of a URI.
@@ -55,33 +103,33 @@ public class URIUtils {
 	 *
 	 * @return the URI encoded path component.
 	 */
-	public static String encodeForURI(String pathComponent) {
-		String result = urlEncodeUtf8(pathComponent);
-		final CharArrayWriter writer = new CharArrayWriter(result.length());
+	public static String encodeForURI(final String pathComponent) {
+		final String src = urlEncodeUtf8(pathComponent);
 
-		for (int i = 0; i < result.length(); i++) {
-			final char c = result.charAt(i);
+		final CharArray result = new CharArray(src.length());
+
+		for (int i = 0; i < src.length(); i++) {
+			final char c = src.charAt(i);
 
 			switch (c) {
 				case '%':
-					if (i + 2 < result.length()) {
-						final char c1 = result.charAt(i+1);
-						final char c2 = result.charAt(i+2);
+					if (i + 2 < src.length()) {
+						final char c1 = src.charAt(i+1);
+						final char c2 = src.charAt(i+2);
 
 						switch (c1) {
 							case '2':
 								switch (c2) {
 									case 'D':
-										writer.write('-');
+										result.append('-');
 										i+=2;
 										break;
 									case 'E':
-										writer.write('.');
+										result.append('.');
 										i+=2;
 										break;
 									default:
-										writer.write(c);
-										writer.write(c1);
+										result.append(c, c1);
 										i++;
 										break;
 								}
@@ -90,12 +138,11 @@ public class URIUtils {
 							case '5':
 								switch (c2) {
 									case 'F':
-										writer.write('_');
+										result.append('_');
 										i+=2;
 										break;
 									default:
-										writer.write(c);
-										writer.write(c1);
+										result.append(c, c1);
 										i++;
 										break;
 								}
@@ -104,41 +151,40 @@ public class URIUtils {
 							case '7':
 								switch (c2) {
 									case 'E':
-										writer.write('~');
+										result.append('~');
 										i+=2;
 										break;
 									default:
-										writer.write(c);
-										writer.write(c1);
+										result.append(c, c1);
 										i++;
 										break;
 								}
 								break;
 
 							default:
-								writer.write(c); //TODO(AR) should this be % encoded
+								result.append(c); //TODO(AR) should this be % encoded
 								break;
 						}
 					} else {
-						writer.write(c);
+						result.append(c);
 					}
 					break;
 
 				case '*':
-					writer.write(ENCODED_ASTERISK, 0, 3);
+					result.append(ENCODED_ASTERISK);
 					break;
 
 				case '+':
-					writer.write(ENCODED_PLUS, 0, 3);
+					result.append(ENCODED_PLUS);
 					break;
 
 				default:
-					writer.write(c);
+					result.append(c);
 			}
 
 		}
 
-		return writer.toString();
+		return new String(result.buf, 0, result.count);
 	}
 	
 	public static String iriToURI(String uriPart) {
