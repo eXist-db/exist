@@ -238,7 +238,7 @@ public class XQuery {
 //            LOG.debug("Generated AST: " + ast.toStringTree());
 
             final PathExpr expr;
-            if (XQueryTreeParser.MODULE_DECL == ast.getType()) {
+            if (isLibraryModule(ast)) {
                 // return new LibraryModuleRoot instead!
                 expr = new LibraryModuleRoot(context);
             } else {
@@ -301,8 +301,31 @@ public class XQuery {
             
         }
     }
-    
-    
+
+    /**
+     * Searches from the root of the AST to find if this is a Library Module
+     *
+     * @param ast the root of the AST
+     *
+     * @return true if this is a library module, false otherwise
+     */
+    static boolean isLibraryModule(AST ast) {
+        while (ast != null) {
+            if (ast.getType() == XQueryTreeParser.MODULE_DECL) {
+                return true;
+            }
+
+            // if we get as far as function declarations or global variable declarations we have gone too far
+            if (ast.getType() == XQueryTreeParser.FUNCTION_DECL || ast.getType() == XQueryTreeParser.GLOBAL_VAR) {
+                return false;
+            }
+
+            ast = ast.getNextSibling();
+        }
+
+        return false;
+    }
+
     public Sequence execute(final DBBroker broker, final CompiledXQuery expression, final Sequence contextSequence) throws XPathException, PermissionDeniedException {
     	return execute(broker, expression, contextSequence, null);
     }
