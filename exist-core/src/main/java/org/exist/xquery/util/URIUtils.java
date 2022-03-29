@@ -35,9 +35,24 @@ import org.exist.xmldb.XmldbURI;
  */
 
 public class URIUtils {
-	
-	public static String encodeForURI(String uriPart) {
-		String result = urlEncodeUtf8(uriPart);
+
+	/**
+	 * Encodes reserved characters in a string that is intended to be used in the path segment of a URI.
+	 *
+	 * This function applies the URI escaping rules defined in <a href="https://www.ietf.org/rfc/rfc3986.html#section-2">RFC 3986 Section 2</a>.
+	 * The effect of the function is to escape reserved characters.
+	 * Each such character in the string is replaced with its percent-encoded form as described in RFC 3986.
+	 *
+	 * Since RFC 3986 recommends that, for consistency, URI producers and normalizers should use uppercase
+	 * hexadecimal digits for all percent-encodings, this function must always generate hexadecimal values
+	 * using the upper-case letters A-F.
+	 *
+	 * @param pathComponent the path component to URI encode.
+	 *
+	 * @return the URI encoded path component.
+	 */
+	public static String encodeForURI(String pathComponent) {
+		String result = urlEncodeUtf8(pathComponent);
 		result = result.replaceAll("\\+", "%20");
 		//result = result.replaceAll("%23", "#");		
 		result = result.replaceAll("%2D", "-");
