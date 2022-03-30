@@ -75,10 +75,146 @@ public class URIUtils {
 			buf[count+2] = c2;
 			count = newcount;
 		}
+
+		public void append(final char[] cc) {
+			final int newcount = count + cc.length;
+			if (newcount > buf.length) {
+				buf = Arrays.copyOf(buf, Math.max(buf.length << 1, newcount));
+			}
+			System.arraycopy(cc, 0, buf, count, cc.length);
+			count = newcount;
+		}
 	}
 
-	private static final char[][] table = new char[][] {
-		new char[] { 'a' }
+	private static final char[][] ASCII_TABLE_URI_PATH_COMPONENT_ENCODED = new char[][] {
+			new char[] { '%', '0', '0' },  //NUL
+			new char[] { '%', '0', '1' },  //SOH
+			new char[] { '%', '0', '2' },  //STX
+			new char[] { '%', '0', '3' },  //ETX
+			new char[] { '%', '0', '4' },  //EOT
+			new char[] { '%', '0', '5' },  //ENQ
+			new char[] { '%', '0', '6' },  //ACK
+			new char[] { '%', '0', '7' },  //BEL
+			new char[] { '%', '0', '8' },  //BS
+			new char[] { '%', '0', '9' },  //HT
+			new char[] { '%', '0', 'A' },  //LF
+			new char[] { '%', '0', 'B' },  //VT
+			new char[] { '%', '0', 'C' },  //FF
+			new char[] { '%', '0', 'D' },  //CR
+			new char[] { '%', '0', 'E' },  //SO
+			new char[] { '%', '0', 'F' },  //SI
+			new char[] { '%', '1', '0' },  //DLE
+			new char[] { '%', '1', '1' },  //DC1
+			new char[] { '%', '1', '2' },  //DC2
+			new char[] { '%', '1', '3' },  //DC3
+			new char[] { '%', '1', '4' },  //DC4
+			new char[] { '%', '1', '5' },  //NAK
+			new char[] { '%', '1', '6' },  //SYN
+			new char[] { '%', '1', '7' },  //ETB
+			new char[] { '%', '1', '8' },  //CAN
+			new char[] { '%', '1', '9' },  //EM
+			new char[] { '%', '1', 'A' },  //SUB
+			new char[] { '%', '1', 'B' },  //ESC
+			new char[] { '%', '1', 'C' },  //FS
+			new char[] { '%', '1', 'D' },  //GS
+			new char[] { '%', '1', 'E' },  //RS
+			new char[] { '%', '1', 'F' },  //US
+			new char[] { '%', '2', '0' },  //space
+			new char[] { '%', '2', '1' },  //!
+			new char[] { '%', '2', '2' },  //"
+			new char[] { '%', '2', '3' },  //#
+			new char[] { '%', '2', '4' },  //$
+			new char[] { '%', '2', '5' },  //%
+			new char[] { '%', '2', '6' },  //&
+			new char[] { '%', '2', '7' },  //'
+			new char[] { '%', '2', '8' },  //(
+			new char[] { '%', '2', '9' },  //)
+			new char[] { '%', '2', 'A' },  //*
+			new char[] { '%', '2', 'B' },  //+
+			new char[] { '%', '2', 'C' },  //,
+			new char[] { '-' },  //-
+			new char[] { '.' },  //.
+			new char[] { '%', '2', 'F' },  ///
+			new char[] { '0' },  //0
+			new char[] { '1' },  //1
+			new char[] { '2' },  //2
+			new char[] { '3' },  //3
+			new char[] { '4' },  //4
+			new char[] { '5' },  //5
+			new char[] { '6' },  //6
+			new char[] { '7' },  //7
+			new char[] { '8' },  //8
+			new char[] { '9' },  //9
+			new char[] { '%', '3', 'A' },  //:
+			new char[] { '%', '3', 'B' },  //;
+			new char[] { '%', '3', 'C' },  //<
+			new char[] { '%', '3', 'D' },  //=
+			new char[] { '%', '3', 'E' },  //>
+			new char[] { '%', '3', 'F' },  //?
+			new char[] { '%', '4', '0' },  //@
+			new char[] { 'A' },  //A
+			new char[] { 'B' },  //B
+			new char[] { 'C' },  //C
+			new char[] { 'D' },  //D
+			new char[] { 'E' },  //E
+			new char[] { 'F' },  //F
+			new char[] { 'G' },  //G
+			new char[] { 'H' },  //H
+			new char[] { 'I' },  //I
+			new char[] { 'J' },  //J
+			new char[] { 'K' },  //K
+			new char[] { 'L' },  //L
+			new char[] { 'M' },  //M
+			new char[] { 'N' },  //N
+			new char[] { 'O' },  //O
+			new char[] { 'P' },  //P
+			new char[] { 'Q' },  //Q
+			new char[] { 'R' },  //R
+			new char[] { 'S' },  //S
+			new char[] { 'T' },  //T
+			new char[] { 'U' },  //U
+			new char[] { 'V' },  //V
+			new char[] { 'W' },  //W
+			new char[] { 'X' },  //X
+			new char[] { 'Y' },  //Y
+			new char[] { 'Z' },  //Z
+			new char[] { '%', '5', 'B' },  //[
+			new char[] { '%', '5', 'C' },  //\
+			new char[] { '%', '5', 'D' },  //]
+			new char[] { '%', '5', 'E' },  //^
+			new char[] { '_' },  //_
+			new char[] { '%', '6', '0' },  //`
+			new char[] { 'a' },  //a
+			new char[] { 'b' },  //b
+			new char[] { 'c' },  //c
+			new char[] { 'd' },  //d
+			new char[] { 'e' },  //e
+			new char[] { 'f' },  //f
+			new char[] { 'g' },  //g
+			new char[] { 'h' },  //h
+			new char[] { 'i' },  //i
+			new char[] { 'j' },  //j
+			new char[] { 'k' },  //k
+			new char[] { 'l' },  //l
+			new char[] { 'm' },  //m
+			new char[] { 'n' },  //n
+			new char[] { 'o' },  //o
+			new char[] { 'p' },  //p
+			new char[] { 'q' },  //q
+			new char[] { 'r' },  //r
+			new char[] { 's' },  //s
+			new char[] { 't' },  //t
+			new char[] { 'u' },  //u
+			new char[] { 'v' },  //v
+			new char[] { 'w' },  //w
+			new char[] { 'x' },  //x
+			new char[] { 'y' },  //y
+			new char[] { 'z' },  //z
+			new char[] { '%', '7', 'B' },  //{
+			new char[] { '%', '7', 'C' },  //|
+			new char[] { '%', '7', 'D' },  //}
+			new char[] { '~' },  //~
+			new char[] { '%', '7', 'F' }   //DEL
 	};
 
 	private static final char[] HEX_TABLE = { '0','1','2','3','4','5','6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
@@ -105,61 +241,53 @@ public class URIUtils {
 
 		for (int i = 0; i < codePoints.length(); i++) {
 			final int c = codePoints.codePointAt(i);
-			if (c== '-' || c == '.'
-					|| (c >= '0' && c <= '9')
-					|| (c >= 'A' && c <= 'Z')
-					|| c == '_'
-					|| (c >= 'a' && c <= 'z')
-					|| c == '~') {
-				buf.append((char)c);
 
-			} else {
+			if (c <= 0x7F) {
+				buf.append(ASCII_TABLE_URI_PATH_COMPONENT_ENCODED[c]);
+
+			} else if (c <= 0x7FF) {
 				buf.append('%');
+				final int c1 = 0xC0 | c >> 6;
+				buf.append(HEX_TABLE[c1 >> 4], HEX_TABLE[c1 & 0xF]);
 
-				if (c <= 0x7F) {
-					buf.append(HEX_TABLE[c >> 4], HEX_TABLE[c & 0xF]);
+				buf.append('%');
+				final int c2 = 0x80 | (c & 0x3F);
+				buf.append(HEX_TABLE[c2 >> 4], HEX_TABLE[c2 & 0xF]);
 
-				} else if (c <= 0x7FF) {
-					final int c1 = 0xC0 | c >> 6;
-					buf.append(HEX_TABLE[c1 >> 4], HEX_TABLE[c1 & 0xF]);
-
-					buf.append('%');
-					final int c2 = 0x80 | (c & 0x3F);
-					buf.append(HEX_TABLE[c2 >> 4], HEX_TABLE[c2 & 0xF]);
-
-					// unicode code point to utf8
+				// unicode code point to utf8
 //					u8 = 0xC000 | ((c >> 6) << 8);
 //					u8 |= 0x80 | (c & 0x3F);
 
-				} else if (c <= 0xFFFF) {
-					final int c1 = 0xE0 | c >> 12;
-					buf.append(HEX_TABLE[c1 >> 4], HEX_TABLE[c1 & 0xF]);
+			} else if (c <= 0xFFFF) {
+				buf.append('%');
+				final int c1 = 0xE0 | c >> 12;
+				buf.append(HEX_TABLE[c1 >> 4], HEX_TABLE[c1 & 0xF]);
 
-					buf.append('%');
-					final int c2 = 0x80 | ((c >> 6) & 0x3F);
-					buf.append(HEX_TABLE[c2 >> 4], HEX_TABLE[c2 & 0xF]);
+				buf.append('%');
+				final int c2 = 0x80 | ((c >> 6) & 0x3F);
+				buf.append(HEX_TABLE[c2 >> 4], HEX_TABLE[c2 & 0xF]);
 
-					buf.append('%');
-					final int c3 = 0x80 | (c & 0x3F);
-					buf.append(HEX_TABLE[c3 >> 4], HEX_TABLE[c3 & 0xF]);
+				buf.append('%');
+				final int c3 = 0x80 | (c & 0x3F);
+				buf.append(HEX_TABLE[c3 >> 4], HEX_TABLE[c3 & 0xF]);
 
-				} else {
-					final int c1 = 0xF0 | c >> 18;
-					buf.append(HEX_TABLE[c1 >> 4], HEX_TABLE[c1 & 0xF]);
+			} else {
+				buf.append('%');
+				final int c1 = 0xF0 | c >> 18;
+				buf.append(HEX_TABLE[c1 >> 4], HEX_TABLE[c1 & 0xF]);
 
-					buf.append('%');
+				buf.append('%');
 
-					final int c2 = 0x80 | ((c >> 12) & 0x3F);
-					buf.append(HEX_TABLE[c2 >> 4], HEX_TABLE[c2 & 0xF]);
+				final int c2 = 0x80 | ((c >> 12) & 0x3F);
+				buf.append(HEX_TABLE[c2 >> 4], HEX_TABLE[c2 & 0xF]);
 
-					buf.append('%');
-					final int c3 = 0x80 | ((c >> 6) & 0x3F);
-					buf.append(HEX_TABLE[c3 >> 4], HEX_TABLE[c3 & 0xF]);
+				buf.append('%');
+				final int c3 = 0x80 | ((c >> 6) & 0x3F);
+				buf.append(HEX_TABLE[c3 >> 4], HEX_TABLE[c3 & 0xF]);
 
-					buf.append('%');
-					final int c4 = 0x80 | (c & 0x3F);
-					buf.append(HEX_TABLE[c4 >> 4], HEX_TABLE[c4 & 0xF]);
-				}
+				buf.append('%');
+				final int c4 = 0x80 | (c & 0x3F);
+				buf.append(HEX_TABLE[c4 >> 4], HEX_TABLE[c4 & 0xF]);
 			}
 		}
 
