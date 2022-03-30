@@ -35,7 +35,6 @@ import org.exist.xmldb.XmldbURI;
  * 
  * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  */
-
 public class URIUtils {
 
 	private final static class CharArray {
@@ -77,12 +76,15 @@ public class URIUtils {
 		}
 
 		public void append(final char[] cc) {
-			final int newcount = count + cc.length;
-			if (newcount > buf.length) {
-				buf = Arrays.copyOf(buf, Math.max(buf.length << 1, newcount));
+			if (cc.length > 2) {
+				append(cc[0], cc[1], cc[2]);
+			} else if (cc.length > 1) {
+				append(cc[0], cc[1]);
+			} else if (cc.length == 1) {
+				append(cc[0]);
+			} else {
+				throw new UnsupportedOperationException("Only supported upto array size 3");
 			}
-			System.arraycopy(cc, 0, buf, count, cc.length);
-			count = newcount;
 		}
 	}
 
