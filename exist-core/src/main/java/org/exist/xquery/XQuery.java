@@ -28,9 +28,10 @@ import antlr.collections.AST;
 import java.io.*;
 import java.text.NumberFormat;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
-import com.evolvedbinary.j8fu.tuple.Tuple2;
+import com.evolvedbinary.j8fu.tuple.Tuple3;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.debuggee.Debuggee;
@@ -237,7 +238,7 @@ public class XQuery {
 //            LOG.debug("Generated AST: " + ast.toStringTree());
 
             final PathExpr expr;
-            if (XQueryTreeParser.MODULE_DECL == ast.getType()) {
+            if (isLibraryModule(ast)) {
                 // return new LibraryModuleRoot instead!
                 expr = new LibraryModuleRoot(context);
             } else {
@@ -300,8 +301,31 @@ public class XQuery {
             
         }
     }
-    
-    
+
+    /**
+     * Searches from the root of the AST to find if this is a Library Module
+     *
+     * @param ast the root of the AST
+     *
+     * @return true if this is a library module, false otherwise
+     */
+    static boolean isLibraryModule(AST ast) {
+        while (ast != null) {
+            if (ast.getType() == XQueryTreeParser.MODULE_DECL) {
+                return true;
+            }
+
+            // if we get as far as function declarations or global variable declarations we have gone too far
+            if (ast.getType() == XQueryTreeParser.FUNCTION_DECL || ast.getType() == XQueryTreeParser.GLOBAL_VAR) {
+                return false;
+            }
+
+            ast = ast.getNextSibling();
+        }
+
+        return false;
+    }
+
     public Sequence execute(final DBBroker broker, final CompiledXQuery expression, final Sequence contextSequence) throws XPathException, PermissionDeniedException {
     	return execute(broker, expression, contextSequence, null);
     }
@@ -324,7 +348,7 @@ public class XQuery {
         return execute(broker, expression, null, contextSequence, outputProperties, resetContext);
     }
 
-    public Sequence execute(final DBBroker broker, final CompiledXQuery expression, @Nullable final Tuple2<QName, List<Expression>> functionCall, @Nullable Sequence contextSequence, final Properties outputProperties, final boolean resetContext) throws XPathException, PermissionDeniedException {
+    public Sequence execute(final DBBroker broker, final CompiledXQuery expression, @Nullable final Tuple3<QName, List<Expression>, Optional<ErrorCodes.ErrorCode>> functionCall, @Nullable Sequence contextSequence, final Properties outputProperties, final boolean resetContext) throws XPathException, PermissionDeniedException {
     	
         //check execute permissions
         if (expression.getContext().getSource() instanceof DBSource) {
@@ -395,7 +419,7 @@ public class XQuery {
                 final Sequence result;
                 if (expression instanceof LibraryModuleRoot) {
                     if (functionCall == null) {
-                        throw new XPathException(ErrorCodes.XPST0017, "No function call details were provided when trying to execute a Library Module");
+                        throw new XPathException(ErrorCodes.EXXQDY0005, "No function call details were provided when trying to execute a Library Module.");
                     }
 
                     final QName functionName = functionCall._1;
@@ -403,7 +427,8 @@ public class XQuery {
                     final int functionArity = functionArgs.size();
                     final UserDefinedFunction function = context.resolveFunction(functionName, functionArity);
                     if (function == null) {
-                        throw new XPathException(ErrorCodes.XPST0017, "No such function: " + functionName.getStringValue() + "#" + functionArity);
+                        final ErrorCodes.ErrorCode errorCode = functionCall._3.orElse(ErrorCodes.EXXQDY0006);
+                        throw new XPathException(errorCode, "No such function: " + functionName.getStringValue() + "#" + functionArity);
                     }
 
                     call = new FunctionCall(context, function);
