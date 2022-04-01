@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-        "src/test/xquery/xquery3/generate-id.xqm"
+        "src/test/xquery/xquery3/string-constructor-comparison.xqm"
 })
 public class XQuery3Tests {
 }
