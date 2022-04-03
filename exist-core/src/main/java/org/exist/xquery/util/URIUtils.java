@@ -38,57 +38,6 @@ import org.exist.xmldb.XmldbURI;
  */
 public class URIUtils {
 
-	private final static class CharArray {
-		char[] buf;
-		int count;
-
-		public CharArray(final int initalSize) {
-			buf = new char[initalSize];
-		}
-
-		void append(final char c) {
-			final int newcount = count + 1;
-			if (newcount > buf.length) {
-				buf = Arrays.copyOf(buf, Math.max(buf.length << 1, newcount));
-			}
-			buf[count] = c;
-			count = newcount;
-		}
-
-		public void append(final char c, final char c1) {
-			final int newcount = count + 2;
-			if (newcount > buf.length) {
-				buf = Arrays.copyOf(buf, Math.max(buf.length << 1, newcount));
-			}
-			buf[count] = c;
-			buf[count+1] = c1;
-			count = newcount;
-		}
-
-		public void append(final char c, final char c1, final char c2) {
-			final int newcount = count + 3;
-			if (newcount > buf.length) {
-				buf = Arrays.copyOf(buf, Math.max(buf.length << 1, newcount));
-			}
-			buf[count] = c;
-			buf[count+1] = c1;
-			buf[count+2] = c2;
-			count = newcount;
-		}
-
-		public void append(final char[] cc) {
-			if (cc.length > 2) {
-				append(cc[0], cc[1], cc[2]);
-			} else if (cc.length > 1) {
-				append(cc[0], cc[1]);
-			} else if (cc.length == 1) {
-				append(cc[0]);
-			} else {
-				throw new UnsupportedOperationException("Only supported upto array size 3");
-			}
-		}
-	}
-
 	private static final char[][] ASCII_TABLE_URI_PATH_COMPONENT_ENCODED = new char[][] {
 			new char[] { '%', '0', '0' },  //NUL
 			new char[] { '%', '0', '1' },  //SOH
@@ -469,4 +418,54 @@ public class URIUtils {
 		return XmldbURI.xmldbUriFor(URIUtils.urlEncodePartsUtf8(path));
 	}
 
+	private static final class CharArray {
+		char[] buf;
+		int count;
+
+		public CharArray(final int initalSize) {
+			buf = new char[initalSize];
+		}
+
+		void append(final char c) {
+			final int newcount = count + 1;
+			if (newcount > buf.length) {
+				buf = Arrays.copyOf(buf, Math.max(buf.length << 1, newcount));
+			}
+			buf[count] = c;
+			count = newcount;
+		}
+
+		public void append(final char c, final char c1) {
+			final int newcount = count + 2;
+			if (newcount > buf.length) {
+				buf = Arrays.copyOf(buf, Math.max(buf.length << 1, newcount));
+			}
+			buf[count] = c;
+			buf[count+1] = c1;
+			count = newcount;
+		}
+
+		public void append(final char c, final char c1, final char c2) {
+			final int newcount = count + 3;
+			if (newcount > buf.length) {
+				buf = Arrays.copyOf(buf, Math.max(buf.length << 1, newcount));
+			}
+			buf[count] = c;
+			buf[count+1] = c1;
+			buf[count+2] = c2;
+			count = newcount;
+		}
+
+		public void append(final char[] cc) {
+			if (cc.length > 2) {
+				append(cc[0], cc[1], cc[2]);
+			} else if (cc.length > 1) {
+				append(cc[0], cc[1]);
+			} else if (cc.length == 1) {
+				append(cc[0]);
+			} else {
+				throw new UnsupportedOperationException("Only supported upto array size 3");
+			}
+		}
+	}
 }

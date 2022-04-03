@@ -39,13 +39,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class URIUtilsTest {
+class URIUtilsTest {
 
     /**
      * Unreserved Characters from <a href="https://www.ietf.org/rfc/rfc3986.html#section-2.3">RFC 3986 Section 2.3</a>.
      */
     @Test
-    public void encodeForURIPathComponentUnreserved() {
+    void encodeForURIPathComponentUnreserved() {
         // alpha
         String encoded = URIUtils.encodeForURI("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
         assertEquals("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", encoded);
@@ -75,7 +75,7 @@ public class URIUtilsTest {
      * General Delimiters from <a href="https://www.ietf.org/rfc/rfc3986.html#section-2.2">RFC 3986 Section 2.2</a>.
      */
     @Test
-    public void encodeForURIPathComponentGeneralDelimiter() {
+    void encodeForURIPathComponentGeneralDelimiter() {
         // colon
         String encoded = URIUtils.encodeForURI("a:b");
         assertEquals("a%3Ab", encoded);
@@ -109,7 +109,7 @@ public class URIUtilsTest {
      * Sub Delimiters from <a href="https://www.ietf.org/rfc/rfc3986.html#section-2.2">RFC 3986 Section 2.2</a>.
      */
     @Test
-    public void encodeForURIPathComponentSubDelimiter() {
+    void encodeForURIPathComponentSubDelimiter() {
         // exclamation mark
         String encoded = URIUtils.encodeForURI("Hello!");
         assertEquals("Hello%21", encoded);
@@ -156,7 +156,7 @@ public class URIUtilsTest {
     }
 
     @Test
-    public void encodeForURIPathComponent() {
+    void encodeForURIPathComponent() {
         // path
         String encoded = URIUtils.encodeForURI("/db/a/b/c");
         assertEquals("%2Fdb%2Fa%2Fb%2Fc", encoded);
@@ -179,7 +179,7 @@ public class URIUtilsTest {
     }
 
     @Test
-    public void encodeForURIPathComponentUtf8() {
+    void encodeForURIPathComponentUtf8() {
         // 2 byte character - yen sign
         String encoded = URIUtils.encodeForURI("¥");
         assertEquals("%C2%A5", encoded);
