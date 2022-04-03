@@ -67,7 +67,7 @@
 	<classpathentry kind="lib" path="lib/endorsed/Saxon-HE-9.6.0-7.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/serializer-2.7.2.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xalan-2.7.2.jar"/>
-	<classpathentry kind="lib" path="lib/endorsed/xercesImpl-2.11.0.jar"/>
+	<classpathentry kind="lib" path="lib/endorsed/xercesImpl-2.12.2.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xml-apis-1.4.01.jar"/>
 	<classpathentry kind="lib" path="lib/endorsed/xml-resolver-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-compress-1.21.jar"/>
