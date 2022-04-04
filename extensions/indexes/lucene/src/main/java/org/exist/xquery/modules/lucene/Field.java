@@ -399,7 +399,7 @@ public class Field extends BasicFunction {
             case Type.UNSIGNED_SHORT:
                 return new IntegerValue(value.longValue());
             case Type.DOUBLE:
-                return new DoubleValue(value.floatValue());
+                return new DoubleValue(value.doubleValue());
             case Type.FLOAT:
                 return new FloatValue(value.floatValue());
             case Type.DECIMAL:
