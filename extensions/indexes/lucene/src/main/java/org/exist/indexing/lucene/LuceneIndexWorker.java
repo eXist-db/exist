@@ -869,12 +869,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 final int id = docId - context.docBase;
                 if (id >= 0 && id < context.reader().numDocs()) {
                     final BinaryDocValues values = context.reader().getBinaryDocValues(field);
-                    if (values == null) {
-                        continue;
-                    }
-                    final BytesRef bytes = values.get(id);
-                    if (bytes != null && bytes.length > 0) {
-                        return bytes;
+                    if (values != null) {
+                        final BytesRef bytes = values.get(id);
+                        if (bytes != null && bytes.length > 0) {
+                            return bytes;
+                        }
                     }
                 }
             }
