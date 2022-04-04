@@ -531,10 +531,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return drillDownQuery;
     }
 
-    private void searchAndProcess(int contextId, QName qname, DocumentSet docs,
-                                  NodeSet contextSet, NodeSet resultSet, boolean returnAncestor,
-                                  SearcherTaxonomyManager.SearcherAndTaxonomy searcher, Query query,
-                                  LuceneConfig config) throws IOException {
+    private void searchAndProcess(final int contextId, final QName qname, final DocumentSet docs,
+                                  final NodeSet contextSet, final NodeSet resultSet, final boolean returnAncestor,
+                                  final SearcherTaxonomyManager.SearcherAndTaxonomy searcher, final Query query,
+                                  final LuceneConfig config) throws IOException {
         final LuceneFacets facets = new LuceneFacets();
         final FacetsCollector facetsCollector = new FacetsCollector();
         final LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, returnAncestor, contextId, facets, facetsCollector);
@@ -885,7 +885,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         Set<String> fields = new HashSet<>();
         fields.add(field);
         return index.withReader(reader -> {
-            Document doc = reader.document(docId, fields);
+            final Document doc = reader.document(docId, fields);
             return doc.getFields(field);
         });
     }
@@ -955,7 +955,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private final LuceneFacets facets;
         private final FacetsCollector chainedCollector;
 
-        private LuceneHitCollector(QName qname, Query query, DocumentSet docs, NodeSet contextSet, NodeSet resultSet, boolean returnAncestor, int contextId, LuceneFacets facets, FacetsCollector nextCollector) {
+        private LuceneHitCollector(final QName qname, final Query query, final DocumentSet docs, final NodeSet contextSet, final NodeSet resultSet, final boolean returnAncestor, final int contextId, final LuceneFacets facets, final FacetsCollector nextCollector) {
             this.qname = qname;
             this.docs = docs;
             this.contextSet = contextSet;
@@ -1038,7 +1038,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
         }
 
-        private LuceneMatch createMatch(int docId, float score, NodeId nodeId) {
+        private LuceneMatch createMatch(final int docId, final float score, final NodeId nodeId) {
             final LuceneMatch match = new LuceneMatch(contextId, docId + docBase, nodeId, query, facets);
             match.setScore(score);
             return match;

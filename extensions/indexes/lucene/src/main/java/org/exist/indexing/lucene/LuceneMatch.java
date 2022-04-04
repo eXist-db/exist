@@ -48,7 +48,7 @@ public class LuceneMatch extends Match {
 
     private Map<String, FieldValue[]> fields = null;
 
-    LuceneMatch(int contextId, int luceneDocId, NodeId nodeId, Query query, LuceneIndexWorker.LuceneFacets facets) {
+    LuceneMatch(final int contextId, final int luceneDocId, final NodeId nodeId, final Query query, final LuceneIndexWorker.LuceneFacets facets) {
         super(contextId, nodeId, null);
         this.luceneDocId = luceneDocId;
         this.query = query;

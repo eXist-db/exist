@@ -125,13 +125,13 @@ public class Field extends BasicFunction {
             )
     };
 
-    public Field(XQueryContext context, FunctionSignature signature) {
+    public Field(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        NodeValue nodeValue = (NodeValue) args[0].itemAt(0);
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+        final NodeValue nodeValue = (NodeValue) args[0].itemAt(0);
         if (nodeValue.getImplementationType() != NodeValue.PERSISTENT_NODE) {
             return Sequence.EMPTY_SEQUENCE;
         }
@@ -164,7 +164,7 @@ public class Field extends BasicFunction {
                 default:
                     throw new XPathException(this, ErrorCodes.FOER0000, "Unknown function: " + getName());
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new XPathException(this, LuceneModule.EXXQDYFT0002, "Error retrieving field: " + e.getMessage());
         }
     }
@@ -178,9 +178,8 @@ public class Field extends BasicFunction {
     }
 
     private Sequence getFieldValues(final String fieldName, final int type, final LuceneMatch match, final LuceneIndexWorker index) throws IOException, XPathException {
-        Sequence result;
         final IndexableField[] fields = index.getField(match.getLuceneDocId(), fieldName);
-        result = new ValueSequence(fields.length);
+        final Sequence result = new ValueSequence(fields.length);
         for (final IndexableField field : fields) {
             if (field.numericValue() != null) {
                 result.add(numberToAtomic(type, field.numericValue()));
@@ -308,7 +307,7 @@ public class Field extends BasicFunction {
         return null;
     }
 
-    static AtomicValue bytesToAtomic(BytesRef field, int type) {
+    static AtomicValue bytesToAtomic(final BytesRef field, final int type) {
         final byte[] data = field.bytes;
         final int timezone;
         switch(type) {
@@ -356,7 +355,7 @@ public class Field extends BasicFunction {
         }
     }
 
-    static AtomicValue stringToAtomic(int type, String value) throws XPathException {
+    static AtomicValue stringToAtomic(final int type, final String value) throws XPathException {
         switch(type) {
             case Type.TIME:
                 return new TimeValue(value);
@@ -381,7 +380,7 @@ public class Field extends BasicFunction {
         }
     }
 
-    static AtomicValue numberToAtomic(int type, Number value) throws XPathException {
+    static AtomicValue numberToAtomic(final int type, final Number value) throws XPathException {
         switch(type) {
             case Type.TIME:
                 final Date time = new Date(value.longValue());

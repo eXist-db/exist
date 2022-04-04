@@ -67,7 +67,7 @@ public class DateValue extends AbstractDateTimeValue {
         super(expression, stripCalendar(cloneXMLGregorianCalendar(calendar)));
     }
 
-    public DateValue(int year, int month, int day, int timezone) {
+    public DateValue(final int year, final int month, final int day, final int timezone) {
         super(TimeUtils.getInstance().newXMLGregorianCalendarDate(year, month, day, timezone));
     }
     

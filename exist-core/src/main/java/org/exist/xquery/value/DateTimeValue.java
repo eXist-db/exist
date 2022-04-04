@@ -67,7 +67,7 @@ public class DateTimeValue extends AbstractDateTimeValue {
         normalize();
     }
 
-    public DateTimeValue(int year, int month, int day, int hour, int minute, int second, int millisecond, int timezone) {
+    public DateTimeValue(final int year, final int month, final int day, final int hour, final int minute, final int second, final int millisecond, final int timezone) {
         super(TimeUtils.getInstance().newXMLGregorianCalendar(year, month, day, hour, minute, second, millisecond, timezone));
     }
 
