@@ -326,6 +326,8 @@ public class Field extends BasicFunction {
             case Type.UNSIGNED_LONG:
             case Type.INT:
             case Type.UNSIGNED_INT:
+            case Type.SHORT:
+            case Type.UNSIGNED_SHORT:
                 return new IntegerValue(ByteConversion.byteToLong(data, 0) ^ 0x8000000000000000L);
             case Type.DOUBLE:
                 final long dBits = ByteConversion.byteToLong(data, 0) ^ 0x8000000000000000L;
@@ -349,6 +351,8 @@ public class Field extends BasicFunction {
             case Type.UNSIGNED_LONG:
             case Type.INT:
             case Type.UNSIGNED_INT:
+            case Type.SHORT:
+            case Type.UNSIGNED_SHORT:
                 return new IntegerValue(value);
             case Type.DOUBLE:
                 return new DoubleValue(value);
@@ -386,6 +390,8 @@ public class Field extends BasicFunction {
             case Type.UNSIGNED_LONG:
             case Type.INT:
             case Type.UNSIGNED_INT:
+            case Type.SHORT:
+            case Type.UNSIGNED_SHORT:
                 return new IntegerValue(value.longValue());
             case Type.DOUBLE:
                 return new DoubleValue(value.floatValue());
