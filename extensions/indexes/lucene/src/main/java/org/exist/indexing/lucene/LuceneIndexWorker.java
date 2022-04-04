@@ -21,6 +21,7 @@
  */
 package org.exist.indexing.lucene;
 
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -882,8 +883,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public IndexableField[] getField(final int docId, final String field) throws IOException {
-        Set<String> fields = new HashSet<>();
-        fields.add(field);
+        final Set<String> fields = ObjectArraySet.of(field);
         return index.withReader(reader -> {
             final Document doc = reader.document(docId, fields);
             return doc.getFields(field);
