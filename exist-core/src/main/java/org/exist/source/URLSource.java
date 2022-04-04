@@ -144,9 +144,13 @@ public class URLSource extends AbstractSource {
         try {
             if (connection == null) {
                 connection = url.openConnection();
-                lastModified = connection.getLastModified();
                 if (connection instanceof HttpURLConnection) {
                     ((HttpURLConnection) connection).setRequestProperty("Accept", ACCEPT_HEADER);
+                }
+
+                lastModified = connection.getLastModified();
+
+                if (connection instanceof HttpURLConnection) {
                     responseCode = ((HttpURLConnection) connection).getResponseCode();
                 }
             }
@@ -167,9 +171,13 @@ public class URLSource extends AbstractSource {
         try {
             if (connection == null) {
                 connection = url.openConnection();
-                lastModified = connection.getLastModified();
                 if (connection instanceof HttpURLConnection) {
                     ((HttpURLConnection) connection).setRequestProperty("Accept", ACCEPT_HEADER);
+                }
+
+                lastModified = connection.getLastModified();
+
+                if (connection instanceof HttpURLConnection) {
                     responseCode = ((HttpURLConnection) connection).getResponseCode();
                 }
             }
@@ -195,9 +203,13 @@ public class URLSource extends AbstractSource {
         try {
             if (connection == null) {
                 connection = url.openConnection();
-                lastModified = connection.getLastModified();
                 if (connection instanceof HttpURLConnection) {
                     ((HttpURLConnection) connection).setRequestProperty("Accept", ACCEPT_HEADER);
+                }
+
+                lastModified = connection.getLastModified();
+
+                if (connection instanceof HttpURLConnection) {
                     responseCode = ((HttpURLConnection) connection).getResponseCode();
                 }
             }
