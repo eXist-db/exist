@@ -37,6 +37,8 @@ import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Write document using XMLRPC to remote database and read the data 
  * from an input stream.
@@ -66,7 +68,7 @@ public class XmlrpcUpload {
             // Setup xmlrpc client
             final XmlRpcClient client = new XmlRpcClient();
             final XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-            config.setEncoding("UTF-8");
+            config.setEncoding(UTF_8.name());
             config.setEnabledForExtensions(true);
             config.setServerURL(new URL(xmldbURL.getXmlRpcURL()));
 

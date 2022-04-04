@@ -101,6 +101,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 
 import static java.lang.invoke.MethodType.methodType;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.http.RESTServerParameter.*;
 
 /**
@@ -119,7 +120,7 @@ public class RESTServer {
 
     static {
         defaultProperties.setProperty(OutputKeys.INDENT, "yes");
-        defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+        defaultProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
         defaultProperties.setProperty(OutputKeys.MEDIA_TYPE, MimeType.XML_TYPE.getName());
         defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
         defaultProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
@@ -129,7 +130,7 @@ public class RESTServer {
 
     static {
         defaultOutputKeysProperties.setProperty(OutputKeys.INDENT, "yes");
-        defaultOutputKeysProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+        defaultOutputKeysProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
         defaultOutputKeysProperties.setProperty(OutputKeys.MEDIA_TYPE,
                 MimeType.XML_TYPE.getName());
     }
@@ -311,7 +312,7 @@ public class RESTServer {
             }
         } catch (final SAXException e) {
             final XPathException x = new XPathException(e.toString());
-            writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, "UTF-8", query, path, x);
+            writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, UTF_8.name(), query, path, x);
         }
 
         if ((option = getParameter(request, HowMany)) != null) {
@@ -369,7 +370,7 @@ public class RESTServer {
         if ((encoding = getParameter(request, Encoding)) != null) {
             outputProperties.setProperty(OutputKeys.ENCODING, encoding);
         } else {
-            encoding = "UTF-8";
+            encoding = UTF_8.name();
         }
 
         final String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
@@ -555,7 +556,7 @@ public class RESTServer {
         if ((encoding = getParameter(request, Encoding)) != null) {
             outputProperties.setProperty(OutputKeys.ENCODING, encoding);
         } else {
-            encoding = "UTF-8";
+            encoding = UTF_8.name();
         }
 
         try(final LockedDocument lockedDocument = broker.getXMLResource(pathUri, LockMode.READ_LOCK)) {
@@ -1232,7 +1233,7 @@ public class RESTServer {
             executeXQuery(broker, transaction, resource, request, response,
                     outputProperties, servletPath.toString(), pathInfo);
         } catch (final XPathException e) {
-            writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, "UTF-8", null, path.toString(), e);
+            writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, UTF_8.name(), null, path.toString(), e);
         } finally {
             lockedDocument.close();
         }
@@ -1243,7 +1244,7 @@ public class RESTServer {
 
         String encoding = request.getCharacterEncoding();
         if (encoding == null) {
-            encoding = "UTF-8";
+            encoding = UTF_8.name();
         }
 
         final InputStream is = request.getInputStream();

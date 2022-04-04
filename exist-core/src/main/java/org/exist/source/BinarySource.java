@@ -28,12 +28,14 @@ import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import java.io.*;
 import java.util.Arrays;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class BinarySource extends AbstractSource {
 
     //TODO replace this with a streaming approach
     private final byte[] data;
     private final boolean checkEncoding;
-    private String encoding = "UTF-8";
+    private String encoding = UTF_8.name();
 
     public BinarySource(final byte[] data, final boolean checkXQEncoding) {
         super(hashKey(data));

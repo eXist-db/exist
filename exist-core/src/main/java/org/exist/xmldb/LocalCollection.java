@@ -57,6 +57,7 @@ import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
 import static com.evolvedbinary.j8fu.Try.Try;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A local implementation of the Collection interface. This
@@ -83,7 +84,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
 
     private final static Properties defaultProperties = new Properties();
     static {
-        defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+        defaultProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
         defaultProperties.setProperty(OutputKeys.INDENT, "yes");
         defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
         defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");

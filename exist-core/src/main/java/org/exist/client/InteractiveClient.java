@@ -2200,7 +2200,7 @@ public class InteractiveClient {
         }
 
         // Fix "uri" property: Excalibur CLI can't parse dashes, so we need to URL encode them:
-        properties.setProperty(URI, URLDecoder.decode(properties.getProperty(URI), "UTF-8"));
+        properties.setProperty(URI, URLDecoder.decode(properties.getProperty(URI), UTF_8.name()));
 
         boolean interactive = true;
         if((!options.parseDocs.isEmpty()) || options.rmDoc.isPresent() || options.getDoc.isPresent()

@@ -52,6 +52,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Servlet to redirect HTTP requests. The request is passed to an XQuery whose return value
  * determines where the request will be redirected to. The query should return a single XML element:
@@ -152,7 +154,7 @@ public class RedirectorServlet extends AbstractExistHttpServlet {
         final ResponseWrapper response = new HttpResponseWrapper(res);
         if (request.getCharacterEncoding() == null)
             try {
-                request.setCharacterEncoding("UTF-8");
+                request.setCharacterEncoding(UTF_8.name());
             } catch (final IllegalStateException e) {
             }
         // Try to find the XQuery

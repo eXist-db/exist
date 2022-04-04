@@ -233,7 +233,7 @@ public class XQueryURLRewrite extends HttpServlet {
                         final Properties outputProperties = new Properties();
 
                         outputProperties.setProperty(OutputKeys.INDENT, "yes");
-                        outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+                        outputProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
                         outputProperties.setProperty(OutputKeys.MEDIA_TYPE, MimeType.XML_TYPE.getName());
 
                         final Sequence result = runQuery(broker, modifiedRequest, response, modelView, staticRewrite, outputProperties);
@@ -925,7 +925,7 @@ public class XQueryURLRewrite extends HttpServlet {
     }
 
     private void declareVariables(final XQueryContext context, final SourceInfo sourceInfo, final URLRewrite staticRewrite, final String basePath, final RequestWrapper request, final HttpServletResponse response) throws XPathException {
-        final HttpRequestWrapper reqw = new HttpRequestWrapper(request, "UTF-8", "UTF-8", false);
+        final HttpRequestWrapper reqw = new HttpRequestWrapper(request, UTF_8.name(), UTF_8.name(), false);
         final HttpResponseWrapper respw = new HttpResponseWrapper(response);
         // context.declareNamespace(RequestModule.PREFIX,
         // RequestModule.NAMESPACE_URI);
