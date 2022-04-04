@@ -52,6 +52,8 @@ public class URLSource extends AbstractSource {
 	private final static Pattern URL_PATTERN = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)");
 
 	private final static Logger LOG = LogManager.getLogger(URLSource.class);
+
+	private static final String ACCEPT_HEADER = "application/xml,application/xhtml+xml;q=0.9,*/*;q=0.2";
 	
 	protected URL url;
 	private URLConnection connection = null;
@@ -157,8 +159,10 @@ public class URLSource extends AbstractSource {
 		try {
 			if(connection == null) {
 				connection = url.openConnection();
-                if (connection instanceof HttpURLConnection)
-                    {responseCode = ((HttpURLConnection) connection).getResponseCode();}
+                if (connection instanceof HttpURLConnection) {
+					((HttpURLConnection) connection).setRequestProperty("Accept", ACCEPT_HEADER);
+					responseCode = ((HttpURLConnection) connection).getResponseCode();
+				}
             }
             Reader reader = null;
             if (responseCode != HttpURLConnection.HTTP_NOT_FOUND)
@@ -175,12 +179,15 @@ public class URLSource extends AbstractSource {
         try {
             if(connection == null) {
                 connection = url.openConnection();
-                if (connection instanceof HttpURLConnection)
-                    {responseCode = ((HttpURLConnection) connection).getResponseCode();}
+                if (connection instanceof HttpURLConnection) {
+					((HttpURLConnection) connection).setRequestProperty("Accept", ACCEPT_HEADER);
+					responseCode = ((HttpURLConnection) connection).getResponseCode();
+				}
             }
             InputStream is = null;
-            if (responseCode != HttpURLConnection.HTTP_NOT_FOUND)
-                {is = connection.getInputStream();}
+            if (responseCode != HttpURLConnection.HTTP_NOT_FOUND) {
+				is = connection.getInputStream();
+			}
             connection = null;
             return is;
             
@@ -201,8 +208,10 @@ public class URLSource extends AbstractSource {
 		try {
 			if(connection == null) {
 				connection = url.openConnection();
-                if (connection instanceof HttpURLConnection)
-                    {responseCode = ((HttpURLConnection) connection).getResponseCode();}
+                if (connection instanceof HttpURLConnection) {
+					((HttpURLConnection) connection).setRequestProperty("Accept", ACCEPT_HEADER);
+					responseCode = ((HttpURLConnection) connection).getResponseCode();
+				}
             }
 			final String content = connection.getContent().toString();
 			connection = null;
