@@ -31,7 +31,6 @@ import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.BytesRef;
 import org.exist.Namespaces;
-import org.exist.dom.QName;
 import org.exist.dom.memtree.InMemoryNodeSet;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.Match;
@@ -52,78 +51,60 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Map;
 
+import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.modules.lucene.LuceneModule.functionSignature;
+import static org.exist.xquery.modules.lucene.LuceneModule.functionSignatures;
+
 public class Field extends BasicFunction {
 
-    public static final String FN_FIELD = "field";
-    public static final String FN_BINARY_FIELD = "binary-field";
-    public static final String FN_HIGHLIGHT_FIELD_MATCHES = "highlight-field-matches";
+    private static final FunctionParameterSequenceType FS_PARAM_NODE = param("node", Type.NODE, "the context node to check for attached fields");
+    private static final FunctionParameterSequenceType FS_PARAM_FIELD = param("field", Type.STRING, "name of the field");
+    private static final FunctionParameterSequenceType TYPE_PARAMETER = param("type", Type.STRING, "intended target type to cast the field value to. Casting may fail with a dynamic error.");
 
-    public static final FunctionParameterSequenceType CONTEXT_NODE_PARAMETER =
-            new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE,
-                    "the context node to check for attached fields");
-
-    public static final FunctionParameterSequenceType FIELD_NAME_PARAMETER =
-            new FunctionParameterSequenceType("field", Type.STRING, Cardinality.EXACTLY_ONE,
-                    "name of the field");
-    public static final FunctionParameterSequenceType TYPE_CAST_PARAMETER =
-            new FunctionParameterSequenceType("type", Type.STRING, Cardinality.EXACTLY_ONE,
-                "intended target type to cast the field value to. Casting may fail with a dynamic error.");
-
-    protected static final FunctionSignature[] signatures = {
-            new FunctionSignature(
-                new QName(FN_FIELD, LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-                "Returns the value of a field attached to a particular node obtained via a full text search.",
-                new SequenceType[]{
-                        CONTEXT_NODE_PARAMETER,
-                        FIELD_NAME_PARAMETER
-                },
-                new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE,
-                        "One or more string values corresponding to the values of the field attached")
-            ),
-            new FunctionSignature(
-                    new QName(FN_FIELD, LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-                    "Returns the value of a field attached to a particular node obtained via a full text search." +
-                            "Accepts an additional parameter to name the target type into which the field " +
-                            "value should be cast. This is mainly relevant for fields having a different type than xs:string. " +
-                            "As lucene does not record type information, numbers or dates would be returned as strings by default.",
-                    new SequenceType[]{
-                            CONTEXT_NODE_PARAMETER,
-                            FIELD_NAME_PARAMETER,
-                            TYPE_CAST_PARAMETER
-                    },
-                    new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE,
-                            "Sequence corresponding to the values of the field attached, cast to the desired target type")
-            ),
-            new FunctionSignature(
-                    new QName(FN_BINARY_FIELD, LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-                    "Returns the value of a binary field attached to a particular node obtained via a full text search." +
-                            "Accepts an additional parameter to name the target type into which the field " +
-                            "value should be cast. This is mainly relevant for fields having a different type than xs:string. " +
-                            "As lucene does not record type information, numbers or dates would be returned as strings by default.",
-                    new SequenceType[]{
-                            CONTEXT_NODE_PARAMETER,
-                            FIELD_NAME_PARAMETER,
-                            TYPE_CAST_PARAMETER
-                    },
-                    new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE,
-                            "Sequence corresponding to the values of the field attached, cast to the desired target type")
-            ),
-            new FunctionSignature(
-                    new QName(FN_HIGHLIGHT_FIELD_MATCHES, LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
-                    "Highlights matches for the last executed lucene query within the value of a field " +
-                    "attached to a particular node obtained via a full text search. Only fields listed in the 'fields' option of ft:query will be " +
-                    "available to highlighting.",
-                    new SequenceType[] {
-                            new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE,
-                                    "the context node to check for attached fields which should be highlighted"),
-                            new FunctionParameterSequenceType("field", Type.STRING, Cardinality.EXACTLY_ONE,
-                                    "name of the field to highlight")
-                    },
-                    new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.ZERO_OR_ONE,
-                            "An exist:field containing the content of the requested field with all query " +
-                                    "matches enclosed in an exist:match")
+    private static final String FS_FIELD_NAME = "field";
+    static final FunctionSignature[] FS_FIELD = functionSignatures(
+            FS_FIELD_NAME,
+            "Returns the value of a field attached to a particular node obtained via a full text search." +
+            "The $type parameter allows you to name the target type into which the field " +
+            "value should be cast. This is mainly relevant for fields having a different type than xs:string. " +
+            "As lucene does not record type information, numbers or dates would be returned as strings by default.",
+            returnsOptMany(Type.ITEM, "Sequence corresponding to the values of the field attached, cast to the desired target type"),
+            arities(
+                    arity(
+                            FS_PARAM_NODE,
+                            FS_PARAM_FIELD
+                    ),
+                    arity(
+                            FS_PARAM_NODE,
+                            FS_PARAM_FIELD,
+                            TYPE_PARAMETER
+                    )
             )
-    };
+    );
+
+    private static final String FS_BINARY_FIELD_NAME = "binary-field";
+    static final FunctionSignature FS_BINARY_FIELD = functionSignature(
+            FS_BINARY_FIELD_NAME,
+            "Returns the value of a binary field attached to a particular node obtained via a full text search." +
+            "Accepts an additional parameter to name the target type into which the field " +
+            "value should be cast. This is mainly relevant for fields having a different type than xs:string. " +
+            "As lucene does not record type information, numbers or dates would be returned as strings by default.",
+            returnsOptMany(Type.ITEM, "Sequence corresponding to the values of the field attached, cast to the desired target type"),
+            FS_PARAM_NODE,
+            FS_PARAM_FIELD,
+            TYPE_PARAMETER
+    );
+
+    private static final String FS_HIGHLIGHT_FIELD_MATCHES_NAME = "highlight-field-matches";
+    static final FunctionSignature FS_HIGHLIGHT_FIELD_MATCHES = functionSignature(
+            FS_HIGHLIGHT_FIELD_MATCHES_NAME,
+            "Highlights matches for the last executed lucene query within the value of a field " +
+            "attached to a particular node obtained via a full text search. Only fields listed in the 'fields' option of ft:query will be " +
+            "available to highlighting.",
+            returnsOpt(Type.ELEMENT, "An exist:field containing the content of the requested field with all query matches enclosed in an exist:match"),
+            FS_PARAM_NODE,
+            FS_PARAM_FIELD
+    );
 
     public Field(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
@@ -154,12 +135,12 @@ public class Field extends BasicFunction {
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         try {
             switch (called) {
-                case FN_FIELD:
+                case FS_FIELD_NAME:
                     return getFieldValues(fieldName, type, match, index);
-                case FN_HIGHLIGHT_FIELD_MATCHES:
+                case FS_HIGHLIGHT_FIELD_MATCHES_NAME:
                     final Sequence result = getFieldValues(fieldName, type, match, index);
                     return highlightMatches(fieldName, proxy, match, result);
-                case FN_BINARY_FIELD:
+                case FS_BINARY_FIELD_NAME:
                     return getBinaryFieldValue(fieldName, type, match, index);
                 default:
                     throw new XPathException(this, ErrorCodes.FOER0000, "Unknown function: " + getName());
