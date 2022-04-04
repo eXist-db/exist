@@ -44,6 +44,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class BinaryToString extends BasicFunction {
 
     protected static final Logger logger = LogManager.getLogger(BinaryToString.class);
@@ -99,7 +101,7 @@ public class BinaryToString extends BasicFunction {
         if(args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        String encoding = "UTF-8";
+        String encoding = UTF_8.name();
         if(args.length == 2) {
             encoding = args[1].getStringValue();
         }

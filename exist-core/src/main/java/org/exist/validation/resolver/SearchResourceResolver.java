@@ -37,6 +37,8 @@ import org.exist.validation.internal.DatabaseResources;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  *  Resolve a resource by searching in database. Schema's are queried
  * directly, DTD are searched in catalog files.
@@ -137,7 +139,7 @@ public class SearchResourceResolver implements XMLEntityResolver {
         final InputStream is = new URL(resourcePath).openStream();
         
         final XMLInputSource xis = new XMLInputSource(xri.getPublicId(),
-            xri.getExpandedSystemId(), xri.getBaseSystemId(), is, "UTF-8");
+            xri.getExpandedSystemId(), xri.getBaseSystemId(), is, UTF_8.name());
 
         if(LOG.isDebugEnabled()) {
             LOG.debug("XMLInputSource: {}", getXisDetails(xis));

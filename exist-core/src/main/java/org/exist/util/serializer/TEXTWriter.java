@@ -30,6 +30,8 @@ import org.exist.dom.QName;
 import org.exist.util.CharSlice;
 import org.exist.util.serializer.encodings.CharacterSet;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Write PLAIN TEXT to a writer. This class defines methods similar to SAX.
  * It deals with opening and closing tags, writing attributes and so on: they
@@ -73,7 +75,7 @@ public class TEXTWriter extends XMLWriter {
         } else {
             outputProperties = properties;
         }
-        final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+        final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, UTF_8.name());
         charSet = CharacterSet.getCharacterSet(encoding);
     }
 

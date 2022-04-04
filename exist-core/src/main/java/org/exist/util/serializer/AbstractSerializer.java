@@ -28,6 +28,8 @@ import javax.xml.transform.OutputKeys;
 import java.io.Writer;
 import java.util.Properties;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Common base for {@link org.exist.util.serializer.SAXSerializer} and {@link org.exist.util.serializer.DOMSerializer}.
  */
@@ -54,7 +56,7 @@ public abstract class AbstractSerializer {
     protected final static Properties defaultProperties = new Properties();
 
     static {
-        defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+        defaultProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
         defaultProperties.setProperty(OutputKeys.INDENT, "false");
     }
 

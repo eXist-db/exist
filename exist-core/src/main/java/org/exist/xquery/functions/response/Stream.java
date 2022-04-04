@@ -45,6 +45,8 @@ import org.xml.sax.SAXException;
 
 import javax.annotation.Nonnull;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class Stream extends StrictResponseFunction {
 
     private static final Logger logger = LogManager.getLogger(Stream.class);
@@ -90,7 +92,7 @@ public class Stream extends StrictResponseFunction {
         }
 
         final String mediaType = serializeOptions.getProperty("media-type", "application/xml");
-        final String encoding = serializeOptions.getProperty("encoding", "UTF-8");
+        final String encoding = serializeOptions.getProperty("encoding", UTF_8.name());
         if (mediaType != null) {
             response.setContentType(mediaType + "; charset=" + encoding);
         }

@@ -94,6 +94,8 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Serializer base class, used to serialize a document or document fragment 
  * back to XML. A serializer may be obtained by calling DBBroker.getSerializer().
@@ -172,7 +174,7 @@ public abstract class Serializer implements XMLReader {
 
 
     protected DBBroker broker;
-    protected String encoding = "UTF-8";
+    protected String encoding = UTF_8.name();
     private EntityResolver entityResolver = null;
 
     private ErrorHandler errorHandler = null;

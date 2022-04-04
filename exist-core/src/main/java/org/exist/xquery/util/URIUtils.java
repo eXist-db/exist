@@ -28,6 +28,8 @@ import java.net.URLEncoder;
 
 import org.exist.xmldb.XmldbURI;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Utilities for URI related functions
  * 
@@ -131,7 +133,7 @@ public class URIUtils {
 	 */
 	public static String urlEncodeUtf8(String uri) {
 		try {
-			final String almostEncoded = URLEncoder.encode(uri, "UTF-8");
+			final String almostEncoded = URLEncoder.encode(uri, UTF_8.name());
 			return almostEncoded.replaceAll("\\+","%20");
 		} catch(final UnsupportedEncodingException e) {
 			//wrap with a runtime Exception
@@ -149,7 +151,7 @@ public class URIUtils {
 	 */
 	public static String urlDecodeUtf8(String uri) {
 		try {
-			return URLDecoder.decode(uri, "UTF-8");
+			return URLDecoder.decode(uri, UTF_8.name());
 		} catch(final UnsupportedEncodingException e) {
 			//wrap with a runtime Exception
 			throw new RuntimeException(e);
@@ -166,7 +168,7 @@ public class URIUtils {
 	 */
 	public static String urlDecodeUtf8(XmldbURI uri) {
 		try {
-			return URLDecoder.decode(uri.toString(), "UTF-8");
+			return URLDecoder.decode(uri.toString(), UTF_8.name());
 		} catch(final UnsupportedEncodingException e) {
 			//wrap with a runtime Exception
 			throw new RuntimeException(e);

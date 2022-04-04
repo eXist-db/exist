@@ -133,7 +133,7 @@ public class SystemExport {
         this.chainFactory = chainFactory;
 
         defaultOutputProperties.setProperty(OutputKeys.INDENT, "no");
-        defaultOutputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+        defaultOutputProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
         defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
         defaultOutputProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
         defaultOutputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
