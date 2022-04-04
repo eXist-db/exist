@@ -321,16 +321,16 @@ public class Field extends BasicFunction {
                     data[5],
                     timezone == Short.MAX_VALUE ? DatatypeConstants.FIELD_UNDEFINED : timezone
                 );
-            case Type.DOUBLE:
-                final long bits = ByteConversion.byteToLong(data, 0) ^ 0x8000000000000000L;
-                final double d = Double.longBitsToDouble(bits);
-                return new DoubleValue(d);
             case Type.INTEGER:
-            case Type.INT:
-            case Type.UNSIGNED_INT:
             case Type.LONG:
             case Type.UNSIGNED_LONG:
+            case Type.INT:
+            case Type.UNSIGNED_INT:
                 return new IntegerValue(ByteConversion.byteToLong(data, 0) ^ 0x8000000000000000L);
+            case Type.DOUBLE:
+                final long dBits = ByteConversion.byteToLong(data, 0) ^ 0x8000000000000000L;
+                final double d = Double.longBitsToDouble(dBits);
+                return new DoubleValue(d);
             default:
                 return new StringValue(field.utf8ToString());
         }
@@ -344,18 +344,18 @@ public class Field extends BasicFunction {
                 return new DateTimeValue(value);
             case Type.DATE:
                 return new DateValue(value);
-            case Type.FLOAT:
-                return new FloatValue(value);
-            case Type.DOUBLE:
-                return new DoubleValue(value);
-            case Type.DECIMAL:
-                return new DecimalValue(value);
             case Type.INTEGER:
-            case Type.INT:
-            case Type.UNSIGNED_INT:
             case Type.LONG:
             case Type.UNSIGNED_LONG:
+            case Type.INT:
+            case Type.UNSIGNED_INT:
                 return new IntegerValue(value);
+            case Type.DOUBLE:
+                return new DoubleValue(value);
+            case Type.FLOAT:
+                return new FloatValue(value);
+            case Type.DECIMAL:
+                return new DecimalValue(value);
             default:
                 return new StringValue(value);
         }
@@ -381,18 +381,18 @@ public class Field extends BasicFunction {
                 date.calendar.setMonth(month);
                 date.calendar.setDay(day);
                 return date;
-            case Type.FLOAT:
-                return new FloatValue(value.floatValue());
-            case Type.DOUBLE:
-                return new DoubleValue(value.floatValue());
-            case Type.DECIMAL:
-                return new DecimalValue(value.doubleValue());
             case Type.INTEGER:
-            case Type.INT:
-            case Type.UNSIGNED_INT:
             case Type.LONG:
             case Type.UNSIGNED_LONG:
+            case Type.INT:
+            case Type.UNSIGNED_INT:
                 return new IntegerValue(value.longValue());
+            case Type.DOUBLE:
+                return new DoubleValue(value.floatValue());
+            case Type.FLOAT:
+                return new FloatValue(value.floatValue());
+            case Type.DECIMAL:
+                return new DecimalValue(value.doubleValue());
             default:
                 return new StringValue(value.toString());
         }
