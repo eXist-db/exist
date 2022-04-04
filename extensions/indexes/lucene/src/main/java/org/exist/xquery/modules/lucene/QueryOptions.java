@@ -102,10 +102,14 @@ public class QueryOptions {
         for (final IEntry<AtomicValue, Sequence> entry: map) {
             final String key = entry.key().getStringValue();
             if (key.equals(OPTION_FACETS) && entry.value().hasOne() && entry.value().getItemType() == Type.MAP) {
-                // map to hold the facet values for each dimension
-                final Map<String, FacetQuery> tf = new HashMap<>();
+
                 // iterate over each dimension and collect its values into a FacetQuery
-                for (final IEntry<AtomicValue, Sequence> facet: (AbstractMapType) entry.value().itemAt(0)) {
+                final AbstractMapType subMap = (AbstractMapType) entry.value().itemAt(0);
+
+                // map to hold the facet values for each dimension
+                final Map<String, FacetQuery> tf = new HashMap<>(subMap.size());
+
+                for (final IEntry<AtomicValue, Sequence> facet : subMap) {
                     final Sequence value = facet.value();
                     final FacetQuery values;
                     if (value.hasOne() && value.getItemType() == Type.ARRAY) {
