@@ -30,7 +30,6 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.util.ByteConversion;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
@@ -40,9 +39,7 @@ import org.w3c.dom.Element;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 
@@ -236,52 +233,19 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
 
     private Field convertToDocValue(final String content) {
         try {
-            final byte[] data;
-            final XMLGregorianCalendar calendar;
-            final int ms;
-            final int timezone;
-            switch(type) {
+            switch (type) {
                 case Type.TIME:
-                    final TimeValue tv = new TimeValue(content);
-                    calendar = tv.calendar;
-                    data = new byte[7]; // allocate an appropriately sized
-                    data[0] = (byte) calendar.getHour();
-                    data[1] = (byte) calendar.getMinute();
-                    data[2] = (byte) calendar.getSecond();
-                    ms = calendar.getMillisecond();
-                    ByteConversion.shortToByteH((short) (ms == DatatypeConstants.FIELD_UNDEFINED ? 0 : ms),
-                            data, 3);
-                    // values for timezone range from -14*60 to 14*60, so we can use a short, but
-                    // need to choose a different value for FIELD_UNDEFINED, which is not the same as 0 (= UTC)
-                    timezone = calendar.getTimezone();
-                    ByteConversion.shortToByteH((short) (timezone == DatatypeConstants.FIELD_UNDEFINED ? Short.MAX_VALUE : timezone), data, 5);
-                    return new BinaryDocValuesField(fieldName, new BytesRef(data));
+                    final TimeValue timeValue = new TimeValue(content);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(timeValue.toJavaObject(byte[].class)));
+
                 case Type.DATE_TIME:
-                    final DateTimeValue dtv = new DateTimeValue(content);
-                    calendar = dtv.calendar;
-                    data = new byte[13]; // allocate an appropriately sized
-                    ByteConversion.intToByteH(calendar.getYear(), data, 0);
-                    data[4] = (byte) calendar.getMonth();
-                    data[5] = (byte) calendar.getDay();
-                    data[6] = (byte) calendar.getHour();
-                    data[7] = (byte) calendar.getMinute();
-                    data[8] = (byte) calendar.getSecond();
-                    ms = calendar.getMillisecond();
-                    ByteConversion.shortToByteH((short) (ms == DatatypeConstants.FIELD_UNDEFINED ? 0 : ms),
-                            data, 9);
-                    timezone = calendar.getTimezone();
-                    ByteConversion.shortToByteH((short) (timezone == DatatypeConstants.FIELD_UNDEFINED ? Short.MAX_VALUE : timezone), data, 11);
-                    return new BinaryDocValuesField(fieldName, new BytesRef(data));
+                    final DateTimeValue dateTimeValue = new DateTimeValue(content);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(dateTimeValue.toJavaObject(byte[].class)));
+
                 case Type.DATE:
-                    final DateValue dv = new DateValue(content);
-                    calendar = dv.calendar;
-                    data = new byte[8]; // allocate an appropriately sized
-                    ByteConversion.intToByteH(calendar.getYear(), data, 0);
-                    data[4] = (byte) calendar.getMonth();
-                    data[5] = (byte) calendar.getDay();
-                    timezone = calendar.getTimezone();
-                    ByteConversion.shortToByteH((short) (timezone == DatatypeConstants.FIELD_UNDEFINED ? Short.MAX_VALUE : timezone), data, 6);
-                    return new BinaryDocValuesField(fieldName, new BytesRef(data));
+                    final DateValue dateValue = new DateValue(content);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(dateValue.toJavaObject(byte[].class)));
+
                 case Type.INTEGER:
                 case Type.LONG:
                 case Type.UNSIGNED_LONG:
@@ -290,37 +254,29 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
                 case Type.SHORT:
                 case Type.UNSIGNED_SHORT:
                     final IntegerValue iv = new IntegerValue(content, Type.INTEGER);
-                    data = new byte[8];
-                    final long l = iv.getValue() - Long.MIN_VALUE;
-                    ByteConversion.longToByte(l, data, 0);
-                    return new BinaryDocValuesField(fieldName, new BytesRef(data));
+                    return new BinaryDocValuesField(fieldName, new BytesRef(iv.serialize()));
+
                 case Type.DOUBLE:
                     final DoubleValue dbv = new DoubleValue(content);
-                    data = new byte[8];
-                    final long dBits = Double.doubleToLongBits(dbv.getValue()) ^ 0x8000000000000000L;
-                    ByteConversion.longToByte(dBits, data, 0);
-                    return new BinaryDocValuesField(fieldName, new BytesRef(data));
+                    return new BinaryDocValuesField(fieldName, new BytesRef(dbv.toJavaObject(byte[].class)));
+
                 case Type.FLOAT:
                     final FloatValue fv = new FloatValue(content);
-                    data = new byte[4];
-                    final int fBits = Float.floatToIntBits(fv.getValue()) ^ 0x80000000;
-                    ByteConversion.intToByteH(fBits, data, 0);
-                    return new BinaryDocValuesField(fieldName, new BytesRef(data));
+                    return new BinaryDocValuesField(fieldName, new BytesRef(fv.toJavaObject(byte[].class)));
+
                 case Type.DECIMAL:
-                    final DecimalValue ddbv = new DecimalValue(content);
-                    data = new byte[8];
-                    final long ddBits = Double.doubleToLongBits(ddbv.getDouble()) ^ 0x8000000000000000L;
-                    ByteConversion.longToByte(ddBits, data, 0);
-                    return new BinaryDocValuesField(fieldName, new BytesRef(data));
+                    final DecimalValue dv = new DecimalValue(content);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(dv.toJavaObject(byte[].class)));
+
                 // everything else treated as string
                 default:
-                    return new BinaryDocValuesField(fieldName, new BytesRef(content.getBytes(StandardCharsets.UTF_8)));
+                    return new BinaryDocValuesField(fieldName, new BytesRef(content));
             }
-        } catch (NumberFormatException | XPathException e) {
+        } catch (final NumberFormatException | XPathException e) {
             // wrong type: ignore
             LOG.error("Cannot convert field {} to type {}. Content was: {}", fieldName, Type.getTypeName(type), content);
+            return null;
         }
-        return null;
     }
 
     private static long dateToLong(DateValue date) {
