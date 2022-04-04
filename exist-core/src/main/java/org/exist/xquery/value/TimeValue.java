@@ -67,7 +67,7 @@ public class TimeValue extends AbstractDateTimeValue {
         }
     }
 
-    public TimeValue(int hour, int minute, int second, int millisecond, int timezone) {
+    public TimeValue(final int hour, final int minute, final int second, final int millisecond, final int timezone) {
         super(TimeUtils.getInstance().newXMLGregorianCalendarTime(hour, minute, second, millisecond, timezone));
     }
     private static XMLGregorianCalendar stripCalendar(XMLGregorianCalendar calendar) {

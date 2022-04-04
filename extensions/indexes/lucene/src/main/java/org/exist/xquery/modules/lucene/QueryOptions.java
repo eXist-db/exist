@@ -98,7 +98,7 @@ public class QueryOptions {
         }
     }
 
-    public QueryOptions(AbstractMapType map) throws XPathException {
+    public QueryOptions(final AbstractMapType map) throws XPathException {
         for (final IEntry<AtomicValue, Sequence> entry: map) {
             final String key = entry.key().getStringValue();
             if (key.equals(OPTION_FACETS) && entry.value().hasOne() && entry.value().getItemType() == Type.MAP) {
@@ -107,7 +107,7 @@ public class QueryOptions {
                 // iterate over each dimension and collect its values into a FacetQuery
                 for (final IEntry<AtomicValue, Sequence> facet: (AbstractMapType) entry.value().itemAt(0)) {
                     final Sequence value = facet.value();
-                    FacetQuery values;
+                    final FacetQuery values;
                     if (value.hasOne() && value.getItemType() == Type.ARRAY) {
                         values = new FacetQuery((ArrayType) facet.value().itemAt(0));
                     } else {

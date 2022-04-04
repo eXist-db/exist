@@ -76,7 +76,7 @@ public class TimeUtils {
      *
      * @param millis the timezone offset in milliseconds, positive or negative
      */
-    public void overrideLocalTimezoneOffset(int millis) {
+    public void overrideLocalTimezoneOffset(final int millis) {
         timezoneOffset = millis;
         timezoneOverriden = true;
     }

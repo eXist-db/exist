@@ -234,7 +234,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         return null;
     }
 
-    private Field convertToDocValue(String content) {
+    private Field convertToDocValue(final String content) {
         try {
             final byte[] data;
             final XMLGregorianCalendar calendar;
