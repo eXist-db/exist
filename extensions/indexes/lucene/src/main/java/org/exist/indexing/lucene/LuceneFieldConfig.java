@@ -306,6 +306,12 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
                     final int fBits = Float.floatToIntBits(fv.getValue()) ^ 0x80000000;
                     ByteConversion.intToByteH(fBits, data, 0);
                     return new BinaryDocValuesField(fieldName, new BytesRef(data));
+                case Type.DECIMAL:
+                    final DecimalValue ddbv = new DecimalValue(content);
+                    data = new byte[8];
+                    final long ddBits = Double.doubleToLongBits(ddbv.getDouble()) ^ 0x8000000000000000L;
+                    ByteConversion.longToByte(ddBits, data, 0);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(data));
                 // everything else treated as string
                 default:
                     return new BinaryDocValuesField(fieldName, new BytesRef(content.getBytes(StandardCharsets.UTF_8)));
