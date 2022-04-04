@@ -332,7 +332,7 @@ public class Field extends BasicFunction {
             case Type.UNSIGNED_LONG:
                 return new IntegerValue(ByteConversion.byteToLong(data, 0) ^ 0x8000000000000000L);
             default:
-                return new StringValue(new String(field.bytes));
+                return new StringValue(field.utf8ToString());
         }
     }
 
