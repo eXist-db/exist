@@ -37,16 +37,15 @@ import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.indexing.lucene.*;
 import org.exist.storage.NodePath;
-import org.exist.util.ByteConversion;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
-import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Map;
@@ -289,38 +288,15 @@ public class Field extends BasicFunction {
     }
 
     static AtomicValue bytesToAtomic(final BytesRef field, final int type) {
-        final byte[] data = field.bytes;
-        final int timezone;
-        switch(type) {
+        switch (type) {
             case Type.TIME:
-                timezone = ByteConversion.byteToShortH(data, 5);
-                return new TimeValue(
-                        data[0],
-                        data[1],
-                        data[2],
-                        ByteConversion.byteToShortH(data, 3),
-                        timezone == Short.MAX_VALUE ? DatatypeConstants.FIELD_UNDEFINED : timezone
-                );
+                return TimeValue.deserialize(ByteBuffer.wrap(field.bytes));
+
             case Type.DATE_TIME:
-                timezone = ByteConversion.byteToShortH(data, 11);
-                return new DateTimeValue(
-                    ByteConversion.byteToIntH(data, 0),
-                    data[4],
-                    data[5],
-                    data[6],
-                    data[7],
-                    data[8],
-                    ByteConversion.byteToShortH(data, 9),
-                    timezone == Short.MAX_VALUE ? DatatypeConstants.FIELD_UNDEFINED : timezone
-                );
+                return DateTimeValue.deserialize(ByteBuffer.wrap(field.bytes));
+
             case Type.DATE:
-                timezone = ByteConversion.byteToShortH(data, 6);
-                return new DateValue(
-                    ByteConversion.byteToIntH(data, 0),
-                    data[4],
-                    data[5],
-                    timezone == Short.MAX_VALUE ? DatatypeConstants.FIELD_UNDEFINED : timezone
-                );
+                return DateValue.deserialize(ByteBuffer.wrap(field.bytes));
             case Type.INTEGER:
             case Type.LONG:
             case Type.UNSIGNED_LONG:
@@ -328,19 +304,17 @@ public class Field extends BasicFunction {
             case Type.UNSIGNED_INT:
             case Type.SHORT:
             case Type.UNSIGNED_SHORT:
-                return new IntegerValue(ByteConversion.byteToLong(data, 0) ^ 0x8000000000000000L);
+                return IntegerValue.deserialize(ByteBuffer.wrap(field.bytes));
+
             case Type.DOUBLE:
-                final long dBits = ByteConversion.byteToLong(data, 0) ^ 0x8000000000000000L;
-                final double d = Double.longBitsToDouble(dBits);
-                return new DoubleValue(d);
+                return DoubleValue.deserialize(ByteBuffer.wrap(field.bytes));
+
             case Type.FLOAT:
-                final int fBits = ByteConversion.byteToIntH(data, 0) ^ 0x80000000;
-                final float f = Float.intBitsToFloat(fBits);
-                return new FloatValue(f);
+                return FloatValue.deserialize(ByteBuffer.wrap(field.bytes));
+
             case Type.DECIMAL:
-                final long ddBits = ByteConversion.byteToLong(data, 0) ^ 0x8000000000000000L;
-                final double dd = Double.longBitsToDouble(ddBits);
-                return new DecimalValue(dd);
+                return DecimalValue.deserialize(ByteBuffer.wrap(field.bytes));
+
             default:
                 return new StringValue(field.utf8ToString());
         }
