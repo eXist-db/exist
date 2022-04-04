@@ -33,6 +33,8 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.CharSlice;
 import org.exist.util.serializer.encodings.CharacterSet;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Write XML to a writer. This class defines methods similar to SAX. It deals
  * with opening and closing tags, writing attributes and so on.
@@ -104,7 +106,7 @@ public class XMLWriter {
     }
 
     public XMLWriter() {
-        charSet = CharacterSet.getCharacterSet("UTF-8");
+        charSet = CharacterSet.getCharacterSet(UTF_8.name());
         if(charSet == null) {
             throw EX_CHARSET_NULL;
         }
@@ -127,7 +129,7 @@ public class XMLWriter {
             outputProperties = properties;
         }
 
-        final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+        final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, UTF_8.name());
         this.charSet = CharacterSet.getCharacterSet(encoding);
         if(this.charSet == null) {
             throw EX_CHARSET_NULL;
@@ -524,7 +526,7 @@ public class XMLWriter {
         if("no".equals(omitXmlDecl)) {
             final String version = outputProperties.getProperty(OutputKeys.VERSION, "1.0");
             final String standalone = outputProperties.getProperty(OutputKeys.STANDALONE);
-            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, UTF_8.name());
             try {
                 writer.write("<?xml version=\"");
                 writer.write(version);

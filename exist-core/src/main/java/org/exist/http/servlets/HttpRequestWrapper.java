@@ -41,6 +41,8 @@ import java.nio.file.Path;
 import java.security.Principal;
 import java.util.*;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 
 /**
  * A wrapper for requests processed by a servlet. All parameters, submitted as part of
@@ -81,7 +83,7 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @param servletRequest The request as viewed by the servlet
      */
     public HttpRequestWrapper(final HttpServletRequest servletRequest) {
-        this(servletRequest, "UTF-8", "UTF-8");
+        this(servletRequest, UTF_8.name(), UTF_8.name());
     }
     
     /**

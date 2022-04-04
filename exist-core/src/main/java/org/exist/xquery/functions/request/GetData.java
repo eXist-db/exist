@@ -48,6 +48,8 @@ import org.xml.sax.XMLReader;
 
 import javax.annotation.Nonnull;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author <a href="mailto:adam@exist-db.org">Adam retter</a>
@@ -126,7 +128,7 @@ public class GetData extends StrictRequestFunction {
                             // 3) not a valid XML document, return a string representation of the document
                             String encoding = request.getCharacterEncoding();
                             if (encoding == null) {
-                                encoding = "UTF-8";
+                                encoding = UTF_8.name();
                             }
 
                             try {

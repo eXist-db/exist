@@ -99,7 +99,7 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
 
                 // set pretty-printing on
                 service.setProperty(OutputKeys.INDENT, "yes");
-                service.setProperty(OutputKeys.ENCODING, "UTF-8");
+                service.setProperty(OutputKeys.ENCODING, UTF_8.name());
 
                 for (final Variable var : variables) {
                     System.out.println("Name: " + var.name);

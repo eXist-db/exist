@@ -35,6 +35,8 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Source implementation that reads from a binary resource
  * stored in the database.
@@ -45,7 +47,7 @@ public class DBSource extends AbstractSource {
     
     private final BinaryDocument doc;
     private final long lastModified;
-    private String encoding = "UTF-8";
+    private String encoding = UTF_8.name();
     private final boolean checkEncoding;
     private final DBBroker broker;
     

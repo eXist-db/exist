@@ -37,6 +37,8 @@ import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 
 import org.exist.protocolhandler.xmldb.XmldbURL;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 
 /**
  *  Read document from using XMLRPC from remote database and write the data 
@@ -60,7 +62,7 @@ public class XmlrpcDownload {
         try {
             final XmlRpcClient client = new XmlRpcClient();
             final XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-            config.setEncoding("UTF-8");
+            config.setEncoding(UTF_8.name());
             config.setEnabledForExtensions(true);
             config.setServerURL(new URL(xmldbURL.getXmlRpcURL()));
 
@@ -74,7 +76,7 @@ public class XmlrpcDownload {
             // Setup xml serializer
             final Map<String, String> options = new HashMap<>();
             options.put("indent", "no");
-            options.put("encoding", "UTF-8");
+            options.put("encoding", UTF_8.name());
             
             // Setup client parameters
             final List<Object> params = new ArrayList<>();
