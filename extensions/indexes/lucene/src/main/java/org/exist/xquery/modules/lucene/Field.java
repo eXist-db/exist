@@ -333,6 +333,11 @@ public class Field extends BasicFunction {
                 final long dBits = ByteConversion.byteToLong(data, 0) ^ 0x8000000000000000L;
                 final double d = Double.longBitsToDouble(dBits);
                 return new DoubleValue(d);
+            case Type.FLOAT:
+                final int fBits = ByteConversion.byteToIntH(data, 0) ^ 0x80000000;
+                final float f = Float.intBitsToFloat(fBits);
+                return new FloatValue(f);
+
             default:
                 return new StringValue(field.utf8ToString());
         }
