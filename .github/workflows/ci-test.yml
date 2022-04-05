@@ -21,12 +21,7 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ matrix.jdk }}
-      - name: Cache Maven packages
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+          cache: 'maven'
       - name: Maven Test
         timeout-minutes: 60
         run: mvn -V -B -DtrimStackTrace=false clean verify
