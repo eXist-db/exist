@@ -38,7 +38,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
- *  Resolve a resource by searching in database. Schema's are queried
+ * Resolve a resource by searching in database. Schema's are queried
  * directly, DTD are searched in catalog files.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)

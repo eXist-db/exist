@@ -31,15 +31,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.exist.Namespaces;
-import org.exist.storage.BrokerPool;
+import org.exist.resolver.XercesXmlResolverAdapter;
 import org.exist.storage.BrokerPoolService;
 import org.exist.validation.GrammarPool;
-import org.exist.validation.resolver.eXistXMLCatalogResolver;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
+import org.xmlresolver.Resolver;
 
 /**
  * Factory to create new XMLReader objects on demand. The factory is used
@@ -81,18 +81,16 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
 
     private Configuration configuration;
     private GrammarPool grammarPool;
-    private eXistXMLCatalogResolver resolver;
+    private Resolver resolver;
 
     @Override
     public void configure(final Configuration configuration) {
         this.configuration = configuration;
         this.grammarPool = (GrammarPool) configuration.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
-        this.resolver = (eXistXMLCatalogResolver) configuration.getProperty(CATALOG_RESOLVER);
+        this.resolver = (Resolver) configuration.getProperty(CATALOG_RESOLVER);
     }
 
-    /**
-     * @see org.apache.commons.pool.BasePoolableObjectFactory#makeObject()
-     */
+    @Override
     public Object makeObject() throws Exception {
         final String option = (String) configuration.getProperty(PROPERTY_VALIDATION_MODE);
         final VALIDATION_SETTING validation = convertValidationMode(option);
@@ -102,15 +100,13 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
     }
 
     /**
-     * Create Xmlreader and setup validation
+     * Create XMLReader and setup validation
      */
-    public static XMLReader createXmlReader(VALIDATION_SETTING validation, GrammarPool grammarPool,
-            eXistXMLCatalogResolver resolver) throws ParserConfigurationException, SAXException{
-
-        // Create a xmlreader
+    public static XMLReader createXmlReader(final VALIDATION_SETTING validation, final GrammarPool grammarPool, final Resolver resolver) throws ParserConfigurationException, SAXException{
+        // Create an XMLReader
         final SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
         
-        if (validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED){
+        if (validation == VALIDATION_SETTING.AUTO || validation == VALIDATION_SETTING.ENABLED) {
             saxFactory.setValidating(true);
         } else {
             saxFactory.setValidating(false);
@@ -121,13 +117,13 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory implements
         final XMLReader xmlReader = saxParser.getXMLReader();
 
         // Setup grammar cache
-        if(grammarPool!=null){
-            setReaderProperty(xmlReader,APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+        if (grammarPool != null ){
+            setReaderProperty(xmlReader, APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
         }
 
         // Setup xml catalog resolver
-        if(resolver!=null){
-           setReaderProperty(xmlReader,APACHE_PROPERTIES_ENTITYRESOLVER, resolver);
+        if (resolver != null) {
+            XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
         }
 
         return xmlReader;
