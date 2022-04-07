@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.functions.validation;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 
@@ -45,7 +44,7 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
 /**
- *   XQuery function for validation of XML instance documents
+ * XQuery function for validation of XML instance documents
  * using grammars like XSDs and DTDs.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
@@ -138,7 +137,7 @@ public class Validation extends BasicFunction  {
     public Validation(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
         brokerPool = context.getBroker().getBrokerPool();
-        validator = new Validator(brokerPool);
+        validator = new Validator(brokerPool, context.getSubject());
     }
 
     /**
