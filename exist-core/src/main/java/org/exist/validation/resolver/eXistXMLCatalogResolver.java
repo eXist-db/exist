@@ -90,9 +90,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
         }
     }
 
-    /**
-     * @see org.apache.xerces.util.XMLCatalogResolver#resolveEntity(String, String)
-     */
+    @Override
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
         LOG.debug("Resolving publicId='{}', systemId='{}'", publicId, systemId);
         InputSource retValue = super.resolveEntity(publicId, systemId);
@@ -133,9 +131,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
         }
     }
 
-    /**
-     * @see org.apache.xerces.util.XMLCatalogResolver#resolveResource(String, String, String, String, String)
-     */
+    @Override
     public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
         LOG.debug("Resolving type='{}', namespaceURI='{}', publicId='{}', systemId='{}', baseURI='{}'", type, namespaceURI, publicId, systemId, baseURI);
         final LSInput retValue = super.resolveResource(type, namespaceURI, publicId, systemId, baseURI);
@@ -148,9 +144,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
         return retValue;
     }
 
-    /**
-     * @see org.apache.xerces.util.XMLCatalogResolver#resolveEntity(String, String, String, String)
-     */
+    @Override
     public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
         LOG.debug("Resolving name='{}', publicId='{}', baseURI='{}', systemId='{}'", name, publicId, baseURI, systemId);
         final InputSource retValue = super.resolveEntity(name, publicId, baseURI, systemId);
@@ -163,9 +157,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
         return retValue;
     }
 
-    /**
-     * @see org.apache.xerces.util.XMLCatalogResolver#resolveIdentifier(XMLResourceIdentifier)
-     */
+    @Override
     public String resolveIdentifier(XMLResourceIdentifier xri) throws IOException, XNIException {
 
         if (xri.getExpandedSystemId() == null && xri.getLiteralSystemId() == null &&
@@ -187,9 +179,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
         return retValue;
     }
 
-    /**
-     * @see org.apache.xerces.util.XMLCatalogResolver#resolveEntity(XMLResourceIdentifier)
-     */
+    @Override
     public XMLInputSource resolveEntity(XMLResourceIdentifier xri) throws XNIException, IOException {
         if (xri.getExpandedSystemId() == null && xri.getLiteralSystemId() == null &&
                 xri.getNamespace() == null && xri.getPublicId() == null) {
@@ -212,9 +202,7 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
         return retValue;
     }
 
-    /**
-     * @see org.apache.xerces.util.XMLCatalogResolver#getExternalSubset(String, String)
-     */
+    @Override
     public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
         LOG.debug("name='{}' baseURI='{}'", name, baseURI);
         return super.getExternalSubset(name, baseURI);
