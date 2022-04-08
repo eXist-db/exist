@@ -306,6 +306,20 @@
             <scope>runtime</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.xmlresolver</groupId>
+            <artifactId>xmlresolver</artifactId>
+            <version>4.2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.xmlresolver</groupId>
+            <artifactId>xmlresolver</artifactId>
+            <version>4.2.0</version>
+            <classifier>data</classifier>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- xpath2 and java-cup are needed at runtime because xercesImpl declares this as optional,
             but we need them to enable Schema 1.1 support -->
         <dependency>

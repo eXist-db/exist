@@ -22,8 +22,16 @@
 package org.exist.xquery.functions.validation;
 
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -37,22 +45,36 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
+import org.apache.xerces.impl.xs.XSDDescription;
+import org.apache.xerces.util.SAXInputSource;
+import org.apache.xerces.xni.XMLResourceIdentifier;
+import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 
+import org.apache.xerces.xni.parser.XMLInputSource;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.LockedDocument;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.io.TemporaryFileManager;
+import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SerializerPool;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.ValidationContentHandler;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.resolver.SearchResourceResolver;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -72,7 +94,12 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.ext.EntityResolver2;
+import org.xmlresolver.Resolver;
+import org.xmlresolver.ResolverFeature;
+import org.xmlresolver.XMLResolverConfiguration;
 
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
 /**
@@ -229,9 +256,24 @@ public class Jaxp extends BasicFunction {
 
                 } else if (singleUrl.endsWith(".xml")) {
                     LOG.debug("Using catalogs {}", getStrings(catalogUrls));
-                    entityResolver = new eXistXMLCatalogResolver();
-                    ((eXistXMLCatalogResolver) entityResolver).setCatalogList(catalogUrls);
-                    setXmlReaderEnitityResolver(xmlReader, entityResolver);
+
+                    final List<Tuple2<String, Optional<InputSource>>> catalogs = new ArrayList<>();
+                    for (final String catalogUrl : catalogUrls) {
+                        if (catalogUrl.startsWith("xmldb:exist://")) {
+                            final InputSource inputSource = new InputSource(new StringReader(serializeDocument(XmldbURI.create(catalogUrl))));
+                            inputSource.setSystemId(catalogUrl);
+                            catalogs.add(Tuple(catalogUrl, Optional.of(inputSource)));
+                        } else if (catalogUrl.startsWith("/db")) {
+                            //TODO(AR) is supporting `/db` the correct thing to do? what if there is a `/db` on the filesystem that they want to access instead? maybe they can just use file:///db ?
+                            final InputSource inputSource = new InputSource(new StringReader(serializeDocument(XmldbURI.create(catalogUrl))));
+                            inputSource.setSystemId("xmldb:exist://" + catalogUrl);
+                            catalogs.add(Tuple(catalogUrl, Optional.of(inputSource)));
+                        } else {
+                            catalogs.add(Tuple(catalogUrl, Optional.empty()));
+                        }
+                    }
+                    final Resolver resolver = getXmlResolver(catalogs);
+                    setXmlReaderEnitityResolver(xmlReader, new ResolverWrapper(resolver));
 
                 } else {
                     LOG.error("Catalog URLs should end on / or .xml");
@@ -320,6 +362,8 @@ public class Jaxp extends BasicFunction {
         saxFactory.setValidating(true);
         saxFactory.setNamespaceAware(true);
 
+        saxFactory.setFeature(XMLReaderObjectFactory.APACHE_FEATURES_VALIDATION_SCHEMA, true);
+
         // Create xml reader
         final SAXParser saxParser = saxFactory.newSAXParser();
         final XMLReader xmlReader = saxParser.getXMLReader();
@@ -346,8 +390,64 @@ public class Jaxp extends BasicFunction {
         }
     }
 
-    private void setXmlReaderEnitityResolver(XMLReader xmlReader, XMLEntityResolver entityResolver ){
+    private static Resolver getXmlResolver(final List<Tuple2<String, Optional<InputSource>>> catalogs) throws URISyntaxException {
+        final XMLResolverConfiguration resolverConfiguration = new XMLResolverConfiguration();
+        resolverConfiguration.setFeature(ResolverFeature.RESOLVER_LOGGER_CLASS, "org.xmlresolver.logging.SystemLogger");
+        resolverConfiguration.setFeature(ResolverFeature.CATALOG_LOADER_CLASS, "org.xmlresolver.loaders.ValidatingXmlLoader");
+        resolverConfiguration.setFeature(ResolverFeature.CLASSPATH_CATALOGS, true);
+        resolverConfiguration.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
 
+        for (final Tuple2<String, Optional<InputSource>> catalog : catalogs) {
+            if (catalog._2.isPresent()) {
+                resolverConfiguration.addCatalog(new URI(catalog._1), catalog._2.get());
+            } else {
+                resolverConfiguration.addCatalog(catalog._1);
+            }
+        }
+
+        return new Resolver(resolverConfiguration);
+    }
+
+    private String serializeDocument(final XmldbURI documentUri) throws SAXException, IOException {
+        try (final LockedDocument lockedDocument = context.getBroker().getXMLResource(documentUri, Lock.LockMode.READ_LOCK)) {
+            if (lockedDocument == null) {
+                throw new IOException("No such document: " + documentUri);
+            }
+
+            final DocumentImpl doc = lockedDocument.getDocument();
+
+            try (final StringWriter stringWriter = new StringWriter()) {
+                final Properties outputProperties = new Properties();
+                outputProperties.setProperty(OutputKeys.METHOD, "XML");
+                outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                outputProperties.setProperty(OutputKeys.INDENT, "no");
+                outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+
+                final Serializer serializer = context.getBroker().getSerializer();
+                serializer.reset();
+                SAXSerializer sax = null;
+                try {
+                    sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+                    sax.setOutput(stringWriter, outputProperties);
+                    serializer.setProperties(outputProperties);
+                    serializer.setSAXHandlers(sax, sax);
+                    serializer.toSAX(doc);
+                } catch (final SAXNotSupportedException | SAXNotRecognizedException e) {
+                    throw new SAXException(e.getMessage(), e);
+                } finally {
+                    if (sax != null) {
+                        SerializerPool.getInstance().returnObject(sax);
+                    }
+                }
+
+                return stringWriter.toString();
+            }
+        } catch (final PermissionDeniedException e) {
+            throw new IOException(e.getMessage(), e);
+        }
+    }
+
+    private void setXmlReaderEnitityResolver(final XMLReader xmlReader, final XMLEntityResolver entityResolver) {
         try {
             xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, entityResolver);
 
@@ -355,6 +455,15 @@ public class Jaxp extends BasicFunction {
             LOG.error(ex.getMessage());
 
         }
+
+
+//        try {
+//            xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, entityResolver);
+//
+//        } catch (final SAXNotRecognizedException | SAXNotSupportedException ex) {
+//            LOG.error(ex.getMessage());
+//
+//        }
     }
 
     // No-go ...processor is in validating mode
@@ -407,4 +516,61 @@ public class Jaxp extends BasicFunction {
     }
     }
      */
+
+    public static class ResolverWrapper implements XMLEntityResolver, EntityResolver2 {
+        private final Resolver resolver;
+
+        public ResolverWrapper(final Resolver resolver) {
+            this.resolver = resolver;
+        }
+
+        @Override
+        public XMLInputSource resolveEntity(final XMLResourceIdentifier xmlResourceIdentifier) throws XNIException, IOException {
+            try {
+                final org.apache.xerces.xni.QName triggeringComponent = ((XSDDescription)xmlResourceIdentifier).getTriggeringComponent();
+
+                // TODO (AR) I have no idea if this is correct?!?
+                final String name;
+                if (triggeringComponent != null) {
+                    name = triggeringComponent.localpart;
+                } else {
+                    name = null;
+                }
+
+                // TODO (AR) I have no idea if this is correct?!?
+                final String systemId;
+                if (xmlResourceIdentifier.getExpandedSystemId() !=  null) {
+                    systemId = xmlResourceIdentifier.getExpandedSystemId();
+                } else {
+                    systemId = xmlResourceIdentifier.getNamespace();
+                }
+
+                final InputSource src = resolver.resolveEntity(name, xmlResourceIdentifier.getPublicId(), xmlResourceIdentifier.getBaseSystemId(), systemId);
+
+                if (src == null) {
+                    return null;
+                }
+
+                return new SAXInputSource(src);
+
+            } catch (final SAXException e) {
+                throw new XNIException(e);
+            }
+        }
+
+        @Override
+        public InputSource getExternalSubset(final String name, final String baseURI) throws SAXException, IOException {
+            return resolver.getExternalSubset(name, baseURI);
+        }
+
+        @Override
+        public InputSource resolveEntity(final String name, final String publicId, final String baseURI, final String systemId) throws SAXException, IOException {
+            return resolver.resolveEntity(name, publicId, baseURI, systemId);
+        }
+
+        @Override
+        public InputSource resolveEntity(final String publicId, final String systemId) throws SAXException, IOException {
+            return resolver.resolveEntity(publicId, systemId);
+        }
+    }
 }
