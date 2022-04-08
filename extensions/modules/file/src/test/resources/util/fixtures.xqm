@@ -106,7 +106,7 @@ declare variable $fixtures:NL := "&#10;";
 (: modification dates :)
 
 declare variable $fixtures:now := current-dateTime();
-declare variable $fixtures:mod-date := $fixtures:now + xs:dayTimeDuration('PT1H');
+declare variable $fixtures:mod-date := $fixtures:now;
 declare variable $fixtures:mod-date-2 := $fixtures:now + xs:dayTimeDuration('PT2H');
 
 (: collections :)
