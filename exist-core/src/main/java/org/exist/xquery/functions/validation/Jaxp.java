@@ -258,19 +258,28 @@ public class Jaxp extends BasicFunction {
                     LOG.debug("Using catalogs {}", getStrings(catalogUrls));
 
                     final List<Tuple2<String, Optional<InputSource>>> catalogs = new ArrayList<>();
-                    for (final String catalogUrl : catalogUrls) {
+                    for (String catalogUrl : catalogUrls) {
+
+                        /* NOTE(AR): Catalog URL if stored in database must start with
+                           URI Scheme xmldb:// so that the XML Resolver can use
+                           org.exist.protocolhandler.protocols.xmldb.Handler
+                           to resolve any relative URI resources from the database.
+                         */
+                        final Optional<InputSource> maybeInputSource;
                         if (catalogUrl.startsWith("xmldb:exist://")) {
-                            final InputSource inputSource = new InputSource(new StringReader(serializeDocument(XmldbURI.create(catalogUrl))));
-                            inputSource.setSystemId(catalogUrl);
-                            catalogs.add(Tuple(catalogUrl, Optional.of(inputSource)));
+                            catalogUrl = catalogUrl.replace("xmldb:exist://", "xmldb://");
+                            maybeInputSource = Optional.of(new InputSource(new StringReader(serializeDocument(XmldbURI.create(catalogUrl)))));
                         } else if (catalogUrl.startsWith("/db")) {
-                            //TODO(AR) is supporting `/db` the correct thing to do? what if there is a `/db` on the filesystem that they want to access instead? maybe they can just use file:///db ?
-                            final InputSource inputSource = new InputSource(new StringReader(serializeDocument(XmldbURI.create(catalogUrl))));
-                            inputSource.setSystemId("xmldb:exist://" + catalogUrl);
-                            catalogs.add(Tuple(catalogUrl, Optional.of(inputSource)));
+                            catalogUrl = "xmldb://" + catalogUrl;
+                            maybeInputSource = Optional.of(new InputSource(new StringReader(serializeDocument(XmldbURI.create(catalogUrl)))));
                         } else {
-                            catalogs.add(Tuple(catalogUrl, Optional.empty()));
+                            maybeInputSource = Optional.empty();
                         }
+
+                        if (maybeInputSource.isPresent()) {
+                            maybeInputSource.get().setSystemId(catalogUrl);
+                        }
+                        catalogs.add(Tuple(catalogUrl, maybeInputSource));
                     }
                     final Resolver resolver = getXmlResolver(catalogs);
                     setXmlReaderEnitityResolver(xmlReader, new ResolverWrapper(resolver));
@@ -408,6 +417,7 @@ public class Jaxp extends BasicFunction {
         return new Resolver(resolverConfiguration);
     }
 
+    // TODO(AR) remove this when PR https://github.com/xmlresolver/xmlresolver/pull/98 is merged
     private String serializeDocument(final XmldbURI documentUri) throws SAXException, IOException {
         try (final LockedDocument lockedDocument = context.getBroker().getXMLResource(documentUri, Lock.LockMode.READ_LOCK)) {
             if (lockedDocument == null) {
