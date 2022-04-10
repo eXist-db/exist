@@ -32,13 +32,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.exist.Namespaces;
+import org.exist.resolver.XercesXmlResolverAdapter;
 import org.exist.storage.BrokerPoolService;
 import org.exist.validation.GrammarPool;
-import org.exist.validation.resolver.eXistXMLCatalogResolver;
 
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
+import org.xmlresolver.Resolver;
 
 import java.util.Map;
 
@@ -75,7 +76,7 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
             = "http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation";
 
     @Nullable private GrammarPool grammarPool;
-    @Nullable private eXistXMLCatalogResolver resolver;
+    @Nullable private Resolver resolver;
     private VALIDATION_SETTING validation = VALIDATION_SETTING.UNKNOWN;
     @Nullable private Map<String, Boolean> parserFeatures;
     private SAXParserFactory saxParserFactory;
@@ -83,7 +84,7 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
     @Override
     public void configure(final Configuration configuration) {
         this.grammarPool = (GrammarPool) configuration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL);
-        this.resolver = (eXistXMLCatalogResolver) configuration.getProperty(CATALOG_RESOLVER);
+        this.resolver = (Resolver) configuration.getProperty(CATALOG_RESOLVER);
         final String option = (String) configuration.getProperty(PROPERTY_VALIDATION_MODE);
         this.validation = VALIDATION_SETTING.fromOption(option);
         this.parserFeatures = (Map<String, Boolean>) configuration.getProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY);
@@ -112,13 +113,21 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
     public void activateObject(final PooledObject<XMLReader> pooledXmlReader) {
         final XMLReader xmlReader = pooledXmlReader.getObject();
 
-        if (validation.maybe()) {
-            // Only need to set Grammar Cache if we are validating
-            setReaderProperty(xmlReader, APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
-        }
+        try {
+            if (validation.maybe()) {
+                // Only need to set Grammar Cache if we are validating
+                xmlReader.setProperty(APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+            }
 
-        // Set XML Catalog Resolver
-        setReaderProperty(xmlReader, APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, resolver);
+            // Set XML Catalog Resolver
+            XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
+
+        } catch (final SAXNotRecognizedException ex) {
+            LOG.error("SAXNotRecognizedException: {}", ex.getMessage());
+
+        } catch (final SAXNotSupportedException ex) {
+            LOG.error("SAXNotSupportedException:{}", ex.getMessage());
+        }
 
         setReaderValidationMode(validation, xmlReader);
 
@@ -163,18 +172,6 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
 
         } catch (final SAXNotSupportedException ex) {
             LOG.error("SAXNotSupportedException: {}", ex.getMessage());
-        }
-    }
-
-    private static void setReaderProperty(final XMLReader xmlReader, final String propertyName, @Nullable final Object object) {
-        try {
-            xmlReader.setProperty(propertyName, object);
-
-        } catch (final SAXNotRecognizedException ex) {
-            LOG.error("SAXNotRecognizedException: {}", ex.getMessage());
-
-        } catch (final SAXNotSupportedException ex) {
-            LOG.error("SAXNotSupportedException:{}", ex.getMessage());
         }
     }
 

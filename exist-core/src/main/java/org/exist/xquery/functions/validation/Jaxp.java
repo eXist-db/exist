@@ -25,8 +25,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +44,6 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
-import org.apache.xerces.xni.parser.XMLEntityResolver;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
@@ -54,6 +51,7 @@ import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
+import org.exist.resolver.ResolverFactory;
 import org.exist.resolver.XercesXmlResolverAdapter;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -69,7 +67,6 @@ import org.exist.validation.GrammarPool;
 import org.exist.validation.ValidationContentHandler;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.resolver.SearchResourceResolver;
-import org.exist.validation.resolver.eXistXMLCatalogResolver;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -91,8 +88,6 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xmlresolver.Resolver;
-import org.xmlresolver.ResolverFeature;
-import org.xmlresolver.XMLResolverConfiguration;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
@@ -195,25 +190,21 @@ public class Jaxp extends BasicFunction {
         brokerPool = context.getBroker().getBrokerPool();
     }
 
-
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-
-        XMLEntityResolver entityResolver = null;
-        GrammarPool grammarPool = null;
-
+    @Override
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final ValidationReport report = new ValidationReport();
-        ContentHandler contenthandler = null;
-        MemTreeBuilder instanceBuilder = null;
-        InputSource instance = null;
 
+        final MemTreeBuilder instanceBuilder;
+        final ContentHandler contenthandler;
         if (isCalledAs("jaxp-parse")) {
             instanceBuilder = context.getDocumentBuilder();
             contenthandler = new DocumentBuilderReceiver(instanceBuilder, true); // (namespace?)
-
         } else {
+            instanceBuilder = null;
             contenthandler = new ValidationContentHandler();
         }
 
+        InputSource instance = null;
         try {
             report.start();
 
@@ -235,8 +226,8 @@ public class Jaxp extends BasicFunction {
                 // Use system catalog
                 LOG.debug("Using system catalog.");
                 final Configuration config = brokerPool.getConfiguration();
-                entityResolver = (eXistXMLCatalogResolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
-                setXmlReaderEnitityResolver(xmlReader, entityResolver);
+                final Resolver resolver = (Resolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
+                XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
 
             } else {
                 // Get URL for catalog
@@ -246,8 +237,8 @@ public class Jaxp extends BasicFunction {
                 if (singleUrl.endsWith("/")) {
                     // Search grammar in collection specified by URL. Just one collection is used.
                     LOG.debug("Search for grammar in {}", singleUrl);
-                    entityResolver = new SearchResourceResolver(catalogUrls[0], brokerPool);
-                    setXmlReaderEnitityResolver(xmlReader, entityResolver);
+                    final Resolver resolver = new SearchResourceResolver(catalogUrls[0], brokerPool);
+                    XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
 
                 } else if (singleUrl.endsWith(".xml")) {
                     LOG.debug("Using catalogs {}", getStrings(catalogUrls));
@@ -262,10 +253,10 @@ public class Jaxp extends BasicFunction {
                          */
                         final Optional<InputSource> maybeInputSource;
                         if (catalogUrl.startsWith("xmldb:exist://")) {
-                            catalogUrl = catalogUrl.replace("xmldb:exist://", "xmldb://");
+                            catalogUrl = ResolverFactory.fixupExistCatalogUri(catalogUrl);
                             maybeInputSource = Optional.of(new InputSource(new StringReader(serializeDocument(XmldbURI.create(catalogUrl)))));
                         } else if (catalogUrl.startsWith("/db")) {
-                            catalogUrl = "xmldb://" + catalogUrl;
+                            catalogUrl = ResolverFactory.fixupExistCatalogUri(catalogUrl);
                             maybeInputSource = Optional.of(new InputSource(new StringReader(serializeDocument(XmldbURI.create(catalogUrl)))));
                         } else {
                             maybeInputSource = Optional.empty();
@@ -276,8 +267,8 @@ public class Jaxp extends BasicFunction {
                         }
                         catalogs.add(Tuple(catalogUrl, maybeInputSource));
                     }
-                    final Resolver resolver = getXmlResolver(catalogs);
-                    setXmlReaderEnitityResolver(xmlReader, new XercesXmlResolverAdapter(resolver));
+                    final Resolver resolver = ResolverFactory.newResolver(catalogs);
+                    XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
 
                 } else {
                     LOG.error("Catalog URLs should end on / or .xml");
@@ -290,7 +281,7 @@ public class Jaxp extends BasicFunction {
             if (useCache) {
                 LOG.debug("Grammar caching enabled.");
                 final Configuration config = brokerPool.getConfiguration();
-                grammarPool = (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL);
+                final GrammarPool grammarPool = (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL);
                 xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
             }
 
@@ -320,7 +311,6 @@ public class Jaxp extends BasicFunction {
 
         } finally {
             report.stop();
-
             Shared.closeInputSource(instance);
         }
 
@@ -394,24 +384,6 @@ public class Jaxp extends BasicFunction {
         }
     }
 
-    private static Resolver getXmlResolver(final List<Tuple2<String, Optional<InputSource>>> catalogs) throws URISyntaxException {
-        final XMLResolverConfiguration resolverConfiguration = new XMLResolverConfiguration();
-        resolverConfiguration.setFeature(ResolverFeature.RESOLVER_LOGGER_CLASS, "org.xmlresolver.logging.SystemLogger");
-        resolverConfiguration.setFeature(ResolverFeature.CATALOG_LOADER_CLASS, "org.xmlresolver.loaders.ValidatingXmlLoader");
-        resolverConfiguration.setFeature(ResolverFeature.CLASSPATH_CATALOGS, true);
-        resolverConfiguration.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
-
-        for (final Tuple2<String, Optional<InputSource>> catalog : catalogs) {
-            if (catalog._2.isPresent()) {
-                resolverConfiguration.addCatalog(new URI(catalog._1), catalog._2.get());
-            } else {
-                resolverConfiguration.addCatalog(catalog._1);
-            }
-        }
-
-        return new Resolver(resolverConfiguration);
-    }
-
     // TODO(AR) remove this when PR https://github.com/xmlresolver/xmlresolver/pull/98 is merged
     private String serializeDocument(final XmldbURI documentUri) throws SAXException, IOException {
         try (final LockedDocument lockedDocument = context.getBroker().getXMLResource(documentUri, Lock.LockMode.READ_LOCK)) {
@@ -450,25 +422,6 @@ public class Jaxp extends BasicFunction {
         } catch (final PermissionDeniedException e) {
             throw new IOException(e.getMessage(), e);
         }
-    }
-
-    private void setXmlReaderEnitityResolver(final XMLReader xmlReader, final XMLEntityResolver entityResolver) {
-        try {
-            xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, entityResolver);
-
-        } catch (final SAXNotRecognizedException | SAXNotSupportedException ex) {
-            LOG.error(ex.getMessage());
-
-        }
-
-
-//        try {
-//            xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, entityResolver);
-//
-//        } catch (final SAXNotRecognizedException | SAXNotSupportedException ex) {
-//            LOG.error(ex.getMessage());
-//
-//        }
     }
 
     // No-go ...processor is in validating mode
