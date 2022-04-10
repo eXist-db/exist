@@ -40,7 +40,7 @@ import org.xml.sax.SAXException;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- *  Resolve a resource by searching in database. Schema's are queried
+ * Resolve a resource by searching in database. Schema's are queried
  * directly, DTD are searched in catalog files.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)

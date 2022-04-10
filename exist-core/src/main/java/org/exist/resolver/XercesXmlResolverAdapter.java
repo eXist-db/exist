@@ -38,8 +38,8 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+import org.exist.util.XMLReaderObjectFactory;
+import org.xml.sax.*;
 import org.xmlresolver.Resolver;
 
 import java.io.IOException;
@@ -92,5 +92,21 @@ public class XercesXmlResolverAdapter implements XMLEntityResolver {
         } catch (final SAXException e) {
             throw new XNIException(e);
         }
+    }
+
+    /**
+     * Wraps the {@code entityResolver} in a XercesXMLResolverAdapter
+     * and then sets it as the property {@code http://apache.org/xml/properties/internal/entity-resolver}
+     * on the {@code xmlReader}.
+     *
+     * @param xmlReader the Xerces XML Reader
+     * @param entityResolver the resolver
+     *
+     * @throws SAXNotSupportedException if the property is not supported by the XMLReader
+     * @throws SAXNotRecognizedException if the property is not recognised by the XMLReader
+     */
+    public static void setXmlReaderEntityResolver(final XMLReader xmlReader, final Resolver entityResolver) throws SAXNotSupportedException, SAXNotRecognizedException {
+        final XMLEntityResolver xmlEntityResolver = new XercesXmlResolverAdapter(entityResolver);
+        xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, xmlEntityResolver);
     }
 }
