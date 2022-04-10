@@ -32,10 +32,14 @@
  */
 package org.exist.resolver;
 
+import org.apache.xerces.impl.dtd.XMLDTDDescription;
 import org.apache.xerces.impl.xs.XSDDescription;
 import org.apache.xerces.util.SAXInputSource;
+import org.apache.xerces.util.XMLEntityDescriptionImpl;
+import org.apache.xerces.xni.QName;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
+import org.apache.xerces.xni.grammars.XMLSchemaDescription;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.exist.util.XMLReaderObjectFactory;
@@ -61,12 +65,18 @@ public class XercesXmlResolverAdapter implements XMLEntityResolver {
     public XMLInputSource resolveEntity(final XMLResourceIdentifier xmlResourceIdentifier) throws XNIException, IOException {
 
         try {
-            final org.apache.xerces.xni.QName triggeringComponent = ((XSDDescription)xmlResourceIdentifier).getTriggeringComponent();
-
             // get the name
             final String name;
-            if (triggeringComponent != null) {
-                name = triggeringComponent.localpart;
+            if (xmlResourceIdentifier instanceof XSDDescription) {
+                final QName triggeringComponent = ((XSDDescription) xmlResourceIdentifier).getTriggeringComponent();
+                name = triggeringComponent != null ? triggeringComponent.localpart : null;
+            } else if (xmlResourceIdentifier instanceof XMLSchemaDescription) {
+                final QName triggeringComponent = ((XMLSchemaDescription) xmlResourceIdentifier).getTriggeringComponent();
+                name = triggeringComponent != null ? triggeringComponent.localpart : null;
+            } else if (xmlResourceIdentifier instanceof XMLEntityDescriptionImpl) {
+                name = ((XMLEntityDescriptionImpl)xmlResourceIdentifier).getEntityName();
+            } else if (xmlResourceIdentifier instanceof XMLDTDDescription) {
+                name = ((XMLDTDDescription)xmlResourceIdentifier).getRootName();
             } else {
                 name = null;
             }
@@ -95,18 +105,32 @@ public class XercesXmlResolverAdapter implements XMLEntityResolver {
     }
 
     /**
-     * Wraps the {@code entityResolver} in a XercesXMLResolverAdapter
+     * Wraps the {@code resolver} in a XercesXMLResolverAdapter
      * and then sets it as the property {@code http://apache.org/xml/properties/internal/entity-resolver}
      * on the {@code xmlReader}.
      *
      * @param xmlReader the Xerces XML Reader
-     * @param entityResolver the resolver
+     * @param resolver the resolver
      *
      * @throws SAXNotSupportedException if the property is not supported by the XMLReader
      * @throws SAXNotRecognizedException if the property is not recognised by the XMLReader
      */
-    public static void setXmlReaderEntityResolver(final XMLReader xmlReader, final Resolver entityResolver) throws SAXNotSupportedException, SAXNotRecognizedException {
-        final XMLEntityResolver xmlEntityResolver = new XercesXmlResolverAdapter(entityResolver);
+    public static void setXmlReaderEntityResolver(final XMLReader xmlReader, final Resolver resolver) throws SAXNotSupportedException, SAXNotRecognizedException {
+        final XMLEntityResolver xmlEntityResolver = new XercesXmlResolverAdapter(resolver);
+        setXmlReaderEntityResolver(xmlReader, xmlEntityResolver);
+    }
+
+    /**
+     * Sets the {@code xmlEntityResolver} as the property {@code http://apache.org/xml/properties/internal/entity-resolver}
+     * on the {@code xmlReader}.
+     *
+     * @param xmlReader the Xerces XML Reader
+     * @param xmlEntityResolver the resolver
+     *
+     * @throws SAXNotSupportedException if the property is not supported by the XMLReader
+     * @throws SAXNotRecognizedException if the property is not recognised by the XMLReader
+     */
+    public static void setXmlReaderEntityResolver(final XMLReader xmlReader, final XMLEntityResolver xmlEntityResolver) throws SAXNotSupportedException, SAXNotRecognizedException {
         xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, xmlEntityResolver);
     }
 }
