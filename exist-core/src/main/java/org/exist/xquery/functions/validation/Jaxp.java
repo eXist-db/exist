@@ -46,19 +46,15 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
-import org.apache.xerces.impl.xs.XSDDescription;
-import org.apache.xerces.util.SAXInputSource;
-import org.apache.xerces.xni.XMLResourceIdentifier;
-import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 
-import org.apache.xerces.xni.parser.XMLInputSource;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
+import org.exist.resolver.XercesXmlResolverAdapter;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.Lock;
@@ -94,7 +90,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
-import org.xml.sax.ext.EntityResolver2;
 import org.xmlresolver.Resolver;
 import org.xmlresolver.ResolverFeature;
 import org.xmlresolver.XMLResolverConfiguration;
@@ -282,7 +277,7 @@ public class Jaxp extends BasicFunction {
                         catalogs.add(Tuple(catalogUrl, maybeInputSource));
                     }
                     final Resolver resolver = getXmlResolver(catalogs);
-                    setXmlReaderEnitityResolver(xmlReader, new ResolverWrapper(resolver));
+                    setXmlReaderEnitityResolver(xmlReader, new XercesXmlResolverAdapter(resolver));
 
                 } else {
                     LOG.error("Catalog URLs should end on / or .xml");
@@ -526,61 +521,4 @@ public class Jaxp extends BasicFunction {
     }
     }
      */
-
-    public static class ResolverWrapper implements XMLEntityResolver, EntityResolver2 {
-        private final Resolver resolver;
-
-        public ResolverWrapper(final Resolver resolver) {
-            this.resolver = resolver;
-        }
-
-        @Override
-        public XMLInputSource resolveEntity(final XMLResourceIdentifier xmlResourceIdentifier) throws XNIException, IOException {
-            try {
-                final org.apache.xerces.xni.QName triggeringComponent = ((XSDDescription)xmlResourceIdentifier).getTriggeringComponent();
-
-                // TODO (AR) I have no idea if this is correct?!?
-                final String name;
-                if (triggeringComponent != null) {
-                    name = triggeringComponent.localpart;
-                } else {
-                    name = null;
-                }
-
-                // TODO (AR) I have no idea if this is correct?!?
-                final String systemId;
-                if (xmlResourceIdentifier.getExpandedSystemId() !=  null) {
-                    systemId = xmlResourceIdentifier.getExpandedSystemId();
-                } else {
-                    systemId = xmlResourceIdentifier.getNamespace();
-                }
-
-                final InputSource src = resolver.resolveEntity(name, xmlResourceIdentifier.getPublicId(), xmlResourceIdentifier.getBaseSystemId(), systemId);
-
-                if (src == null) {
-                    return null;
-                }
-
-                return new SAXInputSource(src);
-
-            } catch (final SAXException e) {
-                throw new XNIException(e);
-            }
-        }
-
-        @Override
-        public InputSource getExternalSubset(final String name, final String baseURI) throws SAXException, IOException {
-            return resolver.getExternalSubset(name, baseURI);
-        }
-
-        @Override
-        public InputSource resolveEntity(final String name, final String publicId, final String baseURI, final String systemId) throws SAXException, IOException {
-            return resolver.resolveEntity(name, publicId, baseURI, systemId);
-        }
-
-        @Override
-        public InputSource resolveEntity(final String publicId, final String systemId) throws SAXException, IOException {
-            return resolver.resolveEntity(publicId, systemId);
-        }
-    }
 }
