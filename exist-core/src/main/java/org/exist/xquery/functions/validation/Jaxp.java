@@ -91,6 +91,7 @@ import org.xml.sax.XMLReader;
 import org.xmlresolver.Resolver;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
 /**
@@ -399,7 +400,7 @@ public class Jaxp extends BasicFunction {
                 outputProperties.setProperty(OutputKeys.METHOD, "XML");
                 outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
                 outputProperties.setProperty(OutputKeys.INDENT, "no");
-                outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+                outputProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
 
                 final Serializer serializer = context.getBroker().getSerializer();
                 serializer.reset();
