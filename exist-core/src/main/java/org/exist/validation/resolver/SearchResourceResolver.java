@@ -207,7 +207,7 @@ public class SearchResourceResolver implements XMLEntityResolver {
                 outputProperties.setProperty(OutputKeys.METHOD, "XML");
                 outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
                 outputProperties.setProperty(OutputKeys.INDENT, "no");
-                outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+                outputProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
 
                 final Serializer serializer = broker.getSerializer();
                 serializer.reset();
