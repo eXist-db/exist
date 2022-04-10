@@ -3255,7 +3255,7 @@ public class RpcConnection implements RpcAPI {
 
         try {
             // Setup validator
-            final Validator validator = new Validator(factory.getBrokerPool());
+            final Validator validator = new Validator(factory.getBrokerPool(), user);
 
             // Get inputstream
             // TODO DWES reconsider

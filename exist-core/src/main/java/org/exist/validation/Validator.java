@@ -37,9 +37,11 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.exist.Namespaces;
 import org.exist.resolver.ResolverFactory;
 import org.exist.resolver.XercesXmlResolverAdapter;
+import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.util.ExistSAXParserFactory;
@@ -66,6 +68,7 @@ public class Validator {
     private static final Logger logger = LogManager.getLogger(Validator.class);
 
     private final BrokerPool brokerPool;
+    private final Subject subject;
     private final GrammarPool grammarPool;
     private final Resolver systemCatalogResolver;
 
@@ -74,10 +77,11 @@ public class Validator {
      * 
      * @param brokerPool brokerPool the broker pool
      */
-    public Validator(final BrokerPool brokerPool) {
+    public Validator(final BrokerPool brokerPool, final Subject subject) {
         logger.info("Initializing Validator.");
 
         this.brokerPool = brokerPool;
+        this.subject = subject;
 
         // Check xerces version        
         final StringBuilder xmlLibMessage = new StringBuilder();
@@ -218,24 +222,28 @@ public class Validator {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Validation using user specified catalog '{}'.", grammarUrl);
                 }
-                final Resolver localResolver = ResolverFactory.newResolver(Arrays.asList(Tuple(grammarUrl, Optional.empty())));
-                XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, localResolver);
+                final Resolver resolver = ResolverFactory.newResolver(Arrays.asList(Tuple(grammarUrl, Optional.empty())));
+                XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
 
             } else if (grammarUrl.endsWith("/")) {
                 // Scenario 3 : path to collection ("/"): search.
                 if (logger.isDebugEnabled()) {
                     logger.debug("Validation using searched grammar, start from '{}'.", grammarUrl);
                 }
-                final Resolver resolver = new SearchResourceResolver(grammarUrl, brokerPool);
+                final XMLEntityResolver resolver = new SearchResourceResolver(brokerPool, subject, grammarUrl);
                 XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
 
             } else {
+                if (grammarUrl.startsWith("/db")) {
+                    grammarUrl = "xmldb://" + grammarUrl;
+                }
+
                 // Scenario 4 : path to grammar (xsd, dtd) specified.
                 if (logger.isDebugEnabled()) {
                     logger.debug("Validation using specified grammar '{}'.", grammarUrl);
                 }
-                final Resolver resolver = new AnyUriResolver(grammarUrl);
-                XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
+                final AnyUriResolver resolver = new AnyUriResolver(grammarUrl);
+                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, resolver);
             }
 
             if (logger.isDebugEnabled()) {

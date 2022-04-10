@@ -45,6 +45,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 
+import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
@@ -237,7 +238,7 @@ public class Jaxp extends BasicFunction {
                 if (singleUrl.endsWith("/")) {
                     // Search grammar in collection specified by URL. Just one collection is used.
                     LOG.debug("Search for grammar in {}", singleUrl);
-                    final Resolver resolver = new SearchResourceResolver(catalogUrls[0], brokerPool);
+                    final XMLEntityResolver resolver = new SearchResourceResolver(brokerPool, context.getSubject(), catalogUrls[0]);
                     XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
 
                 } else if (singleUrl.endsWith(".xml")) {
