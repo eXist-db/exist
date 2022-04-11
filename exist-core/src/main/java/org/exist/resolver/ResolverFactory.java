@@ -49,7 +49,7 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 /**
  * Factory for creating Resolvers.
  *
- * @author <a href="adam@evolvedbinary.com>Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public interface ResolverFactory {
 
@@ -61,7 +61,7 @@ public interface ResolverFactory {
      *
      * @return the resolver
      *
-     * @throws URISyntaxException
+     * @throws URISyntaxException if one of the catalog URI is invalid
      */
     static Resolver newResolver(final List<Tuple2<String, Optional<InputSource>>> catalogs) throws URISyntaxException {
         final XMLResolverConfiguration resolverConfiguration = new XMLResolverConfiguration();

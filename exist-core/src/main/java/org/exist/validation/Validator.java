@@ -76,6 +76,7 @@ public class Validator {
      * Setup Validator object with Broker Pool as db connection.
      * 
      * @param brokerPool brokerPool the broker pool
+     * @param subject the subject to use when accessing resources from the database
      */
     public Validator(final BrokerPool brokerPool, final Subject subject) {
         logger.info("Initializing Validator.");
