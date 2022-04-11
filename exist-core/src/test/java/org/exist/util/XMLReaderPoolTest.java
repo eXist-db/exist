@@ -220,7 +220,9 @@ public class XMLReaderPoolTest {
         final XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertSame(mockResolver, xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER));
+            assertInstanceOf(XercesXmlResolverAdapter.class, xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER));
+            final XercesXmlResolverAdapter xercesXmlResolverAdapter = (XercesXmlResolverAdapter) xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER);
+            assertSame(mockResolver, xercesXmlResolverAdapter.getResolver());
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
@@ -662,7 +664,9 @@ public class XMLReaderPoolTest {
         xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertSame(mockResolver, xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER));
+            assertInstanceOf(XercesXmlResolverAdapter.class, xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER));
+            final XercesXmlResolverAdapter xercesXmlResolverAdapter = (XercesXmlResolverAdapter) xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER);
+            assertSame(mockResolver, xercesXmlResolverAdapter.getResolver());
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }

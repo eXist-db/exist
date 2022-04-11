@@ -46,6 +46,7 @@ import org.exist.util.XMLReaderObjectFactory;
 import org.xml.sax.*;
 import org.xmlresolver.Resolver;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 
 /**
@@ -110,13 +111,13 @@ public class XercesXmlResolverAdapter implements XMLEntityResolver {
      * on the {@code xmlReader}.
      *
      * @param xmlReader the Xerces XML Reader
-     * @param resolver the resolver
+     * @param resolver the resolver, or null to unset the property
      *
      * @throws SAXNotSupportedException if the property is not supported by the XMLReader
      * @throws SAXNotRecognizedException if the property is not recognised by the XMLReader
      */
-    public static void setXmlReaderEntityResolver(final XMLReader xmlReader, final Resolver resolver) throws SAXNotSupportedException, SAXNotRecognizedException {
-        final XMLEntityResolver xmlEntityResolver = new XercesXmlResolverAdapter(resolver);
+    public static void setXmlReaderEntityResolver(final XMLReader xmlReader, @Nullable final Resolver resolver) throws SAXNotSupportedException, SAXNotRecognizedException {
+        final XMLEntityResolver xmlEntityResolver = resolver != null ? new XercesXmlResolverAdapter(resolver) : null;
         setXmlReaderEntityResolver(xmlReader, xmlEntityResolver);
     }
 
@@ -125,12 +126,21 @@ public class XercesXmlResolverAdapter implements XMLEntityResolver {
      * on the {@code xmlReader}.
      *
      * @param xmlReader the Xerces XML Reader
-     * @param xmlEntityResolver the resolver
+     * @param xmlEntityResolver the resolver, or null to unset the resolver
      *
      * @throws SAXNotSupportedException if the property is not supported by the XMLReader
      * @throws SAXNotRecognizedException if the property is not recognised by the XMLReader
      */
-    public static void setXmlReaderEntityResolver(final XMLReader xmlReader, final XMLEntityResolver xmlEntityResolver) throws SAXNotSupportedException, SAXNotRecognizedException {
+    public static void setXmlReaderEntityResolver(final XMLReader xmlReader, @Nullable final XMLEntityResolver xmlEntityResolver) throws SAXNotSupportedException, SAXNotRecognizedException {
         xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, xmlEntityResolver);
+    }
+
+    /**
+     * Get the underlying resolver.
+     *
+     * @return the underlying resolver.
+     */
+    public Resolver getResolver() {
+        return resolver;
     }
 }
