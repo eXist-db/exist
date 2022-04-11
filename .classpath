@@ -84,7 +84,7 @@
 	<classpathentry kind="lib" path="lib/optional/isorelax-20041111.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jaxb-api-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jaxrpc-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/optional/jing-20151127.jar"/>
+	<classpathentry kind="lib" path="lib/optional/jing-20181222.jar"/>
 	<classpathentry kind="lib" path="lib/optional/saaj-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/servlet-api-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/wsdl4j-1.5.1.jar"/>
