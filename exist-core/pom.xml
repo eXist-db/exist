@@ -309,13 +309,13 @@
         <dependency>
             <groupId>org.xmlresolver</groupId>
             <artifactId>xmlresolver</artifactId>
-            <version>4.2.0</version>
+            <version>${xmlresolver.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.xmlresolver</groupId>
             <artifactId>xmlresolver</artifactId>
-            <version>4.2.0</version>
+            <version>${xmlresolver.version}</version>
             <classifier>data</classifier>
             <scope>runtime</scope>
         </dependency>
@@ -926,6 +926,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <ignoredUnusedDeclaredDependency>org.fusesource.jansi:jansi:jar:2.4.0</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>net.sourceforge.nekohtml:nekohtml:jar:1.9.22</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>xml-resolver:xml-resolver:jar:1.2</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.xmlresolver:xmlresolver:jar:${xmlresolver.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.exist-db.thirdparty.org.eclipse.wst.xml:xpath2:jar:1.2.0</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>edu.princeton.cup:java-cup:jar:10k</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-jaas:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
