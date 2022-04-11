@@ -94,6 +94,12 @@ declare function test:suite($functions as function(*)+,
         $test-error-function as (function(xs:string, map(xs:string, item()?)?) as empty-sequence())?,
         $test-finished-function as (function(xs:string) as empty-sequence())?) {
     let $modules := test:distinct-modules($functions)
+    let $runner :=
+        test:run-tests(
+            ?, ?,
+            $test-ignored-function, $test-started-function, $test-failure-function,
+            $test-assumption-failed-function, $test-error-function, $test-finished-function
+        )
     return
         <testsuites>
         {
@@ -106,8 +112,7 @@ declare function test:suite($functions as function(*)+,
             let $result :=
                 if (empty($setup) or $setup/self::ok) then
                     let $startTime := util:system-time()
-                    let $results :=
-                        test:function-by-annotation($modFunctions, "assert", test:run-tests(?, ?, $test-ignored-function, $test-started-function, $test-failure-function, $test-assumption-failed-function, $test-error-function, $test-finished-function))
+                    let $results := test:function-by-annotation($modFunctions, "assert", $runner)
                     let $elapsed :=
                         util:system-time() - $startTime
                     return
