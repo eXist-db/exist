@@ -265,7 +265,10 @@ declare %private function test:run-tests(
                     }</report>
                 )
             else
-                let $argsAnnot := $meta/annotation[matches(@name, ":args?")][not(preceding-sibling::annotation[1][matches(@name, ":args?")])]
+                let $argsAnnot :=
+                    $meta/annotation[matches(@name, ":args?")]
+                        [not(preceding-sibling::annotation[1][matches(@name, ":args?")])]
+
                 let $test := test:test($func, $meta, ?,
                         $test-started-function, $test-failure-function, $test-error-function, $test-finished-function)
                 return
@@ -281,7 +284,7 @@ declare %private function test:run-tests(
  : @param $meta the function description
  : @param $test-assumption-failed-function A callback for reporting the failure of assumptions
  :
- : @return Any assumption annotations where the asusmption did not hold true
+ : @return Any assumption annotations where the assumption did not hold true
  :)
 declare
     %private
