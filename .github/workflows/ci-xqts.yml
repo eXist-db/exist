@@ -12,10 +12,10 @@ jobs:
           distribution: temurin
           java-version: '8'
           cache: 'maven'
-      - name: Maven Build
-        timeout-minutes: 60
-        run: mvn -V -B clean package -DskipTests -Ddependency-check.skip=true -Ddocker=false -P !mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,!build-dist-archives
+      - name: Maven XQTS Build
+        run: mvn -V -B clean package -DskipTests -Ddependency-check.skip=true --projects exist-xqts --also-make
       - name: Run XQTS
+        timeout-minutes: 60
         run: find exist-xqts/target -name exist-xqts-runner.sh -exec {} --xqts-version HEAD --output-dir /tmp/xqts-output \;
       - name: Archive XQTS Logs
         if: always()
