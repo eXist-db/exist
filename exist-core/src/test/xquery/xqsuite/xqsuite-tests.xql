@@ -19,7 +19,7 @@
  : License along with this library; if not, write to the Free Software
  : Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  :)
-xquery version "3.0";
+xquery version "3.1";
 
 (:~
  : Some tests on features of the test suite itself.
@@ -28,7 +28,7 @@ module namespace t="http://exist-db.org/xquery/test/xqsuite";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
-declare 
+declare
     %test:assertXPath("/name[. = 'Item1']")
 function t:xpath() {
     <item>
