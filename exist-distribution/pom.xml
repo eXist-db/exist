@@ -46,7 +46,6 @@
   </scm>
 
     <properties>
-        <appassembler.version>2.1.0</appassembler.version>
         <assemble.dir>${project.build.directory}/${project.artifactId}-${project.version}-dir</assemble.dir>
         <public.xar.repo.uri>http://exist-db.org/exist/apps/public-repo</public.xar.repo.uri>
         <expath.pkg.dir>${project.build.directory}/expath-pkgs</expath.pkg.dir>

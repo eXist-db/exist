@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    eXist-db Open Source Native XML Database
+    Copyright (C) 2001 The eXist-db Authors
+
+    info@exist-db.org
+    http://www.exist-db.org
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.exist-db</groupId>
+        <artifactId>exist-parent</artifactId>
+        <version>6.1.0-SNAPSHOT</version>
+        <relativePath>../exist-parent</relativePath>
+    </parent>
+
+    <artifactId>exist-xqts</artifactId>
+    <packaging>pom</packaging>
+
+    <name>eXist-db W3C XQTS</name>
+    <description>eXist-db W3C XQuery Test Suite</description>
+
+    <scm>
+        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
+        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
+        <url>scm:git:https://github.com/exist-db/exist.git</url>
+    </scm>
+
+    <properties>
+        <assemble.dir>${project.build.directory}/${project.artifactId}-${project.version}-dir</assemble.dir>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-xqts-runner_2.13</artifactId>
+            <version>1.0.0</version>
+            <exclusions>
+                <!-- use the exist-core version of this project instead -->
+                <exclusion>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>exist-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- use the exist-core version of this project -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- needed for the AppAssembler booter approach -->
+        <dependency>
+            <groupId>org.codehaus.mojo.appassembler</groupId>
+            <artifactId>appassembler-booter</artifactId>
+            <version>${appassembler.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>${appassembler.version}</version>
+                <configuration>
+                    <repositoryLayout>flat</repositoryLayout>
+                    <repositoryName>lib</repositoryName>
+                    <binFileExtensions>
+                        <unix>.sh</unix>
+                    </binFileExtensions>
+                    <licenseHeaderFile>LGPL-21-license.txt</licenseHeaderFile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>appassembler-base</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assemble</goal>
+                        </goals>
+                        <configuration>
+                            <assembleDirectory>${assemble.dir}</assembleDirectory>
+                            <programs />
+                            <configurationDirectory>etc</configurationDirectory>
+                            <copyConfigurationDirectory>true</copyConfigurationDirectory>
+                            <logsDirectory>logs</logsDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>appassembler-booter</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>generate-daemons</goal>
+                        </goals>
+                        <configuration>
+                            <generateRepository>false</generateRepository>
+                            <target>${assemble.dir}</target>
+                            <separateTargetPlatforms>false</separateTargetPlatforms>
+                            <daemons>
+                                <daemon>
+                                    <id>exist-xqts-runner</id>
+                                    <mainClass>org.exist.xqts.runner.XQTSRunner</mainClass>
+                                    <platforms>
+                                        <platform>booter-unix</platform>
+                                        <platform>booter-windows</platform>
+                                    </platforms>
+                                </daemon>
+                            </daemons>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
