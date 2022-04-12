@@ -132,6 +132,11 @@ public interface Context {
     Source getSource();
 
     /**
+     * @return the default language
+     */
+    String getDefaultLanguage();
+
+    /**
      * Declare a user-defined static prefix/namespace mapping.
      *
      * eXist internally keeps a table containing all prefix/namespace mappings it found in documents, which have been previously stored into the

@@ -1024,4 +1024,13 @@ public class XQueryFunctionsTest {
         ResourceSet resultRetreive = existEmbeddedServer.executeQuery(queryRetreive);
         assertEquals("retreive, Expect single result", 1, resultRetreive.getSize());
     }
+
+    @Test
+    public void defaultLanguage() throws XMLDBException {
+
+        ResourceSet result = existEmbeddedServer.executeQuery("default-language()");
+        assertEquals(1, result.getSize());
+        String defaultLanguage = (String) result.getResource(0).getContent();
+        assertEquals(Locale.getDefault().getLanguage(), defaultLanguage);
+    }
 }

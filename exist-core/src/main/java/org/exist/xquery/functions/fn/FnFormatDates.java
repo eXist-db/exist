@@ -35,9 +35,7 @@ import java.util.regex.Pattern;
 
 public class FnFormatDates extends BasicFunction {
 
-    private final static String DEFAULT_LANGUAGE = Locale.getDefault().getLanguage();
-
-	private static FunctionParameterSequenceType DATETIME =  
+	private static FunctionParameterSequenceType DATETIME =
 		new FunctionParameterSequenceType(
 			"value", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "The datetime");
 
@@ -152,13 +150,13 @@ public class FnFormatDates extends BasicFunction {
 
         final AbstractDateTimeValue value = (AbstractDateTimeValue) args[0].itemAt(0);
         final String picture = args[1].getStringValue();
-        final Optional<String> language;
+        final String language;
         final Optional<String> place;
         if (getArgumentCount() == 5) {
             if (args[2].hasOne()) {
-                language = Optional.of(args[2].getStringValue());
+                language = args[2].getStringValue();
             } else {
-                language = Optional.empty();
+                language = context.getDefaultLanguage();
             }
 
             if(args[4].hasOne()) {
@@ -167,14 +165,14 @@ public class FnFormatDates extends BasicFunction {
                 place = Optional.empty();
             }
         } else {
-            language = Optional.empty();
+            language = context.getDefaultLanguage();
             place = Optional.empty();
         }
 
         return new StringValue(formatDate(picture, value, language, place));
     }
 
-    private String formatDate(String pic, AbstractDateTimeValue dt, final Optional<String> language,
+    private String formatDate(String pic, AbstractDateTimeValue dt, final String language,
             final Optional<String> place) throws XPathException {
 
         final boolean tzHMZNPictureHint = pic.equals("[H00]:[M00] [ZN]");
@@ -213,7 +211,7 @@ public class FnFormatDates extends BasicFunction {
         return sb.toString();
     }
 
-    private void formatComponent(String component, AbstractDateTimeValue dt, final Optional<String> language,
+    private void formatComponent(String component, AbstractDateTimeValue dt, final String language,
             final Optional<String> place, final boolean tzHMZNPictureHint, final StringBuilder sb)
             throws XPathException {
         final Matcher matcher = componentPattern.matcher(component);
@@ -395,8 +393,8 @@ public class FnFormatDates extends BasicFunction {
     }
 
     private String formatTimeZone(final String timezonePicture, final int hour, final int minute,
-            final TimeZone timeZone, final Optional<String> language, final Optional<String> place) {
-        final Locale locale = new Locale(language.orElse(DEFAULT_LANGUAGE));
+            final TimeZone timeZone, final String language, final Optional<String> place) {
+        final Locale locale = new Locale(language);
 
         final String format;
         switch(timezonePicture) {
@@ -487,9 +485,9 @@ public class FnFormatDates extends BasicFunction {
         }
     }
 
-    private void formatNumber(char specifier, String picture, String width, int num, final Optional<String> language,
+    private void formatNumber(char specifier, String picture, String width, int num, final String language,
                               StringBuilder sb) throws XPathException {
-        final NumberFormatter formatter = NumberFormatter.getInstance(language.orElse(DEFAULT_LANGUAGE));
+        final NumberFormatter formatter = NumberFormatter.getInstance(language);
         if ("N".equals(picture) || "n".equals(picture) || "Nn".equals(picture)) {
             String name;
             switch (specifier) {
