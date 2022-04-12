@@ -139,6 +139,23 @@ declare function test:suite(
         </testsuites>
 };
 
+declare function test:fail ($expected as item()*, $actual as item()*, $message as xs:string) as empty-sequence() {
+    test:fail($expected, $actual, $message, "custom-assertion-failure")
+};
+
+declare function test:fail (
+    $expected as item()*,
+    $actual as item()*,
+    $message as xs:string,
+    $type as xs:string
+) as empty-sequence() {
+    error(xs:QName("test:failure"), $message, map {
+        "expected": $expected,
+        "actual": $actual,
+        "type": $type
+    })
+};
+
 (:~
  : Find functions having the given annotation and call the callback function.
  :)
@@ -385,6 +402,32 @@ declare %private function test:test(
                         else(),
                         test:print-result($meta, $result, $assertResult)
                     )
+            } catch test:failure {
+                (: when test:fail was called :)
+                (: expected and actual can be of any type including functional ones :)
+                let $serialized-expected := serialize($err:value?expected, map {"method": "adaptive"})
+                let $serialized-actual := serialize($err:value?actual, map {"method": "adaptive"})
+
+                return (
+                    if (not(empty($test-failure-function))) then
+                        $test-failure-function(
+                            test:get-test-name($meta),
+                            (: expected :)
+                            map { "value": $serialized-expected },
+                            (: actual :)
+                            map { "result": $serialized-actual }
+                        )
+                    else ()
+                    ,
+                    test:print-result(
+                        $meta,
+                        $serialized-actual,
+                        <report>
+                            <failure message="{ $err:description }" type="{$err:value?type}" />
+                            <output>{ $serialized-actual }</output>
+                        </report>
+                    )
+                )
             } catch * {
                 if ($assertError) then
                     if (
