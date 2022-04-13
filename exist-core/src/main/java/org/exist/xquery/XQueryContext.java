@@ -3328,6 +3328,14 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     /**
+     * TODO (AP) this is a temporary implementation which will conflict and be sorted at merge
+     * @return the default language for the locale
+     */
+    public String getDefaultLanguage() {
+        return Locale.getDefault().getLanguage();
+    }
+
+    /**
      * NOTE: the {@link #unsubscribe()} method can be called
      * from {@link org.exist.storage.NotificationService#unsubscribe(UpdateListener)}
      * by another thread, so this class needs to be thread-safe.

@@ -93,6 +93,8 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FnFormatDates.FNS_FORMAT_DATE_5, FnFormatDates.class),
         new FunctionDef(FnFormatDates.FNS_FORMAT_TIME_2, FnFormatDates.class),
         new FunctionDef(FnFormatDates.FNS_FORMAT_TIME_5, FnFormatDates.class),
+        new FunctionDef(FnFormatIntegers.FS_FORMAT_INTEGER[0], FnFormatIntegers.class),
+        new FunctionDef(FnFormatIntegers.FS_FORMAT_INTEGER[1], FnFormatIntegers.class),
         new FunctionDef(FnFormatNumbers.FS_FORMAT_NUMBER[0], FnFormatNumbers.class),
         new FunctionDef(FnFormatNumbers.FS_FORMAT_NUMBER[1], FnFormatNumbers.class),
         new FunctionDef(FunGenerateId.signatures[0], FunGenerateId.class),
