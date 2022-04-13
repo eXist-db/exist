@@ -32,6 +32,34 @@ import module namespace test="http://exist-db.org/xquery/xqsuite"
 declare variable $ca:var := map {"a": 1, "b": 2};
 
 declare
+    %test:assertEquals("expected", "actual", "Custom message", "custom-assertion-failure")
+function ca:test-fail-3() as item()* {
+    try {
+        test:fail("expected", "actual", "Custom message")
+    }
+    catch test:failure {
+        $err:value?expected, $err:value?actual, $err:description, $err:value?type
+    }
+};
+
+declare
+    %test:assertEquals("expected", "actual", "Custom message", "custom-type")
+function ca:test-fail-4() as item()* {
+    try {
+        test:fail("expected", "actual", "Custom message", "custom-type")
+    }
+    catch test:failure {
+        $err:value?expected, $err:value?actual, $err:description, $err:value?type
+    }
+};
+
+declare
+    %test:assertTrue
+function ca:pass() as item()* {
+    ca:map-assertion($ca:var, map {"b": 2, "a": 1})
+};
+
+declare
     %test:assertEquals("Key 'b' is missing", "map-assertion-failure")
 function ca:missing-key-default-type() as item()* {
     try {
