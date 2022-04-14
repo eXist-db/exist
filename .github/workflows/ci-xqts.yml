@@ -16,6 +16,8 @@ jobs:
         run: mvn -V -B clean package -DskipTests -Ddependency-check.skip=true --projects exist-xqts --also-make
       - name: Run XQTS
         timeout-minutes: 60
+        env:
+          JAVA_OPTS: -XX:+UseG1GC -XX:+UseStringDeduplication
         run: find exist-xqts/target -name exist-xqts-runner.sh -exec {} --xqts-version HEAD --output-dir /tmp/xqts-output \;
       - name: Archive XQTS Logs
         if: always()
