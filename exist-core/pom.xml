@@ -306,6 +306,20 @@
             <scope>runtime</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.xmlresolver</groupId>
+            <artifactId>xmlresolver</artifactId>
+            <version>${xmlresolver.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.xmlresolver</groupId>
+            <artifactId>xmlresolver</artifactId>
+            <version>${xmlresolver.version}</version>
+            <classifier>data</classifier>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- xpath2 and java-cup are needed at runtime because xercesImpl declares this as optional,
             but we need them to enable Schema 1.1 support -->
         <dependency>
@@ -628,6 +642,8 @@
                                 <!--
                                     Already under LGPL 2.1, but with a different Copyright
                                 -->
+                                <exclude>src/main/java/org/exist/resolver/ResolverFactory.java</exclude>
+                                <exclude>src/main/java/org/exist/resolver/XercesXmlResolverAdapter.java</exclude>
                                 <exclude>src/main/java/org/exist/util/UTF8.java</exclude>
                                 <exclude>src/test/java/org/exist/storage/MoveCollectionTest.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/blob/**</exclude>
@@ -775,6 +791,8 @@ The original license statement is also included below.]]></preamble>
                             -->
                             <header>${project.parent.relativePath}/FDB-backport-LGPL-21-ONLY-license.template.txt</header>
                             <includes>
+                                <include>src/main/java/org/exist/resolver/ResolverFactory.java</include>
+                                <include>src/main/java/org/exist/resolver/XercesXmlResolverAdapter.java</include>
                                 <include>src/test/java/org/exist/storage/MoveCollectionTest.java</include>
                                 <include>src/main/java/org/exist/storage/blob/**</include>
                                 <include>src/test/java/org/exist/storage/blob/**</include>
@@ -908,6 +926,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <ignoredUnusedDeclaredDependency>org.fusesource.jansi:jansi:jar:2.4.0</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>net.sourceforge.nekohtml:nekohtml:jar:1.9.22</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>xml-resolver:xml-resolver:jar:1.2</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.xmlresolver:xmlresolver:jar:${xmlresolver.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.exist-db.thirdparty.org.eclipse.wst.xml:xpath2:jar:1.2.0</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>edu.princeton.cup:java-cup:jar:10k</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-jaas:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
