@@ -136,6 +136,7 @@ public class RenderFunction extends BasicFunction {
             // return the result
             return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new ByteArrayInputStream(baos.toByteArray()));
         } catch (final IOException | SAXException se) {
+            LOG.error(se.getMessage(), se);
             throw new XPathException(this, se.getMessage(), se);
         } finally {
             if (adapter != null) {
