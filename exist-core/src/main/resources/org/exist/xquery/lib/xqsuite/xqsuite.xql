@@ -58,6 +58,7 @@ declare variable $test:UNKNOWN_ASSERTION := QName($test:TEST_NAMESPACE, "no-such
 declare variable $test:WRONG_ARG_COUNT := QName($test:TEST_NAMESPACE, "wrong-number-of-arguments");
 declare variable $test:TYPE_ERROR := QName($test:TEST_NAMESPACE, "type-error");
 declare variable $test:UNKNOWN_ANNOTATION_VALUE_TYPE := QName($test:TEST_NAMESPACE, "unknown-annotation-value-type");
+declare variable $test:CUSTOM_ASSERTION_FAILURE_TYPE := "custom-assertion-failure";
 
 (:~
  : Main entry point into the module. Takes a sequence of function items.
@@ -139,14 +140,14 @@ declare function test:suite(
         </testsuites>
 };
 
-declare function test:fail ($expected as item()*, $actual as item()*, $message as xs:string) as empty-sequence() {
-    test:fail($expected, $actual, $message, "custom-assertion-failure")
+declare function test:fail ($message as xs:string, $expected as item()*, $actual as item()*) as empty-sequence() {
+    test:fail($message, $expected, $actual, $test:CUSTOM_ASSERTION_FAILURE_TYPE)
 };
 
 declare function test:fail (
+    $message as xs:string,
     $expected as item()*,
     $actual as item()*,
-    $message as xs:string,
     $type as xs:string
 ) as empty-sequence() {
     error(xs:QName("test:failure"), $message, map {
@@ -406,8 +407,8 @@ declare %private function test:test(
                         test:print-result($meta, $result, $assertResult)
                     )
             } catch test:failure {
-                (: when test:fail was called :)
-                (: expected and actual can be of any type including functional ones :)
+                (: when test:fail was called read expected and actual values from $err:value :)
+                (: expected and actual values can be function types and need to be serialized :)
                 let $serialized-expected := serialize($err:value?expected, map {"method": "adaptive"})
                 let $serialized-actual := serialize($err:value?actual, map {"method": "adaptive"})
 

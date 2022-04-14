@@ -32,79 +32,119 @@ import module namespace test="http://exist-db.org/xquery/xqsuite"
 declare variable $ca:var := map {"a": 1, "b": 2};
 
 declare
-    %test:assertEquals("expected", "actual", "Custom message", "custom-assertion-failure")
+    %test:assertEquals("Custom message", "expected", "actual", "custom-assertion-failure")
 function ca:test-fail-3() as item()* {
     try {
-        test:fail("expected", "actual", "Custom message")
+        test:fail("Custom message", "expected", "actual")
     }
     catch test:failure {
-        $err:value?expected, $err:value?actual, $err:description, $err:value?type
+        $err:description, $err:value?expected, $err:value?actual, $err:value?type
     }
 };
 
 declare
-    %test:assertEquals("expected", "actual", "Custom message", "custom-type")
+    %test:assertEquals("Custom message", "expected", "actual", "custom-type")
 function ca:test-fail-4() as item()* {
     try {
-        test:fail("expected", "actual", "Custom message", "custom-type")
+        test:fail("Custom message", "expected", "actual", "custom-type")
     }
     catch test:failure {
-        $err:value?expected, $err:value?actual, $err:description, $err:value?type
+        $err:description, $err:value?expected, $err:value?actual, $err:value?type
     }
 };
 
 declare
     %test:assertTrue
-function ca:pass() as item()* {
+function ca:map-assertion-pass() as item()* {
     ca:map-assertion($ca:var, map {"b": 2, "a": 1})
 };
 
 declare
-    %test:assertEquals("Key 'b' is missing", "map-assertion-failure")
-function ca:missing-key-default-type() as item()* {
+    %test:assertEquals("Key 'b' is missing", "{""a"":1}", "map-assertion-failure")
+function ca:map-assertion-missing-key() as item()* {
     try {
-        ca:map-assertion($ca:var, map {"a": 1, "c": 3})
+        ca:map-assertion($ca:var, map {"a": 1})
     }
     catch test:failure {
-        $err:description, $err:value?type
+        $err:description,
+        fn:serialize($err:value?actual, map{"method":"json"}),
+        $err:value?type
     }
 };
 
 declare
-    %test:assertEquals("Value mismatch for key 'b'", "custom-assertion-failure")
-function ca:wrong-value-custom-type() as item()* {
+    %test:assertEquals("Value mismatch for key 'b'", "{""a"":1,""b"":3}", "map-assertion-failure")
+function ca:map-assertion-wrong-value() as item()* {
     try {
         ca:map-assertion($ca:var, map {"a": 1, "b": 3})
     }
     catch test:failure {
-        $err:description, $err:value?type
+        $err:description,
+        fn:serialize($err:value?actual, map{"method":"json"}),
+        $err:value?type
     }
 };
 
 declare
-    %test:assertEquals("Type mismatch", "type-mismatch")
-function ca:type-mismatch-custom-type() as item()* {
+    %test:assertEquals("Additional keys found: (23, o)", "{""a"":1,""23"":3,""o"":""o""}", "map-assertion-failure")
+function ca:map-assertion-additional-key() as item()* {
+    try {
+        ca:map-assertion($ca:var, map {"a": 1, 23: 3, "o": "o"})
+    }
+    catch test:failure {
+        $err:description,
+        fn:serialize($err:value?actual, map{"method":"json"}),
+        $err:value?type
+    }
+};
+
+declare
+    %test:assertEquals("Type mismatch", "[1,2]", "type-mismatch")
+function ca:map-assertion-type-mismatch() as item()* {
     try {
         ca:map-assertion($ca:var, [1,2])
     }
     catch test:failure {
-        $err:description, $err:value?type
+        $err:description,
+        fn:serialize($err:value?actual, map{"method":"json"}),
+        $err:value?type
     }
 };
 
+(:
+ : custom assertion, which could also be imported from a library module
+ :)
+
+declare %private variable $ca:MAP_ASSERTION_TYPE := "map-assertion-failure";
+
 declare %private
 function ca:map-assertion ($expected as map(*), $actual as item()*) as item()* {
-    if (exists($actual) and count($actual) eq 1  and $actual instance of map(*))
-    then (
-        for-each(map:keys($expected), function ($key as xs:anyAtomicType) {
-            if (not(map:contains($actual, $key)))
-            then test:fail($expected, $actual, "Key '" || $key || "' is missing", "map-assertion-failure")
-            else if ($expected($key) ne $actual($key))
-            then test:fail($expected, $actual, "Value mismatch for key '" || $key || "'")
-            else ()
-        })
-        ,
+    if (not(exists($actual)))
+    then test:fail("Actual is empty", $expected, $actual, "type-mismatch")
+    else if (count($actual) gt 1)
+    then test:fail("Actual is a sequence with more than one item", $expected, $actual, "type-mismatch")
+    else if (not($actual instance of map(*)))
+    then test:fail("Type mismatch", $expected, $actual, "type-mismatch")
+    else if (not(empty(
+        map:keys(map:remove($actual, map:keys($expected))))))
+    then test:fail(
+             "Additional keys found: (" || string-join(
+                map:keys(map:remove($actual, map:keys($expected))), ', ') || ")",
+             $expected,
+             $actual,
+             $ca:MAP_ASSERTION_TYPE
+        )
+    else (
+        for-each(map:keys($expected), ca:map-assert-key(?, $expected, $actual)),
         true()
     )
-    else test:fail($expected, $actual, "Type mismatch", "type-mismatch")
+};
+
+declare %private
+function ca:map-assert-key ($key as xs:anyAtomicType, $expected as map(*), $actual as map(*)) as item()* {
+    if (not(map:contains($actual, $key)))
+    then test:fail("Key '" || $key || "' is missing", $expected, $actual, $ca:MAP_ASSERTION_TYPE)
+    else if ($expected($key) ne $actual($key))
+    then test:fail("Value mismatch for key '" || $key || "'", $expected, $actual, $ca:MAP_ASSERTION_TYPE)
+    else ()
 };
