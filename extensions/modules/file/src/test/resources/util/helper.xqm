@@ -58,10 +58,7 @@ declare function helper:clear-db() {
 };
 
 declare function helper:create-db-resource($collection as xs:string, $resource as xs:string, $content as item()) as empty-sequence() {
-    let $_ := (
-        xmldb:store($collection, $resource, $content),
-        xmldb:touch($collection, $resource, $fixtures:mod-date)
-    )
+    let $_ := xmldb:store($collection, $resource, $content)
     return ()
 };
 
@@ -142,22 +139,29 @@ declare function helper:assert-sync-result (
 ) as xs:boolean {
     helper:assert-permutation-of(
         $expected?updated,
-        helper:get-updated-from-sync-result($result/*)
+        helper:get-updated-from-sync-result($result/*),
+        "updated"
     )
     and
     helper:assert-permutation-of(
         $expected?deleted,
-        helper:get-deleted-from-sync-result($result/*)
+        helper:get-deleted-from-sync-result($result/*),
+        "deleted"
     )
     and
     helper:assert-permutation-of(
         $expected?fs,
         helper:get-dir-from-sync-result($result/*)
-        => helper:list-files-and-directories()
+        => helper:list-files-and-directories(),
+        "filesystem"
     )
 };
 
-declare function helper:assert-permutation-of($expected as xs:anyAtomicType*, $actual as xs:anyAtomicType*) as xs:boolean {
+declare function helper:assert-permutation-of(
+    $expected as xs:anyAtomicType*,
+    $actual as xs:anyAtomicType*,
+    $label as xs:string
+) as xs:boolean {
     let $test := fold-left(
         $expected,
         [true(), $actual],
@@ -165,9 +169,13 @@ declare function helper:assert-permutation-of($expected as xs:anyAtomicType*, $a
     )
 
     return
-        if (not($test?1 or exists($test?2)))
+        if (empty($expected) and not(empty($actual)))
         then error($helper:error,
-        "Assertion failed: expected permutation of " ||
+            "Assertion failed (" || $label || "): expected empty sequence" ||
+               " but got (" || string-join($actual, ", ") || ")")
+        else if (not($test?1 or exists($test?2)))
+        then error($helper:error,
+            "Assertion failed (" || $label || "): expected permutation of " ||
                "(" || string-join($expected, ", ") || ")" ||
                " but got (" || string-join($actual, ", ") || ")")
         else true()
