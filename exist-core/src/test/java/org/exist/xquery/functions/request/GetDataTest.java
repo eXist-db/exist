@@ -1,6 +1,9 @@
 package org.exist.xquery.functions.request;
 
-import org.exist.util.io.FastByteArrayOutputStream;
+import org.apache.commons.httpclient.HttpVersion;
+import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.UserManagementService;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,6 +16,8 @@ import org.exist.xmldb.EXistResource;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.fail;
@@ -62,29 +67,103 @@ public class GetDataTest extends RESTTest {
 
         testRequest(post, wrapInElement("").getBytes());
     }
-    
-    @Test
-    public void retrieveBinary() {
-        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
 
+    @Test
+    public void retrieveBinaryHttp09() throws IOException {
         final String testData = "12345";
 
-        post.setRequestHeader("Content-Type", "application/octet-stream");
-        post.setRequestEntity(new ByteArrayRequestEntity(testData.getBytes()));
+        final PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
+        post.getParams().setVersion(HttpVersion.HTTP_0_9);
+        post.setRequestEntity(new ByteArrayRequestEntity(testData.getBytes(UTF_8), "application/octet-stream"));
 
-        testRequest(post, wrapInElement(encodeBase64String(testData.getBytes()).trim()).getBytes());
+        final int httpResult = client.executeMethod(post);
+
+        assertEquals(HttpStatus.SC_BAD_REQUEST, httpResult);
     }
 
     @Test
-    public void retrieveXml() {
-        PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
+    public void retrieveBinaryHttp10() {
+        final String testData = "12345";
 
+        final PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
+        post.getParams().setVersion(HttpVersion.HTTP_1_0);
+        post.setRequestEntity(new ByteArrayRequestEntity(testData.getBytes(UTF_8), "application/octet-stream"));
+
+        testRequest(post, wrapInElement(encodeBase64String(testData.getBytes(UTF_8)).trim()).getBytes());
+    }
+
+    @Test
+    public void retrieveBinaryHttp11() {
+        final String testData = "12345";
+
+        final PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
+        post.getParams().setVersion(HttpVersion.HTTP_1_1);
+        post.setRequestEntity(new ByteArrayRequestEntity(testData.getBytes(UTF_8), "application/octet-stream"));
+
+        testRequest(post, wrapInElement(encodeBase64String(testData.getBytes(UTF_8)).trim()).getBytes());
+    }
+
+    @Test
+    public void retrieveBinaryHttp11ChunkedTransferEncoding() throws IOException {
+        final String testData = "12345";
+
+        final PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
+        post.getParams().setVersion(HttpVersion.HTTP_1_1);
+
+        try (final InputStream is = new UnsynchronizedByteArrayInputStream(testData.getBytes(UTF_8))) {
+            post.setRequestEntity(new InputStreamRequestEntity(is, "application/octet-stream"));
+
+            testRequest(post, wrapInElement(encodeBase64String(testData.getBytes(UTF_8)).trim()).getBytes());
+        }
+    }
+
+    @Test
+    public void retrieveXmlHttp09() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
-        post.setRequestHeader("Content-Type", "text/xml");
-        post.setRequestEntity(new ByteArrayRequestEntity(testData.getBytes()));
+        final PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
+        post.getParams().setVersion(HttpVersion.HTTP_0_9);
+        post.setRequestEntity(new ByteArrayRequestEntity(testData.getBytes(UTF_8), "application/xml"));
+
+        final int httpResult = client.executeMethod(post);
+
+        assertEquals(HttpStatus.SC_BAD_REQUEST, httpResult);
+    }
+
+    @Test
+    public void retrieveXmlHttp10() {
+        final String testData = "<a><b><c>hello</c></b></a>";
+
+        final PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
+        post.getParams().setVersion(HttpVersion.HTTP_1_0);
+        post.setRequestEntity(new ByteArrayRequestEntity(testData.getBytes(UTF_8), "application/xml"));
 
         testRequest(post, wrapInElement("\n\t" + testData + "\n").getBytes(), true);
+    }
+
+    @Test
+    public void retrieveXmlHttp11() throws IOException {
+        final String testData = "<a><b><c>hello</c></b></a>";
+
+        final PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
+        post.getParams().setVersion(HttpVersion.HTTP_1_1);
+        post.setRequestEntity(new ByteArrayRequestEntity(testData.getBytes(UTF_8), "application/xml"));
+
+        testRequest(post, wrapInElement("\n\t" + testData + "\n").getBytes(), true);
+    }
+
+    @Test
+    public void retrieveXmlHttp11ChunkedTransferEncoding() throws IOException {
+        final String testData = "<a><b><c>hello</c></b></a>";
+
+        final PostMethod post = new PostMethod(getCollectionRootUri() + "/" + XQUERY_FILENAME);
+        post.getParams().setVersion(HttpVersion.HTTP_1_1);
+
+        try (final InputStream is = new UnsynchronizedByteArrayInputStream(testData.getBytes(UTF_8))) {
+            post.setRequestEntity(new InputStreamRequestEntity(is, "application/xml"));
+
+            testRequest(post, wrapInElement("\n\t" + testData + "\n").getBytes(), true);
+        }
     }
 
     @Test
@@ -121,7 +200,7 @@ public class GetDataTest extends RESTTest {
             assertEquals(HttpStatus.SC_OK, httpResult);
 
             try (final InputStream is = method.getResponseBodyAsStream();
-                    final FastByteArrayOutputStream baos = new FastByteArrayOutputStream()) {
+                    final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
                 baos.write(is);
 
                 byte actualResponse[] = baos.toByteArray();
