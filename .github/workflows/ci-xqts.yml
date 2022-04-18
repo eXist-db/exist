@@ -1,0 +1,28 @@
+name: XQTS
+on: [push, pull_request]
+jobs:
+  xqts:
+    name: W3C XQuery Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          distribution: temurin
+          java-version: '8'
+          cache: 'maven'
+      - name: Maven XQTS Build
+        run: mvn -V -B clean package -DskipTests -Ddependency-check.skip=true --projects exist-xqts --also-make
+      - name: Run XQTS
+        timeout-minutes: 60
+        env:
+          JAVA_OPTS: -XX:+UseG1GC -XX:+UseStringDeduplication
+        run: find exist-xqts/target -name exist-xqts-runner.sh -exec {} --xqts-version HEAD --output-dir /tmp/xqts-output \;
+      - name: Archive XQTS Logs
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: xqts-logs
+          retention-days: 14
+          path: /tmp/xqts-output
