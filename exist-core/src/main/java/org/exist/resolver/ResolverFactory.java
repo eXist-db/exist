@@ -42,6 +42,7 @@ import org.xmlresolver.XMLResolverConfiguration;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -51,7 +52,7 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 /**
  * Factory for creating Resolvers.
  *
- * @author <a href="adam@evolvedbinary.com>Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public interface ResolverFactory {
 
@@ -63,7 +64,7 @@ public interface ResolverFactory {
      *
      * @return the resolver
      *
-     * @throws URISyntaxException
+     * @throws URISyntaxException if one of the catalog URI is invalid
      */
     static Resolver newResolver(final List<Tuple2<String, Optional<InputSource>>> catalogs) throws URISyntaxException {
         final XMLResolverConfiguration resolverConfiguration = new XMLResolverConfiguration();
@@ -73,14 +74,33 @@ public interface ResolverFactory {
         resolverConfiguration.setFeature(ResolverFeature.URI_FOR_SYSTEM, true);
 
         for (final Tuple2<String, Optional<InputSource>> catalog : catalogs) {
+            String strCatalogUri = catalog._1;
+            strCatalogUri = sanitizeCatalogUri(strCatalogUri);
             if (catalog._2.isPresent()) {
-                resolverConfiguration.addCatalog(new URI(catalog._1), catalog._2.get());
+                resolverConfiguration.addCatalog(new URI(strCatalogUri), catalog._2.get());
             } else {
-                resolverConfiguration.addCatalog(catalog._1);
+                resolverConfiguration.addCatalog(strCatalogUri);
             }
         }
 
         return new Resolver(resolverConfiguration);
+    }
+
+    /**
+     * Sanitize the Catalog URI.
+     *
+     * Mainly deals with converting Windows file paths to URI.
+     *
+     * @param strCatalogUri The Catalog URI string
+     *
+     * @return The sanitized Catalog URI string
+     */
+    static String sanitizeCatalogUri(String strCatalogUri) {
+        if (strCatalogUri.indexOf('\\') > -1) {
+            // convert from Windows file path
+            strCatalogUri = Paths.get(strCatalogUri).toUri().toString();
+        }
+        return strCatalogUri;
     }
 
     /**
