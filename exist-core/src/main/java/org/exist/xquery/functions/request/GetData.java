@@ -23,6 +23,8 @@ package org.exist.xquery.functions.request;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
+
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -77,9 +79,15 @@ public class GetData extends StrictRequestFunction {
     public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request)
             throws XPathException {
 
-        //if the content length is unknown or 0, return
+        // if the content length is unknown or 0, and this is not chunked transfer encoding, return
         if (request.getContentLength() <= 0) {
-            return Sequence.EMPTY_SEQUENCE;
+            final boolean isChunkedTransferEncoding = Optional.ofNullable(request.getHeader("Transfer-Encoding"))
+                    .filter(str -> !str.trim().isEmpty())
+                    .map(str -> "chunked".equals(str)).orElse(false);
+
+            if (!isChunkedTransferEncoding) {
+                return Sequence.EMPTY_SEQUENCE;
+            }
         }
 
         InputStream isRequest = null;
