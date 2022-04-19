@@ -99,6 +99,15 @@ public class IntegerPictureTest {
         assertEquals("0,0009", fmt("###4,1234", 9L));
     }
 
+    @Test public void formatOptionalOrdinal() throws XPathException {
+        assertEquals("001st", fmt("#234;o", 1L));
+        assertEquals("009th", fmt("#234;o", 9L));
+        assertEquals("123456789th", fmt("#234;o", 123456789L));
+        assertEquals("000,0009th", fmt("#234,1234;o", 9L));
+        assertEquals("0009th", fmt("####,1234;o", 9L));
+        assertEquals("0,0009th", fmt("###4,1234;o", 9L));
+    }
+
     @Test public void formatDefaultFamily() throws XPathException {
         StringBuilder sb = new StringBuilder();
         sb.append("#234567");
@@ -278,7 +287,6 @@ public class IntegerPictureTest {
         assertEquals("fifth", fmt("w;o", 5L));
         assertEquals("cinque", fmt("w;a", 5L, "it"));
         assertEquals("cinquo", fmt("w;o", 5L, "it"));
-        assertEquals("1st", fmt("1;o", 1L));
         assertEquals("uno", fmt("w;a", 1L, "it"));
         assertEquals("primo", fmt("w;o", 1L, "it"));
     }
