@@ -64,6 +64,15 @@ public class IntegerPictureTest {
         assertEquals("0,1", fmt("1,1", 1L));
     }
 
+    @Test public void formatCardinalModifier() throws XPathException {
+        //c for cardinal is the default, but we still need to recognize it
+        assertEquals("1", fmt("1;c", 1L));
+    }
+
+    @Test public void formatOrdinalModifier() throws XPathException {
+        assertEquals("1st", fmt("1;o", 1L));
+    }
+
     @Test public void formatNegative() throws XPathException {
         assertEquals("-1", fmt("1", -1L));
         assertEquals("-01", fmt("12", -1L));
@@ -201,8 +210,69 @@ public class IntegerPictureTest {
         }
     }
 
-    @Test public void nonDigitFormat() throws XPathException {
-        assertEquals("0|005", fmt("A", 5L));
+    @Test public void alphaUpperDigitFormat() throws XPathException {
+        assertEquals("E", fmt("A", 5L));
+        try {
+            assertEquals("E", fmt("A", 0L));
+            fail("The picture A should not format a number < 1");
+        } catch (XPathException xpe) {
+            assertTrue(xpe.getDetailMessage().contains("cannot be used to format a number less than 1"));
+        }
+        assertEquals("Y", fmt("A", 25L));
+        assertEquals("Z", fmt("A", 26L));
+        assertEquals("AA", fmt("A", 27L));
+        assertEquals("AB", fmt("A", 28L));
+        assertEquals("AZ", fmt("A", 52L));
+        assertEquals("BA", fmt("A", 53L));
+        assertEquals("CA", fmt("A", 79L));
+        assertEquals("ZZ", fmt("A", 702L));
+        assertEquals("AAA", fmt("A", 703L));
+        assertEquals("AAZ", fmt("A", 728L));
+        assertEquals("ZZZ", fmt("A", 18278));
+        assertEquals("AAAA", fmt("A", 18279));
+    }
+
+    @Test public void alphaLowerDigitFormat() throws XPathException {
+        assertEquals("e", fmt("a", 5L));
+        try {
+            assertEquals("e", fmt("a", 0L));
+            fail("The picture A should not format a number < 1");
+        } catch (XPathException xpe) {
+            assertTrue(xpe.getDetailMessage().contains("cannot be used to format a number less than 1"));
+        }
+
+        assertEquals("y", fmt("a", 25L));
+        assertEquals("z", fmt("a", 26L));
+        assertEquals("aa", fmt("a", 27L));
+        assertEquals("ab", fmt("a", 28L));
+        assertEquals("az", fmt("a", 52L));
+        assertEquals("ba", fmt("a", 53L));
+        assertEquals("ca", fmt("a", 79L));
+        assertEquals("zz", fmt("a", 702L));
+        assertEquals("aaa", fmt("a", 703L));
+        assertEquals("aaz", fmt("a", 728L));
+        assertEquals("zzz", fmt("a", 18278));
+        assertEquals("aaaa", fmt("a", 18279));
+    }
+
+    @Test public void romanLowerDigitFormat() throws XPathException {
+        assertEquals("0|005", fmt("i", 5L));
+    }
+
+    @Test public void romanUpperDigitFormat() throws XPathException {
+        assertEquals("0|005", fmt("I", 5L));
+    }
+
+    @Test public void wordLowerDigitFormat() throws XPathException {
+        assertEquals("0|005", fmt("w", 5L));
+    }
+
+    @Test public void wordUpperDigitFormat() throws XPathException {
+        assertEquals("0|005", fmt("W", 5L));
+    }
+
+    @Test public void wordTitleCaseDigitFormat() throws XPathException {
+        assertEquals("0|005", fmt("Ww", 5L));
     }
 
 }

@@ -36,16 +36,23 @@ import java.util.regex.Pattern;
  * Formatting integers according to https://www.w3.org/TR/xpath-functions-31/#formatting-integers
  */
 public class DigitsIntegerPicture extends IntegerPicture {
+
     final static Pattern separatorPattern = Pattern.compile("([^\\p{N}\\p{L}])");
     final static Pattern groupPattern = Pattern.compile("(#*)(\\p{Nd}*)");
+
+    private String primaryFormatToken;
+    private String formatModifier;
 
     private final List<Group> groups = new ArrayList<>();
     private boolean groupsAreRegular = false;
     private int mandatoryDigits = 1;
     private int digitFamily = -1;
 
-    public DigitsIntegerPicture(String primaryFormatToken, String formatModifier) {
-        super(primaryFormatToken, formatModifier);
+    protected DigitsIntegerPicture(final String primaryFormatToken, final String formatModifier) throws XPathException {
+        this.primaryFormatToken = primaryFormatToken;
+        this.formatModifier = formatModifier;
+
+        parseFormatToken();
     }
 
     /**
@@ -53,26 +60,10 @@ public class DigitsIntegerPicture extends IntegerPicture {
      * @throws XPathException if the format is incorrectly formed
      * {@see https://www.w3.org/TR/xpath-functions-31/#formatting-integers}
      */
-    @Override
-    void parseFormatToken() throws XPathException {
+    protected void parseFormatToken() throws XPathException {
             buildGroups();
             countMandatoryDigits(); // Do it before we regularize
             regularizeGroups();
-    }
-
-    /**
-     * Convert a string into a list of unicode code points
-     * @param s the input string
-     * @return a list of the codepoints forming the string
-     */
-    private List<Integer> codePoints(String s) {
-        final List<Integer> codePointList = new ArrayList<>(s.length());
-        for (int i = 0; i < s.length();) {
-            int codePoint = Character.codePointAt(s, i);
-            i += Character.charCount(codePoint);
-            codePointList.add(codePoint);
-        }
-        return codePointList;
     }
 
     /**
@@ -89,12 +80,12 @@ public class DigitsIntegerPicture extends IntegerPicture {
             }
             end = m.end();
             Group group = new Group();
-            group.optional = codePoints(m.group(1)).size();
+            group.optional = CodePoints(m.group(1)).size();
             if (group.optional > 0 && mandatoryDigitsObserved) {
                 throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " has optional digit after mandatory digit");
             }
 
-            final List<Integer> mandatory = codePoints(m.group(2));
+            final List<Integer> mandatory = CodePoints(m.group(2));
             group.mandatory = mandatory.size();
             if (group.mandatory > 0) {
                 mandatoryDigitsObserved = true;
@@ -212,8 +203,6 @@ public class DigitsIntegerPicture extends IntegerPicture {
         }
         return sb.substring(0, sb.length() - 2);
     }
-
-    final static BigInteger TEN = BigInteger.valueOf(10L);
 
     /**
      * Format a number according to this formatting picture
