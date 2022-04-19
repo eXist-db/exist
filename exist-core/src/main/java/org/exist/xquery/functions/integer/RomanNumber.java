@@ -28,36 +28,36 @@
 
 package org.exist.xquery.functions.integer;
 
-import org.exist.xquery.XPathException;
+import java.util.TreeMap;
 
-import java.math.BigInteger;
+class RomanNumber {
 
-public class SequenceIntegerPicture extends IntegerPicture {
+    private final static TreeMap<Integer, String> map = new TreeMap<Integer, String>();
 
-    private final static BigInteger RADIX = BigInteger.valueOf(26L);
+    static {
 
-    private final int codePoint;
+        map.put(1000, "M");
+        map.put(900, "CM");
+        map.put(500, "D");
+        map.put(400, "CD");
+        map.put(100, "C");
+        map.put(90, "XC");
+        map.put(50, "L");
+        map.put(40, "XL");
+        map.put(10, "X");
+        map.put(9, "IX");
+        map.put(5, "V");
+        map.put(4, "IV");
+        map.put(1, "I");
 
-    SequenceIntegerPicture(final int codePoint) {
-        this.codePoint = codePoint;
     }
 
-    @Override
-    public String formatInteger(BigInteger bigInteger, String language) throws XPathException {
-        //spec says out of range should be formatted by "1"
-        if (bigInteger.compareTo(BigInteger.ZERO) <= 0) {
-            return DEFAULT.formatInteger(bigInteger, language);
+    public static String toRoman(int number) {
+        int l = map.floorKey(number);
+        if (number == l) {
+            return map.get(number);
         }
-
-        StringBuilder sb = new StringBuilder();
-        do {
-            bigInteger = bigInteger.subtract(BigInteger.ONE);
-            BigInteger[] divideAndRemainder = bigInteger.divideAndRemainder(RADIX);
-            sb.append(FromCodePoint(codePoint + divideAndRemainder[1].intValue()));
-            bigInteger = divideAndRemainder[0];
-        }
-        while (bigInteger.compareTo(BigInteger.ZERO) > 0);
-
-        return sb.reverse().toString();
+        return map.get(l) + toRoman(number - l);
     }
+
 }

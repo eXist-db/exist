@@ -256,11 +256,16 @@ public class IntegerPictureTest {
     }
 
     @Test public void romanLowerDigitFormat() throws XPathException {
-        assertEquals("0|005", fmt("i", 5L));
+        assertEquals("v", fmt("i", 5L));
     }
 
     @Test public void romanUpperDigitFormat() throws XPathException {
-        assertEquals("0|005", fmt("I", 5L));
+        assertEquals("V", fmt("I", 5L));
+        assertEquals("MDCCCLXVIII", fmt("I", 1868L));
+        assertEquals("MCMLXXXIV", fmt("I", 1984L));
+        assertEquals("-1", fmt("I", -1L));
+        assertEquals("0", fmt("I", 0L));
+        assertEquals("5984", fmt("I", 5984L));
     }
 
     @Test public void wordLowerDigitFormat() throws XPathException {

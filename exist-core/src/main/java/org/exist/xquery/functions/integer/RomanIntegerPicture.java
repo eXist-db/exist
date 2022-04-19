@@ -1,5 +1,6 @@
 /*
  * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
  * info@exist-db.org
  * http://www.exist-db.org
@@ -17,13 +18,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * The source code for this class is taken from the stackoverflow answer
- * https://stackoverflow.com/questions/12967896/converting-integers-to-roman-numerals-java
- * written by https://stackoverflow.com/users/1420681/ben-hur-langoni-junior
- * and is therefore used and made available in accordance with
- * https://creativecommons.org/licenses/by-sa/3.0
- *
  */
 
 package org.exist.xquery.functions.integer;
@@ -32,32 +26,25 @@ import org.exist.xquery.XPathException;
 
 import java.math.BigInteger;
 
-public class SequenceIntegerPicture extends IntegerPicture {
+public class RomanIntegerPicture extends IntegerPicture {
 
-    private final static BigInteger RADIX = BigInteger.valueOf(26L);
+    private final boolean isUpper;
 
-    private final int codePoint;
-
-    SequenceIntegerPicture(final int codePoint) {
-        this.codePoint = codePoint;
+    public RomanIntegerPicture(boolean isUpper) {
+        this.isUpper = isUpper;
     }
-
     @Override
     public String formatInteger(BigInteger bigInteger, String language) throws XPathException {
         //spec says out of range should be formatted by "1"
-        if (bigInteger.compareTo(BigInteger.ZERO) <= 0) {
+        if (bigInteger.compareTo(BigInteger.ZERO) <= 0 || bigInteger.compareTo(BigInteger.valueOf(4999L)) > 0) {
             return DEFAULT.formatInteger(bigInteger, language);
         }
 
-        StringBuilder sb = new StringBuilder();
-        do {
-            bigInteger = bigInteger.subtract(BigInteger.ONE);
-            BigInteger[] divideAndRemainder = bigInteger.divideAndRemainder(RADIX);
-            sb.append(FromCodePoint(codePoint + divideAndRemainder[1].intValue()));
-            bigInteger = divideAndRemainder[0];
+        String roman = RomanNumber.toRoman(bigInteger.intValue());
+        if (isUpper) {
+            return roman.toUpperCase();
+        } else {
+            return roman.toLowerCase();
         }
-        while (bigInteger.compareTo(BigInteger.ZERO) > 0);
-
-        return sb.reverse().toString();
     }
 }
