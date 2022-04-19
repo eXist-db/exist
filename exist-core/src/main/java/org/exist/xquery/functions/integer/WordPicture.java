@@ -1,13 +1,11 @@
 package org.exist.xquery.functions.integer;
 
+import com.ibm.icu.text.RuleBasedNumberFormat;
 import org.apache.commons.lang3.StringUtils;
 import org.exist.xquery.XPathException;
 
-import pl.allegro.finance.tradukisto.ValueConverters;
-
 import java.math.BigInteger;
 import java.util.Locale;
-import java.util.Optional;
 
 public class WordPicture extends IntegerPicture {
 
@@ -18,8 +16,9 @@ public class WordPicture extends IntegerPicture {
 
         String convert(int fromValue, String language) {
 
-            ValueConverters converter = ValueConverters.getByLanguageCodeOrDefault(language, ValueConverters.ENGLISH_INTEGER);
-            String formatted = converter.asWords(fromValue);
+            Locale locale = (new Locale.Builder()).setLanguage(language).build();
+            RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat( locale, RuleBasedNumberFormat.SPELLOUT );
+            String formatted = ruleBasedNumberFormat.format(fromValue);
 
             String result = null;
             switch (this) {
@@ -27,7 +26,6 @@ public class WordPicture extends IntegerPicture {
                     result = formatted;
                     break;
                 case Upper:
-                    Locale locale = (new Locale.Builder()).setLanguage(language).build();
                     result = formatted.toUpperCase(locale);
                     break;
                  case Capitalized:

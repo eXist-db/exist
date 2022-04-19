@@ -75,10 +75,6 @@ public class IntegerPictureTest {
         assertEquals("1", fmt("1;c", 1L));
     }
 
-    @Test public void formatOrdinalModifier() throws XPathException {
-        assertEquals("1st", fmt("1;o", 1L));
-    }
-
     @Test public void formatNegative() throws XPathException {
         assertEquals("-1", fmt("1", -1L));
         assertEquals("-01", fmt("12", -1L));
@@ -274,7 +270,17 @@ public class IntegerPictureTest {
         assertEquals("fifteen", fmt("w", 15L));
         assertEquals("fünfzehn", fmt("w", 15L, "de"));
         assertEquals("two thousand five hundred ninety-eight", fmt("w", 2598L, "en"));
-        assertEquals("zweitausendfünfhundertachtundneunzig", fmt("w", 2598L, "de"));
+        assertEquals("zwei\u00ADtausend\u00ADfünf\u00ADhundert\u00ADacht\u00ADund\u00ADneunzig", fmt("w", 2598L, "de"));
+    }
+
+    @Test public void wordModifiers() throws XPathException {
+        assertEquals("five", fmt("w", 5L));
+        assertEquals("fifth", fmt("w;o", 5L));
+        assertEquals("cinque", fmt("w;a", 5L, "it"));
+        assertEquals("cinquo", fmt("w;o", 5L, "it"));
+        assertEquals("1st", fmt("1;o", 1L));
+        assertEquals("uno", fmt("w;a", 1L, "it"));
+        assertEquals("primo", fmt("w;o", 1L, "it"));
     }
 
     @Test public void wordUpperDigitFormat() throws XPathException {
