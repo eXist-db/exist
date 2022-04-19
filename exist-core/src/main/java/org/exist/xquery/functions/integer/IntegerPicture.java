@@ -95,8 +95,11 @@ public abstract class IntegerPicture {
             case "I":
                 return new RomanIntegerPicture(true/*isUpper*/);
             case "W":
+                return new WordPicture(WordPicture.CaseAndCaps.Upper);
             case "w":
+                return new WordPicture(WordPicture.CaseAndCaps.Lower);
             case "Ww":
+                return new WordPicture(WordPicture.CaseAndCaps.Capitalized);
             default:
                 // TODO (AP) any other token
                 throw new XPathException(ErrorCodes.FODF1310, "Not implemented");
@@ -104,10 +107,11 @@ public abstract class IntegerPicture {
     }
 
     /**
-     * pass an integer and a language string to the picture, and format the integer according to the picture and language
-     * @param bigInteger
-     * @param language
-     * @return
+     * Format an integer according to the picture and language with which this was constructed
+     *
+     * @param bigInteger the integer to format
+     * @param language the language to use in formatting
+     * @return a string containing the formatted integer
      */
     abstract public String formatInteger(BigInteger bigInteger, String language) throws XPathException;
 

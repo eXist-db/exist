@@ -27,6 +27,7 @@ import org.exist.xquery.functions.integer.IntegerPicture;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -54,6 +55,11 @@ public class IntegerPictureTest {
     private String fmt(String pictureString, long value) throws XPathException {
         IntegerPicture picture = IntegerPicture.fromString(pictureString);
         return picture.formatInteger(BigInteger.valueOf(value), "en");
+    }
+
+    private String fmt(String pictureString, long value, String language) throws XPathException {
+        IntegerPicture picture = IntegerPicture.fromString(pictureString);
+        return picture.formatInteger(BigInteger.valueOf(value), language);
     }
 
     @Test public void format() throws XPathException {
@@ -212,12 +218,6 @@ public class IntegerPictureTest {
 
     @Test public void alphaUpperDigitFormat() throws XPathException {
         assertEquals("E", fmt("A", 5L));
-        try {
-            assertEquals("E", fmt("A", 0L));
-            fail("The picture A should not format a number < 1");
-        } catch (XPathException xpe) {
-            assertTrue(xpe.getDetailMessage().contains("cannot be used to format a number less than 1"));
-        }
         assertEquals("Y", fmt("A", 25L));
         assertEquals("Z", fmt("A", 26L));
         assertEquals("AA", fmt("A", 27L));
@@ -230,17 +230,14 @@ public class IntegerPictureTest {
         assertEquals("AAZ", fmt("A", 728L));
         assertEquals("ZZZ", fmt("A", 18278));
         assertEquals("AAAA", fmt("A", 18279));
+
+        //out of range, format is "1L"
+        assertEquals("0", fmt("A", 0L));
+        assertEquals("-35", fmt("A", -35L));
     }
 
     @Test public void alphaLowerDigitFormat() throws XPathException {
         assertEquals("e", fmt("a", 5L));
-        try {
-            assertEquals("e", fmt("a", 0L));
-            fail("The picture A should not format a number < 1");
-        } catch (XPathException xpe) {
-            assertTrue(xpe.getDetailMessage().contains("cannot be used to format a number less than 1"));
-        }
-
         assertEquals("y", fmt("a", 25L));
         assertEquals("z", fmt("a", 26L));
         assertEquals("aa", fmt("a", 27L));
@@ -253,6 +250,10 @@ public class IntegerPictureTest {
         assertEquals("aaz", fmt("a", 728L));
         assertEquals("zzz", fmt("a", 18278));
         assertEquals("aaaa", fmt("a", 18279));
+
+        //out of range, format is "1L"
+        assertEquals("0", fmt("a", 0L));
+        assertEquals("-35", fmt("a", -35L));
     }
 
     @Test public void romanLowerDigitFormat() throws XPathException {
@@ -269,15 +270,24 @@ public class IntegerPictureTest {
     }
 
     @Test public void wordLowerDigitFormat() throws XPathException {
-        assertEquals("0|005", fmt("w", 5L));
+        assertEquals("five", fmt("w", 5L));
+        assertEquals("fifteen", fmt("w", 15L));
+        assertEquals("fünfzehn", fmt("w", 15L, "de"));
+        assertEquals("two thousand five hundred ninety-eight", fmt("w", 2598L, "en"));
+        assertEquals("zweitausendfünfhundertachtundneunzig", fmt("w", 2598L, "de"));
     }
 
     @Test public void wordUpperDigitFormat() throws XPathException {
-        assertEquals("0|005", fmt("W", 5L));
+        assertEquals("FIVE", fmt("W", 5L));
+        assertEquals("FIFTEEN", fmt("W", 15L));
+        assertEquals("FIFTEEN", fmt("W", 15L, "unknown"));
+        assertEquals("FÜNFZEHN", fmt("W", 15L, "de"));
     }
 
     @Test public void wordTitleCaseDigitFormat() throws XPathException {
-        assertEquals("0|005", fmt("Ww", 5L));
+        assertEquals("Five", fmt("Ww", 5L));
+        assertEquals("Fifteen", fmt("Ww", 15L));
+        assertEquals("Two thousand five hundred ninety-eight", fmt("Ww", 2598L, "en"));
     }
 
 }

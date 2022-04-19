@@ -26,13 +26,14 @@ import org.exist.xquery.XPathException;
 
 import java.math.BigInteger;
 
-public class RomanIntegerPicture extends IntegerPicture {
+class RomanIntegerPicture extends IntegerPicture {
 
     private final boolean isUpper;
 
-    public RomanIntegerPicture(boolean isUpper) {
+    RomanIntegerPicture(boolean isUpper) {
         this.isUpper = isUpper;
     }
+
     @Override
     public String formatInteger(BigInteger bigInteger, String language) throws XPathException {
         //spec says out of range should be formatted by "1"

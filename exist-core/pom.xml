@@ -588,6 +588,11 @@
             <artifactId>fluent-hc</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>pl.allegro.finance</groupId>
+            <artifactId>tradukisto</artifactId>
+            <version>1.10.6</version>
+        </dependency>
 
     </dependencies>
 

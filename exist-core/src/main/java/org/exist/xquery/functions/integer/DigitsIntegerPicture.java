@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
 /**
  * Formatting integers according to https://www.w3.org/TR/xpath-functions-31/#formatting-integers
  */
-public class DigitsIntegerPicture extends IntegerPicture {
+class DigitsIntegerPicture extends IntegerPicture {
 
     final static Pattern separatorPattern = Pattern.compile("([^\\p{N}\\p{L}])");
     final static Pattern groupPattern = Pattern.compile("(#*)(\\p{Nd}*)");
@@ -48,7 +48,7 @@ public class DigitsIntegerPicture extends IntegerPicture {
     private int mandatoryDigits = 1;
     private int digitFamily = -1;
 
-    protected DigitsIntegerPicture(final String primaryFormatToken, final String formatModifier) throws XPathException {
+    DigitsIntegerPicture(final String primaryFormatToken, final String formatModifier) throws XPathException {
         this.primaryFormatToken = primaryFormatToken;
         this.formatModifier = formatModifier;
 
@@ -60,7 +60,7 @@ public class DigitsIntegerPicture extends IntegerPicture {
      * @throws XPathException if the format is incorrectly formed
      * {@see https://www.w3.org/TR/xpath-functions-31/#formatting-integers}
      */
-    protected void parseFormatToken() throws XPathException {
+    private void parseFormatToken() throws XPathException {
             buildGroups();
             countMandatoryDigits(); // Do it before we regularize
             regularizeGroups();

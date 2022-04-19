@@ -32,7 +32,7 @@ import org.exist.xquery.XPathException;
 
 import java.math.BigInteger;
 
-public class SequenceIntegerPicture extends IntegerPicture {
+class SequenceIntegerPicture extends IntegerPicture {
 
     private final static BigInteger RADIX = BigInteger.valueOf(26L);
 
