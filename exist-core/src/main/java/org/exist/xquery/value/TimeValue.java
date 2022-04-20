@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.value;
 
-import org.exist.util.ByteConversion;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -29,17 +28,18 @@ import org.exist.xquery.XPathException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.GregorianCalendar;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class TimeValue extends AbstractDateTimeValue {
 
-    public static final int SERIALIZED_SIZE = 7;
+    public static final int MIN_SERIALIZED_SIZE = 4;
+    public static final int MAX_SERIALIZED_SIZE = 5;
 
     public TimeValue() throws XPathException {
         super(null, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
@@ -139,11 +139,11 @@ public class TimeValue extends AbstractDateTimeValue {
     @Override
     public <T> T toJavaObject(final Class<T> target) throws XPathException {
         if (target == byte[].class) {
-            final ByteBuffer buf = ByteBuffer.allocate(SERIALIZED_SIZE);
+            final ByteBuffer buf = ByteBuffer.allocate(MAX_SERIALIZED_SIZE);
             serialize(buf);
             return (T) buf.array();
         } else if (target == ByteBuffer.class) {
-            final ByteBuffer buf = ByteBuffer.allocate(SERIALIZED_SIZE);
+            final ByteBuffer buf = ByteBuffer.allocate(MAX_SERIALIZED_SIZE);
             serialize(buf);
             return (T) buf;
         } else {
@@ -154,38 +154,82 @@ public class TimeValue extends AbstractDateTimeValue {
     /**
      * Serializes to a ByteBuffer.
      *
-     * 7 bytes where: [0 (Hour), 1 (Minute), 2 (Second), 3-4 (Milliseconds), 5-6 (Timezone)]
+     * 4 to 5 bytes comprised of 28 to 39 used bits:
+     *
+     * -Reserved- = 1 bits
+     * Hour = 5 bits
+     * Minute = 6 bits
+     * Second = 6 bits
+     * Milliseconds = 10 bits
+     * Timezone defined = 1 bit
+     * (if Timezone defined) Timezone (Hour = 4 bits, Minute = 6 bits, ± = 1 bit) = 11 bits
      *
      * @param buf the ByteBuffer to serialize to.
      */
     public void serialize(final ByteBuffer buf) {
-        buf.put((byte) calendar.getHour());
-        buf.put((byte) calendar.getMinute());
-        buf.put((byte) calendar.getSecond());
+        final int tz = calendar.getTimezone();
+        final boolean tzDefined = tz != DatatypeConstants.FIELD_UNDEFINED;
 
-        final int ms = calendar.getMillisecond();
-        if (ms == DatatypeConstants.FIELD_UNDEFINED) {
-            buf.putShort((short) 0);
+        final byte b0 = (byte) (((calendar.getHour() & 0x1F) << 2) | ((calendar.getMinute() & 0x3F) >> 4));                             // 1 bit Reserved, 5 bits Hour, 2 bit Minute
+        final byte b1 = (byte) (((calendar.getMinute() & 0xF) << 4) | ((calendar.getSecond() & 0x3F) >> 2));                            // 4 bits Minute, 4 bits Second
+        final byte b2 = (byte) (((calendar.getSecond() & 0x3) << 6) | ((calendar.getMillisecond() & 0x3FF) >> 4));                      // 2 bits Second, 6 bits Millisecond
+
+        if (!tzDefined) {
+            final byte b3 = (byte) ((calendar.getMillisecond() & 0xF) << 4);                                                            // 4 bits Millisecond, 4 bits unused
+
+            buf.put(b0);
+            buf.put(b1);
+            buf.put(b2);
+            buf.put(b3);
+
         } else {
-            ByteConversion.shortToByteH((short) ms, buf);
-        }
+            final int atz = Math.abs(tz);
+            final int tzHour = atz / 60;
+            final int tzMinute = atz - (tzHour * 60);
 
-        // values for timezone range from -14*60 to 14*60, so we can use a short, but
-        // need to choose a different value for FIELD_UNDEFINED, which is not the same as 0 (= UTC)
-        final int timezone = calendar.getTimezone();
-        ByteConversion.shortToByteH((short) (timezone == DatatypeConstants.FIELD_UNDEFINED ? Short.MAX_VALUE : timezone), buf);
+            final byte b3 = (byte) (((calendar.getMillisecond() & 0xF) << 4) | (1 << 3) | ((tzHour & 0xF) >> 1));                       // 4 bits Millisecond, 1 bit TZ defined, 3 bits TZ Hour
+            final byte b4 = (byte) (((tzHour & 0x1) << 7) | ((tzMinute & 0x3F) << 1) | (tz > 0 ? 1 : 0));                               // 1 bit TZ Hour, 6 bits TZ Minute, 1 bit TZ Sign
+
+            buf.put(b0);
+            buf.put(b1);
+            buf.put(b2);
+            buf.put(b3);
+            buf.put(b4);
+        }
     }
 
+    /**
+     * Deserializes from a ByteBuffer.
+     *
+     * See {@link #serialize(ByteBuffer)} for format details.
+     *
+     * @param buf the ByteBuffer to deserialize from.
+     *
+     * @return the deserialized TimeValue.
+     */
     public static TimeValue deserialize(final ByteBuffer buf) {
-        final int hour = buf.get();
-        final int minute = buf.get();
-        final int second = buf.get();
+        final byte b0 = buf.get();
+        final byte b1 = buf.get();
+        final byte b2 = buf.get();
+        final byte b3 = buf.get();
 
-        final int ms = ByteConversion.byteToShortH(buf);
+        final int hour = (b0 >> 2) & 0x1F;
+        final int minute = (((b0 & 0x3) << 4) | ((b1 >> 4) & 0xF));
+        final int second = (((b1 & 0xF) << 2) | ((b2 >> 6) & 0x3));
+        final int ms = (((b2 & 0x3F) << 4) | ((b3 >> 4) & 0xF));
 
-        int timezone = ByteConversion.byteToShortH(buf);
-        if (timezone == Short.MAX_VALUE) {
+        final boolean tzDefined = (b3 & 0x8) == 0x8;
+
+        final int timezone;
+        if (!tzDefined) {
             timezone = DatatypeConstants.FIELD_UNDEFINED;
+
+        } else {
+            final byte b4 = buf.get();
+            final int tzHour = (((b3 & 0x7) << 1) | ((b4 >> 7) & 0x1));
+            final int tzMinute = (b4 >> 1) & 0x3F;
+            final int tzSign = ((b4 & 0x1) == 0x1) ? 1 : -1;
+            timezone = ((tzHour * 60) + tzMinute) * tzSign;
         }
 
         return new TimeValue(hour, minute, second, ms, timezone);

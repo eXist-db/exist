@@ -27,6 +27,11 @@ import org.exist.xquery.XPathException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.xml.datatype.XMLGregorianCalendar;
+
+import java.nio.ByteBuffer;
+import java.util.GregorianCalendar;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -35,6 +40,7 @@ import static org.junit.Assert.assertTrue;
  * note: some of these tests rely on local timezone override to -05:00, done in super.setUp()
  *
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @RunWith(ParallelRunner.class)
 public class TimeTest extends AbstractTimeRelatedTestCase {
@@ -358,5 +364,69 @@ public class TimeTest extends AbstractTimeRelatedTestCase {
         final DurationValue d = new DayTimeDurationValue("P23DT10H10M");
         final AbstractDateTimeValue r = new TimeValue("22:10:00-05:00");
         assertDateEquals(r, t.minus(d));
+    }
+
+    @Test
+    public void serializeDeserializeNow() throws XPathException {
+        final XMLGregorianCalendar now = TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar());
+
+        serializeDeserialize(now);
+    }
+
+    @Test
+    public void serializeDeserializeMin() throws XPathException {
+        final XMLGregorianCalendar min = TimeUtils.getInstance().newXMLGregorianCalendar();
+        min.setTime(0,0,0,0);
+        min.setTimezone(-12 * 60);
+
+        serializeDeserialize(min);
+    }
+
+    @Test
+    public void serializeDeserializeMinNoTimezone() throws XPathException {
+        final XMLGregorianCalendar min = TimeUtils.getInstance().newXMLGregorianCalendar();
+        min.setTime(0,0,0,0);
+
+        serializeDeserialize(min);
+    }
+
+    @Test
+    public void serializeDeserializeMax() throws XPathException {
+        final XMLGregorianCalendar max = TimeUtils.getInstance().newXMLGregorianCalendar();
+        max.setTime(23,59,59,999);
+        max.setTimezone(14 * 60);
+
+        serializeDeserialize(max);
+    }
+
+    @Test
+    public void serializeDeserializeMaxNoTimezone() throws XPathException {
+        final XMLGregorianCalendar max = TimeUtils.getInstance().newXMLGregorianCalendar();
+        max.setTime(23,59,59,999);
+
+        serializeDeserialize(max);
+    }
+
+    private void serializeDeserialize(final XMLGregorianCalendar calendar) throws XPathException {
+        // serialize
+        final ByteBuffer buffer = ByteBuffer.allocate(TimeValue.MAX_SERIALIZED_SIZE);
+        final TimeValue timeValue1 = new TimeValue(calendar);
+        timeValue1.serialize(buffer);
+
+        assertTrue(buffer.position() >= TimeValue.MIN_SERIALIZED_SIZE);
+        assertTrue(buffer.position() <= TimeValue.MAX_SERIALIZED_SIZE);
+        assertEquals(TimeValue.MAX_SERIALIZED_SIZE - buffer.position(), buffer.remaining());
+
+        buffer.flip();
+
+        // deserialize
+        final TimeValue timeValue2 = TimeValue.deserialize(buffer);
+
+        assertEquals(timeValue1, timeValue2);
+        assertEquals(calendar.getHour(), timeValue2.getTrimmedCalendar().getHour());
+        assertEquals(calendar.getMinute(), timeValue2.getTrimmedCalendar().getMinute());
+        assertEquals(calendar.getSecond(), timeValue2.getTrimmedCalendar().getSecond());
+        assertEquals(calendar.getMillisecond(), timeValue2.getTrimmedCalendar().getMillisecond());
+        assertEquals(calendar.getTimezone(), timeValue2.getTrimmedCalendar().getTimezone());
     }
 }

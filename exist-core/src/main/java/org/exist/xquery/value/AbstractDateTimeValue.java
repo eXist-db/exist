@@ -48,6 +48,7 @@ import java.util.regex.Pattern;
  * @author wolf
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  * @author ljo
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public abstract class AbstractDateTimeValue extends ComputableValue {
 
@@ -237,6 +238,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 
     protected abstract QName getXMLSchemaType();
 
+    @Override
     public String getStringValue() throws XPathException {
         String r = getTrimmedCalendar().toXMLFormat();
         // hacked to match the format mandated in XPath 2 17.1.2, which is different from the XML Schema canonical format
@@ -461,7 +463,12 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         }
     }
 
-    public boolean equals(Object obj) {
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
         if (obj instanceof AbstractDateTimeValue) {
             final AbstractDateTimeValue dt = (AbstractDateTimeValue) obj;
             return calendar.equals(dt.calendar);
@@ -470,6 +477,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         return false;
     }
 
+    @Override
     public int hashCode() {
         return calendar.hashCode();
     }
