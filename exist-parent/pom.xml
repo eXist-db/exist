@@ -895,6 +895,7 @@
                             <excludes>
                                 <exclude>FDB-backport-LGPL-21-ONLY-license.template.txt</exclude>
                                 <exclude>FDB-backport-LGPL-21-ONLY-license.xml.template.txt</exclude>
+                                <exclude>LGPL-21-license.txt</exclude>
                             </excludes>
                         </licenseSet>
                     </licenseSets>
