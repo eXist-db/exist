@@ -77,7 +77,7 @@ public class WordPicture extends IntegerPicture {
     @Override
     public String formatInteger(BigInteger bigInteger, String language) throws XPathException {
         //spec says out of range should be formatted by "1"
-        if (bigInteger.compareTo(BigInteger.ZERO) <= 0 || bigInteger.compareTo(BigInteger.valueOf(4999L)) > 0) {
+        if (bigInteger.compareTo(BigInteger.ZERO) <= 0 || bigInteger.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) > 0) {
             return DEFAULT.formatInteger(bigInteger, language);
         }
 
