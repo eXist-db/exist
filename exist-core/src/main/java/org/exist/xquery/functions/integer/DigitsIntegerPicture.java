@@ -41,14 +41,14 @@ class DigitsIntegerPicture extends IntegerPicture {
     final static Pattern groupPattern = Pattern.compile("(#*)(\\p{Nd}*)");
 
     private String primaryFormatToken;
-    private String formatModifier;
+    private FormatModifier formatModifier;
 
     private final List<Group> groups = new ArrayList<>();
     private boolean groupsAreRegular = false;
     private int mandatoryDigits = 1;
     private int digitFamily = -1;
 
-    DigitsIntegerPicture(final String primaryFormatToken, final String formatModifier) throws XPathException {
+    DigitsIntegerPicture(final String primaryFormatToken, final FormatModifier formatModifier) throws XPathException {
         this.primaryFormatToken = primaryFormatToken;
         this.formatModifier = formatModifier;
 
@@ -212,20 +212,26 @@ class DigitsIntegerPicture extends IntegerPicture {
      */
     @Override
     public String formatInteger(BigInteger bigInteger, String language) {
-        StringBuilder reversed = formatNonNegativeInteger(bigInteger.abs(), language);
+        final StringBuilder reversed = formatNonNegativeInteger(bigInteger.abs());
         if (bigInteger.compareTo(BigInteger.ZERO) < 0) {
             reversed.append("-");
         }
-        return reversed.reverse().toString();
+        final StringBuilder result = reversed.reverse();
+        if (formatModifier.numbering == FormatModifier.Numbering.Ordinal &&
+                bigInteger.compareTo(BigInteger.ZERO) > 0 &&
+                bigInteger.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) <= 0) {
+            result.append(ordinalSuffix(bigInteger.intValue(), language));
+        }
+
+        return result.toString();
     }
 
     /**
      *
      * @param bigInteger to format according to this picture
-     * @param language to format {@code bigInteger} in, where words are needed
      * @return the reverse of the formatted string (think of it as a character stack)
      */
-    private StringBuilder formatNonNegativeInteger(BigInteger bigInteger, String language) {
+    private StringBuilder formatNonNegativeInteger(BigInteger bigInteger) {
 
         final StringBuilder sb = new StringBuilder();
         int remainingDigits = mandatoryDigits;

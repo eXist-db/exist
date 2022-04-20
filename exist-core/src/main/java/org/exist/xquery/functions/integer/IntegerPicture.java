@@ -22,12 +22,14 @@
 
 package org.exist.xquery.functions.integer;
 
+import com.ibm.icu.text.RuleBasedNumberFormat;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,7 +39,7 @@ public abstract class IntegerPicture {
 
     static {
         try {
-            DEFAULT = new DigitsIntegerPicture("1", "");
+            DEFAULT = new DigitsIntegerPicture("1", new FormatModifier(""));
         } catch (XPathException e) {
             e.printStackTrace();
         }
@@ -59,15 +61,15 @@ public abstract class IntegerPicture {
     public static IntegerPicture fromString(final String pictureFormat) throws XPathException {
 
         String primaryFormatToken;
-        String formatModifier;
+        FormatModifier formatModifier;
 
         final int splitPosition = pictureFormat.lastIndexOf(';');
         if (splitPosition < 0) {
             primaryFormatToken = pictureFormat;
-            formatModifier = "";
+            formatModifier = new FormatModifier("");
         } else {
             primaryFormatToken = pictureFormat.substring(0, splitPosition);
-            formatModifier = pictureFormat.substring(splitPosition + 1);
+            formatModifier = new FormatModifier(pictureFormat.substring(splitPosition + 1));
         }
         if (primaryFormatToken.isEmpty()) {
             throw new XPathException(ErrorCodes.FODF1310, "Invalid (empty) primary format token in integer format token: " + primaryFormatToken);
@@ -95,11 +97,11 @@ public abstract class IntegerPicture {
             case "I":
                 return new RomanIntegerPicture(true/*isUpper*/);
             case "W":
-                return new WordPicture(WordPicture.CaseAndCaps.Upper);
+                return new WordPicture(WordPicture.CaseAndCaps.Upper, formatModifier);
             case "w":
-                return new WordPicture(WordPicture.CaseAndCaps.Lower);
+                return new WordPicture(WordPicture.CaseAndCaps.Lower, formatModifier);
             case "Ww":
-                return new WordPicture(WordPicture.CaseAndCaps.Capitalized);
+                return new WordPicture(WordPicture.CaseAndCaps.Capitalized, formatModifier);
             default:
                 // TODO (AP) any other token
                 throw new XPathException(ErrorCodes.FODF1310, "Not implemented");
@@ -137,4 +139,15 @@ public abstract class IntegerPicture {
         }
         return sb.toString();
     }
+
+    protected static String ordinalSuffix(int value, String language) {
+        Locale locale = (new Locale.Builder()).setLanguage(language).build();
+        RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat( locale, RuleBasedNumberFormat.ORDINAL);
+        StringBuilder sb = new StringBuilder(ruleBasedNumberFormat.format(value)).reverse();
+        int i = 0;
+        for (; sb.length() > 0 && Character.isAlphabetic(sb.charAt(i)); i++);
+        return sb.delete(i, sb.length()).reverse().toString();
+    }
+
+
 }

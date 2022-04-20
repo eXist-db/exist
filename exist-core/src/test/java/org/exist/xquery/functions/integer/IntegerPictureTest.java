@@ -20,14 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-package org.exist.xquery.functions.util;
+package org.exist.xquery.functions.integer;
 
 import org.exist.xquery.XPathException;
-import org.exist.xquery.functions.integer.IntegerPicture;
 import org.junit.Test;
 
 import java.math.BigInteger;
-import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,18 +36,18 @@ public class IntegerPictureTest {
     }
 
     @Test public void picture() throws XPathException {
-        IntegerPicture picture = IntegerPicture.fromString("123,2345,34567,6789;00;more");
-        assertEquals("primary=123,2345,34567,6789;00::modifier=more::regular=false::group=Group(0,3,,)::group=Group(0,4,,)::group=Group(0,5,,)::group=Group(0,4,;)::group=Group(0,2,)", picture.toString());
-        picture = IntegerPicture.fromString("#23,345,567,789;more");
-        assertEquals("primary=#23,345,567,789::modifier=more::regular=true::group=Group(0,3,,)", picture.toString());
-        picture = IntegerPicture.fromString("123;345,567,789;more");
-        assertEquals("primary=123;345,567,789::modifier=more::regular=false::group=Group(0,3,;)::group=Group(0,3,,)::group=Group(0,3,,)::group=Group(0,3,)", picture.toString());
-        picture = IntegerPicture.fromString("123,2345,567,789;more");
-        assertEquals("primary=123,2345,567,789::modifier=more::regular=false::group=Group(0,3,,)::group=Group(0,4,,)::group=Group(0,3,,)::group=Group(0,3,)", picture.toString());
-        picture = IntegerPicture.fromString("#89;more");
-        assertEquals("primary=#89::modifier=more::regular=true::group=Group(1,2,)", picture.toString());
-        picture = IntegerPicture.fromString("#89|123;more");
-        assertEquals("primary=#89|123::modifier=more::regular=true::group=Group(0,3,|)", picture.toString());
+        IntegerPicture picture = IntegerPicture.fromString("123,2345,34567,6789;00;c(variation)t");
+        assertEquals("primary=123,2345,34567,6789;00::modifier=numbering=Cardinal::variation=variation::lettersequence=Traditional::regular=false::group=Group(0,3,,)::group=Group(0,4,,)::group=Group(0,5,,)::group=Group(0,4,;)::group=Group(0,2,)", picture.toString());
+        picture = IntegerPicture.fromString("#23,345,567,789;c(variation)t");
+        assertEquals("primary=#23,345,567,789::modifier=numbering=Cardinal::variation=variation::lettersequence=Traditional::regular=true::group=Group(0,3,,)", picture.toString());
+        picture = IntegerPicture.fromString("123;345,567,789;c(variation)t");
+        assertEquals("primary=123;345,567,789::modifier=numbering=Cardinal::variation=variation::lettersequence=Traditional::regular=false::group=Group(0,3,;)::group=Group(0,3,,)::group=Group(0,3,,)::group=Group(0,3,)", picture.toString());
+        picture = IntegerPicture.fromString("123,2345,567,789;c(variation)t");
+        assertEquals("primary=123,2345,567,789::modifier=numbering=Cardinal::variation=variation::lettersequence=Traditional::regular=false::group=Group(0,3,,)::group=Group(0,4,,)::group=Group(0,3,,)::group=Group(0,3,)", picture.toString());
+        picture = IntegerPicture.fromString("#89;c(variation)t");
+        assertEquals("primary=#89::modifier=numbering=Cardinal::variation=variation::lettersequence=Traditional::regular=true::group=Group(1,2,)", picture.toString());
+        picture = IntegerPicture.fromString("#89|123;c(variation)t");
+        assertEquals("primary=#89|123::modifier=numbering=Cardinal::variation=variation::lettersequence=Traditional::regular=true::group=Group(0,3,|)", picture.toString());
     }
 
     private String fmt(String pictureString, long value) throws XPathException {
@@ -286,9 +284,35 @@ public class IntegerPictureTest {
         assertEquals("five", fmt("w", 5L));
         assertEquals("fifth", fmt("w;o", 5L));
         assertEquals("cinque", fmt("w;a", 5L, "it"));
-        assertEquals("cinquo", fmt("w;o", 5L, "it"));
-        assertEquals("uno", fmt("w;a", 1L, "it"));
-        assertEquals("primo", fmt("w;o", 1L, "it"));
+        assertEquals("quinta", fmt("w;o", 5L, "it"));
+        assertEquals("una", fmt("w;a", 1L, "it"));
+        assertEquals("prima", fmt("w;o", 1L, "it"));
+        assertEquals("eines", fmt("w;a", 1L, "de"));
+        assertEquals("eines", fmt("w;a", 1L, "de"));
+        assertEquals("eines", fmt("w;c", 1L, "de"));
+        assertEquals("eine", fmt("w;c(feminine)", 1L, "de"));
+        assertEquals("ein", fmt("w;c(masculine)", 1L, "de"));
+        assertEquals("ein", fmt("w;c(neuter)", 1L, "de"));
+        assertEquals("eines", fmt("w;c(vulcan)", 1L, "de"));
+        assertEquals("erste", fmt("w;o", 1L, "de"));
+        assertEquals("erstes", fmt("w;o(s)", 1L, "de"));
+        assertEquals("erster", fmt("w;o(r)", 1L, "de"));
+        assertEquals("ersten", fmt("w;o(n)", 1L, "de"));
+        assertEquals("erste", fmt("w;o(z)", 1L, "de"));
+        assertEquals("первыми", fmt("w;o(z)", 1L, "ru"));
+        assertEquals("одними", fmt("w;c(z)", 1L, "ru"));
+        assertEquals("one", fmt("w;c(z)", 1L, "nonsense"));
+        assertEquals("first", fmt("w;o(z)", 1L, "nonsense"));
+        assertEquals("erster", fmt("w;o(%spellout-ordinal-r)", 1L, "de"));
+        assertEquals("zweites", fmt("w;o(%spellout-ordinal-s)", 2L, "de"));
+        assertEquals("zweiten", fmt("w;o(%spellout-ordinal-n)", 2L, "de"));
+        assertEquals("zweiter", fmt("w;o(%spellout-ordinal-r)", 2L, "de"));
+        assertEquals("eine", fmt("w;c(%spellout-cardinal-feminine)", 1L, "de"));
+        assertEquals("ein", fmt("w;c(%spellout-cardinal-masculine)", 1L, "de"));
+        assertEquals("ein", fmt("w;c(%spellout-cardinal-neuter)", 1L, "de"));
+        assertEquals("zwei", fmt("w;c(%spellout-cardinal-feminine)", 2L, "de"));
+        assertEquals("zwei", fmt("w;c(%spellout-cardinal-masculine)", 2L, "de"));
+        assertEquals("zwei", fmt("w;c(%spellout-cardinal-neuter)", 2L, "de"));
     }
 
     @Test public void wordUpperDigitFormat() throws XPathException {
@@ -304,4 +328,63 @@ public class IntegerPictureTest {
         assertEquals("Two thousand five hundred ninety-eight", fmt("Ww", 2598L, "en"));
     }
 
+    @Test public void modifier() throws XPathException {
+        FormatModifier formatModifier = new FormatModifier("c(maschile)t");
+        assertEquals(FormatModifier.Numbering.Cardinal, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.Traditional, formatModifier.letterSequence);
+        assertEquals("maschile", formatModifier.variation);
+        formatModifier = new FormatModifier("ct");
+        assertEquals(FormatModifier.Numbering.Cardinal, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.Traditional, formatModifier.letterSequence);
+        formatModifier = new FormatModifier("ca");
+        assertEquals(FormatModifier.Numbering.Cardinal, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.Alphabetic, formatModifier.letterSequence);
+        formatModifier = new FormatModifier("ot");
+        assertEquals(FormatModifier.Numbering.Ordinal, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.Traditional, formatModifier.letterSequence);
+        formatModifier = new FormatModifier("oa");
+        assertEquals(FormatModifier.Numbering.Ordinal, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.Alphabetic, formatModifier.letterSequence);
+        formatModifier = new FormatModifier("c");
+        assertEquals(FormatModifier.Numbering.Cardinal, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.Alphabetic, formatModifier.letterSequence);
+        formatModifier = new FormatModifier("o");
+        assertEquals(FormatModifier.Numbering.Ordinal, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.Alphabetic, formatModifier.letterSequence);
+        formatModifier = new FormatModifier("a");
+        assertEquals(FormatModifier.Numbering.Cardinal, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.Alphabetic, formatModifier.letterSequence);
+        formatModifier = new FormatModifier("t");
+        assertEquals(FormatModifier.Numbering.Cardinal, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.Traditional, formatModifier.letterSequence);
+        formatModifier = new FormatModifier("c(hello)");
+        assertEquals(FormatModifier.Numbering.Cardinal, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.Alphabetic, formatModifier.letterSequence);
+        assertEquals("hello", formatModifier.variation);
+    }
+
+    private void modifierFail(String modifier) throws XPathException {
+        try {
+            FormatModifier formatModifier = new FormatModifier(modifier);
+            fail("Format modifier " + modifier + " should throw a parse exception");
+        } catch (XPathException e) {
+            assertTrue(e.getMessage().contains("modifier"));
+        }
+    }
+
+    @Test public void modifierFailTest() throws XPathException {
+        modifierFail("b");
+        modifierFail("ba");
+        modifierFail("bt");
+        modifierFail("(hello)");
+        modifierFail("c(t");
+        modifierFail("cv");
+        modifierFail("av");
+        modifierFail("ev");
+        modifierFail("tc");
+        modifierFail("ctc");
+        modifierFail("ctt");
+        modifierFail("c()t");
+        modifierFail("c()");
+    }
 }

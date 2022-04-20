@@ -1,11 +1,12 @@
 package org.exist.xquery.functions.integer;
 
+import com.ibm.icu.text.MessageFormat;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 import org.apache.commons.lang3.StringUtils;
 import org.exist.xquery.XPathException;
 
 import java.math.BigInteger;
-import java.util.Locale;
+import java.util.*;
 
 public class WordPicture extends IntegerPicture {
 
@@ -14,11 +15,40 @@ public class WordPicture extends IntegerPicture {
         Lower,
         Capitalized;
 
-        String convert(int fromValue, String language) {
+        String formatAndConvert(int fromValue, String language, FormatModifier formatModifier) {
+
+            Set<String> spelloutRuleSet = new HashSet<>();
+            List<String> spelloutRuleList = new ArrayList<>();
+            String defaultSpelloutRule = null;
+            if (formatModifier.numbering == FormatModifier.Numbering.Cardinal) defaultSpelloutRule = "%spellout-cardinal";
+            if (formatModifier.numbering == FormatModifier.Numbering.Ordinal) defaultSpelloutRule = "%spellout-ordinal";
 
             Locale locale = (new Locale.Builder()).setLanguage(language).build();
             RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat( locale, RuleBasedNumberFormat.SPELLOUT );
-            String formatted = ruleBasedNumberFormat.format(fromValue);
+            for (String ruleSetName : ruleBasedNumberFormat.getRuleSetNames()) {
+                if (ruleSetName.startsWith(defaultSpelloutRule)) {
+                    spelloutRuleSet.add(ruleSetName);
+                    spelloutRuleList.add(ruleSetName);
+                }
+            }
+            String spelloutRule = defaultSpelloutRule;
+            if (!spelloutRuleSet.contains(defaultSpelloutRule)) {
+                spelloutRule = spelloutRuleList.get(0);
+            }
+
+            if (formatModifier.variation != null) {
+                String variantSpelloutRule = defaultSpelloutRule + "-" + formatModifier.variation;
+                if (spelloutRuleSet.contains(variantSpelloutRule)) {
+                    spelloutRule = variantSpelloutRule;
+                } else if (spelloutRuleSet.contains(formatModifier.variation)) {
+                    spelloutRule = formatModifier.variation;
+                }
+            }
+
+            MessageFormat ruleBasedMessageFormatFormat
+                    = new MessageFormat("{0,spellout," + spelloutRule + "}"
+                    , locale);
+            String formatted = ruleBasedMessageFormatFormat.format(new Object[]{fromValue});
 
             String result = null;
             switch (this) {
@@ -37,9 +67,11 @@ public class WordPicture extends IntegerPicture {
     };
 
     CaseAndCaps capitalization;
+    FormatModifier formatModifier;
 
-    WordPicture(CaseAndCaps capitalization) {
+    WordPicture(CaseAndCaps capitalization, FormatModifier formatModifier) {
         this.capitalization = capitalization;
+        this.formatModifier = formatModifier;
     }
 
     @Override
@@ -49,6 +81,6 @@ public class WordPicture extends IntegerPicture {
             return DEFAULT.formatInteger(bigInteger, language);
         }
 
-        return capitalization.convert(bigInteger.intValue(), language);
+        return capitalization.formatAndConvert(bigInteger.intValue(), language, formatModifier);
     }
 }
