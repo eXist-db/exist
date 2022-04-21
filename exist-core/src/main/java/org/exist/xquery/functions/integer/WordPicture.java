@@ -10,6 +10,77 @@ import java.util.*;
 
 public class WordPicture extends IntegerPicture {
 
+    final static String DEFAULT_SPELLOUT_CARDINAL = "%spellout-cardinal";
+    final static String DEFAULT_SPELLOUT_ORDINAL = "%spellout-ordinal";
+    final static List<String> SPELLOUT_EXTENSIONS = Arrays.asList("-feminine", "-masculine", "-neuter", "-native", "-common");
+
+    static Set<String> GetSpelloutRules(Locale locale, final String defaultSpelloutRule) {
+        RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat(locale, RuleBasedNumberFormat.SPELLOUT);
+
+        Set<String> spelloutRuleSet = new HashSet<>();
+        for (String ruleSetName : ruleBasedNumberFormat.getRuleSetNames()) {
+            if (ruleSetName.startsWith(defaultSpelloutRule)) {
+                spelloutRuleSet.add(ruleSetName);
+            }
+        }
+
+        return spelloutRuleSet;
+    }
+
+    /**
+     * Pick the best match spellout for a language
+     *
+     * @param locale       to pick a spellout for
+     * @param formatModifier ordinal or cardinal ? Any hints at the spellout required ?
+     * @return our best guess at an appropriate spellout
+     */
+    static String GetSpellout(Locale locale, FormatModifier formatModifier) {
+
+        String defaultSpelloutRule = null;
+        if (formatModifier.numbering == FormatModifier.Numbering.Cardinal)
+            defaultSpelloutRule = DEFAULT_SPELLOUT_CARDINAL;
+        if (formatModifier.numbering == FormatModifier.Numbering.Ordinal)
+            defaultSpelloutRule = DEFAULT_SPELLOUT_ORDINAL;
+
+        String spellout = GetSpellout(locale, formatModifier, defaultSpelloutRule);
+        if (spellout == null && formatModifier.numbering == FormatModifier.Numbering.Ordinal) {
+            // Back off to cardinal if we can't get an ordinal spellout
+            spellout = GetSpellout(locale, formatModifier, DEFAULT_SPELLOUT_CARDINAL);
+        }
+        return spellout;
+    }
+
+    /**
+     * Pick the best match spellout for a language
+     *
+     * @param locale       to pick a spellout for
+     * @param formatModifier ordinal or cardinal ? Any hints at the spellout required ?
+     * @return our best guess at an appropriate spellout
+     */
+    static String GetSpellout(Locale locale, FormatModifier formatModifier, final String defaultSpelloutRule) {
+
+        Set<String> spelloutRuleSet = GetSpelloutRules(locale, defaultSpelloutRule);
+
+        if (formatModifier.variation != null) {
+            String variantSpelloutRule = defaultSpelloutRule + "-" + formatModifier.variation;
+            if (spelloutRuleSet.contains(variantSpelloutRule)) {
+                return variantSpelloutRule;
+            } else if (spelloutRuleSet.contains(formatModifier.variation)) {
+                return formatModifier.variation;
+            }
+        }
+
+        if (spelloutRuleSet.contains(defaultSpelloutRule)) {
+            return defaultSpelloutRule;
+        }
+        for (String extension : SPELLOUT_EXTENSIONS) {
+            if (spelloutRuleSet.contains(defaultSpelloutRule + extension)) {
+                return defaultSpelloutRule + extension;
+            }
+        }
+        return null;
+    }
+
     enum CaseAndCaps {
         Upper,
         Lower,
@@ -17,33 +88,8 @@ public class WordPicture extends IntegerPicture {
 
         String formatAndConvert(int fromValue, String language, FormatModifier formatModifier) {
 
-            Set<String> spelloutRuleSet = new HashSet<>();
-            List<String> spelloutRuleList = new ArrayList<>();
-            String defaultSpelloutRule = null;
-            if (formatModifier.numbering == FormatModifier.Numbering.Cardinal) defaultSpelloutRule = "%spellout-cardinal";
-            if (formatModifier.numbering == FormatModifier.Numbering.Ordinal) defaultSpelloutRule = "%spellout-ordinal";
-
             Locale locale = (new Locale.Builder()).setLanguage(language).build();
-            RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat( locale, RuleBasedNumberFormat.SPELLOUT );
-            for (String ruleSetName : ruleBasedNumberFormat.getRuleSetNames()) {
-                if (ruleSetName.startsWith(defaultSpelloutRule)) {
-                    spelloutRuleSet.add(ruleSetName);
-                    spelloutRuleList.add(ruleSetName);
-                }
-            }
-            String spelloutRule = defaultSpelloutRule;
-            if (!spelloutRuleSet.contains(defaultSpelloutRule)) {
-                spelloutRule = spelloutRuleList.get(0);
-            }
-
-            if (formatModifier.variation != null) {
-                String variantSpelloutRule = defaultSpelloutRule + "-" + formatModifier.variation;
-                if (spelloutRuleSet.contains(variantSpelloutRule)) {
-                    spelloutRule = variantSpelloutRule;
-                } else if (spelloutRuleSet.contains(formatModifier.variation)) {
-                    spelloutRule = formatModifier.variation;
-                }
-            }
+            String spelloutRule = GetSpellout(locale, formatModifier);
 
             MessageFormat ruleBasedMessageFormatFormat
                     = new MessageFormat("{0,spellout," + spelloutRule + "}"

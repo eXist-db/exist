@@ -289,20 +289,20 @@ public class IntegerPictureTest {
         assertEquals("quinta", fmt("w;o", 5L, "it"));
         assertEquals("una", fmt("w;a", 1L, "it"));
         assertEquals("prima", fmt("w;o", 1L, "it"));
-        assertEquals("eines", fmt("w;a", 1L, "de"));
-        assertEquals("eines", fmt("w;a", 1L, "de"));
-        assertEquals("eines", fmt("w;c", 1L, "de"));
+        assertEquals("eine", fmt("w;a", 1L, "de"));
+        assertEquals("ein", fmt("w;c(neuter)a", 1L, "de"));
+        assertEquals("eine", fmt("w;c", 1L, "de"));
         assertEquals("eine", fmt("w;c(feminine)", 1L, "de"));
         assertEquals("ein", fmt("w;c(masculine)", 1L, "de"));
         assertEquals("ein", fmt("w;c(neuter)", 1L, "de"));
-        assertEquals("eines", fmt("w;c(vulcan)", 1L, "de"));
+        assertEquals("eine", fmt("w;c(vulcan)", 1L, "de"));
         assertEquals("erste", fmt("w;o", 1L, "de"));
         assertEquals("erstes", fmt("w;o(s)", 1L, "de"));
         assertEquals("erster", fmt("w;o(r)", 1L, "de"));
         assertEquals("ersten", fmt("w;o(n)", 1L, "de"));
         assertEquals("erste", fmt("w;o(z)", 1L, "de"));
-        assertEquals("первыми", fmt("w;o(z)", 1L, "ru"));
-        assertEquals("одними", fmt("w;c(z)", 1L, "ru"));
+        assertEquals("первая", fmt("w;o(z)", 1L, "ru"));
+        assertEquals("одна", fmt("w;c(z)", 1L, "ru"));
         assertEquals("one", fmt("w;c(z)", 1L, "nonsense"));
         assertEquals("first", fmt("w;o(z)", 1L, "nonsense"));
         assertEquals("erster", fmt("w;o(%spellout-ordinal-r)", 1L, "de"));
@@ -315,6 +315,8 @@ public class IntegerPictureTest {
         assertEquals("zwei", fmt("w;c(%spellout-cardinal-feminine)", 2L, "de"));
         assertEquals("zwei", fmt("w;c(%spellout-cardinal-masculine)", 2L, "de"));
         assertEquals("zwei", fmt("w;c(%spellout-cardinal-neuter)", 2L, "de"));
+        assertEquals("two", fmt("w;c(%spellout-cardinal-neuter)", 2L, "zz"));
+        assertEquals("دو", fmt("w;o", 2L, "fa"));
     }
 
     @Test public void wordUpperDigitFormat() throws XPathException {
@@ -390,9 +392,13 @@ public class IntegerPictureTest {
         modifierFail("c()");
     }
 
-    @Test public void localesAndSpellouts() {
-        List<String> iso639Alpha2Codes = Arrays.asList(new String[]{
-                "aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av", "ay", "az",
+    /**
+     * Investigation of what spellouts are available per-locale
+     *
+     * @Test
+     */
+    public void localesAndSpellouts() {
+        List<String> iso639Alpha2Codes = Arrays.asList("aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av", "ay", "az",
                 "ba", "be", "bg", "bi", "bm", "bn", "bo", "br", "bs",
                 "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv", "cy",
                 "da", "de", "dv", "dz",
@@ -416,20 +422,36 @@ public class IntegerPictureTest {
                 "wa", "wo",
                 "xh",
                 "yi", "yo",
-                "za", "zh", "zu"});
+                "za", "zh", "zu");
+        Set<String> global = new HashSet<>();
         for (String isoCode : iso639Alpha2Codes) {
             Locale locale = (new Locale.Builder()).setLanguage(isoCode).build();
             RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat( locale, RuleBasedNumberFormat.SPELLOUT );
             int i = 0;
             Set<String> names = new HashSet<>();
-            System.err.println(isoCode + " --->>>");
             for (String ruleSetName : ruleBasedNumberFormat.getRuleSetNames()) {
-                System.err.println(isoCode + " " + (++i) + " " + ruleSetName);
                 names.add(ruleSetName);
+                global.add(ruleSetName);
             }
-            System.err.println("<<<---" + isoCode);
-            assertEquals(true, names.contains("%spellout-ordinal") || names.contains("%spellout-ordinal-masculine"));
-            assertEquals(true, names.contains("%spellout-cardinal") || names.contains("%spellout-cardinal-masculine"));
+            boolean displayMissing = !names.contains("%spellout-ordinal") && !names.contains("%spellout-ordinal-masculine") && !names.contains("%spellout-ordinal-feminine");
+            if (!names.contains("%spellout-cardinal") && !names.contains("%spellout-cardinal-masculine") && !names.contains("%spellout-cardinal-feminine")) {
+                displayMissing = true;
+            }
+            if (displayMissing) {
+                System.err.println(isoCode + " missing some spellouts --->>> ");
+                for (String name : names) {
+                    System.err.println(name);
+                }
+                System.err.println(isoCode + " <<<---");
+            }
         }
+        System.err.println("all spellouts --->>>");
+        List<String> globalList = Arrays.asList(global.toArray(new String[]{}));
+        Collections.sort(globalList);
+        for (String name : globalList) {
+            System.err.println(name);
+        }
+        System.err.println("<<<--- all spellouts");
+
     }
 }
