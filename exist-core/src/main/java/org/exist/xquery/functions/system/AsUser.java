@@ -97,17 +97,11 @@ public class AsUser extends Function {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.AbstractExpression#getDependencies()
-     */
     @Override
     public int getDependencies() {
         return getArgument(2).getDependencies();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.PathExpr#returnsType()
-     */
     @Override
     public int returnsType() {
         return getArgument(2).returnsType();
