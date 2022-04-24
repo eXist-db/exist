@@ -56,6 +56,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingWorker;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -358,9 +359,8 @@ public class QueryDialog extends JFrame {
                         collections.addItem(LOADING_INDICATOR);
                         addedLoadingIndicator.value = true;
 
-                        final GetCollectionsListRunnable getCollectionsListRunnable = new GetCollectionsListRunnable(currentCollectionName, collections);
-                        final Thread getCollectionsListThread = client.newClientThread("get-collections-list-" + GET_COLLECTIONS_THREAD_ID.getAndIncrement(), getCollectionsListRunnable);
-                        getCollectionsListThread.start();
+                        final GetCollectionsListSwingWorker getCollectionsListSwingWorker = new GetCollectionsListSwingWorker(currentCollectionName);
+                        getCollectionsListSwingWorker.execute();
                     }
                 }
 
@@ -402,35 +402,6 @@ public class QueryDialog extends JFrame {
 
         inputVBox.add(optionsPanel, BorderLayout.SOUTH);
         return tabs;
-    }
-
-    private static List<String> getCollections(final Collection root, final String currentCollection, final List<String> collectionsList) throws XMLDBException {
-        if (!currentCollection.equals(root.getName())) {
-            collectionsList.add(root.getName());
-        }
-        final String[] childCollections = root.listChildCollections();
-        Collection child = null;
-        for (String childCollection : childCollections) {
-            try {
-                child = root.getChildCollection(childCollection);
-            } catch (final XMLDBException xmldbe) {
-                if (xmldbe.getCause() instanceof PermissionDeniedException) {
-                    continue;
-                } else {
-                    throw xmldbe;
-                }
-            } catch (Exception npe) {
-                System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
-                continue;
-            }
-            try {
-                getCollections(child, currentCollection, collectionsList);
-            } catch (Exception ee) {
-                System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
-                continue;
-            }
-        }
-        return collectionsList;
     }
 
     private void open() {
@@ -696,28 +667,70 @@ public class QueryDialog extends JFrame {
         history.addElement(Integer.toString(history.getSize() + 1) + ". " + query);
     }
 
-    private class GetCollectionsListRunnable implements Runnable {
-        private final String currentCollection;
-        private final JComboBox<String> collections;
+    private class GetCollectionsListSwingWorker extends SwingWorker<Void, String> {
+        private final String currentCollectionName;
 
-        public GetCollectionsListRunnable(final String currentCollection, final JComboBox<String> collections) {
-            this.currentCollection = currentCollection;
-            this.collections = collections;
+        public GetCollectionsListSwingWorker(final String currentCollectionName) {
+            this.currentCollectionName = currentCollectionName;
         }
 
         @Override
-        public void run() {
-            final List<String> collectionsList = new ArrayList<>();
-            collectionsList.add(currentCollection);
-
+        public Void doInBackground() {
             try {
                 final Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
-                getCollections(root, currentCollection, collectionsList);
-
-                collections.setModel(new DefaultComboBoxModel(new java.util.Vector<>(collectionsList)));
+                getCollections(root, currentCollectionName);
             } catch (final XMLDBException e) {
                 ClientFrame.showErrorMessage(
                         Messages.getString("QueryDialog.collectionretrievalerrormessage") + ".", e);
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void process(final List<String> collectionNames) {
+            final int idxLast = collections.getItemCount() - 1;
+            final String lastItem = collections.getItemAt(idxLast);
+            if (LOADING_INDICATOR.equals(lastItem)) {
+                collections.removeItemAt(idxLast);
+            }
+
+            for (final String collectionName : collectionNames) {
+                collections.addItem(collectionName);
+            }
+        }
+
+        private void getCollections(final Collection root, final String currentCollection) throws XMLDBException {
+            if (isCancelled()) {
+                return;
+            }
+
+            if (!currentCollection.equals(root.getName())) {
+                publish(root.getName());
+            }
+
+            final String[] childCollections = root.listChildCollections();
+            Collection child = null;
+            for (int i = 0; i < childCollections.length; i++) {
+                try {
+                    child = root.getChildCollection(childCollections[i]);
+                } catch (final XMLDBException xmldbe) {
+                    if (xmldbe.getCause() instanceof PermissionDeniedException) {
+                        continue;
+                    } else {
+                        throw xmldbe;
+                    }
+                } catch (Exception npe) {
+                    System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
+                    continue;
+                }
+
+                try {
+                    getCollections(child, currentCollection);
+                } catch (Exception ee) {
+                    System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
+                    continue;
+                }
             }
         }
     }
