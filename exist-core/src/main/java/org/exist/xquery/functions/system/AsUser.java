@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.system;
 
+import com.evolvedbinary.j8fu.function.SupplierE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.security.AuthenticationException;
@@ -28,6 +29,7 @@ import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.*;
+import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -54,6 +56,21 @@ public class AsUser extends Function {
             param("username", Type.STRING, "The username of the user to run the code against"),
             optParam("password", Type.STRING, "The password of the user to run the code against"),
             optManyParam("code-block", Type.ITEM, "The code block to run as the identified user")
+    );
+
+    private static String FS_FUNCTION_AS_USER_NAME = "function-as-user";
+    public final static FunctionSignature FS_FUNCTION_AS_USER = functionSignature(
+            FS_FUNCTION_AS_USER_NAME,
+            "A pseudo-function to execute a function as a different " +
+                    "user. The first argument is the name of the user, the second is the " +
+                    "password. If the user can be authenticated, the function will execute the " +
+                    "function given in the third argument with the permissions of that user and" +
+                    "returns the result of the execution. Before the function completes, it switches " +
+                    "the current user back to the old user.",
+            returnsOptMany(Type.ITEM, "the results of the code block executed"),
+            param("username", Type.STRING, "The username of the user to run the code against"),
+            optParam("password", Type.STRING, "The password of the user to run the code against"),
+            param("function", Type.FUNCTION_REFERENCE, "The zero arity function to run as the identified user")
     );
 
     public AsUser(final XQueryContext context, final FunctionSignature signature) {
@@ -86,12 +103,27 @@ public class AsUser extends Function {
             throw exception;
         }
 
+        final SupplierE<Sequence, XPathException> function;
+        if (isCalledAs(FS_AS_USER_NAME)) {
+            final Expression codeBlock = getArgument(2);
+            function = () -> codeBlock.eval(contextSequence, contextItem);
+        } else if (isCalledAs(FS_FUNCTION_AS_USER_NAME)) {
+            final FunctionReference functionArg = (FunctionReference) getArgument(2).eval(contextSequence, contextItem).itemAt(0);
+            final int functionArgArity = functionArg.getSignature().getArgumentCount();
+            if (functionArgArity != 0) {
+                throw new XPathException(this, "$function argument must be a zero arity function, but found a function with arity: " + functionArgArity);
+            }
+            function = () -> functionArg.evalFunction(null, null, null);
+        } else {
+            throw new XPathException(this, "Unknown function: " + getSignature().getName());
+        }
+
         if (logger.isTraceEnabled()) {
             logger.trace("Setting the effective user to: [{}]", username);
         }
         try {
             broker.pushSubject(user);
-            return getArgument(2).eval(contextSequence, contextItem);
+            return function.get();
         } finally {
             broker.popSubject();
             if (logger.isTraceEnabled()) {
