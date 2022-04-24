@@ -41,6 +41,8 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
+import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
+
 /**
  * @author wolf
  */
@@ -69,7 +71,7 @@ public class XMLDBSize extends XMLDBAbstractCollectionManipulator {
 	protected Sequence evalWithCollection(final Collection collection, final Sequence[] args,
 			final Sequence contextSequence) throws XPathException {
         try {
-			final Resource resource = collection.getResource(new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString());
+			final Resource resource = collection.getResource(execAndAddErrorIfMissing(this, () -> new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString()));
 			return new IntegerValue(((EXistResource)resource).getContentLength(), Type.LONG);
 		} catch (final XMLDBException e) {
 			logger.error("Failed to retrieve size: {}", e.getMessage());

@@ -30,6 +30,7 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.txn.bridge.InTxnLocalCollection;
 import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Expression;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -42,6 +43,8 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+
+import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
 
 /**
  * @author Luigi P. Bai, finder@users.sf.net, 2004
@@ -65,35 +68,35 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         this.errorIfAbsent = errorIfAbsent;
     }
 
-    public static LocalCollection getLocalCollection(final XQueryContext context, final String name) throws XMLDBException {
+    public static LocalCollection getLocalCollection(final Expression callingExpression, final XQueryContext context, final String name) throws XMLDBException {
         try {
-            return new InTxnLocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), null, new AnyURIValue(name).toXmldbURI());
+            return new InTxnLocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), null, execAndAddErrorIfMissing(callingExpression, () -> new AnyURIValue(name).toXmldbURI()));
         } catch (final XPathException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI, e);
         }
     }
 
-    public static Collection getCollection(final XQueryContext context, final String collectionUri, final Optional<String> username, final Optional<String> password) throws XMLDBException {
+    public static Collection getCollection(final Expression callingExpression, final XQueryContext context, final String collectionUri, final Optional<String> username, final Optional<String> password) throws XMLDBException {
         final Collection collection;
         if (!collectionUri.startsWith("xmldb:")) {
             // Must be a LOCAL collection
-            collection = getLocalCollection(context, collectionUri);
+            collection = getLocalCollection(callingExpression, context, collectionUri);
 
         } else if (collectionUri.startsWith("xmldb:exist:///")) {
             // Must be a LOCAL collection
-            collection = getLocalCollection(context, collectionUri.replaceFirst("xmldb:exist://", ""));
+            collection = getLocalCollection(callingExpression, context, collectionUri.replaceFirst("xmldb:exist://", ""));
 
         } else if (collectionUri.startsWith("xmldb:exist://embedded-eXist-server")) {
             // Must be a LOCAL collection
-            collection = getLocalCollection(context, collectionUri.replaceFirst("xmldb:exist://embedded-eXist-server", ""));
+            collection = getLocalCollection(callingExpression, context, collectionUri.replaceFirst("xmldb:exist://embedded-eXist-server", ""));
 
         } else if (collectionUri.startsWith("xmldb:exist://localhost")) {
             // Must be a LOCAL collection
-            collection = getLocalCollection(context, collectionUri.replaceFirst("xmldb:exist://localhost", ""));
+            collection = getLocalCollection(callingExpression, context, collectionUri.replaceFirst("xmldb:exist://localhost", ""));
 
         } else if (collectionUri.startsWith("xmldb:exist://127.0.0.1")) {
             // Must be a LOCAL collection
-            collection = getLocalCollection(context, collectionUri.replaceFirst("xmldb:exist://127.0.0.1", ""));
+            collection = getLocalCollection(callingExpression, context, collectionUri.replaceFirst("xmldb:exist://127.0.0.1", ""));
 
         } else {
             // Right now, the collection is retrieved as GUEST. Need to figure out how to
@@ -131,7 +134,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
                 }
                 try {
                     //TODO: use xmldbURI
-                    collection = getLocalCollection(context, internalCol.getURI().toString());
+                    collection = getLocalCollection(this, context, internalCol.getURI().toString());
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("Loaded collection {}", collection.getName());
                     }
@@ -148,7 +151,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
             final String collectionURI = args[paramNumber].getStringValue();
             if (collectionURI != null) {
                 try {
-                    collection = getCollection(context, collectionURI, Optional.empty(), Optional.empty());
+                    collection = getCollection(this, context, collectionURI, Optional.empty(), Optional.empty());
                 } catch (final XMLDBException xe) {
                     if (errorIfAbsent) {
                         throw new XPathException(this, "Could not locate collection: " + collectionURI, xe);
@@ -187,9 +190,9 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         return child;
     }
 
-    static public final Collection createCollectionPath(final Collection parentColl, final String relPath) throws XMLDBException, XPathException {
+    protected final Collection createCollectionPath(final Collection parentColl, final String relPath) throws XMLDBException, XPathException {
         Collection current = parentColl;
-        final StringTokenizer tok = new StringTokenizer(new AnyURIValue(relPath).toXmldbURI().toString(), "/");
+        final StringTokenizer tok = new StringTokenizer(execAndAddErrorIfMissing(this, () -> new AnyURIValue(relPath).toXmldbURI().toString()), "/");
         while (tok.hasMoreTokens()) {
             final String token = tok.nextToken();
             current = createCollection(current, token);
