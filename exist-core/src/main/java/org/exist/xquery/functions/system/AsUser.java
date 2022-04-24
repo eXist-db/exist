@@ -23,17 +23,17 @@ package org.exist.xquery.functions.system;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.QName;
 import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.functions.system.SystemModule.functionSignature;
 
 /**
  */
@@ -41,23 +41,22 @@ public class AsUser extends Function {
 
     private final static Logger logger = LogManager.getLogger(AsUser.class);
 
-    public final static FunctionSignature signature = new FunctionSignature(
-        new QName("as-user", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-        "A pseudo-function to execute a limited block of code as a different " +
-        "user. The first argument is the name of the user, the second is the " +
-        "password. If the user can be authenticated, the function will execute the " +
-        "code block given in the third argument with the permissions of that user and" +
-        "returns the result of the execution. Before the function completes, it switches " +
-        "the current user back to the old user.",
-        new SequenceType[] {
-            new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The username of the user to run the code against"),
-            new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "The password of the user to run the code against"),
-            new FunctionParameterSequenceType("code-block", Type.ITEM, Cardinality.ZERO_OR_MORE, "The code block to run as the identified user")
-        },
-        new FunctionParameterSequenceType("result", Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the code block executed")
+    private static String FS_AS_USER_NAME = "as-user";
+    public final static FunctionSignature FS_AS_USER = functionSignature(
+            FS_AS_USER_NAME,
+            "A pseudo-function to execute a limited block of code as a different " +
+            "user. The first argument is the name of the user, the second is the " +
+            "password. If the user can be authenticated, the function will execute the " +
+            "code block given in the third argument with the permissions of that user and" +
+            "returns the result of the execution. Before the function completes, it switches " +
+            "the current user back to the old user.",
+            returnsOptMany(Type.ITEM, "the results of the code block executed"),
+            param("username", Type.STRING, "The username of the user to run the code against"),
+            optParam("password", Type.STRING, "The password of the user to run the code against"),
+            optManyParam("code-block", Type.ITEM, "The code block to run as the identified user")
     );
 
-    public AsUser(final XQueryContext context) {
+    public AsUser(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
