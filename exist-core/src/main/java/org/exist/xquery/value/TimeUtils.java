@@ -23,10 +23,7 @@ package org.exist.xquery.value;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
-import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.datatype.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Calendar;
@@ -182,8 +179,20 @@ public class TimeUtils {
         return factory.newXMLGregorianCalendarDate(arg0, arg1, arg2, arg3);
     }
 
-    public XMLGregorianCalendar newXMLGregorianCalendarTime(int arg0, int arg1, int arg2, int arg3) {
-        return factory.newXMLGregorianCalendarTime(arg0, arg1, arg2, arg3);
+    public XMLGregorianCalendar newXMLGregorianCalendarDate(final BigInteger year, final int month, final int day, final int timezone) {
+        return factory.newXMLGregorianCalendar(
+                year,
+                month,
+                day,
+                DatatypeConstants.FIELD_UNDEFINED,  // hour
+                DatatypeConstants.FIELD_UNDEFINED,  // minute
+                DatatypeConstants.FIELD_UNDEFINED,  // second
+                null,  // fractionalSecond
+                timezone);
+    }
+
+    public XMLGregorianCalendar newXMLGregorianCalendarTime(final int hours, final int minutes, final int seconds, final int timezone) {
+        return factory.newXMLGregorianCalendarTime(hours, minutes, seconds, timezone);
     }
 
     public XMLGregorianCalendar newXMLGregorianCalendarTime(int arg0, int arg1, int arg2, int arg3, int arg4) {
