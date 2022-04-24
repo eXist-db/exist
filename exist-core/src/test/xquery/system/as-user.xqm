@@ -32,7 +32,7 @@ declare
     %test:assertEquals('admin')
 function sysau:function-as-user-admin-inline() {
     system:function-as-user("admin", "", function() {
-        sm:id()//sm:effective//sm:username/string()
+        (sm:id()//sm:username)[last()]/string(.)
     })
 };
 
@@ -40,7 +40,7 @@ declare
     %test:assertEquals('guest')
 function sysau:function-as-user-guest-inline() {
     system:function-as-user("guest", "guest", function() {
-        sm:id()//sm:effective//sm:username/string()
+        (sm:id()//sm:username)[last()]/string(.)
     })
 };
 
@@ -67,5 +67,5 @@ function sysau:function-as-user-unknown() {
 declare
     %private
 function sysau:get-effective-user-id() as xs:string {
-    sm:id()//sm:effective//sm:username/string()
+    (sm:id()//sm:username)[last()]/string(.)
 };
