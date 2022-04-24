@@ -87,13 +87,17 @@ public class AsUser extends Function {
             throw exception;
         }
 
-        logger.info("Setting the effective user to: [{}]", username);
+        if (logger.isTraceEnabled()) {
+            logger.trace("Setting the effective user to: [{}]", username);
+        }
         try {
             broker.pushSubject(user);
             return getArgument(2).eval(contextSequence, contextItem);
         } finally {
             broker.popSubject();
-            logger.info("Returned the effective user to: [{}]", broker.getCurrentSubject());
+            if (logger.isTraceEnabled()) {
+                logger.trace("Returned the effective user to: [{}]", broker.getCurrentSubject());
+            }
         }
     }
 
