@@ -41,6 +41,8 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
+import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
+
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  *
@@ -81,9 +83,9 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
     public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
         throws XPathException {
 
-        final XmldbURI destination = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI();
+        final XmldbURI destination = execAndAddErrorIfMissing(this, () -> new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI());
         if (getSignature().getArgumentCount() == 3) {
-            final XmldbURI doc = new AnyURIValue(args[2].itemAt(0).getStringValue()).toXmldbURI();
+            final XmldbURI doc = execAndAddErrorIfMissing(this, () -> new AnyURIValue(args[2].itemAt(0).getStringValue()).toXmldbURI());
             try {
                 final Resource resource = collection.getResource(doc.toString());
                 if (resource == null) {

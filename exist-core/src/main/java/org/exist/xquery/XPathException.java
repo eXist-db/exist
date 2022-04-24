@@ -24,6 +24,8 @@ package org.exist.xquery;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import com.evolvedbinary.j8fu.function.SupplierE;
 import org.exist.source.Source;
 import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.parser.XQueryAST;
@@ -473,6 +475,34 @@ public class XPathException extends Exception implements XPathErrorProvider {
         @Override
         public String toString() {
             return function + " [" + line + ":" + column + ":" + file + ']';
+        }
+    }
+
+    /**
+     * Executes the function, and if the function raises an XPathException
+     * and the error information is missing from the exception, it will be added
+     * from the calling expression.
+     *
+     * @param <T> the return type of the function.
+     *
+     * @param callingExpression the calling expression.
+     * @param function the function execute.
+     *
+     * @return the result of the calling function
+     * @throws XPathException if the function throws an XPathException
+     */
+    public static <T> T execAndAddErrorIfMissing(final Expression callingExpression, final SupplierE<T, XPathException> function) throws XPathException {
+        try {
+            return function.get();
+        } catch (final XPathException e) {
+            if (e.getLine() == 0) {
+                if (callingExpression.getSource() != null) {
+                    e.setLocation(callingExpression.getLine(), callingExpression.getColumn(), callingExpression.getSource());
+                } else {
+                    e.setLocation(callingExpression.getLine(), callingExpression.getColumn());
+                }
+            }
+            throw e;
         }
     }
 }

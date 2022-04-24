@@ -43,6 +43,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
+import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
+
 /**
  * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  */
@@ -67,7 +69,7 @@ public class XMLDBGetMimeType extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
         throws XPathException {
 
-		final String path = new AnyURIValue(args[0].itemAt(0).getStringValue()).toString();
+		final String path = execAndAddErrorIfMissing(this, () -> new AnyURIValue(args[0].itemAt(0).getStringValue()).toString());
 		
 		if(path.matches("^[a-z]+://.*")) {
 			//external
