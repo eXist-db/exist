@@ -65,6 +65,8 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
+import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
+
 /**
  * @author wolf
  */
@@ -159,7 +161,8 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
         if (docName != null && docName.length() == 0) {
             docName = null;
         } else if (docName != null) {
-            docName = new AnyURIValue(docName).toXmldbURI().toString();
+            final String localDocName = docName;
+            docName = execAndAddErrorIfMissing(this, () -> new AnyURIValue(localDocName).toXmldbURI().toString());
         }
 
         final Item item = args[2].itemAt(0);

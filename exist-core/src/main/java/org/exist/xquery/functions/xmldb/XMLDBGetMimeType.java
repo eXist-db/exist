@@ -43,6 +43,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
+import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
+
 /**
  * @author Adam Retter <adam.retter@devon.gov.uk>
  */
@@ -83,7 +85,7 @@ public class XMLDBGetMimeType extends BasicFunction {
 			try {
 				XmldbURI pathUri = XmldbURI.xmldbUriFor(path);
 				// relative collection Path: add the current base URI
-				pathUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(pathUri);
+				pathUri = execAndAddErrorIfMissing(this, () -> context.getBaseURI().toXmldbURI()).resolveCollectionPath(pathUri);
 				// try to open the document and acquire a lock
 				doc = (DocumentImpl)context.getBroker().getXMLResource(pathUri, LockMode.READ_LOCK);
 				if(doc != null) {

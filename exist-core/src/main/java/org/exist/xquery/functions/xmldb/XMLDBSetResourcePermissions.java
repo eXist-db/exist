@@ -44,6 +44,8 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
+import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
+
 /**
  * @author Luigi P. Bai, finder@users.sf.net, 2004
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -85,7 +87,7 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
 		throws XPathException {
 
         try {
-            final Resource res = collection.getResource(new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString());
+            final Resource res = collection.getResource(execAndAddErrorIfMissing(this, () -> new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString()));
             if (res != null) {
                 final UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
                 final String user = args[2].getStringValue();
