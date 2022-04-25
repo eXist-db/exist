@@ -132,6 +132,8 @@ public interface Context {
     Source getSource();
 
     /**
+     * Get the default language.
+     *
      * @return the default language
      */
     String getDefaultLanguage();

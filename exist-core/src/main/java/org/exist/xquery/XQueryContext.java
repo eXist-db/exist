@@ -294,7 +294,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * The default language
      */
-    private final static String defaultLanguage = Locale.getDefault().getLanguage();
+    private static final String DefaultLanguage = Locale.getDefault().getLanguage();
 
     /**
      * Default Collator. Will be null for the default unicode codepoint collation.
@@ -3324,7 +3324,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public String getDefaultLanguage() {
-        return defaultLanguage;
+        return DefaultLanguage;
     }
 
     /**

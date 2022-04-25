@@ -1028,9 +1028,9 @@ public class XQueryFunctionsTest {
     @Test
     public void defaultLanguage() throws XMLDBException {
 
-        ResourceSet result = existEmbeddedServer.executeQuery("default-language()");
+        final ResourceSet result = existEmbeddedServer.executeQuery("default-language()");
         assertEquals(1, result.getSize());
-        String defaultLanguage = (String) result.getResource(0).getContent();
+        final String defaultLanguage = (String) result.getResource(0).getContent();
         assertEquals(Locale.getDefault().getLanguage(), defaultLanguage);
     }
 }
