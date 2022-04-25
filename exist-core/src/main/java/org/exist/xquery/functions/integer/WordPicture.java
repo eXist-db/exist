@@ -62,7 +62,12 @@ public class WordPicture extends IntegerPicture {
         Set<String> spelloutRuleSet = GetSpelloutRules(locale, defaultSpelloutRule);
 
         if (formatModifier.variation != null) {
-            String variantSpelloutRule = defaultSpelloutRule + "-" + formatModifier.variation;
+            String variantSpelloutRule;
+            if (formatModifier.variation.startsWith("-")) {
+                variantSpelloutRule = defaultSpelloutRule + formatModifier.variation;
+            } else {
+                variantSpelloutRule = defaultSpelloutRule + "-" + formatModifier.variation;
+            }
             if (spelloutRuleSet.contains(variantSpelloutRule)) {
                 return variantSpelloutRule;
             } else if (spelloutRuleSet.contains(formatModifier.variation)) {

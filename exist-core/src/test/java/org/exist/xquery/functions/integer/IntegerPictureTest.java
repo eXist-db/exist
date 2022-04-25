@@ -288,6 +288,8 @@ public class IntegerPictureTest {
     }
 
     @Test public void wordModifiers() throws XPathException {
+        assertEquals("Erster", fmt("Ww;o(-r)", 1L, "de"));
+        //assertEquals("Erster", fmt("Ww;o(-er)", 1L, "de"));
         assertEquals("five", fmt("w", 5L));
         assertEquals("fifth", fmt("w;o", 5L));
         assertEquals("cinque", fmt("w;a", 5L, "it"));
