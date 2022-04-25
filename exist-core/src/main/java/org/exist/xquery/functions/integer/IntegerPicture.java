@@ -103,8 +103,7 @@ public abstract class IntegerPicture {
             case "Ww":
                 return new WordPicture(WordPicture.CaseAndCaps.Capitalized, formatModifier);
             default:
-                // TODO (AP) any other token
-                throw new XPathException(ErrorCodes.FODF1310, "Not implemented");
+                return new DigitsIntegerPicture("1", formatModifier);
         }
     }
 

@@ -221,6 +221,11 @@ public class IntegerPictureTest {
         }
     }
 
+    @Test public void fromDefault() throws XPathException {
+        assertEquals("1500000", fmt("#a", 1500000L));
+        assertEquals("15th", fmt("#a;o", 15L));
+    }
+
     @Test public void alphaUpperDigitFormat() throws XPathException {
         assertEquals("E", fmt("A", 5L));
         assertEquals("Y", fmt("A", 25L));
