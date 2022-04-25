@@ -40,8 +40,8 @@ class DigitsIntegerPicture extends IntegerPicture {
     final static Pattern separatorPattern = Pattern.compile("([^\\p{N}\\p{L}])");
     final static Pattern groupPattern = Pattern.compile("(#*)(\\p{Nd}*)");
 
-    private String primaryFormatToken;
-    private FormatModifier formatModifier;
+    private final String primaryFormatToken;
+    private final FormatModifier formatModifier;
 
     private final List<Group> groups = new ArrayList<>();
     private boolean groupsAreRegular = false;
@@ -73,13 +73,13 @@ class DigitsIntegerPicture extends IntegerPicture {
     private void buildGroups() throws XPathException {
         boolean mandatoryDigitsObserved = false;
         int end = 0;
-        Matcher m = groupPattern.matcher(primaryFormatToken);
+        final Matcher m = groupPattern.matcher(primaryFormatToken);
         while (m.find()) {
             if (m.start() > end) {
                 throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " expected a digit grouping pattern at " + end);
             }
             end = m.end();
-            Group group = new Group();
+            final Group group = new Group();
             group.optional = CodePoints(m.group(1)).size();
             if (group.optional > 0 && mandatoryDigitsObserved) {
                 throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " has optional digit after mandatory digit");
@@ -95,10 +95,10 @@ class DigitsIntegerPicture extends IntegerPicture {
                 throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " expected a digit grouping pattern at " + end);
             }
 
-            for (int codePoint : mandatory) {
+            for (final int codePoint : mandatory) {
                 // All families begin at 0x____0
                 // represent the family by the 0 character in the family
-                int codePointFamily = codePoint & ~0xF;
+                final int codePointFamily = codePoint & ~0xF;
                 if (digitFamily != -1 && digitFamily != codePointFamily) {
                     throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " contains multiple digit families");
                 }
@@ -140,7 +140,7 @@ class DigitsIntegerPicture extends IntegerPicture {
 
     private void countMandatoryDigits() {
         mandatoryDigits = 0;
-        for (Group group : groups) {
+        for (final Group group : groups) {
             mandatoryDigits += group.mandatory;
         }
         if (mandatoryDigits == 0) {
@@ -152,7 +152,7 @@ class DigitsIntegerPicture extends IntegerPicture {
         groupsAreRegular = false;
         Group prev = groups.get(0);
         for (int i = 1; i < groups.size(); i++) {
-            Group group = groups.get(i);
+            final Group group = groups.get(i);
 
             if (!group.separator.isPresent()) group.separator = prev.separator;
             if (i > 1 && (group.optional + group.mandatory != prev.optional + prev.mandatory)) return;
@@ -166,7 +166,7 @@ class DigitsIntegerPicture extends IntegerPicture {
         groups.add(prev);
     }
 
-    private Group getGroupTail(int index) {
+    private Group getGroupTail(final int index) {
         if (groupsAreRegular) {
             return groups.get(0);
         } else if (index < groups.size()) {
@@ -201,11 +201,11 @@ class DigitsIntegerPicture extends IntegerPicture {
     }
 
     @Override public String toString() {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append("primary=").append(primaryFormatToken).append("::");
         sb.append("modifier=").append(formatModifier).append("::");
         sb.append("regular=").append(groupsAreRegular).append("::");
-        for (Group group : groups) {
+        for (final Group group : groups) {
             sb.append("group=").append(group).append("::");
         }
         return sb.substring(0, sb.length() - 2);
@@ -218,14 +218,14 @@ class DigitsIntegerPicture extends IntegerPicture {
      * @return the formatted string
      */
     @Override
-    public String formatInteger(BigInteger bigInteger, String language) {
+    public String formatInteger(final BigInteger bigInteger, final String language) {
         final StringBuilder reversed = formatNonNegativeInteger(bigInteger.abs());
         if (bigInteger.compareTo(BigInteger.ZERO) < 0) {
             reversed.append("-");
         }
         final StringBuilder result = reversed.reverse();
         if (formatModifier.numbering == FormatModifier.Numbering.Ordinal &&
-                bigInteger.compareTo(BigInteger.ZERO) > 0 &&
+                bigInteger.compareTo(BigInteger.valueOf(Integer.MIN_VALUE)) >= 0 &&
                 bigInteger.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) <= 0) {
             result.append(ordinalSuffix(bigInteger.intValue(), language));
         }

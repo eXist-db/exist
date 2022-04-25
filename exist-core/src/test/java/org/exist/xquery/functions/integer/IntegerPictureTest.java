@@ -52,13 +52,13 @@ public class IntegerPictureTest {
         assertEquals("primary=#89|123::modifier=numbering=Cardinal::variation=variation::lettersequence=Traditional::regular=true::group=Group(0,3,|)", picture.toString());
     }
 
-    private String fmt(String pictureString, long value) throws XPathException {
-        IntegerPicture picture = IntegerPicture.fromString(pictureString);
+    private String fmt(final String pictureString, final long value) throws XPathException {
+        final IntegerPicture picture = IntegerPicture.fromString(pictureString);
         return picture.formatInteger(BigInteger.valueOf(value), "en");
     }
 
-    private String fmt(String pictureString, long value, String language) throws XPathException {
-        IntegerPicture picture = IntegerPicture.fromString(pictureString);
+    private String fmt(final String pictureString, final long value, final String language) throws XPathException {
+        final IntegerPicture picture = IntegerPicture.fromString(pictureString);
         return picture.formatInteger(BigInteger.valueOf(value), language);
     }
 
@@ -109,31 +109,31 @@ public class IntegerPictureTest {
     }
 
     @Test public void formatDefaultFamily() throws XPathException {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append("#234567");
         assertEquals(7, sb.length());
         assertEquals("000009", fmt(sb.toString(), 9L));
     }
 
     @Test public void formatNonDefaultDigitFamilies() throws XPathException {
-        for (int family : new int[]{0x104a0,0x660,0x30,0x1e950,0x1e2f0}) {
-            StringBuilder sb = new StringBuilder();
+        for (final int family : new int[]{0x104a0,0x660,0x30,0x1e950,0x1e2f0}) {
+            final StringBuilder sb = new StringBuilder();
             sb.append("#");
             for (int i = 2; i < 5; i++) {
-                char[] chars = Character.toChars(family + i);
+                final char[] chars = Character.toChars(family + i);
                 sb.append(chars);
             }
             sb.append("|");
             for (int i = 5; i < 8; i++) {
-                char[] chars = Character.toChars(family + i);
+                final char[] chars = Character.toChars(family + i);
                 sb.append(chars);
             }
-            String formatted = fmt(sb.toString(), 149L);
+            final String formatted = fmt(sb.toString(), 149L);
             System.out.println("Formatted:" + formatted);
             assertEquals(6 * Character.charCount(family) + 1, formatted.length());
             int pos = 0;
             int codePoint;
-            for (int offset : new int[]{0, 0, 0}) {
+            for (final int offset : new int[]{0, 0, 0}) {
                 codePoint = Character.codePointAt(formatted, pos);
                 assertEquals(family + offset, codePoint);
                 pos += Character.toChars(family + offset).length;
@@ -141,7 +141,7 @@ public class IntegerPictureTest {
             codePoint = Character.codePointAt(formatted, pos);
             assertEquals(Character.codePointAt("|",0), codePoint);
             pos += 1;
-            for (int offset : new int[]{1, 4, 9}) {
+            for (final int offset : new int[]{1, 4, 9}) {
                 codePoint = Character.codePointAt(formatted, pos);
                 assertEquals(family + offset, codePoint);
                 pos += Character.toChars(family + offset).length;
@@ -149,17 +149,17 @@ public class IntegerPictureTest {
         }
     }
 
-    @Test public void conflictingDigitFamilies() throws XPathException {
-        StringBuilder sb = new StringBuilder();
-        for (int family : new int[]{0x104a0,0x30}) {
-            char[] chars = Character.toChars(family + 3);
+    @Test public void conflictingDigitFamilies() {
+        final StringBuilder sb = new StringBuilder();
+        for (final int family : new int[]{0x104a0,0x30}) {
+            final char[] chars = Character.toChars(family + 3);
             sb.append(chars);
             sb.append(",");
         }
         try {
-            String formatted = fmt(sb.toString(), 9L);
+            fmt(sb.toString(), 9L);
             fail("Conflicting digit families should throw an exception");
-        } catch (XPathException xpe) {
+        } catch (final XPathException xpe) {
             assertTrue(xpe.getDetailMessage().contains("multiple digit families"));
         }
     }
@@ -172,21 +172,21 @@ public class IntegerPictureTest {
         try {
             fmt("12,#45", 0L);
             fail("The picture " + "12,#45" + " should not be valid.");
-        } catch (XPathException xpe) {
+        } catch (final XPathException xpe) {
             assertTrue(xpe.getDetailMessage().contains("optional digit after mandatory"));
         }
 
         try {
             fmt("##|3#|45", 0L);
             fail("The picture " + "##|3#|45" + " should not be valid.");
-        } catch (XPathException xpe) {
+        } catch (final XPathException xpe) {
             assertTrue(xpe.getDetailMessage().contains("expected a digit grouping pattern"));
         }
 
         try {
             fmt("1#", 0L);
             fail("The picture " + "1#" + " should not be valid.");
-        } catch (XPathException xpe) {
+        } catch (final XPathException xpe) {
             assertTrue(xpe.getDetailMessage().contains("ends with a separator"));
         }
 
@@ -197,7 +197,7 @@ public class IntegerPictureTest {
         try {
             fmt("1+", 0L);
             fail("The picture " + "1+" + " should not be valid.");
-        } catch (XPathException xpe) {
+        } catch (final XPathException xpe) {
             assertTrue(xpe.getDetailMessage().contains("ends with a separator"));
         }
     }
@@ -207,16 +207,16 @@ public class IntegerPictureTest {
         try {
             fmt("|1", 0L);
             fail("The picture " + "+1" + " should not be valid.");
-        } catch (XPathException xpe) {
+        } catch (final XPathException xpe) {
             assertTrue(xpe.getDetailMessage().contains("expected a digit grouping pattern"));
         }
     }
 
-    @Test public void multiSeparator() throws XPathException {
+    @Test public void multiSeparator() {
         try {
             assertEquals("0|005", fmt("#3||456", 5L));
             fail("The picture " + "#3||456" + " should not be valid.");
-        } catch (XPathException xpe) {
+        } catch (final XPathException xpe) {
             assertTrue(xpe.getDetailMessage().contains("expected a digit grouping pattern at 3"));
         }
     }
@@ -288,7 +288,10 @@ public class IntegerPictureTest {
     }
 
     @Test public void wordModifiers() throws XPathException {
+        assertEquals("Première", fmt("Ww;o", 1L, "fr"));
+        assertEquals("Deuxième", fmt("Ww;o", 2L, "fr"));
         assertEquals("Erster", fmt("Ww;o(-r)", 1L, "de"));
+        //Ww;o
         //assertEquals("Erster", fmt("Ww;o(-er)", 1L, "de"));
         assertEquals("five", fmt("w", 5L));
         assertEquals("fifth", fmt("w;o", 5L));
@@ -374,16 +377,16 @@ public class IntegerPictureTest {
         assertEquals("hello", formatModifier.variation);
     }
 
-    private void modifierFail(String modifier) throws XPathException {
+    private void modifierFail(final String modifier) {
         try {
-            FormatModifier formatModifier = new FormatModifier(modifier);
-            fail("Format modifier " + modifier + " should throw a parse exception");
-        } catch (XPathException e) {
+            final FormatModifier formatModifier = new FormatModifier(modifier);
+            fail("Format modifier " + modifier + " should throw a parse exception, not: " + formatModifier);
+        } catch (final XPathException e) {
             assertTrue(e.getMessage().contains("modifier"));
         }
     }
 
-    @Test public void modifierFailTest() throws XPathException {
+    @Test public void modifierFailTest() {
         modifierFail("b");
         modifierFail("ba");
         modifierFail("bt");
@@ -407,13 +410,28 @@ public class IntegerPictureTest {
         assertEquals("12345,00,000", fmt("0,00,000", 1234500000L));
     }
 
+    @Test public void falllback() throws XPathException {
+        assertEquals("1234", fmt("&#xa;", 1234L));
+    }
+
+    @Test public void greek() throws XPathException {
+        assertEquals("\u03b2", fmt("\u03b1", 2L));
+    }
+
+    @Test public void numberings() throws XPathException {
+        assertEquals("①", fmt("①", 1L));
+        assertEquals("⑮", fmt("①", 15L));
+        assertEquals("⑳", fmt("①", 20L));
+        assertEquals("21", fmt("①", 21L));
+    }
+
     /**
      * Investigation of what spellouts are available per-locale
      *
      * @Test
      */
     public void localesAndSpellouts() {
-        List<String> iso639Alpha2Codes = Arrays.asList("aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av", "ay", "az",
+        final List<String> iso639Alpha2Codes = Arrays.asList("aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av", "ay", "az",
                 "ba", "be", "bg", "bi", "bm", "bn", "bo", "br", "bs",
                 "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv", "cy",
                 "da", "de", "dv", "dz",
@@ -438,13 +456,12 @@ public class IntegerPictureTest {
                 "xh",
                 "yi", "yo",
                 "za", "zh", "zu");
-        Set<String> global = new HashSet<>();
-        for (String isoCode : iso639Alpha2Codes) {
-            Locale locale = (new Locale.Builder()).setLanguage(isoCode).build();
-            RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat( locale, RuleBasedNumberFormat.SPELLOUT );
-            int i = 0;
-            Set<String> names = new HashSet<>();
-            for (String ruleSetName : ruleBasedNumberFormat.getRuleSetNames()) {
+        final Set<String> global = new HashSet<>();
+        for (final String isoCode : iso639Alpha2Codes) {
+            final Locale locale = (new Locale.Builder()).setLanguage(isoCode).build();
+            final RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat( locale, RuleBasedNumberFormat.SPELLOUT );
+            final Set<String> names = new HashSet<>();
+            for (final String ruleSetName : ruleBasedNumberFormat.getRuleSetNames()) {
                 names.add(ruleSetName);
                 global.add(ruleSetName);
             }
@@ -454,16 +471,16 @@ public class IntegerPictureTest {
             }
             if (displayMissing) {
                 System.err.println(isoCode + " missing some spellouts --->>> ");
-                for (String name : names) {
+                for (final String name : names) {
                     System.err.println(name);
                 }
                 System.err.println(isoCode + " <<<---");
             }
         }
         System.err.println("all spellouts --->>>");
-        List<String> globalList = Arrays.asList(global.toArray(new String[]{}));
+        final List<String> globalList = Arrays.asList(global.toArray(new String[]{}));
         Collections.sort(globalList);
-        for (String name : globalList) {
+        for (final String name : globalList) {
             System.err.println(name);
         }
         System.err.println("<<<--- all spellouts");

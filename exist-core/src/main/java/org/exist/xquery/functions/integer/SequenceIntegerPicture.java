@@ -43,16 +43,16 @@ class SequenceIntegerPicture extends IntegerPicture {
     }
 
     @Override
-    public String formatInteger(BigInteger bigInteger, String language) throws XPathException {
+    public String formatInteger(BigInteger bigInteger, final String language) throws XPathException {
         //spec says out of range should be formatted by "1"
         if (bigInteger.compareTo(BigInteger.ZERO) <= 0) {
             return DEFAULT.formatInteger(bigInteger, language);
         }
 
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         do {
             bigInteger = bigInteger.subtract(BigInteger.ONE);
-            BigInteger[] divideAndRemainder = bigInteger.divideAndRemainder(RADIX);
+            final BigInteger[] divideAndRemainder = bigInteger.divideAndRemainder(RADIX);
             sb.append(FromCodePoint(codePoint + divideAndRemainder[1].intValue()));
             bigInteger = divideAndRemainder[0];
         }

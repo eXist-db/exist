@@ -33,6 +33,10 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Format numbers according to the rules
+ * {@see https://www.w3.org/TR/xpath-functions-31/#formatting-integers}
+ */
 public abstract class IntegerPicture {
 
     static IntegerPicture DEFAULT;
@@ -40,7 +44,7 @@ public abstract class IntegerPicture {
     static {
         try {
             DEFAULT = new DigitsIntegerPicture("1", new FormatModifier(""));
-        } catch (XPathException e) {
+        } catch (final XPathException e) {
             e.printStackTrace();
         }
     }
@@ -60,8 +64,8 @@ public abstract class IntegerPicture {
      */
     public static IntegerPicture fromString(final String pictureFormat) throws XPathException {
 
-        String primaryFormatToken;
-        FormatModifier formatModifier;
+        final String primaryFormatToken;
+        final FormatModifier formatModifier;
 
         final int splitPosition = pictureFormat.lastIndexOf(';');
         if (splitPosition < 0) {
@@ -87,6 +91,8 @@ public abstract class IntegerPicture {
             throw new XPathException(ErrorCodes.FODF1310, "Invalid primary format token is not a valid decimal digital pattern: " + primaryFormatToken);
         }
 
+        // specifically defined format token rules 2-8
+        // {@see https://www.w3.org/TR/xpath-functions-31/#formatting-integers}
         switch (primaryFormatToken) {
             case "A":
                 return new SequenceIntegerPicture('A');
@@ -103,8 +109,15 @@ public abstract class IntegerPicture {
             case "Ww":
                 return new WordPicture(WordPicture.CaseAndCaps.Capitalized, formatModifier);
             default:
-                return new DigitsIntegerPicture("1", formatModifier);
+                break;
         }
+
+        final IntegerPicture defaultWithModifier = new DigitsIntegerPicture("1", formatModifier);
+
+        // Rule 9 - sequences
+        // {@see https://www.w3.org/TR/xpath-functions-31/#formatting-integers}
+        final List<Integer> codePoints = CodePoints(primaryFormatToken);
+        return NumberingPicture.fromIndexCodePoint(codePoints.get(0), formatModifier, defaultWithModifier);
     }
 
     /**
@@ -121,28 +134,28 @@ public abstract class IntegerPicture {
      * @param s the input string
      * @return a list of the codepoints forming the string
      */
-    protected static List<Integer> CodePoints(String s) {
+    protected static List<Integer> CodePoints(final String s) {
         final List<Integer> codePointList = new ArrayList<>(s.length());
         for (int i = 0; i < s.length();) {
-            int codePoint = Character.codePointAt(s, i);
+            final int codePoint = Character.codePointAt(s, i);
             i += Character.charCount(codePoint);
             codePointList.add(codePoint);
         }
         return codePointList;
     }
 
-    protected static String FromCodePoint(int codePoint) {
-        StringBuilder sb = new StringBuilder();
-        for (char c : Character.toChars(codePoint)) {
+    protected static String FromCodePoint(final int codePoint) {
+        final StringBuilder sb = new StringBuilder();
+        for (final char c : Character.toChars(codePoint)) {
             sb.append(c);
         }
         return sb.toString();
     }
 
-    protected static String ordinalSuffix(int value, String language) {
-        Locale locale = (new Locale.Builder()).setLanguage(language).build();
-        RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat( locale, RuleBasedNumberFormat.ORDINAL);
-        StringBuilder sb = new StringBuilder(ruleBasedNumberFormat.format(value)).reverse();
+    protected static String ordinalSuffix(final int value, final String language) {
+        final Locale locale = (new Locale.Builder()).setLanguage(language).build();
+        final RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat( locale, RuleBasedNumberFormat.ORDINAL);
+        final StringBuilder sb = new StringBuilder(ruleBasedNumberFormat.format(value)).reverse();
         int i = 0;
         for (; sb.length() > 0 && Character.isAlphabetic(sb.charAt(i)); i++);
         return sb.delete(i, sb.length()).reverse().toString();
