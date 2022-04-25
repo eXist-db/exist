@@ -87,7 +87,7 @@ public class IntegerPictureTest {
         assertEquals("1,23,45,67,89", fmt("12,34", 123456789L));
         assertEquals("1,23,45,67,89", fmt("12,34,56", 123456789L));
         assertEquals("12345,67?89", fmt("12,34?56", 123456789L));
-        assertEquals("123456,789", fmt("12,345", 123456789L));
+        assertEquals("123,456,789", fmt("12,345", 123456789L));
         assertEquals("00,089", fmt("12,345", 89L));
     }
 
@@ -392,8 +392,12 @@ public class IntegerPictureTest {
         modifierFail("c()");
     }
 
-    @Test public void fromXQTS() throws XPathException {
+    @Test public void separators() throws XPathException {
         assertEquals("1500000", fmt("#", 1500000L));
+        assertEquals("12,500:000", fmt("0,000:000", 12500000L));
+        assertEquals("12,500,000", fmt("0,000,000", 12500000L));
+        assertEquals("1,500,000", fmt("0,000", 1500000L));
+        assertEquals("12345,00,000", fmt("0,00,000", 1234500000L));
     }
 
     /**

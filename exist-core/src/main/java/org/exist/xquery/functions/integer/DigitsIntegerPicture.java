@@ -150,16 +150,17 @@ class DigitsIntegerPicture extends IntegerPicture {
 
     private void regularizeGroups() {
         groupsAreRegular = false;
-        Group prev = null;
-        for (Group group : groups) {
-            if (prev != null) {
-                if (!group.separator.isPresent()) group.separator = prev.separator;
-                if (group.optional + group.mandatory != prev.optional + prev.mandatory) return;
-                if (!group.separator.equals(prev.separator)) return;
-            }
+        Group prev = groups.get(0);
+        for (int i = 1; i < groups.size(); i++) {
+            Group group = groups.get(i);
+
+            if (!group.separator.isPresent()) group.separator = prev.separator;
+            if (i > 1 && (group.optional + group.mandatory != prev.optional + prev.mandatory)) return;
+            if (!group.separator.equals(prev.separator)) return;
+
             prev = group;
         }
-        // One group stands for an infinite series of regualr groups
+        // One group stands for an infinite series of regular groups
         groupsAreRegular = true;
         groups.clear();
         groups.add(prev);
