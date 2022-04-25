@@ -392,6 +392,10 @@ public class IntegerPictureTest {
         modifierFail("c()");
     }
 
+    @Test public void fromXQTS() throws XPathException {
+        assertEquals("1500000", fmt("#", 1500000L));
+    }
+
     /**
      * Investigation of what spellouts are available per-locale
      *

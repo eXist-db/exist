@@ -126,6 +126,12 @@ class DigitsIntegerPicture extends IntegerPicture {
             m.usePattern(groupPattern);
         }
 
+        if (digitFamily == -1) {
+            // # is a valid picture
+            // use the most usual counting number
+            digitFamily = '0' & ~0xF;
+        }
+
         // We should be at the end
         if (end < primaryFormatToken.length()) {
             throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " unexpected character at position " + end);
