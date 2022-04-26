@@ -46,6 +46,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
+
 /**
  * @author <a href="mailto:dannes@exist-db.org">Dannes Wessels</a>
  */
@@ -74,7 +76,7 @@ public class XMLDBSetMimeType extends BasicFunction {
         final MimeTable mimeTable = MimeTable.getInstance();
 
         // Get first parameter
-        final String pathParameter = new AnyURIValue(args[0].itemAt(0).getStringValue()).toString();
+        final String pathParameter = execAndAddErrorIfMissing(this, () -> new AnyURIValue(args[0].itemAt(0).getStringValue()).toString());
 
         if (pathParameter.matches("^[a-z]+://.*")) {
             throw new XPathException("Can not set mime-type for resources outside the database.");

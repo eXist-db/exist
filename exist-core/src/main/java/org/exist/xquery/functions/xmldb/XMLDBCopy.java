@@ -38,6 +38,7 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
 import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
 import static org.exist.xquery.functions.xmldb.XMLDBModule.functionSignatures;
 
 /**
@@ -101,8 +102,8 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
             final Sequence contextSequence) throws XPathException {
 
         if (isCalledAs(FS_COPY_RESOURCE_NAME)) {
-            final XmldbURI destination = new AnyURIValue(args[2].itemAt(0).getStringValue()).toXmldbURI();
-            final XmldbURI doc = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI();
+            final XmldbURI destination = execAndAddErrorIfMissing(this, () -> new AnyURIValue(args[2].itemAt(0).getStringValue()).toXmldbURI());
+            final XmldbURI doc = execAndAddErrorIfMissing(this, () -> new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI());
             try {
                 final Resource resource = collection.getResource(doc.toString());
                 if (resource == null) {

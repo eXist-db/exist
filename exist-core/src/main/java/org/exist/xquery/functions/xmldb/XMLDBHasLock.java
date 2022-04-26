@@ -41,6 +41,8 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
+import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
+
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  *
@@ -83,7 +85,7 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
 
 		try {
 			final UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-			final Resource res = collection.getResource(new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString());
+			final Resource res = collection.getResource(execAndAddErrorIfMissing(this, () -> new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString()));
 			if (res != null) {
 				final String lockUser = ums.hasUserLock(res);
 				if (lockUser != null && isCalledAs("clear-lock")) {
