@@ -31,8 +31,6 @@ import org.exist.xquery.value.Type;
 
 public class FnDefaultLanguage extends BasicFunction {
 
-    private static final Logger logger = LogManager.getLogger(FunCurrentDateTime.class);
-
     public static final FunctionSignature FS_DEFAULT_LANGUAGE = FunctionDSL.functionSignature(
             new QName("default-language", Function.BUILTIN_FUNCTION_NS),
             "Returns the xs:language that is " +
@@ -45,22 +43,10 @@ public class FnDefaultLanguage extends BasicFunction {
         super(context, FS_DEFAULT_LANGUAGE);
     }
 
+    @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);
-            context.getProfiler().message(this, Profiler.DEPENDENCIES,
-                    "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null) {
-                context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                        "CONTEXT SEQUENCE", contextSequence);
-            }
-        }
-        final Sequence result = new StringValue(context.getDefaultLanguage());
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().end(this, "", result);
-        }
-        return result;
 
+        return new StringValue(context.getDefaultLanguage());
     }
 
 }
