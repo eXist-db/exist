@@ -292,6 +292,11 @@ public class XQueryContext implements BinaryValueManager, Context {
     private String defaultCollation = Collations.UNICODE_CODEPOINT_COLLATION_URI;
 
     /**
+     * The default language
+     */
+    private static final String DefaultLanguage = Locale.getDefault().getLanguage();
+
+    /**
      * Default Collator. Will be null for the default unicode codepoint collation.
      */
     private Collator defaultCollator = null;
@@ -3315,6 +3320,11 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public void setSource(final Source source) {
         this.source = source;
+    }
+
+    @Override
+    public String getDefaultLanguage() {
+        return DefaultLanguage;
     }
 
     /**
