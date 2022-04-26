@@ -27,6 +27,7 @@ import org.exist.xquery.XPathException;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -36,6 +37,12 @@ import java.util.regex.Pattern;
  * Formatting integers according to https://www.w3.org/TR/xpath-functions-31/#formatting-integers
  */
 class DigitsIntegerPicture extends IntegerPicture {
+
+    // Calculated by inspecting the result of com.ibm.icu.text.UnicodeSet("[:Nd:]")
+    final static int[] codePointFamilies = new int[]{0x30,0x660,0x6f0,0x7c0,0x966,0x9e6,0xa66,0xae6,0xb66,0xbe6,0xc66,0xce6,0xd66,0xde6,0xe50,0xed0,0xf20,0x1040,0x1090,0x17e0,0x1810,0x1946,0x19d0,0x1a80,0x1a90,0x1b50,0x1bb0,0x1c40,0x1c50,0xa620,0xa8d0,0xa900,0xa9d0,0xa9f0,0xaa50,0xabf0,0xff10,0x104a0,0x11066,0x110f0,0x11136,0x111d0,0x112f0,0x11450,0x114d0,0x11650,0x116c0,0x11730,0x118e0,0x11c50,0x16a60,0x16b50,0x1d7ce,0x1d7d8,0x1d7e2,0x1d7ec,0x1d7f6,0x1e950};
+    static {
+        Arrays.sort(codePointFamilies);
+    }
 
     final static Pattern separatorPattern = Pattern.compile("([^\\p{N}\\p{L}])");
     final static Pattern groupPattern = Pattern.compile("(#*)(\\p{Nd}*)");
@@ -55,15 +62,24 @@ class DigitsIntegerPicture extends IntegerPicture {
         parseFormatToken();
     }
 
+    private int GetCodePointFamily(final int codePoint) {
+        final int index = Arrays.binarySearch(codePointFamilies, codePoint);
+        if (index >= 0) {
+            // The supplied codePoint is a codePoint family start digit
+            return codePoint;
+        }
+        final int familyIndex = -(index + 2);
+        return codePointFamilies[familyIndex];
+    }
+
     /**
-     *
      * @throws XPathException if the format is incorrectly formed
-     * {@see https://www.w3.org/TR/xpath-functions-31/#formatting-integers}
+     *                        {@see https://www.w3.org/TR/xpath-functions-31/#formatting-integers}
      */
     private void parseFormatToken() throws XPathException {
-            buildGroups();
-            countMandatoryDigits(); // Do it before we regularize
-            regularizeGroups();
+        buildGroups();
+        countMandatoryDigits(); // Do it before we regularize
+        regularizeGroups();
     }
 
     /**
@@ -98,7 +114,7 @@ class DigitsIntegerPicture extends IntegerPicture {
             for (final int codePoint : mandatory) {
                 // All families begin at 0x____0
                 // represent the family by the 0 character in the family
-                final int codePointFamily = codePoint & ~0xF;
+                final int codePointFamily = GetCodePointFamily(codePoint);
                 if (digitFamily != -1 && digitFamily != codePointFamily) {
                     throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " contains multiple digit families");
                 }
@@ -129,7 +145,7 @@ class DigitsIntegerPicture extends IntegerPicture {
         if (digitFamily == -1) {
             // # is a valid picture
             // use the most usual counting number
-            digitFamily = '0' & ~0xF;
+            digitFamily = GetCodePointFamily('0');
         }
 
         // We should be at the end
@@ -170,7 +186,7 @@ class DigitsIntegerPicture extends IntegerPicture {
         if (groupsAreRegular) {
             return groups.get(0);
         } else if (index < groups.size()) {
-            return groups.get(groups.size() - index -1);
+            return groups.get(groups.size() - index - 1);
         } else {
             return null;
         }
@@ -195,12 +211,14 @@ class DigitsIntegerPicture extends IntegerPicture {
             return optional + mandatory;
         }
 
-        @Override public String toString() {
+        @Override
+        public String toString() {
             return "Group(" + optional + "," + mandatory + "," + separator.orElse("") + ")";
         }
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("primary=").append(primaryFormatToken).append("::");
         sb.append("modifier=").append(formatModifier).append("::");
@@ -213,8 +231,9 @@ class DigitsIntegerPicture extends IntegerPicture {
 
     /**
      * Format a number according to this formatting picture
+     *
      * @param bigInteger to format according to this picture
-     * @param language to format {@code bigInteger} in, where words are needed
+     * @param language   to format {@code bigInteger} in, where words are needed
      * @return the formatted string
      */
     @Override
@@ -234,7 +253,6 @@ class DigitsIntegerPicture extends IntegerPicture {
     }
 
     /**
-     *
      * @param bigInteger to format according to this picture
      * @return the reverse of the formatted string (think of it as a character stack)
      */

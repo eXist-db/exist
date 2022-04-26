@@ -115,7 +115,7 @@ public class WordPicture extends IntegerPicture {
             }
             return result;
         }
-    };
+    }
 
     CaseAndCaps capitalization;
     FormatModifier formatModifier;

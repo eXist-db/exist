@@ -23,6 +23,8 @@
 package org.exist.xquery.functions.integer;
 
 import com.ibm.icu.text.RuleBasedNumberFormat;
+import com.ibm.icu.text.UnicodeSet;
+import org.exist.util.CodePointString;
 import org.exist.xquery.XPathException;
 import org.junit.Test;
 
@@ -116,7 +118,10 @@ public class IntegerPictureTest {
     }
 
     @Test public void formatNonDefaultDigitFamilies() throws XPathException {
-        for (final int family : new int[]{0x104a0,0x660,0x30,0x1e950,0x1e2f0}) {
+
+        // All the code point families that exist in DigitsIntegerPicture
+        final int[] range = new int[]{0x30,0x660,0x6f0,0x7c0,0x966,0x9e6,0xa66,0xae6,0xb66,0xbe6,0xc66,0xce6,0xd66,0xde6,0xe50,0xed0,0xf20,0x1040,0x1090,0x17e0,0x1810,0x1946,0x19d0,0x1a80,0x1a90,0x1b50,0x1bb0,0x1c40,0x1c50,0xa620,0xa8d0,0xa900,0xa9d0,0xa9f0,0xaa50,0xabf0,0xff10,0x104a0,0x11066,0x110f0,0x11136,0x111d0,0x112f0,0x11450,0x114d0,0x11650,0x116c0,0x11730,0x118e0,0x11c50,0x16a60,0x16b50,0x1d7ce,0x1d7d8,0x1d7e2,0x1d7ec,0x1d7f6,0x1e950};
+        for (final int family : range) {
             final StringBuilder sb = new StringBuilder();
             sb.append("#");
             for (int i = 2; i < 5; i++) {
@@ -129,7 +134,6 @@ public class IntegerPictureTest {
                 sb.append(chars);
             }
             final String formatted = fmt(sb.toString(), 149L);
-            System.out.println("Formatted:" + formatted);
             assertEquals(6 * Character.charCount(family) + 1, formatted.length());
             int pos = 0;
             int codePoint;
@@ -418,11 +422,63 @@ public class IntegerPictureTest {
         assertEquals("\u03b2", fmt("\u03b1", 2L));
     }
 
+    @Test public void math() throws XPathException {
+        char[] chars = Character.toChars(0x1D7D8);
+        StringBuilder sb = new StringBuilder();
+        for (final char c : chars) sb.append(c);
+        assertEquals("\uD835\uDFDC", fmt(sb.toString(), 4L));
+        assertEquals("\uD835\uDFD9", fmt(sb.toString(), 1L));
+        assertEquals("\uD835\uDFD8", fmt(sb.toString(), 0L));
+        assertEquals("\uD835\uDFDA", fmt(sb.toString(), 2L));
+        assertEquals("\uD835\uDFE1", fmt(sb.toString(), 9L));
+        assertEquals("\uD835\uDFD9\uD835\uDFD8", fmt(sb.toString(), 10L));
+
+        chars = Character.toChars(0x1D7E2);
+        sb = new StringBuilder();
+        for (final char c : chars) sb.append(c);
+        assertEquals("\uD835\uDFE2", fmt(sb.toString(), 0L));
+    }
+
     @Test public void numberings() throws XPathException {
         assertEquals("①", fmt("①", 1L));
         assertEquals("⑮", fmt("①", 15L));
         assertEquals("⑳", fmt("①", 20L));
         assertEquals("21", fmt("①", 21L));
+    }
+
+    /**
+     * Investigation of digit sets
+     *
+     * @Test
+     */
+    @Test public void unicodeSets() {
+        final UnicodeSet set = new UnicodeSet("[:Nd:]");
+        set.freeze();
+        System.err.println(set.size());
+        int prev = -1;
+        int count = 0;
+        final StringBuilder sb = new StringBuilder();
+        for (final String s : set) {
+            final CodePointString cps = new CodePointString(s);
+            final int codePoint = cps.codePointAt(0);
+
+            if (prev + 1 < codePoint || count == 10) {
+                if (sb.length() > 0) {
+                    sb.append(',');
+                }
+                if (count > 0) {
+                    System.err.println(count);
+                }
+                System.err.print("" + codePoint + "->");
+                count = 1;
+                sb.append("0x" + Integer.toHexString(codePoint));
+            } else {
+                count++;
+            }
+            prev = codePoint;
+        }
+        System.err.println(count);
+        System.err.println(sb);
     }
 
     /**
