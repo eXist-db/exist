@@ -41,6 +41,8 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
+import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
+
 /**
  *
  *  @author Luigi P. Bai, finder@users.sf.net, 2004
@@ -75,7 +77,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 	
 	protected LocalCollection createLocalCollection(String name) throws XMLDBException {
 		try {
-			return new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), new AnyURIValue(name).toXmldbURI());
+			return new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), execAndAddErrorIfMissing(this, () -> new AnyURIValue(name).toXmldbURI()));
 		} catch(final XPathException e) {
 			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 		}
@@ -201,9 +203,9 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         return child;
     }
     
-    static public final Collection createCollectionPath(Collection parentColl, String relPath) throws XMLDBException, XPathException {
+    protected final Collection createCollectionPath(Collection parentColl, String relPath) throws XMLDBException, XPathException {
         Collection current = parentColl;
-        final StringTokenizer tok = new StringTokenizer(new AnyURIValue(relPath).toXmldbURI().toString(), "/");
+        final StringTokenizer tok = new StringTokenizer(execAndAddErrorIfMissing(this, () -> new AnyURIValue(relPath).toXmldbURI()).toString(), "/");
         while (tok.hasMoreTokens()) {
             final String token = tok.nextToken();
             current = createCollection(current, token);

@@ -58,6 +58,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
+
 /**
  * Implements eXist's xmldb:document() function.
  * 
@@ -139,12 +141,12 @@ public class XMLDBDocument extends Function {
 		for(int i = 0; i < args.size(); i++) {
 		    try {
 			final String next = (String)args.get(i);
-			XmldbURI nextUri = new AnyURIValue(next).toXmldbURI();
+			XmldbURI nextUri = execAndAddErrorIfMissing(this, () -> new AnyURIValue(next).toXmldbURI());
 			if(nextUri.getCollectionPath().length() == 0) {
 			    throw new XPathException(this, "Invalid argument to " + XMLDBModule.PREFIX + ":document() function: empty string is not allowed here.");
 			}
 			if(nextUri.numSegments()==1) {                     
-			    nextUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(nextUri);
+			    nextUri = execAndAddErrorIfMissing(this, () -> context.getBaseURI().toXmldbURI()).resolveCollectionPath(nextUri);
 			}
 			final DocumentImpl doc = context.getBroker().getResource(nextUri, Permission.READ);
 			if(doc == null) { 

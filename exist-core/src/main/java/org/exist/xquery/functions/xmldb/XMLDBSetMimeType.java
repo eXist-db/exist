@@ -45,6 +45,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
+
 /**
  * @author Dannes Wessels (dannes@exist-db.org)
  */
@@ -134,7 +136,7 @@ public class XMLDBSetMimeType extends BasicFunction {
 
         try(final Txn txn = brokerPool.getTransactionManager().beginTransaction()) {
             // relative collection Path: add the current base URI
-            pathUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(pathUri);
+            pathUri = execAndAddErrorIfMissing(this, () -> context.getBaseURI().toXmldbURI()).resolveCollectionPath(pathUri);
 
             // try to open the document and acquire a lock
             doc = (DocumentImpl) broker.getXMLResource(pathUri, LockMode.WRITE_LOCK);
