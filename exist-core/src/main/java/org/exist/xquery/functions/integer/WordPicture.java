@@ -30,7 +30,7 @@ public class WordPicture extends IntegerPicture {
     /**
      * Pick the best match spellout for a language
      *
-     * @param locale       to pick a spellout for
+     * @param locale         to pick a spellout for
      * @param formatModifier ordinal or cardinal ? Any hints at the spellout required ?
      * @return our best guess at an appropriate spellout
      */
@@ -53,7 +53,7 @@ public class WordPicture extends IntegerPicture {
     /**
      * Pick the best match spellout for a language
      *
-     * @param locale       to pick a spellout for
+     * @param locale         to pick a spellout for
      * @param formatModifier ordinal or cardinal ? Any hints at the spellout required ?
      * @return our best guess at an appropriate spellout
      */
@@ -109,7 +109,7 @@ public class WordPicture extends IntegerPicture {
                 case Upper:
                     result = formatted.toUpperCase(locale);
                     break;
-                 case Capitalized:
+                case Capitalized:
                     result = StringUtils.capitalize(formatted);
                     break;
             }

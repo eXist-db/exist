@@ -34,7 +34,7 @@ import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
 
 /**
  * Implements fn:format-integer as per W3C XPath and XQuery Functions and Operators 3.1
- *
+ * <p>
  * fn:format-number($value as integer?, $picture as xs:string) as xs:string
  * fn:format-number($value as integer?, $picture as xs:string, $lang as xs:string) as xs:string
  *

@@ -38,19 +38,20 @@ class NumberingPicture extends IntegerPicture {
 
     // Set up the code point ranges we accept as numberings.
     private final static Map<Integer, Integer> rangesForCodePoint = new HashMap<>();
+
     static {
         range(0x391, 0x3A9);
         range(0x3B1, 0x3C9);
-        range('①','⑳');
-        range('⑴','⒇');
-        range('⒈','⒛');
+        range('①', '⑳');
+        range('⑴', '⒇');
+        range('⒈', '⒛');
     }
 
     /**
      * Define a range using characters
      *
      * @param from first item in range (1)
-     * @param to last item in range (inclusive)
+     * @param to   last item in range (inclusive)
      */
     private static void range(final char from, final char to) {
         final char[] fromChars = {from};
@@ -62,7 +63,7 @@ class NumberingPicture extends IntegerPicture {
      * Define a range using code points
      *
      * @param from first item in range (1)
-     * @param to last item in range (inclusive)
+     * @param to   last item in range (inclusive)
      */
     private static void range(final int from, final int to) {
         rangesForCodePoint.put(from, to);

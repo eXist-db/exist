@@ -124,19 +124,20 @@ public abstract class IntegerPicture {
      * Format an integer according to the picture and language with which this was constructed
      *
      * @param bigInteger the integer to format
-     * @param language the language to use in formatting
+     * @param language   the language to use in formatting
      * @return a string containing the formatted integer
      */
     abstract public String formatInteger(BigInteger bigInteger, String language) throws XPathException;
 
     /**
      * Convert a string into a list of unicode code points
+     *
      * @param s the input string
      * @return a list of the codepoints forming the string
      */
     protected static List<Integer> CodePoints(final String s) {
         final List<Integer> codePointList = new ArrayList<>(s.length());
-        for (int i = 0; i < s.length();) {
+        for (int i = 0; i < s.length(); ) {
             final int codePoint = Character.codePointAt(s, i);
             i += Character.charCount(codePoint);
             codePointList.add(codePoint);
@@ -154,10 +155,10 @@ public abstract class IntegerPicture {
 
     protected static String ordinalSuffix(final int value, final String language) {
         final Locale locale = (new Locale.Builder()).setLanguage(language).build();
-        final RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat( locale, RuleBasedNumberFormat.ORDINAL);
+        final RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat(locale, RuleBasedNumberFormat.ORDINAL);
         final StringBuilder sb = new StringBuilder(ruleBasedNumberFormat.format(value)).reverse();
         int i = 0;
-        for (; sb.length() > 0 && Character.isAlphabetic(sb.charAt(i)); i++);
+        for (; sb.length() > 0 && Character.isAlphabetic(sb.charAt(i)); i++) ;
         return sb.delete(i, sb.length()).reverse().toString();
     }
 

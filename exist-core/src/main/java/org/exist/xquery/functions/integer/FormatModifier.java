@@ -8,8 +8,13 @@ import java.util.regex.Pattern;
 
 class FormatModifier {
 
-    enum Numbering {Cardinal, Ordinal};
-    enum LetterSequence { Alphabetic, Traditional };
+    enum Numbering {Cardinal, Ordinal}
+
+    ;
+
+    enum LetterSequence {Alphabetic, Traditional}
+
+    ;
 
     final String modifier;
     final boolean isEmpty;

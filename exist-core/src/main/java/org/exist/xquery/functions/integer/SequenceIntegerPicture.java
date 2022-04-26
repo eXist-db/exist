@@ -49,7 +49,8 @@ class SequenceIntegerPicture extends IntegerPicture {
             return DEFAULT.formatInteger(bigInteger, language);
         }
 
-        final StringBuilder sb = new StringBuilder();
+        final StringBuilder
+                sb = new StringBuilder();
         do {
             bigInteger = bigInteger.subtract(BigInteger.ONE);
             final BigInteger[] divideAndRemainder = bigInteger.divideAndRemainder(RADIX);
