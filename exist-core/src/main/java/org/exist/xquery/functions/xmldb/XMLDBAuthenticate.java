@@ -143,7 +143,7 @@ public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
                 return BooleanValue.FALSE;
             }
 
-            final Collection root = XMLDBAbstractCollectionManipulator.getCollection(context, uri, Optional.of(userName), Optional.of(password));
+            final Collection root = XMLDBAbstractCollectionManipulator.getCollection(this, context, uri, Optional.of(userName), Optional.of(password));
 
             if (root == null) {
                 logger.error("Unable to authenticate user: target collection {} does not exist {}", uri, getLocation());

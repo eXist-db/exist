@@ -38,6 +38,8 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
+import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
+
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  *
@@ -74,7 +76,7 @@ public class XMLDBRemove extends XMLDBAbstractCollectionManipulator {
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
 		if(getSignature().getArgumentCount() == 2) {
-			final String doc = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI().toString();
+			final String doc = execAndAddErrorIfMissing(this, () -> new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI().toString());
 			try {
 				final Resource resource = collection.getResource(doc);
 				if (resource == null) {
