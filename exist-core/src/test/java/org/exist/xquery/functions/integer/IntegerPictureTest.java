@@ -482,7 +482,6 @@ public class IntegerPictureTest {
      *
      * @Test
      */
-    @Test
     public void unicodeSets() {
         final UnicodeSet set = new UnicodeSet("[:Nd:]");
         set.freeze();
