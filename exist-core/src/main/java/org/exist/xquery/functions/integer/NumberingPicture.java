@@ -33,6 +33,7 @@ import org.exist.xquery.XPathException;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 class NumberingPicture extends IntegerPicture {
 
@@ -74,19 +75,19 @@ class NumberingPicture extends IntegerPicture {
     private final IntegerPicture defaultPicture;
     private final FormatModifier formatModifier;
 
-    private NumberingPicture(final int indexCodePoint, final int limitForRange, final FormatModifier formatModifier, final IntegerPicture defaultPicture) {
+    private NumberingPicture(final int indexCodePoint, final int limitForRange, final FormatModifier formatModifier) throws XPathException {
         this.indexCodePoint = indexCodePoint;
         this.limitForRange = limitForRange;
-        this.defaultPicture = defaultPicture;
+        this.defaultPicture = IntegerPicture.defaultPictureWithModifier(formatModifier);
         this.formatModifier = formatModifier;
     }
 
-    public static IntegerPicture fromIndexCodePoint(final int indexCodePoint, final FormatModifier formatModifier, final IntegerPicture defaultPicture) {
+    public static Optional<IntegerPicture> fromIndexCodePoint(final int indexCodePoint, final FormatModifier formatModifier) throws XPathException {
         if (!rangesForCodePoint.containsKey(indexCodePoint)) {
-            return defaultPicture;
+            return Optional.empty();
         }
         final int limitForRange = rangesForCodePoint.get(indexCodePoint);
-        return new NumberingPicture(indexCodePoint, limitForRange, formatModifier, defaultPicture);
+        return Optional.of(new NumberingPicture(indexCodePoint, limitForRange, formatModifier));
     }
 
     @Override

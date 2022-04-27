@@ -82,7 +82,11 @@ public abstract class IntegerPicture {
         // type 1 matcher (some digits)
         final Matcher decimalDigitMatcher = decimalDigitPattern.matcher(primaryFormatToken);
         if (decimalDigitMatcher.matches()) {
-            return new DigitsIntegerPicture(primaryFormatToken, formatModifier);
+            try {
+                return new DigitsIntegerPicture(primaryFormatToken, formatModifier);
+            } catch (final XPathException e) {
+                return defaultPictureWithModifier(formatModifier);
+            }
         }
 
         // incorrect type 1 matcher (and not anything else)
@@ -112,12 +116,14 @@ public abstract class IntegerPicture {
                 break;
         }
 
-        final IntegerPicture defaultWithModifier = new DigitsIntegerPicture("1", formatModifier);
-
         // Rule 9 - sequences
         // {@see https://www.w3.org/TR/xpath-functions-31/#formatting-integers}
         final List<Integer> codePoints = CodePoints(primaryFormatToken);
-        return NumberingPicture.fromIndexCodePoint(codePoints.get(0), formatModifier, defaultWithModifier);
+        return NumberingPicture.fromIndexCodePoint(codePoints.get(0), formatModifier).orElse(defaultPictureWithModifier(formatModifier));
+    }
+
+    static IntegerPicture defaultPictureWithModifier(final FormatModifier formatModifier) throws XPathException {
+        return new DigitsIntegerPicture("1", formatModifier);
     }
 
     /**
@@ -158,6 +164,7 @@ public abstract class IntegerPicture {
         final RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat(locale, RuleBasedNumberFormat.ORDINAL);
         final StringBuilder sb = new StringBuilder(ruleBasedNumberFormat.format(value)).reverse();
         int i = 0;
+        //noinspection StatementWithEmptyBody
         for (; sb.length() > 0 && Character.isAlphabetic(sb.charAt(i)); i++) ;
         return sb.delete(i, sb.length()).reverse().toString();
     }

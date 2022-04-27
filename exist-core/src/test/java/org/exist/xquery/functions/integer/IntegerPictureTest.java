@@ -477,6 +477,18 @@ public class IntegerPictureTest {
         assertEquals("21", fmt("①", 21L));
     }
 
+    @Test
+    public void kanji() throws XPathException {
+        System.out.println("\u4e00\u4e01\u4e02\u4e03\u4e04\u4e05\u4e06\u4e07\u4e08\u4e09\u4e0a");
+        assertEquals("一", fmt("\u4e00", 1L));
+    }
+
+    @Test
+    public void fallback() throws XPathException {
+        final char[] hexChar = Character.toChars(0xa);
+        assertEquals("1", fmt(String.valueOf(hexChar), 1L));
+    }
+
     /**
      * Investigation of digit sets
      *
