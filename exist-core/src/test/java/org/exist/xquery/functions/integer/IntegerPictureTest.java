@@ -24,6 +24,7 @@ package org.exist.xquery.functions.integer;
 
 import com.ibm.icu.text.RuleBasedNumberFormat;
 import com.ibm.icu.text.UnicodeSet;
+import org.checkerframework.checker.units.qual.A;
 import org.exist.util.CodePointString;
 import org.exist.xquery.XPathException;
 import org.junit.Test;
@@ -57,13 +58,13 @@ public class IntegerPictureTest {
     }
 
     private String fmt(final String pictureString, final long value) throws XPathException {
-        return fmt(pictureString, value, "en");
+        final IntegerPicture picture = IntegerPicture.fromString(pictureString);
+        return picture.formatInteger(BigInteger.valueOf(value), Collections.singletonList("en"));
     }
 
     private String fmt(final String pictureString, final long value, final String language) throws XPathException {
         final IntegerPicture picture = IntegerPicture.fromString(pictureString);
-        final Locale locale = new Locale.Builder().setLanguage(language).build();
-        return picture.formatInteger(BigInteger.valueOf(value), locale);
+        return picture.formatInteger(BigInteger.valueOf(value), Arrays.asList(language, "en"));
     }
 
     @Test
@@ -501,14 +502,19 @@ public class IntegerPictureTest {
     //format-integer(11, 'Ww', '@*!+%')
     @Test
     public void badLanguage() throws XPathException {
-        assertEquals("43", fmt("Ww", 11L, "@*!+%"));
+        assertEquals("One hundred twenty-three", fmt("Ww", 123L, "@*!+%"));
     }
-
 
     @Test
     public void fallback() throws XPathException {
         final char[] hexChar = Character.toChars(0xa);
         assertEquals("1", fmt(String.valueOf(hexChar), 1L));
+    }
+
+    //format-integer(123456789, '000,00,00')
+    @Test
+    public void formatFix() throws XPathException {
+        assertEquals("12345,67,89", fmt("000,00,00", 123456789L));
     }
 
     /**

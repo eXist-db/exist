@@ -27,9 +27,7 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,7 +49,7 @@ public abstract class IntegerPicture {
 
     final static BigInteger TEN = BigInteger.valueOf(10L);
 
-    final static Pattern decimalDigitPattern = Pattern.compile("^((\\p{Nd}|#|[^\\p{N}\\p{L}])+?)$", Pattern.UNICODE_CHARACTER_CLASS);
+    final static Pattern decimalDigitPattern = Pattern.compile("^((\\p{Nd}|#|[^\\p{N}\\p{L}])+)$", Pattern.UNICODE_CHARACTER_CLASS);
     final static Pattern invalidDigitPattern = Pattern.compile("(\\p{Nd})");
 
     /**
@@ -82,11 +80,7 @@ public abstract class IntegerPicture {
         // type 1 matcher (some digits)
         final Matcher decimalDigitMatcher = decimalDigitPattern.matcher(primaryFormatToken);
         if (decimalDigitMatcher.matches()) {
-            try {
-                return new DigitsIntegerPicture(primaryFormatToken, formatModifier);
-            } catch (final XPathException e) {
-                return defaultPictureWithModifier(formatModifier);
-            }
+            return new DigitsIntegerPicture(primaryFormatToken, formatModifier);
         }
 
         // incorrect type 1 matcher (and not anything else)
@@ -119,7 +113,9 @@ public abstract class IntegerPicture {
         // Rule 9 - sequences
         // {@see https://www.w3.org/TR/xpath-functions-31/#formatting-integers}
         final List<Integer> codePoints = CodePoints(primaryFormatToken);
-        return NumberingPicture.fromIndexCodePoint(codePoints.get(0), formatModifier).orElse(defaultPictureWithModifier(formatModifier));
+        final Optional<IntegerPicture> numberingPicture = NumberingPicture.fromIndexCodePoint(codePoints.get(0), formatModifier);
+
+        return numberingPicture.orElse(defaultPictureWithModifier(formatModifier));
     }
 
     static IntegerPicture defaultPictureWithModifier(final FormatModifier formatModifier) throws XPathException {
@@ -133,7 +129,28 @@ public abstract class IntegerPicture {
      * @param locale of the language to use in formatting
      * @return a string containing the formatted integer
      */
-    abstract public String formatInteger(BigInteger bigInteger, Locale locale) throws XPathException;
+    abstract protected String formatInteger(BigInteger bigInteger, Locale locale) throws XPathException;
+
+    private Locale getLocaleFromLanguages(final List<String> languages) throws XPathException {
+
+        IllformedLocaleException languageILE = null;
+        for (final String language : languages) {
+            final Locale.Builder localeBuilder = new Locale.Builder();
+            try {
+                localeBuilder.setLanguage(language);
+                return localeBuilder.build();
+            } catch (final IllformedLocaleException ile) {
+                languageILE = ile;
+            }
+        }
+        throw new XPathException(ErrorCodes.FODF1310, languageILE.getMessage());
+    }
+
+    public final String formatInteger(final BigInteger bigInteger, final List<String> languages) throws XPathException {
+
+        final Locale locale = getLocaleFromLanguages(languages);
+        return formatInteger(bigInteger, locale);
+    }
 
     /**
      * Convert a string into a list of unicode code points
