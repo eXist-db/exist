@@ -44,41 +44,13 @@
         <xs:annotation>
             <xs:documentation>Index Configuration</xs:documentation>
         </xs:annotation>
-        <xs:choice>
-            <xs:sequence>
-                <xs:element ref="lucene" minOccurs="0"/>
-                <xs:element ref="range" minOccurs="0"/>
-                <xs:element name="create" type="rangeIndexType" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="gml" minOccurs="0"/>
-            </xs:sequence>
-            <xs:sequence>
-                <xs:element ref="lucene"/>
-                <xs:element ref="range" minOccurs="0"/>
-                <xs:element name="create" type="rangeIndexType" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="gml" minOccurs="0"/>
-            </xs:sequence>
-            <xs:sequence>
-                <xs:element ref="range"/>
-                <xs:element name="create" type="rangeIndexType" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="gml" minOccurs="0"/>
-            </xs:sequence>
-            <xs:sequence>
-                <xs:element name="create" type="rangeIndexType" maxOccurs="unbounded"/>
-                <xs:element ref="ngram" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="gml" minOccurs="0"/>
-            </xs:sequence>
-            <xs:sequence>
-                <xs:element ref="ngram" maxOccurs="unbounded"/>
-                <xs:element ref="gml" minOccurs="0"/>
-            </xs:sequence>
-            <xs:sequence>
-                <xs:element ref="gml"/>
-            </xs:sequence>
+        <xs:choice maxOccurs="unbounded">
+            <xs:element ref="lucene"/>
+            <xs:element ref="range"/>
+            <xs:element name="create" type="rangeIndexType"/>
+            <xs:element ref="ngram"/>
+            <xs:element ref="gml"/>
         </xs:choice>
-
     </xs:complexType>
 
     <xs:complexType name="rangeIndexType">
