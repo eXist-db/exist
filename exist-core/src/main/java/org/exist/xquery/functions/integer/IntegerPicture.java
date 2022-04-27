@@ -49,7 +49,10 @@ public abstract class IntegerPicture {
 
     final static BigInteger TEN = BigInteger.valueOf(10L);
 
-    final static Pattern decimalDigitPattern = Pattern.compile("^((\\p{Nd}|#|[^\\p{N}\\p{L}])+)$", Pattern.UNICODE_CHARACTER_CLASS);
+    //This contains \\v (vertical whitespace characters) so anything with vertical white space isn't a pattern
+    //It also disallows 0 instances of the pattern
+    //When decimal digit pattern doesn't match, we end up falling into a standard default.
+    final static Pattern decimalDigitPattern = Pattern.compile("^((\\p{Nd}|#|[^\\p{N}\\p{L}\\v])+)$", Pattern.UNICODE_CHARACTER_CLASS);
     final static Pattern invalidDigitPattern = Pattern.compile("(\\p{Nd})");
 
     /**
