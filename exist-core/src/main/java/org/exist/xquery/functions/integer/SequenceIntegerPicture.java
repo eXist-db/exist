@@ -31,6 +31,7 @@ package org.exist.xquery.functions.integer;
 import org.exist.xquery.XPathException;
 
 import java.math.BigInteger;
+import java.util.Locale;
 
 class SequenceIntegerPicture extends IntegerPicture {
 
@@ -43,10 +44,10 @@ class SequenceIntegerPicture extends IntegerPicture {
     }
 
     @Override
-    public String formatInteger(BigInteger bigInteger, final String language) throws XPathException {
+    public String formatInteger(BigInteger bigInteger, final Locale locale) throws XPathException {
         //spec says out of range should be formatted by "1"
         if (bigInteger.compareTo(BigInteger.ZERO) <= 0) {
-            return DEFAULT.formatInteger(bigInteger, language);
+            return DEFAULT.formatInteger(bigInteger, locale);
         }
 
         final StringBuilder

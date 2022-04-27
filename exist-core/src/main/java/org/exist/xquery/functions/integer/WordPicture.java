@@ -51,6 +51,44 @@ public class WordPicture extends IntegerPicture {
     }
 
     /**
+     * Common variations for formatters used by other systems.
+     */
+    static final Map<String, Map<String, String>> shorthands = new HashMap<>();
+    static {
+        final Map<String, String> de = new HashMap<>();
+        de.put("er", "r");
+        de.put("es", "s");
+        de.put("en", "n");
+        shorthands.put("de", de);
+        final Map<String, String> it = new HashMap<>();
+        it.put("o", "masculine");
+        it.put("a", "feminine");
+        shorthands.put("it", it);
+    }
+
+    static String mapVariationShorthand(final String language, final String variation) {
+        if (variation == null) {
+            return null;
+        }
+        final String trimmedVariation = variation.replace("-", "");
+        final Map<String, String> languageMap = shorthands.get(language);
+        if (languageMap == null) {
+            //nothing to map
+            return variation;
+        }
+        final String mappedVariation = languageMap.get(trimmedVariation);
+        if (mappedVariation == null) {
+            //not a known shorthand
+            return variation;
+        }
+        if (variation.startsWith("-")) {
+            return "-" + mappedVariation;
+        } else {
+            return mappedVariation;
+        }
+    }
+
+    /**
      * Pick the best match spellout for a language
      *
      * @param locale         to pick a spellout for
@@ -61,17 +99,18 @@ public class WordPicture extends IntegerPicture {
 
         final Set<String> spelloutRuleSet = GetSpelloutRules(locale, defaultSpelloutRule);
 
-        if (formatModifier.variation != null) {
+        final String variation = mapVariationShorthand(locale.getLanguage(), formatModifier.variation);
+        if (variation != null) {
             final String variantSpelloutRule;
-            if (formatModifier.variation.startsWith("-")) {
-                variantSpelloutRule = defaultSpelloutRule + formatModifier.variation;
+            if (variation.startsWith("-")) {
+                variantSpelloutRule = defaultSpelloutRule + variation;
             } else {
-                variantSpelloutRule = defaultSpelloutRule + "-" + formatModifier.variation;
+                variantSpelloutRule = defaultSpelloutRule + "-" + variation;
             }
             if (spelloutRuleSet.contains(variantSpelloutRule)) {
                 return variantSpelloutRule;
-            } else if (spelloutRuleSet.contains(formatModifier.variation)) {
-                return formatModifier.variation;
+            } else if (spelloutRuleSet.contains(variation)) {
+                return variation;
             }
         }
 
@@ -91,9 +130,8 @@ public class WordPicture extends IntegerPicture {
         Lower,
         Capitalized;
 
-        String formatAndConvert(final int fromValue, final String language, final FormatModifier formatModifier) {
+        String formatAndConvert(final int fromValue, final Locale locale, final FormatModifier formatModifier) {
 
-            final Locale locale = (new Locale.Builder()).setLanguage(language).build();
             final String spelloutRule = GetSpellout(locale, formatModifier);
 
             final MessageFormat ruleBasedMessageFormatFormat
@@ -126,10 +164,10 @@ public class WordPicture extends IntegerPicture {
     }
 
     @Override
-    public String formatInteger(final BigInteger bigInteger, final String language) throws XPathException {
+    public String formatInteger(final BigInteger bigInteger, final Locale locale) throws XPathException {
         //spec says out of range should be formatted by "1"
         if (bigInteger.compareTo(BigInteger.valueOf(Integer.MIN_VALUE)) < 0 || bigInteger.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) > 0) {
-            return DEFAULT.formatInteger(bigInteger, language);
+            return DEFAULT.formatInteger(bigInteger, locale);
         }
 
         final BigInteger absInteger = bigInteger.abs();
@@ -137,6 +175,6 @@ public class WordPicture extends IntegerPicture {
         if (absInteger.compareTo(bigInteger) != 0) {
             prefix = "-";
         }
-        return prefix + capitalization.formatAndConvert(absInteger.intValue(), language, formatModifier);
+        return prefix + capitalization.formatAndConvert(absInteger.intValue(), locale, formatModifier);
     }
 }

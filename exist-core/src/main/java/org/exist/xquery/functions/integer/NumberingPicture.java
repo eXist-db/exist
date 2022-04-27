@@ -32,6 +32,7 @@ import org.exist.xquery.XPathException;
 
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -91,11 +92,11 @@ class NumberingPicture extends IntegerPicture {
     }
 
     @Override
-    public String formatInteger(final BigInteger bigInteger, final String language) throws XPathException {
+    public String formatInteger(final BigInteger bigInteger, final Locale locale) throws XPathException {
         //spec says out of range should be formatted by "1"
         if (bigInteger.compareTo(BigInteger.valueOf(1)) < 0 ||
                 bigInteger.compareTo(BigInteger.valueOf(limitForRange - indexCodePoint + 1)) > 0) {
-            return defaultPicture.formatInteger(bigInteger, language);
+            return defaultPicture.formatInteger(bigInteger, locale);
         }
 
         final StringBuilder result = new StringBuilder();
@@ -103,7 +104,7 @@ class NumberingPicture extends IntegerPicture {
         if (formatModifier.numbering == FormatModifier.Numbering.Ordinal &&
                 bigInteger.compareTo(BigInteger.valueOf(Integer.MIN_VALUE)) >= 0 &&
                 bigInteger.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) <= 0) {
-            result.append(ordinalSuffix(bigInteger.intValue(), language));
+            result.append(ordinalSuffix(bigInteger.intValue(), locale));
         }
         return result.toString();
     }

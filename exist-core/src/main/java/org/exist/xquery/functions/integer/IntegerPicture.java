@@ -130,10 +130,10 @@ public abstract class IntegerPicture {
      * Format an integer according to the picture and language with which this was constructed
      *
      * @param bigInteger the integer to format
-     * @param language   the language to use in formatting
+     * @param locale of the language to use in formatting
      * @return a string containing the formatted integer
      */
-    abstract public String formatInteger(BigInteger bigInteger, String language) throws XPathException;
+    abstract public String formatInteger(BigInteger bigInteger, Locale locale) throws XPathException;
 
     /**
      * Convert a string into a list of unicode code points
@@ -159,8 +159,7 @@ public abstract class IntegerPicture {
         return sb.toString();
     }
 
-    protected static String ordinalSuffix(final int value, final String language) {
-        final Locale locale = (new Locale.Builder()).setLanguage(language).build();
+    protected static String ordinalSuffix(final int value, final Locale locale) {
         final RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat(locale, RuleBasedNumberFormat.ORDINAL);
         final StringBuilder sb = new StringBuilder(ruleBasedNumberFormat.format(value)).reverse();
         int i = 0;

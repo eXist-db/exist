@@ -27,6 +27,8 @@ import org.exist.xquery.functions.integer.IntegerPicture;
 import org.exist.xquery.value.*;
 
 import java.math.BigInteger;
+import java.util.IllformedLocaleException;
+import java.util.Locale;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.FunctionDSL.arity;
@@ -83,13 +85,23 @@ public class FnFormatIntegers extends BasicFunction {
 
         final IntegerPicture picture = IntegerPicture.fromString(args[1].getStringValue());
 
-        String language;
+        final String language;
+        Locale.Builder localeBuilder = null;
         if (args.length == 3 && !args[2].isEmpty()) {
-            language = args[2].getStringValue();
-        } else {
-            language = context.getDefaultLanguage();
+            try {
+                localeBuilder = new Locale.Builder();
+                localeBuilder.setLanguage(args[2].getStringValue());
+            } catch (final IllformedLocaleException ile) {
+                //use the default (below)
+                localeBuilder = null;
+            }
         }
+        if (localeBuilder == null) {
+            localeBuilder = new Locale.Builder();
+            localeBuilder.setLanguage(context.getDefaultLanguage());
+        }
+        final Locale locale = localeBuilder.build();
 
-        return new StringValue(picture.formatInteger(bigInteger, language));
+        return new StringValue(picture.formatInteger(bigInteger, locale));
     }
 }

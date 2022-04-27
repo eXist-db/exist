@@ -26,10 +26,7 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -235,11 +232,11 @@ class DigitsIntegerPicture extends IntegerPicture {
      * Format a number according to this formatting picture
      *
      * @param bigInteger to format according to this picture
-     * @param language   to format {@code bigInteger} in, where words are needed
+     * @param locale holds the language to format {@code bigInteger} in, where words are needed
      * @return the formatted string
      */
     @Override
-    public String formatInteger(final BigInteger bigInteger, final String language) {
+    public String formatInteger(final BigInteger bigInteger, final Locale locale) {
         final StringBuilder reversed = formatNonNegativeInteger(bigInteger.abs());
         if (bigInteger.compareTo(BigInteger.ZERO) < 0) {
             reversed.append("-");
@@ -248,7 +245,7 @@ class DigitsIntegerPicture extends IntegerPicture {
         if (formatModifier.numbering == FormatModifier.Numbering.Ordinal &&
                 bigInteger.compareTo(BigInteger.valueOf(Integer.MIN_VALUE)) >= 0 &&
                 bigInteger.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) <= 0) {
-            result.append(ordinalSuffix(bigInteger.intValue(), language));
+            result.append(ordinalSuffix(bigInteger.intValue(), locale));
         }
 
         return result.toString();

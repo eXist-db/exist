@@ -25,23 +25,24 @@ package org.exist.xquery.functions.integer;
 import org.exist.xquery.XPathException;
 
 import java.math.BigInteger;
+import java.util.Locale;
 
 class RomanIntegerPicture extends IntegerPicture {
 
     private final boolean isUpper;
 
-    RomanIntegerPicture(boolean isUpper) {
+    RomanIntegerPicture(final boolean isUpper) {
         this.isUpper = isUpper;
     }
 
     @Override
-    public String formatInteger(BigInteger bigInteger, String language) throws XPathException {
+    public String formatInteger(final BigInteger bigInteger, final Locale locale) throws XPathException {
         //spec says out of range should be formatted by "1"
         if (bigInteger.compareTo(BigInteger.ZERO) <= 0 || bigInteger.compareTo(BigInteger.valueOf(4999L)) > 0) {
-            return DEFAULT.formatInteger(bigInteger, language);
+            return DEFAULT.formatInteger(bigInteger, locale);
         }
 
-        String roman = RomanNumber.toRoman(bigInteger.intValue());
+        final String roman = RomanNumber.toRoman(bigInteger.intValue());
         if (isUpper) {
             return roman.toUpperCase();
         } else {

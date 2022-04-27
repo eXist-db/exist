@@ -57,13 +57,13 @@ public class IntegerPictureTest {
     }
 
     private String fmt(final String pictureString, final long value) throws XPathException {
-        final IntegerPicture picture = IntegerPicture.fromString(pictureString);
-        return picture.formatInteger(BigInteger.valueOf(value), "en");
+        return fmt(pictureString, value, "en");
     }
 
     private String fmt(final String pictureString, final long value, final String language) throws XPathException {
         final IntegerPicture picture = IntegerPicture.fromString(pictureString);
-        return picture.formatInteger(BigInteger.valueOf(value), language);
+        final Locale locale = new Locale.Builder().setLanguage(language).build();
+        return picture.formatInteger(BigInteger.valueOf(value), locale);
     }
 
     @Test
@@ -480,6 +480,10 @@ public class IntegerPictureTest {
 
         assertEquals("Erster", fmt("Ww;o(-r)", 1L, "de"));
         assertEquals("Erster", fmt("Ww;o(-er)", 1L, "de"));
+        assertEquals("Erstes", fmt("Ww;o(-s)", 1L, "de"));
+        assertEquals("Erstes", fmt("Ww;o(-es)", 1L, "de"));
+        assertEquals("Ersten", fmt("Ww;o(-n)", 1L, "de"));
+        assertEquals("Ersten", fmt("Ww;o(-en)", 1L, "de"));
     }
 
     @Test public void italiano() throws XPathException {
@@ -493,6 +497,13 @@ public class IntegerPictureTest {
         System.out.println("\u4e00\u4e01\u4e02\u4e03\u4e04\u4e05\u4e06\u4e07\u4e08\u4e09\u4e0a");
         assertEquals("一", fmt("\u4e00", 1L));
     }
+
+    //format-integer(11, 'Ww', '@*!+%')
+    @Test
+    public void badLanguage() throws XPathException {
+        assertEquals("43", fmt("Ww", 11L, "@*!+%"));
+    }
+
 
     @Test
     public void fallback() throws XPathException {
@@ -525,7 +536,7 @@ public class IntegerPictureTest {
                 }
                 System.err.print("" + codePoint + "->");
                 count = 1;
-                sb.append("0x" + Integer.toHexString(codePoint));
+                sb.append("0x").append(Integer.toHexString(codePoint));
             } else {
                 count++;
             }
@@ -596,7 +607,7 @@ public class IntegerPictureTest {
         for (final String name : globalList) {
             final StringBuilder sb = new StringBuilder();
             sb.append(name).append(" --->");
-            for (String isoCode : global.get(name)) {
+            for (final String isoCode : global.get(name)) {
                 sb.append(' ').append(isoCode);
             }
             System.err.println(sb);
