@@ -316,9 +316,6 @@ public class IntegerPictureTest {
     public void wordModifiers() throws XPathException {
         assertEquals("Première", fmt("Ww;o", 1L, "fr"));
         assertEquals("Deuxième", fmt("Ww;o", 2L, "fr"));
-        assertEquals("Erster", fmt("Ww;o(-r)", 1L, "de"));
-        //Ww;o
-        //assertEquals("Erster", fmt("Ww;o(-er)", 1L, "de"));
         assertEquals("five", fmt("w", 5L));
         assertEquals("fifth", fmt("w;o", 5L));
         assertEquals("cinque", fmt("w;a", 5L, "it"));
@@ -477,6 +474,20 @@ public class IntegerPictureTest {
         assertEquals("21", fmt("①", 21L));
     }
 
+
+
+    @Test public void deutsch() throws XPathException {
+
+        assertEquals("Erster", fmt("Ww;o(-r)", 1L, "de"));
+        assertEquals("Erster", fmt("Ww;o(-er)", 1L, "de"));
+    }
+
+    @Test public void italiano() throws XPathException {
+
+        assertEquals("Quinto", fmt("Ww;o(-o)", 5L, "it"));
+        assertEquals("Quinta", fmt("Ww;o(-a)", 5L, "it"));
+    }
+
     @Test
     public void kanji() throws XPathException {
         System.out.println("\u4e00\u4e01\u4e02\u4e03\u4e04\u4e05\u4e06\u4e07\u4e08\u4e09\u4e0a");
@@ -529,7 +540,7 @@ public class IntegerPictureTest {
      *
      * @Test
      */
-    public void localesAndSpellouts() {
+    @Test public void localesAndSpellouts() {
         final List<String> iso639Alpha2Codes = Arrays.asList("aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av", "ay", "az",
                 "ba", "be", "bg", "bi", "bm", "bn", "bo", "br", "bs",
                 "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv", "cy",
@@ -555,14 +566,17 @@ public class IntegerPictureTest {
                 "xh",
                 "yi", "yo",
                 "za", "zh", "zu");
-        final Set<String> global = new HashSet<>();
+        final Map<String,Set<String>> global = new HashMap<>();
         for (final String isoCode : iso639Alpha2Codes) {
             final Locale locale = (new Locale.Builder()).setLanguage(isoCode).build();
             final RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat(locale, RuleBasedNumberFormat.SPELLOUT);
             final Set<String> names = new HashSet<>();
             for (final String ruleSetName : ruleBasedNumberFormat.getRuleSetNames()) {
                 names.add(ruleSetName);
-                global.add(ruleSetName);
+                if (!global.containsKey(ruleSetName)) {
+                    global.put(ruleSetName, new HashSet<>());
+                }
+                global.get(ruleSetName).add(isoCode);
             }
             boolean displayMissing = !names.contains("%spellout-ordinal") && !names.contains("%spellout-ordinal-masculine") && !names.contains("%spellout-ordinal-feminine");
             if (!names.contains("%spellout-cardinal") && !names.contains("%spellout-cardinal-masculine") && !names.contains("%spellout-cardinal-feminine")) {
@@ -577,10 +591,15 @@ public class IntegerPictureTest {
             }
         }
         System.err.println("all spellouts --->>>");
-        final List<String> globalList = Arrays.asList(global.toArray(new String[]{}));
+        final List<String> globalList = Arrays.asList(global.keySet().toArray(new String[]{}));
         Collections.sort(globalList);
         for (final String name : globalList) {
-            System.err.println(name);
+            final StringBuilder sb = new StringBuilder();
+            sb.append(name).append(" --->");
+            for (String isoCode : global.get(name)) {
+                sb.append(' ').append(isoCode);
+            }
+            System.err.println(sb);
         }
         System.err.println("<<<--- all spellouts");
 

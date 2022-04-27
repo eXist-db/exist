@@ -58,7 +58,7 @@ public class FnFormatIntegers extends BasicFunction {
                     arity(
                             FS_PARAM_VALUE,
                             FS_PARAM_PICTURE,
-                            optParam("lang", Type.LANGUAGE, "The language in which to format the integers.")
+                            optParam("lang", Type.STRING, "The language in which to format the integers.")
                     )
             )
     );
