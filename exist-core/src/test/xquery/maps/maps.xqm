@@ -251,6 +251,78 @@ function mt:merge-duplicate-keys-use-last-explicit-2() {
 };
 
 declare
+    %test:assertError("err:FOJS0003")
+function mt:merge-duplicate-keys-reject-has-duplicates() {
+    let $specialWeek := map:merge((map { 7 : "Caturday" }, $mt:integerKeys), map { "duplicates": "reject" })
+    return
+        ($specialWeek(7))
+};
+
+declare
+    %test:assertEquals("Saturday", "Saturday", "Caturday")
+function mt:merge-duplicate-keys-reject-no-duplicates() {
+    let $specialWeek := map:merge((map { 8 : "Caturday" }, $mt:integerKeys), map { "duplicates": "reject" })
+    return
+        ($mt:integerKeys(7), $specialWeek(7), $specialWeek(8))
+};
+
+declare
+    %test:assertEquals("Caturday","Maturday","Saturday")
+function mt:merge-duplicate-keys-combine-has-duplicates-sequence() {
+    let $specialWeek := map:merge((map { 7 : ("Caturday","Maturday") }, $mt:integerKeys), map { "duplicates": "combine" })
+    return
+        ($specialWeek(7))
+};
+
+declare
+    %test:assertEquals("Saturday","Caturday","Maturday")
+function mt:merge-duplicate-keys-combine-has-duplicates-sequence-order() {
+    let $specialWeek := map:merge(($mt:integerKeys, map { 7 : ("Caturday","Maturday") }), map { "duplicates": "combine" })
+    return
+        ($specialWeek(7))
+};
+
+declare
+    %test:assertEquals("Saturday","Caturday","Maturday", "Caturday", "Zaturday")
+function mt:merge-duplicate-keys-combine-3-has-duplicates-sequence-order() {
+    let $specialWeek := map:merge(($mt:integerKeys, map { 7 : ("Caturday","Maturday") }, map { 7 : ("Caturday","Zaturday") }), map { "duplicates": "combine" })
+    return
+        ($specialWeek(7))
+};
+
+declare
+    %test:assertEquals("Caturday","Saturday")
+function mt:merge-duplicate-keys-combine-has-duplicates-atomic() {
+    let $specialWeek := map:merge((map { 7 : ("Caturday") }, $mt:integerKeys), map { "duplicates": "combine" })
+    return
+        ($specialWeek(7))
+};
+
+declare
+    %test:assertEquals("Caturday","Saturday", "Maturday")
+function mt:merge-duplicate-keys-combine-has-duplicates-three() {
+    let $specialWeek := map:merge((map { 7 : ("Caturday") }, $mt:integerKeys, map { 7: ("Maturday")}), map { "duplicates": "combine" })
+    return
+        ($specialWeek(7))
+};
+
+declare
+    %test:assertEquals("Saturday", "Caturday", "Maturday", "Waturday")
+function mt:merge-duplicate-keys-combine-has-duplicates-four() {
+    let $specialWeek := map:merge((map { 7 : () }, $mt:integerKeys, map { 7: ("Caturday", "Maturday", "Waturday")}), map { "duplicates": "combine" })
+    return
+        ($specialWeek(7))
+};
+
+declare
+    %test:assertEquals("Caturday","Saturday")
+function mt:merge-duplicate-keys-combine-has-duplicates-empty-third() {
+    let $specialWeek := map:merge((map { 7 : ("Caturday") }, $mt:integerKeys, map { 7: ()}), map { "duplicates": "combine" })
+    return
+        ($specialWeek(7))
+};
+
+declare
     %test:assertEmpty
 function mt:mapEmptyValue() {
     let $map := $mt:mapOfSequences
