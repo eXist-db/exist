@@ -32,28 +32,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Format numbers according to the rules
- * {@see https://www.w3.org/TR/xpath-functions-31/#formatting-integers}
+ * Format numbers according to the rules for
+ * <a href="https://www.w3.org/TR/xpath-functions-31/#formatting-integers">format-integer</a>
  */
 public abstract class IntegerPicture {
 
-    static IntegerPicture DEFAULT;
-
-    static {
-        try {
-            DEFAULT = new DigitsIntegerPicture("1", new FormatModifier(""));
-        } catch (final XPathException e) {
-            e.printStackTrace();
-        }
-    }
-
-    final static BigInteger TEN = BigInteger.valueOf(10L);
+    static final BigInteger TEN = BigInteger.valueOf(10L);
 
     //This contains \\v (vertical whitespace characters) so anything with vertical white space isn't a pattern
     //It also disallows 0 instances of the pattern
     //When decimal digit pattern doesn't match, we end up falling into a standard default.
-    final static Pattern decimalDigitPattern = Pattern.compile("^((\\p{Nd}|#|[^\\p{N}\\p{L}\\v])+)$", Pattern.UNICODE_CHARACTER_CLASS);
-    final static Pattern invalidDigitPattern = Pattern.compile("(\\p{Nd})");
+    static final Pattern decimalDigitPattern = Pattern.compile("^((\\p{Nd}|#|[^\\p{N}\\p{L}\\v])+)$", Pattern.UNICODE_CHARACTER_CLASS);
+    static final Pattern invalidDigitPattern = Pattern.compile("(\\p{Nd})");
 
     /**
      * The value of $picture consists of a primary format token,
@@ -81,19 +71,19 @@ public abstract class IntegerPicture {
         }
 
         // type 1 matcher (some digits)
-        final Matcher decimalDigitMatcher = decimalDigitPattern.matcher(primaryFormatToken);
+        final Matcher decimalDigitMatcher = IntegerPicture.decimalDigitPattern.matcher(primaryFormatToken);
         if (decimalDigitMatcher.matches()) {
             return new DigitsIntegerPicture(primaryFormatToken, formatModifier);
         }
 
         // incorrect type 1 matcher (and not anything else)
-        final Matcher invalidDigitMatcher = invalidDigitPattern.matcher(primaryFormatToken);
+        final Matcher invalidDigitMatcher = IntegerPicture.invalidDigitPattern.matcher(primaryFormatToken);
         if (invalidDigitMatcher.find()) {
             throw new XPathException(ErrorCodes.FODF1310, "Invalid primary format token is not a valid decimal digital pattern: " + primaryFormatToken);
         }
 
         // specifically defined format token rules 2-8
-        // {@see https://www.w3.org/TR/xpath-functions-31/#formatting-integers}
+        // <a href="https://www.w3.org/TR/xpath-functions-31/#formatting-integers"/>
         switch (primaryFormatToken) {
             case "A":
                 return new SequenceIntegerPicture('A');
@@ -104,21 +94,21 @@ public abstract class IntegerPicture {
             case "I":
                 return new RomanIntegerPicture(true/*isUpper*/);
             case "W":
-                return new WordPicture(WordPicture.CaseAndCaps.Upper, formatModifier);
+                return new WordPicture(WordPicture.CaseAndCaps.UPPER, formatModifier);
             case "w":
-                return new WordPicture(WordPicture.CaseAndCaps.Lower, formatModifier);
+                return new WordPicture(WordPicture.CaseAndCaps.LOWER, formatModifier);
             case "Ww":
-                return new WordPicture(WordPicture.CaseAndCaps.Capitalized, formatModifier);
+                return new WordPicture(WordPicture.CaseAndCaps.CAPITALIZED, formatModifier);
             default:
                 break;
         }
 
         // Rule 9 - sequences
-        // {@see https://www.w3.org/TR/xpath-functions-31/#formatting-integers}
-        final List<Integer> codePoints = CodePoints(primaryFormatToken);
+        // <a href="https://www.w3.org/TR/xpath-functions-31/#formatting-integers"/>
+        final List<Integer> codePoints = IntegerPicture.codePoints(primaryFormatToken);
         final Optional<IntegerPicture> numberingPicture = NumberingPicture.fromIndexCodePoint(codePoints.get(0), formatModifier);
 
-        return numberingPicture.orElse(defaultPictureWithModifier(formatModifier));
+        return numberingPicture.orElse(IntegerPicture.defaultPictureWithModifier(formatModifier));
     }
 
     static IntegerPicture defaultPictureWithModifier(final FormatModifier formatModifier) throws XPathException {
@@ -131,10 +121,11 @@ public abstract class IntegerPicture {
      * @param bigInteger the integer to format
      * @param locale of the language to use in formatting
      * @return a string containing the formatted integer
+     * @throws XPathException if the locale is ill-formed
      */
-    abstract protected String formatInteger(BigInteger bigInteger, Locale locale) throws XPathException;
+    protected abstract String formatInteger(BigInteger bigInteger, Locale locale) throws XPathException;
 
-    private Locale getLocaleFromLanguages(final List<String> languages) throws XPathException {
+    private static Locale getLocaleFromLanguages(final List<String> languages) throws XPathException {
 
         IllformedLocaleException languageILE = null;
         for (final String language : languages) {
@@ -146,12 +137,13 @@ public abstract class IntegerPicture {
                 languageILE = ile;
             }
         }
+        assert languageILE != null;
         throw new XPathException(ErrorCodes.FODF1310, languageILE.getMessage());
     }
 
     public final String formatInteger(final BigInteger bigInteger, final List<String> languages) throws XPathException {
 
-        final Locale locale = getLocaleFromLanguages(languages);
+        final Locale locale = IntegerPicture.getLocaleFromLanguages(languages);
         return formatInteger(bigInteger, locale);
     }
 
@@ -161,9 +153,10 @@ public abstract class IntegerPicture {
      * @param s the input string
      * @return a list of the codepoints forming the string
      */
-    protected static List<Integer> CodePoints(final String s) {
+    protected static List<Integer> codePoints(final String s) {
         final List<Integer> codePointList = new ArrayList<>(s.length());
-        for (int i = 0; i < s.length(); ) {
+        int i = 0;
+        while (i < s.length()) {
             final int codePoint = Character.codePointAt(s, i);
             i += Character.charCount(codePoint);
             codePointList.add(codePoint);
@@ -171,7 +164,7 @@ public abstract class IntegerPicture {
         return codePointList;
     }
 
-    protected static String FromCodePoint(final int codePoint) {
+    protected static String fromCodePoint(final int codePoint) {
         final StringBuilder sb = new StringBuilder();
         for (final char c : Character.toChars(codePoint)) {
             sb.append(c);
@@ -187,6 +180,4 @@ public abstract class IntegerPicture {
         for (; sb.length() > 0 && Character.isAlphabetic(sb.charAt(i)); i++) ;
         return sb.delete(i, sb.length()).reverse().toString();
     }
-
-
 }

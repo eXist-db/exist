@@ -1,5 +1,6 @@
 /*
  * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
  * info@exist-db.org
  * http://www.exist-db.org
@@ -17,47 +18,51 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+package org.exist.xquery.functions.integer;
+
+import java.util.TreeMap;
+
+/**
+ * Roman numerals, in support of formatting by {@link RomanIntegerPicture}
  *
  * The source code for this class is taken from the stackoverflow answer
  * https://stackoverflow.com/questions/12967896/converting-integers-to-roman-numerals-java
  * written by https://stackoverflow.com/users/1420681/ben-hur-langoni-junior
  * and is therefore used and made available in accordance with
  * https://creativecommons.org/licenses/by-sa/3.0
- *
+ * 
  */
+class RomanNumberHelper {
 
-package org.exist.xquery.functions.integer;
+    private static final TreeMap<Integer, String> map = new TreeMap<>();
 
-import java.util.TreeMap;
-
-class RomanNumber {
-
-    private final static TreeMap<Integer, String> map = new TreeMap<Integer, String>();
+    private RomanNumberHelper() {}
 
     static {
 
-        map.put(1000, "M");
-        map.put(900, "CM");
-        map.put(500, "D");
-        map.put(400, "CD");
-        map.put(100, "C");
-        map.put(90, "XC");
-        map.put(50, "L");
-        map.put(40, "XL");
-        map.put(10, "X");
-        map.put(9, "IX");
-        map.put(5, "V");
-        map.put(4, "IV");
-        map.put(1, "I");
+        RomanNumberHelper.map.put(1000, "M");
+        RomanNumberHelper.map.put(900, "CM");
+        RomanNumberHelper.map.put(500, "D");
+        RomanNumberHelper.map.put(400, "CD");
+        RomanNumberHelper.map.put(100, "C");
+        RomanNumberHelper.map.put(90, "XC");
+        RomanNumberHelper.map.put(50, "L");
+        RomanNumberHelper.map.put(40, "XL");
+        RomanNumberHelper.map.put(10, "X");
+        RomanNumberHelper.map.put(9, "IX");
+        RomanNumberHelper.map.put(5, "V");
+        RomanNumberHelper.map.put(4, "IV");
+        RomanNumberHelper.map.put(1, "I");
 
     }
 
-    public static String toRoman(int number) {
-        int l = map.floorKey(number);
+    public static String toRoman(final int number) {
+        final int l = RomanNumberHelper.map.floorKey(number);
         if (number == l) {
-            return map.get(number);
+            return RomanNumberHelper.map.get(number);
         }
-        return map.get(l) + toRoman(number - l);
+        return RomanNumberHelper.map.get(l) + RomanNumberHelper.toRoman(number - l);
     }
 
 }

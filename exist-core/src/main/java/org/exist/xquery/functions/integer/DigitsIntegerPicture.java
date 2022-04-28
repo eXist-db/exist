@@ -22,13 +22,16 @@
 
 package org.exist.xquery.functions.integer;
 
+import com.ibm.icu.text.Replaceable;
+import com.ibm.icu.text.ReplaceableString;
+import com.ibm.icu.text.UnicodeSet;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 import java.math.BigInteger;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import static com.ibm.icu.text.UnicodeMatcher.U_MATCH;
 
 /**
  * Formatting integers according to https://www.w3.org/TR/xpath-functions-31/#formatting-integers
@@ -36,19 +39,24 @@ import java.util.regex.Pattern;
 class DigitsIntegerPicture extends IntegerPicture {
 
     // This was calculated by inspecting the result of com.ibm.icu.text.UnicodeSet("[:Nd:]")
-    // In an ideal world it would be part of a build step.
-    final static int[] codePointFamilies = new int[]{0x30, 0x660, 0x6f0, 0x7c0, 0x966, 0x9e6, 0xa66, 0xae6, 0xb66, 0xbe6, 0xc66, 0xce6, 0xd66, 0xde6, 0xe50, 0xed0, 0xf20, 0x1040, 0x1090, 0x17e0, 0x1810, 0x1946, 0x19d0, 0x1a80, 0x1a90, 0x1b50, 0x1bb0, 0x1c40, 0x1c50, 0xa620, 0xa8d0, 0xa900, 0xa9d0, 0xa9f0, 0xaa50, 0xabf0, 0xff10, 0x104a0, 0x11066, 0x110f0, 0x11136, 0x111d0, 0x112f0, 0x11450, 0x114d0, 0x11650, 0x116c0, 0x11730, 0x118e0, 0x11c50, 0x16a60, 0x16b50, 0x1d7ce, 0x1d7d8, 0x1d7e2, 0x1d7ec, 0x1d7f6, 0x1e950};
+    // In an ideal world it would be generated automatically as part of a build step.
+    // Each family is a set of decimal digits (0-9) which can be used in a decimal digit pattern
+    static final int[] codePointFamilies = new int[]{0x30, 0x660, 0x6f0, 0x7c0, 0x966, 0x9e6, 0xa66, 0xae6, 0xb66, 0xbe6, 0xc66, 0xce6, 0xd66, 0xde6, 0xe50, 0xed0, 0xf20, 0x1040, 0x1090, 0x17e0, 0x1810, 0x1946, 0x19d0, 0x1a80, 0x1a90, 0x1b50, 0x1bb0, 0x1c40, 0x1c50, 0xa620, 0xa8d0, 0xa900, 0xa9d0, 0xa9f0, 0xaa50, 0xabf0, 0xff10, 0x104a0, 0x11066, 0x110f0, 0x11136, 0x111d0, 0x112f0, 0x11450, 0x114d0, 0x11650, 0x116c0, 0x11730, 0x118e0, 0x11c50, 0x16a60, 0x16b50, 0x1d7ce, 0x1d7d8, 0x1d7e2, 0x1d7ec, 0x1d7f6, 0x1e950};
 
     static {
-        Arrays.sort(codePointFamilies);
+        Arrays.sort(DigitsIntegerPicture.codePointFamilies);
     }
 
-    final static Pattern separatorPattern = Pattern.compile("([^\\p{N}\\p{L}])");
-    final static Pattern groupPattern = Pattern.compile("(#*)(\\p{Nd}*)");
+    // A single group of decimal digits, and the separator of these groups
+    static final UnicodeSet optionalPrefixDigitSet = new UnicodeSet("[#]").freeze();
+    static final UnicodeSet decimalDigitSet = new UnicodeSet("[:Nd:]").freeze();
+    static final UnicodeSet separatorDigitSet = new UnicodeSet("[:^Nd:]").add("[:^Lu:]").remove("#").freeze();
 
     private final String primaryFormatToken;
     private final FormatModifier formatModifier;
 
+    // Fields determining the layout of decimal digits
+    // These fields are generated when we parse the primaryFormatToken into groups
     private final List<Group> groups = new ArrayList<>();
     private boolean groupsAreRegular = false;
     private int mandatoryDigits = 1;
@@ -61,14 +69,20 @@ class DigitsIntegerPicture extends IntegerPicture {
         parseFormatToken();
     }
 
-    private int GetCodePointFamily(final int codePoint) {
-        final int index = Arrays.binarySearch(codePointFamilies, codePoint);
+    /**
+     * Calculate the digit family that a codePoint belongs to
+     *
+     * @param codePoint a decimal digit
+     * @return the codePoint representing 0 in the family of the input
+     */
+    private static int getCodePointFamily(final int codePoint) {
+        final int index = Arrays.binarySearch(DigitsIntegerPicture.codePointFamilies, codePoint);
         if (index >= 0) {
             // The supplied codePoint is a codePoint family start digit
             return codePoint;
         }
         final int familyIndex = -(index + 2);
-        return codePointFamilies[familyIndex];
+        return DigitsIntegerPicture.codePointFamilies[familyIndex];
     }
 
     /**
@@ -82,77 +96,70 @@ class DigitsIntegerPicture extends IntegerPicture {
     }
 
     /**
-     * We have a primaryFormatToken with a valid pattern
-     * Interpret the primaryFormatToken into a list of groups
+     * assume {@link #primaryFormatToken} has a valid pattern
+     * Interpret it into a list of groups
      */
     private void buildGroups() throws XPathException {
+
         boolean mandatoryDigitsObserved = false;
-        int end = 0;
-        final Matcher m = groupPattern.matcher(primaryFormatToken);
-        while (m.find()) {
-            if (m.start() > end) {
-                throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " expected a digit grouping pattern at " + end);
-            }
-            end = m.end();
+
+        final PrimaryFormatParser formatParser = new PrimaryFormatParser(primaryFormatToken);
+        for (;;) {
             final Group group = new Group();
-            group.optional = CodePoints(m.group(1)).size();
+            group.optional = formatParser.matchSet(DigitsIntegerPicture.optionalPrefixDigitSet);
             if (group.optional > 0 && mandatoryDigitsObserved) {
-                throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " has optional digit after mandatory digit");
+                throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " has optional digit after mandatory digit at " + formatParser.match());
             }
 
-            final List<Integer> mandatory = CodePoints(m.group(2));
-            group.mandatory = mandatory.size();
+            group.mandatory = formatParser.matchSet(DigitsIntegerPicture.decimalDigitSet);
             if (group.mandatory > 0) {
                 mandatoryDigitsObserved = true;
+
+                for (final int codePoint : formatParser.matchCodes()) {
+                    // All families begin at 0x____0
+                    // represent the family by the 0 character in the family
+                    final int codePointFamily = DigitsIntegerPicture.getCodePointFamily(codePoint);
+                    if (digitFamily != -1 && digitFamily != codePointFamily) {
+                        throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " contains multiple digit families");
+                    }
+                    digitFamily = codePointFamily;
+                }
+            }
+
+            final int trailingOptional = formatParser.matchSetOnce(DigitsIntegerPicture.optionalPrefixDigitSet);
+            if (trailingOptional > 0) {
+                throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " has optional digit after mandatory digit at " + formatParser.match());
             }
 
             if (group.optional == 0 && group.mandatory == 0) {
-                throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " expected a digit grouping pattern at " + end);
+                throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " expected a digit grouping pattern at " + formatParser.pos());
             }
 
-            for (final int codePoint : mandatory) {
-                // All families begin at 0x____0
-                // represent the family by the 0 character in the family
-                final int codePointFamily = GetCodePointFamily(codePoint);
-                if (digitFamily != -1 && digitFamily != codePointFamily) {
-                    throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " contains multiple digit families");
+            final int separator = formatParser.matchSetOnce(DigitsIntegerPicture.separatorDigitSet);
+            if (separator > 0) {
+                if (formatParser.end()) {
+                    throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " ends with a separator at " + formatParser.match());
                 }
-                digitFamily = codePointFamily;
-            }
-
-            // Either we just finished, or there's a separator
-            m.usePattern(separatorPattern);
-            if (m.find()) {
-                if (m.start() > end) {
-                    throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " expected a separator at " + end);
-                }
-                // But a separator at the end is an error
-                if (m.end() == primaryFormatToken.length()) {
-                    throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " ends with a separator");
-                }
-                end = m.end();
+                group.separator = Optional.of(String.valueOf(Character.toChars(formatParser.matchCodes().get(0))));
+                groups.add(group);
             } else {
                 groups.add(group);
+                // No separator, so we're done.
                 break;
             }
-            group.separator = Optional.of(m.group(1));
-            groups.add(group);
-
-            m.usePattern(groupPattern);
         }
 
         if (digitFamily == -1) {
             // # is a valid picture
-            // use the most usual counting number
-            digitFamily = GetCodePointFamily('0');
-        }
-
-        // We should be at the end
-        if (end < primaryFormatToken.length()) {
-            throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " unexpected character at position " + end);
+            // use the default counting number as the family
+            digitFamily = DigitsIntegerPicture.getCodePointFamily('0');
         }
     }
 
+    /**
+     * assume {@link #groups} has been generated
+     * we calculate the minimum number of digits to display in output
+     */
     private void countMandatoryDigits() {
         mandatoryDigits = 0;
         for (final Group group : groups) {
@@ -163,6 +170,11 @@ class DigitsIntegerPicture extends IntegerPicture {
         }
     }
 
+    /**
+     * assume {@link #groups} has been generated
+     * determine whether the groups are "regular" as per the spec
+     * and if so, fix groups up so that 1 group can represent an infinite number
+     */
     private void regularizeGroups() {
         groupsAreRegular = false;
         Group prev = groups.get(0);
@@ -182,7 +194,16 @@ class DigitsIntegerPicture extends IntegerPicture {
         groups.add(prev);
     }
 
-    private Group getGroupTail(final int index) {
+    /**
+     * Numbers are formatted from the little end first
+     * So we need to access groups from that end too
+     * If groups are regular there is only ever 1 group,
+     * and we return that.
+     *
+     * @param index from the end
+     * @return the index-th group from the end
+     */
+    private Group getGroupFromEnd(final int index) {
         if (groupsAreRegular) {
             return groups.get(0);
         } else if (index < groups.size()) {
@@ -230,10 +251,10 @@ class DigitsIntegerPicture extends IntegerPicture {
     }
 
     /**
-     * Format a number according to this formatting picture
+     * Format a number according to this parsed formatting state
      *
-     * @param bigInteger to format according to this picture
-     * @param locale holds the language to format {@code bigInteger} in, where words are needed
+     * @param bigInteger the number to format according to this picture
+     * @param locale     holds the language to format {@code bigInteger} in, needed if we are returning an ordinal
      * @return the formatted string
      */
     @Override
@@ -243,10 +264,8 @@ class DigitsIntegerPicture extends IntegerPicture {
             reversed.append("-");
         }
         final StringBuilder result = reversed.reverse();
-        if (formatModifier.numbering == FormatModifier.Numbering.Ordinal &&
-                bigInteger.compareTo(BigInteger.valueOf(Integer.MIN_VALUE)) >= 0 &&
-                bigInteger.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) <= 0) {
-            result.append(ordinalSuffix(bigInteger.intValue(), locale));
+        if (formatModifier.numbering == FormatModifier.Numbering.ORDINAL && bigInteger.compareTo(BigInteger.valueOf(Integer.MIN_VALUE)) >= 0 && bigInteger.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) <= 0) {
+            result.append(IntegerPicture.ordinalSuffix(bigInteger.intValue(), locale));
         }
 
         return result.toString();
@@ -256,30 +275,84 @@ class DigitsIntegerPicture extends IntegerPicture {
      * @param bigInteger to format according to this picture
      * @return the reverse of the formatted string (think of it as a character stack)
      */
-    private StringBuilder formatNonNegativeInteger(BigInteger bigInteger) {
+    private StringBuilder formatNonNegativeInteger(final BigInteger bigInteger) {
 
-        final StringBuilder sb = new StringBuilder();
+        final StringBuilder reversedBuilder = new StringBuilder();
         int remainingDigits = mandatoryDigits;
-        int currentGroup = 0;
-        Group group = getGroupTail(currentGroup);
+        int groupIndex = 0;
+        Group group = getGroupFromEnd(groupIndex);
         int groupUsed = 0;
-        while (remainingDigits > 0 || bigInteger.compareTo(BigInteger.ZERO) > 0) {
+        BigInteger acc = bigInteger;
+        while (remainingDigits > 0 || acc.compareTo(BigInteger.ZERO) > 0) {
             if (group != null && groupUsed == group.total()) {
-                currentGroup++;
-                group = getGroupTail(currentGroup);
+                groupIndex++;
+                group = getGroupFromEnd(groupIndex);
                 groupUsed = 0;
                 if (group != null) {
-                    sb.append(group.separator.orElse(""));
+                    reversedBuilder.append(group.separator.orElse(""));
                 }
             }
-            final BigInteger[] divideAndRemainder = bigInteger.divideAndRemainder(TEN);
+            final BigInteger[] divideAndRemainder = acc.divideAndRemainder(IntegerPicture.TEN);
             final BigInteger remainder = divideAndRemainder[1];
             final int codePoint = digitFamily + remainder.intValue();
-            sb.append(Character.toChars(codePoint));
+            reversedBuilder.append(Character.toChars(codePoint));
             remainingDigits--;
             groupUsed++;
-            bigInteger = divideAndRemainder[0];
+            acc = divideAndRemainder[0];
         }
-        return sb;
+        return reversedBuilder;
+    }
+
+    private static class PrimaryFormatParser {
+
+        final String primaryFormat;
+        final Replaceable target;
+        final int length;
+        final int[] offset = {0};
+        int lastMatch = -1;
+
+        PrimaryFormatParser(final String primaryFormat) {
+            this.primaryFormat = primaryFormat;
+            this.target = new ReplaceableString(primaryFormat);
+            this.length = primaryFormat.length();
+        }
+
+        int matchSet(final UnicodeSet unicodeSet, final int maxPoints) {
+            final int matchStart = offset[0];
+            final int matchLimit = matchStart + maxPoints;
+            int matchPoints = 0;
+            for (int matchStatus = U_MATCH; offset[0] < matchLimit && matchStatus == U_MATCH;) {
+                matchStatus = unicodeSet.matches(target, offset, length, false);
+                if (matchStatus == U_MATCH) matchPoints++;
+            }
+            if (offset[0] > matchStart) {
+                lastMatch = matchStart;
+            }
+            return matchPoints;
+        }
+
+        List<Integer> matchCodes() {
+            return IntegerPicture.codePoints(primaryFormat.substring(lastMatch, offset[0]));
+        }
+
+        int matchSet(final UnicodeSet unicodeSet) {
+            return matchSet(unicodeSet, length - offset[0]);
+        }
+
+        int matchSetOnce(final UnicodeSet unicodeSet) {
+            return matchSet(unicodeSet, Math.min(length - offset[0], 1));
+        }
+
+        boolean end() {
+            return (offset[0] >= length);
+        }
+
+        int pos() {
+            return offset[0];
+        }
+
+        int match() {
+            return lastMatch;
+        }
     }
 }

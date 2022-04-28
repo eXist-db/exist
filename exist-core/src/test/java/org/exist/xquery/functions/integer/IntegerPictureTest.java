@@ -22,15 +22,13 @@
 
 package org.exist.xquery.functions.integer;
 
-import com.ibm.icu.text.RuleBasedNumberFormat;
-import com.ibm.icu.text.UnicodeSet;
-import org.checkerframework.checker.units.qual.A;
-import org.exist.util.CodePointString;
 import org.exist.xquery.XPathException;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -44,17 +42,17 @@ public class IntegerPictureTest {
     @Test
     public void picture() throws XPathException {
         IntegerPicture picture = IntegerPicture.fromString("123,2345,34567,6789;00;c(variation)t");
-        assertEquals("primary=123,2345,34567,6789;00::modifier=numbering=Cardinal::variation=variation::lettersequence=Traditional::regular=false::group=Group(0,3,,)::group=Group(0,4,,)::group=Group(0,5,,)::group=Group(0,4,;)::group=Group(0,2,)", picture.toString());
+        assertEquals("primary=123,2345,34567,6789;00::modifier=numbering=CARDINAL::variation=variation::lettersequence=TRADITIONAL::regular=false::group=Group(0,3,,)::group=Group(0,4,,)::group=Group(0,5,,)::group=Group(0,4,;)::group=Group(0,2,)", picture.toString());
         picture = IntegerPicture.fromString("#23,345,567,789;c(variation)t");
-        assertEquals("primary=#23,345,567,789::modifier=numbering=Cardinal::variation=variation::lettersequence=Traditional::regular=true::group=Group(0,3,,)", picture.toString());
+        assertEquals("primary=#23,345,567,789::modifier=numbering=CARDINAL::variation=variation::lettersequence=TRADITIONAL::regular=true::group=Group(0,3,,)", picture.toString());
         picture = IntegerPicture.fromString("123;345,567,789;c(variation)t");
-        assertEquals("primary=123;345,567,789::modifier=numbering=Cardinal::variation=variation::lettersequence=Traditional::regular=false::group=Group(0,3,;)::group=Group(0,3,,)::group=Group(0,3,,)::group=Group(0,3,)", picture.toString());
+        assertEquals("primary=123;345,567,789::modifier=numbering=CARDINAL::variation=variation::lettersequence=TRADITIONAL::regular=false::group=Group(0,3,;)::group=Group(0,3,,)::group=Group(0,3,,)::group=Group(0,3,)", picture.toString());
         picture = IntegerPicture.fromString("123,2345,567,789;c(variation)t");
-        assertEquals("primary=123,2345,567,789::modifier=numbering=Cardinal::variation=variation::lettersequence=Traditional::regular=false::group=Group(0,3,,)::group=Group(0,4,,)::group=Group(0,3,,)::group=Group(0,3,)", picture.toString());
+        assertEquals("primary=123,2345,567,789::modifier=numbering=CARDINAL::variation=variation::lettersequence=TRADITIONAL::regular=false::group=Group(0,3,,)::group=Group(0,4,,)::group=Group(0,3,,)::group=Group(0,3,)", picture.toString());
         picture = IntegerPicture.fromString("#89;c(variation)t");
-        assertEquals("primary=#89::modifier=numbering=Cardinal::variation=variation::lettersequence=Traditional::regular=true::group=Group(1,2,)", picture.toString());
+        assertEquals("primary=#89::modifier=numbering=CARDINAL::variation=variation::lettersequence=TRADITIONAL::regular=true::group=Group(1,2,)", picture.toString());
         picture = IntegerPicture.fromString("#89|123;c(variation)t");
-        assertEquals("primary=#89|123::modifier=numbering=Cardinal::variation=variation::lettersequence=Traditional::regular=true::group=Group(0,3,|)", picture.toString());
+        assertEquals("primary=#89|123::modifier=numbering=CARDINAL::variation=variation::lettersequence=TRADITIONAL::regular=true::group=Group(0,3,|)", picture.toString());
     }
 
     private String fmt(final String pictureString, final long value) throws XPathException {
@@ -197,14 +195,14 @@ public class IntegerPictureTest {
             fmt("##|3#|45", 0L);
             fail("The picture " + "##|3#|45" + " should not be valid.");
         } catch (final XPathException xpe) {
-            assertTrue(xpe.getDetailMessage().contains("expected a digit grouping pattern"));
+            assertTrue(xpe.getDetailMessage().contains("optional digit after mandatory digit"));
         }
 
         try {
             fmt("1#", 0L);
             fail("The picture " + "1#" + " should not be valid.");
         } catch (final XPathException xpe) {
-            assertTrue(xpe.getDetailMessage().contains("ends with a separator"));
+            assertTrue(xpe.getDetailMessage().contains("optional digit after mandatory digit"));
         }
 
     }
@@ -371,36 +369,36 @@ public class IntegerPictureTest {
     @Test
     public void modifier() throws XPathException {
         FormatModifier formatModifier = new FormatModifier("c(maschile)t");
-        assertEquals(FormatModifier.Numbering.Cardinal, formatModifier.numbering);
-        assertEquals(FormatModifier.LetterSequence.Traditional, formatModifier.letterSequence);
+        assertEquals(FormatModifier.Numbering.CARDINAL, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.TRADITIONAL, formatModifier.letterSequence);
         assertEquals("maschile", formatModifier.variation);
         formatModifier = new FormatModifier("ct");
-        assertEquals(FormatModifier.Numbering.Cardinal, formatModifier.numbering);
-        assertEquals(FormatModifier.LetterSequence.Traditional, formatModifier.letterSequence);
+        assertEquals(FormatModifier.Numbering.CARDINAL, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.TRADITIONAL, formatModifier.letterSequence);
         formatModifier = new FormatModifier("ca");
-        assertEquals(FormatModifier.Numbering.Cardinal, formatModifier.numbering);
-        assertEquals(FormatModifier.LetterSequence.Alphabetic, formatModifier.letterSequence);
+        assertEquals(FormatModifier.Numbering.CARDINAL, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.ALPHABETIC, formatModifier.letterSequence);
         formatModifier = new FormatModifier("ot");
-        assertEquals(FormatModifier.Numbering.Ordinal, formatModifier.numbering);
-        assertEquals(FormatModifier.LetterSequence.Traditional, formatModifier.letterSequence);
+        assertEquals(FormatModifier.Numbering.ORDINAL, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.TRADITIONAL, formatModifier.letterSequence);
         formatModifier = new FormatModifier("oa");
-        assertEquals(FormatModifier.Numbering.Ordinal, formatModifier.numbering);
-        assertEquals(FormatModifier.LetterSequence.Alphabetic, formatModifier.letterSequence);
+        assertEquals(FormatModifier.Numbering.ORDINAL, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.ALPHABETIC, formatModifier.letterSequence);
         formatModifier = new FormatModifier("c");
-        assertEquals(FormatModifier.Numbering.Cardinal, formatModifier.numbering);
-        assertEquals(FormatModifier.LetterSequence.Alphabetic, formatModifier.letterSequence);
+        assertEquals(FormatModifier.Numbering.CARDINAL, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.ALPHABETIC, formatModifier.letterSequence);
         formatModifier = new FormatModifier("o");
-        assertEquals(FormatModifier.Numbering.Ordinal, formatModifier.numbering);
-        assertEquals(FormatModifier.LetterSequence.Alphabetic, formatModifier.letterSequence);
+        assertEquals(FormatModifier.Numbering.ORDINAL, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.ALPHABETIC, formatModifier.letterSequence);
         formatModifier = new FormatModifier("a");
-        assertEquals(FormatModifier.Numbering.Cardinal, formatModifier.numbering);
-        assertEquals(FormatModifier.LetterSequence.Alphabetic, formatModifier.letterSequence);
+        assertEquals(FormatModifier.Numbering.CARDINAL, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.ALPHABETIC, formatModifier.letterSequence);
         formatModifier = new FormatModifier("t");
-        assertEquals(FormatModifier.Numbering.Cardinal, formatModifier.numbering);
-        assertEquals(FormatModifier.LetterSequence.Traditional, formatModifier.letterSequence);
+        assertEquals(FormatModifier.Numbering.CARDINAL, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.TRADITIONAL, formatModifier.letterSequence);
         formatModifier = new FormatModifier("c(hello)");
-        assertEquals(FormatModifier.Numbering.Cardinal, formatModifier.numbering);
-        assertEquals(FormatModifier.LetterSequence.Alphabetic, formatModifier.letterSequence);
+        assertEquals(FormatModifier.Numbering.CARDINAL, formatModifier.numbering);
+        assertEquals(FormatModifier.LetterSequence.ALPHABETIC, formatModifier.letterSequence);
         assertEquals("hello", formatModifier.variation);
     }
 
@@ -493,9 +491,10 @@ public class IntegerPictureTest {
         assertEquals("Quinta", fmt("Ww;o(-a)", 5L, "it"));
     }
 
+    @Ignore("kanji is not yet implemented")
     @Test
     public void kanji() throws XPathException {
-        System.out.println("\u4e00\u4e01\u4e02\u4e03\u4e04\u4e05\u4e06\u4e07\u4e08\u4e09\u4e0a");
+        //System.err.println("\u4e00\u4e01\u4e02\u4e03\u4e04\u4e05\u4e06\u4e07\u4e08\u4e09\u4e0a");
         assertEquals("一", fmt("\u4e00", 1L));
     }
 
@@ -515,110 +514,5 @@ public class IntegerPictureTest {
     @Test
     public void formatFix() throws XPathException {
         assertEquals("12345,67,89", fmt("000,00,00", 123456789L));
-    }
-
-    /**
-     * Investigation of digit sets
-     *
-     * @Test
-     */
-    public void unicodeSets() {
-        final UnicodeSet set = new UnicodeSet("[:Nd:]");
-        set.freeze();
-        System.err.println(set.size());
-        int prev = -1;
-        int count = 0;
-        final StringBuilder sb = new StringBuilder();
-        for (final String s : set) {
-            final CodePointString cps = new CodePointString(s);
-            final int codePoint = cps.codePointAt(0);
-
-            if (prev + 1 < codePoint || count == 10) {
-                if (sb.length() > 0) {
-                    sb.append(',');
-                }
-                if (count > 0) {
-                    System.err.println(count);
-                }
-                System.err.print("" + codePoint + "->");
-                count = 1;
-                sb.append("0x").append(Integer.toHexString(codePoint));
-            } else {
-                count++;
-            }
-            prev = codePoint;
-        }
-        System.err.println(count);
-        System.err.println(sb);
-    }
-
-    /**
-     * Investigation of what spellouts are available per-locale
-     *
-     * @Test
-     */
-    @Test public void localesAndSpellouts() {
-        final List<String> iso639Alpha2Codes = Arrays.asList("aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av", "ay", "az",
-                "ba", "be", "bg", "bi", "bm", "bn", "bo", "br", "bs",
-                "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv", "cy",
-                "da", "de", "dv", "dz",
-                "ee", "el", "en", "eo", "es", "et", "eu",
-                "fa", "ff", "fi", "fj", "fo", "fr", "fy",
-                "ga", "gd", "gl", "gn", "gu", "gv",
-                "ha", "he", "hi", "ho", "hr", "ht", "hu", "hy", "hz",
-                "ia", "id", "ie", "ig", "ii", "ik", "io", "is", "it", "iu",
-                "ja", "jv",
-                "ka", "kg", "ki", "kj", "kk", "kl", "km", "kn", "ko", "kr", "ks", "ku", "kv", "kw", "ky",
-                "la", "lb", "lg", "li", "ln", "lo", "lt", "lu", "lv",
-                "mg", "mh", "mi", "mk", "ml", "mn", "mr", "ms", "mt", "my",
-                "na", "nb", "nd", "ne", "ng", "nl", "nn", "no", "nr", "nv", "ny",
-                "oc", "oj", "om", "or", "os",
-                "pa", "pi", "pl", "ps", "pt",
-                "rm", "rn", "ro", "ru", "rw",
-                "sa", "sc", "sd", "se", "sg", "si", "sk", "sl", "sm", "sn", "so", "sq", "sr", "ss", "st", "su", "sv", "sw",
-                "ta", "te", "tg", "th", "ti", "tk", "tl", "tn", "to", "tr", "ts", "tt", "tw", "ty",
-                "ug", "uk", "ur", "uz",
-                "ve", "vi", "vo",
-                "wa", "wo",
-                "xh",
-                "yi", "yo",
-                "za", "zh", "zu");
-        final Map<String,Set<String>> global = new HashMap<>();
-        for (final String isoCode : iso639Alpha2Codes) {
-            final Locale locale = (new Locale.Builder()).setLanguage(isoCode).build();
-            final RuleBasedNumberFormat ruleBasedNumberFormat = new RuleBasedNumberFormat(locale, RuleBasedNumberFormat.SPELLOUT);
-            final Set<String> names = new HashSet<>();
-            for (final String ruleSetName : ruleBasedNumberFormat.getRuleSetNames()) {
-                names.add(ruleSetName);
-                if (!global.containsKey(ruleSetName)) {
-                    global.put(ruleSetName, new HashSet<>());
-                }
-                global.get(ruleSetName).add(isoCode);
-            }
-            boolean displayMissing = !names.contains("%spellout-ordinal") && !names.contains("%spellout-ordinal-masculine") && !names.contains("%spellout-ordinal-feminine");
-            if (!names.contains("%spellout-cardinal") && !names.contains("%spellout-cardinal-masculine") && !names.contains("%spellout-cardinal-feminine")) {
-                displayMissing = true;
-            }
-            if (displayMissing) {
-                System.err.println(isoCode + " missing some spellouts --->>> ");
-                for (final String name : names) {
-                    System.err.println(name);
-                }
-                System.err.println(isoCode + " <<<---");
-            }
-        }
-        System.err.println("all spellouts --->>>");
-        final List<String> globalList = Arrays.asList(global.keySet().toArray(new String[]{}));
-        Collections.sort(globalList);
-        for (final String name : globalList) {
-            final StringBuilder sb = new StringBuilder();
-            sb.append(name).append(" --->");
-            for (final String isoCode : global.get(name)) {
-                sb.append(' ').append(isoCode);
-            }
-            System.err.println(sb);
-        }
-        System.err.println("<<<--- all spellouts");
-
     }
 }

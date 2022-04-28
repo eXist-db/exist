@@ -22,18 +22,18 @@
 
 package org.exist.xquery.functions.fn;
 
-import org.exist.xquery.*;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.integer.IntegerPicture;
 import org.exist.xquery.value.*;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.IllformedLocaleException;
 import java.util.List;
-import java.util.Locale;
 
 import static org.exist.xquery.FunctionDSL.*;
-import static org.exist.xquery.FunctionDSL.arity;
 import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
 
 /**
@@ -77,7 +77,7 @@ public class FnFormatIntegers extends BasicFunction {
         // If $value is an empty sequence, the function returns a zero-length string
         // https://www.w3.org/TR/xpath-functions-31/#func-format-integer
         if (args[0].isEmpty()) {
-            return AtomicValue.EMPTY_SEQUENCE;
+            return Sequence.EMPTY_SEQUENCE;
         }
 
         // If the value of $value is negative, the rules below are applied to the absolute value of $value,
@@ -86,6 +86,9 @@ public class FnFormatIntegers extends BasicFunction {
         final BigInteger bigInteger = integerValue.toJavaObject(BigInteger.class);
 
         final IntegerPicture picture = IntegerPicture.fromString(args[1].getStringValue());
+
+        // Build a list of languages to try
+        // the called picture will use the first one with a valid locale
         final List<String> languages = new ArrayList<>(2);
         if (args.length == 3 && !args[2].isEmpty()) {
             languages.add(args[2].getStringValue());

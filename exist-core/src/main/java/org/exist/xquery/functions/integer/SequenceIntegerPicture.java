@@ -1,5 +1,6 @@
 /*
  * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
  *
  * info@exist-db.org
  * http://www.exist-db.org
@@ -17,15 +18,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * The source code for this class is taken from the stackoverflow answer
- * https://stackoverflow.com/questions/12967896/converting-integers-to-roman-numerals-java
- * written by https://stackoverflow.com/users/1420681/ben-hur-langoni-junior
- * and is therefore used and made available in accordance with
- * https://creativecommons.org/licenses/by-sa/3.0
- *
  */
-
 package org.exist.xquery.functions.integer;
 
 import org.exist.xquery.XPathException;
@@ -33,9 +26,13 @@ import org.exist.xquery.XPathException;
 import java.math.BigInteger;
 import java.util.Locale;
 
+/**
+ * Format as sequence according to rule 2/3 (alphabetic digits)
+ * {@see https://www.w3.org/TR/xpath-functions-31/#formatting-integers}
+ */
 class SequenceIntegerPicture extends IntegerPicture {
 
-    private final static BigInteger RADIX = BigInteger.valueOf(26L);
+    private static final BigInteger RADIX = BigInteger.valueOf(26L);
 
     private final int codePoint;
 
@@ -43,22 +40,28 @@ class SequenceIntegerPicture extends IntegerPicture {
         this.codePoint = codePoint;
     }
 
+    /**
+     * Format with a sequence as digits
+     *
+     * @param bigInteger the integer to format
+     * @param locale     of the language to use in formatting
+     * @return the formatted string
+     * @throws XPathException if something went wrong
+     */
     @Override
-    public String formatInteger(BigInteger bigInteger, final Locale locale) throws XPathException {
+    public String formatInteger(final BigInteger bigInteger, final Locale locale) throws XPathException {
         //spec says out of range should be formatted by "1"
         if (bigInteger.compareTo(BigInteger.ZERO) <= 0) {
-            return DEFAULT.formatInteger(bigInteger, locale);
+            return IntegerPicture.defaultPictureWithModifier(new FormatModifier("")).formatInteger(bigInteger, locale);
         }
 
-        final StringBuilder
-                sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
+        BigInteger acc = bigInteger;
         do {
-            bigInteger = bigInteger.subtract(BigInteger.ONE);
-            final BigInteger[] divideAndRemainder = bigInteger.divideAndRemainder(RADIX);
-            sb.append(FromCodePoint(codePoint + divideAndRemainder[1].intValue()));
-            bigInteger = divideAndRemainder[0];
-        }
-        while (bigInteger.compareTo(BigInteger.ZERO) > 0);
+            final BigInteger[] divideAndRemainder = acc.subtract(BigInteger.ONE).divideAndRemainder(SequenceIntegerPicture.RADIX);
+            sb.append(IntegerPicture.fromCodePoint(codePoint + divideAndRemainder[1].intValue()));
+            acc = divideAndRemainder[0];
+        } while (acc.compareTo(BigInteger.ZERO) > 0);
 
         return sb.reverse().toString();
     }

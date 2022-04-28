@@ -27,6 +27,10 @@ import org.exist.xquery.XPathException;
 import java.math.BigInteger;
 import java.util.Locale;
 
+/**
+ * Format numbers according to rules 4/5 (any other numbering sequence)
+ * {@see https://www.w3.org/TR/xpath-functions-31/#formatting-integers}
+ */
 class RomanIntegerPicture extends IntegerPicture {
 
     private final boolean isUpper;
@@ -39,10 +43,10 @@ class RomanIntegerPicture extends IntegerPicture {
     public String formatInteger(final BigInteger bigInteger, final Locale locale) throws XPathException {
         //spec says out of range should be formatted by "1"
         if (bigInteger.compareTo(BigInteger.ZERO) <= 0 || bigInteger.compareTo(BigInteger.valueOf(4999L)) > 0) {
-            return DEFAULT.formatInteger(bigInteger, locale);
+            return defaultPictureWithModifier(new FormatModifier("")).formatInteger(bigInteger, locale);
         }
 
-        final String roman = RomanNumber.toRoman(bigInteger.intValue());
+        final String roman = RomanNumberHelper.toRoman(bigInteger.intValue());
         if (isUpper) {
             return roman.toUpperCase();
         } else {
