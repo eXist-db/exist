@@ -242,7 +242,24 @@
         <xs:annotation>
             <xs:documentation>Per collection validation-switch configuration</xs:documentation>
         </xs:annotation>
+        <xs:sequence>
+            <xs:element ref="entity-resolver" minOccurs="0"/>
+        </xs:sequence>
         <xs:attributeGroup ref="modeReq"/>
+    </xs:complexType>
+
+    <xs:element name="entity-resolver" type="entityResolverType"/>
+
+    <xs:complexType name="entityResolverType">
+        <xs:sequence>
+            <xs:element ref="catalog" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="catalog" type="catalogType"/>
+
+    <xs:complexType name="catalogType">
+        <xs:attribute name="uri" type="xs:string" use="required"/>
     </xs:complexType>
 
     <!--
