@@ -819,6 +819,52 @@ try {
     }
 
     @Test
+    public void execQueryWithBasicAuthCaseInsensitive() throws IOException {
+        doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
+
+        // allow query to be executed only by owner
+        chmod(XmldbURI.ROOT_COLLECTION + "/test/auth.xq", "rwxrw-r--");
+
+        // call the auth.xq
+        final String uri = getCollectionUri() + "/auth.xq";
+        final HttpURLConnection connect = getConnection(uri);
+        try {
+            connect.setRequestProperty("Authorization", "bAsiC " + credentials);  // NOTE(AR): Intentional use of 'bAsiC' to test case-insensitive scheme matching
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+
+            final String response = readResponse(connect.getInputStream());
+
+            final Source expectedSource = Input.from(
+                    "<authorization>\n" +
+                            "    <sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
+                            "        <sm:real>\n" +
+                            "            <sm:username>admin</sm:username>\n" +
+                            "            <sm:groups>\n" +
+                            "                <sm:group>dba</sm:group>\n" +
+                            "            </sm:groups>\n" +
+                            "        </sm:real>\n" +
+                            "    </sm:id>\n" +
+                            "    <header>bAsiC YWRtaW46</header>\n" +
+                            "</authorization>").build();
+            final Source actualSource = Input.from(response).build();
+
+            final Diff diff = DiffBuilder.compare(expectedSource)
+                    .withTest(actualSource)
+                    .checkForSimilar()
+                    .build();
+
+            assertFalse(diff.toString(), diff.hasDifferences());
+
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
     public void execSetUidQueryWithNoAuth() throws IOException {
         doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
 
