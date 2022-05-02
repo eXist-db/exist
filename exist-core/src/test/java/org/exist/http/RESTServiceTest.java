@@ -712,6 +712,9 @@ try {
     public void execQueryWithNoAuth() throws IOException {
         doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
 
+        // allow query to be executed only by owner
+        chmod(XmldbURI.ROOT_COLLECTION + "/test/auth.xq", "rwxrw-r--");
+
         // call the auth.xq
         final String uri = getCollectionUri() + "/auth.xq";
         final HttpURLConnection connect = getConnection(uri);
@@ -732,26 +735,11 @@ try {
         doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
 
         // allow query to be executed by guest
-        String uri = getCollectionUri() +"?_query=" + URLEncoder.encode(
-                        "sm:chmod(xs:anyURI('" + XmldbURI.ROOT_COLLECTION + "/test/auth.xq'), 'rwxr--r-x')",
-                        UTF_8.displayName());
-        HttpURLConnection connect = getConnection(uri);
-        try {
-            connect.setRequestMethod("GET");
-            connect.setRequestProperty("Authorization", "Basic " + credentials);
-            connect.connect();
-
-            final int r = connect.getResponseCode();
-            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
-
-            readResponse(connect.getInputStream());
-        } finally {
-            connect.disconnect();
-        }
+        chmod(XmldbURI.ROOT_COLLECTION + "/test/auth.xq", "rwxrw-r-x");
 
         // call the auth.xq
-        uri = getCollectionUri() + "/auth.xq";
-        connect = getConnection(uri);
+        final String uri = getCollectionUri() + "/auth.xq";
+        final HttpURLConnection connect = getConnection(uri);
         try {
             connect.setRequestMethod("GET");
             connect.connect();
@@ -790,6 +778,9 @@ try {
     @Test
     public void execQueryWithBasicAuth() throws IOException {
         doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
+
+        // allow query to be executed only by owner
+        chmod(XmldbURI.ROOT_COLLECTION + "/test/auth.xq", "rwxrw-r--");
 
         // call the auth.xq
         final String uri = getCollectionUri() + "/auth.xq";
@@ -834,27 +825,12 @@ try {
     public void execSetUidQueryWithNoAuth() throws IOException {
         doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
 
-        // allow query to be executed by guest
-        String uri = getCollectionUri() +"?_query=" + URLEncoder.encode(
-                "sm:chmod(xs:anyURI('" + XmldbURI.ROOT_COLLECTION + "/test/auth.xq'), 'rwsr--r-x')",
-                UTF_8.displayName());
-        HttpURLConnection connect = getConnection(uri);
-        try {
-            connect.setRequestMethod("GET");
-            connect.setRequestProperty("Authorization", "Basic " + credentials);
-            connect.connect();
-
-            final int r = connect.getResponseCode();
-            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
-
-            readResponse(connect.getInputStream());
-        } finally {
-            connect.disconnect();
-        }
+        // allow query to be executed setUid as admin by guest
+        chmod(XmldbURI.ROOT_COLLECTION + "/test/auth.xq", "rwsr--r-x");
 
         // call the auth.xq
-        uri = getCollectionUri() + "/auth.xq";
-        connect = getConnection(uri);
+        final String uri = getCollectionUri() + "/auth.xq";
+        final HttpURLConnection connect = getConnection(uri);
         try {
             connect.setRequestMethod("GET");
             connect.connect();
@@ -900,27 +876,12 @@ try {
     public void execSetUidQueryWithBasicAuth() throws IOException {
         doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
 
-        // allow query to be executed by guest
-        String uri = getCollectionUri() +"?_query=" + URLEncoder.encode(
-                "sm:chmod(xs:anyURI('" + XmldbURI.ROOT_COLLECTION + "/test/auth.xq'), 'rwsr--r-x')",
-                UTF_8.displayName());
-        HttpURLConnection connect = getConnection(uri);
-        try {
-            connect.setRequestMethod("GET");
-            connect.setRequestProperty("Authorization", "Basic " + credentials);
-            connect.connect();
-
-            final int r = connect.getResponseCode();
-            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
-
-            readResponse(connect.getInputStream());
-        } finally {
-            connect.disconnect();
-        }
+        // allow query to be executed setUid as admin by guest
+        chmod(XmldbURI.ROOT_COLLECTION + "/test/auth.xq", "rwsr--r-x");
 
         // call the auth.xq
-        uri = getCollectionUri() + "/auth.xq";
-        connect = getConnection(uri);
+        final String uri = getCollectionUri() + "/auth.xq";
+        final HttpURLConnection connect = getConnection(uri);
         try {
             connect.setRequestMethod("GET");
             connect.setRequestProperty("Authorization", "Basic " + credentials);
@@ -961,6 +922,9 @@ try {
     public void execQueryWithBearerAuth() throws IOException {
         doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
 
+        // allow query to be executed only by owner
+        chmod(XmldbURI.ROOT_COLLECTION + "/test/auth.xq", "rwxrw-r--");
+
         // call the auth.xq
         final String uri = getCollectionUri() + "/auth.xq";
         final HttpURLConnection connect = getConnection(uri);
@@ -981,27 +945,12 @@ try {
     public void execSetUidQueryWithBearerAuth() throws IOException {
         doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
 
-        // allow query to be executed by guest
-        String uri = getCollectionUri() +"?_query=" + URLEncoder.encode(
-                "sm:chmod(xs:anyURI('" + XmldbURI.ROOT_COLLECTION + "/test/auth.xq'), 'rwsr--r-x')",
-                UTF_8.displayName());
-        HttpURLConnection connect = getConnection(uri);
-        try {
-            connect.setRequestMethod("GET");
-            connect.setRequestProperty("Authorization", "Basic " + credentials);
-            connect.connect();
-
-            final int r = connect.getResponseCode();
-            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
-
-            readResponse(connect.getInputStream());
-        } finally {
-            connect.disconnect();
-        }
+        // allow query to be executed setUid as admin by guest
+        chmod(XmldbURI.ROOT_COLLECTION + "/test/auth.xq", "rwsr--r-x");
 
         // call the auth.xq
-        uri = getCollectionUri() + "/auth.xq";
-        connect = getConnection(uri);
+        final String uri = getCollectionUri() + "/auth.xq";
+        final HttpURLConnection connect = getConnection(uri);
         try {
             connect.setRequestMethod("GET");
             connect.setRequestProperty("Authorization", "Bearer some-token");
@@ -1039,6 +988,23 @@ try {
 
             assertFalse(diff.toString(), diff.hasDifferences());
 
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    private void chmod(final String resourcePath, final String mode) throws IOException {
+        final String uri = getCollectionUri() +"?_query=" + URLEncoder.encode(
+                "sm:chmod(xs:anyURI('" + resourcePath + "'), '" + mode + "')",
+                UTF_8.displayName());
+        final HttpURLConnection connect = getConnection(uri);
+        try {
+            connect.setRequestMethod("GET");
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.connect();
+
+            final int responseCode = connect.getResponseCode();
+            assertEquals("Server returned response code " + responseCode, HttpStatus.OK_200, responseCode);
         } finally {
             connect.disconnect();
         }
