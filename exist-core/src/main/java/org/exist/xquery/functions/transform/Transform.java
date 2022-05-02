@@ -188,7 +188,7 @@ public class Transform extends BasicFunction {
         final XSLTErrorsListener<XPathException> errorListener =
             new XSLTErrorsListener<XPathException>(stopOnError, stopOnWarn) {
                 @Override
-                protected void raiseError(String error, Exception ex) throws XPathException {
+                protected void raiseError(final String error, final TransformerException ex) throws XPathException {
                     throw new XPathException(Transform.this, error, ex);
                 }
             };

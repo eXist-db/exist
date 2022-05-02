@@ -42,14 +42,14 @@ public abstract class XSLTErrorsListener<E extends Exception> implements ErrorLi
   private final boolean stopOnWarn;
 
   @Nullable private ErrorType errorType;
-  @Nullable private Exception exception;
+  @Nullable private TransformerException exception;
 
   public XSLTErrorsListener(final boolean stopOnError, final boolean stopOnWarn) {
     this.stopOnError = stopOnError;
     this.stopOnWarn = stopOnWarn;
   }
 
-  protected abstract void raiseError(String error, Exception ex) throws E;
+  protected abstract void raiseError(String error, TransformerException ex) throws E;
 
   public void checkForErrors() throws E {
     if (errorType == null) {
@@ -59,16 +59,16 @@ public abstract class XSLTErrorsListener<E extends Exception> implements ErrorLi
     switch (errorType) {
       case WARNING:
         if (stopOnWarn) {
-          raiseError("XSL transform reported warning: " + exception.getMessage(), exception);
+          raiseError("XSL transform reported warning: " + exception.getMessageAndLocation(), exception);
         }
         break;
       case ERROR:
         if (stopOnError) {
-          raiseError("XSL transform reported error: " + exception.getMessage(), exception);
+          raiseError("XSL transform reported error: " + exception.getMessageAndLocation(), exception);
         }
         break;
       case FATAL:
-        raiseError("XSL transform reported error: " + exception.getMessage(), exception);
+        raiseError("XSL transform reported error: " + exception.getMessageAndLocation(), exception);
     }
   }
 
