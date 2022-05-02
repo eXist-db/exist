@@ -53,7 +53,7 @@ public class ConcurrencyTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private static int CONCURRENT_THREADS = Runtime.getRuntime().availableProcessors() * 3;
+    private static int CONCURRENT_THREADS = Math.min(16, Runtime.getRuntime().availableProcessors() * 3);
     private static final int DOC_COUNT = CONCURRENT_THREADS * 10;
 
     private static final int QUERY_COUNT = 20;
