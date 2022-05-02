@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<realm xmlns="http://exist-db.org/Configuration"
+ xmlns:db="http://docbook.org/ns/docbook"
+ xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://exist-db.org/Configuration file:/Users/lcahlander/IdeaProjects/exist/extensions/security/jwt/jwt-realm.xsd" id="LDAP" principals-are-case-insensitive="false" version="1.0">
+    <context>
+        <header-field-prefix>Authorization: Bearer</header-field-prefix>
+        <secret>secret0</secret>
+        <search>
+            <account>
+                <search-attribute key="name">search-attribute0</search-attribute>
+                <search-attribute key="name">search-attribute1</search-attribute>
+                <metadata-search-attribute key="http://axschema.org/namePerson">metadata-search-attribute0</metadata-search-attribute>
+                <metadata-search-attribute key="http://axschema.org/namePerson">metadata-search-attribute1</metadata-search-attribute>
+                <whitelist>
+                    <principal>principal0</principal>
+                    <principal>principal1</principal>
+                </whitelist>
+                <blacklist>
+                    <principal>principal2</principal>
+                    <principal>principal3</principal>
+                </blacklist>
+            </account>
+            <group>
+                <search-filter-xpath>search-filter-xpath0</search-filter-xpath>
+                <search-attribute key="name">search-attribute2</search-attribute>
+                <search-attribute key="name">search-attribute3</search-attribute>
+                <metadata-search-attribute key="http://axschema.org/namePerson">metadata-search-attribute2</metadata-search-attribute>
+                <metadata-search-attribute key="http://axschema.org/namePerson">metadata-search-attribute3</metadata-search-attribute>
+                <whitelist>
+                    <principal>principal4</principal>
+                    <principal>principal5</principal>
+                </whitelist>
+                <blacklist>
+                    <principal>principal6</principal>
+                    <principal>principal7</principal>
+                </blacklist>
+            </group>
+        </search>
+        <transformation>
+            <add-group>add-group0</add-group>
+        </transformation>
+    </context>
+</realm>

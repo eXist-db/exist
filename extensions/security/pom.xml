@@ -48,6 +48,7 @@
     <modules>
         <module>activedirectory</module>
         <module>iprange</module>
+        <module>jwt</module>
         <module>ldap</module>
     </modules>
 
