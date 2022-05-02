@@ -69,9 +69,9 @@ public class BasicAuthenticator implements Authenticator {
 		String password = null;
 
 		try {
-			if (credentials != null && credentials.startsWith("Basic")) {
+			if (credentials != null && credentials.toLowerCase().startsWith("basic ")) {
 				final Base64Decoder dec = new Base64Decoder();
-				dec.translate(credentials.substring("Basic ".length()));
+				dec.translate(credentials.substring("basic ".length()));
 				final byte[] c = dec.getByteArray();
 				final String s = new String(c);
 				// LOG.debug("BASIC auth credentials: "+s);
@@ -80,7 +80,7 @@ public class BasicAuthenticator implements Authenticator {
 				password = p < 0 ? null : s.substring(p + 1);
 			}
 		} catch(final IllegalArgumentException iae) {
-			LOG.warn("Invalid BASIC authentication header received: " + iae.getMessage(), iae);
+			LOG.warn("Invalid Basic Authentication header received: " + iae.getMessage(), iae);
 			credentials = null;
 		}
 
