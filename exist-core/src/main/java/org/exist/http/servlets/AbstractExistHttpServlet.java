@@ -246,9 +246,9 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
 	        }
         }
 
-        // Secondly try basic authentication
+        // Secondly try basic authentication if there is no Authorization header or the Authorization header does not indicate Basic auth
         final String auth = request.getHeader("Authorization");
-        if (auth == null && getDefaultUser() != null) {
+        if ((auth == null || !auth.startsWith("Basic ")) && getDefaultUser() != null) {
             return getDefaultUser();
         }
         return getAuthenticator().authenticate(request, response, true);

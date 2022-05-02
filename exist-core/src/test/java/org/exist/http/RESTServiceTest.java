@@ -50,15 +50,20 @@ import org.w3c.dom.Element;
 
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.SAXParser;
+import javax.xml.transform.Source;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.builder.Input;
+import org.xmlunit.diff.Diff;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
@@ -143,6 +148,14 @@ public class RESTServiceTest {
                     "declare namespace request=\"http://exist-db.org/xquery/request\";\n" +
                     "declare option exist:serialize \"method=text media-type=text/text\";\n" +
                     "request:get-data()//data/text() || ' ' || request:get-path-info()";
+
+    private static final String AUTH_QUERY =
+            "import module namespace request=\"http://exist-db.org/xquery/request\";\n" +
+                    "import module namespace sm=\"http://exist-db.org/xquery/securitymanager\";\n" +
+                    "<authorization>\n" +
+                    "    {sm:id()}\n" +
+                    "    <header>{request:get-header('Authorization')}</header>\n" +
+                    "</authorization>\n";
 
     private static String credentials;
     private static String badCredentials;
@@ -690,6 +703,342 @@ try {
 
         // cached and wrapped:
         doStoredQuery(true, true);
+    }
+
+    @Test
+    public void execQueryWithNoAuth() throws IOException {
+        doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
+
+        // call the auth.xq
+        final String uri = getCollectionUri() + "/auth.xq";
+        final HttpURLConnection connect = getConnection(uri);
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.UNAUTHORIZED_401, r);
+
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
+    public void execGuestQueryWithNoAuth() throws IOException {
+        doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
+
+        // allow query to be executed by guest
+        String uri = getCollectionUri() +"?_query=" + URLEncoder.encode(
+                "sm:chmod(xs:anyURI('" + XmldbURI.ROOT_COLLECTION + "/test/auth.xq'), 'rwxr--r-x')",
+                UTF_8.displayName());
+        HttpURLConnection connect = getConnection(uri);
+        try {
+            connect.setRequestMethod("GET");
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+
+            readResponse(connect.getInputStream());
+        } finally {
+            connect.disconnect();
+        }
+
+        // call the auth.xq
+        uri = getCollectionUri() + "/auth.xq";
+        connect = getConnection(uri);
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+
+            final String response = readResponse(connect.getInputStream());
+
+            final Source expectedSource = Input.from(
+                    "<authorization>\n" +
+                            "    <sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
+                            "        <sm:real>\n" +
+                            "            <sm:username>guest</sm:username>\n" +
+                            "            <sm:groups>\n" +
+                            "                <sm:group>guest</sm:group>\n" +
+                            "            </sm:groups>\n" +
+                            "        </sm:real>\n" +
+                            "    </sm:id>\n" +
+                            "    <header/>\n" +
+                            "</authorization>").build();
+            final Source actualSource = Input.from(response).build();
+
+            final Diff diff = DiffBuilder.compare(expectedSource)
+                    .withTest(actualSource)
+                    .checkForSimilar()
+                    .build();
+
+            assertFalse(diff.toString(), diff.hasDifferences());
+
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
+    public void execQueryWithBasicAuth() throws IOException {
+        doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
+
+        // call the auth.xq
+        final String uri = getCollectionUri() + "/auth.xq";
+        final HttpURLConnection connect = getConnection(uri);
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+
+            final String response = readResponse(connect.getInputStream());
+
+            final Source expectedSource = Input.from(
+                    "<authorization>\n" +
+                            "    <sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
+                            "        <sm:real>\n" +
+                            "            <sm:username>admin</sm:username>\n" +
+                            "            <sm:groups>\n" +
+                            "                <sm:group>dba</sm:group>\n" +
+                            "            </sm:groups>\n" +
+                            "        </sm:real>\n" +
+                            "    </sm:id>\n" +
+                            "    <header>Basic YWRtaW46</header>\n" +
+                            "</authorization>").build();
+            final Source actualSource = Input.from(response).build();
+
+            final Diff diff = DiffBuilder.compare(expectedSource)
+                    .withTest(actualSource)
+                    .checkForSimilar()
+                    .build();
+
+            assertFalse(diff.toString(), diff.hasDifferences());
+
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
+    public void execSetUidQueryWithNoAuth() throws IOException {
+        doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
+
+        // allow query to be executed by guest
+        String uri = getCollectionUri() +"?_query=" + URLEncoder.encode(
+                "sm:chmod(xs:anyURI('" + XmldbURI.ROOT_COLLECTION + "/test/auth.xq'), 'rwsr--r-x')",
+                UTF_8.displayName());
+        HttpURLConnection connect = getConnection(uri);
+        try {
+            connect.setRequestMethod("GET");
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+
+            readResponse(connect.getInputStream());
+        } finally {
+            connect.disconnect();
+        }
+
+        // call the auth.xq
+        uri = getCollectionUri() + "/auth.xq";
+        connect = getConnection(uri);
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+
+            final String response = readResponse(connect.getInputStream());
+
+            final Source expectedSource = Input.from(
+                    "<authorization>\n" +
+                            "    <sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
+                            "        <sm:real>\n" +
+                            "            <sm:username>guest</sm:username>\n" +
+                            "            <sm:groups>\n" +
+                            "                <sm:group>guest</sm:group>\n" +
+                            "            </sm:groups>\n" +
+                            "        </sm:real>\n" +
+                            "        <sm:effective>\n" +
+                            "            <sm:username>admin</sm:username>\n" +
+                            "            <sm:groups>\n" +
+                            "                <sm:group>dba</sm:group>\n" +
+                            "            </sm:groups>\n" +
+                            "        </sm:effective>\n" +
+                            "    </sm:id>\n" +
+                            "    <header/>\n" +
+                            "</authorization>").build();
+            final Source actualSource = Input.from(response).build();
+
+            final Diff diff = DiffBuilder.compare(expectedSource)
+                    .withTest(actualSource)
+                    .checkForSimilar()
+                    .build();
+
+            assertFalse(diff.toString(), diff.hasDifferences());
+
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
+    public void execSetUidQueryWithBasicAuth() throws IOException {
+        doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
+
+        // allow query to be executed by guest
+        String uri = getCollectionUri() +"?_query=" + URLEncoder.encode(
+                "sm:chmod(xs:anyURI('" + XmldbURI.ROOT_COLLECTION + "/test/auth.xq'), 'rwsr--r-x')",
+                UTF_8.displayName());
+        HttpURLConnection connect = getConnection(uri);
+        try {
+            connect.setRequestMethod("GET");
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+
+            readResponse(connect.getInputStream());
+        } finally {
+            connect.disconnect();
+        }
+
+        // call the auth.xq
+        uri = getCollectionUri() + "/auth.xq";
+        connect = getConnection(uri);
+        try {
+            connect.setRequestMethod("GET");
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+
+            final String response = readResponse(connect.getInputStream());
+
+            final Source expectedSource = Input.from(
+                    "<authorization>\n" +
+                            "    <sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
+                            "        <sm:real>\n" +
+                            "            <sm:username>admin</sm:username>\n" +
+                            "            <sm:groups>\n" +
+                            "                <sm:group>dba</sm:group>\n" +
+                            "            </sm:groups>\n" +
+                            "        </sm:real>\n" +
+                            "    </sm:id>\n" +
+                            "    <header>Basic YWRtaW46</header>\n" +
+                            "</authorization>").build();
+            final Source actualSource = Input.from(response).build();
+
+            final Diff diff = DiffBuilder.compare(expectedSource)
+                    .withTest(actualSource)
+                    .checkForSimilar()
+                    .build();
+
+            assertFalse(diff.toString(), diff.hasDifferences());
+
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
+    public void execQueryWithBearerAuth() throws IOException {
+        doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
+
+        // call the auth.xq
+        final String uri = getCollectionUri() + "/auth.xq";
+        final HttpURLConnection connect = getConnection(uri);
+        try {
+            connect.setRequestProperty("Authorization", "Bearer some-token");
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.UNAUTHORIZED_401, r);
+
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
+    public void execSetUidQueryWithBearerAuth() throws IOException {
+        doPut(AUTH_QUERY, "auth.xq", HttpStatus.CREATED_201);
+
+        // allow query to be executed by guest
+        String uri = getCollectionUri() +"?_query=" + URLEncoder.encode(
+                "sm:chmod(xs:anyURI('" + XmldbURI.ROOT_COLLECTION + "/test/auth.xq'), 'rwsr--r-x')",
+                UTF_8.displayName());
+        HttpURLConnection connect = getConnection(uri);
+        try {
+            connect.setRequestMethod("GET");
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+
+            readResponse(connect.getInputStream());
+        } finally {
+            connect.disconnect();
+        }
+
+        // call the auth.xq
+        uri = getCollectionUri() + "/auth.xq";
+        connect = getConnection(uri);
+        try {
+            connect.setRequestMethod("GET");
+            connect.setRequestProperty("Authorization", "Bearer some-token");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+
+            final String response = readResponse(connect.getInputStream());
+
+            final Source expectedSource = Input.from(
+                    "<authorization>\n" +
+                            "    <sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
+                            "        <sm:real>\n" +
+                            "            <sm:username>guest</sm:username>\n" +
+                            "            <sm:groups>\n" +
+                            "                <sm:group>guest</sm:group>\n" +
+                            "            </sm:groups>\n" +
+                            "        </sm:real>\n" +
+                            "        <sm:effective>\n" +
+                            "            <sm:username>admin</sm:username>\n" +
+                            "            <sm:groups>\n" +
+                            "                <sm:group>dba</sm:group>\n" +
+                            "            </sm:groups>\n" +
+                            "        </sm:effective>\n" +
+                            "    </sm:id>\n" +
+                            "    <header>Bearer some-token</header>\n" +
+                            "</authorization>").build();
+            final Source actualSource = Input.from(response).build();
+
+            final Diff diff = DiffBuilder.compare(expectedSource)
+                    .withTest(actualSource)
+                    .checkForSimilar()
+                    .build();
+
+            assertFalse(diff.toString(), diff.hasDifferences());
+
+        } finally {
+            connect.disconnect();
+        }
     }
 
     private void doPut(final String data, final String path, final int responseCode) throws IOException {
