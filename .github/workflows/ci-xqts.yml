@@ -1,5 +1,8 @@
 name: XQTS
 on: [push, pull_request]
+permissions:
+  contents: read
+
 jobs:
   xqts:
     name: W3C XQuery Test Suite
