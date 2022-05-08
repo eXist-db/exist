@@ -210,15 +210,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
             trimmedCalendar = cloneXMLGregorianCalendar(calendar);
             final BigDecimal fract = trimmedCalendar.getFractionalSecond();
             if (fract != null) {
-                // TODO: replace following algorithm in JDK 1.5 with fract.stripTrailingZeros();
-                final String s = fract.toString();
-                int i = s.length();
-                while (i > 0 && s.charAt(i - 1) == '0') i--;
-                if (i == 0) {
-                    trimmedCalendar.setFractionalSecond(null);
-                } else if (i != s.length()) {
-                    trimmedCalendar.setFractionalSecond(new BigDecimal(s.substring(0, i)));
-                }
+                trimmedCalendar.setFractionalSecond(fract.stripTrailingZeros());
             }
         }
         return trimmedCalendar;
