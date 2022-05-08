@@ -39,14 +39,18 @@ import java.util.TimeZone;
  *
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
+@NotThreadSafe
 public class TimeUtils {
 
     private static final TimeUtils INSTANCE = new TimeUtils();
     public static final Duration ONE_DAY = INSTANCE.factory.newDuration(true, 0, 0, 1, 0, 0, 0);
-    // assume it's thread-safe, if not synchronize all access
+
     private final DatatypeFactory factory;
+
+    // assume it's thread-safe, if not synchronize all access
     private int timezoneOffset;
     private boolean timezoneOverriden;
+
     private TimeUtils() {
         // singleton, keep constructor private
         try {
@@ -97,86 +101,76 @@ public class TimeUtils {
         return getLocalTimezoneOffsetMillis() / 60000;
     }
 
-    public Duration newDuration(long arg0) {
-        return factory.newDuration(arg0);
+    public Duration newDuration(final long durationInMilliSeconds) {
+        return factory.newDuration(durationInMilliSeconds);
     }
 
-    public Duration newDuration(String arg0) {
-        return factory.newDuration(arg0);
+    public Duration newDuration(final String lexicalRepresentation) {
+        return factory.newDuration(lexicalRepresentation);
     }
 
-    public Duration newDuration(
-            final boolean isPositive,
-            final int years,
-            final int months,
-            final int days,
-            final int hours,
-            final int minutes,
-            final int seconds) {
-
+    public Duration newDuration(final boolean isPositive, final int years, final int months, final int days, final int hours, final int minutes, final int seconds) {
         return factory.newDuration(isPositive, years, months, days, hours, minutes, seconds);
     }
 
-    public Duration newDuration(boolean arg0, BigInteger arg1, BigInteger arg2, BigInteger arg3, BigInteger arg4, BigInteger arg5, BigDecimal arg6) {
-        return factory.newDuration(arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+    public Duration newDuration(final boolean isPositive, final BigInteger years, final BigInteger months, final BigInteger days, final BigInteger hours, final BigInteger minutes, final BigDecimal seconds) {
+        return factory.newDuration(isPositive, years, months, days, hours, minutes, seconds);
     }
 
-    public Duration newDurationDayTime(long arg0) {
-        return factory.newDurationDayTime(arg0);
+    public Duration newDurationDayTime(final long durationInMilliseconds) {
+        return factory.newDurationDayTime(durationInMilliseconds);
     }
 
-    public Duration newDurationDayTime(String arg0) {
-        return factory.newDurationDayTime(arg0);
+    public Duration newDurationDayTime(final String lexicalRepresentation) {
+        return factory.newDurationDayTime(lexicalRepresentation);
     }
 
-    public Duration newDurationDayTime(boolean arg0, int arg1, int arg2, int arg3, int arg4) {
-        return factory.newDurationDayTime(arg0, arg1, arg2, arg3, arg4);
+    public Duration newDurationDayTime(final boolean isPositive, final int day, final int hour, final int minute, final int second) {
+        return factory.newDurationDayTime(isPositive, day, hour, minute, second);
     }
 
-    public Duration newDurationDayTime(boolean arg0, BigInteger arg1, BigInteger arg2, BigInteger arg3, BigInteger arg4) {
-        return factory.newDurationDayTime(arg0, arg1, arg2, arg3, arg4);
+    public Duration newDurationDayTime(final boolean isPositive, final BigInteger day, final BigInteger hour, final BigInteger minute, final BigInteger second) {
+        return factory.newDurationDayTime(isPositive, day, hour, minute, second);
     }
 
-    public Duration newDurationYearMonth(long arg0) {
-        return factory.newDurationYearMonth(arg0);
+    public Duration newDurationYearMonth(final long durationInMilliseconds) {
+        return factory.newDurationYearMonth(durationInMilliseconds);
     }
 
-    public Duration newDurationYearMonth(String arg0) {
-        return factory.newDurationYearMonth(arg0);
+    public Duration newDurationYearMonth(final String lexicalRepresentation) {
+        return factory.newDurationYearMonth(lexicalRepresentation);
     }
 
-    public Duration newDurationYearMonth(boolean arg0, int arg1, int arg2) {
-        return factory.newDurationYearMonth(arg0, arg1, arg2);
+    public Duration newDurationYearMonth(final boolean isPositive, final int year, final int month) {
+        return factory.newDurationYearMonth(isPositive, year, month);
     }
 
-    public Duration newDurationYearMonth(boolean arg0, BigInteger arg1, BigInteger arg2) {
-        return factory.newDurationYearMonth(arg0, arg1, arg2);
+    public Duration newDurationYearMonth(final boolean isPositive, final BigInteger year, final BigInteger month) {
+        return factory.newDurationYearMonth(isPositive, year, month);
     }
 
     public XMLGregorianCalendar newXMLGregorianCalendar() {
         return factory.newXMLGregorianCalendar();
     }
 
-    public XMLGregorianCalendar newXMLGregorianCalendar(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7) {
-        return factory.newXMLGregorianCalendar(arg0, arg1, arg2, arg3, arg4, arg5,
-                arg6, arg7);
+    public XMLGregorianCalendar newXMLGregorianCalendar(final int year, final int month, final int day, final int hour, final int minute, final int second, final int millisecond, final int timezone) {
+        return factory.newXMLGregorianCalendar(year, month, day, hour, minute, second, millisecond, timezone);
     }
 
-    public XMLGregorianCalendar newXMLGregorianCalendar(String lexicalRepresentation) {
+    public XMLGregorianCalendar newXMLGregorianCalendar(final String lexicalRepresentation) {
         return factory.newXMLGregorianCalendar(lexicalRepresentation);
     }
 
-    public XMLGregorianCalendar newXMLGregorianCalendar(BigInteger arg0, int arg1, int arg2, int arg3, int arg4, int arg5, BigDecimal arg6, int arg7) {
-        return factory.newXMLGregorianCalendar(arg0, arg1, arg2, arg3, arg4, arg5,
-                arg6, arg7);
+    public XMLGregorianCalendar newXMLGregorianCalendar(final BigInteger year, final int month, final int day, final int hour, final int minute, final int second, final BigDecimal fractionalSecond, final int timezone) {
+        return factory.newXMLGregorianCalendar(year, month, day, hour, minute, second, fractionalSecond, timezone);
     }
 
-    public XMLGregorianCalendar newXMLGregorianCalendar(GregorianCalendar arg0) {
-        return factory.newXMLGregorianCalendar(arg0);
+    public XMLGregorianCalendar newXMLGregorianCalendar(final GregorianCalendar cal) {
+        return factory.newXMLGregorianCalendar(cal);
     }
 
-    public XMLGregorianCalendar newXMLGregorianCalendarDate(int arg0, int arg1, int arg2, int arg3) {
-        return factory.newXMLGregorianCalendarDate(arg0, arg1, arg2, arg3);
+    public XMLGregorianCalendar newXMLGregorianCalendarDate(final int year, final int month, final int day,final  int timezone) {
+        return factory.newXMLGregorianCalendarDate(year, month, day, timezone);
     }
 
     public XMLGregorianCalendar newXMLGregorianCalendarDate(final BigInteger year, final int month, final int day, final int timezone) {
@@ -195,11 +189,11 @@ public class TimeUtils {
         return factory.newXMLGregorianCalendarTime(hours, minutes, seconds, timezone);
     }
 
-    public XMLGregorianCalendar newXMLGregorianCalendarTime(int arg0, int arg1, int arg2, int arg3, int arg4) {
-        return factory.newXMLGregorianCalendarTime(arg0, arg1, arg2, arg3, arg4);
+    public XMLGregorianCalendar newXMLGregorianCalendarTime(final int hours, final int minutes, final int seconds, final int milliseconds, final int timezone) {
+        return factory.newXMLGregorianCalendarTime(hours, minutes, seconds, milliseconds, timezone);
     }
 
-    public XMLGregorianCalendar newXMLGregorianCalendarTime(int arg0, int arg1, int arg2, BigDecimal arg3, int arg4) {
-        return factory.newXMLGregorianCalendarTime(arg0, arg1, arg2, arg3, arg4);
+    public XMLGregorianCalendar newXMLGregorianCalendarTime(final int hours, final int minutes, final int seconds, final BigDecimal fractionalSecond, final int timezone) {
+        return factory.newXMLGregorianCalendarTime(hours, minutes, seconds, fractionalSecond, timezone);
     }
 }
