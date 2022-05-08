@@ -32,6 +32,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -201,7 +202,7 @@ public class DateTimeValue extends AbstractDateTimeValue {
         if (target == byte[].class) {
             final ByteBuffer buf = ByteBuffer.allocate(MAX_SERIALIZED_SIZE);
             serialize(buf);
-            return (T) buf.array();
+            return (T) Arrays.copyOf(buf.array(), buf.position());
         } else if (target == ByteBuffer.class) {
             final ByteBuffer buf = ByteBuffer.allocate(MAX_SERIALIZED_SIZE);
             serialize(buf);

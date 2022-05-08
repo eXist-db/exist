@@ -33,6 +33,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.function.IntSupplier;
 import java.util.regex.Pattern;
 
@@ -535,7 +536,7 @@ public class DecimalValue extends NumericValue {
         } else if (target == byte[].class) {
             final ByteBuffer buf = ByteBuffer.allocate(SERIALIZED_SIZE);
             serialize(buf);
-            return (T) buf.array();
+            return (T) Arrays.copyOf(buf.array(), buf.position());
         } else if (target == ByteBuffer.class) {
             final ByteBuffer buf = ByteBuffer.allocate(SERIALIZED_SIZE);
             serialize(buf);

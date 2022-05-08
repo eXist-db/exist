@@ -34,6 +34,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.function.IntSupplier;
 
 /**
@@ -553,7 +554,7 @@ public class IntegerValue extends NumericValue {
         } else if (target == byte[].class) {
             final ByteBuffer buf = ByteBuffer.allocate(MAX_SERIALIZED_SIZE);
             serialize(buf);
-            return (T) buf.array();
+            return (T) Arrays.copyOf(buf.array(), buf.position());
         } else if (target == ByteBuffer.class) {
             final ByteBuffer buf = ByteBuffer.allocate(MAX_SERIALIZED_SIZE);
             serialize(buf);
