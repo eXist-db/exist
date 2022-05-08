@@ -23,12 +23,13 @@ package org.exist.xquery.value;
 
 import com.ibm.icu.text.Collator;
 import org.exist.util.ByteConversion;
+import org.exist.util.io.VariableLengthQuantity;
+import org.exist.util.io.ZigZag;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -43,6 +44,10 @@ import java.util.function.IntSupplier;
  * See http://www.w3.org/TR/xmlschema-2/#integer
  */
 public class IntegerValue extends NumericValue {
+
+    public static final int MIN_SERIALIZED_SIZE = 1;
+    //TODO(AR) this is not very good as the size of the IntegerValue is unbounded and may not fit in 10 bytes.
+    public static final int MAX_SERIALIZED_SIZE = 10;
 
     //TODO this class should be split into numerous sub classes for each xs: type with proper
     //inheritance as defined by http://www.w3.org/TR/xmlschema-2/#built-in-datatypes
@@ -546,9 +551,13 @@ public class IntegerValue extends NumericValue {
         } else if (target == Boolean.class || target == boolean.class) {
             return (T) new BooleanValue(getExpression(), effectiveBooleanValue());
         } else if (target == byte[].class) {
-            return (T) serialize();
+            final ByteBuffer buf = ByteBuffer.allocate(MAX_SERIALIZED_SIZE);
+            serialize(buf);
+            return (T) buf.array();
         } else if (target == ByteBuffer.class) {
-            return (T) ByteBuffer.wrap(serialize());
+            final ByteBuffer buf = ByteBuffer.allocate(MAX_SERIALIZED_SIZE);
+            serialize(buf);
+            return (T) buf;
         } else if (target == String.class) {
             return (T) value.toString();
         } else if (target == BigInteger.class) {
@@ -576,37 +585,100 @@ public class IntegerValue extends NumericValue {
         return value.hashCode();
     }
 
-    //TODO(AR) this is not a very good serialization method, the size of the IntegerValue is unbounded and may not fit in 8 bytes.
-    /**
-     * Serializes to a byte array.
-     *
-     * 8 bytes.
-     *
-     * @return the serialized data.
-     */
-    public byte[] serialize() {
-        final byte[] buf = new byte[8];
-        final long l = value.longValue() - Long.MIN_VALUE;
-        ByteConversion.longToByte(l, buf, 0);
-        return buf;
-    }
-
-    //TODO(AR) this is not a very good serialization method, the size of the IntegerValue is unbounded and may not fit in 8 bytes.
     /**
      * Serializes to a ByteBuffer.
      *
-     * 8 bytes.
+     * Uses Variable Length Quantities,
+     * and so we can only know the possible minimum
+     * and maximum length of the output.
+     *
+     * 1 to 10 bytes.
      *
      * @param buf the ByteBuffer to serialize to.
      */
-    public void serialize(final ByteBuffer buf) throws IOException {
-        final long l = value.longValue() - Long.MIN_VALUE;
-        ByteConversion.longToByte(l, buf);
+    public void serialize(final ByteBuffer buf) {
+        // TODO(AR) this switch should instead be refactored to create Sub-Classes of IntegerValue for each specific XDM sub-type
+        switch (type) {
+            case Type.UNSIGNED_LONG:
+            case Type.LONG:
+                final long l = ZigZag.encode(value.longValue());
+                VariableLengthQuantity.writeLong(buf, l);
+                break;
+
+            case Type.UNSIGNED_INT:
+            case Type.INT:
+                final int i = ZigZag.encode(value.intValue());
+                VariableLengthQuantity.writeInt(buf, i);
+                break;
+
+            case Type.UNSIGNED_SHORT:
+            case Type.SHORT:
+                ByteConversion.shortToByteH(value.shortValue(), buf);
+                break;
+
+            default:
+                // TODO(AR) this is not a very good serialization method, the size of the IntegerValue is unbounded and may not fit in 10 bytes..
+                final long other = value.longValue() - Long.MIN_VALUE;
+                VariableLengthQuantity.writeLong(buf, ZigZag.encode(other));
+                break;
+        }
     }
 
-    //TODO(AR) this is not a very good deserialization method, the size of the IntegerValue is unbounded and may not fit in 8 bytes.
-    public static IntegerValue deserialize(final ByteBuffer buf) {
-        final long l = ByteConversion.byteToLong(buf) ^ 0x8000000000000000L;
-        return new IntegerValue(l);
+    public static IntegerValue deserialize(final ByteBuffer buf, final int type) throws XPathException {
+        // TODO(AR) this switch should instead be refactored to create Sub-Classes of IntegerValue for each specific XDM sub-type, which would also remove the `type` parameter and throws XPathException from the function.
+        switch (type) {
+            case Type.UNSIGNED_LONG:
+                final long ul = ZigZag.decode(VariableLengthQuantity.readLong(buf));
+                if (ul >= 0) {
+                    return new IntegerValue(ul, type);
+                } else {
+                    final int upper = (int) (ul >>> 32);
+                    final int lower = (int) ul;
+                    return new IntegerValue(BigInteger.valueOf(Integer.toUnsignedLong(upper))
+                            .shiftLeft(32)
+                            .add(BigInteger.valueOf(Integer.toUnsignedLong(lower))), type);
+                }
+
+            case Type.LONG:
+                final long l = ZigZag.decode(VariableLengthQuantity.readLong(buf));
+                return new IntegerValue(l, type);
+
+            case Type.UNSIGNED_INT:
+                final int ui = ZigZag.decode(VariableLengthQuantity.readInt(buf));
+                if (ui >= 0) {
+                    return new IntegerValue(ui, type);
+                } else {
+                    final short upper = (short) (ui >>> 16);
+                    final short lower = (short) ui;
+                    return new IntegerValue(BigInteger.valueOf(Short.toUnsignedInt(upper))
+                            .shiftLeft(16)
+                            .add(BigInteger.valueOf(Short.toUnsignedInt(lower))), type);
+                }
+
+            case Type.INT:
+                final int i = ZigZag.decode(VariableLengthQuantity.readInt(buf));
+                return new IntegerValue(i, type);
+
+            case Type.UNSIGNED_SHORT:
+                final short us = ByteConversion.byteToShortH(buf);
+                if (us >= 0) {
+                    return new IntegerValue(us, type);
+                } else {
+                    final byte upper = (byte) (us >>> 8);
+                    final byte lower = (byte) us;
+                    return new IntegerValue(BigInteger.valueOf(Byte.toUnsignedInt(upper))
+                            .shiftLeft(8)
+                            .add(BigInteger.valueOf(Byte.toUnsignedInt(lower))), type);
+                }
+
+            case Type.SHORT:
+                final short s = ByteConversion.byteToShortH(buf);
+                return new IntegerValue(s, type);
+
+            default:
+                //TODO(AR) this is not a very good deserialization method, the size of the IntegerValue is unbounded and may not fit in 10 bytes.
+                final long other = ZigZag.decode(VariableLengthQuantity.readLong(buf)) ^ 0x8000000000000000L;
+                return new IntegerValue(other, type);
+        }
     }
 }

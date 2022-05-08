@@ -254,7 +254,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
                 case Type.SHORT:
                 case Type.UNSIGNED_SHORT:
                     final IntegerValue iv = new IntegerValue(content, Type.INTEGER);
-                    return new BinaryDocValuesField(fieldName, new BytesRef(iv.serialize()));
+                    return new BinaryDocValuesField(fieldName, new BytesRef(iv.toJavaObject(byte[].class)));
 
                 case Type.DOUBLE:
                     final DoubleValue dbv = new DoubleValue(content);

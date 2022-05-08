@@ -149,7 +149,7 @@ public class Field extends BasicFunction {
         }
     }
 
-    private Sequence getBinaryFieldValue(final String fieldName, final int type, final LuceneMatch match, final LuceneIndexWorker index) throws IOException {
+    private Sequence getBinaryFieldValue(final String fieldName, final int type, final LuceneMatch match, final LuceneIndexWorker index) throws IOException, XPathException {
         final BytesRef fieldValue = index.getBinaryField(match.getLuceneDocId(), fieldName);
         if (fieldValue == null) {
             return Sequence.EMPTY_SEQUENCE;
@@ -287,7 +287,7 @@ public class Field extends BasicFunction {
         return null;
     }
 
-    static AtomicValue bytesToAtomic(final BytesRef field, final int type) {
+    static AtomicValue bytesToAtomic(final BytesRef field, final int type) throws XPathException {
         switch (type) {
             case Type.TIME:
                 return TimeValue.deserialize(ByteBuffer.wrap(field.bytes));
@@ -304,7 +304,7 @@ public class Field extends BasicFunction {
             case Type.UNSIGNED_INT:
             case Type.SHORT:
             case Type.UNSIGNED_SHORT:
-                return IntegerValue.deserialize(ByteBuffer.wrap(field.bytes));
+                return IntegerValue.deserialize(ByteBuffer.wrap(field.bytes), type);
 
             case Type.DOUBLE:
                 return DoubleValue.deserialize(ByteBuffer.wrap(field.bytes));
