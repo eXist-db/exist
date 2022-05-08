@@ -29,8 +29,6 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -55,10 +53,6 @@ public class DecimalValue extends NumericValue {
     private static final int DIVIDE_PRECISION = 18;
     //Copied from Saxon 8.7
     private static final Pattern decimalPattern = Pattern.compile("(\\-|\\+)?((\\.[0-9]+)|([0-9]+(\\.[0-9]*)?))");
-    private static final Object[] EMPTY_OBJECT_ARRAY = {};
-    //Copied from Saxon 8.8
-    private static boolean stripTrailingZerosMethodUnavailable = false;
-    private static Method stripTrailingZerosMethod = null;
     final BigDecimal value;
 
     public DecimalValue(final BigDecimal decimal) {
@@ -67,7 +61,7 @@ public class DecimalValue extends NumericValue {
 
     public DecimalValue(final Expression expression, BigDecimal decimal) {
         super(expression);
-        this.value = stripTrailingZeros(decimal);
+        this.value = decimal.stripTrailingZeros();
     }
 
     public DecimalValue(final String str) throws XPathException {
@@ -82,7 +76,7 @@ public class DecimalValue extends NumericValue {
                 throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
                         " from \"" + str + "\"");
             }
-            value = stripTrailingZeros(new BigDecimal(str));
+            value = new BigDecimal(str).stripTrailingZeros();
         } catch (final NumberFormatException e) {
             throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
                     " from \"" + getStringValue() + "\"");
@@ -95,59 +89,7 @@ public class DecimalValue extends NumericValue {
 
     public DecimalValue(final Expression expression, double doubleValue) {
         super(expression);
-        value = stripTrailingZeros(new BigDecimal(doubleValue));
-    }
-
-    /**
-     * Remove insignificant trailing zeros (the Java BigDecimal class retains trailing zeros,
-     * but the XPath 2.0 xs:decimal type does not). The BigDecimal#stripTrailingZeros() method
-     * was introduced in JDK 1.5: we use it if available, and simulate it if not.
-     */
-
-    private static BigDecimal stripTrailingZeros(BigDecimal value) {
-        if (stripTrailingZerosMethodUnavailable) {
-            return stripTrailingZerosFallback(value);
-        }
-
-        try {
-            if (stripTrailingZerosMethod == null) {
-                final Class<?>[] argTypes = {};
-                stripTrailingZerosMethod = BigDecimal.class.getMethod("stripTrailingZeros", argTypes);
-            }
-            final Object result = stripTrailingZerosMethod.invoke(value, EMPTY_OBJECT_ARRAY);
-            return (BigDecimal) result;
-        } catch (final NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            stripTrailingZerosMethodUnavailable = true;
-            return stripTrailingZerosFallback(value);
-        }
-
-    }
-
-    private static BigDecimal stripTrailingZerosFallback(BigDecimal value) {
-
-        // The code below differs from JDK 1.5 stripTrailingZeros in that it does not remove trailing zeros
-        // from integers, for example 1000 is not changed to 1E3.
-
-        int scale = value.scale();
-        if (scale > 0) {
-            BigInteger i = value.unscaledValue();
-            while (true) {
-                final BigInteger[] dr = i.divideAndRemainder(BIG_INTEGER_TEN);
-                if (dr[1].equals(BigInteger.ZERO)) {
-                    i = dr[0];
-                    scale--;
-                    if (scale == 0) {
-                        break;
-                    }
-                } else {
-                    break;
-                }
-            }
-            if (scale != value.scale()) {
-                value = new BigDecimal(i, scale);
-            }
-        }
-        return value;
+        value = new BigDecimal(doubleValue).stripTrailingZeros();
     }
 
     public BigDecimal getValue() {
