@@ -41,11 +41,6 @@ import java.util.GregorianCalendar;
  */
 public class DateValue extends AbstractDateTimeValue {
 
-    /**
-     * <p>BigInteger constant; representing one billion.</p>
-     */
-    private static final BigInteger BILLION_B = BigInteger.valueOf(1000000000);
-
     public static final int MIN_SERIALIZED_SIZE = 4;
     public static final int MAX_SERIALIZED_SIZE = 13;
 
@@ -171,7 +166,7 @@ public class DateValue extends AbstractDateTimeValue {
         }
     }
 
-    /**
+        /**
      * Serializes to a ByteBuffer.
      *
      * Uses Variable Length Quantities,
@@ -191,23 +186,11 @@ public class DateValue extends AbstractDateTimeValue {
      * @param buf the ByteBuffer to serialize to.
      */
     public void serialize(final ByteBuffer buf) {
-        final int eon;
-        if (calendar.getEon() != null) {
-            final BigInteger temp = calendar.getEon().divide(BILLION_B);
-            final long templ = temp.longValue();
-            if (templ > Integer.MAX_VALUE || templ < Integer.MIN_VALUE) {
-                throw new IllegalArgumentException("Calendar EON is out of Integer range: " + temp);
-            }
-            eon = temp.intValue();
-        } else {
-            eon = 0;
-        }
-
         final int tz = calendar.getTimezone();
         final boolean tzDefined = tz != DatatypeConstants.FIELD_UNDEFINED;
 
         // TODO(AR) assume max 32 bits for billions of years - not unbounded but very large! We should add an Overflow check to DateValue construction!
-        VariableLengthQuantity.writeInt(buf, ZigZag.encode(eon));                                               // 8 to 40 bits Eon
+        VariableLengthQuantity.writeInt(buf, ZigZag.encode(getEonBillions()));                                  // 8 to 40 bits Eon
         VariableLengthQuantity.writeInt(buf, ZigZag.encode(calendar.getYear()));                                // 8 to 40 bits Year
 
         final byte b0 = (byte) (((calendar.getMonth() & 0xF) << 1) | (calendar.getDay() >> 4));                 // 3 bits Reserved, 4 bits Month, 1 bit Day
@@ -265,12 +248,6 @@ public class DateValue extends AbstractDateTimeValue {
             timezone = ((tzHour * 60) + tzMinute) * tzSign;
         }
 
-        BigInteger eonAndYear = BigInteger.ZERO;
-        if (eon != 0) {
-            eonAndYear = BILLION_B.multiply(BigInteger.valueOf(eon));
-        }
-        eonAndYear = eonAndYear.add(BigInteger.valueOf(year));
-
-        return new DateValue(eonAndYear, month, day, timezone);
+        return new DateValue(calcEonAndYear(eon, year), month, day, timezone);
     }
 }

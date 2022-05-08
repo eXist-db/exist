@@ -28,6 +28,11 @@ import org.exist.xquery.XPathException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.util.GregorianCalendar;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -36,6 +41,7 @@ import static org.junit.Assert.assertTrue;
  *	note: some of these tests rely on local timezone override to -05:00, done in super.setUp()
  *
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @RunWith(ParallelRunner.class)
 public class DateTimeTest extends AbstractTimeRelatedTestCase {
@@ -425,5 +431,111 @@ public class DateTimeTest extends AbstractTimeRelatedTestCase {
 		final DurationValue d = new DayTimeDurationValue("P3DT1H15M");
 		final AbstractDateTimeValue r = new DateTimeValue("2000-10-27T09:57:00");
 		assertDateEquals(r, t.minus(d));
+	}
+
+	@Test
+	public void serializeDeserializeNow() throws XPathException {
+		final XMLGregorianCalendar now = TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar());
+
+		serializeDeserialize(now);
+	}
+
+	@Test
+	public void serializeDeserializeMin() throws XPathException {
+		final XMLGregorianCalendar min = TimeUtils.getInstance().newXMLGregorianCalendar();
+		min.setYear(Integer.MIN_VALUE + 1);
+		min.setMonth(1);
+		min.setDay(1);
+		min.setHour(0);
+		min.setMinute(0);
+		min.setSecond(0);
+		min.setMillisecond(0);
+		min.setTimezone(-12 * 60);
+
+		serializeDeserialize(min);
+	}
+
+	@Test
+	public void serializeDeserializeMinNoTimezone() throws XPathException {
+		final XMLGregorianCalendar min = TimeUtils.getInstance().newXMLGregorianCalendar();
+		min.setYear(Integer.MIN_VALUE + 1);
+		min.setMonth(1);
+		min.setDay(1);
+		min.setHour(0);
+		min.setMinute(0);
+		min.setSecond(0);
+		min.setMillisecond(0);
+
+		serializeDeserialize(min);
+	}
+
+	@Test
+	public void serializeDeserializeMax() throws XPathException {
+		final XMLGregorianCalendar max = TimeUtils.getInstance().newXMLGregorianCalendar();
+		max.setYear(Integer.MAX_VALUE);
+		max.setMonth(12);
+		max.setDay(31);
+		max.setHour(23);
+		max.setMinute(59);
+		max.setSecond(59);
+		max.setMillisecond(999);
+		max.setTimezone(14 * 60);
+
+		serializeDeserialize(max);
+	}
+
+	@Test
+	public void serializeDeserializeMaxNoTimezone() throws XPathException {
+		final XMLGregorianCalendar max = TimeUtils.getInstance().newXMLGregorianCalendar();
+		max.setYear(Integer.MAX_VALUE);
+		max.setMonth(12);
+		max.setDay(31);
+		max.setHour(23);
+		max.setMinute(59);
+		max.setSecond(59);
+		max.setMillisecond(999);
+
+		serializeDeserialize(max);
+	}
+
+	@Test
+	public void serializeDeserializeApproxYearsOfUniverse() throws XPathException {
+		final XMLGregorianCalendar univ = TimeUtils.getInstance().newXMLGregorianCalendar();
+		univ.setYear(new BigInteger("-13787000000"));
+		univ.setMonth(1);
+		univ.setDay(1);
+		univ.setHour(0);
+		univ.setMinute(0);
+		univ.setSecond(0);
+		univ.setMillisecond(0);
+		univ.setTimezone(0);
+
+		serializeDeserialize(univ);
+	}
+
+	private void serializeDeserialize(final XMLGregorianCalendar calendar) throws XPathException {
+		// serialize
+		final ByteBuffer buffer = ByteBuffer.allocate(DateTimeValue.MAX_SERIALIZED_SIZE);
+		final DateTimeValue dateTimeValue1 = new DateTimeValue(calendar);
+		dateTimeValue1.serialize(buffer);
+
+		assertTrue(buffer.position() >= DateTimeValue.MIN_SERIALIZED_SIZE);
+		assertTrue(buffer.position() <= DateTimeValue.MAX_SERIALIZED_SIZE);
+		assertEquals(DateTimeValue.MAX_SERIALIZED_SIZE - buffer.position(), buffer.remaining());
+
+		buffer.flip();
+
+		// deserialize
+		final DateTimeValue dateTimeValue2 = DateTimeValue.deserialize(buffer);
+
+		assertEquals(dateTimeValue1, dateTimeValue2);
+		assertEquals(calendar.getYear(), dateTimeValue2.getTrimmedCalendar().getYear());
+		assertEquals(calendar.getMonth(), dateTimeValue2.getTrimmedCalendar().getMonth());
+		assertEquals(calendar.getDay(), dateTimeValue2.getTrimmedCalendar().getDay());
+		assertEquals(calendar.getHour(), dateTimeValue2.getTrimmedCalendar().getHour());
+		assertEquals(calendar.getMinute(), dateTimeValue2.getTrimmedCalendar().getMinute());
+		assertEquals(calendar.getSecond(), dateTimeValue2.getTrimmedCalendar().getSecond());
+		assertEquals(calendar.getMillisecond(), dateTimeValue2.getTrimmedCalendar().getMillisecond());
+		assertEquals(calendar.getTimezone(), dateTimeValue2.getTrimmedCalendar().getTimezone());
 	}
 }

@@ -52,6 +52,11 @@ import java.util.regex.Pattern;
  */
 public abstract class AbstractDateTimeValue extends ComputableValue {
 
+    /**
+     * <p>BigInteger constant; representing a billion.</p>
+     */
+    private static final BigInteger BILLION_B = BigInteger.valueOf(1000000000);
+
     public final static int YEAR = 0;
     public final static int MONTH = 1;
     public final static int DAY = 2;
@@ -825,4 +830,44 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         }
     }
 
+    /**
+     * Get the number of billions of years of the year component of the date.
+     *
+     * @return the number of billions of years.
+     */
+    protected int getEonBillions() {
+        final int eon;
+        if (calendar.getEon() != null) {
+            final BigInteger temp = calendar.getEon().divide(BILLION_B);
+            final long templ = temp.longValue();
+            if (templ > Integer.MAX_VALUE || templ < Integer.MIN_VALUE) {
+                throw new IllegalArgumentException("Calendar EON is out of Integer range: " + temp);
+            }
+            eon = temp.intValue();
+        } else {
+            eon = 0;
+        }
+        return eon;
+    }
+
+    /**
+     * Calculates the Eon and Year given the number of billions of years of the year component and the year
+     * component of the date.
+     *
+     * Compliments {@link #getEonBillions()}.
+     *
+     * @param eonBillions the number of billions of years of the year component of the date.
+     * @param year the year component of the date.
+     *
+     * @return the Eon and Year.
+     */
+    protected static BigInteger calcEonAndYear(final int eonBillions, final int year) {
+        BigInteger eonAndYear = BigInteger.ZERO;
+        if (eonBillions != 0) {
+            eonAndYear = BILLION_B.multiply(BigInteger.valueOf(eonBillions));
+        }
+        eonAndYear = eonAndYear.add(BigInteger.valueOf(year));
+
+        return eonAndYear;
+    }
 }

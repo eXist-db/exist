@@ -21,7 +21,8 @@
  */
 package org.exist.xquery.value;
 
-import org.exist.util.ByteConversion;
+import org.exist.util.io.VariableLengthQuantity;
+import org.exist.util.io.ZigZag;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -29,6 +30,7 @@ import org.exist.xquery.XPathException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -42,7 +44,8 @@ import java.util.GregorianCalendar;
  */
 public class DateTimeValue extends AbstractDateTimeValue {
 
-    public static final int SERIALIZED_SIZE = 13;
+    public static final int MIN_SERIALIZED_SIZE = 7;
+    public static final int MAX_SERIALIZED_SIZE = 16;
 
     public DateTimeValue() throws XPathException {
         super(null, TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar()));
@@ -73,6 +76,10 @@ public class DateTimeValue extends AbstractDateTimeValue {
     }
 
     public DateTimeValue(final int year, final int month, final int day, final int hour, final int minute, final int second, final int millisecond, final int timezone) {
+        super(TimeUtils.getInstance().newXMLGregorianCalendar(year, month, day, hour, minute, second, millisecond, timezone));
+    }
+
+    public DateTimeValue(final BigInteger year, final int month, final int day, final int hour, final int minute, final int second, final int millisecond, final int timezone) {
         super(TimeUtils.getInstance().newXMLGregorianCalendar(year, month, day, hour, minute, second, millisecond, timezone));
     }
 
@@ -192,11 +199,11 @@ public class DateTimeValue extends AbstractDateTimeValue {
     @Override
     public <T> T toJavaObject(final Class<T> target) throws XPathException {
         if (target == byte[].class) {
-            final ByteBuffer buf = ByteBuffer.allocate(SERIALIZED_SIZE);
+            final ByteBuffer buf = ByteBuffer.allocate(MAX_SERIALIZED_SIZE);
             serialize(buf);
             return (T) buf.array();
         } else if (target == ByteBuffer.class) {
-            final ByteBuffer buf = ByteBuffer.allocate(SERIALIZED_SIZE);
+            final ByteBuffer buf = ByteBuffer.allocate(MAX_SERIALIZED_SIZE);
             serialize(buf);
             return (T) buf;
         } else {
@@ -207,46 +214,104 @@ public class DateTimeValue extends AbstractDateTimeValue {
     /**
      * Serializes to a ByteBuffer.
      *
-     * 13 bytes where: [0-3 (Year), 4 (Month), 5 (Day), 6 (Hour), 7 (Minute), 8 (Second), 9-10 (Milliseconds), 11-12 (Timezone)]
+     * Uses Variable Length Quantities,
+     * and so we can only know the possible minimum
+     * and maximum length of the output.
+     *
+     * 7 to 16 bytes comprised of 53 to 128 used bits:
+     *
+     * Eon = 8 to 40 bits (most often 8 bits for dates less than ± One Billion Years). NOTE: Always a multiple of 8 bits.
+     * Year = 8 to 40 bits (most often 16 bits for dates less than ± 32,767 Years). NOTE: Always a multiple of 8 bits.
+     * Month = 4 bits
+     * Day = 5 bits
+     * Hour = 5 bits
+     * Minute = 6 bits
+     * Second = 6 bits
+     * Milliseconds = 10 bits
+     * Timezone defined = 1 bit
+     * (if Timezone defined) Timezone (Hour = 4 bits, Minute = 6 bits, ± = 1 bit) = 11 bits
      *
      * @param buf the ByteBuffer to serialize to.
      */
     public void serialize(final ByteBuffer buf) {
-        ByteConversion.intToByteH(calendar.getYear(), buf);
-        buf.put((byte) calendar.getMonth());
-        buf.put((byte) calendar.getDay());
-        buf.put((byte) calendar.getHour());
-        buf.put((byte) calendar.getMinute());
-        buf.put((byte) calendar.getSecond());
+        final int tz = calendar.getTimezone();
+        final boolean tzDefined = tz != DatatypeConstants.FIELD_UNDEFINED;
 
-        final int ms = calendar.getMillisecond();
-        if (ms == DatatypeConstants.FIELD_UNDEFINED) {
-            buf.putShort((short) 0);
+        // TODO(AR) assume max 32 bits for billions of years - not unbounded but very large! We should add an Overflow check to DateTimeValue construction!
+        VariableLengthQuantity.writeInt(buf, ZigZag.encode(getEonBillions()));                                                                  // 8 to 40 bits Eon
+        VariableLengthQuantity.writeInt(buf, ZigZag.encode(calendar.getYear()));                                                                // 8 to 40 bits Year
+
+        final byte b0 = (byte) (((calendar.getMonth() & 0xF) << 4) | ((calendar.getDay() & 0x1F) >> 1));                                        // 4 bits Month, 4 bits Day
+        final byte b1 = (byte) (((calendar.getDay() & 0x1) << 7)  | ((calendar.getHour() & 0x1F) << 2) | ((calendar.getMinute() & 0x3F) >> 4)); // 1 bit Day, 5 bits Hour, 2 bits Minute
+        final byte b2 = (byte) (((calendar.getMinute() & 0xF) << 4) | ((calendar.getSecond() & 0x3F) >> 2));                                    // 4 bits Minute, 4 bits Second
+        final byte b3 = (byte) (((calendar.getSecond() & 0x3) << 6) |  ((calendar.getMillisecond() & 0x3FF) >> 4));                             // 2 bits Second, 6 bits Milliseconds
+
+        if (!tzDefined) {
+            final byte b4 = (byte) ((calendar.getMillisecond() & 0xF) << 4);                                                                    // 4 bits Milliseconds, 4 bits unused
+
+            buf.put(b0);
+            buf.put(b1);
+            buf.put(b2);
+            buf.put(b3);
+            buf.put(b4);
+
         } else {
-            ByteConversion.shortToByteH((short) ms, buf);
-        }
 
-        // values for timezone range from -14*60 to 14*60, so we can use a short, but
-        // need to choose a different value for FIELD_UNDEFINED, which is not the same as 0 (= UTC)
-        final int timezone = calendar.getTimezone();
-        ByteConversion.shortToByteH((short) (timezone == DatatypeConstants.FIELD_UNDEFINED ? Short.MAX_VALUE : timezone), buf);
+            final int atz = Math.abs(tz);
+            final int tzHour = atz / 60;
+            final int tzMinute = atz - (tzHour * 60);
+
+            final byte b4 = (byte) (((calendar.getMillisecond() & 0xF) << 4) | (1 << 3) | ((tzHour & 0xF) >> 1));                               // 4 bits Milliseconds, 1 bit TZ defined, 3 bits TZ Hour
+            final byte b5 = (byte) (((tzHour & 0x1) << 7) | ((tzMinute & 0x3F) << 1) | (tz > 0 ? 1 : 0));                                       // 1 bit TZ Hour, 6 bits TZ Minute, 1 bit TZ Sign
+
+            buf.put(b0);
+            buf.put(b1);
+            buf.put(b2);
+            buf.put(b3);
+            buf.put(b4);
+            buf.put(b5);
+        }
     }
 
-    public static AtomicValue deserialize(final ByteBuffer buf) {
-        final int year = ByteConversion.byteToIntH(buf);
-        final int month = buf.get();
-        final int day = buf.get();
-        final int hour = buf.get();
-        final int minute = buf.get();
-        final int second = buf.get();
+    /**
+     * Deserializes from a ByteBuffer.
+     *
+     * See {@link #serialize(ByteBuffer)} for format details.
+     *
+     * @param buf the ByteBuffer to deserialize from.
+     *
+     * @return the deserialized DateTimeValue.
+     */
+    public static DateTimeValue deserialize(final ByteBuffer buf) {
+        final int eon = ZigZag.decode(VariableLengthQuantity.readInt(buf));
+        final int year = ZigZag.decode(VariableLengthQuantity.readInt(buf));
 
-        final int ms = ByteConversion.byteToShortH(buf);
+        final byte b0 = buf.get();
+        final byte b1 = buf.get();
+        final byte b2 = buf.get();
+        final byte b3 = buf.get();
+        final byte b4 = buf.get();
 
-        int timezone = ByteConversion.byteToShortH(buf);
-        if (timezone == Short.MAX_VALUE) {
+        final int month = ((b0 >> 4) & 0xF);
+        final int day = (((b0 & 0xF) << 1) | ((b1 >> 7) & 0x1));
+        final int hour = ((b1 >> 2) & 0x1F);
+        final int minute = (((b1 & 0x3) << 4) | ((b2 >> 4) & 0xF));
+        final int seconds = (((b2 & 0xF) << 2) | ((b3 >> 6) & 0x3));
+        final int milliseconds = (((b3 & 0x3F) << 4) | ((b4 >> 4) & 0xF));
+
+        final boolean tzDefined = (b4 & 0x8) == 0x8;
+        final int timezone;
+        if (!tzDefined) {
             timezone = DatatypeConstants.FIELD_UNDEFINED;
+
+        } else {
+            final byte b5 = buf.get();
+            final int tzHour = (((b4 & 0x7) << 1) | ((b5 >> 7) & 0x1));
+            final int tzMinute = (b5 >> 1) & 0x3F;
+            final int tzSign = ((b5 & 0x1) == 0x1) ? 1 : -1;
+            timezone = ((tzHour * 60) + tzMinute) * tzSign;
         }
 
-        return new DateTimeValue(year, month, day, hour, minute, second, ms, timezone);
+        return new DateTimeValue(calcEonAndYear(eon, year), month, day, hour, minute, seconds, milliseconds, timezone);
     }
 }

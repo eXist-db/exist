@@ -45,6 +45,11 @@ public class TimeUtils {
     private static final TimeUtils INSTANCE = new TimeUtils();
     public static final Duration ONE_DAY = INSTANCE.factory.newDuration(true, 0, 0, 1, 0, 0, 0);
 
+    /**
+     * <p>BigDecimal constant; representing a thousand.</p>
+     */
+    private static final BigDecimal THOUSAND_B = BigDecimal.valueOf(1000);
+
     private final DatatypeFactory factory;
 
     // assume it's thread-safe, if not synchronize all access
@@ -155,6 +160,18 @@ public class TimeUtils {
 
     public XMLGregorianCalendar newXMLGregorianCalendar(final int year, final int month, final int day, final int hour, final int minute, final int second, final int millisecond, final int timezone) {
         return factory.newXMLGregorianCalendar(year, month, day, hour, minute, second, millisecond, timezone);
+    }
+
+    public XMLGregorianCalendar newXMLGregorianCalendar(final BigInteger year, final int month, final int day, final int hour, final int minute, final int second, final int millisecond, final int timezone) {
+        return factory.newXMLGregorianCalendar(
+                year,
+                month,
+                day,
+                hour,
+                minute,
+                second,
+                BigDecimal.valueOf(millisecond).divide(THOUSAND_B),
+                timezone);
     }
 
     public XMLGregorianCalendar newXMLGregorianCalendar(final String lexicalRepresentation) {
