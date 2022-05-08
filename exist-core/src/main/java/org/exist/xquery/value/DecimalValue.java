@@ -41,14 +41,11 @@ import java.util.regex.Pattern;
  */
 public class DecimalValue extends NumericValue {
 
-    public static final int SERIALIZED_SIZE = 8;
+        public static final int SERIALIZED_SIZE = 8;
 
-    public static final BigInteger BIG_INTEGER_TEN = BigInteger.valueOf(10);
     // i × 10^-n where i, n = integers  and n >= 0
     // All ·minimally conforming· processors ·must· support decimal numbers
     // with a minimum of 18 decimal digits (i.e., with a ·totalDigits· of 18)
-    @SuppressWarnings("unused")
-    private static final BigDecimal ZERO_BIGDECIMAL = new BigDecimal("0");
     //Copied from Saxon 8.6.1
     private static final int DIVIDE_PRECISION = 18;
     //Copied from Saxon 8.7
