@@ -30,6 +30,7 @@ import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.function.IntSupplier;
 
 /**
@@ -255,7 +256,7 @@ public class FloatValue extends NumericValue {
     /* (non-Javadoc)
      * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.value.IntegerValue)
      */
-    public NumericValue round(IntegerValue precision) throws XPathException {
+    public NumericValue round(final IntegerValue precision, final RoundingMode roundingMode) throws XPathException {
         if (precision == null) {
             return round();
         }
@@ -265,7 +266,14 @@ public class FloatValue extends NumericValue {
         }
 		
 		/* use the decimal rounding method */
-        return (FloatValue) ((DecimalValue) convertTo(Type.DECIMAL)).round(precision).convertTo(Type.FLOAT);
+        return (FloatValue) ((DecimalValue) convertTo(Type.DECIMAL)).round(precision, roundingMode).convertTo(Type.FLOAT);
+    }
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.value.IntegerValue)
+     */
+    public NumericValue round(IntegerValue precision) throws XPathException {
+        return round(precision, DecimalValue.DEFAULT_ROUNDING_MODE);
     }
 
     /* (non-Javadoc)

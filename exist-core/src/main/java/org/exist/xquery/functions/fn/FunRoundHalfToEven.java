@@ -22,13 +22,7 @@
 package org.exist.xquery.functions.fn;
 
 import org.exist.dom.QName;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
@@ -38,14 +32,21 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import java.math.RoundingMode;
+
 /**
- * Implements the fn:roud-half-to-even() function.
+ * Implements the fn:round-half-to-even() function.
+ *
+ * Shares a base class and evaluator with {@link FunRound}
+ * They differ only in the rounding mode used.
  *
  * @author wolf
  *
  */
-public class FunRoundHalfToEven extends Function {
-	
+public class FunRoundHalfToEven extends FunRoundBase {
+
+	private static final QName qName = new QName("round-half-to-even", Function.BUILTIN_FUNCTION_NS);
+
 	protected static final String FUNCTION_DESCRIPTION_1_PARAM = 
         "The value returned is the nearest (that is, numerically closest) " +
 		"value to $arg that is a multiple of ten to the power of minus 0. ";
@@ -81,66 +82,26 @@ public class FunRoundHalfToEven extends Function {
 	protected static final FunctionParameterSequenceType PRECISION_PARAM = new FunctionParameterSequenceType("precision", Type.INTEGER, Cardinality.EXACTLY_ONE, "The precision factor");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE, "the rounded value");
 
-	public final static FunctionSignature[] signatures = {
-			new FunctionSignature(
-					new QName("round-half-to-even", Function.BUILTIN_FUNCTION_NS),
-					FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_COMMON,
-					new SequenceType[] { ARG_PARAM }, 
-					RETURN_TYPE),
-			
-			new FunctionSignature(new QName("round-half-to-even",
-					Function.BUILTIN_FUNCTION_NS),
-					FUNCTION_DESCRIPTION_2_PARAM + FUNCTION_DESCRIPTION_COMMON,
-					new SequenceType[] { ARG_PARAM, PRECISION_PARAM }, 
-					RETURN_TYPE ) 
-	};
+	public static final FunctionSignature[] FN_ROUND_HALF_TO_EVEN_SIGNATURES = {
+			FunctionDSL.functionSignature(FunRoundHalfToEven.qName, FunRoundHalfToEven.FUNCTION_DESCRIPTION_1_PARAM + FunRoundHalfToEven.FUNCTION_DESCRIPTION_COMMON, FunRoundHalfToEven.RETURN_TYPE,
+					new FunctionParameterSequenceType("arg", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The input number")),
+			FunctionDSL.functionSignature(FunRoundHalfToEven.qName, FunRoundHalfToEven.FUNCTION_DESCRIPTION_2_PARAM + FunRoundHalfToEven.FUNCTION_DESCRIPTION_COMMON, RETURN_TYPE,
+					new FunctionParameterSequenceType("arg", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The input number"),
+					new FunctionParameterSequenceType("precision", Type.INTEGER, Cardinality.ZERO_OR_ONE, "The input number")) };
 
-	public FunRoundHalfToEven(XQueryContext context,
-			FunctionSignature signatures) {
-		super(context, signatures);
+	public FunRoundHalfToEven(final XQueryContext context,
+							  final FunctionSignature signature) {
+		super(context, signature);
 	}
 
-	public int returnsType() {
-		return Type.DOUBLE;
-	}
+	/**
+	 * Work out the rounding mode for a particular value using fn:round-half-to-even
+	 *
+	 * @param value that has to be rounded
+	 * @return the rounding mode to use on this value
+	 */
+	@Override protected final RoundingMode getFunctionRoundingMode(final NumericValue value) {
 
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
-        }               
-        
-        Sequence result;
-		IntegerValue precision = null;
-		final Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-		if (seq.isEmpty())
-			{result = Sequence.EMPTY_SEQUENCE;}
-        else {		
-            if (contextItem != null) 
-    			{contextSequence = contextItem.toSequence();}
-            
-    		if (getSignature().getArgumentCount() > 1) {
-    			precision = (IntegerValue) getArgument(1).eval(contextSequence, contextItem).itemAt(0).convertTo(Type.INTEGER);
-    		}
-            
-        	final Item item = seq.itemAt(0);
-        	NumericValue value;
-        	if (item instanceof NumericValue) {
-				value = (NumericValue) item;
-			} else {
-				value = (NumericValue) item.convertTo(Type.NUMBER);
-			}
-        	
-			result = value.round(precision);
-        }
-        
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", result);} 
-        
-        return result;           
+		return RoundingMode.HALF_EVEN;
 	}
 }

@@ -28,6 +28,7 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
+import javax.xml.bind.annotation.XmlType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -330,12 +331,12 @@ public class DecimalValue extends NumericValue {
     /* (non-Javadoc)
      * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.value.IntegerValue)
      */
-    public NumericValue round(IntegerValue precision) throws XPathException {
+    public NumericValue round(final IntegerValue precision, final RoundingMode roundingMode) throws XPathException {
         if (value.signum() == 0) {
             return this;
         }
 
-        int pre;
+        final int pre;
         if (precision == null) {
             pre = 0;
         } else {
@@ -343,13 +344,22 @@ public class DecimalValue extends NumericValue {
         }
 
         if (pre >= 0) {
-            return new DecimalValue(value.setScale(pre, RoundingMode.HALF_EVEN));
+            return new DecimalValue(value.setScale(pre, roundingMode));
         } else {
             return new DecimalValue(
                     value.movePointRight(pre).
-                            setScale(0, RoundingMode.HALF_EVEN).
+                            setScale(0, roundingMode).
                             movePointLeft(pre));
         }
+    }
+
+    protected static final RoundingMode DEFAULT_ROUNDING_MODE = RoundingMode.HALF_EVEN;
+
+    /* (non-Javadoc)
+     * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.value.IntegerValue)
+     */
+    public NumericValue round(final IntegerValue precision) throws XPathException {
+        return round(precision, DecimalValue.DEFAULT_ROUNDING_MODE);
     }
 
     /* (non-Javadoc)

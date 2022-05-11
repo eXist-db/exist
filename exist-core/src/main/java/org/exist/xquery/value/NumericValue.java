@@ -28,6 +28,7 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
+import java.math.RoundingMode;
 import java.util.function.IntSupplier;
 
 public abstract class NumericValue extends ComputableValue {
@@ -167,6 +168,8 @@ public abstract class NumericValue extends ComputableValue {
     public abstract NumericValue round() throws XPathException;
 
     public abstract NumericValue round(IntegerValue precision) throws XPathException;
+
+    public abstract NumericValue round(IntegerValue precision, RoundingMode roundingMode) throws XPathException;
 
     public abstract NumericValue mod(NumericValue other) throws XPathException;
 
