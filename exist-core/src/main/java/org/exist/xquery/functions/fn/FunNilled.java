@@ -68,11 +68,7 @@ public class FunNilled extends BasicFunction {
 			item = args[0];
 		}
 
-		if (item == null) {
-			throw new XPathException(ErrorCodes.XPDY0002, "A context sequence is absent on the call to nilled");
-		}
-
-		if (item.isEmpty()) {
+		if (item == null || item.isEmpty()) {
 			return Sequence.EMPTY_SEQUENCE;
 		}
 
