@@ -215,6 +215,7 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunTokenize.FS_TOKENIZE[2], FunTokenize.class),
         new FunctionDef(FunTrace.FS_TRACE1, FunTrace.class),
         new FunctionDef(FunTrace.FS_TRACE2, FunTrace.class),
+        new FunctionDef(FnTransform.FS_TRANSFORM, FnTransform.class),
         new FunctionDef(FunTranslate.signature, FunTranslate.class),
         new FunctionDef(FunTrueOrFalse.fnTrue, FunTrueOrFalse.class),
         new FunctionDef(FunTrueOrFalse.fnFalse, FunTrueOrFalse.class),

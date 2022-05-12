@@ -227,6 +227,11 @@ public class ErrorCodes {
     public static final ErrorCode FOQM0005 = new W3CErrorCode("FOQM0005", "Parameter for dynamically-loaded XQuery " +
             "module has incorrect type");
     public static final ErrorCode FOQM0006 = new W3CErrorCode("FOQM0006", "No suitable XQuery processor available.");
+    public static final ErrorCode FOXT0001 = new W3CErrorCode("FOXT0001", "No suitable XSLT processor available.");
+    public static final ErrorCode FOXT0002 = new W3CErrorCode("FOXT0002", "Invalid parameters to XSLT transformation");
+    public static final ErrorCode FOXT0003 = new W3CErrorCode("FOXT0003", "XSLT transformation failed");
+    public static final ErrorCode FOXT0004 = new W3CErrorCode("FOXT0004", "XSLT transformation has been disabled");
+    public static final ErrorCode FOXT0006 = new W3CErrorCode("FOXT0006", "XSLT output contains non-accepted characters");
 
     /* eXist specific XQuery and XPath errors
      *
