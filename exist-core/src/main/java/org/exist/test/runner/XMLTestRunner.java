@@ -79,10 +79,10 @@ public class XMLTestRunner extends AbstractTestRunner {
     /**
      * @param path The path to the XML file containing the tests.
      * @param parallel whether the tests should be run in parallel.
-     *
      * @throws InitializationError if the test runner could not be constructed.
      */
-    public XMLTestRunner(final Path path, final boolean parallel) throws InitializationError {
+
+    XMLTestRunner(final Path path, final boolean parallel) throws InitializationError {
         super(path, parallel);
         try {
             this.doc = parse(path);
@@ -120,7 +120,7 @@ public class XMLTestRunner extends AbstractTestRunner {
                             testName = getTaskText(child);
                         }
                         if (testName == null) {
-                            throw new InitializationError("Could not find @id or <task> within <test> of XML <TestSet> document:" + path.toAbsolutePath().toString());
+                            throw new InitializationError("Could not find @id or <task> within <test> of XML <TestSet> document:" + path.toAbsolutePath());
                         }
                         testNames.add(testName);
                         break;
@@ -133,7 +133,7 @@ public class XMLTestRunner extends AbstractTestRunner {
         }
 
         if (testSetName == null) {
-            throw new InitializationError("Could not find <testName> in XML <TestSet> document: " + path.toAbsolutePath().toString());
+            throw new InitializationError("Could not find <testName> in XML <TestSet> document: " + path.toAbsolutePath());
         }
 
         return new XMLTestInfo(testSetName, description, testNames);
@@ -169,8 +169,7 @@ public class XMLTestRunner extends AbstractTestRunner {
     }
 
     private String getSuiteName() {
-        final String suiteName = "xmlts." + info.getName();  // add "xmlts." prefix
-        return suiteName;
+        return "xmlts." + info.getName();
     }
 
     @Override
@@ -213,7 +212,7 @@ public class XMLTestRunner extends AbstractTestRunner {
         }
     }
 
-    private Document parse(final Path path) throws ParserConfigurationException, IOException, SAXException {
+    private static Document parse(final Path path) throws ParserConfigurationException, IOException, SAXException {
         final InputSource src = new InputSource(path.toUri().toASCIIString());
         final SAXParser parser = SAX_PARSER_FACTORY.newSAXParser();
         final XMLReader xr = parser.getXMLReader();
