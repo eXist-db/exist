@@ -24,10 +24,12 @@ package org.exist.xquery.functions.map;
 import io.lacuna.bifurcan.IEntry;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
+import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.exist.xquery.FunctionDSL.*;
@@ -46,11 +48,12 @@ public class MapFunction extends BasicFunction {
     private static final QName QN_KEYS = new QName("keys", MapModule.NAMESPACE_URI, MapModule.PREFIX);
     private static final QName QN_REMOVE = new QName("remove", MapModule.NAMESPACE_URI, MapModule.PREFIX);
     private static final QName QN_FOR_EACH = new QName("for-each", MapModule.NAMESPACE_URI, MapModule.PREFIX);
+    private static final QName QN_FIND = new QName("find", MapModule.NAMESPACE_URI, MapModule.PREFIX);
 
     private static final FunctionParameterSequenceType FS_PARAM_MAPS = optManyParam("maps", Type.MAP, "Existing maps to merge to create a new map.");
 
     private static final String FS_MERGE_NAME = "merge";
-    public final static FunctionSignature[] FS_MERGE = functionSignatures(
+    public static final FunctionSignature[] FS_MERGE = functionSignatures(
         FS_MERGE_NAME,
         "Returns a map that combines the entries from a number of existing maps.",
         returns(Type.MAP, "A new map which is the result of merging the maps"),
@@ -63,6 +66,15 @@ public class MapFunction extends BasicFunction {
                         param("options", Type.MAP, "Can be used to control the way in which duplicate keys are handled.")
                 )
         )
+    );
+
+    public static final FunctionSignature FS_FIND = functionSignature(
+            QN_FIND,
+            "Searches the supplied input sequence and any contained maps and arrays for a map entry with the supplied key, " +
+                    "and returns the corresponding values.",
+            returns(Type.ARRAY, "An array containing the found values with the input key"),
+            new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "The sequence of maps to search"),
+            new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The key to match")
     );
 
     public final static FunctionSignature FNS_SIZE = new FunctionSignature(
@@ -177,6 +189,8 @@ public class MapFunction extends BasicFunction {
             return remove(args);
         } else if (isCalledAs(QN_FOR_EACH.getLocalPart())) {
             return forEach(args);
+        } else if (isCalledAs(QN_FIND.getLocalPart())) {
+            return find(args);
         }
         throw new XPathException(this, "No function: " + getName() + "#" + getSignature().getArgumentCount());
     }
@@ -293,6 +307,57 @@ public class MapFunction extends BasicFunction {
             }
             return result;
         }
+    }
+
+    /**
+     * Recursive helper for find
+     *
+     * Recursively find map members in a sequence
+     * By searching each of the individual items in the sequence
+     *
+     * @param result add found values to this
+     * @param key the key to match
+     * @param sequence the sequence to search within
+     */
+    static private void findRec(final ArrayType result, final AtomicValue key, final Sequence sequence) {
+        for (int i = 0; i < sequence.getItemCount(); i++) {
+            MapFunction.findRec(result, key, sequence.itemAt(i));
+        }
+    }
+
+    /**
+     * Recursive helper for find
+     *
+     * Recursively find map members in items, which can only be maps or arrays
+     * (They may be other types, but these are not containers)
+     *
+     * @param result add found values to this
+     * @param key the key to match
+     * @param item the item to search within
+     */
+    static private void findRec(final ArrayType result, final AtomicValue key, final Item item) {
+        if (Type.subTypeOf(item.getType(), Type.ARRAY)) {
+            final ArrayType array = (ArrayType) item;
+            for (final Sequence sequence : array.toArray()) {
+                MapFunction.findRec(result, key, sequence);
+            }
+        } else if (Type.subTypeOf(item.getType(), Type.MAP)) {
+            final AbstractMapType map = (AbstractMapType) item;
+            //append the values in the map with the supplied key
+            result.add(map.get(key));
+            //recursively examine all the values in the map (key notwithstanding), they may in turn be maps
+            for (final IEntry<AtomicValue, Sequence> entry : map) {
+                MapFunction.findRec(result, key, entry.value());
+            }
+        }
+    }
+
+    private ArrayType find(final Sequence[] args) {
+
+        final AtomicValue key = (AtomicValue) args[1].itemAt(0);
+        final ArrayType result = new ArrayType(context, Collections.emptyList());
+        MapFunction.findRec(result, key, args[0]);
+        return result;
     }
 
     private enum MergeDuplicates {
