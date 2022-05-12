@@ -281,37 +281,35 @@ public class FnModule extends AbstractInternalModule {
         super(functions, parameters, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getDescription()
-     */
+    @Override
     public String getDescription() {
         return "A module with the XQuery/XPath Core Library Functions";
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getNamespaceURI()
-     */
+    @Override
     public String getNamespaceURI() {
         return Function.BUILTIN_FUNCTION_NS;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getDefaultPrefix()
-     */
+    @Override
     public String getDefaultPrefix() {
         return PREFIX;
     }
 
+    @Override
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }
 
-    static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
-        return FunctionDSL.functionSignature(new QName(name, Function.BUILTIN_FUNCTION_NS), description, returnType, paramTypes);
+    static FunctionSignature functionSignature(final String name, final String description,
+            final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
+        return FunctionDSL.functionSignature(new QName(name, Function.BUILTIN_FUNCTION_NS), description,
+                returnType, paramTypes);
     }
 
-    static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
-        return FunctionDSL.functionSignatures(new QName(name, Function.BUILTIN_FUNCTION_NS), description, returnType, variableParamTypes);
+    static FunctionSignature[] functionSignatures(final String name, final String description,
+            final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
+        return FunctionDSL.functionSignatures(new QName(name, Function.BUILTIN_FUNCTION_NS), description,
+                returnType, variableParamTypes);
     }
-
 }
