@@ -358,7 +358,6 @@ public class JSON extends BasicFunction {
                     if(parser.getCurrentName() != null){
                         builder.addAttribute(KEY, parser.getCurrentName());
                     }
-                    // according to spec, all numbers are converted to double
                     builder.characters(parser.getText());
                     builder.endElement();
 
