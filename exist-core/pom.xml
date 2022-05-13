@@ -114,7 +114,7 @@
         <dependency>
             <groupId>org.relaxng</groupId>
             <artifactId>jing</artifactId>
-            <version>20181222</version>
+            <version>20220510</version>
             <exclusions>
                 <exclusion> <!-- conflicts with xerces 2.12.2 dependency on xml-apis version 1.4.01 -->
                     <groupId>xml-apis</groupId>

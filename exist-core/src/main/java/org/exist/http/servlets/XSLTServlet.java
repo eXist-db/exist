@@ -89,7 +89,7 @@ public class XSLTServlet extends HttpServlet {
         new XSLTErrorsListener<ServletException>(true, false) {
 
             @Override
-            protected void raiseError(String error, Exception ex) throws ServletException {
+            protected void raiseError(final String error, final TransformerException ex) throws ServletException {
                 throw new ServletException(error, ex);
             }
         };
