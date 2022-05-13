@@ -39,6 +39,9 @@ import org.exist.xquery.value.*;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
+
 /**
  * Functions related to JSON parsing.
  *
@@ -46,62 +49,58 @@ import java.io.InputStream;
  */
 public class JSON extends BasicFunction {
 
-    public static final FunctionSignature[] signatures = {
-        new FunctionSignature(
-                new QName("parse-json", Function.BUILTIN_FUNCTION_NS),
-                "Parses a string supplied in the form of a JSON text, returning the results typically in the form of a map or array.",
-                new SequenceType[]{
-                        new FunctionParameterSequenceType("json-text", Type.STRING, Cardinality.ZERO_OR_ONE, "JSON string")
-                },
-                new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "The parsed data, typically a map, array or atomic value")
-        ),
-        new FunctionSignature(
-                new QName("parse-json", Function.BUILTIN_FUNCTION_NS),
-                "Parses a string supplied in the form of a JSON text, returning the results typically in the form of a map or array.",
-                new SequenceType[]{
-                        new FunctionParameterSequenceType("json-text", Type.STRING, Cardinality.ZERO_OR_ONE, "JSON string"),
-                        new FunctionParameterSequenceType("options", Type.MAP, Cardinality.EXACTLY_ONE, "Parsing options")
-                },
-                new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "The parsed data, typically a map, array or atomic value")
-        ),
-        new FunctionSignature(
-                new QName("json-doc", Function.BUILTIN_FUNCTION_NS),
-                "Reads an external (or database) resource containing JSON, and returns the results of parsing the resource as JSON. An URL parameter " +
-                "without scheme or scheme 'xmldb:' is considered to point to a database resource.",
-                new SequenceType[]{
-                        new FunctionParameterSequenceType("href", Type.STRING, Cardinality.ZERO_OR_ONE, "URL pointing to a JSON resource")
-                },
-                new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "The parsed data, typically a map, array or atomic value")
-        ),
-        new FunctionSignature(
-                new QName("json-doc", Function.BUILTIN_FUNCTION_NS),
-                "Reads an external (or database) resource containing JSON, and returns the results of parsing the resource as JSON. An URL parameter " +
-                "without scheme or scheme 'xmldb:' is considered to point to a database resource.",
-                new SequenceType[]{
-                        new FunctionParameterSequenceType("href", Type.STRING, Cardinality.ZERO_OR_ONE, "URL pointing to a JSON resource"),
-                        new FunctionParameterSequenceType("options", Type.MAP, Cardinality.EXACTLY_ONE, "Parsing options")
-                },
-                new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "The parsed data, typically a map, array or atomic value")
-        ),
-        new FunctionSignature(
-                new QName("json-to-xml", Function.BUILTIN_FUNCTION_NS),
-                "Parses a string supplied in the form of a JSON text, returning the results in the form of an XML document node.",
-                new SequenceType[]{
-                        new FunctionParameterSequenceType("json-text", Type.STRING, Cardinality.ZERO_OR_ONE, "JSON text as defined in [RFC 7159]. The function parses this string to return an XDM value"),
-                },
-                new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "The parsed data as XML")
-        ),
+    private static final FunctionParameterSequenceType FS_PARAM_JSON_TEXT = optParam("json-text", Type.STRING, "JSON text as defined in [RFC 7159]. The function parses this string to return an XDM value");
+    private static final FunctionParameterSequenceType FS_PARAM_HREF = optParam("href", Type.STRING,"URL pointing to a JSON resource");
+    private static final FunctionParameterSequenceType FS_PARAM_OPTIONS = param("options", Type.MAP, "Parsing options");
 
-        new FunctionSignature(
-                new QName("json-to-xml", Function.BUILTIN_FUNCTION_NS),
-                "Parses a string supplied in the form of a JSON text, returning the results in the form of an XML document node.",
-                new SequenceType[]{
-                        new FunctionParameterSequenceType("json-text", Type.STRING, Cardinality.ZERO_OR_ONE, "JSON text as defined in [RFC 7159]. The function parses this string to return an XDM value"),
-                        new FunctionParameterSequenceType("options", Type.MAP, Cardinality.EXACTLY_ONE, "Parsing options")
-                },
-                new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "The parsed data as XML")
-        )
-    };
+    private static final String FS_PARSE_JSON_NAME = "parse-json";
+    static final FunctionSignature[] FS_PARSE_JSON = functionSignatures(
+            FS_PARSE_JSON_NAME,
+            "Parses a string supplied in the form of a JSON text, returning the results typically in the form of a map or array.",
+            returnsOpt(Type.ITEM, "The parsed data, typically a map, array or atomic value"),
+            arities(
+                arity(
+                        FS_PARAM_JSON_TEXT
+                ),
+                arity(
+                        FS_PARAM_JSON_TEXT,
+                        param("options", Type.MAP, "Parsing options")
+                )
+            )
+    );
+
+    private static final String FS_JSON_DOC_NAME = "json-doc";
+    static final FunctionSignature[] FS_JSON_DOC = functionSignatures(
+            FS_JSON_DOC_NAME,
+            "Reads an external (or database) resource containing JSON, and returns the results of parsing the resource as JSON. An URL parameter " +
+            "without scheme or scheme 'xmldb:' is considered to point to a database resource.",
+            returnsOpt(Type.ITEM, "The parsed data, typically a map, array or atomic value"),
+            arities(
+                    arity(
+                            FS_PARAM_HREF
+                    ),
+                    arity(
+                            FS_PARAM_HREF,
+                            FS_PARAM_OPTIONS
+                    )
+            )
+    );
+
+    private static final String FS_JSON_TO_XML_NAME = "json-to-xml";
+    static final FunctionSignature[] FS_JSON_TO_XML = functionSignatures(
+            FS_JSON_TO_XML_NAME,
+            "Parses a string supplied in the form of a JSON text, returning the results in the form of an XML document node.",
+            returnsOpt(Type.ITEM, "The parsed data as XML"),
+            arities(
+                    arity(
+                            FS_PARAM_JSON_TEXT
+                    ),
+                    arity(
+                            FS_PARAM_JSON_TEXT,
+                            FS_PARAM_OPTIONS
+                    )
+            )
+    );
 
     public static final String OPTION_DUPLICATES = "duplicates";
     public static final String OPTION_DUPLICATES_REJECT = "reject";
@@ -139,9 +138,9 @@ public class JSON extends BasicFunction {
 
         JsonFactory factory = createJsonFactory(liberal);
 
-        if (isCalledAs("parse-json")) {
+        if (isCalledAs(FS_PARSE_JSON_NAME)) {
             return parse(args[0], handleDuplicates, factory);
-        }  else if (isCalledAs("json-to-xml")) {
+        }  else if (isCalledAs(FS_JSON_TO_XML_NAME)) {
             return toxml(args[0], handleDuplicates, factory);
         } else {
             return parseResource(args[0], handleDuplicates, factory);
