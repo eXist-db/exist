@@ -43,7 +43,7 @@ import static org.exist.xquery.FunctionDSL.*;
  */
 public class FunXmlToJson extends BasicFunction {
 
-    private final static Logger logger = LogManager.getLogger();
+    private static final Logger logger = LogManager.getLogger();
 
     private static final String FS_XML_TO_JSON_NAME = "xml-to-json";
     private static final FunctionParameterSequenceType FS_XML_TO_JSON_OPT_PARAM_NODE = optParam("node", Type.NODE, "The input node");
