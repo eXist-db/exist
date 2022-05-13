@@ -79,7 +79,7 @@ public class XMLDBRestoreTest {
     @Parameterized.Parameter(value = 1)
     public String baseUri;
 
-    private final String getBaseUri() {
+    private String getBaseUri() {
         return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
     }
 
@@ -177,7 +177,7 @@ public class XMLDBRestoreTest {
 
     @Test
     public void restoreUserWithoutGroupIsPlacedInNoGroup() throws IOException, XMLDBException {
-        final String username = UUID.randomUUID().toString() + "-user";
+        final String username = UUID.randomUUID() + "-user";
         final Path contentsFile = createBackupWithUserWithoutPrimaryGroup(username);
         final TestRestoreListener listener = new TestRestoreListener();
         final XmldbURI rootUri = XmldbURI.create(getBaseUri()).append(XmldbURI.ROOT_COLLECTION_URI);
@@ -198,7 +198,7 @@ public class XMLDBRestoreTest {
 
     @Test
     public void restoreUserWithNoSuchGroupIsPlacedInNoGroup() throws IOException, XMLDBException {
-        final String username = UUID.randomUUID().toString() + "-user";
+        final String username = UUID.randomUUID() + "-user";
         final Path contentsFile = createBackupWithUserInNoSuchGroup(username);
         final TestRestoreListener listener = new TestRestoreListener();
         final XmldbURI rootUri = XmldbURI.create(getBaseUri()).append(XmldbURI.ROOT_COLLECTION_URI);
@@ -261,11 +261,11 @@ public class XMLDBRestoreTest {
     }
 
     private void restoreUserWithGroups(final Path backupPath, final Path restorePath, final int expectedRestoredCount) throws IOException, XMLDBException {
-        final String username = UUID.randomUUID().toString() + "-user";
+        final String username = UUID.randomUUID() + "-user";
         final String primaryGroup = username;  // personal group
-        final String group1 = UUID.randomUUID().toString() + "-group-1";
-        final String group2 = UUID.randomUUID().toString() + "-group-2";
-        final String group3 = UUID.randomUUID().toString() + "-group-3";
+        final String group1 = UUID.randomUUID() + "-group-1";
+        final String group2 = UUID.randomUUID() + "-group-2";
+        final String group3 = UUID.randomUUID() + "-group-3";
         final TestRestoreListener listener = new TestRestoreListener();
         final XmldbURI rootUri = XmldbURI.create(getBaseUri()).append(XmldbURI.ROOT_COLLECTION_URI);
 
