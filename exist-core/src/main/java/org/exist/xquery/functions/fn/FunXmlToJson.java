@@ -34,6 +34,7 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import static org.exist.xquery.FunctionDSL.*;
@@ -179,7 +180,7 @@ public class FunXmlToJson extends BasicFunction {
                                 break;
                             case "number":
                                 try{
-                                    final double tempDouble = Double.parseDouble(tempString);
+                                    final BigDecimal tempDouble = new BigDecimal(tempString);
                                     jsonGenerator.writeNumber(tempDouble);
                                 } catch (NumberFormatException ex){
                                     throw new XPathException(ErrorCodes.FOJS0006, "Cannot convert '" + tempString + "' to a number.");
