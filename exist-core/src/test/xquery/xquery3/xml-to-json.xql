@@ -58,15 +58,15 @@ declare
     %test:arg('arg1', '')
     %test:assertError('FOJS0006')
     %test:arg('arg1', '0')
-    %test:assertEquals('0.0')
+    %test:assertEquals('0')
     %test:arg('arg1', '1')
-    %test:assertEquals('1.0')
+    %test:assertEquals('1')
     %test:arg('arg1', '-1')
-    %test:assertEquals('-1.0')
+    %test:assertEquals('-1')
     %test:arg('arg1', '01')
-    %test:assertEquals('1.0') (: should error out for leading zeros according to spec :)
+    %test:assertEquals('1')
     %test:arg('arg1', '08')
-    %test:assertEquals('8.0') (: should error out for leading zeros according to spec :)
+    %test:assertEquals('8')
     %test:arg('arg1', '3.1415')
     %test:assertEquals('3.1415')
     %test:arg('arg1', '0.31415e+1')
@@ -303,7 +303,7 @@ function xtj:xml-to-json-xmlInJsonString() {
 };
 
 declare
-    %test:assertEquals('{"pcM9qSs":"YbFYeK10.e01xgS1DEJFaxxvm372Ru","wh5J8qAmnZx8WAHnHCeBpM":-1.270212191431E9,"ssEhB3U9zZhRNNH2Vm":["A","OIQwg4ICB9fkzihwpE.cQv1",false]}')
+    %test:assertEquals('{"pcM9qSs":"YbFYeK10.e01xgS1DEJFaxxvm372Ru","wh5J8qAmnZx8WAHnHCeBpM":-1270212191.431,"ssEhB3U9zZhRNNH2Vm":["A","OIQwg4ICB9fkzihwpE.cQv1",false]}')
 function xtj:xml-to-json-generatedFromSchema-1() {
     let $node :=
 <map xmlns="http://www.w3.org/2005/xpath-functions"
@@ -320,7 +320,7 @@ function xtj:xml-to-json-generatedFromSchema-1() {
 };
 
 declare
-    %test:assertEquals('{"v-DhbQUwZO3zpW":[{"fRcP.5e9btnuR3dOnd":[false,"_aQ",null],"yVlXSsyg1pPatQ7ilEaSSA9":"DVbrO2wpIRJimrskkRk.7wg1Gvh","K9xGofqp":true,"PatQ7iK9xGof":false},1.1145450201E7,5.84608693252E8],"IU6lSWbLYTzc3QvIVAdmJ.CG":1.600374222048E9,"_o3UT5zEy":"WFUwRRW5Jc3rdwKCoO8iV3RYDu_5"}')
+    %test:assertEquals('{"v-DhbQUwZO3zpW":[{"fRcP.5e9btnuR3dOnd":[false,"_aQ",null],"yVlXSsyg1pPatQ7ilEaSSA9":"DVbrO2wpIRJimrskkRk.7wg1Gvh","K9xGofqp":true,"PatQ7iK9xGof":false},11145450.201,584608693.252],"IU6lSWbLYTzc3QvIVAdmJ.CG":1600374222.048,"_o3UT5zEy":"WFUwRRW5Jc3rdwKCoO8iV3RYDu_5"}')
 function xtj:xml-to-json-generatedFromSchema-2() {
     let $node :=
 <map xmlns="http://www.w3.org/2005/xpath-functions"
@@ -361,4 +361,72 @@ declare
 function xtj:xml-to-json-clearTextnodeBufferForNewElement() {
     let $node := <array><array> </array><string/></array>
     return fn:xml-to-json($node)
+};
+
+declare
+    %test:arg("int", "-1") %test:assertEquals('{"integer":-1}')
+    %test:arg("int", "-1.0") %test:assertEquals('{"integer":-1.0}')
+    %test:arg("int", "0") %test:assertEquals('{"integer":0}')
+    %test:arg("int", "0.0") %test:assertEquals('{"integer":0.0}')
+    %test:arg("int", "1") %test:assertEquals('{"integer":1}')
+    %test:arg("int", "1.0") %test:assertEquals('{"integer":1.0}')
+function xtj:xmlmap-to-json-for-int-precision($int as xs:string) as xs:string {
+    fn:xml-to-json(
+        <map xmlns="http://www.w3.org/2005/xpath-functions">
+          <number key="integer">{$int}</number>
+        </map>
+    )
+};
+
+declare
+    %test:arg("int", "-1") %test:assertXPath('$result/fn:map/fn:number = ''-1''')
+    %test:arg("int", "-1.0") %test:assertXPath('$result/fn:map/fn:number = ''-1.0''')
+    %test:arg("int", "0") %test:assertXPath('$result/fn:map/fn:number = ''0''')
+    %test:arg("int", "0.0") %test:assertXPath('$result/fn:map/fn:number = ''0.0''')
+    %test:arg("int", "1") %test:assertXPath('$result/fn:map/fn:number = ''1''')
+    %test:arg("int", "1.0") %test:assertXPath('$result/fn:map/fn:number = ''1.0''')
+function xtj:json-to-xmlmap-for-int-precision($int as xs:string) as document-node() {
+    fn:json-to-xml(
+        '{"integer":' || $int || '}'
+    )
+};
+
+declare
+    %test:arg("int", "1E9") %test:assertEquals('{"integer":1E+9}')
+    %test:arg("int", "1E+9") %test:assertEquals('{"integer":1E+9}')
+    %test:arg("int", "1E-9") %test:assertEquals('{"integer":1E-9}')
+    %test:arg("int", "1e9") %test:assertEquals('{"integer":1E+9}')
+    %test:arg("int", "1e+9") %test:assertEquals('{"integer":1E+9}')
+    %test:arg("int", "1e-9") %test:assertEquals('{"integer":1E-9}')
+    %test:arg("int", "1.1E9") %test:assertEquals('{"integer":1.1E+9}')
+    %test:arg("int", "1.1E+9") %test:assertEquals('{"integer":1.1E+9}')
+    %test:arg("int", "1.1E-9") %test:assertEquals('{"integer":1.1E-9}')
+    %test:arg("int", "1.1e9") %test:assertEquals('{"integer":1.1E+9}')
+    %test:arg("int", "1.1e+9") %test:assertEquals('{"integer":1.1E+9}')
+    %test:arg("int", "1.1e-9") %test:assertEquals('{"integer":1.1E-9}')
+function xtj:xmlmap-to-json-for-exponent($int as xs:string) as xs:string {
+    fn:xml-to-json(
+        <map xmlns="http://www.w3.org/2005/xpath-functions">
+          <number key="integer">{$int}</number>
+        </map>
+    )
+};
+
+declare
+    %test:arg("int", "1E9") %test:assertXPath('$result/fn:map/fn:number = ''1E9''')
+    %test:arg("int", "1E+9") %test:assertXPath('$result/fn:map/fn:number = ''1E+9''')
+    %test:arg("int", "1E-9") %test:assertXPath('$result/fn:map/fn:number = ''1E-9''')
+    %test:arg("int", "1e9") %test:assertXPath('$result/fn:map/fn:number = ''1e9''')
+    %test:arg("int", "1e+9") %test:assertXPath('$result/fn:map/fn:number = ''1e+9''')
+    %test:arg("int", "1e-9") %test:assertXPath('$result/fn:map/fn:number = ''1e-9''')
+    %test:arg("int", "1.1E9") %test:assertXPath('$result/fn:map/fn:number = ''1.1E9''')
+    %test:arg("int", "1.1E+9") %test:assertXPath('$result/fn:map/fn:number = ''1.1E+9''')
+    %test:arg("int", "1.1E-9") %test:assertXPath('$result/fn:map/fn:number = ''1.1E-9''')
+    %test:arg("int", "1.1e9") %test:assertXPath('$result/fn:map/fn:number = ''1.1e9''')
+    %test:arg("int", "1.1e+9") %test:assertXPath('$result/fn:map/fn:number = ''1.1e+9''')
+    %test:arg("int", "1.1e-9") %test:assertXPath('$result/fn:map/fn:number = ''1.1e-9''')
+function xtj:json-to-xmlmap-for-exponent($int as xs:string) as document-node() {
+    fn:json-to-xml(
+        '{"integer":' || $int || '}'
+    )
 };
