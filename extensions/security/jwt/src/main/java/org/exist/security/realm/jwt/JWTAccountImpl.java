@@ -63,10 +63,10 @@ public class JWTAccountImpl extends AccountImpl {
     public Group addGroup(final Group group) throws PermissionDeniedException {
         if (group instanceof JWTGroupImpl) {
             //TODO
-            //we dont support writes to LDAP yet!
+            //we dont support writes to JWT yet!
             return null;
         } else {
-            //adds an LDAP User to a group from a different Realm
+            //adds an JWT User to a group from a different Realm
             return super.addGroup(group);
         }
     }
@@ -75,7 +75,7 @@ public class JWTAccountImpl extends AccountImpl {
     public Group addGroup(final String name) throws PermissionDeniedException {
         Group group = getRealm().getGroup(name);
 
-        //allow LDAP users to have groups from other realms
+        //allow JWT users to have groups from other realms
         if (group == null) {
             //if the group is not present in this realm, look externally
             group = getRealm().getExternalGroup(name);
