@@ -39,12 +39,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.util.ParametersExtractor;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -132,9 +127,24 @@ public class GetConnectionFunction extends BasicFunction {
         return new IntegerValue(SQLModule.storeConnection(context, connection), Type.LONG);
     }
 
+    /**
+     * This accesses the JDBC driver that has been loaded as an XAR package.
+     *
+     * @param jdbcDriver The classpath of the JDBC driver
+     * @return true if the driver is successfully loaded.
+     */
+    private boolean testClass(final StringValue jdbcDriver) {
+        try {
+            return (Class.forName(jdbcDriver.getStringValue()) != null);
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
     private Connection getConnection(final Sequence[] args) throws XPathException {
         // get the db connection details
         final String dbURL = args[1].getStringValue();
+
+        testClass((StringValue) args[0]);
 
         try {
 
