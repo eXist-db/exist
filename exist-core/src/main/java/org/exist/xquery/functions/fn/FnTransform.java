@@ -25,6 +25,7 @@ package org.exist.xquery.functions.fn;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.lacuna.bifurcan.IEntry;
 import net.jpountz.xxhash.XXHash64;
 import net.jpountz.xxhash.XXHashFactory;
 import net.sf.saxon.Configuration;
@@ -34,14 +35,18 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.util.Base64Encoder;
+import org.exist.util.Holder;
+import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.MapType;
+import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
+import org.exist.xslt.EXistURIResolver;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
 import javax.xml.stream.XMLEventReader;
@@ -56,18 +61,22 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
-import javax.xml.ws.Holder;
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.Namespaces.XSL_NS;
-import static org.exist.xquery.FunctionDSL.*;
-import static org.exist.xquery.functions.fn.FnModule.*;
+import static org.exist.xquery.FunctionDSL.param;
+import static org.exist.xquery.FunctionDSL.returnsOptMany;
+import static org.exist.xquery.functions.fn.FnModule.functionSignature;
 import static org.exist.xquery.functions.fn.FnTransform.Option.*;
+import static org.exist.xquery.functions.fn.FunSerialize.normalize;
 
 /**
  * Implementation of fn:transform.
@@ -77,14 +86,14 @@ import static org.exist.xquery.functions.fn.FnTransform.Option.*;
 public class FnTransform extends BasicFunction {
 
     private static final Logger LOGGER =  LogManager.getLogger(FnTransform.class);
-    private static final ErrorListenerLog4jAdapter ERROR_LISTENER = new ErrorListenerLog4jAdapter(LOGGER);
+    private static final ErrorListenerLog4jAdapter ERROR_LISTENER = new ErrorListenerLog4jAdapter(FnTransform.LOGGER);
 
     private static final javax.xml.namespace.QName QN_XSL_STYLESHEET = new javax.xml.namespace.QName(XSL_NS, "stylesheet");
     private static final javax.xml.namespace.QName QN_VERSION = new javax.xml.namespace.QName("version");
 
     private static final String FS_TRANSFORM_NAME = "transform";
     static final FunctionSignature FS_TRANSFORM = functionSignature(
-            FS_TRANSFORM_NAME,
+            FnTransform.FS_TRANSFORM_NAME,
             "Invokes a transformation using a dynamically-loaded XSLT stylesheet.",
             returnsOptMany(Type.MAP, "The result of the transformation is returned as a map. " +
                     "There is one entry in the map for the principal result document, and one for each " +
@@ -99,7 +108,7 @@ public class FnTransform extends BasicFunction {
 
     //TODO(AR) if you want Saxon-EE features we need to set those in the Configuration
     private static final Configuration SAXON_CONFIGURATION = new Configuration();
-    private static final Processor SAXON_PROCESSOR = new Processor(SAXON_CONFIGURATION);
+    private static final Processor SAXON_PROCESSOR = new Processor(FnTransform.SAXON_CONFIGURATION);
 
     private static final long XXHASH64_SEED = 0x2245a28e;
     private static final XXHash64 XX_HASH_64 = XXHashFactory.fastestInstance().hash64();
@@ -119,8 +128,18 @@ public class FnTransform extends BasicFunction {
 
         final Tuple2<String, Source> xsltSource = getStylesheet(options);
 
+        final MapType stylesheetParams = FnTransform.STYLESHEET_PARAMS.get(options).orElse(new MapType(context));
+        for (final IEntry<AtomicValue, Sequence> entry : stylesheetParams) {
+            if (!(entry.key() instanceof QNameValue)) {
+                throw new XPathException(this, ErrorCodes.FOXT0002, "Supplied stylesheet-param is not a valid xs:qname: " + entry);
+            }
+            if (!(entry.value() instanceof Sequence)) {
+                throw new XPathException(this, ErrorCodes.FOXT0002, "Supplied stylesheet-param is not a valid xs:sequence: " + entry);
+            }
+        }
+
         final float xsltVersion;
-        final Optional<DecimalValue> explicitXsltVersion = XSLT_VERSION.get(options);
+        final Optional<DecimalValue> explicitXsltVersion = FnTransform.XSLT_VERSION.get(options);
         if (explicitXsltVersion.isPresent()) {
             try {
                 xsltVersion = explicitXsltVersion.get().getFloat();
@@ -132,24 +151,35 @@ public class FnTransform extends BasicFunction {
         }
 
         final String stylesheetBaseUri;
-        final Optional<StringValue> explicitStylesheetBaseUri = STYLESHEET_BASE_URI.get(xsltVersion, options);
+        final Optional<StringValue> explicitStylesheetBaseUri = FnTransform.STYLESHEET_BASE_URI.get(xsltVersion, options);
         if (explicitStylesheetBaseUri.isPresent()) {
             stylesheetBaseUri = explicitStylesheetBaseUri.get().getStringValue();
         } else {
             stylesheetBaseUri = xsltSource._1;
         }
 
-        //TODO(AR) Saxon recommends to use a <code>StreamSource</code> or <code>SAXSource</code> instead of DOMSource for performance
-        final Source sourceNode = getSourceNode(options);
+        System.err.println("Context:\n" + context);
 
-        final boolean shouldCache = CACHE.get(xsltVersion, options).map(BooleanValue::getValue).orElse(true);
+        final Optional<QNameValue> initialTemplate = FnTransform.INITIAL_TEMPLATE.get(options);
+
+        final String executableHash = Tuple(stylesheetBaseUri, stylesheetParams).toString();
+
+        //TODO(AR) Saxon recommends to use a <code>StreamSource</code> or <code>SAXSource</code> instead of DOMSource for performance
+        final Source sourceNode = FnTransform.getSourceNode(options);
+
+        final boolean shouldCache = FnTransform.CACHE.get(xsltVersion, options).map(BooleanValue::getValue).orElse(true);
 
         if (xsltVersion == 1.0f || xsltVersion == 2.0f || xsltVersion == 3.0f) {
             try {
                 final Holder<SaxonApiException> compileException = new Holder<>();
-                final XsltExecutable xsltExecutable = XSLT_EXECUTABLE_CACHE.get(stylesheetBaseUri, key -> {
-                    final XsltCompiler xsltCompiler = SAXON_PROCESSOR.newXsltCompiler();
-                    xsltCompiler.setErrorListener(ERROR_LISTENER);
+                final XsltExecutable xsltExecutable = FnTransform.XSLT_EXECUTABLE_CACHE.get(executableHash, key -> {
+                    final XsltCompiler xsltCompiler = FnTransform.SAXON_PROCESSOR.newXsltCompiler();
+                    xsltCompiler.setErrorListener(FnTransform.ERROR_LISTENER);
+                    for (final IEntry entry : stylesheetParams) {
+                        final QName qKey = ((QNameValue) entry.key()).getQName();
+                        final XdmValue value = XdmValue.makeValue("2");
+                        xsltCompiler.setParameter(new net.sf.saxon.s9api.QName(qKey.getPrefix(), qKey.getLocalPart()), value);
+                    }
 
                     try {
                         return xsltCompiler.compile(xsltSource._2); // .compilePackage //TODO(AR) need to implement support for xslt-packages
@@ -184,8 +214,21 @@ public class FnTransform extends BasicFunction {
                 final DocumentBuilderReceiver builderReceiver = new DocumentBuilderReceiver(builder);
 
                 final SAXDestination saxDestination = new SAXDestination(builderReceiver);
-                xslt30Transformer.applyTemplates(sourceNode, saxDestination);
-                return builder.getDocument();
+                if (initialTemplate.isPresent()) {
+                    if (sourceNode != null) {
+                        final DocumentBuilder sourceBuilder = FnTransform.SAXON_PROCESSOR.newDocumentBuilder();
+                        final XdmNode xdmNode = sourceBuilder.build(sourceNode);
+                        xslt30Transformer.setGlobalContextItem(xdmNode);
+                    } else {
+                        xslt30Transformer.setGlobalContextItem(null);
+                    }
+                    final QName qName = initialTemplate.get().getQName();
+                    xslt30Transformer.callTemplate(
+                            new net.sf.saxon.s9api.QName(qName.getPrefix() == null ? "" : qName.getPrefix(), qName.getNamespaceURI(), qName.getLocalPart()), saxDestination);
+                } else {
+                    xslt30Transformer.applyTemplates(sourceNode, saxDestination);
+                }
+                return makeResultMap(xsltVersion, options, builder.getDocument());
 
             } catch (final SaxonApiException e) {
                 if (e.getErrorCode() != null) {
@@ -202,12 +245,85 @@ public class FnTransform extends BasicFunction {
         }
     }
 
-    private Source getSourceNode(final MapType options) {
-        final Optional<Node> sourceNode = SOURCE_NODE.get(options).map(NodeValue::getNode);
-        if (sourceNode.isPresent()) {
-            return new DOMSource(sourceNode.get());
+    private MapType makeResultMap(final float xsltVersion, final MapType options, final NodeValue outputDocument) throws XPathException {
+
+        final MapType outputMap = new MapType(context);
+        final StringValue outputKey = FnTransform.BASE_OUTPUT_URI.get(xsltVersion, options).orElse(new StringValue("output"));
+
+        final StringValue deliveryFormat = FnTransform.DELIVERY_FORMAT.get(xsltVersion, options).get();
+        final Sequence output;
+        switch (deliveryFormat.getStringValue()) {
+            case "serialized":
+                output = serializeOutput(FnTransform.SERIALIZATION_PARAMS.get(xsltVersion, options), outputDocument);
+                break;
+            case "raw":
+                throw new XPathException(this, FnModule.SENR0001, "\"raw\" output is not supported");
+            case "document":
+            default:
+                output = outputDocument;
+                break;
         }
-        return null;
+        outputMap.add(outputKey, output);
+
+        return outputMap;
+    }
+
+    /**
+     * If the output document is to be serialized, serialize it.
+     *
+     * @param serializationOptionsMap fromserialization parameters
+     * @param outputDocument the generated document to be serialized
+     * @return a {@link StringValue} which is the serialized value of the document
+     * @throws XPathException if serialization failed
+     */
+    private Sequence serializeOutput(final Optional<MapType> serializationOptionsMap, final NodeValue outputDocument) throws XPathException {
+        final Properties outputProperties = SerializerUtils.getSerializationOptions(this, serializationOptionsMap.orElse(new MapType(context)));
+        try(final StringWriter writer = new StringWriter()) {
+            final XQuerySerializer xqSerializer = new XQuerySerializer(context.getBroker(), outputProperties, writer);
+
+            Sequence seq = outputDocument;
+            if (xqSerializer.normalize()) {
+                seq = normalize(this, context, seq);
+            }
+
+            xqSerializer.serialize(seq);
+            return new StringValue(writer.toString());
+        } catch (final IOException | SAXException e) {
+            throw new XPathException(this, FnModule.SENR0001, e.getMessage());
+        }
+    }
+
+    private static Source getSourceNode(final MapType options) throws XPathException {
+        final Optional<Node> sourceNode = FnTransform.SOURCE_NODE.get(options).map(NodeValue::getNode);
+        return sourceNode.map(DOMSource::new).orElse(null);
+    }
+
+    /**
+     * Resolve the stylesheet location.
+     * <p>
+     *     It may be a dynamically configured document.
+     *     Or a document within the database.
+     * </p>
+     * @param stylesheetLocation path or URI of stylesheet
+     * @return a source wrapping the contents of the stylesheet
+     * @throws XPathException if there is a problem resolving the location.
+     */
+    private Source resolveStylesheetLocation(final String stylesheetLocation) throws XPathException {
+        final Sequence document = context.getDynamicallyAvailableDocument(stylesheetLocation);
+        System.err.println("Dynamically resolve " + stylesheetLocation + " to " + (document == null ? "<null>" : document.getStringValue()));
+        if (document != null && document.hasOne() && Type.subTypeOf(document.getItemType(), Type.NODE)) {
+            System.err.println("Dynamically resolve " + stylesheetLocation + " succeeded.");
+            return new DOMSource((Node) document.itemAt(0));
+        }
+        final EXistURIResolver eXistURIResolver = new EXistURIResolver(
+                context.getBroker().getBrokerPool(), null);
+        try {
+            System.err.println("eXist URI resolve " + stylesheetLocation + "...");
+            return eXistURIResolver.resolve(stylesheetLocation, context.getBaseURI().getStringValue());
+        } catch (final TransformerException e) {
+            System.err.println("eXist URI resolve " + stylesheetLocation + " failed: " + e.getMessage());
+            throw new XPathException(this, ErrorCodes.FOXT0002, "Unable to resolve stylesheet location: " + stylesheetLocation + ": " + e.getMessage(), Sequence.EMPTY_SEQUENCE, e);
+        }
     }
 
     /**
@@ -217,22 +333,21 @@ public class FnTransform extends BasicFunction {
      *     value is the source for accessing the stylesheet
      */
     private Tuple2<String, Source> getStylesheet(final MapType options) throws XPathException {
-        final Optional<String> stylesheetLocation = STYLESHEET_LOCATION.get(options).map(StringValue::getStringValue);
+        final Optional<String> stylesheetLocation = FnTransform.STYLESHEET_LOCATION.get(options).map(StringValue::getStringValue);
         if (stylesheetLocation.isPresent()) {
-            //TODO(AR) handle database resources, see org.exist.xquery.functions.transform.EXistURIResolver.databaseSource
-            return Tuple(stylesheetLocation.get(), new StreamSource(stylesheetLocation.get()));
+            return Tuple(stylesheetLocation.get(), resolveStylesheetLocation(stylesheetLocation.get()));
         }
 
-        final Optional<Node> stylesheetNode = STYLESHEET_NODE.get(options).map(NodeValue::getNode);
+        final Optional<Node> stylesheetNode = FnTransform.STYLESHEET_NODE.get(options).map(NodeValue::getNode);
         if (stylesheetNode.isPresent()) {
             return Tuple(stylesheetNode.get().getBaseURI(), new DOMSource(stylesheetNode.get()));
         }
 
-        final Optional<String> stylesheetText = STYLESHEET_TEXT.get(options).map(StringValue::getStringValue);
-        if (stylesheetNode.isPresent()) {
+        final Optional<String> stylesheetText = FnTransform.STYLESHEET_TEXT.get(options).map(StringValue::getStringValue);
+        if (stylesheetText.isPresent()) {
             final String text = stylesheetText.get();
             final byte[] data = text.getBytes(UTF_8);
-            final long checksum = XX_HASH_64.hash(data, 0, data.length, XXHASH64_SEED);
+            final long checksum = FnTransform.XX_HASH_64.hash(data, 0, data.length, FnTransform.XXHASH64_SEED);
             return Tuple("checksum://" + checksum, new StringSource(stylesheetText.get()));
         }
 
@@ -240,6 +355,7 @@ public class FnTransform extends BasicFunction {
     }
 
     private float getXsltVersion(final Source xsltStylesheet) throws XPathException {
+
         if (xsltStylesheet instanceof DOMSource) {
             return domExtractXsltVersion(xsltStylesheet);
         } else if (xsltStylesheet instanceof StreamSource) {
@@ -277,8 +393,8 @@ public class FnTransform extends BasicFunction {
                 final XMLEvent event = eventReader.nextEvent();
                 if (event.getEventType() == XMLStreamConstants.START_ELEMENT) {
                     final StartElement startElement = event.asStartElement();
-                    if (QN_XSL_STYLESHEET.equals(startElement.getName())) {
-                        final Attribute version = startElement.getAttributeByName(QN_VERSION);
+                    if (FnTransform.QN_XSL_STYLESHEET.equals(startElement.getName())) {
+                        final Attribute version = startElement.getAttributeByName(FnTransform.QN_VERSION);
                         return Float.parseFloat(version.getValue());
                     }
                 }
@@ -291,67 +407,67 @@ public class FnTransform extends BasicFunction {
     }
 
     private static final Option<StringValue> BASE_OUTPUT_URI = new Option<>(
-            "base-output-uri", v1_0, v2_0, v3_0);
+            Type.STRING, "base-output-uri", v1_0, v2_0, v3_0);
     private static final Option<BooleanValue> CACHE = new Option<>(
-            "cache", BooleanValue.TRUE, v1_0, v2_0, v3_0);
+            Type.BOOLEAN, "cache", BooleanValue.TRUE, v1_0, v2_0, v3_0);
     private static final Option<StringValue> DELIVERY_FORMAT = new Option<>(
-            "delivery-format", new StringValue("document"), v1_0, v2_0, v3_0);
+            Type.STRING, "delivery-format", new StringValue("document"), v1_0, v2_0, v3_0);
     private static final Option<BooleanValue> ENABLE_ASSERTIONS = new Option<>(
-            "enable-assertions", BooleanValue.FALSE, v3_0);
+            Type.BOOLEAN, "enable-assertions", BooleanValue.FALSE, v3_0);
     private static final Option<BooleanValue> ENABLE_MESSAGES = new Option<>(
-            "enable-messages", BooleanValue.TRUE, v1_0, v2_0, v3_0);
+            Type.BOOLEAN, "enable-messages", BooleanValue.TRUE, v1_0, v2_0, v3_0);
     private static final Option<BooleanValue> ENABLE_TRACE = new Option<>(
-            "enable-trace", BooleanValue.TRUE, v2_0, v3_0);
+            Type.BOOLEAN, "enable-trace", BooleanValue.TRUE, v2_0, v3_0);
     private static final Option<ArrayType> FUNCTION_PARAMS = new Option<>(
-            "function-params", v3_0);
+            Type.ARRAY,"function-params", v3_0);
     private static final Option<Item> GLOBAL_CONTEXT_ITEM = new Option<>(
-            "global-context-item", v3_0);
+            Type.ITEM, "global-context-item", v3_0);
     private static final Option<QNameValue> INITIAL_FUNCTION = new Option<>(
-            "initial-function", v3_0);
+            Type.QNAME,"initial-function", v3_0);
     private static final Option<Item> INITIAL_MATCH_SELECTION = new Option<>(
-            "initial-match-selection", v3_0);
+            Type.ITEM,"initial-match-selection", v3_0);
     private static final Option<QNameValue> INITIAL_MODE = new Option<>(
-            "initial-match-selection", v1_0, v2_0, v3_0);
+            Type.QNAME,"initial-match-selection", v1_0, v2_0, v3_0);
     private static final Option<QNameValue> INITIAL_TEMPLATE = new Option<>(
-            "initial-template", v2_0, v3_0);
+            Type.QNAME,"initial-template", v2_0, v3_0);
     private static final Option<StringValue> PACKAGE_NAME = new Option<>(
-            "package-name", v3_0);
+            Type.STRING,"package-name", v3_0);
     private static final Option<StringValue> PACKAGE_LOCATION = new Option<>(
-            "package-location", v3_0);
+            Type.STRING,"package-location", v3_0);
     private static final Option<NodeValue> PACKAGE_NODE = new Option<>(
-            "package-node", v3_0);
+            Type.NODE,"package-node", v3_0);
     private static final Option<StringValue> PACKAGE_TEXT = new Option<>(
-            "package-text", v3_0);
+            Type.STRING,"package-text", v3_0);
     private static final Option<StringValue> PACKAGE_VERSION = new Option<>(
-            "package-version", new StringValue("*"), v3_0);
+            Type.STRING,"package-version", new StringValue("*"), v3_0);
     private static final Option<FunctionReference> POST_PROCESS = new Option<>(
-            "post-process", v1_0, v2_0, v3_0);
+            Type.FUNCTION_REFERENCE,"post-process", v1_0, v2_0, v3_0);
     private static final Option<MapType> REQUESTED_PROPERTIES = new Option<>(
-            "requested-properties", v1_0, v2_0, v3_0);
+            Type.MAP,"requested-properties", v1_0, v2_0, v3_0);
     private static final Option<MapType> SERIALIZATION_PARAMS = new Option<>(
-            "serialization-params", v1_0, v2_0, v3_0);
+            Type.MAP,"serialization-params", v1_0, v2_0, v3_0);
     private static final Option<NodeValue> SOURCE_NODE = new Option<>(
-            "source-node", v1_0, v2_0, v3_0);
+            Type.NODE,"source-node", v1_0, v2_0, v3_0);
     private static final Option<NodeValue> STATIC_PARAMS = new Option<>(
-            "static-params", v3_0);
+            Type.NODE,"static-params", v3_0);
     private static final Option<StringValue> STYLESHEET_BASE_URI = new Option<>(
-            "stylesheet-base-uri", v1_0, v2_0, v3_0);
+            Type.STRING, "stylesheet-base-uri", v1_0, v2_0, v3_0);
     private static final Option<StringValue> STYLESHEET_LOCATION = new Option<>(
-            "stylesheet-location", v1_0, v2_0, v3_0);
+            Type.STRING,"stylesheet-location", v1_0, v2_0, v3_0);
     private static final Option<NodeValue> STYLESHEET_NODE = new Option<>(
-            "stylesheet-node", v1_0, v2_0, v3_0);
+            Type.NODE,"stylesheet-node", v1_0, v2_0, v3_0);
     private static final Option<MapType> STYLESHEET_PARAMS = new Option<>(
-            "stylesheet-params", v1_0, v2_0, v3_0);
+            Type.MAP,"stylesheet-params", v1_0, v2_0, v3_0);
     private static final Option<StringValue> STYLESHEET_TEXT = new Option<>(
-            "stylesheet-text", v1_0, v2_0, v3_0);
+            Type.STRING,"stylesheet-text", v1_0, v2_0, v3_0);
     private static final Option<MapType> TEMPLATE_PARAMS = new Option<>(
-            "template-params", v3_0);
+            Type.MAP,"template-params", v3_0);
     private static final Option<MapType> TUNNEL_PARAMS = new Option<>(
-            "tunnel-params", v3_0);
+            Type.MAP,"tunnel-params", v3_0);
     private static final Option<MapType> VENDOR_OPTIONS = new Option<>(
-            "vendor-options", v1_0, v2_0, v3_0);
+            Type.MAP,"vendor-options", v1_0, v2_0, v3_0);
     private static final Option<DecimalValue> XSLT_VERSION = new Option<>(
-            "xslt-version", v1_0, v2_0, v3_0);
+            Type.DECIMAL,"xslt-version", v1_0, v2_0, v3_0);
 
     static class Option<T extends Item> {
         public static final float v1_0 = 1.0f;
@@ -361,24 +477,34 @@ public class FnTransform extends BasicFunction {
         private final StringValue name;
         private final Optional<T> defaultValue;
         private final float[] appliesToVersions;
+        private final int itemSubtype;
 
-        public Option(final String name, final float... appliesToVersions) {
-            this(name, Optional.empty(), appliesToVersions);
+        public Option(final int itemSubtype, final String name, final float... appliesToVersions) {
+            this(itemSubtype, name, Optional.empty(), appliesToVersions);
         }
 
-        public Option(final String name, @Nullable final T defaultValue, final float... appliesToVersions) {
-            this(name, Optional.ofNullable(defaultValue), appliesToVersions);
+        public Option(final int itemSubtype, final String name, @Nullable final T defaultValue, final float... appliesToVersions) {
+            this(itemSubtype, name, Optional.ofNullable(defaultValue), appliesToVersions);
         }
 
-        private Option(final String name, final Optional<T> defaultValue, final float... appliesToVersions) {
+        private Option(final int itemSubtype, final String name, final Optional<T> defaultValue, final float... appliesToVersions) {
             this.name = new StringValue(name);
             this.defaultValue = defaultValue;
             this.appliesToVersions = appliesToVersions;
+            this.itemSubtype = itemSubtype;
         }
 
-        public Optional<T> get(final MapType options) {
+        public Optional<T> get(final MapType options) throws XPathException {
             if (options.contains(name)) {
-                return Optional.of((T)options.get(name).itemAt(0));
+                final Item item0 = options.get(name).itemAt(0);
+                if (item0 != null) {
+                    if (Type.subTypeOf(item0.getType(), itemSubtype)) {
+                        return Optional.of((T) item0);
+                    } else {
+                        throw new XPathException(
+                                ErrorCodes.XPTY0004, "Type error: expected " + Type.getTypeName(itemSubtype) + ", got " + Type.getTypeName(item0.getType()));
+                    }
+                }
             }
 
             return defaultValue;

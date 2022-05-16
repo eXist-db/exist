@@ -3445,4 +3445,112 @@ public class XQueryContext implements BinaryValueManager, Context {
             return new HttpContext(request, response, newSession);
         }
     }
+
+    @Override public String toString() {
+        return getStringValue();
+    }
+
+    public String getStringValue() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append('{');
+
+        sb.append("dynamicDocuments: {");
+        if (dynamicDocuments != null) {
+            for (final String key : dynamicDocuments.keySet()) {
+                sb.append(key).append("-> ");
+                sb.append(dynamicDocuments.get(key));
+            }
+        }
+        sb.append('}');
+        sb.append('\n');
+
+        sb.append("dynamicTextResources: {");
+        if (dynamicTextResources != null) {
+            for (final Tuple2<String, Charset> key : dynamicTextResources.keySet()) {
+                sb.append(key).append("-> ");
+                sb.append(dynamicTextResources.get(key));
+            }
+        }
+        sb.append('}');
+        sb.append('\n');
+
+        sb.append("dynamicCollections: {");
+        if (dynamicCollections != null) {
+            for (final String key : dynamicCollections.keySet()) {
+                sb.append(key).append("-> ");
+                sb.append(dynamicCollections.get(key));
+            }
+        }
+        sb.append('}');
+        sb.append('\n');
+
+        sb.append("baseURI: ");
+        try {
+            sb.append(getBaseURI()).append('\n');
+        } catch (final XPathException e) {
+            sb.append("?");
+        }
+
+        sb.append("inScopePrefixes: {");
+        if (inScopePrefixes != null) {
+            for (final String key : inScopePrefixes.keySet()) {
+                sb.append(key).append("-> ");
+                sb.append(inScopePrefixes.get(key));
+            }
+        }
+        sb.append('}');
+        sb.append('\n');
+
+        sb.append("inScopeNamespaces: {");
+        if (inScopeNamespaces != null) {
+            for (final String key : inScopeNamespaces.keySet()) {
+                sb.append(key).append("-> ");
+                sb.append(inScopeNamespaces.get(key));
+            }
+        }
+        sb.append('}');
+        sb.append('\n');
+
+        sb.append("modules: {");
+        if (modules != null) {
+            for (final String key : modules.keySet()) {
+                sb.append(key).append("-> ");
+                for (final Module module : modules.get(key)) {
+                    sb.append("namespaceURI: ").append(module.getNamespaceURI()).append('\n');
+                    sb.append("defaultPrefix: ").append(module.getDefaultPrefix()).append('\n');
+                    sb.append("description: ").append(module.getDescription()).append('\n');
+                    for (final Iterator<QName> it = module.getGlobalVariables(); it.hasNext(); ) {
+                        final QName qName = it.next();
+                        sb.append(qName).append(';');
+                    }
+                }
+            }
+        }
+        sb.append('}');
+        sb.append('\n');
+
+        sb.append("allModules: {");
+        if (allModules != null) {
+            for (final String key : allModules.keySet()) {
+                sb.append(key).append("-> ");
+                for (final Module module : allModules.get(key)) {
+                    sb.append("namespaceURI: ").append(module.getNamespaceURI()).append('\n');
+                    sb.append("defaultPrefix: ").append(module.getDefaultPrefix()).append('\n');
+                    sb.append("description: ").append(module.getDescription()).append('\n');
+                    for (final Iterator<QName> it = module.getGlobalVariables(); it.hasNext(); ) {
+                        final QName qName = it.next();
+                        sb.append(qName).append(';');
+                    }
+                }
+            }
+        }
+        sb.append('}');
+        sb.append('\n');
+
+        sb.append('}');
+
+        return sb.toString();
+    }
+
+
 }
