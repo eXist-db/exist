@@ -21,9 +21,6 @@
  */
 package org.exist.security.realm.jwt;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -38,11 +35,14 @@ import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.*;
 import org.exist.security.*;
 import org.exist.security.internal.SecurityManagerImpl;
+import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 
+import javax.naming.ldap.LdapContext;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -67,7 +67,7 @@ public class JWTRealm extends AbstractRealm {
     @ConfigurationFieldAsElement("context")
     protected JWTContextFactory jwtContextFactory;
 
-    protected DecodedJWT decodedJWT;
+    protected Map jwtMap;
 
     public JWTRealm(final SecurityManagerImpl sm, final Configuration config) {
         super(sm, config);
@@ -112,17 +112,21 @@ public class JWTRealm extends AbstractRealm {
     @Override
     public Subject authenticate(String accountName, Object credentials) throws AuthenticationException {
         final String jwt = deserialize(accountName);
+        LOG.info("JWT = " + jwt);
         ObjectMapper mapper = new ObjectMapper();
         Map jwtMap;
         try {
             jwtMap = mapper.readValue(jwt, Map.class);
+            this.jwtMap = jwtMap;
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        final String name1 = this.jwtContextFactory.getAccount().getSearchProperty(JWTAccount.JWTPropertyKey.valueOf("name"));
+        final String name1 = "sub"; // this.jwtContextFactory.getAccount().getSearchProperty(JWTAccount.JWTPropertyKey.NAME);
+        LOG.info("Name property = " + name1);
         String name = (String) jwtMap.get(name1);
+        LOG.info("From JWT = " + name);
         final AbstractAccount account = (AbstractAccount) getAccount(name);
-        return (Subject) account;
+        return new AuthenticatedJWTSubjectAccreditedImpl (account, this.jwtMap, String.valueOf(credentials));
     }
     public String deserialize(String tokenString) {
         String[] pieces = splitTokenString(tokenString);
@@ -156,11 +160,11 @@ public class JWTRealm extends AbstractRealm {
                     LOG.debug("Cached used.");
                 }
 
-                updateGroupsInDatabase(broker, this.decodedJWT, acct);
+                updateGroupsInDatabase(broker, this.jwtMap, acct);
 
                 return acct;
             } else {
-                return createAccountInDatabase(broker, this.decodedJWT, name);
+                return createAccountInDatabase(broker, this.jwtMap, name);
             }
         } catch (EXistException e) {
             e.printStackTrace();
@@ -170,77 +174,77 @@ public class JWTRealm extends AbstractRealm {
         return null;
     }
 
-    private void updateGroupsInDatabase(DBBroker broker, DecodedJWT decodedJWT, Account acct) throws PermissionDeniedException, EXistException {
-        final String claim = this.jwtContextFactory.getGroup().getClaim();
-        final List<String> dbaList = this.jwtContextFactory.getGroup().getDbaList().getPrincipals();
-        final List<String> groupNames = ((Claim) decodedJWT.getClaim(claim)).asList(String.class);
-        final String[] acctGroups = acct.getGroups();
-
-        for (final String accountGroup : acctGroups) {
-            if (!groupNames.contains(accountGroup)) {
-                acct.remGroup(accountGroup);
-            }
-        }
-
-        for (final String groupName : groupNames) {
-            if (acct.hasGroup(groupName)) {
-                continue;
-            }
-            if (dbaList.contains(groupName)) {
-                if (!acct.hasDbaRole()) {
-                    acct.addGroup(getSecurityManager().getDBAGroup());
-                }
-            }
-            final Group group = super.getGroup(groupName);
-
-            if (group != null) {
-                acct.addGroup(group);
-            } else {
-                final GroupAider groupAider = new GroupAider(ID, groupName);
-                final Group newGroup = getSecurityManager().addGroup(broker, groupAider);
-                acct.addGroup(newGroup);
-            }
-        }
-
+    private void updateGroupsInDatabase(DBBroker broker, Map decodedJWT, Account acct) throws PermissionDeniedException, EXistException {
+//        final String claim = this.jwtContextFactory.getGroup().getClaim();
+//        final List<String> dbaList = this.jwtContextFactory.getGroup().getDbaList().getPrincipals();
+//        final List<String> groupNames = ((ArrayList) decodedJWT.get(claim));
+//        final String[] acctGroups = acct.getGroups();
+//
+//        for (final String accountGroup : acctGroups) {
+//            if (!groupNames.contains(accountGroup)) {
+//                acct.remGroup(accountGroup);
+//            }
+//        }
+//
+//        for (final String groupName : groupNames) {
+//            if (acct.hasGroup(groupName)) {
+//                continue;
+//            }
+//            if (dbaList.contains(groupName)) {
+//                if (!acct.hasDbaRole()) {
+//                    acct.addGroup(getSecurityManager().getDBAGroup());
+//                }
+//            }
+//            final Group group = super.getGroup(groupName);
+//
+//            if (group != null) {
+//                acct.addGroup(group);
+//            } else {
+//                final GroupAider groupAider = new GroupAider(ID, groupName);
+//                final Group newGroup = getSecurityManager().addGroup(broker, groupAider);
+//                acct.addGroup(newGroup);
+//            }
+//        }
+//
     }
 
-    private Account createAccountInDatabase(DBBroker broker, DecodedJWT decodedJWT, String name) throws PermissionDeniedException, EXistException {
+    private Account createAccountInDatabase(DBBroker broker, Map jwtMap, String name) throws PermissionDeniedException, EXistException {
         Account account = null;
-        final String claim = this.jwtContextFactory.getGroup().getClaim();
-        final List<String> jwtGroupNames = ((Claim) decodedJWT.getClaim(claim)).asList(String.class);
-        final List<String> dbaList = this.jwtContextFactory.getGroup().getDbaList().getPrincipals();
-
+//        final String claim = this.jwtContextFactory.getGroup().getClaim();
+//        final List<String> jwtGroupNames = ((ArrayList) jwtMap.get(claim)).asList(String.class);
+//        final List<String> dbaList = this.jwtContextFactory.getGroup().getDbaList().getPrincipals();
+//
         final UserAider userAider = new UserAider(ID, name);
-
-
-        //store any requested metadata
-        for (final AXSchemaType axSchemaType : AXSchemaType.values()) {
-            final String metadataSearchProperty = this.jwtContextFactory.getAccount().getMetadataSearchProperty(axSchemaType);
-            if (metadataSearchProperty != null) {
-                final String s = ((Claim) decodedJWT.getClaim(metadataSearchProperty)).asString();
-                if (s != null) {
-                    userAider.setMetadataValue(axSchemaType, s);
-                }
-            }
-        }
-
-        boolean dbaNotAdded = true;
-
-        for (final String jwtGroupName : jwtGroupNames) {
-            if (dbaNotAdded && dbaList.contains(jwtGroupName)) {
-                userAider.addGroup(getSecurityManager().getDBAGroup());
-                dbaNotAdded = false;
-            }
-            final Group group = super.getGroup(jwtGroupName);
-
-            if (group != null) {
-                userAider.addGroup(group);
-            } else {
-                final GroupAider groupAider = new GroupAider(ID, jwtGroupName);
-                final Group group1 = getSecurityManager().addGroup(broker, groupAider);
-                userAider.addGroup(group1);
-            }
-        }
+//
+//
+//        //store any requested metadata
+//        for (final AXSchemaType axSchemaType : AXSchemaType.values()) {
+//            final String metadataSearchProperty = this.jwtContextFactory.getAccount().getMetadataSearchProperty(axSchemaType);
+//            if (metadataSearchProperty != null) {
+//                final String s = ((Claim) jwtMap.getClaim(metadataSearchProperty)).asString();
+//                if (s != null) {
+//                    userAider.setMetadataValue(axSchemaType, s);
+//                }
+//            }
+//        }
+//
+//        boolean dbaNotAdded = true;
+//
+//        for (final String jwtGroupName : jwtGroupNames) {
+//            if (dbaNotAdded && dbaList.contains(jwtGroupName)) {
+//                userAider.addGroup(getSecurityManager().getDBAGroup());
+//                dbaNotAdded = false;
+//            }
+//            final Group group = super.getGroup(jwtGroupName);
+//
+//            if (group != null) {
+//                userAider.addGroup(group);
+//            } else {
+//                final GroupAider groupAider = new GroupAider(ID, jwtGroupName);
+//                final Group group1 = getSecurityManager().addGroup(broker, groupAider);
+//                userAider.addGroup(group1);
+//            }
+//        }
 
         try {
             account = getSecurityManager().addAccount(broker, userAider);
@@ -260,6 +264,20 @@ public class JWTRealm extends AbstractRealm {
 
         } catch (Exception e) {
             throw new AuthenticationException(AuthenticationException.UNNOWN_EXCEPTION, e.getMessage(), e);
+        }
+    }
+
+    private final class AuthenticatedJWTSubjectAccreditedImpl extends SubjectAccreditedImpl {
+
+        private final String authenticatedCredentials;
+
+        private AuthenticatedJWTSubjectAccreditedImpl(final AbstractAccount account, final Map jwt, final String authenticatedCredentials) {
+            super(account, jwt);
+            this.authenticatedCredentials = authenticatedCredentials;
+        }
+
+        private String getAuthenticatedCredentials() {
+            return authenticatedCredentials;
         }
     }
 
