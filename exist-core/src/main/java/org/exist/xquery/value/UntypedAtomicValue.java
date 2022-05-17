@@ -106,6 +106,8 @@ public class UntypedAtomicValue extends AtomicValue {
 
             case Type.DATE_TIME:
                 return new DateTimeValue(value);
+            case Type.DATE_TIME_STAMP:
+                return new DateTimeStampValue(value);
             case Type.TIME:
                 return new TimeValue(value);
             case Type.DATE:

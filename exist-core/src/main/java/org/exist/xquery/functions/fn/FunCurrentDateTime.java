@@ -32,7 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.DateTimeStampValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -48,12 +48,11 @@ public class FunCurrentDateTime extends Function {
     public final static FunctionSignature fnCurrentDateTime =
         new FunctionSignature(
             new QName("current-dateTime", Function.BUILTIN_FUNCTION_NS),
-            "Returns the xs:dateTime (with timezone) that is current at some time " +
+            "Returns the xs:dateTimeStamp (with timezone) that is current at some time " +
             "during the evaluation of a query or transformation in which " +
             "fn:current-dateTime() is executed.",
             null,
-            //should be xs:dateTimeStamp, need to add support for DATE_TIME_STAMP
-            new FunctionReturnSequenceType(Type.DATE_TIME,
+            new FunctionReturnSequenceType(Type.DATE_TIME_STAMP,
                 Cardinality.EXACTLY_ONE, "the date-time current " +
                     "within query execution time span"));
 
@@ -95,7 +94,7 @@ public class FunCurrentDateTime extends Function {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES,
                     "CONTEXT ITEM", contextItem.toSequence());}
         }
-        Sequence result = new DateTimeValue(context.getCalendar());
+        Sequence result = new DateTimeStampValue(context.getCalendar());
         if (isCalledAs("current-dateTime")) {
             // do nothing, result already in right form
         } else if (isCalledAs("current-date")) {

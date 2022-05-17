@@ -115,6 +115,8 @@ public class DateTimeValue extends AbstractDateTimeValue {
             case Type.ATOMIC:
             case Type.ITEM:
                 return this;
+            case Type.DATE_TIME_STAMP:
+                return new DateTimeStampValue(calendar);
             case Type.DATE:
                 return new DateValue(calendar);
             case Type.TIME:
