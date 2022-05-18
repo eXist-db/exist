@@ -22,10 +22,12 @@
 package org.exist.xquery.functions.fn;
 
 import org.exist.Namespaces;
-import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
+
+import static org.exist.xquery.FunctionDSL.param;
+import static org.exist.xquery.functions.fn.FnModule.functionSignature;
 
 /**
  * Built-in function fn:nilled().
@@ -34,24 +36,24 @@ import org.w3c.dom.Node;
  */
 public class FunNilled extends BasicFunction {
 
-	private static final QName qName = new QName("nilled", Function.BUILTIN_FUNCTION_NS);
-	private static final FunctionReturnSequenceType returns = FunctionDSL.returns(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the argument node is \"nilled\"");
+	private static final String FUN_NAME = "nilled";
+	private static final FunctionReturnSequenceType RETURNS = FunctionDSL.returns(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the argument node is \"nilled\"");
 
 	public static final FunctionSignature[] FUNCTION_SIGNATURES_NILLED = {
 
-			FunctionDSL.functionSignature(
-					FunNilled.qName,
+			functionSignature(
+					FUN_NAME,
 					"Returns an xs:boolean indicating whether the argument node is \"nilled\". " +
 							"If the argument is not an element node, returns the empty sequence. " +
 							"If the argument is the empty sequence, returns the empty sequence.",
-					FunNilled.returns,
-					FunctionDSL.param("node", Type.NODE, Cardinality.ZERO_OR_MORE, "node to test")),
-			FunctionDSL.functionSignature(
-					FunNilled.qName,
+					RETURNS,
+					param("node", Type.NODE, Cardinality.ZERO_OR_MORE, "node to test")),
+			functionSignature(
+					FUN_NAME,
 					"Returns an xs:boolean indicating whether the default (context) item is \"nilled\". " +
 							"If the context item is not an element node, returns the empty sequence. " +
 							"If the context item is the empty sequence, returns the empty sequence.",
-					FunNilled.returns)
+					RETURNS)
 	};
 
 	public FunNilled(final XQueryContext context, final FunctionSignature signature) {

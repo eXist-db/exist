@@ -21,69 +21,69 @@
  :)
 xquery version "3.1";
 
-module namespace fnt="http://exist-db.org/xquery/test/fnnilled";
+module namespace testNilled="http://exist-db.org/xquery/test/fnNilled";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
-declare variable $fnt:simple_node := <node>"1"</node>;
+declare variable $testNilled:simple_node := <node>"1"</node>;
 
 declare
     %test:assertFalse
-function fnt:nilled-no-param() {
+function testNilled:nilled-no-param() {
     fn:nilled()
 };
 
 declare
     %test:assertFalse
-function fnt:nilled-node-is-false() {
-    fn:nilled($fnt:simple_node)
+function testNilled:nilled-node-is-false() {
+    fn:nilled($testNilled:simple_node)
 };
 
 declare
     %test:assertExists
-function fnt:nilled-node-exists() {
-    fn:nilled($fnt:simple_node)
+function testNilled:nilled-node-exists() {
+    fn:nilled($testNilled:simple_node)
 };
 
-declare variable $fnt:empty_seq := ();
+declare variable $testNilled:empty_seq := ();
 
 declare
     %test:assertFalse
-function fnt:nilled-empty-is-false() {
-    fn:nilled($fnt:empty_seq)
+function testNilled:nilled-empty-is-false() {
+    fn:nilled($testNilled:empty_seq)
 };
 
 declare
     %test:assertEmpty
-function fnt:nilled-empty-is-empty() {
-    fn:nilled($fnt:empty_seq)
+function testNilled:nilled-empty-is-empty() {
+    fn:nilled($testNilled:empty_seq)
 };
 
-declare variable $fnt:one_element := <node>"just-one-element"</node>;
+declare variable $testNilled:one_element := <node>"just-one-element"</node>;
 
 declare
     %test:assertFalse
-function fnt:nilled-single-is-false() {
-    fn:nilled($fnt:one_element)
+function testNilled:nilled-single-is-false() {
+    fn:nilled($testNilled:one_element)
 };
 
 declare
     %test:assertExists
-function fnt:nilled-single-is-not-empty() {
-    fn:nilled($fnt:one_element)
+function testNilled:nilled-single-is-not-empty() {
+    fn:nilled($testNilled:one_element)
 };
 
 declare
     %test:args("one")
     %test:assertError("err:XPTY0004")
-function fnt:nilled-string-not-a-node($param) {
+function testNilled:nilled-string-not-a-node($param) {
     fn:nilled($param)
 };
 
-declare variable $fnt:two_elements := ("one","two");
+declare variable $testNilled:two_elements := ("one","two");
 
 declare
     %test:assertError("XPTY0004")
-function fnt:nilled-p2() {
-    fn:nilled($fnt:two_elements)
+function testNilled:nilled-p2() {
+    fn:nilled($testNilled:two_elements)
 };
