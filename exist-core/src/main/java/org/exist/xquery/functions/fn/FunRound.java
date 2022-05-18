@@ -21,12 +21,16 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.QName;
-import org.exist.xquery.*;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 
 import java.math.RoundingMode;
-import java.util.Objects;
+
+import static org.exist.xquery.FunctionDSL.optParam;
+import static org.exist.xquery.functions.fn.FnModule.functionSignature;
 
 /**
  * Implement fn:round() function
@@ -36,7 +40,7 @@ import java.util.Objects;
  */
 public class FunRound extends FunRoundBase {
 
-	private static final QName qName = new QName("round", Function.BUILTIN_FUNCTION_NS);
+	private static final String FN_NAME = "round";
 	private static final String description = "The function returns the nearest (that is, numerically closest) " +
 			"value to $arg that is a multiple of ten to the power of minus $precision. " +
 			"If two such values are equally near (for example, if the fractional part in $arg is exactly .5), " +
@@ -61,11 +65,11 @@ public class FunRound extends FunRoundBase {
 	private static final FunctionReturnSequenceType returnType = new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE, "the rounded value");
 
 	public static final FunctionSignature[] FN_ROUND_SIGNATURES = {
-			FunctionDSL.functionSignature(FunRound.qName, FunRound.description, FunRound.returnType,
-					new FunctionParameterSequenceType("arg", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The input number")),
-			FunctionDSL.functionSignature(FunRound.qName, FunRound.description, FunRound.returnType,
-					new FunctionParameterSequenceType("arg", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The input number"),
-					new FunctionParameterSequenceType("precision", Type.INTEGER, Cardinality.ZERO_OR_ONE, "The input number"))
+			functionSignature(FN_NAME, FunRound.description, FunRound.returnType,
+					optParam("arg", Type.NUMBER, "The input number")),
+			functionSignature(FN_NAME, FunRound.description, FunRound.returnType,
+					optParam("arg", Type.NUMBER, "The input number"),
+					optParam("precision", Type.INTEGER, "The input number"))
 	};
 
 	public FunRound(final XQueryContext context, final FunctionSignature signature) {

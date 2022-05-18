@@ -21,18 +21,17 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.QName;
-import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 import java.math.RoundingMode;
+
+import static org.exist.xquery.FunctionDSL.optParam;
+import static org.exist.xquery.functions.fn.FnModule.functionSignature;
 
 /**
  * Implements the fn:round-half-to-even() function.
@@ -45,7 +44,7 @@ import java.math.RoundingMode;
  */
 public class FunRoundHalfToEven extends FunRoundBase {
 
-	private static final QName qName = new QName("round-half-to-even", Function.BUILTIN_FUNCTION_NS);
+	private static final String FN_NAME = "round-half-to-even";
 
 	protected static final String FUNCTION_DESCRIPTION_1_PARAM = 
         "The value returned is the nearest (that is, numerically closest) " +
@@ -78,16 +77,15 @@ public class FunRoundHalfToEven extends FunRoundBase {
 		"If $arg is of type xs:float or xs:double, rounding occurs on the " +
 		"value of the mantissa computed with exponent = 0.";
 	
-	protected static final FunctionParameterSequenceType ARG_PARAM = new FunctionParameterSequenceType("arg", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The input number");
-	protected static final FunctionParameterSequenceType PRECISION_PARAM = new FunctionParameterSequenceType("precision", Type.INTEGER, Cardinality.EXACTLY_ONE, "The precision factor");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE, "the rounded value");
 
 	public static final FunctionSignature[] FN_ROUND_HALF_TO_EVEN_SIGNATURES = {
-			FunctionDSL.functionSignature(FunRoundHalfToEven.qName, FunRoundHalfToEven.FUNCTION_DESCRIPTION_1_PARAM + FunRoundHalfToEven.FUNCTION_DESCRIPTION_COMMON, FunRoundHalfToEven.RETURN_TYPE,
-					new FunctionParameterSequenceType("arg", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The input number")),
-			FunctionDSL.functionSignature(FunRoundHalfToEven.qName, FunRoundHalfToEven.FUNCTION_DESCRIPTION_2_PARAM + FunRoundHalfToEven.FUNCTION_DESCRIPTION_COMMON, RETURN_TYPE,
-					new FunctionParameterSequenceType("arg", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The input number"),
-					new FunctionParameterSequenceType("precision", Type.INTEGER, Cardinality.ZERO_OR_ONE, "The input number")) };
+			functionSignature(FN_NAME, FunRoundHalfToEven.FUNCTION_DESCRIPTION_1_PARAM + FunRoundHalfToEven.FUNCTION_DESCRIPTION_COMMON, FunRoundHalfToEven.RETURN_TYPE,
+					optParam("arg", Type.NUMBER, "The input number")),
+			functionSignature(FN_NAME, FunRoundHalfToEven.FUNCTION_DESCRIPTION_2_PARAM + FunRoundHalfToEven.FUNCTION_DESCRIPTION_COMMON, RETURN_TYPE,
+					optParam("arg", Type.NUMBER, "The input number"),
+					optParam("precision", Type.INTEGER, "Precision to round to"))
+	};
 
 	public FunRoundHalfToEven(final XQueryContext context,
 							  final FunctionSignature signature) {
