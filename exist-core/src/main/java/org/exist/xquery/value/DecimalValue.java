@@ -23,12 +23,10 @@ package org.exist.xquery.value;
 
 import com.ibm.icu.text.Collator;
 import org.exist.xquery.Constants;
-import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
-import javax.xml.bind.annotation.XmlType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
