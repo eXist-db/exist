@@ -117,12 +117,15 @@ function fr:round-half-to-even($number as xs:double) {
 declare
     %test:args("-0.41",1)
     %test:assertEquals("-0.4")
-    %test:args("-0.41",0)
+    %test:args("-0.43",0)
     %test:assertEquals("-0")
+    %test:args("-0.43",0)
+    %test:assertEquals("0")
+    %test:args("-0.43",0)
+    %test:assertEquals(0)
 function fr:round-negative-zero($number as xs:decimal, $precision as xs:integer) {
     fn:round($number, $precision)
 };
-
 
 declare
     %test:args("-0.41",1)
@@ -130,5 +133,14 @@ declare
     %test:args("-0.41",0)
     %test:assertEquals("-0")
 function fr:round-negative-zero-double($number as xs:double, $precision as xs:integer) {
+    fn:round($number, $precision)
+};
+
+declare
+    %test:args("-0.41",1)
+    %test:assertEquals("-0.4")
+    %test:args("-0.41",0)
+    %test:assertEquals("-0")
+function fr:round-negative-zero-float($number as xs:float, $precision as xs:integer) {
     fn:round($number, $precision)
 };

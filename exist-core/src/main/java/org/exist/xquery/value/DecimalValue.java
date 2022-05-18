@@ -209,6 +209,7 @@ public class DecimalValue extends NumericValue {
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#convertTo(int)
      */
+    @Override
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
             case Type.ATOMIC:

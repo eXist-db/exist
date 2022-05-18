@@ -28,6 +28,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 
 import java.math.RoundingMode;
+import java.util.Objects;
 
 /**
  * Base class for rounding mode functions
@@ -63,16 +64,46 @@ abstract class FunRoundBase extends BasicFunction {
         }
 
         final RoundingMode roundingMode = getFunctionRoundingMode(value);
-        
+
         if (args.length > 1) {
             final Item precisionItem = args[1].itemAt(0);
             if (precisionItem instanceof IntegerValue) {
                 final IntegerValue precision = (IntegerValue) precisionItem;
-                return value.round(precision, roundingMode);
+                return convertValue(precision, value, roundingMode);
             }
         }
 
-        return value.round(IntegerValue.ZERO, roundingMode);
+        return convertValue(IntegerValue.ZERO, value, roundingMode);
+    }
+
+    /**
+     * Apply necessary conversions to/from decimal to perform rounding in decimal
+     *
+     * @param precision precision of rounding
+     * @param value to round
+     * @param roundingMode mode to round in
+     * @return rounded value in decimal converted back to the input type
+     * @throws XPathException if a conversion goes wrong (it shouldn't)
+     */
+    private static Sequence convertValue(final IntegerValue precision, final NumericValue value, final RoundingMode roundingMode) throws XPathException {
+        final DecimalValue decimal = (DecimalValue)value.convertTo(Type.DECIMAL);
+        final DecimalValue rounded = (DecimalValue) Objects.requireNonNull(decimal).round(precision, roundingMode);
+
+        if (value.isNegative() && rounded.isZero()) {
+            //Extreme care!! (AP) -0 as DecimalValue will not be negative, -0.0f and -0.0d will be negative.
+            //So we need to test that original value to decide whether to negate a "zero" result.
+            //DecimalValue(s) are not necessarily normalized, but the 0-test will work..
+            switch (value.getType()) {
+                case Type.DOUBLE:
+                    return new DoubleValue(-0.0d);
+                case Type.FLOAT:
+                    return new FloatValue(-0.0f);
+                default:
+                    break;
+            }
+        }
+
+        return rounded.convertTo(value.getType());
     }
 
 }
