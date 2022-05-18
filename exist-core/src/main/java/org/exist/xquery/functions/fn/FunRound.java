@@ -94,37 +94,4 @@ public class FunRound extends FunRoundBase {
 			return RoundingMode.HALF_UP;
 		}
 	}
-
-	@Override
-	public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-
-		if (args[0].isEmpty()) {
-			return Sequence.EMPTY_SEQUENCE;
-		}
-
-		final Item item = args[0].itemAt(0);
-		final NumericValue value;
-		if (item instanceof NumericValue) {
-			value = (NumericValue) item;
-		} else {
-			value = (NumericValue) item.convertTo(Type.NUMBER);
-		}
-
-		final RoundingMode roundingMode;
-		if (value.isNegative()) {
-			roundingMode = RoundingMode.HALF_DOWN;
-		} else {
-			roundingMode = RoundingMode.HALF_UP;
-		}
-
-		if (args.length > 1) {
-			final Item precisionItem = args[1].itemAt(0);
-			if (precisionItem instanceof IntegerValue) {
-				final IntegerValue precision = (IntegerValue) precisionItem;
-				return value.round(precision, roundingMode);
-			}
-		}
-
-		return value.round(IntegerValue.ZERO, roundingMode);
-	}
 }
