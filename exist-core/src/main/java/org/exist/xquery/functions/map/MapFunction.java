@@ -73,8 +73,8 @@ public class MapFunction extends BasicFunction {
             "Searches the supplied input sequence and any contained maps and arrays for a map entry with the supplied key, " +
                     "and returns the corresponding values.",
             returns(Type.ARRAY, "An array containing the found values with the input key"),
-            new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "The sequence of maps to search"),
-            new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The key to match")
+            optManyParam("input", Type.ITEM, "The sequence of maps to search"),
+            param("key", Type.ATOMIC, "The key to match")
     );
 
     public final static FunctionSignature FNS_SIZE = new FunctionSignature(
@@ -319,9 +319,9 @@ public class MapFunction extends BasicFunction {
      * @param key the key to match
      * @param sequence the sequence to search within
      */
-    static private void findRec(final ArrayType result, final AtomicValue key, final Sequence sequence) {
+    private static void findRec(final ArrayType result, final AtomicValue key, final Sequence sequence) {
         for (int i = 0; i < sequence.getItemCount(); i++) {
-            MapFunction.findRec(result, key, sequence.itemAt(i));
+            findRec(result, key, sequence.itemAt(i));
         }
     }
 
@@ -335,11 +335,11 @@ public class MapFunction extends BasicFunction {
      * @param key the key to match
      * @param item the item to search within
      */
-    static private void findRec(final ArrayType result, final AtomicValue key, final Item item) {
+    private static void findRec(final ArrayType result, final AtomicValue key, final Item item) {
         if (Type.subTypeOf(item.getType(), Type.ARRAY)) {
             final ArrayType array = (ArrayType) item;
             for (final Sequence sequence : array.toArray()) {
-                MapFunction.findRec(result, key, sequence);
+                findRec(result, key, sequence);
             }
         } else if (Type.subTypeOf(item.getType(), Type.MAP)) {
             final AbstractMapType map = (AbstractMapType) item;
