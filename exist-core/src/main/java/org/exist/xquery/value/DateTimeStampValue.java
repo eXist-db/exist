@@ -34,12 +34,12 @@ public class DateTimeStampValue extends DateTimeValue {
 
     private static final QName XML_SCHEMA_TYPE = new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "dateTimeStamp");
 
-    public DateTimeStampValue(XMLGregorianCalendar calendar) throws XPathException {
+    public DateTimeStampValue(final XMLGregorianCalendar calendar) throws XPathException {
         super(calendar);
         checkValidTimezone();
     }
 
-    public DateTimeStampValue(String dateTime) throws XPathException {
+    public DateTimeStampValue(final String dateTime) throws XPathException {
         super(dateTime);
         checkValidTimezone();
     }
@@ -51,7 +51,7 @@ public class DateTimeStampValue extends DateTimeValue {
     }
 
     @Override
-    public AtomicValue convertTo(int requiredType) throws XPathException {
+    public AtomicValue convertTo(final int requiredType) throws XPathException {
         switch (requiredType) {
             case Type.DATE_TIME_STAMP:
                 return this;
@@ -60,6 +60,11 @@ public class DateTimeStampValue extends DateTimeValue {
             default: return
                     super.convertTo(requiredType);
         }
+    }
+
+    @Override
+    protected AbstractDateTimeValue createSameKind(final XMLGregorianCalendar cal) throws XPathException {
+        return new DateTimeStampValue(cal);
     }
 
     @Override

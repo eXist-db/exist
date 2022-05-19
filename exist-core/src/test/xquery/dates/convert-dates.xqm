@@ -41,9 +41,52 @@ function fd:convert-date-time-stamp($date as xs:dateTimeStamp) {
     format-dateTime($date, "[h00]:[m00] [P] on [FNn], [MNn] [D1o], [Y]", "en", (), ())
 };
 
+declare
+    %test:args("2022-05-17T16:24:06.003+02:00", "PT2H")
+    %test:assertEquals("2022-05-17T18:24:06.003+02:00")
+function fd:add-test($date as xs:dateTimeStamp, $duration as xs:dayTimeDuration) {
+    $duration + $date
+};
+
+
 (: verify that fn:current-dateTime() return type is xs:dateTimeStamp  :)
 declare
     %test:assertEquals("true")
 function fd:current-dateTime-type() {
     fn:current-dateTime() instance of xs:dateTimeStamp
+};
+
+declare
+    %test:args("2022-05-17T16:24:06.003+02:00", "PT2H")
+    %test:assertEquals("true")
+function fd:return-type-test($date as xs:dateTimeStamp, $duration as xs:dayTimeDuration) {
+    ($duration + $date) instance of xs:dateTimeStamp
+};
+
+declare
+    %test:args("not-a-dateTimeStamp")
+    %test:assertError
+function fd:not-a-dateTimeStamp($date as xs:dateTimeStamp) {
+    $date instance of xs:dateTimeStamp
+};
+
+declare
+    %test:args("2022-05-17T17:16:00.000")
+    %test:assertError
+function fd:not-a-dateTimeStamp2($date as xs:dateTimeStamp) {
+    $date instance of xs:dateTimeStamp
+};
+
+declare
+    %test:args("2022-05-17T17:16:00.000Z")
+    %test:assertEquals("true")
+function fd:create-dateTimeStamp($date as xs:dateTimeStamp) {
+    $date instance of xs:dateTimeStamp
+};
+
+declare
+    %test:args("2022-05-17T17:16:00.000+01:00")
+    %test:assertEquals("true")
+function fd:create-dateTimeStamp2($date as xs:dateTimeStamp) {
+    $date instance of xs:dateTimeStamp
 };
