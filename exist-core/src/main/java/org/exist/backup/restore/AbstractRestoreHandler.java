@@ -74,10 +74,16 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public abstract class AbstractRestoreHandler extends DefaultHandler {
 
-    private final static Logger LOG = LogManager.getLogger(AbstractRestoreHandler.class);
+    private static final Logger LOG = LogManager.getLogger(AbstractRestoreHandler.class);
 
     private static final int STRICT_URI_VERSION = 1;
     private static final int BLOB_STORE_VERSION = 2;
+
+    protected static final String COLLECTION_ELEMENT_NAME = "collection";
+    protected static final String RESOURCE_ELEMENT_NAME = "resource";
+    protected static final String SUBCOLLECTION_ELEMENT_NAME = "subcollection";
+    protected static final String DELETED_ELEMENT_NAME = "deleted";
+    protected static final String ACE_ELEMENT_NAME = "ace";
 
     protected final DBBroker broker;
     @Nullable private final Txn transaction;
@@ -101,7 +107,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
      * @param listener the listener to report restore events to
      * @param pathsToIgnore database paths to ignore in the backup
      */
-    public AbstractRestoreHandler(final DBBroker broker, @Nullable final Txn transaction,
+    protected AbstractRestoreHandler(final DBBroker broker, @Nullable final Txn transaction,
             final BackupDescriptor descriptor, final RestoreListener listener,
             @Nullable final Set<String> pathsToIgnore) {
         this.broker = broker;
@@ -135,23 +141,23 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
             return;
         }
 
-        if ("collection".equals(localName) || "resource".equals(localName)) {
+        if (COLLECTION_ELEMENT_NAME.equals(localName) || RESOURCE_ELEMENT_NAME.equals(localName)) {
 
             final DeferredPermission df;
-            if ("collection".equals(localName)) {
+            if (COLLECTION_ELEMENT_NAME.equals(localName)) {
                 df = restoreCollectionEntry(atts);
             } else {
                 df = restoreResourceEntry(atts);
             }
             deferredPermissions.push(df);
 
-        } else if ("subcollection".equals(localName)) {
+        } else if (SUBCOLLECTION_ELEMENT_NAME.equals(localName)) {
             restoreSubCollectionEntry(atts);
 
-        } else if ("deleted".equals(localName)) {
+        } else if (DELETED_ELEMENT_NAME.equals(localName)) {
             restoreDeletedEntry(atts);
 
-        } else if ("ace".equals(localName)) {
+        } else if (ACE_ELEMENT_NAME.equals(localName)) {
             addACEToDeferredPermissions(atts);
         }
     }
@@ -159,30 +165,31 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
     @Override
     public void endElement(final String namespaceURI, final String localName, final String qName) throws SAXException {
         if (Namespaces.EXIST_NS.equals(namespaceURI) &&
-                ("collection".equals(localName)
-                        || "resource".equals(localName))) {
+                (COLLECTION_ELEMENT_NAME.equals(localName)
+                        || RESOURCE_ELEMENT_NAME.equals(localName))) {
             setDeferredPermissions();
         }
     }
 
-    private DeferredPermission restoreCollectionEntry(final Attributes atts) throws SAXException {
-        final String name = atts.getValue("name");
+    private DeferredPermission restoreCollectionEntry(final Attributes attributes) throws SAXException {
+        final EntryCommonMetadataAttributes commonAttributes = EntryCommonMetadataAttributes.fromAttributes(attributes);
 
-        if (name == null) {
+        // Don't process entries which should be skipped
+        if (commonAttributes.skip) {
+            return new SkippedEntryDeferredPermission();
+        }
+
+        if (commonAttributes.name == null) {
             throw new SAXException("Collection requires a name attribute");
         }
 
-        final String owner = getAttr(atts, "owner", SecurityManager.SYSTEM);
-        final String group = getAttr(atts, "group", SecurityManager.DBA_GROUP);
-        final String mode = getAttr(atts, "mode", "644");
-        final String created = atts.getValue("created");
-        final String strVersion = atts.getValue("version");
+        final String strVersion = attributes.getValue("version");
 
         if (strVersion != null) {
             try {
                 this.version = Integer.parseInt(strVersion);
             } catch(final NumberFormatException nfe) {
-                final String msg = "Could not parse version number for Collection '" + name + "', defaulting to version 0";
+                final String msg = "Could not parse version number for Collection '" + commonAttributes.name + "', defaulting to version 0";
                 listener.warn(msg);
                 LOG.warn(msg);
 
@@ -191,22 +198,14 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
         }
 
         try {
-            listener.createdCollection(name);
-            final XmldbURI collUri;
-
-            if(version >= STRICT_URI_VERSION) {
-                collUri = XmldbURI.create(name);
-            } else {
-                try {
-                    collUri = URIUtils.encodeXmldbUriFor(name);
-                } catch(final URISyntaxException e) {
-                    listener.warn("Could not parse document name into a URI: " + e.getMessage());
-                    return new SkippedEntryDeferredPermission();
-                }
+            listener.createdCollection(commonAttributes.name);
+            @Nullable final XmldbURI collUri = uriFromPath(commonAttributes.name);
+            if (collUri == null) {
+                return new SkippedEntryDeferredPermission();
             }
 
             if (version >= BLOB_STORE_VERSION) {
-                this.deduplicateBlobs = Boolean.parseBoolean(atts.getValue("deduplicate-blobs"));
+                this.deduplicateBlobs = Boolean.parseBoolean(attributes.getValue("deduplicate-blobs"));
             } else {
                 this.deduplicateBlobs = false;
             }
@@ -216,7 +215,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
                  final ManagedCollectionLock colLock = lockManager.acquireCollectionWriteLock(collUri)) {
                 Collection collection = broker.getCollection(collUri);
                 if (collection == null) {
-                    final Tuple2<Permission, Long> creationAttributes = Tuple(null, getDateFromXSDateTimeStringForItem(created, name).getTime());
+                    final Tuple2<Permission, Long> creationAttributes = Tuple(null, getDateFromXSDateTimeStringForItem(commonAttributes.created, commonAttributes.name).getTime());
                     collection = broker.getOrCreateCollection(transaction, collUri, Optional.of(creationAttributes));
                     broker.saveCollection(transaction, collection);
                 }
@@ -226,14 +225,14 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
                 this.currentCollectionUri = collection.getURI();
             }
 
-            notifyStartCollectionRestore(currentCollectionUri, atts);
+            notifyStartCollectionRestore(currentCollectionUri, attributes);
 
             final DeferredPermission deferredPermission;
-            if (name.startsWith(XmldbURI.SYSTEM_COLLECTION)) {
+            if (commonAttributes.name.startsWith(XmldbURI.SYSTEM_COLLECTION)) {
                 //prevents restore of a backup from changing System collection ownership
-                deferredPermission = new CollectionDeferredPermission(listener, currentCollectionUri, SecurityManager.SYSTEM, SecurityManager.DBA_GROUP, Integer.parseInt(mode, 8));
+                deferredPermission = new CollectionDeferredPermission(listener, currentCollectionUri, SecurityManager.SYSTEM, SecurityManager.DBA_GROUP, Integer.parseInt(commonAttributes.mode, 8));
             } else {
-                deferredPermission = new CollectionDeferredPermission(listener, currentCollectionUri, owner, group, Integer.parseInt(mode, 8));
+                deferredPermission = new CollectionDeferredPermission(listener, currentCollectionUri, commonAttributes.owner, commonAttributes.group, Integer.parseInt(commonAttributes.mode, 8));
             }
 
             notifyEndCollectionRestore(currentCollectionUri);
@@ -241,7 +240,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
             return deferredPermission;
 
         } catch (final IOException | LockException | TransactionException | PermissionDeniedException e) {
-            final String msg = "An unrecoverable error occurred while restoring collection '" + name + "': "  + e.getMessage() + ". Aborting restore!";
+            final String msg = "An unrecoverable error occurred while restoring collection '" + commonAttributes.name + "': "  + e.getMessage() + ". Aborting restore!";
             LOG.error(msg, e);
             listener.warn(msg);
             throw new SAXException(msg, e);
@@ -256,7 +255,6 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
             name = atts.getValue("name");
         }
 
-        // TODO(AR) this was previously commented out in the SystemImportHandler
         // exclude the /db/system, /db/system/security, /db/system/security/exist/groups collections and their sub-collections, as these have already been restored
         if ((XmldbURI.DB.equals(currentCollectionUri) && "system".equals(name))
                 || (XmldbURI.SYSTEM.equals(currentCollectionUri) && "security".equals(name))
@@ -298,56 +296,38 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
         }
     }
 
-    private DeferredPermission restoreResourceEntry(final Attributes atts) throws SAXException {
-        @Nullable final String skip = atts.getValue( "skip" );
+    private DeferredPermission restoreResourceEntry(final Attributes attributes) throws SAXException {
+        final EntryCommonMetadataAttributes commonAttributes = EntryCommonMetadataAttributes.fromAttributes(attributes);
 
         // Don't process entries which should be skipped
-        if (skip != null && !"no".equals(skip)) {
+        if (commonAttributes.skip) {
             return new SkippedEntryDeferredPermission();
         }
 
-        @Nullable final String name = atts.getValue("name");
-        if (name == null) {
+        if (commonAttributes.name == null) {
             throw new SAXException("Resource requires a name attribute");
         }
 
-        final boolean xmlType = Optional.ofNullable(atts.getValue("type")).filter(s -> s.equals("XMLResource")).isPresent();
+        final boolean xmlType = Optional.ofNullable(attributes.getValue("type")).filter(s -> s.equals("XMLResource")).isPresent();
+        final String filename = getAttr(attributes, "filename", commonAttributes.name);
+        @Nullable final String mimeTypeStr = attributes.getValue("mimetype");
+        @Nullable final String dateModifiedStr = attributes.getValue("modified");
+        @Nullable final String publicId = attributes.getValue("publicid");
+        @Nullable final String systemId = attributes.getValue("systemid");
+        @Nullable final String nameDocType = attributes.getValue("namedoctype");
 
-        final String owner = getAttr(atts, "owner", SecurityManager.SYSTEM);
-        final String group = getAttr(atts, "group", SecurityManager.DBA_GROUP);
-        final String perms = getAttr(atts, "mode", "644");
-
-        final String filename = getAttr(atts, "filename", name);
-
-        @Nullable final String mimeTypeStr = atts.getValue("mimetype");
-        @Nullable final String dateCreatedStr = atts.getValue("created");
-        @Nullable final String dateModifiedStr = atts.getValue("modified");
-
-        @Nullable final String publicId = atts.getValue("publicid");
-        @Nullable final String systemId = atts.getValue("systemid");
-        @Nullable final String nameDocType = atts.getValue("namedoctype");
-
-        final XmldbURI docName;
-        if (version >= STRICT_URI_VERSION) {
-            docName = XmldbURI.create(name);
-        } else {
-            try {
-                docName = URIUtils.encodeXmldbUriFor(name);
-            } catch(final URISyntaxException e) {
-                final String msg = "Could not parse document name into a URI: " + e.getMessage();
-                listener.error(msg);
-                LOG.error(msg, e);
-                return new SkippedEntryDeferredPermission();
-            }
+        @Nullable final XmldbURI docName = uriFromPath(commonAttributes.name);
+        if (docName == null) {
+            return new SkippedEntryDeferredPermission();
         }
 
         final EXistInputSource is;
         if (deduplicateBlobs && !xmlType) {
-            final String blobId = atts.getValue("blob-id");
+            final String blobId = attributes.getValue("blob-id");
             is = descriptor.getBlobInputSource(blobId);
 
             if (is == null) {
-                final String msg = "Failed to restore resource '" + name + "'\nfrom BLOB '" + blobId + "'.\nReason: Unable to obtain its EXistInputSource";
+                final String msg = String.format("Failed to restore resource '%s'%nfrom BLOB '%s'.%nReason: Unable to obtain its EXistInputSource", commonAttributes.name, blobId);
                 listener.warn(msg);
                 return new SkippedEntryDeferredPermission();
             }
@@ -355,7 +335,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
             is = descriptor.getInputSource(filename);
 
             if (is == null) {
-                final String msg = "Failed to restore resource '" + name + "'\nfrom file '" + descriptor.getSymbolicPath( name, false ) + "'.\nReason: Unable to obtain its EXistInputSource";
+                final String msg = String.format("Failed to restore resource '%s'%nfrom file '%s'.%nReason: Unable to obtain its EXistInputSource", commonAttributes.name, descriptor.getSymbolicPath(commonAttributes.name, false));
                 listener.warn(msg);
                 return new SkippedEntryDeferredPermission();
             }
@@ -375,9 +355,9 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
         }
 
         Date dateCreated = null;
-        if (dateCreatedStr != null) {
+        if (commonAttributes.created != null) {
             try {
-                dateCreated = new DateTimeValue(dateCreatedStr).getDate();
+                dateCreated = new DateTimeValue(commonAttributes.created).getDate();
             } catch (final XPathException xpe) {
                 listener.warn("Illegal creation date. Ignoring date...");
             }
@@ -411,7 +391,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
                         broker.storeDocument(transaction, docName, is, mimeType, dateCreated, dateModified, null, docType, null, collection);
                         validated = true;
 
-                        notifyStartDocumentRestore(docUri, atts);
+                        notifyStartDocumentRestore(docUri, attributes);
 
                         transaction.commit();
 
@@ -434,21 +414,21 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
             }
 
             final DeferredPermission deferredPermission;
-            if(name.startsWith(XmldbURI.SYSTEM_COLLECTION)) {
+            if(commonAttributes.name.startsWith(XmldbURI.SYSTEM_COLLECTION)) {
                 //prevents restore of a backup from changing system collection resource ownership
-                deferredPermission = new ResourceDeferredPermission(listener, docUri, SecurityManager.SYSTEM, SecurityManager.DBA_GROUP, Integer.parseInt(perms, 8));
+                deferredPermission = new ResourceDeferredPermission(listener, docUri, SecurityManager.SYSTEM, SecurityManager.DBA_GROUP, Integer.parseInt(commonAttributes.mode, 8));
             } else {
-                deferredPermission = new ResourceDeferredPermission(listener, docUri, owner, group, Integer.parseInt(perms, 8));
+                deferredPermission = new ResourceDeferredPermission(listener, docUri, commonAttributes.owner, commonAttributes.group, Integer.parseInt(commonAttributes.mode, 8));
             }
 
             notifyEndDocumentRestore(docUri);
 
-            listener.restoredResource(name);
+            listener.restoredResource(commonAttributes.name);
 
             return deferredPermission;
 
         } catch(final Exception e) {
-            final String message = String.format("Failed to restore resource '%s'\nfrom file '%s'.\nReason: %s", name, descriptor.getSymbolicPath(name, false), e.getMessage());
+            final String message = String.format("Failed to restore resource '%s'%nfrom file '%s'.%nReason: %s", commonAttributes.name, descriptor.getSymbolicPath(commonAttributes.name, false), e.getMessage());
             listener.warn(message);
             LOG.error(message, e);
             return new SkippedEntryDeferredPermission();
@@ -461,7 +441,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
         final String name = atts.getValue("name");
         final String type = atts.getValue("type");
 
-        if ("collection".equals(type)) {
+        if (COLLECTION_ELEMENT_NAME.equals(type)) {
             try {
                 try (final Txn transaction = beginTransaction();
                      final Collection collection = broker.openCollection(currentCollectionUri.append(name), Lock.LockMode.WRITE_LOCK)) {
@@ -482,7 +462,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
                 listener.warn("Failed to remove deleted collection: " + name + ": " + e.getMessage());
             }
 
-        } else if ("resource".equals(type)) {
+        } else if (RESOURCE_ELEMENT_NAME.equals(type)) {
             final XmldbURI docName = XmldbURI.create(name);
             try (final Txn transaction = beginTransaction();
                  final Collection collection = broker.openCollection(currentCollectionUri.append(name), Lock.LockMode.WRITE_LOCK);
@@ -516,13 +496,30 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
         }
     }
 
+    private @Nullable XmldbURI uriFromPath(final String path) {
+        final XmldbURI uri;
+        if (version >= STRICT_URI_VERSION) {
+            uri = XmldbURI.create(path);
+        } else {
+            try {
+                uri = URIUtils.encodeXmldbUriFor(path);
+            } catch(final URISyntaxException e) {
+                final String msg = "Could not parse name into a URI: " + e.getMessage();
+                listener.warn(msg);
+                LOG.warn(msg, e);
+                return null;
+            }
+        }
+        return uri;
+    }
+
     private void addACEToDeferredPermissions(final Attributes atts) {
         final int index = Integer.parseInt(atts.getValue("index"));
         final ACLPermission.ACE_TARGET target = ACLPermission.ACE_TARGET.valueOf(atts.getValue("target"));
         final String who = atts.getValue("who");
-        final ACLPermission.ACE_ACCESS_TYPE access_type = ACLPermission.ACE_ACCESS_TYPE.valueOf(atts.getValue("access_type"));
+        final ACLPermission.ACE_ACCESS_TYPE accessType = ACLPermission.ACE_ACCESS_TYPE.valueOf(atts.getValue("access_type"));
         final int mode = Integer.parseInt(atts.getValue("mode"), 8);
-        deferredPermissions.peek().addACE(index, target, who, access_type, mode);
+        deferredPermissions.peek().addACE(index, target, who, accessType, mode);
     }
 
     private void setDeferredPermissions() {
@@ -539,24 +536,25 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
     }
 
     private Date getDateFromXSDateTimeStringForItem(final String strXSDateTime, final String itemName) {
-        Date date_created = null;
+        Date dateCreated = null;
 
-        if(strXSDateTime != null) {
+        if (strXSDateTime != null) {
             try {
-                date_created = new DateTimeValue(strXSDateTime).getDate();
+                dateCreated = new DateTimeValue(strXSDateTime).getDate();
             } catch(final XPathException e2) {
+                // no-op, ignore and move on
             }
         }
 
-        if(date_created == null) {
+        if (dateCreated == null) {
             final String msg = "Could not parse created date '" + strXSDateTime + "' from backup for: '" + itemName + "', using current time!";
             listener.error(msg);
             LOG.error(msg);
 
-            date_created = Calendar.getInstance().getTime();
+            dateCreated = Calendar.getInstance().getTime();
         }
 
-        return date_created;
+        return dateCreated;
     }
 
     private static String getAttr(final Attributes atts, final String name, final String fallback) {
@@ -616,5 +614,35 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
      */
     protected void notifyEndDocumentRestore(final XmldbURI documentUri) throws PermissionDeniedException {
         // no-op by default, may be overridden by subclass
+    }
+
+    private static class EntryCommonMetadataAttributes {
+        final boolean skip;
+        @Nullable final String name;
+        final String owner;
+        final String group;
+        final String mode;
+        @Nullable final String created;
+
+        private EntryCommonMetadataAttributes(final boolean skip, @Nullable final String name, final String owner, final String group, final String mode, @Nullable final String created) {
+            this.skip = skip;
+            this.name = name;
+            this.owner = owner;
+            this.group = group;
+            this.mode = mode;
+            this.created = created;
+        }
+
+        public static EntryCommonMetadataAttributes fromAttributes(final Attributes attributes) {
+            @Nullable final String skipStr = attributes.getValue("skip");
+            final boolean skip = skipStr != null && (skipStr.equalsIgnoreCase("true") || skipStr.equalsIgnoreCase("yes"));
+            @Nullable final String name = attributes.getValue("name");
+            final String owner = getAttr(attributes, "owner", SecurityManager.SYSTEM);
+            final String group = getAttr(attributes, "group", SecurityManager.DBA_GROUP);
+            final String mode = getAttr(attributes, "mode", "644");
+            @Nullable final String created = attributes.getValue("created");
+
+            return new EntryCommonMetadataAttributes(skip, name, owner, group, mode, created);
+        }
     }
 }
