@@ -71,11 +71,11 @@ public class SystemImportHandler extends AbstractRestoreHandler {
     @Override
     public void startElement(final String namespaceURI, final String localName, final String qName, final Attributes atts) throws SAXException {
         if (Namespaces.EXIST_NS.equals(namespaceURI) &&
-                ("collection".equals(localName) ||
-                        "resource".equals(localName) ||
-                        "subcollection".equals(localName) ||
-                        "deleted".equals(localName) ||
-                        "ace".equals(localName))) {
+                (COLLECTION_ELEMENT_NAME.equals(localName) ||
+                        RESOURCE_ELEMENT_NAME.equals(localName) ||
+                        SUBCOLLECTION_ELEMENT_NAME.equals(localName) ||
+                        DELETED_ELEMENT_NAME.equals(localName) ||
+                        ACE_ELEMENT_NAME.equals(localName))) {
             super.startElement(namespaceURI, localName, qName, atts);
         } else {
             rh.startElement(namespaceURI, localName, qName, atts);
@@ -85,11 +85,11 @@ public class SystemImportHandler extends AbstractRestoreHandler {
     @Override
     public void endElement(final String namespaceURI, final String localName, final String qName) throws SAXException {
         if (Namespaces.EXIST_NS.equals(namespaceURI) &&
-                ("collection".equals(localName) ||
-                        "resource".equals(localName) ||
-                        "subcollection".equals(localName) ||
-                        "deleted".equals(localName) ||
-                        "ace".equals(localName))) {
+                (COLLECTION_ELEMENT_NAME.equals(localName) ||
+                        RESOURCE_ELEMENT_NAME.equals(localName) ||
+                        SUBCOLLECTION_ELEMENT_NAME.equals(localName) ||
+                        DELETED_ELEMENT_NAME.equals(localName) ||
+                        ACE_ELEMENT_NAME.equals(localName))) {
             super.endElement(namespaceURI, localName, qName);
         } else {
             rh.endElement(namespaceURI, localName, qName);
