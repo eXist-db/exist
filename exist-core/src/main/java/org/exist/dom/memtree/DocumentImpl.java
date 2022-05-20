@@ -211,6 +211,10 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         return docId;
     }
 
+    public boolean isExplicitlyCreated() {
+        return explicitlyCreated;
+    }
+
     public int addNode(final short kind, final short level, final QName qname) {
         if(nodeKind == null) {
             init();
