@@ -98,4 +98,5 @@ HEALTHCHECK CMD [ "java", \
     "--xpath", "system:get-version()" ]
 
 ENTRYPOINT [ "java", \
-    "org.exist.start.Main", "jetty" ]
+    "org.exist.start.Main"]
+CMD ["jetty" ]
