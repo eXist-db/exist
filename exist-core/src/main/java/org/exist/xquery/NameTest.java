@@ -19,12 +19,15 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.INode;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.ReferenceNode;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
@@ -88,6 +91,16 @@ public class NameTest extends TypeTest {
     public boolean matchesName(final Node other) {
         if (other.getNodeType() == NodeImpl.REFERENCE_NODE) {
             return matchesName(((ReferenceNode) other).getReference().getNode());
+        }
+
+        if (nodeType == Type.DOCUMENT && other.getNodeType() == Node.DOCUMENT_NODE) {
+            final Element otherElement = ((Document) other).getDocumentElement();
+            if (otherElement != null) {
+                final QName otherQName = ((INode) otherElement).getQName();
+                if (nodeName.equals(otherQName)) {
+                    return true;
+                }
+            }
         }
 
         if (nodeName == QName.WildcardQName.getInstance()) {
