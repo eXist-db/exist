@@ -202,7 +202,7 @@
                     <images>
                         <image>
                             <name>existdb/existdb:%v</name>
-                            <alias>exist-ci</alias>
+                            <alias>exist</alias>
                             <build>
                                 <tags>
                                     <tag>${docker.tag}</tag>
