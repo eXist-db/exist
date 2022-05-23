@@ -200,26 +200,24 @@
         </xs:annotation>
     </xs:element>
 
-    <xs:group name="white-black-list">
+    <xs:group name="dba-white-black-list">
         <xs:sequence>
-            <xs:element name="whitelist" type="cnf:principalRestrictionListType" minOccurs="0">
+            <xs:element name="dbalist" type="cnf:principalRestrictionListType" minOccurs="0"
+                maxOccurs="1">
                 <xs:annotation>
-                    <xs:documentation>
-                        <db:section>
-                            <db:title>Principal Whitelist</db:title>
-                            <db:para>Whitelist of Principals to allow from the LDAP</db:para>
-                        </db:section>
-                    </xs:documentation>
+                    <xs:documentation>List of Principals to set as DBA</xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="blacklist" type="cnf:principalRestrictionListType" minOccurs="0">
+            <xs:element name="whitelist" type="cnf:principalRestrictionListType" minOccurs="0"
+                maxOccurs="1">
                 <xs:annotation>
-                    <xs:documentation>
-                        <db:section>
-                            <db:title>Principal Blacklist</db:title>
-                            <db:para>Blacklist of Principals to disallow from the LDAP</db:para>
-                        </db:section>
-                    </xs:documentation>
+                    <xs:documentation>Whitelist of Principals to allow from the LDAP</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="blacklist" type="cnf:principalRestrictionListType" minOccurs="0"
+                maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Blacklist of Principals to disallow from the LDAP</xs:documentation>
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
@@ -236,7 +234,7 @@
             <xs:element name="search-attribute" type="cnf:searchAttributeType_account"
                 maxOccurs="unbounded"/>
             <xs:element ref="cnf:metadata-search-attribute" maxOccurs="unbounded"/>
-            <xs:group ref="cnf:white-black-list"/>
+            <xs:group ref="cnf:dba-white-black-list"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -246,7 +244,7 @@
             <xs:element name="search-attribute" type="cnf:searchAttributeType_group"
                 maxOccurs="unbounded"/>
             <xs:element ref="cnf:metadata-search-attribute" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:group ref="cnf:white-black-list"/>
+            <xs:group ref="cnf:dba-white-black-list"/>
         </xs:sequence>
     </xs:complexType>
 

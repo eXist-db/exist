@@ -21,10 +21,8 @@
  */
 package org.exist.security.realm.jwt;
 
-import com.auth0.jwt.interfaces.Claim;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ReadContext;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -41,8 +39,6 @@ import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 
-import javax.naming.ldap.LdapContext;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -68,6 +64,8 @@ public class JWTRealm extends AbstractRealm {
     protected JWTContextFactory jwtContextFactory;
 
     protected Map jwtMap;
+
+    protected ReadContext jwtContext;
 
     public JWTRealm(final SecurityManagerImpl sm, final Configuration config) {
         super(sm, config);
@@ -113,20 +111,9 @@ public class JWTRealm extends AbstractRealm {
     public Subject authenticate(String accountName, Object credentials) throws AuthenticationException {
         final String jwt = deserialize(accountName);
         LOG.info("JWT = " + jwt);
-        ObjectMapper mapper = new ObjectMapper();
-        Map jwtMap;
-        try {
-            jwtMap = mapper.readValue(jwt, Map.class);
-            this.jwtMap = jwtMap;
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-        final String name1 = "sub"; // this.jwtContextFactory.getAccount().getSearchProperty(JWTAccount.JWTPropertyKey.NAME);
-        LOG.info("Name property = " + name1);
-        String name = (String) jwtMap.get(name1);
-        LOG.info("From JWT = " + name);
-        final AbstractAccount account = (AbstractAccount) getAccount(name);
-        return new AuthenticatedJWTSubjectAccreditedImpl (account, this.jwtMap, String.valueOf(credentials));
+        ReadContext ctx = JsonPath.parse(jwt);
+        final AbstractAccount account = (AbstractAccount) getAccount(ctx);
+        return new AuthenticatedJWTSubjectAccreditedImpl (account, ctx, String.valueOf(credentials));
     }
     public String deserialize(String tokenString) {
         String[] pieces = splitTokenString(tokenString);
@@ -146,8 +133,12 @@ public class JWTRealm extends AbstractRealm {
         }
         return pieces;
     }
-    @Override
-    public final synchronized Account getAccount(String name) {
+    public final synchronized Account getAccount(ReadContext ctx) {
+
+        final JWTContextFactory jwtContextFactory = ensureContextFactory();
+        final JWTSearchContext search = jwtContextFactory.getSearchContext();
+        final JWTSearchAccount searchAccount = search.getSearchAccount();
+        final String name = ctx.read(searchAccount.getSearchAttribute(AbstractJWTSearchPrincipal.JWTSearchAttributeKey.NAME));
 
         //first attempt to get the cached account
         final Account acct = super.getAccount(name);
@@ -171,6 +162,10 @@ public class JWTRealm extends AbstractRealm {
         } catch (PermissionDeniedException e) {
             e.printStackTrace();
         }
+        return null;
+    }
+
+    private List<Group> getGroupMembershipForJWTUser(final ReadContext ctx, final DBBroker broker) {
         return null;
     }
 
@@ -267,11 +262,28 @@ public class JWTRealm extends AbstractRealm {
         }
     }
 
+    private String addDomainPostfix(final String principalName) {
+        String name = principalName;
+        if (!name.contains("@")) {
+            name += '@' + ensureContextFactory().getDomain();
+        }
+        return name;
+    }
+
+    private String removeDomainPostfix(final String principalName) {
+        String name = principalName;
+        if (name.contains("@") && name.endsWith(ensureContextFactory().getDomain())) {
+            name = name.substring(0, name.indexOf('@'));
+        }
+        return name;
+    }
+
+
     private final class AuthenticatedJWTSubjectAccreditedImpl extends SubjectAccreditedImpl {
 
         private final String authenticatedCredentials;
 
-        private AuthenticatedJWTSubjectAccreditedImpl(final AbstractAccount account, final Map jwt, final String authenticatedCredentials) {
+        private AuthenticatedJWTSubjectAccreditedImpl(final AbstractAccount account, final ReadContext jwt, final String authenticatedCredentials) {
             super(account, jwt);
             this.authenticatedCredentials = authenticatedCredentials;
         }

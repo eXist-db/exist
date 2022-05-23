@@ -1,6 +1,6 @@
 /*
  * eXist-db Open Source Native XML Database
- * Copyright (C) 2021 The eXist-db Authors
+ * Copyright (C) 2001 The eXist-db Authors
  *
  * info@exist-db.org
  * http://www.exist-db.org
@@ -24,45 +24,32 @@ package org.exist.security.realm.jwt;
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
+import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 
-/**
- * @author <a href="mailto:loren.cahlander@gmail.com">Loren Cahlander</a>
- *
- */
-public class JWTContextFactory implements Configurable {
+import java.util.ArrayList;
+import java.util.List;
 
-    @ConfigurationFieldAsElement("domain")
-    protected String domain = null;
+@ConfigurationClass("transformation")
+public class JWTTransformationContext implements TransformationContext, Configurable {
 
-    @ConfigurationFieldAsElement("secret")
-    protected String secret = null;
+    @ConfigurationFieldAsElement("add-group")
+    //protected List<String> addGroup = new ArrayList<String>();
+    protected String addGroup; //TODO convert to list
 
-    @ConfigurationFieldAsElement("search")
-    protected JWTSearchContext searchContext;
+    private final Configuration configuration;
 
-    @ConfigurationFieldAsElement("transformation")
-    private JWTTransformationContext transformationContext;
-
-    private Configuration configuration = null;
-
-    public JWTContextFactory(final Configuration config) {
-        configuration = Configurator.configure(this, config);
+    public JWTTransformationContext(final Configuration config) {
+        this.configuration = Configurator.configure(this, config);
     }
 
-    public String getDomain() { return domain; }
-
-    public String getSecret() { return secret; }
-
-    public JWTSearchContext getSearchContext() {
-        return searchContext;
+    @Override
+    public List<String> getAdditionalGroups() {
+        final List<String> additionalGroups = new ArrayList<>();
+        additionalGroups.add(addGroup);
+        return additionalGroups;
     }
 
-    public JWTTransformationContext getTransformationContext() {
-        return transformationContext;
-    }
-
-    // configurable methods
     @Override
     public boolean isConfigured() {
         return (configuration != null);

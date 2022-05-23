@@ -1,5 +1,6 @@
 To enable LDAP authentication you need to make sure that the file /db/system/security/config.xml content something similar to that below 
 
+```xml
 <security-manager xmlns="http://exist-db.org/Configuration" ...
 	...
     <realm id="LDAP">
@@ -13,24 +14,35 @@ To enable LDAP authentication you need to make sure that the file /db/system/sec
                 <default-password>some-ldap-password</default-password>
 				<account>
                     <search-filter-prefix>(&amp;(objectClass=user)(sAMAccountName=${account-name}))</search-filter-prefix>
-                    <search-attribute>...</search-attribute>
-                    <metadata-search-attribute>..</metadata-search-attribute>
+                    <search-attribute key="...">...</search-attribute>
+                    <metadata-search-attribute key="...">..</metadata-search-attribute>
                     <whitelist><principal>..</principal><principal>..</principal></whitelist>
                     <blacklist><principal>..</principal><principal>..</principal></blacklist>
-                </account
+                </account>
                 <group>
                     <search-filter-prefix>(&amp;(objectClass=group)(sAMAccountName=${group-name}))</group-search-filter>
-                    <search-attribute>...</search-attribute>
-                    <metadata-search-attribute>..</metadata-search-attribute>
-                    <whitelist><principal>..</principal><principal>..</principal></whitelist>
-                    <blacklist><principal>..</principal><principal>..</principal></blacklist>
+                    <search-attribute key="...">...</search-attribute>
+                    <metadata-search-attribute key="...">..</metadata-search-attribute>
+                    <!-- Whitelist of Principals to allow from the LDAP -->
+                    <whitelist>
+                        <principal>..</principal>
+                        <principal>..</principal>
+                    </whitelist>
+                    <!-- Blacklist of Principals to disallow from the LDAP -->
+                    <blacklist>
+                        <principal>..</principal>
+                        <principal>..</principal>
+                    </blacklist>
                 </group>
             </search>
-            <transformation><add-group>...</add-group></transformation>
+            <transformation>
+                <add-group>...</add-group>
+            </transformation>
         </context>
     </realm>
 	...
 </security-manager>
+```
 
 url - the URL to your LDAP directory server.
 base - the LDAP base to use when resolving users and groups
