@@ -321,6 +321,26 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         return flatten ? flatten(input, new ValueSequence(input.getItemCount() * 2)) : input;
     }
 
+    @Override
+    public boolean containsReference(final Item item) {
+        for (int i = 0; i < vector.length(); i++) {
+            if (vector.nth(i) == item) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        for (int i = 0; i < vector.length(); i++) {
+            if (vector.nth(i).equals(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * The accessor function which will be evaluated if the map is called
      * as a function item.

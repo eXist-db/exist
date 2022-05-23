@@ -352,6 +352,48 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         return searchData(root, proxy) != null;
     }
 
+    @Override
+    public boolean containsReference(final Item item) {
+        if (root == null) {
+            return false;
+        }
+
+        return containsReference(root, item);
+    }
+
+    private boolean containsReference(@Nullable final Node node, final Item item) {
+        if (node == null) {
+            return false;
+        }
+
+        if (node.data == item) {
+            return true;
+        }
+
+        return containsReference(node.leftChild, item) || containsReference(node.rightChild, item);
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        if (root == null) {
+            return false;
+        }
+
+        return containsReference(root, item);
+    }
+
+    private boolean contains(@Nullable final Node node, final Item item) {
+        if (node == null) {
+            return false;
+        }
+
+        if (node.data.equals(item)) {
+            return true;
+        }
+
+        return containsReference(node.leftChild, item) || containsReference(node.rightChild, item);
+    }
+
     public void removeNode(final Node node) {
         --size;
         Node tempNode = node;

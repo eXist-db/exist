@@ -94,6 +94,24 @@ public class MapType extends AbstractMapType {
         return this.map.containsKey(key);
     }
 
+    @Override
+    public boolean containsReference(final Item item) {
+        for (final Iterator<Map.Entry<AtomicValue, Sequence>> it = map.iterator(); it.hasNext();) {
+            final Sequence value = it.next().getValue();
+            return value == item;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        for (final Iterator<Map.Entry<AtomicValue, Sequence>> it = map.iterator(); it.hasNext();) {
+            final Sequence value = it.next().getValue();
+            return value.equals(item);
+        }
+        return false;
+    }
+
     public Sequence keys() {
         final ValueSequence seq = new ValueSequence();
         for (final Map.Entry<AtomicValue, Sequence> entry: this.map) {
