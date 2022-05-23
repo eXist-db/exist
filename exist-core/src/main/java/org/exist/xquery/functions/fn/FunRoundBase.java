@@ -86,8 +86,15 @@ abstract class FunRoundBase extends BasicFunction {
      * @throws XPathException if a conversion goes wrong (it shouldn't)
      */
     private static Sequence convertValue(final IntegerValue precision, final NumericValue value, final RoundingMode roundingMode) throws XPathException {
+
+        if (value.isInfinite() || value.isNaN()) {
+            return value;
+        }
+
         final DecimalValue decimal = (DecimalValue)value.convertTo(Type.DECIMAL);
-        final DecimalValue rounded = (DecimalValue) Objects.requireNonNull(decimal).round(precision, roundingMode);
+        // (AP) This is as much precision as we can need, and prevents overflows scaling BigInteger
+        final IntegerValue usePrecision = truncatePrecision(decimal, precision);
+        final DecimalValue rounded = (DecimalValue) Objects.requireNonNull(decimal).round(usePrecision, roundingMode);
 
         if (value.isNegative() && rounded.isZero()) {
             //Extreme care!! (AP) -0 as DecimalValue will not be negative, -0.0f and -0.0d will be negative.
@@ -106,4 +113,12 @@ abstract class FunRoundBase extends BasicFunction {
         return rounded.convertTo(value.getType());
     }
 
+    private static IntegerValue truncatePrecision(final DecimalValue decimal, final IntegerValue precision) throws XPathException {
+
+        final IntegerValue decimalPrecision = new IntegerValue(decimal.getValue().precision());
+        if (decimalPrecision.compareTo(precision) < 0) {
+            return decimalPrecision;
+        }
+        return precision;
+    }
 }

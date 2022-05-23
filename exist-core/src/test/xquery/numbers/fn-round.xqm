@@ -115,6 +115,20 @@ function fr:round-half-to-even($number as xs:double) {
 };
 
 declare
+    %test:args("3.567812E+3", 4294967296)
+    %test:assertEquals("3567.812")
+function fr:round-half-to-even-high-precision($number as xs:double, $precision as xs:integer) {
+    fn:round-half-to-even($number, $precision)
+};
+
+declare
+    %test:args("-0.05", 1)
+    %test:assertEquals("-0.1")
+function fr:round-half-to-even-inexact-halfway-float($number as xs:float, $precision as xs:integer) {
+    fn:round-half-to-even($number, $precision)
+};
+
+declare
     %test:args("-0.41",1)
     %test:assertEquals("-0.4")
     %test:args("-0.43",0)
@@ -143,4 +157,22 @@ declare
     %test:assertEquals("-0")
 function fr:round-negative-zero-float($number as xs:float, $precision as xs:integer) {
     fn:round($number, $precision)
+};
+
+declare
+    %test:args("INF")
+    %test:assertEquals("INF")
+    %test:args("-INF")
+    %test:assertEquals("-INF")
+function fr:round-inf-float($number as xs:float) {
+    fn:round($number)
+};
+
+declare
+    %test:args("INF")
+    %test:assertEquals("INF")
+    %test:args("-INF")
+    %test:assertEquals("-INF")
+function fr:round-inf-double($number as xs:double) {
+    fn:round($number)
 };
