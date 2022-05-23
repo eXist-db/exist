@@ -304,11 +304,16 @@ public class RestoreHandler extends DefaultHandler {
         }
 
         MimeType mimeType = null;
-        if (mimeTypeStr != null) {
+        if (xmlType) {
+            mimeType = MimeType.XML_TYPE;
+        } else if (mimeTypeStr != null) {
             mimeType = MimeTable.getInstance().getContentType(mimeTypeStr);
-        }
-        if (mimeType == null) {
-            mimeType = xmlType ? MimeType.XML_TYPE : MimeType.BINARY_TYPE;
+            if (mimeType == null) {
+                mimeType = MimeType.BINARY_TYPE;
+            } else if (mimeType.isXMLType() !=  xmlType) {
+                listener.warn("Calculated mime type " + mimeType + " type differs from the one specified in the backup, adjusting it");
+                mimeType = new MimeType(mimeType.getName(), xmlType ? MimeType.XML : MimeType.BINARY);
+            }
         }
 
         Date dateCreated = null;
