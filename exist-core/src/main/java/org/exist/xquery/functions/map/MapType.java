@@ -98,7 +98,10 @@ public class MapType extends AbstractMapType {
     public boolean containsReference(final Item item) {
         for (final Iterator<Map.Entry<AtomicValue, Sequence>> it = map.iterator(); it.hasNext();) {
             final Sequence value = it.next().getValue();
-            return value == item;
+            if (value == item) {
+                return true;
+            }
+            return value.containsReference(item);
         }
         return false;
     }
@@ -107,7 +110,10 @@ public class MapType extends AbstractMapType {
     public boolean contains(final Item item) {
         for (final Iterator<Map.Entry<AtomicValue, Sequence>> it = map.iterator(); it.hasNext();) {
             final Sequence value = it.next().getValue();
-            return value.equals(item);
+            if (value.equals(item)) {
+                return true;
+            }
+            return value.contains(item);
         }
         return false;
     }
