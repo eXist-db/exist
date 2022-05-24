@@ -28,7 +28,7 @@ declare namespace test="http://exist-db.org/xquery/xqsuite";
 declare variable $testNilled:simple_node := <node>"1"</node>;
 
 declare
-    %test:assertFalse
+    %test:assertError("err:XPDY0002")
 function testNilled:nilled-no-param() {
     fn:nilled()
 };
@@ -87,3 +87,19 @@ declare
 function testNilled:nilled-p2() {
     fn:nilled($testNilled:two_elements)
 };
+
+declare variable $testNilled:one_element_in_conjunction := <shoe xsi:nil="{fn:true()}"/>;
+
+declare
+    %test:assertFalse
+function testNilled:nilled-conjunction-is-false() {
+    fn:nilled($testNilled:one_element_in_conjunction) and fn:true()
+};
+
+
+declare
+    %test:assertFalse
+function testNilled:nilled-conjunction-element-is-false() {
+    fn:nilled($testNilled:one_element_in_conjunction)
+};
+
