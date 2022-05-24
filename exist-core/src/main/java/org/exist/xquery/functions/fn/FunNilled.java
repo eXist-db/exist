@@ -65,6 +65,9 @@ public class FunNilled extends BasicFunction {
 
 		final Sequence item;
 		if (args.length == 0) {
+			if (contextSequence == null || contextSequence.isEmpty()) {
+				throw new XPathException(ErrorCodes.XPDY0002, "Context item is absent in call to nilled. ");
+			}
 			item = contextSequence;
 		} else {
 			item = args[0];
@@ -81,14 +84,6 @@ public class FunNilled extends BasicFunction {
 		final Item arg = item.itemAt(0);
 		if (!Type.subTypeOf(arg.getType(), Type.ELEMENT)) {
 			return Sequence.EMPTY_SEQUENCE;
-		}
-
-		final Node n = ((NodeValue) arg).getNode();
-		if (n.hasAttributes()) {
-			final Node nilled = n.getAttributes().getNamedItemNS(Namespaces.SCHEMA_INSTANCE_NS, "nil");
-			if (nilled != null) {
-				return new BooleanValue(this, nilled.getNodeValue().equals("true"));
-			}
 		}
 
         return BooleanValue.FALSE;
