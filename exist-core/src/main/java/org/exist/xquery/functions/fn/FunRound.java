@@ -21,51 +21,58 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NumericValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
-public class FunRound extends Function {
+import java.math.RoundingMode;
 
-	public final static FunctionSignature signature =
-			new FunctionSignature(
-				new QName("round", Function.BUILTIN_FUNCTION_NS),
-				"Returns the number with no fractional part that is closest " +
-				"to the argument $arg. If there are two such numbers, then the one " +
-				"that is closest to positive infinity is returned. If type of " +
-				"$arg is one of the four numeric types xs:float, xs:double, " +
-				"xs:decimal or xs:integer the type of the result is the same " +
-				"as the type of $arg. If the type of $arg is a type derived " +
-				"from one of the numeric types, the result is an instance of " +
-				"the base numeric type.\n\n" +
-				"For xs:float and xs:double arguments, if the argument is " +
-				"positive infinity, then positive infinity is returned. " +
-				"If the argument is negative infinity, then negative infinity " +
-				"is returned. If the argument is positive zero, then positive " +
-				"zero is returned. If the argument is negative zero, then " +
-				"negative zero is returned. If the argument is less than zero, " +
-				"but greater than or equal to -0.5, then negative zero is returned. " +
-				"In the cases where positive zero or negative zero is returned, " +
-				"negative zero or positive zero may be returned as " +
-				"[XML Schema Part 2: Datatypes Second Edition] does not " +
-				"distinguish between the values positive zero and negative zero.",
-				new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The input number") },
-				new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE, "the rounded value")
-			);
-			
-	public FunRound(XQueryContext context) {
+import static org.exist.xquery.FunctionDSL.optParam;
+import static org.exist.xquery.functions.fn.FnModule.functionSignature;
+
+/**
+ * Implement fn:round() function
+ *
+ * Shares a base class and evaluator with {@link FunRoundHalfToEven}
+ * They differ only in the rounding mode used.
+ */
+public class FunRound extends FunRoundBase {
+
+	private static final String FN_NAME = "round";
+	private static final String description = "The function returns the nearest (that is, numerically closest) " +
+			"value to $arg that is a multiple of ten to the power of minus $precision. " +
+			"If two such values are equally near (for example, if the fractional part in $arg is exactly .5), " +
+			"the function returns the one that is closest to positive infinity. " +
+			"For the four types xs:float, xs:double, xs:decimal and xs:integer, " +
+			"it is guaranteed that if the type of $arg is an instance of type T " +
+			"then the result will also be an instance of T. " +
+			"The result may also be an instance of a type derived from one of these four by restriction. " +
+			"For example, if $arg is an instance of xs:decimal and $precision is less than one, " +
+			"then the result may be an instance of xs:integer. " +
+			"The single-argument version of this function produces the same result " +
+			"as the two-argument version with $precision=0 (that is, it rounds to a whole number). " +
+			"When $arg is of type xs:float and xs:double: " +
+			"If $arg is NaN, positive or negative zero, or positive or negative infinity, " +
+			"then the result is the same as the argument. " +
+			"For other values, the argument is cast to xs:decimal " +
+			"using an implementation of xs:decimal that imposes no limits on the number of digits " +
+			"that can be represented. The function is applied to this xs:decimal value, " +
+			"and the resulting xs:decimal is cast back to xs:float or xs:double as appropriate " +
+			"to form the function result. If the resulting xs:decimal value is zero, " +
+			"then positive or negative zero is returned according to the sign of $arg.";
+	private static final FunctionReturnSequenceType returnType = new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE, "the rounded value");
+
+	public static final FunctionSignature[] FN_ROUND_SIGNATURES = {
+			functionSignature(FN_NAME, FunRound.description, FunRound.returnType,
+					optParam("arg", Type.NUMBER, "The input number")),
+			functionSignature(FN_NAME, FunRound.description, FunRound.returnType,
+					optParam("arg", Type.NUMBER, "The input number"),
+					optParam("precision", Type.INTEGER, "The input number"))
+	};
+
+	public FunRound(final XQueryContext context, final FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -73,37 +80,18 @@ public class FunRound extends Function {
 		return Type.NUMBER;
 	}
 
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
-        }       
-        
-        if (contextItem != null)
-			{contextSequence = contextItem.toSequence();}
-		
-        Sequence result;
-        final Sequence seq = getArgument(0).eval(contextSequence, contextItem);
-		if (seq.isEmpty())
-            {result = Sequence.EMPTY_SEQUENCE;}
-        else {
-        	final Item item = seq.itemAt(0);
-        	NumericValue value;
-        	if (item instanceof NumericValue) {
-				value = (NumericValue) item;
-			} else {
-				value = (NumericValue) item.convertTo(Type.NUMBER);
-			}
-            result = value.round();
-        }
+	/**
+	 * Work out the rounding mode for a particular value using fn:round
+	 *
+	 * @param value that has to be rounded
+	 * @return the rounding mode to use on this value
+	 */
+	@Override protected final RoundingMode getFunctionRoundingMode(final NumericValue value) {
 
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", result);} 
-        
-        return result;           
+		if (value.isNegative()) {
+			return RoundingMode.HALF_DOWN;
+		} else {
+			return RoundingMode.HALF_UP;
+		}
 	}
 }
