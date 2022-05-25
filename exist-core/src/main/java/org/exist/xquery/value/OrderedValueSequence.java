@@ -290,6 +290,28 @@ public class OrderedValueSequence extends AbstractSequence {
         return true;
     }
 
+    @Override
+    public boolean containsReference(final Item item) {
+        for (final SequenceIterator it = iterate(); it.hasNext(); ) {
+            final Item i = it.nextItem();
+            if (i == item) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        for (final SequenceIterator it = iterate(); it.hasNext(); ) {
+            final Item i = it.nextItem();
+            if (i.equals(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private class Entry implements Comparable<Entry> {
         Item item;
         AtomicValue values[];

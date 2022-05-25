@@ -39,8 +39,10 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -449,6 +451,52 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
     }
 
     @Override
+    public boolean containsReference(final Item item) {
+        if (item instanceof Node) {
+            for (int i = 0; i < partCount; i++) {
+                if (parts[i].containsReference(item)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        if (item instanceof Node) {
+            @Nullable final Document doc;
+            if (item instanceof Document) {
+                doc = (Document) item;
+            } else {
+                doc = ((Node) item).getOwnerDocument();
+            }
+
+            if (doc == null || !(doc instanceof DocumentImpl || doc instanceof org.exist.dom.memtree.DocumentImpl)) {
+                return false;
+            }
+
+            final int docId;
+            if (doc instanceof DocumentImpl) {
+                docId = ((DocumentImpl) doc).getDocId();
+            } else {
+                docId = (int) ((org.exist.dom.memtree.DocumentImpl) doc).getDocId();
+            }
+
+            if (IntArrays.binarySearch(documentIds, 0, partCount, docId) == -1) {
+                return false;
+            }
+
+            for (int i = 0; i < partCount; i++) {
+                if (parts[i].contains(item)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
     public NodeSet docsToNodeSet() {
         final NodeSet result = new ExtArrayNodeSet(partCount);
         for (int i = 0; i < partCount; i++) {
@@ -661,6 +709,26 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
 
         boolean contains(final NodeId nodeId) {
             return get(nodeId) != null;
+        }
+
+        boolean containsReference(final Item item) {
+            for (int i = 0; i < length; i++) {
+                final NodeProxy p = array[i];
+                if (p == item) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        boolean contains(final Item item) {
+            for (int i = 0; i < length; i++) {
+                final NodeProxy p = array[i];
+                if (p.equals(item)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         NodeProxy get(final int pos) {

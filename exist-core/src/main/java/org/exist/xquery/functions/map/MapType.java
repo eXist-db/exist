@@ -217,6 +217,24 @@ public class MapType extends AbstractMapType {
     }
 
     @Override
+    public boolean containsReference(final Item item) {
+        for (final Iterator<Sequence> it = map.values().iterator(); it.hasNext();) {
+            final Sequence value = it.next();
+            return value == item;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        for (final Iterator<Sequence> it = map.values().iterator(); it.hasNext();) {
+            final Sequence value = it.next();
+            return value.equals(item);
+        }
+        return false;
+    }
+
+    @Override
     public Sequence keys() {
         final ArrayListValueSequence seq = new ArrayListValueSequence((int)map.size());
         for (final AtomicValue key: map.keys()) {
