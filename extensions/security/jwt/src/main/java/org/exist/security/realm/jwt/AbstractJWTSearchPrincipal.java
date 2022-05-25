@@ -1,5 +1,9 @@
 package org.exist.security.realm.jwt;
 
+import java.util.*;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
@@ -7,13 +11,10 @@ import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.security.AXSchemaType;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 @ConfigurationClass("")
 public abstract class AbstractJWTSearchPrincipal implements Configurable {
+
+    private static final Logger LOG = LogManager.getLogger(AbstractJWTSearchPrincipal.class);
 
     @ConfigurationFieldAsElement("search-attribute")
     protected Map<String, String> searchAttributes = new HashMap<>();
@@ -36,8 +37,19 @@ public abstract class AbstractJWTSearchPrincipal implements Configurable {
         this.configuration = Configurator.configure(this, config);
     }
 
-    public String getSearchAttribute(final JWTSearchAttributeKey key) {
-        return searchAttributes.get(key.getKey());
+    public String getSearchAttribute(final JWTSearchAttributeKey jwtSearchAttributeKey) {
+
+        String key1 = jwtSearchAttributeKey.getKey();
+        LOG.info("key = " + key1);
+
+        Iterator it = searchAttributes.keySet().iterator();
+        while (it.hasNext()) {
+            String key = (String) it.next();
+            LOG.info(key + " = " + searchAttributes.get(key));
+        }
+
+
+        return searchAttributes.get(key1);
     };
 
     public String getMetadataSearchAttribute(final AXSchemaType axSchemaType) {

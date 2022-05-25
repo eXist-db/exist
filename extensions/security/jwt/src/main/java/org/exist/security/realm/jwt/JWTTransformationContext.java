@@ -46,7 +46,15 @@ public class JWTTransformationContext implements TransformationContext, Configur
     @Override
     public List<String> getAdditionalGroups() {
         final List<String> additionalGroups = new ArrayList<>();
-        additionalGroups.add(addGroup);
+        if (addGroup != null) {
+            if (addGroup.contains(",")) {
+                for (String groupName : addGroup.split(",")) {
+                    additionalGroups.add(groupName);
+                }
+            } else {
+                additionalGroups.add(addGroup);
+            }
+        }
         return additionalGroups;
     }
 

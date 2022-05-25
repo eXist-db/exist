@@ -21,16 +21,22 @@
  */
 package org.exist.security.realm.jwt;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
+import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 
 /**
  * @author <a href="mailto:loren.cahlander@gmail.com">Loren Cahlander</a>
  *
  */
+@ConfigurationClass("context")
 public class JWTContextFactory implements Configurable {
+
+    private static final Logger LOG = LogManager.getLogger(JWTContextFactory.class);
 
     @ConfigurationFieldAsElement("domain")
     protected String domain = null;
@@ -47,6 +53,7 @@ public class JWTContextFactory implements Configurable {
     private Configuration configuration = null;
 
     public JWTContextFactory(final Configuration config) {
+        LOG.info("Config = " + config.toString());
         configuration = Configurator.configure(this, config);
     }
 

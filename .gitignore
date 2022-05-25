@@ -13,3 +13,4 @@ target/
 
 # OS specific files
 .DS_Store
+.idea

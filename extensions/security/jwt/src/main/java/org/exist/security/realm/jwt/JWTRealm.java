@@ -36,12 +36,11 @@ import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
+import org.exist.security.realm.jwt.AbstractJWTSearchPrincipal.JWTSearchAttributeKey;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -62,10 +61,6 @@ public class JWTRealm extends AbstractRealm {
 
     @ConfigurationFieldAsElement("context")
     protected JWTContextFactory jwtContextFactory;
-
-    protected Map jwtMap;
-
-    protected ReadContext jwtContext;
 
     public JWTRealm(final SecurityManagerImpl sm, final Configuration config) {
         super(sm, config);
@@ -136,12 +131,21 @@ public class JWTRealm extends AbstractRealm {
     public final synchronized Account getAccount(ReadContext ctx) {
 
         final JWTContextFactory jwtContextFactory = ensureContextFactory();
+        LOG.info("JWTContextFactory " + jwtContextFactory.toString());
         final JWTSearchContext search = jwtContextFactory.getSearchContext();
+        LOG.info("JWTSearchContext " + search.toString());
         final JWTSearchAccount searchAccount = search.getSearchAccount();
-        final String name = ctx.read(searchAccount.getSearchAttribute(AbstractJWTSearchPrincipal.JWTSearchAttributeKey.NAME));
+        LOG.info("JWTSearchAccount " + searchAccount.toString());
+        JWTSearchAttributeKey key = JWTSearchAttributeKey.NAME;
+        LOG.info("key = " + key.toString());
+        final String searchAttribute = searchAccount.getSearchAttribute(key);
+        LOG.info("searchAttribute = ", searchAttribute);
+        final String name = ctx.read(searchAttribute);
+        LOG.info("name = ", name);
 
         //first attempt to get the cached account
         final Account acct = super.getAccount(name);
+
         try {
             final DBBroker broker = getDatabase().get(Optional.of(getSecurityManager().getSystemSubject()));
 
@@ -151,11 +155,11 @@ public class JWTRealm extends AbstractRealm {
                     LOG.debug("Cached used.");
                 }
 
-                updateGroupsInDatabase(broker, this.jwtMap, acct);
+                updateGroupsInDatabase(broker, ctx, acct);
 
                 return acct;
             } else {
-                return createAccountInDatabase(broker, this.jwtMap, name);
+                return createAccountInDatabase(broker, ctx, name);
             }
         } catch (EXistException e) {
             e.printStackTrace();
@@ -166,10 +170,27 @@ public class JWTRealm extends AbstractRealm {
     }
 
     private List<Group> getGroupMembershipForJWTUser(final ReadContext ctx, final DBBroker broker) {
-        return null;
+        final List<Group> memberOf_groups = new ArrayList<>();
+
+        final JWTSearchContext searchContext = ensureContextFactory().getSearchContext();
+        final JWTSearchGroup groupContext = searchContext.getSearchGroup();
+
+        if (ensureContextFactory().getTransformationContext() != null) {
+            final List<String> additionalGroupNames = ensureContextFactory().getTransformationContext().getAdditionalGroups();
+            if (additionalGroupNames != null) {
+                for (final String additionalGroupName : additionalGroupNames) {
+                    final Group additionalGroup = getSecurityManager().getGroup(additionalGroupName);
+                    if (additionalGroup != null) {
+                        memberOf_groups.add(additionalGroup);
+                    }
+                }
+            }
+        }
+
+        return memberOf_groups;
     }
 
-    private void updateGroupsInDatabase(DBBroker broker, Map decodedJWT, Account acct) throws PermissionDeniedException, EXistException {
+    private void updateGroupsInDatabase(DBBroker broker, ReadContext decodedJWT, Account acct) throws PermissionDeniedException, EXistException {
 //        final String claim = this.jwtContextFactory.getGroup().getClaim();
 //        final List<String> dbaList = this.jwtContextFactory.getGroup().getDbaList().getPrincipals();
 //        final List<String> groupNames = ((ArrayList) decodedJWT.get(claim));
@@ -203,53 +224,34 @@ public class JWTRealm extends AbstractRealm {
 //
     }
 
-    private Account createAccountInDatabase(DBBroker broker, Map jwtMap, String name) throws PermissionDeniedException, EXistException {
-        Account account = null;
-//        final String claim = this.jwtContextFactory.getGroup().getClaim();
-//        final List<String> jwtGroupNames = ((ArrayList) jwtMap.get(claim)).asList(String.class);
-//        final List<String> dbaList = this.jwtContextFactory.getGroup().getDbaList().getPrincipals();
-//
-        final UserAider userAider = new UserAider(ID, name);
-//
-//
-//        //store any requested metadata
-//        for (final AXSchemaType axSchemaType : AXSchemaType.values()) {
-//            final String metadataSearchProperty = this.jwtContextFactory.getAccount().getMetadataSearchProperty(axSchemaType);
-//            if (metadataSearchProperty != null) {
-//                final String s = ((Claim) jwtMap.getClaim(metadataSearchProperty)).asString();
-//                if (s != null) {
-//                    userAider.setMetadataValue(axSchemaType, s);
-//                }
-//            }
-//        }
-//
-//        boolean dbaNotAdded = true;
-//
-//        for (final String jwtGroupName : jwtGroupNames) {
-//            if (dbaNotAdded && dbaList.contains(jwtGroupName)) {
-//                userAider.addGroup(getSecurityManager().getDBAGroup());
-//                dbaNotAdded = false;
-//            }
-//            final Group group = super.getGroup(jwtGroupName);
-//
-//            if (group != null) {
-//                userAider.addGroup(group);
-//            } else {
-//                final GroupAider groupAider = new GroupAider(ID, jwtGroupName);
-//                final Group group1 = getSecurityManager().addGroup(broker, groupAider);
-//                userAider.addGroup(group1);
-//            }
-//        }
+    private Account createAccountInDatabase(DBBroker broker, ReadContext ctx, String name) throws PermissionDeniedException, EXistException {
 
-        try {
-            account = getSecurityManager().addAccount(broker, userAider);
-        } catch (PermissionDeniedException e) {
-            e.printStackTrace();
-        } catch (EXistException e) {
-            e.printStackTrace();
+        final UserAider userAider = new UserAider(ID, name);
+
+        // Add the member groups
+        for (final Group memberOf_group : getGroupMembershipForJWTUser(ctx, broker)) {
+            userAider.addGroup(memberOf_group);
         }
 
+        // store any requested metadata
+        for (final AbstractMap.SimpleEntry<AXSchemaType, String> metadata : getMetadataForJWTUser(ctx)) {
+            userAider.setMetadataValue(metadata.getKey(), metadata.getValue());
+        }
+
+        final Account account = getSecurityManager().addAccount(userAider);
+
         return account;
+    }
+
+    private Iterable<? extends AbstractMap.SimpleEntry<AXSchemaType, String>> getMetadataForJWTUser(ReadContext ctx) {
+        final List<AbstractMap.SimpleEntry<AXSchemaType, String>> metadata = new ArrayList<>();
+        final JWTSearchAccount searchAccount = ensureContextFactory().getSearchContext().getSearchAccount();
+
+        for (final AXSchemaType axSchemaType : searchAccount.getMetadataSearchAttributeKeys()) {
+            final String searchAttribute = searchAccount.getMetadataSearchAttribute(axSchemaType);
+
+        }
+        return metadata;
     }
 
     private Group createGroupInDatabase(final DBBroker broker, final String groupname) throws AuthenticationException {
