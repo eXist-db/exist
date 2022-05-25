@@ -86,7 +86,15 @@ public class FunNilled extends BasicFunction {
 			return Sequence.EMPTY_SEQUENCE;
 		}
 
-        return BooleanValue.FALSE;
+		final Node n = ((NodeValue) arg).getNode();
+		if (n.hasAttributes()) {
+			final Node nilled = n.getAttributes().getNamedItemNS(Namespaces.SCHEMA_INSTANCE_NS, "nil");
+			if (nilled != null) {
+				return new BooleanValue(this, nilled.getNodeValue().equals("true"));
+			}
+		}
+
+		return BooleanValue.FALSE;
 		
 	}
 
