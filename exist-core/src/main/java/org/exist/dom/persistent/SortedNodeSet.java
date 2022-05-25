@@ -134,6 +134,28 @@ public class SortedNodeSet extends AbstractNodeSet {
     }
 
     @Override
+    public boolean containsReference(final Item item) {
+        for (final Iterator<IteratorItem> i = list.iterator(); i.hasNext();) {
+            final NodeProxy p = (i.next()).proxy;
+            if (p == item) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        for (final Iterator<IteratorItem> i = list.iterator(); i.hasNext();) {
+            final NodeProxy p = (i.next()).proxy;
+            if (p.equals(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public NodeProxy get(final int pos) {
         final IteratorItem item = (IteratorItem) list.get(pos);
         return item == null ? null : item.proxy;
