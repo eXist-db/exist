@@ -146,8 +146,7 @@ public class BinaryValueFromFile extends BinaryValue {
     @Override
     public void destroy(final XQueryContext context, final Sequence contextSequence) {
         // do not close if this object is part of the contextSequence
-        if (contextSequence == this ||
-                (contextSequence instanceof ValueSequence && ((ValueSequence) contextSequence).containsValue(this))) {
+        if (contextSequence == this || contextSequence.containsReference(this)) {
             return;
         }
         try {
