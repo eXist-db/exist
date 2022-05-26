@@ -427,7 +427,7 @@ public class FnTransform extends BasicFunction {
     private static final Option<Item> INITIAL_MATCH_SELECTION = new Option<>(
             Type.ITEM,"initial-match-selection", v3_0);
     private static final Option<QNameValue> INITIAL_MODE = new Option<>(
-            Type.QNAME,"initial-match-selection", v1_0, v2_0, v3_0);
+            Type.QNAME,"initial-mode", v1_0, v2_0, v3_0);
     private static final Option<QNameValue> INITIAL_TEMPLATE = new Option<>(
             Type.QNAME,"initial-template", v2_0, v3_0);
     private static final Option<StringValue> PACKAGE_NAME = new Option<>(
