@@ -30,6 +30,7 @@ import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.function.IntSupplier;
 
 public class DoubleValue extends NumericValue {
@@ -265,7 +266,7 @@ public class DoubleValue extends NumericValue {
     }
 
     @Override
-    public NumericValue round(final IntegerValue precision) throws XPathException {
+    public NumericValue round(final IntegerValue precision, final RoundingMode roundingMode) throws XPathException {
         if (precision == null) {
             return round();
         }
@@ -275,9 +276,15 @@ public class DoubleValue extends NumericValue {
         }
 
         /* use the decimal rounding method */
-        return (DoubleValue) ((DecimalValue) convertTo(Type.DECIMAL)).round(precision).convertTo(Type.DOUBLE);
+        return (DoubleValue) ((DecimalValue) convertTo(Type.DECIMAL)).round(precision, roundingMode).convertTo(Type.DOUBLE);
     }
 
+    @Override
+    public NumericValue round(final IntegerValue precision) throws XPathException {
+
+        /* use the decimal rounding method */
+        return round(precision, DecimalValue.DEFAULT_ROUNDING_MODE);
+    }
 
     @Override
     public ComputableValue minus(final ComputableValue other) throws XPathException {

@@ -321,16 +321,23 @@ public class IntegerValue extends NumericValue {
     }
 
     @Override
-    public NumericValue round(final IntegerValue precision) throws XPathException {
+    public NumericValue round(final IntegerValue precision, final RoundingMode roundingMode) throws XPathException {
         if (precision == null) {
             return round();
         }
 
         if (precision.getInt() <= 0) {
-            return (IntegerValue) ((DecimalValue) convertTo(Type.DECIMAL)).round(precision).convertTo(Type.INTEGER);
+            return (IntegerValue) ((DecimalValue) convertTo(Type.DECIMAL)).round(precision, roundingMode).convertTo(Type.INTEGER);
         } else {
             return this;
         }
+    }
+
+    @Override
+    public NumericValue round(final IntegerValue precision) throws XPathException {
+
+        /* use the decimal rounding method */
+        return round(precision, DecimalValue.DEFAULT_ROUNDING_MODE);
     }
 
     @Override
