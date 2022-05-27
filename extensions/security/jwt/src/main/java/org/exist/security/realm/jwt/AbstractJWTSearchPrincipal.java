@@ -16,8 +16,11 @@ public abstract class AbstractJWTSearchPrincipal implements Configurable {
 
     private static final Logger LOG = LogManager.getLogger(AbstractJWTSearchPrincipal.class);
 
-    @ConfigurationFieldAsElement("search-attribute")
-    protected Map<String, String> searchAttributes = new HashMap<>();
+    @ConfigurationFieldAsElement("name")
+    protected String name = null;
+
+    @ConfigurationFieldAsElement("base-path")
+    protected String basePath = null;
 
     @ConfigurationFieldAsElement("metadata-search-attribute")
     protected Map<String, String> metadataSearchAttributes = new HashMap<>();
@@ -37,20 +40,13 @@ public abstract class AbstractJWTSearchPrincipal implements Configurable {
         this.configuration = Configurator.configure(this, config);
     }
 
-    public String getSearchAttribute(final JWTSearchAttributeKey jwtSearchAttributeKey) {
+    public String getName() {
+        return name;
+    }
 
-        String key1 = jwtSearchAttributeKey.getKey();
-        LOG.info("key = " + key1);
-
-        Iterator it = searchAttributes.keySet().iterator();
-        while (it.hasNext()) {
-            String key = (String) it.next();
-            LOG.info(key + " = " + searchAttributes.get(key));
-        }
-
-
-        return searchAttributes.get(key1);
-    };
+    public String getBasePath() {
+        return basePath;
+    }
 
     public String getMetadataSearchAttribute(final AXSchemaType axSchemaType) {
         return metadataSearchAttributes.get(axSchemaType.getNamespace());
@@ -80,30 +76,4 @@ public abstract class AbstractJWTSearchPrincipal implements Configurable {
     public JWTPrincipalWhiteList getWhiteList() { return whiteList; }
 
     public JWTPrincipalBlackList getBlackList() { return blackList; }
-
-
-    public enum JWTSearchAttributeKey {
-        NAME("name"),
-        FULLNAME("fullName"),
-        DESCRIPTION("description");
-
-        private final String key;
-
-        JWTSearchAttributeKey(final String key) {
-            this.key = key;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public static JWTSearchAttributeKey valueOfKey(final String key) {
-            for (final JWTSearchAttributeKey jwtSearchAttributeKey: JWTSearchAttributeKey.values()) {
-                if (jwtSearchAttributeKey.getKey().equals(key)) {
-                    return jwtSearchAttributeKey;
-                }
-            }
-            return null;
-        }
-    }
 }

@@ -11,18 +11,33 @@ To enable JWT authentication you need to make sure that the file /db/system/secu
             <domain>...</domain>
             <secret>...</secret>
             <account>
-                <property>...</property>
-                <metadata-property>..</metadata-property>
-                <whitelist><principal>..</principal><principal>..</principal></whitelist>
-                <blacklist><principal>..</principal><principal>..</principal></blacklist>
+                <name>$.sub</name>
+                <metadata-search-attribute key="http://axschema.org/namePerson">$.name</metadata-search-attribute>
+                <whitelist>
+                    <principal>..</principal>
+                    <principal>..</principal>
+                </whitelist>
+                <blacklist>
+                    <principal>..</principal>
+                    <principal>..</principal>
+                </blacklist>
             </account>
             <group>
-                <claim>...</claim>
-                <property>...</property>
-                <metadata-property>..</metadata-property>
-                <dba><principal>..</principal><principal>..</principal></dba>
-                <whitelist><principal>..</principal><principal>..</principal></whitelist>
-                <blacklist><principal>..</principal><principal>..</principal></blacklist>
+                <base-path>...</base-path>
+                <name>$.['https://example.com/auth'].groups[*]</name>
+                <metadata-search-attribute key="...">..</metadata-search-attribute>
+                <dba>
+                    <principal>..</principal>
+                    <principal>..</principal>
+                </dba>
+                <whitelist>
+                    <principal>..</principal>
+                    <principal>..</principal>
+                </whitelist>
+                <blacklist>
+                    <principal>..</principal>
+                    <principal>..</principal>
+                </blacklist>
             </group>
         </context>
     </realm>

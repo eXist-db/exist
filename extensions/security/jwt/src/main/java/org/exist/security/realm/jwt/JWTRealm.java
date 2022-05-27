@@ -36,7 +36,6 @@ import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
-import org.exist.security.realm.jwt.AbstractJWTSearchPrincipal.JWTSearchAttributeKey;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 
@@ -131,17 +130,10 @@ public class JWTRealm extends AbstractRealm {
     public final synchronized Account getAccount(ReadContext ctx) {
 
         final JWTContextFactory jwtContextFactory = ensureContextFactory();
-        LOG.info("JWTContextFactory " + jwtContextFactory.toString());
         final JWTSearchContext search = jwtContextFactory.getSearchContext();
-        LOG.info("JWTSearchContext " + search.toString());
         final JWTSearchAccount searchAccount = search.getSearchAccount();
-        LOG.info("JWTSearchAccount " + searchAccount.toString());
-        JWTSearchAttributeKey key = JWTSearchAttributeKey.NAME;
-        LOG.info("key = " + key.toString());
-        final String searchAttribute = searchAccount.getSearchAttribute(key);
-        LOG.info("searchAttribute = ", searchAttribute);
-        final String name = ctx.read(searchAttribute);
-        LOG.info("name = ", name);
+        final String nameFieldPath = searchAccount.getName();
+        final String name = ctx.read(nameFieldPath);
 
         //first attempt to get the cached account
         final Account acct = super.getAccount(name);
@@ -165,15 +157,31 @@ public class JWTRealm extends AbstractRealm {
             e.printStackTrace();
         } catch (PermissionDeniedException e) {
             e.printStackTrace();
+        } catch (AuthenticationException e) {
+            e.printStackTrace();
         }
         return null;
     }
 
-    private List<Group> getGroupMembershipForJWTUser(final ReadContext ctx, final DBBroker broker) {
+    private List<Group> getGroupMembershipForJWTUser(final ReadContext ctx, final DBBroker broker) throws AuthenticationException {
         final List<Group> memberOf_groups = new ArrayList<>();
 
         final JWTSearchContext searchContext = ensureContextFactory().getSearchContext();
         final JWTSearchGroup groupContext = searchContext.getSearchGroup();
+
+        if (groupContext != null) {
+            String basePathPath = groupContext.getBasePath();
+            String namePath = groupContext.getName();
+
+            if (basePathPath != null) {
+                ctx.read(basePathPath);
+            } else {
+                List<String> groupNames = ctx.read(namePath);
+                for (final String groupName: groupNames) {
+                    memberOf_groups.add(getGroup(ctx, broker, groupName));
+                }
+            }
+        }
 
         if (ensureContextFactory().getTransformationContext() != null) {
             final List<String> additionalGroupNames = ensureContextFactory().getTransformationContext().getAdditionalGroups();
@@ -188,6 +196,15 @@ public class JWTRealm extends AbstractRealm {
         }
 
         return memberOf_groups;
+    }
+
+    private Group getGroup(ReadContext ctx, DBBroker broker, String groupName) throws AuthenticationException {
+        final Group grp = getGroup(groupName);
+        if (grp != null) {
+            return grp;
+        } else {
+            return createGroupInDatabase(broker, groupName);
+        }
     }
 
     private void updateGroupsInDatabase(DBBroker broker, ReadContext decodedJWT, Account acct) throws PermissionDeniedException, EXistException {
@@ -224,7 +241,7 @@ public class JWTRealm extends AbstractRealm {
 //
     }
 
-    private Account createAccountInDatabase(DBBroker broker, ReadContext ctx, String name) throws PermissionDeniedException, EXistException {
+    private Account createAccountInDatabase(DBBroker broker, ReadContext ctx, String name) throws PermissionDeniedException, EXistException, AuthenticationException {
 
         final UserAider userAider = new UserAider(ID, name);
 
@@ -249,6 +266,10 @@ public class JWTRealm extends AbstractRealm {
 
         for (final AXSchemaType axSchemaType : searchAccount.getMetadataSearchAttributeKeys()) {
             final String searchAttribute = searchAccount.getMetadataSearchAttribute(axSchemaType);
+            if (searchAttribute != null) {
+                String value = ctx.read(searchAttribute);
+                metadata.add(new AbstractMap.SimpleEntry<>(axSchemaType, value));
+            }
 
         }
         return metadata;
