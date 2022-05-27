@@ -13,6 +13,8 @@ To enable JWT authentication you need to make sure that the file /db/system/secu
             <account>
                 <name>$.sub</name>
                 <metadata-search-attribute key="http://axschema.org/namePerson">$.name</metadata-search-attribute>
+                <metadata-search-attribute key="http://axschema.org/namePerson/friendly">$.nickname</metadata-search-attribute>
+                <metadata-search-attribute key="http://axschema.org/contact/email">$.email</metadata-search-attribute>
                 <whitelist>
                     <principal>..</principal>
                     <principal>..</principal>
@@ -45,46 +47,64 @@ To enable JWT authentication you need to make sure that the file /db/system/secu
 </security-manager>
 ```
 
+Here are the metadata-search-attribute keys:
+
+* http://axschema.org/contact/email
+* http://axschema.org/pref/language
+* http://exist-db.org/security/description
+* http://axschema.org/contact/country/home
+* http://axschema.org/namePerson
+* http://axschema.org/namePerson/first
+* http://axschema.org/namePerson/friendly
+* http://axschema.org/namePerson/last
+* http://axschema.org/pref/timezone
+
+
 For the following JWT
 
 ```json
 {
-    "sub": "00uixa271s6x7qt8I0h7",
-    "ver": 1,
-    "iss": "https://${yourOktaDomain}",
-    "aud": "0oaoiuhhch8VRtBnC0h7",
-    "iat": 1574201516,
-    "exp": 1574205116,
-    "jti": "ID.ewMNfSvcpuqyS93OgVeCN3F2LseqROkyYjz7DNb9yhs",
-    "amr": [
-        "pwd",
-        "mfa",
-        "kba"
-    ],
-    "idp": "00oixa26ycdNcX0VT0h7",
-    "nonce": "UBGW",
-    "auth_time": 1574201433,
+  "https://example.com/auth": {
     "groups": [
-        "Everyone",
-        "IT"
-    ]
+      "IT",
+      "member"
+    ],
+    "roles": ["Editor"]
+  },
+  "nickname": "loren.cahlander",
+  "name": "Loren Cahlander",
+  "updated_at": "2022-05-04T18:14:26.482Z",
+  "email": "loren.cahlander@example.com",
+  "email_verified": true,
+  "iss": "https://dev-1nrabvoy.us.auth0.com/",
+  "sub": "auth0|626029dab5995b0068540953",
+  "aud": "sRX5zX0ylWgHZ5OtRr137x5RXyCCO19L",
+  "iat": 1651770465,
+  "exp": 1651806465,
+  "nonce": "VZP0NI1Lmw8YCt-radQdzdKsxQt5KtuloABUC5Qan7g"
 }
 ```
 
 Here is the realm description
 
-
 ```xml
 <realm id="JWT" version="1.0" principals-are-case-insensitive="true">
     <context>
         <domain>domain.here</domain>
-        <secret>...</secret>
-        <account>
-            <property key="name">idp</property>
-        </account>
-        <group>
-            <claim>groups</claim>
-        </group>
+        <search>
+            <account>
+                <name>$.sub</name>
+                <metadata-search-attribute key="http://axschema.org/namePerson">$.name</metadata-search-attribute>
+                <metadata-search-attribute key="http://axschema.org/namePerson/friendly">$.nickname</metadata-search-attribute>
+                <metadata-search-attribute key="http://axschema.org/contact/email">$.email</metadata-search-attribute>
+            </account>
+            <group>
+                <name>$.['https://example.com/auth'].groups[*]</name>
+            </group>
+        </search>
+        <transformation>
+            <add-group>guest</add-group>
+        </transformation>
     </context>
 </realm>
 ```
@@ -93,47 +113,47 @@ If the `groups` entry contained JSON objects like the folllowing:
 
 ```json
 {
-    "sub": "00uixa271s6x7qt8I0h7",
-    "ver": 1,
-    "iss": "https://${yourOktaDomain}",
-    "aud": "0oaoiuhhch8VRtBnC0h7",
-    "iat": 1574201516,
-    "exp": 1574205116,
-    "jti": "ID.ewMNfSvcpuqyS93OgVeCN3F2LseqROkyYjz7DNb9yhs",
-    "amr": [
-        "pwd",
-        "mfa",
-        "kba"
-    ],
-    "idp": "00oixa26ycdNcX0VT0h7",
-    "nonce": "UBGW",
-    "auth_time": 1574201433,
+  "https://example.com/auth": {
     "groups": [
-        {
-          "name" : "Everyone"
-        },
-        {
-          "name" : "IT"
-        }
-    ]
+      {"name": "IT"},
+      {"name": "member"}
+    ],
+    "roles": ["Editor"]
+  },
+  "nickname": "loren.cahlander",
+  "name": "Loren Cahlander",
+  "updated_at": "2022-05-04T18:14:26.482Z",
+  "email": "loren.cahlander@example.com",
+  "email_verified": true,
+  "iss": "https://dev-1nrabvoy.us.auth0.com/",
+  "sub": "auth0|626029dab5995b0068540953",
+  "aud": "sRX5zX0ylWgHZ5OtRr137x5RXyCCO19L",
+  "iat": 1651770465,
+  "exp": 1651806465,
+  "nonce": "VZP0NI1Lmw8YCt-radQdzdKsxQt5KtuloABUC5Qan7g"
 }
 ```
 
 Then the realm description would be:
 
-
 ```xml
 <realm id="JWT" version="1.0" principals-are-case-insensitive="true">
     <context>
         <domain>domain.here</domain>
-        <secret>...</secret>
-        <account>
-            <property key="name">idp</property>
-        </account>
-        <group>
-            <claim>groups</claim>
-            <property key="name">name</property>
-        </group>
+        <search>
+            <account>
+                <name>$.sub</name>
+                <metadata-search-attribute key="http://axschema.org/namePerson">$.name</metadata-search-attribute>
+                <metadata-search-attribute key="http://axschema.org/namePerson/friendly">$.nickname</metadata-search-attribute>
+                <metadata-search-attribute key="http://axschema.org/contact/email">$.email</metadata-search-attribute>
+            </account>
+            <group>
+                <name>$.['https://example.com/auth'].groups[*]</name>
+            </group>
+        </search>
+        <transformation>
+            <add-group>guest</add-group>
+        </transformation>
     </context>
 </realm>
 ```
