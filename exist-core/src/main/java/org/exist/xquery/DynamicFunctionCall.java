@@ -46,6 +46,17 @@ public class DynamicFunctionCall extends AbstractExpression {
     }
 
     @Override
+    public int getDependencies() {
+        int dependencies = functionExpr.getDependencies();
+        if (arguments != null) {
+            for (final Expression argument : arguments) {
+                dependencies |= argument.getDependencies();
+            }
+        }
+        return dependencies;
+    }
+
+    @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         cachedContextInfo = new AnalyzeContextInfo(contextInfo);
         functionExpr.analyze(contextInfo);
@@ -94,7 +105,7 @@ public class DynamicFunctionCall extends AbstractExpression {
 	        ref.analyze(new AnalyzeContextInfo(cachedContextInfo));
 	        // Evaluate the function
             try {
-                return ref.eval(contextSequence);
+                return ref.eval(contextSequence, contextItem);
             } catch (XPathException e) {
                 if (e.getLine() <= 0) {
                     e.setLocation(getLine(), getColumn(), getSource());
