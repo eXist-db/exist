@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.exist.dom.QName;
