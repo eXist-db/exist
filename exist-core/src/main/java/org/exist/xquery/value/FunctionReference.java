@@ -82,6 +82,10 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
         return functionCall.eval(contextSequence);
     }
 
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        return functionCall.eval(contextSequence, contextItem);
+    }
+
     /**
      * Calls {@link FunctionCall#evalFunction(Sequence, Item, Sequence[])}.
      */

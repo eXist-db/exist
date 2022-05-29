@@ -86,6 +86,11 @@ public abstract class AbstractMapType extends FunctionReference
     }
 
     @Override
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        return accessorFunc.eval(contextSequence, contextItem);
+    }
+
+    @Override
     public void setArguments(List<Expression> arguments) throws XPathException {
         getAccessorFunc().setArguments(arguments);
     }
