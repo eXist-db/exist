@@ -39,6 +39,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import static org.exist.xquery.Predicate.ExecutionMode.*;
+
 /**
  * Handles predicate expressions.
  * 
@@ -46,14 +48,16 @@ import java.util.TreeSet;
  */
 public class Predicate extends PathExpr {
 
-    public final static int UNKNOWN = -1;
-    public final static int NODE = 0;
-    public final static int BOOLEAN = 1;
-    public final static int POSITIONAL = 2;
+    enum ExecutionMode {
+        UNKNOWN,
+        NODE,
+        BOOLEAN,
+        POSITIONAL
+    }
 
     private CachedResult cached = null;
 
-    private int executionMode = UNKNOWN;
+    private ExecutionMode executionMode = UNKNOWN;
 
     private int outerContextId;
 
@@ -162,7 +166,7 @@ public class Predicate extends PathExpr {
         if (inner == null)
             {result = false;}
         else {
-            int recomputedExecutionMode = executionMode;
+            ExecutionMode recomputedExecutionMode = executionMode;
             Sequence innerSeq = null;
             // Atomic context sequences :
             if (Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
@@ -264,7 +268,7 @@ public class Predicate extends PathExpr {
         else {
             if (executionMode == UNKNOWN)
                 {executionMode = BOOLEAN;}
-            int recomputedExecutionMode = executionMode;
+            ExecutionMode recomputedExecutionMode = executionMode;
             Sequence innerSeq = null;
             // Atomic context sequences :
             if (Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
@@ -654,7 +658,7 @@ public class Predicate extends PathExpr {
             {getExpression(0).setContextDocSet(contextSet);}
     }
 
-    public int getExecutionMode() {
+    ExecutionMode getExecutionMode() {
         return executionMode;
     }
 
