@@ -223,6 +223,7 @@ public class RangeSequence extends AbstractSequence {
                 return other.compareTo(start.toJavaObject(BigInteger.class)) >= 0
                         && other.compareTo(end.toJavaObject(BigInteger.class)) <= 0;
             } catch (final XPathException e) {
+                LOG.warn(e.getMessage(), e);
                 return false;
             }
         }
