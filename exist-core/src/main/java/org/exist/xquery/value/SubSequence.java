@@ -450,6 +450,7 @@ public class SubSequence extends AbstractSequence {
             }
             return false;
         } catch (final XPathException e) {
+            LOG.warn(e.getMessage(), e);
             return false;
         }
     }
@@ -465,6 +466,7 @@ public class SubSequence extends AbstractSequence {
             }
             return false;
         } catch (final XPathException e) {
+            LOG.warn(e.getMessage(), e);
             return false;
         }
     }
