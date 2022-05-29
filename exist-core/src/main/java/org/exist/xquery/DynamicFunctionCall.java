@@ -31,13 +31,13 @@ import org.exist.xquery.value.Type;
 
 public class DynamicFunctionCall extends AbstractExpression {
 
-    private Expression functionExpr;
-    private List<Expression> arguments;
-    private boolean isPartial = false;
+    private final Expression functionExpr;
+    private final List<Expression> arguments;
+    private final boolean isPartial;
     
     private AnalyzeContextInfo cachedContextInfo;
 
-    public DynamicFunctionCall(XQueryContext context, Expression fun, List<Expression> args, boolean partial) {
+    public DynamicFunctionCall(final XQueryContext context, final Expression fun, final List<Expression> args, final boolean partial) {
         super(context);
         setLocation(fun.getLine(), fun.getColumn());
         this.functionExpr = fun;

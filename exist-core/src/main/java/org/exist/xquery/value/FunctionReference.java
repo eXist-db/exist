@@ -38,10 +38,10 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
 
     private final static Logger LOG = LogManager.getLogger(FunctionReference.class);
 
-    protected FunctionCall functionCall;
+    protected final FunctionCall functionCall;
 
-    public FunctionReference(FunctionCall fcall) {
-        this.functionCall = fcall;
+    public FunctionReference(final FunctionCall functionCall) {
+        this.functionCall = functionCall;
     }
 
     public FunctionCall getCall() {
