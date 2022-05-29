@@ -178,8 +178,8 @@ public class Sync extends BasicFunction {
             }
             options.put(EXCLUDES_OPT, seq);
 
-            checkOption(optionsMap, PRUNE_OPT, Type.BOOLEAN, options);
-            checkOption(optionsMap, AFTER_OPT, Type.DATE_TIME, options);
+            checkOption(optionsMap, PRUNE_OPT, options, Type.BOOLEAN);
+            checkOption(optionsMap, AFTER_OPT, options, Type.DATE_TIME, Type.DATE_TIME_STAMP);
         } else if (parameter.itemAt(0).getType() == Type.DATE_TIME) {
             options.put(AFTER_OPT, parameter);
         } else {
@@ -192,8 +192,8 @@ public class Sync extends BasicFunction {
     private void checkOption(
             final AbstractMapType optionsMap,
             final String name,
-            final int expectedType,
-            final Map<String, Sequence> options
+            final Map<String, Sequence> options,
+            final int... expectedTypes
     ) throws XPathException {
         final Sequence p = optionsMap.get(new StringValue(name));
 
@@ -201,14 +201,32 @@ public class Sync extends BasicFunction {
             return; // nothing to do, continue
         }
 
-        if (p.hasMany() || p.getItemType() != expectedType) {
+        if (p.hasMany() || !isExpectedType(p.getItemType(), expectedTypes)) {
             throw new XPathException(this, ErrorCodes.XPTY0004,
                     "Invalid value type for option \"" + name + "\", expected " +
-                            Type.getTypeName(expectedType) + " got " +
+                            formatTypes(expectedTypes) + " got " +
                             Type.getTypeName(p.itemAt(0).getType()));
         }
 
         options.put(name, p);
+    }
+
+    private boolean isExpectedType(final int actualType, final int... expectedTypes) {
+        for(int type : expectedTypes) {
+            if(type == actualType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String formatTypes(final int... expectedTypes) {
+        StringBuilder buff = new StringBuilder(Type.getTypeName(expectedTypes[0]));
+        for(int i = 1; i < expectedTypes.length; i++) {
+            buff.append(", ");
+            buff.append(Type.getTypeName(expectedTypes[i]));
+        }
+        return buff.toString();
     }
 
     private Sequence startSync(
