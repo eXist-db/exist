@@ -21,6 +21,8 @@
  */
 package org.exist.xquery;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.util.List;
 
@@ -89,6 +91,10 @@ public class XPathUtil {
             return new IntegerValue(((Integer) obj), Type.INT);
         } else if (obj instanceof Long) {
             return new IntegerValue(((Long) obj), Type.LONG);
+        } else if (obj instanceof BigInteger) {
+             return new IntegerValue((BigInteger) obj);
+        } else if (obj instanceof BigDecimal) {
+            return new DecimalValue((BigDecimal) obj);
         } else if (obj instanceof byte[]) {
             return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream((byte[]) obj));
 
