@@ -120,10 +120,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
         }
 
         final NodeProxy firstParent = getFirstParent((NodeProxy) item, null, axis == Constants.SELF_AXIS, 0);
-        if (firstParent == item) {
-            return true;
-        }
-        return false;
+        return firstParent == item;
     }
 
     @Override
@@ -133,10 +130,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
         }
 
         final NodeProxy firstParent = getFirstParent((NodeProxy) item, null, axis == Constants.SELF_AXIS, 0);
-        if (firstParent.equals(item)) {
-            return true;
-        }
-        return false;
+        return firstParent.equals(item);
     }
 
     public void setInPredicate(final boolean predicate) {

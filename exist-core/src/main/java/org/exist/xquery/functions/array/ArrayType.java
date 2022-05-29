@@ -386,10 +386,9 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     public boolean containsReference(final Item item) {
         for (int i = 0; i < vector.length(); i++) {
             final Sequence value = vector.nth(i);
-            if (value == item) {
+            if (value == item || value.containsReference(item)) {
                 return true;
             }
-            return value.containsReference(item);
         }
         return false;
     }
@@ -398,10 +397,9 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     public boolean contains(final Item item) {
         for (int i = 0; i < vector.length(); i++) {
             final Sequence value = vector.nth(i);
-            if (value.equals(item)) {
+            if (value.equals(item) || value.contains(item)) {
                 return true;
             }
-            return value.contains(item);
         }
         return false;
     }
