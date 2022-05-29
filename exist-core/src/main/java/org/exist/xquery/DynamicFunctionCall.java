@@ -117,4 +117,31 @@ public class DynamicFunctionCall extends AbstractExpression {
         functionExpr.resetState(postOptimization);
         arguments.forEach(arg -> arg.resetState(postOptimization));
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+        if (functionExpr != null) {
+            builder.append(functionExpr);
+        } else {
+            builder.append("DynamicFunctionCall{arguments=");
+        }
+
+        builder.append('(');
+        if (arguments != null) {
+            for (int i = 0; i < arguments.size(); i++) {
+                if (i > 0) {
+                    builder.append(", ");
+                }
+                builder.append(arguments.get(i).toString());
+            }
+        }
+        builder.append(')');
+
+        if (functionExpr == null) {
+            builder.append('}');
+        }
+
+        return builder.toString();
+    }
 }
