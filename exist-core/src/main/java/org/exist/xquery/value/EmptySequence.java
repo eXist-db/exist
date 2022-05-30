@@ -93,6 +93,16 @@ public class EmptySequence extends AbstractSequence {
     }
 
     @Override
+    public boolean containsReference(final Item item) {
+        return false;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        return false;
+    }
+
+    @Override
     public String toString() {
         return "()";
     }

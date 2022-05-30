@@ -139,6 +139,28 @@ public class PreorderedValueSequence extends AbstractSequence {
         // TODO: is this ever relevant?
     }
 
+    @Override
+    public boolean containsReference(final Item item) {
+        for (final SequenceIterator it = iterate(); it.hasNext(); ) {
+            final Item i = it.nextItem();
+            if (i == item) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        for (final SequenceIterator it = iterate(); it.hasNext(); ) {
+            final Item i = it.nextItem();
+            if (i.equals(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void sort() {
         Arrays.sort(nodes, new OrderedComparator());
     }

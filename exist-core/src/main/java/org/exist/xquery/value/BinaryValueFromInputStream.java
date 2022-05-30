@@ -100,8 +100,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
     @Override
     public void destroy(XQueryContext context, final Sequence contextSequence) {
         // do not close if this object is part of the contextSequence
-        if (contextSequence == this
-                || (contextSequence instanceof ValueSequence && ((ValueSequence) contextSequence).containsValue(this))) {
+        if (contextSequence == this || contextSequence.containsReference(this)) {
             return;
         }
         LOG.debug("Closing input stream");

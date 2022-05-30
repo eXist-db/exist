@@ -757,6 +757,16 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     }
 
     @Override
+    public boolean containsReference(final Item item) {
+        return this == item;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        return equals(item);
+    }
+
+    @Override
     public void destroy(final XQueryContext context, final Sequence contextSequence) {
     }
 
