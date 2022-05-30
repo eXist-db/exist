@@ -977,6 +977,16 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     }
 
     @Override
+    public boolean containsReference(final Item item) {
+        return this == item;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        return this.equals(item);
+    }
+
+    @Override
     public void destroy(final XQueryContext context, final Sequence contextSequence) {
         // Nothing to do
     }

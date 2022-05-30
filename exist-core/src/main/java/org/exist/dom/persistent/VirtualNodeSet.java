@@ -113,6 +113,26 @@ public class VirtualNodeSet extends AbstractNodeSet {
         return false;
     }
 
+    @Override
+    public boolean containsReference(final Item item) {
+        if (!(item instanceof NodeProxy)) {
+            return false;
+        }
+
+        final NodeProxy firstParent = getFirstParent((NodeProxy) item, null, axis == Constants.SELF_AXIS, 0);
+        return firstParent == item;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        if (!(item instanceof NodeProxy)) {
+            return false;
+        }
+
+        final NodeProxy firstParent = getFirstParent((NodeProxy) item, null, axis == Constants.SELF_AXIS, 0);
+        return firstParent.equals(item);
+    }
+
     public void setInPredicate(final boolean predicate) {
         inPredicate = predicate;
     }
