@@ -172,35 +172,15 @@ Get the details of the current user.
 declare
     %rest:GET
     %rest:path("/sample/who-am-i")
-    %rest:header-param("Authorization", "{$authorization}")
+    %rest:header-param("JWT", "{$authorization}")
     %rest:produces("application/json")
     %output:media-type("application/json")
     %output:method("json")
 function whoami:get($authorization as xs:string*)
 as map(*)
 {
-    let $login := login:authenticate($authorization[1])
+    let $jwt := $authorization || "@test"
+    let $login := xmldb:login("/db", $jwt, $jwt)
 ...
 }
-```
-
-Here is the sample login function.
-
-```xquery
-module namespace login = "http://example.com/modules/ns/login";
-
-import module namespace jwt = "http://exist-db.org/security/jwt/xquery"
-    at "java:org.exist.security.realm.jwt.xquery.JWTModule";
-
-declare function login:authenticate($authorization as xs:string?)
-as empty-sequence()
-{
-    if ($authorization)
-    then
-        if (fn:starts-with($authorization, "Bearer"))
-        then jwt:authorize($authorization)
-        else ()
-    else ()
-
-};
 ```
