@@ -45,6 +45,7 @@ public class MapModule extends AbstractInternalModule {
     private static final FunctionDef[] functions = {
             new FunctionDef(MapFunction.FS_MERGE[0], MapFunction.class),
             new FunctionDef(MapFunction.FS_MERGE[1], MapFunction.class),
+            new FunctionDef(MapFunction.FS_FIND, MapFunction.class),
             new FunctionDef(MapFunction.FNS_SIZE, MapFunction.class),
             new FunctionDef(MapFunction.FNS_KEYS, MapFunction.class),
             new FunctionDef(MapFunction.FNS_CONTAINS, MapFunction.class),

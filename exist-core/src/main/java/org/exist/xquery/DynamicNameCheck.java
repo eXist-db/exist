@@ -21,11 +21,14 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.INode;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
@@ -77,56 +80,52 @@ public class DynamicNameCheck extends AbstractExpression {
                     }
                 }
                 if (!Type.subTypeOf(itemType, test.getType())) {
-                    throw new XPathException(expression, "Type error in expression" +
+                    throw new XPathException(expression, ErrorCodes.XPTY0004, "Type error in expression" +
                         ": required type is " + Type.getTypeName(test.getType()) +
                         "; got: " + Type.getTypeName(item.getType()) + ": " + item.getStringValue());
                 }
                 final Node node = ((NodeValue) item).getNode();
-                if (!test.matchesName(node))
-                    {throw new XPathException(expression, "Type error in expression: " +
-                        "required node name is " + getPrefixedNodeName(test.getName()) +
-                        "; got: " + getPrefixedNodeName(node));}
+                if (!test.matchesName(node)) {
+                    throw new XPathException(expression, ErrorCodes.XPTY0004, "Type error in expression: " +
+                        "required node name is " + getPrefixedNodeName(test) +
+                        "; got: " + getPrefixedNodeName((INode) node));
                 }
-                if (context.getProfiler().isEnabled()) {
-                    context.getProfiler().end(this, "", seq);
-                }
-                return seq;
-            } catch(final IllegalArgumentException iae) {
-                throw new XPathException(expression, iae);
             }
-    }
-
-    private String getPrefixedNodeName(Node node) {
-        final String prefix = node.getPrefix();
-        if (prefix == null) {
-            final String nameSpace = node.getNamespaceURI();
-            if (nameSpace == null) {
-                return node.getNodeName();
-            } else {
-                return "{'" + nameSpace + "'}:" + node.getNodeName();
+            if (context.getProfiler().isEnabled()) {
+                context.getProfiler().end(this, "", seq);
             }
-        } else if (prefix.isEmpty()) {
-            return "{''}:" + node.getNodeName();
-        } else {
-            return prefix + ":" + node.getLocalName();
+            return seq;
+        } catch(final IllegalArgumentException iae) {
+            throw new XPathException(expression, iae);
         }
     }
 
-    // TODO should be moved to QName
-    private String getPrefixedNodeName(QName name) {
-        final String prefix = name.getPrefix();
-        final String localName = name.getLocalPart();
-        if (prefix == null) {
-            final String namespaceURI = name.getNamespaceURI();
-            if (namespaceURI == null) {
-                return localName;
-            } else {
-                return "{'" + namespaceURI + "'}:" + localName;
+    private String getPrefixedNodeName(final INode iNode) {
+        if (iNode instanceof Document) {
+            final Element documentElement = ((Document) iNode).getDocumentElement();
+            if (documentElement != null) {
+                return getPrefixedNodeName(true, ((INode) documentElement).getQName());
             }
-        } else if (prefix.isEmpty()) {
-            return "{''}:" + localName;
+        }
+        return getPrefixedNodeName(false, iNode.getQName());
+    }
+
+    private String getPrefixedNodeName(final NameTest nameTest) {
+        return getPrefixedNodeName(nameTest.isOfType(Node.DOCUMENT_NODE), nameTest.getName());
+    }
+
+    private String getPrefixedNodeName(final boolean wasDocumentNodeWithNamedElementTest, final QName name) {
+        final String prefixedName;
+        if (name.getPrefix() == null && name.hasNamespace()) {
+            prefixedName = name.toURIQualifiedName();
         } else {
-            return prefix + ":" + localName;
+            prefixedName = name.getStringValue();
+        }
+
+        if (wasDocumentNodeWithNamedElementTest) {
+            return "document-node(" + prefixedName + ")";
+        } else {
+            return prefixedName;
         }
     }
 

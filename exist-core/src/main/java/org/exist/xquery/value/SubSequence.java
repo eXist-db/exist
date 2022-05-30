@@ -440,6 +440,38 @@ public class SubSequence extends AbstractSequence {
     }
 
     @Override
+    public boolean containsReference(final Item item) {
+        try {
+            for (final SequenceIterator it = iterate(); it.hasNext(); ) {
+                final Item i = it.nextItem();
+                if (i == item) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (final XPathException e) {
+            LOG.warn(e.getMessage(), e);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        try {
+            for (final SequenceIterator it = iterate(); it.hasNext(); ) {
+                final Item i = it.nextItem();
+                if (i.equals(item)) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (final XPathException e) {
+            LOG.warn(e.getMessage(), e);
+            return false;
+        }
+    }
+
+    @Override
     public void destroy(final XQueryContext context, final Sequence contextSequence) {
         sequence.destroy(context, contextSequence);
     }

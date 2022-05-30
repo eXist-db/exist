@@ -153,6 +153,7 @@ abstract class OrderedDurationValue extends DurationValue {
             }
             case Type.TIME:
             case Type.DATE_TIME:
+            case Type.DATE_TIME_STAMP:
             case Type.DATE:
                 final AbstractDateTimeValue date = (AbstractDateTimeValue) other;
                 final XMLGregorianCalendar gc = (XMLGregorianCalendar) date.calendar.clone();

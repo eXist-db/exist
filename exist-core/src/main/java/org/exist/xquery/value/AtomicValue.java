@@ -352,6 +352,16 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
     }
 
     @Override
+    public boolean containsReference(final Item item) {
+        return this == item;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        return equals(item);
+    }
+
+    @Override
     public void destroy(final XQueryContext context, final Sequence contextSequence) {
         // nothing to be done by default
     }

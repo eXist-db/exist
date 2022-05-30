@@ -1,5 +1,8 @@
 name: Javadoc
 on: [push, pull_request]
+permissions:
+  contents: read
+
 jobs:
   test:
     name: ${{ matrix.jdk }} Javadocs 
