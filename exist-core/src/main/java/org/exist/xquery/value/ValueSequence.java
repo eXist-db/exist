@@ -392,9 +392,20 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
         }
     }
 
-    public boolean containsValue(final AtomicValue value) {
+    @Override
+    public boolean containsReference(final Item item) {
         for (int i = 0; i <= size; i++) {
-            if (values[i] == value) {
+            if (values[i] == item) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        for (int i = 0; i <= size; i++) {
+            if (values[i].equals(item)) {
                 return true;
             }
         }
