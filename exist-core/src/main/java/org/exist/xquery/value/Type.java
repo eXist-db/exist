@@ -91,6 +91,7 @@ public class Type {
     public final static int GDAY = 58;
     public final static int GYEARMONTH = 59;
     public final static int GMONTHDAY = 71;
+    public final static int DATE_TIME_STAMP = 72;
     public final static int TOKEN = 60;
     public final static int NORMALIZED_STRING = 61;
     public final static int LANGUAGE = 62;
@@ -158,7 +159,7 @@ public class Type {
         defineSubType(ATOMIC, UNTYPED_ATOMIC);
 
         // DATE_TIME sub-types
-        //defineSubType(DATE_TIME, DATE_TIME_STAMP);
+        defineSubType(DATE_TIME, DATE_TIME_STAMP);
 
         // DURATION sub-types
         defineSubType(DURATION, DAY_TIME_DURATION);
@@ -285,8 +286,7 @@ public class Type {
         defineBuiltInType(HEX_BINARY, "xs:hexBinary");
         defineBuiltInType(NOTATION, "xs:NOTATION");
 
-        //TODO add handling for xs:dateTimeStamp
-        //defineBuiltInType(DATE_TIME_STAMP, "xs:dateTimeStamp");
+        defineBuiltInType(DATE_TIME_STAMP, "xs:dateTimeStamp");
         defineBuiltInType(DATE_TIME, "xs:dateTime");
         defineBuiltInType(DATE, "xs:date");
         defineBuiltInType(TIME, "xs:time");
@@ -355,7 +355,7 @@ public class Type {
                 DAY_TIME_DURATION
         });
         definePrimitiveType(DATE_TIME, new int[] {
-                //DATE_TIME_STAMP
+                DATE_TIME_STAMP
         });
         definePrimitiveType(TIME);
         definePrimitiveType(DATE);

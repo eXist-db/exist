@@ -128,6 +128,16 @@ public final class EmptyNodeSet extends AbstractNodeSet {
         return other;
     }
 
+    @Override
+    public boolean containsReference(final Item item) {
+        return false;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        return false;
+    }
+
     private static final class EmptyNodeSetIterator implements NodeSetIterator {
 
         @Override

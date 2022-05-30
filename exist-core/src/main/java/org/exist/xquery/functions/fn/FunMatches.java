@@ -41,10 +41,12 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import net.sf.saxon.regex.RegularExpression;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
@@ -492,29 +494,39 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
     private Sequence evalGeneric(final Sequence contextSequence, final Item contextItem, final Sequence input) throws XPathException {
         final String string = input.getStringValue();
 
-        final int flags;
+        final String xmlRegexFlags;
         if (getSignature().getArgumentCount() == 3) {
-            flags = parseFlags(this, getArgument(2).eval(contextSequence, contextItem).getStringValue());
+            xmlRegexFlags = getArgument(2).eval(contextSequence, contextItem).getStringValue();
         } else {
-            flags = 0;
+            xmlRegexFlags = "";
         }
 
-        final String pattern;
+        final String pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
         if (isCalledAs("matches-regex")) {
-            pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+            final int flags = parseFlags(this, xmlRegexFlags);
+            return BooleanValue.valueOf(match(string, pattern,flags));
         } else {
-            final boolean literal = hasLiteral(flags);
-            if (literal) {
-                // no need to change anything
-                pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-            } else {
-                final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
-                final boolean caseBlind = hasCaseInsensitive(flags);
-                pattern = translateRegexp(this, getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
-            }
+            return BooleanValue.valueOf(matchXmlRegex(string, pattern, xmlRegexFlags));
         }
+    }
 
-        return BooleanValue.valueOf(match(string, pattern, flags));
+
+    private boolean matchXmlRegex(final String string, final String pattern, final String flags) throws XPathException {
+        try {
+            List<String> warnings = new ArrayList<>(1);
+            RegularExpression regex = context.getBroker().getBrokerPool()
+                    .getSaxonConfiguration()
+                    .compileRegularExpression(pattern, flags, "XP30", warnings);
+
+            for (final String warning : warnings) {
+                LOG.warn(warning);
+            }
+
+            return regex.containsMatch(string);
+
+        } catch (final net.sf.saxon.trans.XPathException e) {
+            throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(pattern), e);
+        }
     }
 
     /**

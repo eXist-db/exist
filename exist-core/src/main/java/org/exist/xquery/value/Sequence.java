@@ -333,6 +333,24 @@ public interface Sequence {
     boolean hasChanged(int previousState);
 
     /**
+     * Returns true if the sequence contains the item.
+     *
+     * NOTE that comparison is done via reference equality.
+     *
+     * @return true if the item is within the sequence, false otherwise.
+     */
+    boolean containsReference(Item item);
+
+    /**
+     * Returns true if the sequence contains the item.
+     *
+     * NOTE that comparison is done via object equality.
+     *
+     * @return true if the item is within the sequence, false otherwise.
+     */
+    boolean contains(Item item);
+
+    /**
      * Clean up any resources used by the items in this sequence.
      *
      * @param context the XQuery context

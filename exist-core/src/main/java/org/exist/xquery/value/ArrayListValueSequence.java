@@ -239,6 +239,22 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
     }
 
     @Override
+    public boolean containsReference(final Item item) {
+        for (final Iterator<Item> it = values.iterator(); it.hasNext(); ) {
+            final Item value = it.next();
+            if (value == item) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        return values.contains(item);
+    }
+
+    @Override
     public void destroy(final XQueryContext context, final Sequence contextSequence) {
         for (final Item value : values) {
             value.destroy(context, contextSequence);
