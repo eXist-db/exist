@@ -30,16 +30,19 @@ import net.jpountz.xxhash.XXHash64;
 import net.jpountz.xxhash.XXHashFactory;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.s9api.*;
+import net.sf.saxon.trans.UncheckedXPathException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.security.PermissionDeniedException;
 import org.exist.util.Holder;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.MapType;
+import org.exist.xquery.util.DocUtils;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.exist.xslt.EXistURIResolver;
@@ -158,7 +161,7 @@ public class FnTransform extends BasicFunction {
             stylesheetBaseUri = xsltSource._1;
         }
 
-        System.err.println("Context:\n" + context);
+        //System.err.println("Context [Fntransform]:\n" + context);
 
         final Optional<QNameValue> initialTemplate = FnTransform.INITIAL_TEMPLATE.get(options);
 
@@ -226,6 +229,10 @@ public class FnTransform extends BasicFunction {
                     xslt30Transformer.callTemplate(
                             new net.sf.saxon.s9api.QName(qName.getPrefix() == null ? "" : qName.getPrefix(), qName.getNamespaceURI(), qName.getLocalPart()), saxDestination);
                 } else {
+                    if (sourceNode == null) {
+                        // TODO (AP) OK if initial match selection is supplied instead, not yet implemented
+                        throw new XPathException(this, ErrorCodes.FOXT0002, SOURCE_NODE.name + " not supplied");
+                    }
                     xslt30Transformer.applyTemplates(sourceNode, saxDestination);
                 }
                 return makeResultMap(xsltVersion, options, builder.getDocument());
@@ -237,7 +244,8 @@ public class FnTransform extends BasicFunction {
                 } else {
                     throw new XPathException(this, ErrorCodes.FOXT0003, e.getMessage());
                 }
-
+            } catch (final UncheckedXPathException e) {
+                throw new XPathException(this, ErrorCodes.FOXT0003, e.getMessage());
             }
 
         } else {
@@ -248,7 +256,13 @@ public class FnTransform extends BasicFunction {
     private MapType makeResultMap(final float xsltVersion, final MapType options, final NodeValue outputDocument) throws XPathException {
 
         final MapType outputMap = new MapType(context);
-        final StringValue outputKey = FnTransform.BASE_OUTPUT_URI.get(xsltVersion, options).orElse(new StringValue("output"));
+        final AtomicValue outputKey;
+        final Optional<AnyURIValue> baseOutputURI = FnTransform.BASE_OUTPUT_URI.get(xsltVersion, options);
+        if (baseOutputURI.isPresent()) {
+            outputKey = baseOutputURI.get();
+        } else {
+            outputKey = new StringValue("output");
+        }
 
         final StringValue deliveryFormat = FnTransform.DELIVERY_FORMAT.get(xsltVersion, options).get();
         final Sequence output;
@@ -309,7 +323,13 @@ public class FnTransform extends BasicFunction {
      * @throws XPathException if there is a problem resolving the location.
      */
     private Source resolveStylesheetLocation(final String stylesheetLocation) throws XPathException {
-        final Sequence document = context.getDynamicallyAvailableDocument(stylesheetLocation);
+        final Sequence document;
+        try {
+            document = DocUtils.getDocument(context, stylesheetLocation);
+        } catch (PermissionDeniedException e) {
+            throw new XPathException(this, ErrorCodes.FODC0002,
+                    "Can not access '" + stylesheetLocation + "'" + e.getMessage());
+        }
         System.err.println("Dynamically resolve " + stylesheetLocation + " to " + (document == null ? "<null>" : document.getStringValue()));
         if (document != null && document.hasOne() && Type.subTypeOf(document.getItemType(), Type.NODE)) {
             System.err.println("Dynamically resolve " + stylesheetLocation + " succeeded.");
@@ -406,7 +426,7 @@ public class FnTransform extends BasicFunction {
         throw new XPathException(this, ErrorCodes.FOXT0002, "Unable to extract version from XSLT via STaX");
     }
 
-    private static final Option<StringValue> BASE_OUTPUT_URI = new Option<>(
+    private static final Option<AnyURIValue> BASE_OUTPUT_URI = new Option<>(
             Type.STRING, "base-output-uri", v1_0, v2_0, v3_0);
     private static final Option<BooleanValue> CACHE = new Option<>(
             Type.BOOLEAN, "cache", BooleanValue.TRUE, v1_0, v2_0, v3_0);
