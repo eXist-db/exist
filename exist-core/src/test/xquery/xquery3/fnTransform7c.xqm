@@ -25,6 +25,14 @@ module namespace testTransform="http://exist-db.org/xquery/test/function_transfo
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
+declare variable $testTransform:transform-7c-xsl := "<out xmlns:xsl='http://www.w3.org/1999/XSL/Transform' xsl:version='2.0'>
+                          <xsl:value-of select='.' />
+                         </out>";
 
-fn:transform(map {"stylesheet-location" : $render, "source-node" : fn:doc($uri), "delivery-format" : "serialized",
-            "serialization-params" : map { "indent": false() } })
+declare
+    %test:assertTrue
+function testTransform:transform-7c() {
+    let $style := $testTransform:transform-7c-xsl
+    let $result := transform(map{"stylesheet-node":parse-xml($style)/*, "source-node":parse-xml("<doc>this</doc>") })
+   return $result
+};

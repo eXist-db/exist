@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NamespaceNode;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.Holder;
 import org.exist.util.serializer.XQuerySerializer;
@@ -46,9 +47,7 @@ import org.exist.xquery.util.DocUtils;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.exist.xslt.EXistURIResolver;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
@@ -385,7 +384,7 @@ public class FnTransform extends BasicFunction {
         throw new XPathException(this, ErrorCodes.FOXT0002, "Unable to extract version from XSLT, unrecognised source");
     }
 
-    private float domExtractXsltVersion(final Source xsltStylesheet) throws XPathException {
+    private float domExtractXsltVersion0(final Source xsltStylesheet) throws XPathException {
         Node node = ((DOMSource) xsltStylesheet).getNode();
         if (node instanceof Document) {
             node = ((Document) node).getDocumentElement();
@@ -401,6 +400,48 @@ public class FnTransform extends BasicFunction {
         }
 
         throw new XPathException(this, ErrorCodes.FOXT0002, "Unable to extract version from XSLT via DOM");
+    }
+
+    private float domExtractXsltVersion(final Source xsltStylesheet) throws XPathException {
+
+        Node node = ((DOMSource) xsltStylesheet).getNode();
+        if (node instanceof Document) {
+            node = ((Document) node).getDocumentElement();
+        }
+
+        String version = "";
+
+        if (node instanceof Element) {
+
+            final Element elem = (Element) node;
+            if (XSL_NS.equals(node.getNamespaceURI())
+                    && "stylesheet".equals(node.getLocalName())) {
+                version = elem.getAttribute("version");
+            }
+
+            // No luck ? Search the attributes of a "simplified stylesheet"
+            final NamedNodeMap attributes = elem.getAttributes();
+            for (int i = 0; version.isEmpty() && i < attributes.getLength(); i++) {
+                if (attributes.item(i) instanceof NamespaceNode) {
+                    final NamespaceNode nsNode = (NamespaceNode) attributes.item(i);
+                    final String uri = nsNode.getNodeValue();
+                    final String localName = nsNode.getLocalName(); // "xsl"
+                    if (XSL_NS.equals(uri)) {
+                        version = elem.getAttribute(localName + ":version");
+                    }
+                }
+            }
+        }
+
+        if (version.isEmpty()) {
+            throw new XPathException(this, ErrorCodes.FOXT0002, "Unable to extract version from XSLT via DOM");
+        }
+
+        try {
+            return Float.parseFloat(version);
+        } catch (final NumberFormatException nfe) {
+            throw new XPathException(this, ErrorCodes.FOXT0002, "Unable to extract version from XSLT via DOM. Value: " + version + " : " + nfe.getMessage());
+        }
     }
 
     private float staxExtractXsltVersion(final Source xsltStylesheet) throws XPathException {
