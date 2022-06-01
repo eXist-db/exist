@@ -30,7 +30,7 @@ We hold an open Community Call each week on Monday, from 19:30-20:30 CET. The me
 
 If you wish to participate, please join the #community channel on our Slack workspace (invitation link below). Pinned to that channel is a link to the upcoming meeting's agenda, which contains the link to the call, as well as a link to timeanddate.com to look up the time of the meeting for your local time zone. 
 
-The notes of past Community Calls are located [here](https://drive.google.com/drive/folders/0B4NLNdpw86LPc2JsV294NDFfTjQ).
+The notes of past Community Calls are located [here](https://drive.google.com/drive/folders/0B4NLNdpw86LPc2JsV294NDFfTjQ?resourcekey=0-NQPHfHbtiDuZULNDi06dbA&usp=sharing).
 
 ## Resources
 
