@@ -68,9 +68,7 @@ public class JWTRealm extends AbstractRealm {
 
     protected JWTContextFactory ensureContextFactory() {
         if (this.jwtContextFactory == null) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("No JWTContextFactory specified - creating a default instance.");
-            }
+            LOG.debug("No JWTContextFactory specified - creating a default instance.");
             this.jwtContextFactory = new JWTContextFactory(configuration);
         }
         return this.jwtContextFactory;
@@ -104,7 +102,7 @@ public class JWTRealm extends AbstractRealm {
     @Override
     public Subject authenticate(String accountName, Object credentials) throws AuthenticationException {
         final String jwt = deserialize(accountName);
-        LOG.info("JWT = " + jwt);
+        LOG.debug("JWT = [" + jwt + "]");
         ReadContext ctx = JsonPath.parse(jwt);
         final AbstractAccount account = (AbstractAccount) getAccount(ctx);
         return new AuthenticatedJWTSubjectAccreditedImpl (account, ctx, String.valueOf(credentials));
@@ -131,36 +129,34 @@ public class JWTRealm extends AbstractRealm {
 
         final JWTContextFactory jwtContextFactory = ensureContextFactory();
         final JWTSearchContext search = jwtContextFactory.getSearchContext();
+        LOG.debug("search: " + search.toString());
         final JWTSearchAccount searchAccount = search.getSearchAccount();
+        LOG.debug("searchAccount: " + searchAccount.toString());
         final String nameFieldPath = searchAccount.getName();
+        LOG.debug("nameFieldPath [" + nameFieldPath + "]");
         final String name = ctx.read(nameFieldPath);
+        LOG.debug("name = " + name);
 
         //first attempt to get the cached account
-        final Account acct = super.getAccount(name);
+        Account acct = null;
 
         try {
+            acct = super.getAccount(name);
             final DBBroker broker = getDatabase().get(Optional.of(getSecurityManager().getSystemSubject()));
 
             if (acct != null) {
-
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Cached used.");
-                }
-
+                LOG.debug("Cached used.");
+                LOG.debug("account = " + acct.toString() + " " + acct.getName() + " " + acct.getRealmId());
                 updateGroupsInDatabase(broker, ctx, acct);
-
-                return acct;
             } else {
-                return createAccountInDatabase(broker, ctx, name);
+                LOG.debug("Creating Account");
+                acct = createAccountInDatabase(broker, ctx, name);
             }
-        } catch (EXistException e) {
-            e.printStackTrace();
-        } catch (PermissionDeniedException e) {
-            e.printStackTrace();
-        } catch (AuthenticationException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            LOG.debug(e.getMessage(), e);
         }
-        return null;
+        LOG.debug("account = " + acct.toString() + " " + acct.getName() + " " + acct.getRealmId());
+        return acct;
     }
 
     private List<Group> getGroupMembershipForJWTUser(final ReadContext ctx, final DBBroker broker) throws AuthenticationException {
@@ -247,6 +243,7 @@ public class JWTRealm extends AbstractRealm {
 
         // Add the member groups
         for (final Group memberOf_group : getGroupMembershipForJWTUser(ctx, broker)) {
+            LOG.debug("Adding group [" + memberOf_group.getName() + "] from realm [" + memberOf_group.getRealmId() + "] added tu user [" + name + "]");
             userAider.addGroup(memberOf_group);
         }
 
@@ -255,7 +252,9 @@ public class JWTRealm extends AbstractRealm {
             userAider.setMetadataValue(metadata.getKey(), metadata.getValue());
         }
 
+        LOG.debug("Creating user");
         final Account account = getSecurityManager().addAccount(userAider);
+        LOG.debug("User created: " + account.getName() + " " + account.getRealmId());
 
         return account;
     }
