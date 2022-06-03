@@ -29,6 +29,7 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.w3c.dom.*;
 
+import javax.annotation.Nullable;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -133,18 +134,27 @@ public class FunPath extends BasicFunction {
      * @param   values  the path values
      */
     private static void getPathValues(Node node, final List<String> values) {
-        // get the owner element, if the specified node is an attribute node
-        Node attributeNode;
-        if (node.getNodeType() == Type.ATTRIBUTE) {
-            attributeNode = node;
-            node = ((Attr) node).getOwnerElement();
-        } else {
-            attributeNode = null;
-        }
+        @Nullable Node parent = node.getParentNode();
 
         final StringBuilder value = new StringBuilder();
-        final StringBuilder attributeValue = new StringBuilder();
-        if (node.getNodeType() == Type.TEXT) {
+
+        if (node.getNodeType() == Type.ATTRIBUTE) {
+            // For an attribute node, if the node is in no namespace,
+            // @local, where local is the local part of the node name.
+            // Otherwise, @Q{uri}local, where uri is the namespace URI of
+            // the node name, and local is the local part of the node name.
+            value.append('/');
+            if (node.getNamespaceURI() != null) {
+                value.append(String.format("@Q{%s}", node.getNamespaceURI()));
+            } else {
+                value.append('@');
+            }
+            value.append(node.getLocalName());
+
+            // attributes have an owner element - not a parent node!
+            parent = ((Attr) node).getOwnerElement();
+
+        } else if (node.getNodeType() == Type.TEXT) {
             // For a text node: text()[position] where position is an integer
             // representing the position of the selected node among its text
             // node siblings
@@ -194,31 +204,12 @@ public class FunPath extends BasicFunction {
             }
         }
 
-        // For an attribute node, if the node is in no namespace,
-        // @local, where local is the local part of the node name.
-        // Otherwise, @Q{uri}local, where uri is the namespace URI of
-        // the node name, and local is the local part of the node name.
-        if (attributeNode != null) {
-            attributeValue.append('/');
-            if (attributeNode.getNamespaceURI() != null) {
-                attributeValue.append(String.format("@Q{%s}", attributeNode.getNamespaceURI()));
-            } else {
-                attributeValue.append('@');
-            }
-            attributeValue.append(attributeNode.getLocalName());
-            node = attributeNode;
-        }
-
-        if (node.getParentNode() != null) {
-            getPathValues(node.getParentNode(), values);
+        if (parent != null) {
+            getPathValues(parent, values);
         }
 
         if (value.toString().length() > 0) {
             values.add(value.toString());
-        }
-
-        if (attributeValue.toString().length() > 0) {
-            values.add(attributeValue.toString());
         }
     }
 }
