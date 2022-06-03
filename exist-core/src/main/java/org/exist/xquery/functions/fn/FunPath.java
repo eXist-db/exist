@@ -78,9 +78,7 @@ public class FunPath extends BasicFunction {
             if (item.getType() == Type.DOCUMENT) {
                 // If $arg is a document node, the function returns the string "/".
                 result = new StringValue("/");
-            } else if (item.getType() == Type.ELEMENT   ||
-                       item.getType() == Type.ATTRIBUTE ||
-                       item.getType() == Type.TEXT       ) {
+            } else if (Type.subTypeOf(item.getType(), Type.NODE)) {
                 // For an element node, Q{uri}local[position], where uri is the
                 // namespace URI of the node name or the empty string if the
                 // node is in no namespace, local is the local part of the node
@@ -103,7 +101,7 @@ public class FunPath extends BasicFunction {
                 }
             } else {
                 // If the context item is not a node, type error [err:XPTY0004].
-                throw new XPathException(this, ErrorCodes.XPTY0004,  "Item is not a document or node; got '" + item + "'", sequence);
+                throw new XPathException(this, ErrorCodes.XPTY0004,  "Item is not a document or node; got '" + Type.getTypeName(item.getType()) + "'", sequence);
             }
         }
         return result;
