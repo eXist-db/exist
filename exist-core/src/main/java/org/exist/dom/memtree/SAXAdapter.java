@@ -68,7 +68,7 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
 
     @Override
     public void startDocument() throws SAXException {
-        builder.startDocument();
+        builder.startDocument(true);
         if(replaceAttributeFlag) {
             builder.setReplaceAttributeFlag(replaceAttributeFlag);
         }
