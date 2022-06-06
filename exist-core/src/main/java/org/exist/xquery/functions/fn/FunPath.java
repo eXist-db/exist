@@ -133,12 +133,12 @@ public class FunPath extends BasicFunction {
      * @param   node    the node whose path values to get
      * @param   values  the path values
      */
-    private static void getPathValues(Node node, final List<String> values) {
+    private static void getPathValues(final Node node, final List<String> values) {
         @Nullable Node parent = node.getParentNode();
 
         final StringBuilder value = new StringBuilder();
 
-        if (node.getNodeType() == Type.ATTRIBUTE) {
+        if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
             // For an attribute node, if the node is in no namespace,
             // @local, where local is the local part of the node name.
             // Otherwise, @Q{uri}local, where uri is the namespace URI of
@@ -154,7 +154,7 @@ public class FunPath extends BasicFunction {
             // attributes have an owner element - not a parent node!
             parent = ((Attr) node).getOwnerElement();
 
-        } else if (node.getNodeType() == Type.TEXT) {
+        } else if (node.getNodeType() == Node.TEXT_NODE) {
             // For a text node: text()[position] where position is an integer
             // representing the position of the selected node among its text
             // node siblings
@@ -162,7 +162,7 @@ public class FunPath extends BasicFunction {
             if (nodePosition > 0) {
                 value.append(String.format("/text()[%d]", nodePosition));
             }
-        } else if (node.getNodeType() == Type.COMMENT) {
+        } else if (node.getNodeType() == Node.COMMENT_NODE) {
             // For a comment node: comment()[position] where position is an
             // integer representing the position of the selected node among
             // its comment node siblings.
@@ -170,7 +170,7 @@ public class FunPath extends BasicFunction {
             if (nodePosition > 0) {
                 value.append(String.format("/comment()[%d]", nodePosition));
             }
-        } else if (node.getNodeType() == Type.PROCESSING_INSTRUCTION) {
+        } else if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE) {
             // For a processing-instruction node: processing-instruction(local)[position]
             // where local is the name of the processing instruction node and position is
             // an integer representing the position of the selected node among its
@@ -179,7 +179,7 @@ public class FunPath extends BasicFunction {
             if (nodePosition > 0) {
                 value.append(String.format("/processing-instruction(%s)[%d]", node.getNodeName(), nodePosition));
             }
-        } else if (node.getNodeType() == Type.NAMESPACE) {
+        } else if (node.getNodeType() == INode.NAMESPACE_NODE) {
             // For a namespace node: If the namespace node has a name: namespace::prefix,
             // where prefix is the local part of the name of the namespace node
             // (which represents the namespace prefix).  If the namespace node
