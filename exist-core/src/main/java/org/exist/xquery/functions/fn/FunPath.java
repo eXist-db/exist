@@ -119,7 +119,7 @@ public class FunPath extends BasicFunction {
         int position = 1;
         Node siblingNode = node.getPreviousSibling();
         while (siblingNode != null) {
-            if (siblingNode != null && siblingNode.getNodeName().equals(node.getNodeName())) {
+            if (siblingNode.getNodeName().equals(node.getNodeName())) {
                 ++position;
             }
             siblingNode = siblingNode.getPreviousSibling();
@@ -138,70 +138,83 @@ public class FunPath extends BasicFunction {
 
         final StringBuilder value = new StringBuilder();
 
-        if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
-            // For an attribute node, if the node is in no namespace,
-            // @local, where local is the local part of the node name.
-            // Otherwise, @Q{uri}local, where uri is the namespace URI of
-            // the node name, and local is the local part of the node name.
-            value.append('/');
-            if (node.getNamespaceURI() != null) {
-                value.append(String.format("@Q{%s}", node.getNamespaceURI()));
-            } else {
-                value.append('@');
-            }
-            value.append(node.getLocalName());
+        switch (node.getNodeType()) {
+            case Node.ATTRIBUTE_NODE:
+                // For an attribute node, if the node is in no namespace,
+                // @local, where local is the local part of the node name.
+                // Otherwise, @Q{uri}local, where uri is the namespace URI of
+                // the node name, and local is the local part of the node name.
+                value.append('/');
+                if (node.getNamespaceURI() != null) {
+                    value.append(String.format("@Q{%s}", node.getNamespaceURI()));
+                } else {
+                    value.append('@');
+                }
+                value.append(node.getLocalName());
 
-            // attributes have an owner element - not a parent node!
-            parent = ((Attr) node).getOwnerElement();
+                // attributes have an owner element - not a parent node!
+                parent = ((Attr) node).getOwnerElement();
+                break;
 
-        } else if (node.getNodeType() == Node.TEXT_NODE) {
-            // For a text node: text()[position] where position is an integer
-            // representing the position of the selected node among its text
-            // node siblings
-            final int nodePosition = getNodePosition(node);
-            if (nodePosition > 0) {
-                value.append(String.format("/text()[%d]", nodePosition));
-            }
-        } else if (node.getNodeType() == Node.COMMENT_NODE) {
-            // For a comment node: comment()[position] where position is an
-            // integer representing the position of the selected node among
-            // its comment node siblings.
-            final int nodePosition = getNodePosition(node);
-            if (nodePosition > 0) {
-                value.append(String.format("/comment()[%d]", nodePosition));
-            }
-        } else if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE) {
-            // For a processing-instruction node: processing-instruction(local)[position]
-            // where local is the name of the processing instruction node and position is
-            // an integer representing the position of the selected node among its
-            // like-named processing-instruction node siblings.
-            final int nodePosition = getNodePosition(node);
-            if (nodePosition > 0) {
-                value.append(String.format("/processing-instruction(%s)[%d]", node.getNodeName(), nodePosition));
-            }
-        } else if (node.getNodeType() == INode.NAMESPACE_NODE) {
-            // For a namespace node: If the namespace node has a name: namespace::prefix,
-            // where prefix is the local part of the name of the namespace node
-            // (which represents the namespace prefix).  If the namespace node
-            // has no name (that is, it represents the default namespace):
-            // namespace::*[Q{http://www.w3.org/2005/xpath-functions}local-name()=""]
-            if (node.getNamespaceURI() != null) {
-                value.append(String.format("namespace::{%s}", node.getLocalName()));
-            } else {
-                value.append("namespace::*[Q{http://www.w3.org/2005/xpath-functions}local-name()=\"\"]");
-            }
-        } else if (node.getLocalName() != null) {
-            // For an element node, Q{uri}local[position], where uri is the
-            // namespace URI of the node name or the empty string if the
-            // node is in no namespace, local is the local part of the node
-            // name, and position is an integer representing the position
-            // of the selected node among its like-named siblings.
-            final int nodePosition = getNodePosition(node);
-            value.append((node.getOwnerDocument() != null && node.getOwnerDocument().getDocumentElement() != null) ? "/Q" : "Q");
-            value.append(((INode) node).getQName().toURIQualifiedName());
-            if (nodePosition > 0) {
-                value.append(String.format("[%d]", nodePosition));
-            }
+            case Node.TEXT_NODE:
+                // For a text node: text()[position] where position is an integer
+                // representing the position of the selected node among its text
+                // node siblings
+                final int textNodePosition = getNodePosition(node);
+                if (textNodePosition > 0) {
+                    value.append(String.format("/text()[%d]", textNodePosition));
+                }
+                break;
+
+            case Node.COMMENT_NODE:
+                // For a comment node: comment()[position] where position is an
+                // integer representing the position of the selected node among
+                // its comment node siblings.
+                final int commentNodePosition = getNodePosition(node);
+                if (commentNodePosition > 0) {
+                    value.append(String.format("/comment()[%d]", commentNodePosition));
+                }
+                break;
+
+            case Node.PROCESSING_INSTRUCTION_NODE:
+                // For a processing-instruction node: processing-instruction(local)[position]
+                // where local is the name of the processing instruction node and position is
+                // an integer representing the position of the selected node among its
+                // like-named processing-instruction node siblings.
+                int processingInstructionNodePosition = getNodePosition(node);
+                if (processingInstructionNodePosition > 0) {
+                    value.append(String.format("/processing-instruction(%s)[%d]", node.getNodeName(), processingInstructionNodePosition));
+                }
+                break;
+
+            case INode.NAMESPACE_NODE:
+                // For a namespace node: If the namespace node has a name: namespace::prefix,
+                // where prefix is the local part of the name of the namespace node
+                // (which represents the namespace prefix).  If the namespace node
+                // has no name (that is, it represents the default namespace):
+                // namespace::*[Q{http://www.w3.org/2005/xpath-functions}local-name()=""]
+                if (node.getNamespaceURI() != null) {
+                    value.append(String.format("namespace::{%s}", node.getLocalName()));
+                } else {
+                    value.append("namespace::*[Q{http://www.w3.org/2005/xpath-functions}local-name()=\"\"]");
+                }
+                break;
+
+            default:
+                if (node.getLocalName() != null) {
+                    // For an element node, Q{uri}local[position], where uri is the
+                    // namespace URI of the node name or the empty string if the
+                    // node is in no namespace, local is the local part of the node
+                    // name, and position is an integer representing the position
+                    // of the selected node among its like-named siblings.
+                    final int nodePosition = getNodePosition(node);
+                    value.append((node.getOwnerDocument() != null && node.getOwnerDocument().getDocumentElement() != null) ? "/Q" : "Q");
+                    value.append(((INode) node).getQName().toURIQualifiedName());
+                    if (nodePosition > 0) {
+                        value.append(String.format("[%d]", nodePosition));
+                    }
+                }
+                break;
         }
 
         if (parent != null) {
