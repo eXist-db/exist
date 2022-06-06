@@ -171,7 +171,7 @@ public class JWTRealm extends AbstractRealm {
 
             if (basePathPath != null) {
                 ctx.read(basePathPath);
-            } else {
+            } else if(namePath != null) {
                 List<String> groupNames = ctx.read(namePath);
                 for (final String groupName: groupNames) {
                     memberOf_groups.add(getGroup(ctx, broker, groupName));
