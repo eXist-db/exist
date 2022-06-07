@@ -21,30 +21,92 @@
  :)
 xquery version "3.1";
 
-module namespace fnp="http://exist-db.org/xquery/test/function_collation_key";
+module namespace fnck="http://exist-db.org/xquery/test/function_collation_key";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 declare
     %test:assertTrue
-function fnp:equal() {
-    let $first := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA?strength=primary")
-    let $second := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA?strength=primary")
+function fnck:default-equal-case() {
+    let $first := fn:collation-key("a")
+    let $second := fn:collation-key("a")
     return $first = $second
 };
 
 declare
     %test:assertTrue
-function fnp:equal-ignore-case() {
-    let $first := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA?strength=primary")
-    let $second := fn:collation-key("A", "http://www.w3.org/2013/collation/UCA?strength=primary")
+function fnck:default-equal() {
+    let $first := fn:collation-key("a")
+    let $second := fn:collation-key("a")
     return $first = $second
 };
 
 declare
     %test:assertTrue
-function fnp:not-equal() {
-    let $first := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA?strength=primary")
-    let $second := fn:collation-key("b", "http://www.w3.org/2013/collation/UCA?strength=primary")
+function fnck:default-not-equal() {
+    let $first := fn:collation-key("a")
+    let $second := fn:collation-key("b")
+    return $first != $second
+};
+
+declare
+    %test:assertTrue
+function fnck:default-not-equal-ignore-case() {
+    let $first := fn:collation-key("a")
+    let $second := fn:collation-key("A")
+    return $first != $second
+};
+
+declare
+    %test:assertTrue
+function fnck:exist-equal() {
+    let $first := fn:collation-key("a", "http://exist-db.org/collation")
+    let $second := fn:collation-key("a", "http://exist-db.org/collation")
+    return $first = $second
+};
+
+declare
+    %test:assertTrue
+function fnck:exist-equal-ignore-case() {
+    let $first := fn:collation-key("a", "http://exist-db.org/collation")
+    let $second := fn:collation-key("A", "http://exist-db.org/collation")
+    return $first = $second
+};
+
+declare
+    %test:assertTrue
+function fnck:exist-not-equal() {
+    let $first := fn:collation-key("a", "http://exist-db.org/collation")
+    let $second := fn:collation-key("b", "http://exist-db.org/collation")
+    return $first != $second
+};
+
+declare
+    %test:assertError("FOCH0002")
+function fnck:invalid-uri() {
+    fn:collation-key("a", "")
+};
+
+declare
+    %test:assertTrue
+function fnck:uca-equal() {
+    let $first := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA")
+    let $second := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA")
+    return $first = $second
+};
+
+declare
+    %test:assertTrue
+function fnck:uca-equal-ignore-case() {
+    let $first := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA")
+    let $second := fn:collation-key("A", "http://www.w3.org/2013/collation/UCA")
+    return $first = $second
+};
+
+declare
+    %test:assertTrue
+function fnck:uca-not-equal() {
+    let $first := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA")
+    let $second := fn:collation-key("b", "http://www.w3.org/2013/collation/UCA")
     return $first != $second
 };

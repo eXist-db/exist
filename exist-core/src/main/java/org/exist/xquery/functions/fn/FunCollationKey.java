@@ -65,21 +65,10 @@ public class FunCollationKey extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        final BinaryValue result;
         final String source = (args.length >= 1) ? args[0].toString() : "";
-        final Collator collator;
-        if (args.length >= 2) {
-            collator = Collations.getCollationFromURI(args[1].toString());
-            if (collator == null) {
-                throw new XPathException(ErrorCodes.FOCH0002, "Unsupported collation: " + args[1]);
-            }
-        } else {
-            collator = context.getDefaultCollator();
-            if (collator == null) {
-                throw new XPathException(ErrorCodes.FOCH0002, "Could not get default collator.");
-            }
-        }
-        result = new BinaryValueFromBinaryString(new Base64BinaryValueType(), Base64.encodeBase64String(collator.getCollationKey(source).toByteArray()));
-        return result;
+        final Collator collator = (args.length >= 2) ? Collations.getCollationFromURI(args[1].toString()) : null;
+
+        return new BinaryValueFromBinaryString(new Base64BinaryValueType(), Base64.encodeBase64String(
+                (collator == null) ? source.getBytes(StandardCharsets.UTF_8) : new String(collator.getCollationKey(source).toByteArray()).getBytes(StandardCharsets.UTF_8)));
     }
 }
