@@ -2510,6 +2510,41 @@ public class XQueryTest {
         assertEquals(query, "INF",
                 result.getResource(0).getContent().toString());
     }
+
+    /**
+     * @see https://github.com/eXist-db/exist/issues/3441
+     */
+    @Test
+    public void divErrorArgVariable() throws XMLDBException {
+        String query = "let $x := 2 " +
+                "return 1 div $x * 4";
+
+        XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+        ResourceSet result = service.query(query);
+
+        assertEquals(1, result.getSize());
+
+        assertEquals(query, "2", result.getResource(0).getContent().toString());
+
+    }
+
+    /**
+            * @see https://github.com/eXist-db/exist/issues/3441
+            */
+    @Test
+    public void divErrorArgVariable2() throws XMLDBException {
+        String query = "let $x := 2 \n" +
+                "let $y := 1 div $x * 4\n" +
+                "return $y";
+
+        XPathQueryService service = (XPathQueryService) getTestCollection().getService("XPathQueryService", "1.0");
+        ResourceSet result = service.query(query);
+
+        assertEquals(1, result.getSize());
+
+        assertEquals(query, "2", result.getResource(0).getContent().toString());
+
+    }
     
     /**
      * @see http://sourceforge.net/support/tracker.php?aid=1841635
