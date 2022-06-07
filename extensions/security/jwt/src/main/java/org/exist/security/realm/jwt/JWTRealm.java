@@ -92,7 +92,7 @@ public class JWTRealm extends AbstractRealm {
      */
     protected JWTContextFactory ensureContextFactory() {
         if (this.jwtContextFactory == null) {
-            LOG.debug("No JWTContextFactory specified - creating a default instance.");
+            LOG.info("No JWTContextFactory specified - creating a default instance.");
             this.jwtContextFactory = new JWTContextFactory(configuration);
         }
         return this.jwtContextFactory;
@@ -169,7 +169,7 @@ public class JWTRealm extends AbstractRealm {
     @Override
     public Subject authenticate(String accountName, Object credentials) throws AuthenticationException {
         final String jwt = deserialize(accountName);
-        LOG.debug("JWT = [" + jwt + "]");
+        LOG.info("JWT = [" + jwt + "]");
         ReadContext ctx = JsonPath.parse(jwt);
         final AbstractAccount account = (AbstractAccount) getAccount(ctx);
         return new AuthenticatedJWTSubjectAccreditedImpl (account, ctx, String.valueOf(credentials));
@@ -208,33 +208,33 @@ public class JWTRealm extends AbstractRealm {
 
         final JWTContextFactory jwtContextFactory = ensureContextFactory();
         final JWTSearchContext search = jwtContextFactory.getSearchContext();
-        LOG.debug("search: " + search.toString());
+        LOG.info("search: " + search.toString());
         final JWTSearchAccount searchAccount = search.getSearchAccount();
-        LOG.debug("searchAccount: " + searchAccount.toString());
-        final String nameFieldPath = searchAccount.getIdentifier();
-        LOG.debug("nameFieldPath [" + nameFieldPath + "]");
-        final String name = ctx.read(nameFieldPath);
-        LOG.debug("name = " + name);
+        LOG.info("searchAccount: " + searchAccount.toString());
+        final String identifierFieldPath = searchAccount.getIdentifier();
+        LOG.info("identifierFieldPath [" + identifierFieldPath + "]");
 
         //first attempt to get the cached account
         Account acct = null;
 
         try {
+            final String name = ctx.read(identifierFieldPath);
+            LOG.info("name = " + name);
             acct = super.getAccount(name);
             final DBBroker broker = getDatabase().get(Optional.of(getSecurityManager().getSystemSubject()));
 
             if (acct != null) {
-                LOG.debug("Cached used.");
-                LOG.debug("account = " + acct.toString() + " " + acct.getName() + " " + acct.getRealmId());
+                LOG.info("Cached used.");
+                LOG.info("account = " + acct.toString() + " " + acct.getName() + " " + acct.getRealmId());
                 updateGroupsInDatabase(broker, ctx, acct);
             } else {
-                LOG.debug("Creating Account");
+                LOG.info("Creating Account");
                 acct = createAccountInDatabase(broker, ctx, name);
             }
         } catch (Exception e) {
-            LOG.debug(e.getMessage(), e);
+            LOG.info(e.getMessage(), e);
         }
-        LOG.debug("account = " + acct.toString() + " " + acct.getName() + " " + acct.getRealmId());
+        LOG.info("account = " + acct.toString() + " " + acct.getName() + " " + acct.getRealmId());
         return acct;
     }
 
@@ -256,11 +256,21 @@ public class JWTRealm extends AbstractRealm {
             String identifierPath = groupContext.getIdentifier();
 
             if (basePathPath != null) {
-                ctx.read(basePathPath);
+                try {
+                    ctx.read(basePathPath);
+                } catch(Exception e) {
+                    LOG.error("Unable to get groups", e);
+                }
             } else if(identifierPath != null) {
-                List<String> groupNames = ctx.read(identifierPath);
-                for (final String groupName: groupNames) {
-                    memberOf_groups.add(getGroup(ctx, broker, groupName));
+                List<String> groupNames = null;
+
+                try {
+                    groupNames = ctx.read(identifierPath);
+                    for (final String groupName: groupNames) {
+                        memberOf_groups.add(getGroup(ctx, broker, groupName));
+                    }
+                } catch(Exception e) {
+                    LOG.error("Unable to get groups", e);
                 }
             }
         }
@@ -369,20 +379,29 @@ public class JWTRealm extends AbstractRealm {
 
         // Add the member groups
         for (final Group memberOf_group : getGroupMembershipForJWTUser(ctx, broker)) {
-            LOG.debug("Adding group [" + memberOf_group.getName() + "] from realm [" + memberOf_group.getRealmId() + "] added to user [" + name + "]");
+            LOG.info("Adding group [" + memberOf_group.getName() + "] from realm [" + memberOf_group.getRealmId() + "] added to user [" + name + "]");
             userAider.addGroup(memberOf_group);
         }
 
-        LOG.debug("Creating user");
+        LOG.info("Creating user");
         final Account account = getSecurityManager().addAccount(userAider);
-        LOG.debug("User created: " + account.getName() + " " + account.getRealmId());
+        LOG.info("User created: " + account.getName() + " " + account.getRealmId());
 
         return account;
     }
 
     private void setMetadataValue(UserAider userAider, ReadContext ctx, String axschematype, String valuePath) {
         if (valuePath != null) {
-            String value = ctx.read(valuePath);
+
+            LOG.info("metadata valuePath for " + axschematype + " = " + valuePath);
+            String value;
+
+            try {
+                value = ctx.read(valuePath);
+            } catch(Exception e) {
+                value = null;
+            }
+            LOG.info("value = " + value);
 
             if (value != null) {
                 AXSchemaType schemaType = AXSchemaType.valueOfNamespace(axschematype);
@@ -408,7 +427,6 @@ public class JWTRealm extends AbstractRealm {
      */
     private Group createGroupInDatabase(final DBBroker broker, final String groupname) throws AuthenticationException {
         try {
-            //return sm.addGroup(instantiateGroup(this, groupname));
             return getSecurityManager().addGroup(broker, new GroupAider(ID, groupname));
 
         } catch (Exception e) {
