@@ -11,10 +11,16 @@ To enable JWT authentication you need to make sure that the file /db/system/secu
             <domain>...</domain>
             <secret>...</secret>
             <account>
-                <name>$.sub</name>
-                <metadata-search-attribute key="http://axschema.org/namePerson">$.name</metadata-search-attribute>
-                <metadata-search-attribute key="http://axschema.org/namePerson/friendly">$.nickname</metadata-search-attribute>
-                <metadata-search-attribute key="http://axschema.org/contact/email">$.email</metadata-search-attribute>
+                <identifier>$.sub</identifier>
+                <email>$.email</email>
+                <language></language>
+                <description></description>
+                <country></country>
+                <name>$.name</name>
+                <firstname>$.['given_name']</firstname>
+                <friendly>$.nickname</friendly>
+                <lastname>$.['family_name']</lastname>
+                <timezone></timezone>
                 <whitelist>
                     <principal>..</principal>
                     <principal>..</principal>
@@ -25,9 +31,7 @@ To enable JWT authentication you need to make sure that the file /db/system/secu
                 </blacklist>
             </account>
             <group>
-                <base-path>...</base-path>
-                <name>$.['https://example.com/auth'].groups[*]</name>
-                <metadata-search-attribute key="...">..</metadata-search-attribute>
+                <identifier>$.['https://example.com/auth'].groups[*]</identifier>
                 <dba>
                     <principal>..</principal>
                     <principal>..</principal>
@@ -93,13 +97,19 @@ Here is the realm description
         <domain>domain.here</domain>
         <search>
             <account>
-                <name>$.sub</name>
-                <metadata-search-attribute key="http://axschema.org/namePerson">$.name</metadata-search-attribute>
-                <metadata-search-attribute key="http://axschema.org/namePerson/friendly">$.nickname</metadata-search-attribute>
-                <metadata-search-attribute key="http://axschema.org/contact/email">$.email</metadata-search-attribute>
+                <identifier>$.sub</identifier>
+                <email>$.email</email>
+                <language></language>
+                <description></description>
+                <country></country>
+                <name>$.name</name>
+                <firstname>$.['given_name']</firstname>
+                <friendly>$.nickname</friendly>
+                <lastname>$.['family_name']</lastname>
+                <timezone></timezone>
             </account>
             <group>
-                <name>$.['https://example.com/auth'].groups[*]</name>
+                <identifier>$.['https://example.com/auth'].groups[*]</identifier>
             </group>
         </search>
         <transformation>
@@ -142,13 +152,19 @@ Then the realm description would be:
         <domain>domain.here</domain>
         <search>
             <account>
-                <name>$.sub</name>
-                <metadata-search-attribute key="http://axschema.org/namePerson">$.name</metadata-search-attribute>
-                <metadata-search-attribute key="http://axschema.org/namePerson/friendly">$.nickname</metadata-search-attribute>
-                <metadata-search-attribute key="http://axschema.org/contact/email">$.email</metadata-search-attribute>
+                <identifier>$.sub</identifier>
+                <email>$.email</email>
+                <language></language>
+                <description></description>
+                <country></country>
+                <name>$.name</name>
+                <firstname>$.['given_name']</firstname>
+                <friendly>$.nickname</friendly>
+                <lastname>$.['family_name']</lastname>
+                <timezone></timezone>
             </account>
             <group>
-                <name>$.['https://example.com/auth'].groups[*]</name>
+                <identifier>$.['https://example.com/auth'].groups[*]</identifier>
             </group>
         </search>
         <transformation>

@@ -35,30 +35,81 @@ import org.exist.storage.DBBroker;
  *
  */
 public class JWTAccountImpl extends AccountImpl {
+    /**
+     *
+     * @param realm
+     * @param configuration
+     * @throws ConfigurationException
+     */
     public JWTAccountImpl(final AbstractRealm realm, final Configuration configuration) throws ConfigurationException {
         super(realm, configuration);
     }
 
+    /**
+     *
+     * @param broker
+     * @param realm
+     * @param from_user
+     * @throws ConfigurationException
+     */
     public JWTAccountImpl(final DBBroker broker, final AbstractRealm realm, final AccountImpl from_user) throws ConfigurationException {
         super(broker, realm, from_user);
     }
 
+    /**
+     *
+     * @param broker
+     * @param realm
+     * @param id
+     * @param from_user
+     * @throws ConfigurationException
+     * @throws PermissionDeniedException
+     */
     public JWTAccountImpl(final DBBroker broker, final AbstractRealm realm, final int id, final Account from_user) throws ConfigurationException, PermissionDeniedException {
         super(broker, realm, id, from_user);
     }
 
+    /**
+     *
+     * @param broker
+     * @param realm
+     * @param name
+     * @throws ConfigurationException
+     */
     public JWTAccountImpl(final DBBroker broker, final AbstractRealm realm, final String name) throws ConfigurationException {
         super(broker, realm, name);
     }
 
+    /**
+     *
+     * @param broker
+     * @param realm
+     * @param id
+     * @param name
+     * @param password
+     * @throws ConfigurationException
+     */
     public JWTAccountImpl(final DBBroker broker, final AbstractRealm realm, final int id, final String name, final String password) throws ConfigurationException {
         super(broker, realm, id, name, password);
     }
 
+    /**
+     *
+     * @param realm
+     * @param config
+     * @param removed
+     * @throws ConfigurationException
+     */
     JWTAccountImpl(final AbstractRealm realm, final Configuration config, final boolean removed) throws ConfigurationException {
         super(realm, config, removed);
     }
 
+    /**
+     *
+     * @param group The group to add the user to
+     * @return
+     * @throws PermissionDeniedException
+     */
     @Override
     public Group addGroup(final Group group) throws PermissionDeniedException {
         if (group instanceof JWTGroupImpl) {
@@ -71,6 +122,12 @@ public class JWTAccountImpl extends AccountImpl {
         }
     }
 
+    /**
+     *
+     * @param name The group to add the user to
+     * @return
+     * @throws PermissionDeniedException
+     */
     @Override
     public Group addGroup(final String name) throws PermissionDeniedException {
         Group group = getRealm().getGroup(name);

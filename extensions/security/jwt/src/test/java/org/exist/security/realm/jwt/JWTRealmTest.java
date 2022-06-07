@@ -38,6 +38,10 @@ import java.io.InputStream;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
+/**
+ * @author <a href="mailto:loren.cahlander@gmail.com">Loren Cahlander</a>
+ *
+ */
 @RunWith(Parameterized.class)
 public class JWTRealmTest {
 
@@ -47,13 +51,13 @@ public class JWTRealmTest {
                     "        <domain>test</domain>\n" +
                     "        <search>\n" +
                     "            <account>\n" +
-                    "                <name>$.sub</name>\n" +
+                    "                <identifier>$.sub</identifier>\n" +
                     "                <metadata-search-attribute key=\"http://axschema.org/namePerson\">$.name</metadata-search-attribute>\n" +
                     "                <metadata-search-attribute key=\"http://axschema.org/namePerson/friendly\">$.nickname</metadata-search-attribute>\n" +
                     "                <metadata-search-attribute key=\"http://axschema.org/contact/email\">$.email</metadata-search-attribute>\n" +
                     "            </account>\n" +
                     "            <group>\n" +
-                    "                <name>$.['https://example.com/auth'].groups[*]</name>\n" +
+                    "                <identifier>$.['https://example.com/auth'].groups[*]</identifier>\n" +
                     "            </group>\n" +
                     "        </search>\n" +
                     "        <transformation>\n" +

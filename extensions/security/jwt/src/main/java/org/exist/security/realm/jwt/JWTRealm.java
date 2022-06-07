@@ -49,23 +49,47 @@ import java.util.regex.Pattern;
 @ConfigurationClass("realm") //TODO: id = JWT
 public class JWTRealm extends AbstractRealm {
 
+    /**
+     *
+     */
     private static final Logger LOG = LogManager.getLogger(JWTRealm.class);
+    /**
+     *
+     */
     private static JWTRealm instance = null;
 
+    /**
+     *
+     */
     @ConfigurationFieldAsAttribute("id")
     public final static String ID = "JWT";
 
+    /**
+     *
+     */
     @ConfigurationFieldAsAttribute("version")
     public static final String VERSION = "1.0";
 
+    /**
+     *
+     */
     @ConfigurationFieldAsElement("context")
     protected JWTContextFactory jwtContextFactory;
 
+    /**
+     *
+     * @param sm
+     * @param config
+     */
     public JWTRealm(final SecurityManagerImpl sm, final Configuration config) {
         super(sm, config);
         instance = this;
     }
 
+    /**
+     *
+     * @return
+     */
     protected JWTContextFactory ensureContextFactory() {
         if (this.jwtContextFactory == null) {
             LOG.debug("No JWTContextFactory specified - creating a default instance.");
@@ -74,31 +98,74 @@ public class JWTRealm extends AbstractRealm {
         return this.jwtContextFactory;
     }
 
-    public static JWTRealm getInstance() { return instance; }
+    /**
+     *
+     * @return
+     */
+    public static JWTRealm getInstance() {
+        return instance;
+    }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String getId() {
         return ID;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getVersion() { return VERSION; }
 
+    /**
+     *
+     * @param broker
+     * @param transaction
+     * @throws EXistException
+     */
     @Override
     public void start(final DBBroker broker, final Txn transaction) throws EXistException {
         super.start(broker, transaction);
     }
 
 
+    /**
+     *
+     * @param account
+     * @return
+     * @throws PermissionDeniedException
+     * @throws EXistException
+     * @throws ConfigurationException
+     */
     @Override
     public boolean deleteAccount(Account account) throws PermissionDeniedException, EXistException, ConfigurationException {
         return false;
     }
 
+    /**
+     *
+     * @param group
+     * @return
+     * @throws PermissionDeniedException
+     * @throws EXistException
+     * @throws ConfigurationException
+     */
     @Override
     public boolean deleteGroup(Group group) throws PermissionDeniedException, EXistException, ConfigurationException {
         return false;
     }
 
+    /**
+     *
+     * @param accountName
+     * @param credentials
+     * @return
+     * @throws AuthenticationException
+     */
     @Override
     public Subject authenticate(String accountName, Object credentials) throws AuthenticationException {
         final String jwt = deserialize(accountName);
@@ -107,6 +174,12 @@ public class JWTRealm extends AbstractRealm {
         final AbstractAccount account = (AbstractAccount) getAccount(ctx);
         return new AuthenticatedJWTSubjectAccreditedImpl (account, ctx, String.valueOf(credentials));
     }
+
+    /**
+     *
+     * @param tokenString
+     * @return
+     */
     public String deserialize(String tokenString) {
         String[] pieces = splitTokenString(tokenString);
         String jwtPayloadSegment = pieces[1];
@@ -125,6 +198,12 @@ public class JWTRealm extends AbstractRealm {
         }
         return pieces;
     }
+
+    /**
+     *
+     * @param ctx
+     * @return
+     */
     public final synchronized Account getAccount(ReadContext ctx) {
 
         final JWTContextFactory jwtContextFactory = ensureContextFactory();
@@ -132,7 +211,7 @@ public class JWTRealm extends AbstractRealm {
         LOG.debug("search: " + search.toString());
         final JWTSearchAccount searchAccount = search.getSearchAccount();
         LOG.debug("searchAccount: " + searchAccount.toString());
-        final String nameFieldPath = searchAccount.getName();
+        final String nameFieldPath = searchAccount.getIdentifier();
         LOG.debug("nameFieldPath [" + nameFieldPath + "]");
         final String name = ctx.read(nameFieldPath);
         LOG.debug("name = " + name);
@@ -159,6 +238,13 @@ public class JWTRealm extends AbstractRealm {
         return acct;
     }
 
+    /**
+     *
+     * @param ctx
+     * @param broker
+     * @return
+     * @throws AuthenticationException
+     */
     private List<Group> getGroupMembershipForJWTUser(final ReadContext ctx, final DBBroker broker) throws AuthenticationException {
         final List<Group> memberOf_groups = new ArrayList<>();
 
@@ -167,12 +253,12 @@ public class JWTRealm extends AbstractRealm {
 
         if (groupContext != null) {
             String basePathPath = groupContext.getBasePath();
-            String namePath = groupContext.getName();
+            String identifierPath = groupContext.getIdentifier();
 
             if (basePathPath != null) {
                 ctx.read(basePathPath);
-            } else if(namePath != null) {
-                List<String> groupNames = ctx.read(namePath);
+            } else if(identifierPath != null) {
+                List<String> groupNames = ctx.read(identifierPath);
                 for (final String groupName: groupNames) {
                     memberOf_groups.add(getGroup(ctx, broker, groupName));
                 }
@@ -194,6 +280,14 @@ public class JWTRealm extends AbstractRealm {
         return memberOf_groups;
     }
 
+    /**
+     *
+     * @param ctx
+     * @param broker
+     * @param groupName
+     * @return
+     * @throws AuthenticationException
+     */
     private Group getGroup(ReadContext ctx, DBBroker broker, String groupName) throws AuthenticationException {
         final Group grp = getGroup(groupName);
         if (grp != null) {
@@ -203,6 +297,14 @@ public class JWTRealm extends AbstractRealm {
         }
     }
 
+    /**
+     *
+     * @param broker
+     * @param decodedJWT
+     * @param acct
+     * @throws PermissionDeniedException
+     * @throws EXistException
+     */
     private void updateGroupsInDatabase(DBBroker broker, ReadContext decodedJWT, Account acct) throws PermissionDeniedException, EXistException {
 //        final String claim = this.jwtContextFactory.getGroup().getClaim();
 //        final List<String> dbaList = this.jwtContextFactory.getGroup().getDbaList().getPrincipals();
@@ -237,19 +339,38 @@ public class JWTRealm extends AbstractRealm {
 //
     }
 
+    /**
+     *
+     * @param broker
+     * @param ctx
+     * @param name
+     * @return
+     * @throws PermissionDeniedException
+     * @throws EXistException
+     * @throws AuthenticationException
+     */
     private Account createAccountInDatabase(DBBroker broker, ReadContext ctx, String name) throws PermissionDeniedException, EXistException, AuthenticationException {
 
         final UserAider userAider = new UserAider(ID, name);
 
-        // Add the member groups
-        for (final Group memberOf_group : getGroupMembershipForJWTUser(ctx, broker)) {
-            LOG.debug("Adding group [" + memberOf_group.getName() + "] from realm [" + memberOf_group.getRealmId() + "] added tu user [" + name + "]");
-            userAider.addGroup(memberOf_group);
-        }
+        final JWTSearchContext searchContext = ensureContextFactory().getSearchContext();
+        final JWTSearchAccount searchAccount = searchContext.getSearchAccount();
 
         // store any requested metadata
-        for (final AbstractMap.SimpleEntry<AXSchemaType, String> metadata : getMetadataForJWTUser(ctx)) {
-            userAider.setMetadataValue(metadata.getKey(), metadata.getValue());
+        setMetadataValue(userAider, ctx, "http://axschema.org/contact/country/home", searchAccount.getCountry());
+        setMetadataValue(userAider, ctx, "http://exist-db.org/security/description", searchAccount.getDescription());
+        setMetadataValue(userAider, ctx, "http://axschema.org/contact/email", searchAccount.getEmail());
+        setMetadataValue(userAider, ctx, "http://axschema.org/namePerson/first", searchAccount.getFirstname());
+        setMetadataValue(userAider, ctx, "http://axschema.org/namePerson/friendly", searchAccount.getFriendly());
+        setMetadataValue(userAider, ctx, "http://axschema.org/pref/language", searchAccount.getLanguage());
+        setMetadataValue(userAider, ctx, "http://axschema.org/namePerson/last", searchAccount.getLastname());
+        setMetadataValue(userAider, ctx, "http://axschema.org/namePerson", searchAccount.getName());
+        setMetadataValue(userAider, ctx, "http://axschema.org/pref/timezone", searchAccount.getTimezone());
+
+        // Add the member groups
+        for (final Group memberOf_group : getGroupMembershipForJWTUser(ctx, broker)) {
+            LOG.debug("Adding group [" + memberOf_group.getName() + "] from realm [" + memberOf_group.getRealmId() + "] added to user [" + name + "]");
+            userAider.addGroup(memberOf_group);
         }
 
         LOG.debug("Creating user");
@@ -259,21 +380,32 @@ public class JWTRealm extends AbstractRealm {
         return account;
     }
 
-    private Iterable<? extends AbstractMap.SimpleEntry<AXSchemaType, String>> getMetadataForJWTUser(ReadContext ctx) {
-        final List<AbstractMap.SimpleEntry<AXSchemaType, String>> metadata = new ArrayList<>();
-        final JWTSearchAccount searchAccount = ensureContextFactory().getSearchContext().getSearchAccount();
+    private void setMetadataValue(UserAider userAider, ReadContext ctx, String axschematype, String valuePath) {
+        if (valuePath != null) {
+            String value = ctx.read(valuePath);
 
-        for (final AXSchemaType axSchemaType : searchAccount.getMetadataSearchAttributeKeys()) {
-            final String searchAttribute = searchAccount.getMetadataSearchAttribute(axSchemaType);
-            if (searchAttribute != null) {
-                String value = ctx.read(searchAttribute);
-                metadata.add(new AbstractMap.SimpleEntry<>(axSchemaType, value));
+            if (value != null) {
+                AXSchemaType schemaType = AXSchemaType.valueOfNamespace(axschematype);
+
+                if (schemaType != null) {
+                    userAider.setMetadataValue(schemaType, value);
+                }
             }
-
         }
-        return metadata;
     }
 
+    /**
+     *
+     * @param ctx
+     * @return
+     */
+    /**
+     *
+     * @param broker
+     * @param groupname
+     * @return
+     * @throws AuthenticationException
+     */
     private Group createGroupInDatabase(final DBBroker broker, final String groupname) throws AuthenticationException {
         try {
             //return sm.addGroup(instantiateGroup(this, groupname));
@@ -284,6 +416,11 @@ public class JWTRealm extends AbstractRealm {
         }
     }
 
+    /**
+     *
+     * @param principalName
+     * @return
+     */
     private String addDomainPostfix(final String principalName) {
         String name = principalName;
         if (!name.contains("@")) {
@@ -292,6 +429,11 @@ public class JWTRealm extends AbstractRealm {
         return name;
     }
 
+    /**
+     *
+     * @param principalName
+     * @return
+     */
     private String removeDomainPostfix(final String principalName) {
         String name = principalName;
         if (name.contains("@") && name.endsWith(ensureContextFactory().getDomain())) {
@@ -301,15 +443,31 @@ public class JWTRealm extends AbstractRealm {
     }
 
 
+    /**
+     *
+     */
     private final class AuthenticatedJWTSubjectAccreditedImpl extends SubjectAccreditedImpl {
 
+        /**
+         *
+         */
         private final String authenticatedCredentials;
 
+        /**
+         *
+         * @param account
+         * @param jwt
+         * @param authenticatedCredentials
+         */
         private AuthenticatedJWTSubjectAccreditedImpl(final AbstractAccount account, final ReadContext jwt, final String authenticatedCredentials) {
             super(account, jwt);
             this.authenticatedCredentials = authenticatedCredentials;
         }
 
+        /**
+         *
+         * @return
+         */
         private String getAuthenticatedCredentials() {
             return authenticatedCredentials;
         }

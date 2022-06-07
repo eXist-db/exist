@@ -32,34 +32,61 @@ import org.exist.config.annotation.ConfigurationFieldAsElement;
 
 
 /**
- * @author lcahlander
+ * @author <a href="mailto:loren.cahlander@gmail.com">Loren Cahlander</a>
+ *
  */
 @ConfigurationClass("")
 public abstract class AbstractJWTPrincipalRestrictionList implements Configurable {
 
+    /**
+     *
+     */
     @ConfigurationFieldAsElement("principal")
     private List<String> principals = new ArrayList<>();
 
+    /**
+     *
+     */
     protected Configuration configuration;
 
+    /**
+     *
+     * @param config
+     */
     public AbstractJWTPrincipalRestrictionList(final Configuration config) {
         this.configuration = Configurator.configure(this, config);
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public Configuration getConfiguration() {
         return configuration;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public boolean isConfigured() {
         return (configuration != null);
     }
 
+    /**
+     *
+     * @return
+     */
     public List<String> getPrincipals() {
         return principals;
     }
 
+    /**
+     *
+     * @param principal
+     */
     public void addPrincipal(String principal) {
         this.principals.add(principal);
     }

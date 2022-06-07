@@ -35,14 +35,37 @@ import java.util.List;
  *
  */
 public class JWTGroupImpl extends GroupImpl {
+    /**
+     *
+     * @param realm
+     * @param configuration
+     * @throws ConfigurationException
+     */
     public JWTGroupImpl(AbstractRealm realm, Configuration configuration) throws ConfigurationException {
         super(realm, configuration);
     }
 
+    /**
+     *
+     * @param broker
+     * @param realm
+     * @param id
+     * @param name
+     * @throws ConfigurationException
+     */
     public JWTGroupImpl(DBBroker broker, AbstractRealm realm, int id, String name) throws ConfigurationException {
         super(broker, realm, id, name);
     }
 
+    /**
+     *
+     * @param broker
+     * @param realm
+     * @param id
+     * @param name
+     * @param managers
+     * @throws ConfigurationException
+     */
     public JWTGroupImpl(DBBroker broker, AbstractRealm realm, int id, String name, List<Account> managers) throws ConfigurationException {
         super(broker, realm, id, name, managers);
     }

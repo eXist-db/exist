@@ -33,6 +33,10 @@ import org.exist.config.annotation.ConfigurationClass;
 @ConfigurationClass("blacklist")
 public class JWTPrincipalBlackList extends AbstractJWTPrincipalRestrictionList implements Configurable {
 
+    /**
+     *
+     * @param config
+     */
     public JWTPrincipalBlackList(final Configuration config) {
         super(config);
 

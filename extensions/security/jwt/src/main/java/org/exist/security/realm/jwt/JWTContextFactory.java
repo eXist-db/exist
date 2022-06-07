@@ -36,45 +36,92 @@ import org.exist.config.annotation.ConfigurationFieldAsElement;
 @ConfigurationClass("context")
 public class JWTContextFactory implements Configurable {
 
+    /**
+     *
+     */
     private static final Logger LOG = LogManager.getLogger(JWTContextFactory.class);
 
+    /**
+     *
+     */
     @ConfigurationFieldAsElement("domain")
     protected String domain = null;
 
+    /**
+     *
+     */
     @ConfigurationFieldAsElement("secret")
     protected String secret = null;
 
+    /**
+     *
+     */
     @ConfigurationFieldAsElement("search")
     protected JWTSearchContext searchContext;
 
+    /**
+     *
+     */
     @ConfigurationFieldAsElement("transformation")
     private JWTTransformationContext transformationContext;
 
+    /**
+     *
+     */
     private Configuration configuration = null;
 
+    /**
+     *
+     * @param config
+     */
     public JWTContextFactory(final Configuration config) {
         LOG.info("Config = " + config.toString());
         configuration = Configurator.configure(this, config);
     }
 
+    /**
+     *
+     * @return
+     */
     public String getDomain() { return domain; }
 
+    /**
+     *
+     * @return
+     */
     public String getSecret() { return secret; }
 
+    /**
+     *
+     * @return
+     */
     public JWTSearchContext getSearchContext() {
         return searchContext;
     }
 
+    /**
+     *
+     * @return
+     */
     public JWTTransformationContext getTransformationContext() {
         return transformationContext;
     }
 
     // configurable methods
+
+    /**
+     *
+     * @return
+     */
     @Override
     public boolean isConfigured() {
         return (configuration != null);
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public Configuration getConfiguration() {
         return configuration;

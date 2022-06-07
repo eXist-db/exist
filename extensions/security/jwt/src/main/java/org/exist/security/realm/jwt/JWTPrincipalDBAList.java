@@ -32,6 +32,10 @@ import org.exist.config.annotation.ConfigurationClass;
  */
 @ConfigurationClass("dba")
 public class JWTPrincipalDBAList extends AbstractJWTPrincipalRestrictionList implements Configurable {
+    /**
+     *
+     * @param config
+     */
     public JWTPrincipalDBAList(Configuration config) {
         super(config);
 

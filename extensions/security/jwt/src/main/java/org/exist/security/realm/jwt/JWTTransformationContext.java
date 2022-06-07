@@ -30,19 +30,36 @@ import org.exist.config.annotation.ConfigurationFieldAsElement;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author <a href="mailto:loren.cahlander@gmail.com">Loren Cahlander</a>
+ *
+ */
 @ConfigurationClass("transformation")
 public class JWTTransformationContext implements TransformationContext, Configurable {
 
+    /**
+     *
+     */
     @ConfigurationFieldAsElement("add-group")
-    //protected List<String> addGroup = new ArrayList<String>();
-    protected String addGroup; //TODO convert to list
+    protected String addGroup;
 
+    /**
+     *
+     */
     private final Configuration configuration;
 
+    /**
+     *
+     * @param config
+     */
     public JWTTransformationContext(final Configuration config) {
         this.configuration = Configurator.configure(this, config);
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public List<String> getAdditionalGroups() {
         final List<String> additionalGroups = new ArrayList<>();
@@ -58,11 +75,19 @@ public class JWTTransformationContext implements TransformationContext, Configur
         return additionalGroups;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public boolean isConfigured() {
         return (configuration != null);
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public Configuration getConfiguration() {
         return configuration;

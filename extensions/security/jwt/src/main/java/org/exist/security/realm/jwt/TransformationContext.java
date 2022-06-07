@@ -24,8 +24,13 @@ package org.exist.security.realm.jwt;
 import java.util.List;
 
 /**
- * @author aretter
+ * @author <a href="mailto:loren.cahlander@gmail.com">Loren Cahlander</a>
+ *
  */
 public interface TransformationContext {
+    /**
+     *
+     * @return
+     */
     List<String> getAdditionalGroups();
 }
