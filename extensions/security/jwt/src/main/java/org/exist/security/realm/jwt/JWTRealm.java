@@ -1,6 +1,6 @@
 /*
  * eXist-db Open Source Native XML Database
- * Copyright (C) 2021 The eXist-db Authors
+ * Copyright (C) 2022 The eXist-db Authors
  *
  * info@exist-db.org
  * http://www.exist-db.org
@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
  * @author <a href="mailto:loren.cahlander@gmail.com">Loren Cahlander</a>
  *
  */
-@ConfigurationClass("realm") //TODO: id = JWT
+@ConfigurationClass("realm")
 public class JWTRealm extends AbstractRealm {
 
     /**
