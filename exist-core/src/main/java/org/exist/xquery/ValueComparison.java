@@ -76,7 +76,7 @@ public class ValueComparison extends GeneralComparison {
 			final AtomicValue rv = rs.itemAt(0).atomize();
             final Collator collator = getCollator(contextSequence);
 			return BooleanValue.valueOf(compareAtomic(collator, lv, rv, StringTruncationOperator.NONE, relation));
-		} 
+		}
         throw new XPathException(this, ErrorCodes.XPTY0004, "Type error: sequence with more than one item is not allowed here");
 	}
 

@@ -137,7 +137,8 @@ public class FloatValue extends NumericValue {
         if (other instanceof IntegerValue) {
             comparison = () -> BigDecimal.valueOf(value).compareTo(new BigDecimal(((IntegerValue)other).value));
         } else if (other instanceof DecimalValue) {
-            comparison = () -> BigDecimal.valueOf(value).compareTo(((DecimalValue)other).value);
+            final BigDecimal promoted = new BigDecimal(Float.toString(value));
+            comparison = () -> promoted.compareTo(((DecimalValue)other).value);
         } else if (other instanceof DoubleValue) {
             comparison = () -> BigDecimal.valueOf(value).compareTo(BigDecimal.valueOf(((DoubleValue)other).value));
         } else if (other instanceof FloatValue) {
@@ -276,35 +277,38 @@ public class FloatValue extends NumericValue {
         return round(precision, DecimalValue.DEFAULT_ROUNDING_MODE);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#minus(org.exist.xquery.value.NumericValue)
-     */
-    public ComputableValue minus(ComputableValue other) throws XPathException {
+    @Override
+    public ComputableValue minus(final ComputableValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.FLOAT)) {
             return new FloatValue(value - ((FloatValue) other).value);
+        } else if (other.getType() == Type.DOUBLE) {
+            // type promotion - see https://www.w3.org/TR/xpath-31/#promotion
+            return ((DoubleValue) convertTo(Type.DOUBLE)).minus(other);
         } else {
             return minus((ComputableValue) other.convertTo(getType()));
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#plus(org.exist.xquery.value.NumericValue)
-     */
-    public ComputableValue plus(ComputableValue other) throws XPathException {
+    @Override
+    public ComputableValue plus(final ComputableValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.FLOAT)) {
             return new FloatValue(value + ((FloatValue) other).value);
+        } else if (other.getType() == Type.DOUBLE) {
+            // type promotion - see https://www.w3.org/TR/xpath-31/#promotion
+            return ((DoubleValue) convertTo(Type.DOUBLE)).plus(other);
         } else {
             return plus((ComputableValue) other.convertTo(getType()));
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#mult(org.exist.xquery.value.NumericValue)
-     */
-    public ComputableValue mult(ComputableValue other) throws XPathException {
+    @Override
+    public ComputableValue mult(final ComputableValue other) throws XPathException {
         switch (other.getType()) {
             case Type.FLOAT:
                 return new FloatValue(value * ((FloatValue) other).value);
+            case Type.DOUBLE:
+                // type promotion - see https://www.w3.org/TR/xpath-31/#promotion
+                return ((DoubleValue) convertTo(Type.DOUBLE)).mult(other);
             case Type.DAY_TIME_DURATION:
             case Type.YEAR_MONTH_DURATION:
                 return other.mult(this);
@@ -358,26 +362,26 @@ public class FloatValue extends NumericValue {
         }
     }
 
-    public IntegerValue idiv(NumericValue other) throws XPathException {
-        final ComputableValue result = div(other);
-        return new IntegerValue(((IntegerValue) result.convertTo(Type.INTEGER)).getLong());
-		/*
-		if (Type.subTypeOf(other.getType(), Type.FLOAT)) {
-			float result = value / ((FloatValue) other).value;
-			if (result == Float.NaN || result == Float.POSITIVE_INFINITY || result == Float.NEGATIVE_INFINITY)
-				throw new XPathException("illegal arguments to idiv");
-			return new IntegerValue(new BigDecimal(result).toBigInteger(), Type.INTEGER);
-		}
-		throw new XPathException("idiv called with incompatible argument type: " + getType() + " vs " + other.getType());
-		*/
+    @Override
+    public IntegerValue idiv(final NumericValue other) throws XPathException {
+        if (other.getType() == Type.DOUBLE) {
+            // type promotion - see https://www.w3.org/TR/xpath-31/#promotion
+            return ((DoubleValue) convertTo(Type.DOUBLE)).idiv(other);
+        } else if (other.getType() == Type.DECIMAL) {
+            return idiv((FloatValue) other.convertTo(Type.FLOAT));
+        } else {
+            final ComputableValue result = div(other);
+            return new IntegerValue(((IntegerValue) result.convertTo(Type.INTEGER)).getLong());
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#mod(org.exist.xquery.value.NumericValue)
-     */
-    public NumericValue mod(NumericValue other) throws XPathException {
+    @Override
+    public NumericValue mod(final NumericValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.FLOAT)) {
             return new FloatValue(value % ((FloatValue) other).value);
+        } else if (other.getType() == Type.DOUBLE) {
+            // type promotion - see https://www.w3.org/TR/xpath-31/#promotion
+            return ((DoubleValue) convertTo(Type.DOUBLE)).mod(other);
         } else {
             return mod((NumericValue) other.convertTo(getType()));
         }
