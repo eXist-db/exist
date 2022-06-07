@@ -30,6 +30,8 @@ import org.exist.xquery.value.*;
 
 import com.ibm.icu.text.Collator;
 
+import java.nio.charset.StandardCharsets;
+
 public class FunCollationKey extends BasicFunction {
 
     private static final QName FN_NAME = new QName("collation-key", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX);
@@ -47,11 +49,15 @@ public class FunCollationKey extends BasicFunction {
             new FunctionSignature(FunCollationKey.FN_NAME, FunCollationKey.FN_DESCRIPTION,
                     new SequenceType[] {
                             new FunctionParameterSequenceType("value-string", Type.STRING,
+                                    Cardinality.ZERO_OR_ONE, "The value string")
+                    }, FN_RETURN),
+            new FunctionSignature(FunCollationKey.FN_NAME, FunCollationKey.FN_DESCRIPTION,
+                    new SequenceType[] {
+                            new FunctionParameterSequenceType("value-string", Type.STRING,
                                     Cardinality.ZERO_OR_ONE, "The value string"),
                             new FunctionParameterSequenceType("collection-string", Type.STRING,
                                     Cardinality.ZERO_OR_ONE, "The collation string")
                     }, FN_RETURN)
-
     };
 
     public FunCollationKey(final XQueryContext context, final FunctionSignature signature) {
@@ -61,7 +67,18 @@ public class FunCollationKey extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         final BinaryValue result;
         final String source = (args.length >= 1) ? args[0].toString() : "";
-        final Collator collator = (args.length >= 2) ? Collations.getCollationFromURI(args[1].toString()) : context.getDefaultCollator();
+        final Collator collator;
+        if (args.length >= 2) {
+            collator = Collations.getCollationFromURI(args[1].toString());
+            if (collator == null) {
+                throw new XPathException(ErrorCodes.FOCH0002, "Unsupported collation: " + args[1]);
+            }
+        } else {
+            collator = context.getDefaultCollator();
+            if (collator == null) {
+                throw new XPathException(ErrorCodes.FOCH0002, "Could not get default collator.");
+            }
+        }
         result = new BinaryValueFromBinaryString(new Base64BinaryValueType(), Base64.encodeBase64String(collator.getCollationKey(source).toByteArray()));
         return result;
     }

@@ -53,6 +53,7 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunCodepointEqual.signature, FunCodepointEqual.class),
         new FunctionDef(FunCodepointsToString.signature, FunCodepointsToString.class),
         new FunctionDef(FunCollationKey.FS_COLLATION_KEY_SIGNATURES[0], FunCollationKey.class),
+        new FunctionDef(FunCollationKey.FS_COLLATION_KEY_SIGNATURES[1], FunCollationKey.class),
         new FunctionDef(FunCompare.signatures[0], FunCompare.class),
         new FunctionDef(FunCompare.signatures[1], FunCompare.class),
         new FunctionDef(FunConcat.signature, FunConcat.class),
