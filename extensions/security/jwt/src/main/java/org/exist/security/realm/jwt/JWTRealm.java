@@ -226,6 +226,16 @@ public class JWTRealm extends AbstractRealm {
             if (acct != null) {
                 LOG.info("Cached used.");
                 LOG.info("account = " + acct.toString() + " " + acct.getName() + " " + acct.getRealmId());
+                // store any available account metadata
+                updateMetadataValue(acct, ctx, "http://axschema.org/contact/country/home", searchAccount.getCountry());
+                updateMetadataValue(acct, ctx, "http://exist-db.org/security/description", searchAccount.getDescription());
+                updateMetadataValue(acct, ctx, "http://axschema.org/contact/email", searchAccount.getEmail());
+                updateMetadataValue(acct, ctx, "http://axschema.org/namePerson/first", searchAccount.getFirstname());
+                updateMetadataValue(acct, ctx, "http://axschema.org/namePerson/friendly", searchAccount.getFriendly());
+                updateMetadataValue(acct, ctx, "http://axschema.org/pref/language", searchAccount.getLanguage());
+                updateMetadataValue(acct, ctx, "http://axschema.org/namePerson/last", searchAccount.getLastname());
+                updateMetadataValue(acct, ctx, "http://axschema.org/namePerson", searchAccount.getName());
+                updateMetadataValue(acct, ctx, "http://axschema.org/pref/timezone", searchAccount.getTimezone());
                 updateGroupsInDatabase(broker, ctx, acct);
             } else {
                 LOG.info("Creating Account");
@@ -310,43 +320,34 @@ public class JWTRealm extends AbstractRealm {
     /**
      *
      * @param broker
-     * @param decodedJWT
+     * @param ctx
      * @param acct
      * @throws PermissionDeniedException
-     * @throws EXistException
      */
-    private void updateGroupsInDatabase(DBBroker broker, ReadContext decodedJWT, Account acct) throws PermissionDeniedException, EXistException {
-//        final String claim = this.jwtContextFactory.getGroup().getClaim();
-//        final List<String> dbaList = this.jwtContextFactory.getGroup().getDbaList().getPrincipals();
-//        final List<String> groupNames = ((ArrayList) decodedJWT.get(claim));
-//        final String[] acctGroups = acct.getGroups();
-//
-//        for (final String accountGroup : acctGroups) {
-//            if (!groupNames.contains(accountGroup)) {
-//                acct.remGroup(accountGroup);
-//            }
-//        }
-//
-//        for (final String groupName : groupNames) {
-//            if (acct.hasGroup(groupName)) {
-//                continue;
-//            }
-//            if (dbaList.contains(groupName)) {
-//                if (!acct.hasDbaRole()) {
-//                    acct.addGroup(getSecurityManager().getDBAGroup());
-//                }
-//            }
-//            final Group group = super.getGroup(groupName);
-//
-//            if (group != null) {
-//                acct.addGroup(group);
-//            } else {
-//                final GroupAider groupAider = new GroupAider(ID, groupName);
-//                final Group newGroup = getSecurityManager().addGroup(broker, groupAider);
-//                acct.addGroup(newGroup);
-//            }
-//        }
-//
+    private void updateGroupsInDatabase(DBBroker broker, ReadContext ctx, Account acct) throws PermissionDeniedException, AuthenticationException {
+
+        final List<Group>  groups = getGroupMembershipForJWTUser(ctx, broker);
+        final String[] acctGroups = acct.getGroups();
+
+        for (final String accountGroup : acctGroups) {
+            boolean groupExists = false;
+            for (final Group group: groups) {
+                if (group.getName().equals(accountGroup)) {
+                    groupExists = true;
+                }
+            }
+            if (!groupExists) {
+                acct.remGroup(accountGroup);
+            }
+        }
+
+        for (final Group group: groups) {
+            if (acct.hasGroup(group.getName())) {
+                continue;
+            } else {
+                acct.addGroup(group);
+            }
+        }
     }
 
     /**
@@ -388,6 +389,29 @@ public class JWTRealm extends AbstractRealm {
         LOG.info("User created: " + account.getName() + " " + account.getRealmId());
 
         return account;
+    }
+
+    private void updateMetadataValue(Account acct, ReadContext ctx, String axschematype, String valuePath) {
+        if (valuePath != null) {
+
+            LOG.info("metadata valuePath for " + axschematype + " = " + valuePath);
+            String value;
+
+            try {
+                value = ctx.read(valuePath);
+            } catch(Exception e) {
+                value = null;
+            }
+            LOG.info("value = " + value);
+
+            if (value != null) {
+                AXSchemaType schemaType = AXSchemaType.valueOfNamespace(axschematype);
+
+                if (schemaType != null) {
+                    acct.setMetadataValue(schemaType, value);
+                }
+            }
+        }
     }
 
     private void setMetadataValue(UserAider userAider, ReadContext ctx, String axschematype, String valuePath) {
