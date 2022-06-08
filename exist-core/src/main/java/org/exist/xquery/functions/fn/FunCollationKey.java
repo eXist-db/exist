@@ -32,43 +32,43 @@ import com.ibm.icu.text.Collator;
 
 import java.nio.charset.StandardCharsets;
 
+import static org.exist.xquery.FunctionDSL.*;
+
 public class FunCollationKey extends BasicFunction {
 
-    private static final QName FN_NAME = new QName("collation-key", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX);
+    private static final String FN_NAME = "collation-key"; // , Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX);
     private static final String FN_DESCRIPTION =
-            "Given a $value-string value and a $collection-string " +
+            "Given a $value-string value and a $collation-string " +
                     "collation, generates an internal value called a collation key, with the " +
                     "property that the matching and ordering of collation " +
                     "keys reflects the matching and ordering of strings " +
                     "under the specified collation.";
-    private static final FunctionReturnSequenceType FN_RETURN = new FunctionReturnSequenceType(
-            Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the collation key"
-    );
-
-    public static final FunctionSignature[] FS_COLLATION_KEY_SIGNATURES = {
-            new FunctionSignature(FunCollationKey.FN_NAME, FunCollationKey.FN_DESCRIPTION,
-                    new SequenceType[] {
-                            new FunctionParameterSequenceType("value-string", Type.STRING,
-                                    Cardinality.ZERO_OR_ONE, "The value string")
-                    }, FN_RETURN),
-            new FunctionSignature(FunCollationKey.FN_NAME, FunCollationKey.FN_DESCRIPTION,
-                    new SequenceType[] {
-                            new FunctionParameterSequenceType("value-string", Type.STRING,
-                                    Cardinality.ZERO_OR_ONE, "The value string"),
-                            new FunctionParameterSequenceType("collection-string", Type.STRING,
-                                    Cardinality.ZERO_OR_ONE, "The collation string")
-                    }, FN_RETURN)
-    };
+    private static final FunctionReturnSequenceType FN_RETURN = returnsOpt(Type.BASE64_BINARY, "the collation key");
+    private static final FunctionParameterSequenceType PARAM_VALUE_STRING = param("value-string", Type.STRING, "The value string");
+    private static final FunctionParameterSequenceType PARAM_COLLATION_STRING = param("collation-string", Type.STRING, "The collation string");
+    public static final FunctionSignature[] FS_COLLATION_KEY_SIGNATURES = functionSignatures(
+            FN_NAME,
+            FN_DESCRIPTION,
+            FN_RETURN,
+            arities(
+                    arity(PARAM_VALUE_STRING),
+                    arity(PARAM_VALUE_STRING, PARAM_COLLATION_STRING)
+            )
+        );
 
     public FunCollationKey(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final String source = (args.length >= 1) ? args[0].toString() : "";
         final Collator collator = (args.length >= 2) ? Collations.getCollationFromURI(args[1].toString()) : null;
 
         return new BinaryValueFromBinaryString(new Base64BinaryValueType(), Base64.encodeBase64String(
                 (collator == null) ? source.getBytes(StandardCharsets.UTF_8) : new String(collator.getCollationKey(source).toByteArray()).getBytes(StandardCharsets.UTF_8)));
+    }
+
+    private static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
+        return FunctionDSL.functionSignatures(new QName(name, Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX), description, returnType, variableParamTypes);
     }
 }

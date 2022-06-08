@@ -30,7 +30,7 @@ declare
 function fnck:default-equal-case() {
     let $first := fn:collation-key("a")
     let $second := fn:collation-key("a")
-    return $first = $second
+    return $first eq $second
 };
 
 declare
@@ -38,7 +38,7 @@ declare
 function fnck:default-equal() {
     let $first := fn:collation-key("a")
     let $second := fn:collation-key("a")
-    return $first = $second
+    return $first eq $second
 };
 
 declare
@@ -46,7 +46,7 @@ declare
 function fnck:default-not-equal() {
     let $first := fn:collation-key("a")
     let $second := fn:collation-key("b")
-    return $first != $second
+    return $first ne $second
 };
 
 declare
@@ -54,7 +54,7 @@ declare
 function fnck:default-not-equal-ignore-case() {
     let $first := fn:collation-key("a")
     let $second := fn:collation-key("A")
-    return $first != $second
+    return $first ne $second
 };
 
 declare
@@ -62,7 +62,7 @@ declare
 function fnck:exist-equal() {
     let $first := fn:collation-key("a", "http://exist-db.org/collation")
     let $second := fn:collation-key("a", "http://exist-db.org/collation")
-    return $first = $second
+    return $first eq $second
 };
 
 declare
@@ -70,7 +70,7 @@ declare
 function fnck:exist-equal-ignore-case() {
     let $first := fn:collation-key("a", "http://exist-db.org/collation")
     let $second := fn:collation-key("A", "http://exist-db.org/collation")
-    return $first = $second
+    return $first eq $second
 };
 
 declare
@@ -78,7 +78,7 @@ declare
 function fnck:exist-not-equal() {
     let $first := fn:collation-key("a", "http://exist-db.org/collation")
     let $second := fn:collation-key("b", "http://exist-db.org/collation")
-    return $first != $second
+    return $first ne $second
 };
 
 declare
@@ -92,7 +92,7 @@ declare
 function fnck:uca-equal() {
     let $first := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA")
     let $second := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA")
-    return $first = $second
+    return $first eq $second
 };
 
 declare
@@ -100,13 +100,13 @@ declare
 function fnck:uca-equal-ignore-case() {
     let $first := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA")
     let $second := fn:collation-key("A", "http://www.w3.org/2013/collation/UCA")
-    return $first = $second
+    return $first eq $second
 };
 
 declare
     %test:assertTrue
 function fnck:uca-not-equal() {
-    let $first := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA")
-    let $second := fn:collation-key("b", "http://www.w3.org/2013/collation/UCA")
-    return $first != $second
+    let $first := fn:collation-key(fn:codepoints-to-string((37, 65500, 37)))
+    let $second := fn:collation-key(fn:codepoints-to-string((37, 100000, 37)))
+    return $first eq $second
 };
