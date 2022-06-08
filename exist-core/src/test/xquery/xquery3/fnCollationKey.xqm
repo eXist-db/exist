@@ -67,17 +67,17 @@ function fnck:exist-equal() {
 
 declare
     %test:assertTrue
-function fnck:exist-equal-ignore-case() {
+function fnck:exist-not-equal() {
     let $first := fn:collation-key("a", "http://exist-db.org/collation")
-    let $second := fn:collation-key("A", "http://exist-db.org/collation")
-    return $first eq $second
+    let $second := fn:collation-key("b", "http://exist-db.org/collation")
+    return $first ne $second
 };
 
 declare
     %test:assertTrue
-function fnck:exist-not-equal() {
+function fnck:exist-not-equal-ignore-case() {
     let $first := fn:collation-key("a", "http://exist-db.org/collation")
-    let $second := fn:collation-key("b", "http://exist-db.org/collation")
+    let $second := fn:collation-key("A", "http://exist-db.org/collation")
     return $first ne $second
 };
 
@@ -90,16 +90,16 @@ function fnck:invalid-uri() {
 declare
     %test:assertTrue
 function fnck:uca-equal() {
-    let $first := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA")
-    let $second := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA")
+    let $first := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA?lang=en;strength=primary")
+    let $second := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA?lang=en;strength=primary")
     return $first eq $second
 };
 
 declare
     %test:assertTrue
 function fnck:uca-equal-ignore-case() {
-    let $first := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA")
-    let $second := fn:collation-key("A", "http://www.w3.org/2013/collation/UCA")
+    let $first := fn:collation-key("a", "http://www.w3.org/2013/collation/UCA?lang=en;strength=primary")
+    let $second := fn:collation-key("A", "http://www.w3.org/2013/collation/UCA?lang=en;strength=primary")
     return $first eq $second
 };
 
@@ -108,5 +108,5 @@ declare
 function fnck:uca-not-equal() {
     let $first := fn:collation-key(fn:codepoints-to-string((37, 65500, 37)))
     let $second := fn:collation-key(fn:codepoints-to-string((37, 100000, 37)))
-    return $first eq $second
+    return $first lt $second
 };

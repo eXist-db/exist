@@ -65,7 +65,7 @@ public class FunCollationKey extends BasicFunction {
         final Collator collator = (args.length >= 2) ? Collations.getCollationFromURI(args[1].itemAt(0).toString()) : null;
 
         return new BinaryValueFromBinaryString(new Base64BinaryValueType(), Base64.encodeBase64String(
-                (collator == null) ? source.getBytes(StandardCharsets.UTF_8) : new String(collator.getCollationKey(source).toByteArray()).getBytes(StandardCharsets.UTF_8)));
+                (collator == null) ? source.getBytes(StandardCharsets.UTF_8) : new String(collator.getCollationKey(source).toByteArray()).getBytes(StandardCharsets.UTF_8))).convertTo(new Base64BinaryValueType());
     }
 
     private static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {

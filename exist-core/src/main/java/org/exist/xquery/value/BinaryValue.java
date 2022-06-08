@@ -31,6 +31,7 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 import java.io.*;
+import java.util.Objects;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -109,10 +110,13 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
             return -1;
         } else if (otherIs == null) {
             return 1;
+        } else if (is == otherIs) {
+            return 0;
         } else {
-            int read = -1;
-            int otherRead = -1;
-            while (true) {
+            int read;
+            int otherRead;
+            do {
+
                 try {
                     read = is.read();
                 } catch (final IOException ioe) {
@@ -125,8 +129,12 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
                     return 1;
                 }
 
-                return read - otherRead;
-            }
+                final int readComparison = Integer.compare(read, otherRead);
+                if (readComparison != 0) {
+                    return readComparison;
+                }
+            } while (read != -1 && otherRead != -1);
+            return 0;
         }
     }
 
@@ -276,4 +284,12 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
      * Increments the number of shared references to this binary value.
      */
     public abstract void incrementSharedReferences();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BinaryValue that = (BinaryValue) o;
+        return compareTo(that) == 0;
+    }
 }
