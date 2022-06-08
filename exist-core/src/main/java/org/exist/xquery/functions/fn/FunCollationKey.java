@@ -61,8 +61,8 @@ public class FunCollationKey extends BasicFunction {
     }
 
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        final String source = (args.length >= 1) ? args[0].toString() : "";
-        final Collator collator = (args.length >= 2) ? Collations.getCollationFromURI(args[1].toString()) : null;
+        final String source = (args.length >= 1) ? args[0].itemAt(0).toString() : "";
+        final Collator collator = (args.length >= 2) ? Collations.getCollationFromURI(args[1].itemAt(0).toString()) : null;
 
         return new BinaryValueFromBinaryString(new Base64BinaryValueType(), Base64.encodeBase64String(
                 (collator == null) ? source.getBytes(StandardCharsets.UTF_8) : new String(collator.getCollationKey(source).toByteArray()).getBytes(StandardCharsets.UTF_8)));
