@@ -184,6 +184,7 @@
             <test name="xquery.arrays.ArrayTests" todir="${junit.reports.dat}"/>
             <test name="xquery.maps.MapTests" todir="${junit.reports.dat}"/>
             <test name="xquery.logicalOp.LogicalOpTests" todir="${junit.reports.dat}"/>
+            <test name="xquery.numericOp.NumericOpTests" todir="${junit.reports.dat}"/>
             <test name="xquery.numbers.NumberTests" todir="${junit.reports.dat}"/>
             <test name="xquery.modules.compression.CompressionTests" todir="${junit.reports.dat}"/>
             <test name="xquery.modules.file.FileTests" todir="${junit.reports.dat}"/>
