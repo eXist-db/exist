@@ -283,7 +283,8 @@ public class DecimalValue extends NumericValue {
         } else if (other instanceof DoubleValue) {
             comparison = () -> value.compareTo(BigDecimal.valueOf(((DoubleValue)other).value));
         } else if (other instanceof FloatValue) {
-            comparison = () -> value.compareTo(BigDecimal.valueOf(((FloatValue)other).value));
+            final BigDecimal otherPromoted = new BigDecimal(Float.toString(((FloatValue)other).value));
+            comparison = () -> value.compareTo(otherPromoted);
         } else {
             return null;
         }
@@ -361,10 +362,8 @@ public class DecimalValue extends NumericValue {
         return round(precision, DecimalValue.DEFAULT_ROUNDING_MODE);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#minus(org.exist.xquery.value.NumericValue)
-     */
-    public ComputableValue minus(ComputableValue other) throws XPathException {
+    @Override
+    public ComputableValue minus(final ComputableValue other) throws XPathException {
         switch (other.getType()) {
             case Type.DECIMAL:
                 return new DecimalValue(value.subtract(((DecimalValue) other).value));
@@ -375,10 +374,8 @@ public class DecimalValue extends NumericValue {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#plus(org.exist.xquery.value.NumericValue)
-     */
-    public ComputableValue plus(ComputableValue other) throws XPathException {
+    @Override
+    public ComputableValue plus(final ComputableValue other) throws XPathException {
         switch (other.getType()) {
             case Type.DECIMAL:
                 return new DecimalValue(value.add(((DecimalValue) other).value));
