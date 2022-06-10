@@ -90,6 +90,21 @@ public class StringJoinBenchmark {
     }
 
     @Benchmark
+    public StringBuilder forApproachRadek(/*final BuilderState builderState*/) {
+//        final StringBuilder builder = builderState.builder;
+        final StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < strings.size(); i++) {
+            builder.append(strings.get(i));
+            builder.append(", ");
+        }
+
+        builder.substring(0, builder.length() - 3);
+
+        return builder;
+    }
+
+    @Benchmark
     public StringBuilder forEachApproach(/*final BuilderState builderState*/) {
 //        final StringBuilder builder = builderState.builder;
         final StringBuilder builder = new StringBuilder();
@@ -103,6 +118,22 @@ public class StringJoinBenchmark {
                 builder.append(", ");
             }
         }
+        return builder;
+    }
+
+    @Benchmark
+    public StringBuilder forEachApproachRadek(/*final BuilderState builderState*/) {
+//        final StringBuilder builder = builderState.builder;
+        final StringBuilder builder = new StringBuilder();
+
+        boolean firstArgument = true;
+        for (final String str : strings) {
+            builder.append(str);
+            builder.append(", ");
+        }
+
+        builder.substring(0, builder.length() - 3);
+
         return builder;
     }
 
