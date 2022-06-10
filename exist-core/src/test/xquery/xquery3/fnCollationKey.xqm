@@ -27,14 +27,6 @@ declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 declare
     %test:assertTrue
-function fnck:default-equal-case() {
-    let $first := fn:collation-key("a")
-    let $second := fn:collation-key("a")
-    return $first eq $second
-};
-
-declare
-    %test:assertTrue
 function fnck:default-equal() {
     let $first := fn:collation-key("a")
     let $second := fn:collation-key("a")
