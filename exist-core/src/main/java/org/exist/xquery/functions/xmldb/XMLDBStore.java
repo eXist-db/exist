@@ -30,6 +30,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
@@ -265,7 +266,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
             try {
                 temp = temporaryFileManager.getTemporaryFile();
                 try(final InputStream is = uri.toURL().openStream()) {
-                    Files.copy(is, temp);
+                    Files.copy(is, temp, StandardCopyOption.REPLACE_EXISTING); //REPLACE_EXISTING because getTemporaryFile always create file on filesystem.
                     resource = loadFromFile(collection, temp, docName, mimeType);
                 } finally {
                     if(temp != null) {
