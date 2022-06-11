@@ -126,69 +126,35 @@ public class FnTransform extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        final MapType options = (MapType) args[0].itemAt(0);
+        final Options options = new Options((MapType) args[0].itemAt(0));
 
-        final Tuple2<String, Source> xsltSource = getStylesheet(options);
-
-        final MapType stylesheetParams = FnTransform.STYLESHEET_PARAMS.get(options).orElse(new MapType(context));
-        for (final IEntry<AtomicValue, Sequence> entry : stylesheetParams) {
-            if (!(entry.key() instanceof QNameValue)) {
-                throw new XPathException(this, ErrorCodes.FOXT0002, "Supplied stylesheet-param is not a valid xs:qname: " + entry);
-            }
-            if (!(entry.value() instanceof Sequence)) {
-                throw new XPathException(this, ErrorCodes.FOXT0002, "Supplied stylesheet-param is not a valid xs:sequence: " + entry);
-            }
-        }
-
-        final float xsltVersion;
-        final Optional<DecimalValue> explicitXsltVersion = FnTransform.XSLT_VERSION.get(options);
-        if (explicitXsltVersion.isPresent()) {
-            try {
-                xsltVersion = explicitXsltVersion.get().getFloat();
-            } catch (final XPathException e) {
-                throw new XPathException(this, ErrorCodes.FOXT0002, "Supplied xslt-version is not a valid xs:decimal: " + e.getMessage(), explicitXsltVersion.get(), e);
-            }
-        } else {
-            xsltVersion = getXsltVersion(xsltSource._2);
-        }
-
-        final String stylesheetBaseUri;
-        final Optional<StringValue> explicitStylesheetBaseUri = FnTransform.STYLESHEET_BASE_URI.get(xsltVersion, options);
-        if (explicitStylesheetBaseUri.isPresent()) {
-            stylesheetBaseUri = explicitStylesheetBaseUri.get().getStringValue();
-        } else {
-            stylesheetBaseUri = xsltSource._1;
-        }
-        final AnyURIValue resolvedStylesheetBaseURI = resolveURI(new AnyURIValue(stylesheetBaseUri), context.getBaseURI());
-
-        final Optional<QNameValue> initialTemplate = FnTransform.INITIAL_TEMPLATE.get(options);
-
-        final String executableHash = Tuple(stylesheetBaseUri, stylesheetParams).toString();
+        final String executableHash = Tuple(options.resolvedStylesheetBaseURI, options
+                .stylesheetParams).toString();
 
         //TODO(AR) Saxon recommends to use a <code>StreamSource</code> or <code>SAXSource</code> instead of DOMSource for performance
-        final Optional<Source> sourceNode = FnTransform.getSourceNode(options, context.getBaseURI());
+        final Optional<Source> sourceNode = FnTransform.getSourceNode(options.sourceNode, context.getBaseURI());
 
-        final boolean shouldCache = FnTransform.CACHE.get(xsltVersion, options).map(BooleanValue::getValue).orElse(true);
+        final boolean shouldCache = options.shouldCache.map(BooleanValue::getValue).orElse(true);
 
-        if (xsltVersion == 1.0f || xsltVersion == 2.0f || xsltVersion == 3.0f) {
+        if (options.xsltVersion == 1.0f || options.xsltVersion == 2.0f || options.xsltVersion == 3.0f) {
             try {
                 final Holder<SaxonApiException> compileException = new Holder<>();
                 final XsltExecutable xsltExecutable = FnTransform.XSLT_EXECUTABLE_CACHE.get(executableHash, key -> {
                     final XsltCompiler xsltCompiler = FnTransform.SAXON_PROCESSOR.newXsltCompiler();
                     xsltCompiler.setErrorListener(FnTransform.ERROR_LISTENER);
-                    for (final IEntry entry : stylesheetParams) {
+                    for (final IEntry entry : options.stylesheetParams) {
                         final QName qKey = ((QNameValue) entry.key()).getQName();
                         final XdmValue value = XdmValue.makeValue("2");
                         xsltCompiler.setParameter(new net.sf.saxon.s9api.QName(qKey.getPrefix(), qKey.getLocalPart()), value);
                     }
 
                     try {
-                        if (!resolvedStylesheetBaseURI.isEmpty()) {
-                            xsltSource._2.setSystemId(resolvedStylesheetBaseURI.getStringValue());
+                        if (!options.resolvedStylesheetBaseURI.isEmpty()) {
+                            options.xsltSource._2.setSystemId(options.resolvedStylesheetBaseURI.getStringValue());
                         } else {
-                            xsltSource._2.setSystemId(context.getBaseURI().getStringValue());
+                            options.xsltSource._2.setSystemId(context.getBaseURI().getStringValue());
                         }
-                        return xsltCompiler.compile(xsltSource._2); // .compilePackage //TODO(AR) need to implement support for xslt-packages
+                        return xsltCompiler.compile(options.xsltSource._2); // .compilePackage //TODO(AR) need to implement support for xslt-packages
                     } catch (final SaxonApiException e) {
                         compileException.value = e;
                         return null;
@@ -218,7 +184,7 @@ public class FnTransform extends BasicFunction {
                 });
 
                 final SAXDestination saxDestination = new SAXDestination(builderReceiver);
-                if (initialTemplate.isPresent()) {
+                if (options.initialTemplate.isPresent()) {
                     if (sourceNode.isPresent()) {
                         final DocumentBuilder sourceBuilder = FnTransform.SAXON_PROCESSOR.newDocumentBuilder();
                         final XdmNode xdmNode = sourceBuilder.build(sourceNode.get());
@@ -226,7 +192,7 @@ public class FnTransform extends BasicFunction {
                     } else {
                         xslt30Transformer.setGlobalContextItem(null);
                     }
-                    final QName qName = initialTemplate.get().getQName();
+                    final QName qName = options.initialTemplate.get().getQName();
                     xslt30Transformer.callTemplate(
                             new net.sf.saxon.s9api.QName(qName.getPrefix() == null ? "" : qName.getPrefix(), qName.getNamespaceURI(), qName.getLocalPart()), saxDestination);
                 } else {
@@ -236,7 +202,7 @@ public class FnTransform extends BasicFunction {
                     }
                     xslt30Transformer.applyTemplates(sourceNode.get(), saxDestination);
                 }
-                return makeResultMap(xsltVersion, options, builder.getDocument(), resultDocuments);
+                return makeResultMap(options, builder.getDocument(), resultDocuments);
 
             } catch (final SaxonApiException e) {
                 if (e.getErrorCode() != null) {
@@ -250,40 +216,38 @@ public class FnTransform extends BasicFunction {
             }
 
         } else {
-            throw new XPathException(this, ErrorCodes.FOXT0001, "xslt-version: " + xsltVersion + " is not supported.");
+            throw new XPathException(this, ErrorCodes.FOXT0001, "xslt-version: " + options.xsltVersion + " is not supported.");
         }
     }
 
-    private MapType makeResultMap(final float xsltVersion, final MapType options, final NodeValue outputDocument, final Map<URI, MemTreeBuilder> resultDocuments) throws XPathException {
+    private MapType makeResultMap(final Options options, final NodeValue outputDocument, final Map<URI, MemTreeBuilder> resultDocuments) throws XPathException {
 
         final MapType outputMap = new MapType(context);
         final AtomicValue outputKey;
-        final Optional<AnyURIValue> baseOutputURI = FnTransform.BASE_OUTPUT_URI.get(xsltVersion, options);
-        if (baseOutputURI.isPresent()) {
-            outputKey = baseOutputURI.get();
+        if (options.baseOutputURI.isPresent()) {
+            outputKey = options.baseOutputURI.get();
         } else {
             outputKey = new StringValue("output");
         }
 
-        outputMap.add(outputKey, convertToDeliveryFormat(xsltVersion, options, outputDocument));
+        outputMap.add(outputKey, convertToDeliveryFormat(options, outputDocument));
 
         for (final Map.Entry<URI, MemTreeBuilder> resultDocument : resultDocuments.entrySet()) {
-            final Sequence value = convertToDeliveryFormat(xsltVersion, options, resultDocument.getValue().getDocument());
+            final Sequence value = convertToDeliveryFormat(options, resultDocument.getValue().getDocument());
             outputMap.add(new AnyURIValue(resultDocument.getKey()), value);
         }
 
         return outputMap;
     }
 
-    private Sequence convertToDeliveryFormat(final float xsltVersion, final MapType options, final NodeValue document) throws XPathException {
+    private Sequence convertToDeliveryFormat(final Options options, final NodeValue document) throws XPathException {
 
-        final StringValue deliveryFormat = FnTransform.DELIVERY_FORMAT.get(xsltVersion, options).get();
-        switch (deliveryFormat.getStringValue()) {
-            case "serialized":
-                return serializeOutput(FnTransform.SERIALIZATION_PARAMS.get(xsltVersion, options), document);
-            case "raw":
-                throw new XPathException(this, FnModule.SENR0001, "\"raw\" output is not supported");
-            case "document":
+        switch (options.deliveryFormat) {
+            case SERIALIZED:
+                return serializeOutput(options.serializationParams, document);
+            case RAW:
+                return rawOutput(document);
+            case DOCUMENT:
             default:
                 return document;
         }
@@ -314,9 +278,22 @@ public class FnTransform extends BasicFunction {
         }
     }
 
-    private static Optional<Source> getSourceNode(final MapType options, final AnyURIValue baseURI) throws XPathException {
-        final Optional<Node> sourceNode = FnTransform.SOURCE_NODE.get(options).map(NodeValue::getNode);
-        return sourceNode.map(node -> new DOMSource(node, baseURI.getStringValue()));
+    private Sequence rawOutput(final NodeValue outputDocument) throws XPathException {
+        if (outputDocument instanceof Document) {
+            System.err.println("[outputDocument]: " + outputDocument);
+            final Document document = (Document) outputDocument;
+            final Element element = document.getDocumentElement();
+            if (element instanceof NodeValue) {
+                System.err.println("[outputDocument document element]: " + element);
+                return (Sequence) element;
+            }
+        }
+        throw new XPathException(this, ErrorCodes.FOXT0002, "Unexpected output not a node value, requested " +
+                FnTransform.DELIVERY_FORMAT + " " + DeliveryFormat.RAW.name().toLowerCase());
+    }
+
+    private static Optional<Source> getSourceNode(final Optional<NodeValue> sourceNode, final AnyURIValue baseURI) throws XPathException {
+        return sourceNode.map(NodeValue::getNode).map(node -> new DOMSource(node, baseURI.getStringValue()));
     }
 
     /**
@@ -657,6 +634,96 @@ public class FnTransform extends BasicFunction {
         @Override
         public Reader getReader() {
             return new StringReader(string);
+        }
+    }
+
+    private enum DeliveryFormat {
+        DOCUMENT,
+        SERIALIZED,
+        RAW;
+
+    }
+
+    /**
+     * Read options into class values in a single place.
+     *
+     * This is a bit clearer where we need an option several times,
+     * we know we have read it up front.
+     */
+    private class Options {
+
+        final Tuple2<String, Source> xsltSource;
+        final MapType stylesheetParams;
+        final float xsltVersion;
+        final AnyURIValue resolvedStylesheetBaseURI;
+        final Optional<QNameValue> initialTemplate;
+        final Optional<NodeValue> sourceNode;
+        final Optional<BooleanValue> shouldCache;
+        final DeliveryFormat deliveryFormat;
+        final Optional<AnyURIValue> baseOutputURI;
+        final Optional<MapType> serializationParams;
+
+        Options(final MapType options) throws XPathException {
+            xsltSource = getStylesheet(options);
+
+            stylesheetParams = FnTransform.STYLESHEET_PARAMS.get(options).orElse(new MapType(context));
+            for (final IEntry<AtomicValue, Sequence> entry : stylesheetParams) {
+                if (!(entry.key() instanceof QNameValue)) {
+                    throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied stylesheet-param is not a valid xs:qname: " + entry);
+                }
+                if (!(entry.value() instanceof Sequence)) {
+                    throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied stylesheet-param is not a valid xs:sequence: " + entry);
+                }
+            }
+
+            final Optional<DecimalValue> explicitXsltVersion = FnTransform.XSLT_VERSION.get(options);
+            if (explicitXsltVersion.isPresent()) {
+                try {
+                    xsltVersion = explicitXsltVersion.get().getFloat();
+                } catch (final XPathException e) {
+                    throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied xslt-version is not a valid xs:decimal: " + e.getMessage(), explicitXsltVersion.get(), e);
+                }
+            } else {
+                xsltVersion = getXsltVersion(xsltSource._2);
+            }
+
+            final String stylesheetBaseUri;
+            final Optional<StringValue> explicitStylesheetBaseUri = FnTransform.STYLESHEET_BASE_URI.get(xsltVersion, options);
+            if (explicitStylesheetBaseUri.isPresent()) {
+                stylesheetBaseUri = explicitStylesheetBaseUri.get().getStringValue();
+            } else {
+                stylesheetBaseUri = xsltSource._1;
+            }
+            resolvedStylesheetBaseURI = resolveURI(new AnyURIValue(stylesheetBaseUri), context.getBaseURI());
+
+            initialTemplate = FnTransform.INITIAL_TEMPLATE.get(options);
+
+            sourceNode = FnTransform.SOURCE_NODE.get(options);
+
+            shouldCache = FnTransform.CACHE.get(xsltVersion, options);
+
+            deliveryFormat = getDeliveryFormat(xsltVersion, options);
+
+            baseOutputURI = FnTransform.BASE_OUTPUT_URI.get(xsltVersion, options);
+
+            serializationParams = FnTransform.SERIALIZATION_PARAMS.get(xsltVersion, options);
+        }
+
+        private DeliveryFormat getDeliveryFormat(final float xsltVersion, final MapType options) throws XPathException {
+            final String string = FnTransform.DELIVERY_FORMAT.get(xsltVersion, options).get().getStringValue().toUpperCase();
+            final DeliveryFormat deliveryFormat;
+            try {
+                deliveryFormat = DeliveryFormat.valueOf(string);
+            } catch (final IllegalArgumentException ie) {
+                throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied " + FnTransform.DELIVERY_FORMAT.name +
+                        " is not a valid " + FnTransform.DELIVERY_FORMAT.name);
+            }
+            if (deliveryFormat.equals(DeliveryFormat.RAW) && xsltVersion < v3_0) {
+                throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, FnTransform.DELIVERY_FORMAT.name + " " +
+                        DeliveryFormat.RAW + " is only valid with XSLT version 3.0 or better. " +
+                        "Version requested is " + xsltVersion);
+            }
+            return deliveryFormat;
         }
     }
 }
