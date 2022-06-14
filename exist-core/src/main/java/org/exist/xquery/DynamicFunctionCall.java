@@ -31,18 +31,29 @@ import org.exist.xquery.value.Type;
 
 public class DynamicFunctionCall extends AbstractExpression {
 
-    private Expression functionExpr;
-    private List<Expression> arguments;
-    private boolean isPartial = false;
+    private final Expression functionExpr;
+    private final List<Expression> arguments;
+    private final boolean isPartial;
     
     private AnalyzeContextInfo cachedContextInfo;
 
-    public DynamicFunctionCall(XQueryContext context, Expression fun, List<Expression> args, boolean partial) {
+    public DynamicFunctionCall(final XQueryContext context, final Expression fun, final List<Expression> args, final boolean partial) {
         super(context);
         setLocation(fun.getLine(), fun.getColumn());
         this.functionExpr = fun;
         this.arguments = args;
         this.isPartial = partial;
+    }
+
+    @Override
+    public int getDependencies() {
+        int dependencies = functionExpr.getDependencies();
+        if (arguments != null) {
+            for (final Expression argument : arguments) {
+                dependencies |= argument.getDependencies();
+            }
+        }
+        return dependencies;
     }
 
     @Override
@@ -94,7 +105,7 @@ public class DynamicFunctionCall extends AbstractExpression {
 	        ref.analyze(new AnalyzeContextInfo(cachedContextInfo));
 	        // Evaluate the function
             try {
-                return ref.eval(contextSequence);
+                return ref.eval(contextSequence, contextItem);
             } catch (XPathException e) {
                 if (e.getLine() <= 0) {
                     e.setLocation(getLine(), getColumn(), getSource());
@@ -116,5 +127,32 @@ public class DynamicFunctionCall extends AbstractExpression {
         super.resetState(postOptimization);
         functionExpr.resetState(postOptimization);
         arguments.forEach(arg -> arg.resetState(postOptimization));
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+        if (functionExpr != null) {
+            builder.append(functionExpr);
+        } else {
+            builder.append("DynamicFunctionCall{arguments=");
+        }
+
+        builder.append('(');
+        if (arguments != null) {
+            for (int i = 0; i < arguments.size(); i++) {
+                if (i > 0) {
+                    builder.append(", ");
+                }
+                builder.append(arguments.get(i).toString());
+            }
+        }
+        builder.append(')');
+
+        if (functionExpr == null) {
+            builder.append('}');
+        }
+
+        return builder.toString();
     }
 }
