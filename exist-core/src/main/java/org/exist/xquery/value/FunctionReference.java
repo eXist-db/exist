@@ -38,10 +38,10 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
 
     private final static Logger LOG = LogManager.getLogger(FunctionReference.class);
 
-    protected FunctionCall functionCall;
+    protected final FunctionCall functionCall;
 
-    public FunctionReference(FunctionCall fcall) {
-        this.functionCall = fcall;
+    public FunctionReference(final FunctionCall functionCall) {
+        this.functionCall = functionCall;
     }
 
     public FunctionCall getCall() {
@@ -80,6 +80,10 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
      */
     public Sequence eval(Sequence contextSequence) throws XPathException {
         return functionCall.eval(contextSequence);
+    }
+
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        return functionCall.eval(contextSequence, contextItem);
     }
 
     /**
@@ -159,5 +163,10 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
     @Override
     public AtomicValue atomize() throws XPathException {
         throw new XPathException(ErrorCodes.FOTY0013, "A function item other than an array cannot be atomized");
+    }
+
+    @Override
+    public String toString() {
+        return "anonymous-function#" + functionCall.getArgumentCount();
     }
 }
