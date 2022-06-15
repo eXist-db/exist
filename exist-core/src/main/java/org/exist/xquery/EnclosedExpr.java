@@ -25,6 +25,7 @@ import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.TextImpl;
 import org.exist.xquery.functions.array.ArrayType;
+import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 import org.w3c.dom.DOMException;
@@ -100,7 +101,6 @@ public class EnclosedExpr extends PathExpr {
                     if (Type.subTypeOf(next.getType(), Type.FUNCTION_REFERENCE)) {
                         final Expression expression = ((FunctionReference) next).getExpression();
                         throw new XPathException((expression == null) ? this : expression, ErrorCodes.XQTY0105, "Enclosed expression contains function item");
-
                         // if item is an atomic value, collect the string values of all
                         // following atomic values and separate them by a space.
                     } else if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
