@@ -135,8 +135,6 @@ public class FnTransform extends BasicFunction {
         //TODO(AR) Saxon recommends to use a <code>StreamSource</code> or <code>SAXSource</code> instead of DOMSource for performance
         final Optional<Source> sourceNode = FnTransform.getSourceNode(options.sourceNode, context.getBaseURI());
 
-        final boolean shouldCache = options.shouldCache.map(BooleanValue::getValue).orElse(true);
-
         if (options.xsltVersion == 1.0f || options.xsltVersion == 2.0f || options.xsltVersion == 3.0f) {
             try {
                 final Holder<SaxonApiException> compileException = new Holder<>();
@@ -186,7 +184,16 @@ public class FnTransform extends BasicFunction {
                 });
 
                 final SAXDestination saxDestination = new SAXDestination(builderReceiver);
-                if (options.initialTemplate.isPresent()) {
+                if (options.initialFunction.isPresent()) {
+                    final QName qName = options.initialFunction.get().getQName();
+                    final XdmValue[] functionParams;
+                    if (options.functionParams.isPresent()) {
+                        functionParams = Saxon.of(options.functionParams.get());
+                    } else {
+                        functionParams = new XdmValue[0];
+                    }
+                    xslt30Transformer.callFunction(Saxon.of(qName), functionParams, saxDestination);
+                } else if (options.initialTemplate.isPresent()) {
                     if (sourceNode.isPresent()) {
                         final DocumentBuilder sourceBuilder = FnTransform.SAXON_PROCESSOR.newDocumentBuilder();
                         final XdmNode xdmNode = sourceBuilder.build(sourceNode.get());
@@ -195,8 +202,7 @@ public class FnTransform extends BasicFunction {
                         xslt30Transformer.setGlobalContextItem(null);
                     }
                     final QName qName = options.initialTemplate.get().getQName();
-                    xslt30Transformer.callTemplate(
-                            new net.sf.saxon.s9api.QName(qName.getPrefix() == null ? "" : qName.getPrefix(), qName.getNamespaceURI(), qName.getLocalPart()), saxDestination);
+                    xslt30Transformer.callTemplate(Saxon.of(qName), saxDestination);
                 } else {
                     if (!sourceNode.isPresent()) {
                         // TODO (AP) OK if initial match selection is supplied instead, not yet implemented
@@ -667,6 +673,8 @@ public class FnTransform extends BasicFunction {
         final MapType stylesheetParams;
         final float xsltVersion;
         final AnyURIValue resolvedStylesheetBaseURI;
+        final Optional<QNameValue> initialFunction;
+        final Optional<ArrayType> functionParams;
         final Optional<QNameValue> initialTemplate;
         final Optional<NodeValue> sourceNode;
         final Optional<BooleanValue> shouldCache;
@@ -707,6 +715,9 @@ public class FnTransform extends BasicFunction {
             }
             resolvedStylesheetBaseURI = resolveURI(new AnyURIValue(stylesheetBaseUri), context.getBaseURI());
 
+            initialFunction = FnTransform.INITIAL_FUNCTION.get(options);
+            functionParams = FnTransform.FUNCTION_PARAMS.get(options);
+
             initialTemplate = FnTransform.INITIAL_TEMPLATE.get(options);
 
             sourceNode = FnTransform.SOURCE_NODE.get(options);
@@ -737,4 +748,54 @@ public class FnTransform extends BasicFunction {
             return deliveryFormat;
         }
     }
+
+    /**
+     *
+     * Type conversion to Saxon
+     *
+     * TODO (AP) probably not yet complete.
+     */
+    private static class Saxon {
+
+        private static net.sf.saxon.s9api.QName of(final QName qName) {
+            return new net.sf.saxon.s9api.QName(qName.getPrefix() == null ? "" : qName.getPrefix(), qName.getNamespaceURI(), qName.getLocalPart());
+        }
+
+        private static XdmValue of(final Item item) throws XPathException {
+            final int itemType = item.getType();
+            if (Type.subTypeOf(itemType, Type.ATOMIC)) {
+                final AtomicValue atomicValue = (AtomicValue) item;
+                if (Type.subTypeOf(itemType, Type.NUMBER)) {
+                    return XdmValue.makeValue(((NumericValue)atomicValue).getDouble());
+                } else if (Type.subTypeOf(itemType, Type.BOOLEAN)) {
+                    return XdmValue.makeValue(((BooleanValue)atomicValue).getValue());
+                } else if (Type.subTypeOf(itemType, Type.STRING)) {
+                    return XdmValue.makeValue(((StringValue)atomicValue).getStringValue());
+                }
+            }
+            throw new XPathException(ErrorCodes.XPTY0004,
+                    "Item " + item + " of type " + Type.getTypeName(itemType) +
+                    " could not be converted to an XdmValue");
+        }
+
+        private static XdmValue[] of(final ArrayType values) throws XPathException {
+            final int size = values.getSize();
+            final XdmValue[] result = new XdmValue[size];
+            for (int i = 0; i < size; i++) {
+                final Sequence sequence = values.get(i);
+                result[i] = XdmValue.makeValue(Saxon.of(sequence));
+            }
+            return result;
+        }
+
+        private static List<Object> of(final Sequence value) throws XPathException {
+            final int size = value.getItemCount();
+            final List<Object> result = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) {
+                result.add(Saxon.of(value.itemAt(i)));
+            }
+            return result;
+        }
+    }
+
 }
