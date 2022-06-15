@@ -153,7 +153,10 @@ public class AttrImpl extends NodeImpl implements Attr {
         if (test.matches(this)) {
             result.add(this);
         }
-        ((NodeImpl)getOwnerElement()).selectAncestors(true, test, result);
+        final ElementImpl ownerElement = (ElementImpl) getOwnerElement();
+        if (ownerElement != null) {
+            ownerElement.selectAncestors(true, test, result);
+        }
     }
 
     @Override
