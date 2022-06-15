@@ -98,8 +98,8 @@ public class EnclosedExpr extends PathExpr {
                 while (next != null) {
                     context.proceed(this, builder);
                     if (Type.subTypeOf(next.getType(), Type.FUNCTION_REFERENCE)) {
-                        throw new XPathException((getLine() > 0 && getColumn() > 0) ? this : next.getExpression(),
-                                ErrorCodes.XQTY0105, "Enclosed expression contains function item");
+                        final Expression expression = ((FunctionReference) next).getExpression();
+                        throw new XPathException((expression == null) ? this : expression, ErrorCodes.XQTY0105, "Enclosed expression contains function item");
 
                         // if item is an atomic value, collect the string values of all
                         // following atomic values and separate them by a space.
