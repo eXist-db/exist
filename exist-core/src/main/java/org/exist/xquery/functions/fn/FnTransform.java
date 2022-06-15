@@ -740,11 +740,6 @@ public class FnTransform extends BasicFunction {
                 throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied " + FnTransform.DELIVERY_FORMAT.name +
                         " is not a valid " + FnTransform.DELIVERY_FORMAT.name);
             }
-            if (deliveryFormat.equals(DeliveryFormat.RAW) && xsltVersion < v3_0) {
-                throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, FnTransform.DELIVERY_FORMAT.name + " " +
-                        DeliveryFormat.RAW + " is only valid with XSLT version 3.0 or better. " +
-                        "Version requested is " + xsltVersion);
-            }
             return deliveryFormat;
         }
     }
