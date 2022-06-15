@@ -36,7 +36,7 @@ function nill:nilfalse() {
 };
 
 declare
-%test:assertEquals("true")
+%test:assertEquals("false")
     function nill:niltrue() {
     let $a := <a xsi:nil="true"></a>
     return
