@@ -23,7 +23,6 @@
 package org.exist.xquery.functions.fn;
 
 import org.apache.commons.codec.binary.Base64;
-import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -33,6 +32,7 @@ import com.ibm.icu.text.Collator;
 import java.nio.charset.StandardCharsets;
 
 import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
 
 public class FunCollationKey extends BasicFunction {
 
@@ -66,9 +66,5 @@ public class FunCollationKey extends BasicFunction {
 
         return new BinaryValueFromBinaryString(new Base64BinaryValueType(), Base64.encodeBase64String(
                 (collator == null) ? source.getBytes(StandardCharsets.UTF_8) : new String(collator.getCollationKey(source).toByteArray()).getBytes(StandardCharsets.UTF_8))).convertTo(new Base64BinaryValueType());
-    }
-
-    private static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
-        return FunctionDSL.functionSignatures(new QName(name, Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX), description, returnType, variableParamTypes);
     }
 }
