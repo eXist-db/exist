@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.fn;
 
+import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.persistent.ExtArrayNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
@@ -41,8 +42,11 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Node;
 
 /**
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunRoot extends Function {
@@ -125,13 +129,8 @@ public class FunRoot extends Function {
                 final NodeProxy p = s.toNodeSet().get(0);
                 result.add(new NodeProxy(p.getOwnerDocument()));
             } else {
-                if (seq.hasOne() && item.getType() == Type.ATTRIBUTE) {
-                    result.add(item);
-                } else if (item.getType() == Type.DOCUMENT) {
-                    result.add(item);
-                } else {
-                    result.add(((NodeImpl) item).getOwnerDocument());
-                }
+                final NodeImpl ancestor = findAncestorOrSelf((NodeImpl) item);
+                result.add(ancestor);
             }
         }
 
@@ -140,5 +139,38 @@ public class FunRoot extends Function {
         }
 
         return result;
+    }
+
+    private NodeImpl findAncestorOrSelf(final NodeImpl self) {
+        if (self.getNodeType() == Node.DOCUMENT_NODE) {
+            return self;
+
+        } else {
+            final DocumentImpl ownerDocument = self.getOwnerDocument();
+            if (ownerDocument != null && ownerDocument.isExplicitlyCreated()) {
+                /*
+                    All nodes in the MemTree will return an Owner document due to how the MemTree is implemented,
+                    however the explicitlyCreated flag tells us whether there "really" was a Document Node or not.
+                    See https://github.com/eXist-db/exist/issues/1463
+                 */
+                return ownerDocument;
+            }
+
+            NodeImpl ancestor = self;
+
+            for (NodeImpl current = ancestor; current != null; ) {
+                if (current.getNodeType() == Node.ATTRIBUTE_NODE) {
+                    current = (NodeImpl) ((Attr) current).getOwnerElement();
+                } else {
+                    current = (NodeImpl) current.getParentNode();
+                }
+
+                if (current != null) {
+                    ancestor = current;
+                }
+            }
+
+            return ancestor;
+        }
     }
 }
