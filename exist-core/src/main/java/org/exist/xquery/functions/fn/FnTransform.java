@@ -178,8 +178,9 @@ public class FnTransform extends BasicFunction {
                 // Record the secondary result documents generated
                 final Map<URI, MemTreeBuilder> resultDocuments = new HashMap<>();
                 xslt30Transformer.setResultDocumentHandler(resultDocumentURI -> {
-                    final MemTreeBuilder resultBuilder = context.getDocumentBuilder();
-                    final DocumentBuilderReceiver resultBuilderReceiver = new DocumentBuilderReceiver(builder);
+                    final MemTreeBuilder resultBuilder = new MemTreeBuilder(context);
+                    resultBuilder.startDocument();
+                    final DocumentBuilderReceiver resultBuilderReceiver = new DocumentBuilderReceiver(resultBuilder);
                     resultDocuments.put(resultDocumentURI, resultBuilder);
                     return new SAXDestination(resultBuilderReceiver);
                 });
@@ -230,15 +231,21 @@ public class FnTransform extends BasicFunction {
         } else {
             outputKey = new StringValue("output");
         }
+        System.err.println("[[resultDocument] BEGIN]");
+        System.err.println("[[resultDocument] primary key: " + outputKey);
+        System.err.println("[[resultDocument] primary value: " + outputDocument);
 
         final Sequence primaryValue = convertToDeliveryFormat(options, outputDocument);
-        System.err.println("[[primaryValue]: " + primaryValue + "]");
         outputMap.add(outputKey, primaryValue);
 
         for (final Map.Entry<URI, MemTreeBuilder> resultDocument : resultDocuments.entrySet()) {
+            System.err.println("[[resultDocument] key: " + resultDocument.getKey());
+            System.err.println("[[resultDocument] value: " + resultDocument.getValue().getDocument());
             final Sequence value = convertToDeliveryFormat(options, resultDocument.getValue().getDocument());
             outputMap.add(new AnyURIValue(resultDocument.getKey()), value);
         }
+
+        System.err.println("[[resultDocument] END]");
 
         return outputMap;
     }
@@ -276,7 +283,6 @@ public class FnTransform extends BasicFunction {
 
             xqSerializer.serialize(seq);
             final String serialized = writer.toString().replaceAll("\"", "\\\"");
-            System.err.println("[serialized]: [[[" + serialized + "]]]");
             return new StringValue(serialized);
         } catch (final IOException | SAXException e) {
             throw new XPathException(this, FnModule.SENR0001, e.getMessage());
