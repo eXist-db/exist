@@ -31,6 +31,7 @@ import net.jpountz.xxhash.XXHashFactory;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.s9api.*;
 import net.sf.saxon.trans.UncheckedXPathException;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -230,7 +231,9 @@ public class FnTransform extends BasicFunction {
             outputKey = new StringValue("output");
         }
 
-        outputMap.add(outputKey, convertToDeliveryFormat(options, outputDocument));
+        final Sequence primaryValue = convertToDeliveryFormat(options, outputDocument);
+        System.err.println("[[primaryValue]: " + primaryValue + "]");
+        outputMap.add(outputKey, primaryValue);
 
         for (final Map.Entry<URI, MemTreeBuilder> resultDocument : resultDocuments.entrySet()) {
             final Sequence value = convertToDeliveryFormat(options, resultDocument.getValue().getDocument());
@@ -272,7 +275,9 @@ public class FnTransform extends BasicFunction {
             }
 
             xqSerializer.serialize(seq);
-            return new StringValue(writer.toString());
+            final String serialized = writer.toString().replaceAll("\"", "\\\"");
+            System.err.println("[serialized]: [[[" + serialized + "]]]");
+            return new StringValue(serialized);
         } catch (final IOException | SAXException e) {
             throw new XPathException(this, FnModule.SENR0001, e.getMessage());
         }
