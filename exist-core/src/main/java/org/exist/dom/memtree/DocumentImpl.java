@@ -211,6 +211,10 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         return docId;
     }
 
+    public boolean isExplicitlyCreated() {
+        return explicitlyCreated;
+    }
+
     public int addNode(final short kind, final short level, final QName qname) {
         if(nodeKind == null) {
             init();
@@ -1056,7 +1060,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 nextNode = (NodeImpl) node.getFirstChild();
             }
             while(nextNode == null) {
-                copyEndNode(node, receiver);
+                if (node != null) {
+                    copyEndNode(node, receiver);
+                }
                 if((top != null) && (top.nodeNumber == node.nodeNumber)) {
                     break;
                 }
@@ -1065,7 +1071,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 if(nextNode == null) {
                     node = (NodeImpl) node.getParentNode();
                     if((node == null) || ((top != null) && (top.nodeNumber == node.nodeNumber))) {
-                        copyEndNode(node, receiver);
+                        if (node != null) {
+                            copyEndNode(node, receiver);
+                        }
                         break;
                     }
                 }
@@ -1304,7 +1312,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 if(nextNode == null) {
                     node = (NodeImpl) node.getParentNode();
                     if((node == null) || ((top != null) && (top.nodeNumber == node.nodeNumber))) {
-                        endNode(node, receiver);
+                        if (node != null) {
+                            endNode(node, receiver);
+                        }
                         break;
                     }
                 }

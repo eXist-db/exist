@@ -270,13 +270,23 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     @Override
     public Node getParentNode() {
         int next = document.next[nodeNumber];
-        while(next > nodeNumber) {
+        while (next > nodeNumber) {
             next = document.next[next];
         }
-        if(next < 0) {
+        if (next < 0) {
             return null;
         }
-        return document.getNode(next);
+        final NodeImpl parent = document.getNode(next);
+        if (parent.getNodeType() == DOCUMENT_NODE && !((DocumentImpl) parent).isExplicitlyCreated()) {
+            /*
+                All nodes in the MemTree will return an Owner document due to how the MemTree is implemented,
+                however the explicitlyCreated flag tells us whether there "really" was a Document Node or not.
+                See https://github.com/eXist-db/exist/issues/1463
+             */
+            return null;
+        } else {
+            return parent;
+        }
     }
 
     public Node selectParentNode() {
