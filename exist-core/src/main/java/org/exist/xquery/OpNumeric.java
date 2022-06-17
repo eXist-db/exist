@@ -78,7 +78,11 @@ public class OpNumeric extends BinaryOp {
             } else if (ltype == Type.NUMBER || rtype == Type.NUMBER) {
                 // if one of both operands returns a number, we can safely assume
                 // the return type of the whole expression will be a number
-                returnType = Type.NUMBER;
+                if(operator == ArithmeticOperator.DIVISION) {
+                    returnType = Type.DECIMAL;
+                }else {
+                    returnType = Type.NUMBER;
+                }
             }
         }
         add(left);

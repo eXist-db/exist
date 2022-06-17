@@ -124,7 +124,11 @@ public class AttrImpl extends NodeImpl implements Attr {
 
     @Override
     public Element getOwnerElement() {
-        return (Element) document.getNode(document.attrParent[nodeNumber]);
+        final Node node = document.getNode(document.attrParent[nodeNumber]);
+        if (node != null && node.getNodeType() == Node.ELEMENT_NODE) {
+            return (Element) node;
+        }
+        return null;
     }
 
     @Override
@@ -149,7 +153,10 @@ public class AttrImpl extends NodeImpl implements Attr {
         if (test.matches(this)) {
             result.add(this);
         }
-        ((NodeImpl)getOwnerElement()).selectAncestors(true, test, result);
+        final ElementImpl ownerElement = (ElementImpl) getOwnerElement();
+        if (ownerElement != null) {
+            ownerElement.selectAncestors(true, test, result);
+        }
     }
 
     @Override

@@ -591,7 +591,7 @@ public class Predicate extends PathExpr {
         }
     }
 
-    public ExecutionMode getExecutionMode() {
+    ExecutionMode getExecutionMode() {
         return executionMode;
     }
 

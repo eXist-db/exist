@@ -78,6 +78,7 @@
                             <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
                             <excludes>
                                 <exclude>src/main/java/org/exist/storage/lock/LockTableBenchmark.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/utils/StringJoinBenchmark.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/utils/URIUtilsBenchmark.java</exclude>
                             </excludes>
                         </licenseSet>
@@ -89,6 +90,7 @@
                             <header>${project.parent.relativePath}/FDB-backport-LGPL-21-ONLY-license.template.txt</header>
                             <includes>
                                 <include>src/main/java/org/exist/storage/lock/LockTableBenchmark.java</include>
+                                <include>src/main/java/org/exist/xquery/utils/StringJoinBenchmark.java</include>
                                 <include>src/main/java/org/exist/xquery/utils/URIUtilsBenchmark.java</include>
                             </includes>
 
