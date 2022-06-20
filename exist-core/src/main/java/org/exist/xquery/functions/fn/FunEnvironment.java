@@ -59,7 +59,7 @@ public class FunEnvironment extends BasicFunction {
                             new FunctionParameterSequenceType("name", Type.STRING,
                                     Cardinality.EXACTLY_ONE, "Name of environment variable.")
                     },
-                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO, "Corresponding value of the environment variable, "
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "Corresponding value of the environment variable, "
                             + "if there is no environment variable with a matching name, the function returns the empty sequence. User must be DBA.")
             )
     };
