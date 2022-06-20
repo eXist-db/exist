@@ -21,20 +21,23 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Pattern;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
+import org.exist.util.PatternFactory;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionDef;
+import org.exist.xquery.functions.AccessUtil;
 
 /**
  * Module function definitions for xpath-functions module.
  *
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  * @author ljo
+ * @author <a href="mailto:adam@evolvedbinary.com>Adam Retter</a>
  */
 public class FnModule extends AbstractInternalModule {
 
@@ -259,7 +262,12 @@ public class FnModule extends AbstractInternalModule {
     public final static ErrorCodes.ErrorCode SEPM0019 = new ErrorCodes.ErrorCode("SEPM0019", "It is an error if an instance of the data model " +
             "used to specify the settings of serialization parameters specifies the value of the same parameter more than once.");
 
-    public FnModule(Map<String, List<? extends Object>> parameters) {
+    private static final Pattern PTN_ENVIRONMENT_VARIABLE_ACCESS = PatternFactory.getInstance().getPattern("environmentVariableAccess\\.([^=\\00])+\\.requires((?:Group)|(?:User))");
+
+    private Map<String, Set<String>> environmentVariableAccessGroups = null;
+    private Map<String, Set<String>> environmentVariableAccessUsers = null;
+
+    public FnModule(final Map<String, List<? extends Object>> parameters) {
         super(functions, parameters, true);
     }
 
@@ -288,4 +296,31 @@ public class FnModule extends AbstractInternalModule {
         return RELEASED_IN_VERSION;
     }
 
+    /**
+     * Get the environment variable names and groups that are allowed to access them.
+     *
+     * @return a map where the key is the environment variable name, and the value is a set of group names.
+     */
+    Map<String, Set<String>> getEnvironmentVariableAccessGroups() {
+        if (environmentVariableAccessGroups == null) {
+            final Tuple2<Map<String, Set<String>>, Map<String, Set<String>>> accessRules = AccessUtil.parseAccessParameters(PTN_ENVIRONMENT_VARIABLE_ACCESS, getParameters());
+            this.environmentVariableAccessGroups = accessRules._1;
+            this.environmentVariableAccessUsers = accessRules._2;
+        }
+        return environmentVariableAccessGroups;
+    }
+
+    /**
+     * Get the environment variable names and users that are allowed to access them.
+     *
+     * @return a map where the key is the environment variable name, and the value is a set of usernames.
+     */
+    Map<String, Set<String>> getEnvironmentVariableAccessUsers() {
+        if (environmentVariableAccessUsers == null) {
+            final Tuple2<Map<String, Set<String>>, Map<String, Set<String>>> accessRules = AccessUtil.parseAccessParameters(PTN_ENVIRONMENT_VARIABLE_ACCESS, getParameters());
+            this.environmentVariableAccessGroups = accessRules._1;
+            this.environmentVariableAccessUsers = accessRules._2;
+        }
+        return environmentVariableAccessUsers;
+    }
 }
