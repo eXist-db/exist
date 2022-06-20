@@ -111,8 +111,19 @@ public class XMLDBModule extends AbstractInternalModule {
         Arrays.sort(functions, new FunctionComparator());
     }
 
+    private boolean anyUriDisabled = true;
+
     public XMLDBModule(Map<String, List<?>> parameters) {
         super(functions, parameters, true);
+
+        final List<String> anyUriDisabledParameterList = (List<String>) getParameter("anyUriDisabled");
+        if (anyUriDisabledParameterList != null && !anyUriDisabledParameterList.isEmpty()) {
+            final String strAnyUriDisabled = anyUriDisabledParameterList.get(0);
+            if (strAnyUriDisabled != null) {
+                this.anyUriDisabled = Boolean.parseBoolean(strAnyUriDisabled);
+            }
+        }
+
     }
 
     @Override
@@ -133,6 +144,10 @@ public class XMLDBModule extends AbstractInternalModule {
     @Override
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
+    }
+
+    public boolean isAnyUriDisabled() {
+        return anyUriDisabled;
     }
 
     static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {

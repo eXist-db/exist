@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-        "src/test/xquery/xquery3"
+        "src/test/xquery/xquery3/db-store.xqm"
 })
 public class XQuery3Tests {
 }
