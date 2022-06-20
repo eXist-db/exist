@@ -2478,7 +2478,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      */
     public Map<String, String> getEnvironmentVariables() {
         if (envs == null) {
-            envs = System.getenv();
+            envs = Collections.unmodifiableMap(new HashMap<>(System.getenv()));
         }
         return envs;
     }
