@@ -21,17 +21,12 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.exist.SystemProperties;
-import org.exist.dom.QName;
+import org.exist.ExistSystemProperties;
 import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
@@ -63,7 +58,7 @@ public class SystemProperty extends BasicFunction {
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final String key = args[0].getStringValue();
-        String value = SystemProperties.getInstance().getSystemProperty(key, null);
+        String value = ExistSystemProperties.getInstance().getExistSystemProperty(key, null);
         if (value == null) {
             value = System.getProperty(key);
         }

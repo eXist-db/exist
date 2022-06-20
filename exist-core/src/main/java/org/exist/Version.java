@@ -35,12 +35,12 @@ public final class Version {
 	
 	static {
 
-		final SystemProperties systemProperties = SystemProperties.getInstance();
-		NAME = systemProperties.getSystemProperty("product-name", "eXist");
-		VERSION = systemProperties.getSystemProperty("product-version");
-		BUILD = systemProperties.getSystemProperty("product-build");
-		GIT_BRANCH = systemProperties.getSystemProperty("git-branch");
-		GIT_COMMIT = systemProperties.getSystemProperty("git-commit");
+		final ExistSystemProperties existSystemProperties = ExistSystemProperties.getInstance();
+		NAME = existSystemProperties.getExistSystemProperty("product-name", "eXist");
+		VERSION = existSystemProperties.getExistSystemProperty("product-version");
+		BUILD = existSystemProperties.getExistSystemProperty("product-build");
+		GIT_BRANCH = existSystemProperties.getExistSystemProperty("git-branch");
+		GIT_COMMIT = existSystemProperties.getExistSystemProperty("git-commit");
 	}
 	
 	public static String getProductName() {
