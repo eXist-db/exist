@@ -57,6 +57,6 @@ public class GetBuild extends BasicFunction {
      */
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        return new StringValue(ExistSystemProperties.getInstance().getExistSystemProperty("product-build", "unknown build"));
+        return new StringValue(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_BUILD, "unknown build"));
     }
 }

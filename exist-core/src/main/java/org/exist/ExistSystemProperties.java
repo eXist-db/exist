@@ -9,11 +9,19 @@ import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nullable;
+
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @ThreadSafe
 public class ExistSystemProperties {
+
+    public static final String PROP_PRODUCT_NAME = "product-name";
+    public static final String PROP_PRODUCT_VERSION = "product-version";
+    public static final String PROP_PRODUCT_BUILD = "product-build";
+    public static final String PROP_GIT_BRANCH = "git-branch";
+    public static final String PROP_GIT_COMMIT = "git-commit";
 
     private static final Logger LOG = LogManager.getLogger(ExistSystemProperties.class);
     private static final ExistSystemProperties instance = new ExistSystemProperties();
@@ -39,11 +47,11 @@ public class ExistSystemProperties {
         return properties;
     }
 
-    public String getExistSystemProperty(final String propertyName) {
+    public @Nullable String getExistSystemProperty(final String propertyName) {
         return properties.get().getProperty(propertyName);
     }
 
-    public String getExistSystemProperty(final String propertyName, final String defaultValue) {
+    public @Nullable String getExistSystemProperty(final String propertyName, @Nullable final String defaultValue) {
         return properties.get().getProperty(propertyName, defaultValue);
     }
 }

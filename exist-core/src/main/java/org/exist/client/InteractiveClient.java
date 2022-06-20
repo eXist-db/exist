@@ -2478,12 +2478,12 @@ public class InteractiveClient {
 
     public String getNotice() {
         final StringBuilder builder = new StringBuilder();
-        builder.append(ExistSystemProperties.getInstance().getExistSystemProperty("product-name", "eXist-db"));
+        builder.append(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_NAME, "eXist-db"));
         builder.append(" version ");
-        builder.append(ExistSystemProperties.getInstance().getExistSystemProperty("product-version", "unknown"));
-        if (!"".equals(ExistSystemProperties.getInstance().getExistSystemProperty("git-commit", ""))) {
+        builder.append(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, "unknown"));
+        if (!"".equals(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_GIT_COMMIT, ""))) {
             builder.append(" (");
-            builder.append(ExistSystemProperties.getInstance().getExistSystemProperty("git-commit", "(unknown Git commit ID)"));
+            builder.append(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_GIT_COMMIT, "(unknown Git commit ID)"));
             builder.append(")");
         }
         builder.append(", Copyright (C) 2001-");

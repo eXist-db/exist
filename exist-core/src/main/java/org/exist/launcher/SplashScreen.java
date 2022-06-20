@@ -67,10 +67,10 @@ public class SplashScreen extends JFrame implements Observer, Comparable {
         // version label
         final StringBuilder builder = new StringBuilder();
 	builder.append("Version ");
-        builder.append(ExistSystemProperties.getInstance().getExistSystemProperty("product-version", "unknown"));
-	if (!"".equals(ExistSystemProperties.getInstance().getExistSystemProperty("git-commit", ""))) {
+        builder.append(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, "unknown"));
+	if (!"".equals(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_GIT_COMMIT, ""))) {
 	    builder.append(" (");
-	    builder.append(ExistSystemProperties.getInstance().getExistSystemProperty("git-commit", "(unknown Git commit ID)"));
+	    builder.append(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_GIT_COMMIT, "(unknown Git commit ID)"));
 	    builder.append(")");
 	}
         versionLabel = new JLabel(builder.toString(), SwingConstants.CENTER);
