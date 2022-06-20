@@ -53,7 +53,7 @@
         - http://exist-db.org/exist/apps/doc/documentation.xml
         - http://atomic.exist-db.org/
         
-    Version: @version@
+    Version: 4.11.0-SNAPSHOT
 
 -->
 <exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/conf.xsd">
@@ -155,8 +155,8 @@
         you have some more memory to waste. If you deal with lots of 
         collections, you can also increase the collectionCacheSize value 
     -->
-    <db-connection cacheSize="@cacheSize@M" checkMaxCacheSize="true" collectionCache="@collectionCacheSize@M" database="@database@"
-        files="@dataDir@" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
+    <db-connection cacheSize="256M" checkMaxCacheSize="true" collectionCache="64M" database="native"
+        files="webapp/WEB-INF/data" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
         doc-ids="default" minDiskSpace="128M">
 
         <!--
@@ -322,7 +322,7 @@
                 and if inconsistencies are found in the db, it writes an emergency
                 backup to the same directory.
         -->
-        <recovery enabled="yes"  group-commit="no"   journal-dir="@journalDir@"
+        <recovery enabled="yes"  group-commit="no"   journal-dir="webapp/WEB-INF/data"
                   size="100M" sync-on-commit="no"  force-restart="no"  consistency-check="yes"/>
 
         <!--
@@ -414,35 +414,7 @@
         suppress-whitespace="none">
 
         <modules>
-            <module id="ngram-index" file="ngram.dbx" n="3" class="org.exist.indexing.ngram.NGramIndex"/>
-                    
-            <!--
-            <module id="spatial-index" connectionTimeout="10000" flushAfter="300" class="org.exist.indexing.spatial.GMLHSQLIndex"/>
-            -->
-            
-            <module id="lucene-index" buffer="32" class="org.exist.indexing.lucene.LuceneIndex" />
 
-            <!--
-                The following index can be used to speed up 'order by' expressions
-                by pre-ordering a node set.
-            -->
-            <module id="sort-index"      class="org.exist.indexing.sort.SortIndex"/>
-
-            <!-- 
-                New range index based on Apache Lucene. Replaces the old range index which is
-                hard-wired into eXist core.
-            -->
-            <module id="range-index"    class="org.exist.indexing.range.RangeIndex"/>
-
-            <!--
-                 The following module is not really an index (though it sits 
-                 in the index pipeline). It gathers relevant statistics on the
-                 distribution of elements in the database, which can be used 
-                 by the query optimizer for additional optimizations. 
-            -->
-            <!--
-            <module id="index-stats" file="stats.dbx" class="org.exist.storage.statistics.IndexStatistics" />
-            -->
         </modules>
 
         <!--
@@ -806,200 +778,15 @@
         <builtin-modules>
 
             <module uri="http://www.w3.org/2005/xpath-functions" class="org.exist.xquery.functions.fn.FnModule">
-
-                <!--
-                    Access to Environment Variables via the fn:available-environment-variables#0
-                    and fn:environment-variable#1 functions can be restricted for Security Purposes.
-
-                    The syntax of the parameter keys is:
-                        "environmentVariableAccess.<Name of an Environment Variable>.[requiresGroup|requiresUser]"
-
-                    If you have multiple users who wish to access the same Environment Variable, then you may
-                    add multiple parameters for the same key, e.g.:
-
-                    <parameter name="environmentVariableAccess.PATH.requiresGroup" value="dba"/>
-                    <parameter name="environmentVariableAccess.PATH.requiresGroup" value="admin"/>
-                    <parameter name="environmentVariableAccess.PATH.requiresUser" value="my-special-user"/>
-
-                    The special symbol "*", meaning "otherwise", may be used to indicate all Environment Variables
-                    which have not otherwise been specified in this config.
-                       If "*" is not set in this config, then it is set to the "DBA" group by default.
-                -->
                 <parameter name="environmentVariableAccess.*.requiresGroup" value="dba"/>
-
             </module>
 
-            <!-- 
-                Modularized Indexes 
-            -->
-            <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule" />
-            <module uri="http://exist-db.org/xquery/ngram"  class="org.exist.xquery.modules.ngram.NGramModule" />
-            <module uri="http://exist-db.org/xquery/sort"   class="org.exist.xquery.modules.sort.SortModule" />
-            <module uri="http://exist-db.org/xquery/range"  class="org.exist.xquery.modules.range.RangeIndexModule" />
-
-            <!--
-            <module uri="http://exist-db.org/xquery/spatial" class="org.exist.xquery.modules.spatial.SpatialModule" />
-            -->
-            
-            <!-- 
-                Default Modules 
-            -->
-            <module uri="http://exist-db.org/xquery/examples"   class="org.exist.xquery.modules.example.ExampleModule" />
-            <module uri="http://exist-db.org/xquery/inspection" class="org.exist.xquery.functions.inspect.InspectionModule"/>
-            <module uri="http://exist-db.org/xquery/mail"       class="org.exist.xquery.modules.mail.MailModule" />
-            <module uri="http://exist-db.org/xquery/math"       class="org.exist.xquery.modules.math.MathModule" />
-            <module uri="http://exist-db.org/xquery/request"    class="org.exist.xquery.functions.request.RequestModule" />
-            <module uri="http://exist-db.org/xquery/response"   class="org.exist.xquery.functions.response.ResponseModule" />
-            <module uri="http://exist-db.org/xquery/securitymanager" class="org.exist.xquery.functions.securitymanager.SecurityManagerModule"/>
-            <module uri="http://exist-db.org/xquery/session"    class="org.exist.xquery.functions.session.SessionModule" />
-            <module uri="http://exist-db.org/xquery/system"     class="org.exist.xquery.functions.system.SystemModule" />
-            <module uri="http://exist-db.org/xquery/transform"  class="org.exist.xquery.functions.transform.TransformModule" />
-            
             <module uri="http://exist-db.org/xquery/util"       class="org.exist.xquery.functions.util.UtilModule">
                 <!-- set to true to disable the util:eval functions -->
                 <parameter name="evalDisabled" value="false"/>
 
-                <!--
-                    Access to Java System Properties via the util:available-system-properties#0
-                    and util:system-property#1 functions can be restricted for Security Purposes.
-
-                    The syntax of the parameter keys is:
-                        "systemPropertyAccess.<Name of a Java System Property>.[requiresGroup|requiresUser]"
-
-                    If you have multiple users who wish to access the same System Property, then you may
-                    add multiple parameters for the same key, e.g.:
-
-                    <parameter name="systemPropertyAccess.PATH.requiresGroup" value="dba"/>
-                    <parameter name="systemPropertyAccess.PATH.requiresGroup" value="admin"/>
-                    <parameter name="systemPropertyAccess.PATH.requiresUser" value="my-special-user"/>
-
-                    The special symbol "*", meaning "otherwise", may be used to indicate all System Properties
-                    which have not otherwise been specified in this config.
-                       If "*" is not set in this config, then it is set to the "DBA" group by default.
-                -->
-                <parameter name="systemPropertyAccess.*.requiresGroup" value="dba"/>
+                <parameter name="systemPropertyAccess.*.requiresGroup" value="admins"/>
             </module>
-            
-            <module uri="http://exist-db.org/xquery/validation" class="org.exist.xquery.functions.validation.ValidationModule" />
-            <module uri="http://exist-db.org/xquery/xmldb"      class="org.exist.xquery.functions.xmldb.XMLDBModule" />
-
-            <module uri="http://www.w3.org/2005/xpath-functions/map"  class="org.exist.xquery.functions.map.MapModule" />
-            <module uri="http://www.w3.org/2005/xpath-functions/math" class="org.exist.xquery.functions.math.MathModule" />
-            <module uri="http://www.w3.org/2005/xpath-functions/array" class="org.exist.xquery.functions.array.ArrayModule" />
-            <module uri="http://exist-db.org/xquery/process" class="org.exist.xquery.modules.process.ProcessModule"/>
-            
-
-            <!-- 
-                EXPath Modules 
-            -->
-            <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule"/>
-
-            <!-- (deprecated) Native HTTPClient Module -->
-            <!-- module uri="http://exist-db.org/xquery/httpclient" class="org.exist.xquery.modules.httpclient.HTTPClientModule" /-->
-            
-            <!-- FTPClient Module -->
-            <!--module uri="http://exist-db.org/xquery/ftpclient" class="org.exist.xquery.modules.ftpclient.FTPClientModule" /-->
- 
-            <!-- EXPath ZIP Module -->
-            <module uri="http://expath.org/ns/zip" class="org.expath.exist.ZipModule" />
-
-            <!-- EXPathrepo module: required for managing external dependencies -->
-            <module uri="http://exist-db.org/xquery/repo" class="org.exist.xquery.modules.expathrepo.ExpathPackageModule"  />
-
-            <!-- EXQuery Modules -->
-            <!-- RESTXQ -->
-            <module uri="http://exquery.org/ns/restxq" class="org.exist.extensions.exquery.restxq.impl.xquery.RestXqModule"/>
-            <module uri="http://exquery.org/ns/restxq/exist" class="org.exist.extensions.exquery.restxq.impl.xquery.exist.ExistRestXqModule"/>
-            
-            <!-- Request Module -->           
-            <module uri="http://exquery.org/ns/request" class="org.exist.extensions.exquery.modules.request.RequestModule"/>
-            
-            
-            <!-- 
-                Modules written in XQuery
-                resource: loads module from classpath (jar files)
-            -->        
-            
-            <!-- KWIC module -->
-            <module uri="http://exist-db.org/xquery/kwic" src="resource:org/exist/xquery/lib/kwic.xql" />
-            
-            <!-- JSON module -->
-            <module uri="http://www.json.org" src="resource:org/exist/xquery/lib/json.xq" />
-
-            <!-- JSONP module -->
-            <module uri="http://www.jsonp.org" src="resource:org/exist/xquery/lib/jsonp.xq" />
-            
-            <!-- Test module -->
-            <module uri="http://exist-db.org/xquery/testing" src="resource:org/exist/xquery/lib/test.xq" />
-
-            <!-- 
-                Optional Modules : 
-                - uncomment for enabling modules
-                - the following steps might be required:
-                    - copy extensions/build.properties to extensions/local.build.properties
-                    - edit extensions/local.build.properties
-                    - build modules with "./build.sh extension-modules"
-            -->
-            
-            <!-- Safe to use, function to be used by DBA only  -->
-            <module uri="http://exist-db.org/xquery/file" class="org.exist.xquery.modules.file.FileModule" />
-            
-            <!-- Compression module-->
-            <module uri="http://exist-db.org/xquery/compression" class="org.exist.xquery.modules.compression.CompressionModule" />
-            
-            <!-- XQDoc module: required for generating function documentation -->
-            <module uri="http://exist-db.org/xquery/xqdoc" class="org.exist.xqdoc.xquery.XQDocModule" />
-
-            
-            <!-- Modules to be enabled when building the distribution -->
-            <module uri="http://exist-db.org/xquery/contentextraction"  class="org.exist.contentextraction.xquery.ContentExtractionModule" />
-            <module uri="http://exist-db.org/xquery/counter"            class="org.exist.xquery.modules.counter.CounterModule" />
-            <module uri="http://exist-db.org/xquery/datetime"           class="org.exist.xquery.modules.datetime.DateTimeModule" />
-            <module uri="http://exist-db.org/xquery/httpclient"         class="org.exist.xquery.modules.httpclient.HTTPClientModule" />
-            <module uri="http://exist-db.org/xquery/image"              class="org.exist.xquery.modules.image.ImageModule" />
-            <module uri="http://exist-db.org/xquery/mail"               class="org.exist.xquery.modules.mail.MailModule" />
-            <module uri="http://exist-db.org/xquery/scheduler"          class="org.exist.xquery.modules.scheduler.SchedulerModule" />
-            <module uri="http://exist-db.org/xquery/sql"                class="org.exist.xquery.modules.sql.SQLModule" />
-            <module uri="http://exist-db.org/xquery/xmldiff"            class="org.exist.xquery.modules.xmldiff.XmlDiffModule" />
-
-            <!--
-                XSLFO:
-                valid processor adapters are -
-                - org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter for Apache's FOP
-                - org.exist.xquery.modules.xslfo.RenderXXepProcessorAdapter for RenderX's XEP
-                - org.exist.xquery.modules.xslfo.AntennaHouseProcessorAdapter for AntennaHouse Formatter
-            -->
-            <module uri="http://exist-db.org/xquery/xslfo" class="org.exist.xquery.modules.xslfo.XSLFOModule">
-                <parameter name="processorAdapter" value="org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter"/>
-            </module>
-
-            <!-- Modules not enabled in the distribution by default -->
-            <!--
-            <module uri="http://exist-db.org/xquery/backups"            class="org.exist.backup.xquery.BackupModule" />
-            <module uri="http://exist-db.org/xquery/cache"              class="org.exist.xquery.modules.cache.CacheModule" />
-            <module uri="http://exist-db.org/xquery/context"            class="org.exist.xquery.modules.context.ContextModule" />
-            <module uri="http://exist-db.org/xquery/cqlparser"          class="org.exist.xquery.modules.cqlparser.CQLParserModule" />
-            <module uri="http://exist-db.org/xquery/exi"                class="org.exist.xquery.modules.exi.ExiModule" />
-            <module uri="http://exist-db.org/xquery/jndi"               class="org.exist.xquery.modules.jndi.JNDIModule" />
-            <module uri="http://exist-db.org/xquery/jfreechart"         class="org.exist.xquery.modules.jfreechart.JFreeChartModule" /> 
-            <module uri="http://exist-db.org/xquery/memcached"          class="org.exist.xquery.modules.memcached.MemcachedModule" />
-            <module uri="http://exist-db.org/xquery/oracle"             class="org.exist.xquery.modules.oracle.OracleModule" />
-            <module uri="http://exist-db.org/xquery/simpleql"           class="org.exist.xquery.modules.simpleql.SimpleQLModule" />
-            <module uri="http://exist-db.org/xquery/versioning/svn"     class="org.exist.versioning.svn.xquery.SVNModule" />
-            <module uri="http://exist-db.org/xquery/xmpp"               class="org.exist.xquery.modules.xmpp.XMPPModule" />
-            -->
-
-            <!--
-                exiftool:
-                - perl-path - file system path to the perl executable
-                - exiftool-path - file system path to the exiftool perl script
-            -->
-            <!--
-            <module uri="http://exist-db.org/xquery/exiftool"  class="org.exist.exiftool.xquery.ExiftoolModule">
-                <parameter name="perl-path" value="/usr/bin/perl"/>
-                <parameter name="exiftool-path" value="/usr/bin/exiftool"/>
-            </module>
-            -->
 
         </builtin-modules>
     </xquery>
