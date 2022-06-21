@@ -111,6 +111,10 @@ class Convert {
             return new net.sf.saxon.s9api.QName(qName.getPrefix() == null ? "" : qName.getPrefix(), qName.getNamespaceURI(), qName.getLocalPart());
         }
 
+        static net.sf.saxon.s9api.QName of(final QNameValue qName) {
+            return of(qName.getQName());
+        }
+
         static XdmValue of(final Item item) throws XPathException {
             final int itemType = item.getType();
             if (Type.subTypeOf(itemType, Type.ATOMIC)) {
@@ -133,12 +137,16 @@ class Convert {
             final XdmValue[] result = new XdmValue[size];
             for (int i = 0; i < size; i++) {
                 final Sequence sequence = values.get(i);
-                result[i] = XdmValue.makeValue(ToSaxon.of(sequence));
+                result[i] = XdmValue.makeValue(ToSaxon.listOf(sequence));
             }
             return result;
         }
 
-        static List<Object> of(final Sequence value) throws XPathException {
+        static XdmValue of(final Sequence value) throws XPathException {
+            return XdmValue.makeSequence(ToSaxon.listOf(value));
+        }
+
+        static private List<Object> listOf(final Sequence value) throws XPathException {
             final int size = value.getItemCount();
             final List<Object> result = new ArrayList<>(size);
             for (int i = 0; i < size; i++) {
