@@ -410,9 +410,6 @@ public class Configuration implements ErrorHandler
      * @throws  DatabaseConfigurationException
      */
     private void loadModuleClasses( Element xquery, Map<String, Class<?>> modulesClassMap, Map<String, String> modulesSourceMap, Map<String, Map<String, List<? extends Object>>> moduleParameters) throws DatabaseConfigurationException {
-        // add the standard function module
-        modulesClassMap.put(Namespaces.XPATH_FUNCTIONS_NS, org.exist.xquery.functions.fn.FnModule.class);
-
         // add other modules specified in configuration
         final NodeList builtins = xquery.getElementsByTagName(XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME);
 
@@ -473,6 +470,11 @@ public class Configuration implements ErrorHandler
                     moduleParameters.put(uri, ParametersExtractor.extract(elem.getElementsByTagName(ParametersExtractor.PARAMETER_ELEMENT_NAME)));
                 }
             }
+        }
+
+        // if not specified in the conf.xml, then add the standard function module anyway
+        if (!modulesClassMap.containsKey(Namespaces.XPATH_FUNCTIONS_NS)) {
+            modulesClassMap.put(Namespaces.XPATH_FUNCTIONS_NS, org.exist.xquery.functions.fn.FnModule.class);
         }
     }
 
