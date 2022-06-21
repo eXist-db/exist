@@ -60,7 +60,7 @@ public class SystemProperty extends BasicFunction {
         final String key = args[0].getStringValue();
         String value = ExistSystemProperties.getInstance().getExistSystemProperty(key, null);
         if (value == null) {
-            value = System.getProperty(key);
+            value = context.getJavaSystemProperties().get(key, null);
         }
         return value == null ? Sequence.EMPTY_SEQUENCE : new StringValue(value);
     }
