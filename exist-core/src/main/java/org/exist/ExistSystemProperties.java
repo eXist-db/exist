@@ -35,23 +35,23 @@ import org.apache.logging.log4j.Logger;
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 @ThreadSafe
-public class SystemProperties {
+public class ExistSystemProperties {
 
-    private static final Logger LOG = LogManager.getLogger(SystemProperties.class);
-    private static final SystemProperties instance = new SystemProperties();
+    private static final Logger LOG = LogManager.getLogger(ExistSystemProperties.class);
+    private static final ExistSystemProperties instance = new ExistSystemProperties();
 
     private final AtomicLazyVal<Properties> properties = new AtomicLazyVal<>(this::load);
 
-    public final static SystemProperties getInstance() {
+    public final static ExistSystemProperties getInstance() {
         return instance;
     }
 
-    private SystemProperties() {
+    private ExistSystemProperties() {
     }
 
     private Properties load() {
         final Properties properties = new Properties();
-        try (final InputStream is = SystemProperties.class.getResourceAsStream("system.properties")) {
+        try (final InputStream is = ExistSystemProperties.class.getResourceAsStream("system.properties")) {
             if (is != null) {
                 properties.load(is);
             }
@@ -61,11 +61,11 @@ public class SystemProperties {
         return properties;
     }
 
-    public String getSystemProperty(final String propertyName) {
+    public String getExistSystemProperty(final String propertyName) {
         return properties.get().getProperty(propertyName);
     }
 
-    public String getSystemProperty(final String propertyName, final String defaultValue) {
+    public String getExistSystemProperty(final String propertyName, final String defaultValue) {
         return properties.get().getProperty(propertyName, defaultValue);
     }
 }

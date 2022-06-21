@@ -24,7 +24,7 @@ package org.exist.management.impl;
 import java.nio.charset.Charset;
 import java.util.Locale;
 
-import org.exist.SystemProperties;
+import org.exist.ExistSystemProperties;
 
 /**
  * Class SystemInfo
@@ -38,22 +38,22 @@ public class SystemInfo implements SystemInfoMXBean {
 
     @Override
     public String getProductName() {
-        return SystemProperties.getInstance().getSystemProperty("product-name","eXist");
+        return ExistSystemProperties.getInstance().getExistSystemProperty("product-name","eXist");
     }
 
     @Override
     public String getProductVersion() {
-        return SystemProperties.getInstance().getSystemProperty("product-version","unknown");
+        return ExistSystemProperties.getInstance().getExistSystemProperty("product-version","unknown");
     }
 
     @Override
     public String getProductBuild() {
-        return SystemProperties.getInstance().getSystemProperty("product-build","unknown");
+        return ExistSystemProperties.getInstance().getExistSystemProperty("product-build","unknown");
     }
 
     @Override
     public String getGitCommit() {
-        return SystemProperties.getInstance().getSystemProperty("git-commit", "unknown Git commit ID");
+        return ExistSystemProperties.getInstance().getExistSystemProperty("git-commit", "unknown Git commit ID");
     }
 
     @Override
