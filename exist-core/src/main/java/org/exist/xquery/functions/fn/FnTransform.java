@@ -31,7 +31,6 @@ import net.jpountz.xxhash.XXHashFactory;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.s9api.*;
 import net.sf.saxon.trans.UncheckedXPathException;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -48,7 +47,10 @@ import org.exist.xquery.util.DocUtils;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.exist.xslt.EXistURIResolver;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
@@ -70,7 +72,10 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -188,11 +193,11 @@ public class FnTransform extends BasicFunction {
                     final QName qName = options.initialFunction.get().getQName();
                     final XdmValue[] functionParams;
                     if (options.functionParams.isPresent()) {
-                        functionParams = Saxon.of(options.functionParams.get());
+                        functionParams = Convert.ToSaxon.of(options.functionParams.get());
                     } else {
                         functionParams = new XdmValue[0];
                     }
-                    xslt30Transformer.callFunction(Saxon.of(qName), functionParams, saxDestination);
+                    xslt30Transformer.callFunction(Convert.ToSaxon.of(qName), functionParams, saxDestination);
                 } else if (options.initialTemplate.isPresent()) {
                     if (sourceNode.isPresent()) {
                         final DocumentBuilder sourceBuilder = FnTransform.SAXON_PROCESSOR.newDocumentBuilder();
@@ -202,7 +207,19 @@ public class FnTransform extends BasicFunction {
                         xslt30Transformer.setGlobalContextItem(null);
                     }
                     final QName qName = options.initialTemplate.get().getQName();
-                    xslt30Transformer.callTemplate(Saxon.of(qName), saxDestination);
+                    //TODO (AP) - Implement complete conversion in the {@link Convert} class
+                    //TODO (AP) - The saxDestination conversion loses type information in some cases
+                    //TODO (AP) - e.g. fn-transform-63 from XQTS has a <xsl:template name='main' as='xs:integer'>
+                    //TODO (AP) - which alongside "delivery-format":"raw" fails to deliver an int
+                    if (options.deliveryFormat == DeliveryFormat.RAW) {
+                        final XdmValue xdmValue = xslt30Transformer.callTemplate(Convert.ToSaxon.of(qName));
+                        final Sequence existValue = Convert.ToExist.of(xdmValue);
+                        return makeResultMap(options, existValue, resultDocuments);
+                    } else {
+                        //TODO (AP) - The saxDestination conversion loses type information in some cases
+                        //TODO (AP) - e.g. fn-transform-63 from XQTS has a <xsl:template name='main' as='xs:integer'>
+                        xslt30Transformer.callTemplate(Convert.ToSaxon.of(qName), saxDestination);
+                    }
                 } else {
                     if (!sourceNode.isPresent()) {
                         // TODO (AP) OK if initial match selection is supplied instead, not yet implemented
@@ -237,21 +254,34 @@ public class FnTransform extends BasicFunction {
         } else {
             outputKey = new StringValue("output");
         }
-        System.err.println("[[resultDocument] BEGIN]");
-        System.err.println("[[resultDocument] primary key: " + outputKey);
-        System.err.println("[[resultDocument] primary value: " + outputDocument);
 
         final Sequence primaryValue = convertToDeliveryFormat(options, outputDocument);
         outputMap.add(outputKey, primaryValue);
 
         for (final Map.Entry<URI, MemTreeBuilder> resultDocument : resultDocuments.entrySet()) {
-            System.err.println("[[resultDocument] key: " + resultDocument.getKey());
-            System.err.println("[[resultDocument] value: " + resultDocument.getValue().getDocument());
             final Sequence value = convertToDeliveryFormat(options, resultDocument.getValue().getDocument());
             outputMap.add(new AnyURIValue(resultDocument.getKey()), value);
         }
 
-        System.err.println("[[resultDocument] END]");
+        return outputMap;
+    }
+
+    private MapType makeResultMap(final Options options, final Sequence rawPrimaryOutput, final Map<URI, MemTreeBuilder> resultDocuments) throws XPathException {
+
+        final MapType outputMap = new MapType(context);
+        final AtomicValue outputKey;
+        if (options.baseOutputURI.isPresent()) {
+            outputKey = options.baseOutputURI.get();
+        } else {
+            outputKey = new StringValue("output");
+        }
+
+        outputMap.add(outputKey, rawPrimaryOutput);
+
+        for (final Map.Entry<URI, MemTreeBuilder> resultDocument : resultDocuments.entrySet()) {
+            final Sequence value = convertToDeliveryFormat(options, resultDocument.getValue().getDocument());
+            outputMap.add(new AnyURIValue(resultDocument.getKey()), value);
+        }
 
         return outputMap;
     }
@@ -295,21 +325,11 @@ public class FnTransform extends BasicFunction {
         }
     }
 
-    private Sequence rawOutput(final NodeValue outputDocument) throws XPathException {
-        if (outputDocument instanceof Document) {
-            System.err.println("[outputDocument]: " + outputDocument);
-            final Document document = (Document) outputDocument;
-            final Element element = document.getDocumentElement();
-            if (element instanceof NodeValue) {
-                System.err.println("[outputDocument document element]: " + element);
-                return (Sequence) element;
-            }
-        }
-        throw new XPathException(this, ErrorCodes.FOXT0002, "Unexpected output not a node value, requested " +
-                FnTransform.DELIVERY_FORMAT + " " + DeliveryFormat.RAW.name().toLowerCase());
+    private static Sequence rawOutput(final NodeValue outputDocument) throws XPathException {
+        throw new XPathException(ErrorCodes.XPTY0004, "Seocndary document raw output is not yet implemented");
     }
 
-    private static Optional<Source> getSourceNode(final Optional<NodeValue> sourceNode, final AnyURIValue baseURI) throws XPathException {
+    private static Optional<Source> getSourceNode(final Optional<NodeValue> sourceNode, final AnyURIValue baseURI) {
         return sourceNode.map(NodeValue::getNode).map(node -> new DOMSource(node, baseURI.getStringValue()));
     }
 
@@ -327,7 +347,7 @@ public class FnTransform extends BasicFunction {
         final Sequence document;
         try {
             document = DocUtils.getDocument(context, stylesheetLocation);
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             throw new XPathException(this, ErrorCodes.FODC0002,
                     "Can not access '" + stylesheetLocation + "'" + e.getMessage());
         }
@@ -345,10 +365,10 @@ public class FnTransform extends BasicFunction {
 
     /**
      * URI resolution, the core should be the same as for fn:resolve-uri
-     * @param relative
-     * @param base
-     * @return
-     * @throws XPathException
+     * @param relative URI to resolve
+     * @param base to resolve against
+     * @return resolved URI
+     * @throws XPathException if resolution is not possible
      */
     private AnyURIValue resolveURI(final AnyURIValue relative, final AnyURIValue base) throws XPathException {
         final URI relativeURI;
@@ -584,17 +604,17 @@ public class FnTransform extends BasicFunction {
             return defaultValue.map(ValueSequence::new);
         }
 
-        private boolean appliesToVersion(final float xsltVersion) {
+        private boolean notApplicableToVersion(final float xsltVersion) {
             for (final float appliesToVersion : appliesToVersions) {
                 if (xsltVersion == appliesToVersion) {
-                    return true;
+                    return false;
                 }
             }
-            return false;
+            return true;
         }
 
         public Optional<T> get(final float xsltVersion, final MapType options) {
-            if (!appliesToVersion(xsltVersion)) {
+            if (notApplicableToVersion(xsltVersion)) {
                 return Optional.empty();
             }
 
@@ -606,7 +626,7 @@ public class FnTransform extends BasicFunction {
         }
 
         public Optional<Sequence> getSeq(final float xsltVersion, final MapType options) {
-            if (!appliesToVersion(xsltVersion)) {
+            if (notApplicableToVersion(xsltVersion)) {
                 return Optional.empty();
             }
 
@@ -741,55 +761,6 @@ public class FnTransform extends BasicFunction {
                         " is not a valid " + FnTransform.DELIVERY_FORMAT.name);
             }
             return deliveryFormat;
-        }
-    }
-
-    /**
-     *
-     * Type conversion to Saxon
-     *
-     * TODO (AP) probably not yet complete.
-     */
-    private static class Saxon {
-
-        private static net.sf.saxon.s9api.QName of(final QName qName) {
-            return new net.sf.saxon.s9api.QName(qName.getPrefix() == null ? "" : qName.getPrefix(), qName.getNamespaceURI(), qName.getLocalPart());
-        }
-
-        private static XdmValue of(final Item item) throws XPathException {
-            final int itemType = item.getType();
-            if (Type.subTypeOf(itemType, Type.ATOMIC)) {
-                final AtomicValue atomicValue = (AtomicValue) item;
-                if (Type.subTypeOf(itemType, Type.NUMBER)) {
-                    return XdmValue.makeValue(((NumericValue)atomicValue).getDouble());
-                } else if (Type.subTypeOf(itemType, Type.BOOLEAN)) {
-                    return XdmValue.makeValue(((BooleanValue)atomicValue).getValue());
-                } else if (Type.subTypeOf(itemType, Type.STRING)) {
-                    return XdmValue.makeValue(((StringValue)atomicValue).getStringValue());
-                }
-            }
-            throw new XPathException(ErrorCodes.XPTY0004,
-                    "Item " + item + " of type " + Type.getTypeName(itemType) +
-                    " could not be converted to an XdmValue");
-        }
-
-        private static XdmValue[] of(final ArrayType values) throws XPathException {
-            final int size = values.getSize();
-            final XdmValue[] result = new XdmValue[size];
-            for (int i = 0; i < size; i++) {
-                final Sequence sequence = values.get(i);
-                result[i] = XdmValue.makeValue(Saxon.of(sequence));
-            }
-            return result;
-        }
-
-        private static List<Object> of(final Sequence value) throws XPathException {
-            final int size = value.getItemCount();
-            final List<Object> result = new ArrayList<>(size);
-            for (int i = 0; i < size; i++) {
-                result.add(Saxon.of(value.itemAt(i)));
-            }
-            return result;
         }
     }
 
