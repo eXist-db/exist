@@ -204,6 +204,12 @@ public class FnTransform extends BasicFunction {
                     }
                     xslt30Transformer.callFunction(Convert.ToSaxon.of(qName), functionParams, saxDestination);
                 } else if (options.initialTemplate.isPresent()) {
+                    if (options.initialMode.isPresent()) {
+                        throw new XPathException(this, ErrorCodes.FOXT0002,
+                                INITIAL_MODE.name + " supplied indicating apply-templates invocation, " +
+                                "AND " + INITIAL_TEMPLATE.name + " supplied indicating call-template invocation.");
+                    }
+
                     if (sourceNode.isPresent()) {
                         final DocumentBuilder sourceBuilder = FnTransform.SAXON_PROCESSOR.newDocumentBuilder();
                         final XdmNode xdmNode = sourceBuilder.build(sourceNode.get());
@@ -723,6 +729,7 @@ public class FnTransform extends BasicFunction {
         final Map<net.sf.saxon.s9api.QName, XdmValue> templateParams;
         final Map<net.sf.saxon.s9api.QName, XdmValue> tunnelParams;
         final Optional<QNameValue> initialTemplate;
+        final Optional<QNameValue> initialMode;
         final Optional<NodeValue> sourceNode;
         final Optional<BooleanValue> shouldCache;
         final DeliveryFormat deliveryFormat;
@@ -736,6 +743,8 @@ public class FnTransform extends BasicFunction {
             for (final IEntry<AtomicValue, Sequence> entry : stylesheetParams) {
                 if (!(entry.key() instanceof QNameValue)) {
                     throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied stylesheet-param is not a valid xs:qname: " + entry);
+                } else {
+                    System.err.println("[VALID QNAME]: " + entry.key());
                 }
                 if (!(entry.value() instanceof Sequence)) {
                     throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied stylesheet-param is not a valid xs:sequence: " + entry);
@@ -766,6 +775,7 @@ public class FnTransform extends BasicFunction {
             functionParams = FnTransform.FUNCTION_PARAMS.get(options);
 
             initialTemplate = FnTransform.INITIAL_TEMPLATE.get(options);
+            initialMode = FnTransform.INITIAL_MODE.get(options);
 
             templateParams = readParamsMap(FnTransform.TEMPLATE_PARAMS.get(options), FnTransform.TEMPLATE_PARAMS.name.getStringValue());
             tunnelParams = readParamsMap(FnTransform.TUNNEL_PARAMS.get(options), FnTransform.TUNNEL_PARAMS.name.getStringValue());
