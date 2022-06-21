@@ -51,6 +51,8 @@ import com.evolvedbinary.j8fu.function.TriFunctionE;
 import com.evolvedbinary.j8fu.function.QuadFunctionE;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import com.ibm.icu.text.Collator;
+import io.lacuna.bifurcan.IMap;
+import io.lacuna.bifurcan.LinearMap;
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.objects.*;
 import net.jcip.annotations.Immutable;
@@ -367,7 +369,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     protected Profiler profiler;
 
     //For holding the environment variables
-    private Map<String, String> envs;
+    private IMap<String, String> envs;
 
     private ContextUpdateListener updateListener = null;
 
@@ -2728,9 +2730,9 @@ public class XQueryContext implements BinaryValueManager, Context {
      *
      * @return Map of environment variables
      */
-    public Map<String, String> getEnvironmentVariables() {
+    public io.lacuna.bifurcan.IMap<String, String> getEnvironmentVariables() {
         if (envs == null) {
-            envs = System.getenv();
+            envs = io.lacuna.bifurcan.Map.from(System.getenv());
         }
         return envs;
     }
