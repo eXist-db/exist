@@ -21,8 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.Map;
-
+import io.lacuna.bifurcan.IMap;
+import io.lacuna.bifurcan.ISet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -69,7 +69,7 @@ public class FunEnvironment extends BasicFunction {
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
         if (!context.getSubject().hasDbaRole()) {
             final String txt = "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.";
@@ -81,9 +81,9 @@ public class FunEnvironment extends BasicFunction {
 
             final Sequence result = new ValueSequence();
 
-            final Map<String, String> env = context.getEnvironmentVariables();
-            for (final String key : env.keySet()) {
-                result.add(new StringValue(this, key));
+            final IMap<String, String> environmentVariables = context.getEnvironmentVariables();
+            for (final String environmentVariableName : environmentVariables.keys()) {
+                result.add(new StringValue(this, environmentVariableName));
             }
 
             return result;
@@ -96,7 +96,7 @@ public class FunEnvironment extends BasicFunction {
 
             final String parameter = args[0].itemAt(0).getStringValue();
 
-            final String value = context.getEnvironmentVariables().get(parameter);
+            final String value = context.getEnvironmentVariables().get(parameter, null);
             if (value == null) {
                 return Sequence.EMPTY_SEQUENCE;
             }
