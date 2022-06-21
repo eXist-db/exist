@@ -24,6 +24,7 @@ package org.exist;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.Set;
 
 import com.evolvedbinary.j8fu.lazy.AtomicLazyVal;
 import net.jcip.annotations.ThreadSafe;
@@ -73,5 +74,14 @@ public class ExistSystemProperties {
 
     public String getExistSystemProperty(final String propertyName, final String defaultValue) {
         return properties.get().getProperty(propertyName, defaultValue);
+    }
+
+    /**
+     * Get the available eXist System Properties.
+     *
+     * @return the available eXist System Properties.
+     */
+    public Set<String> getAvailableExistSystemProperties() {
+        return properties.get().stringPropertyNames();
     }
 }

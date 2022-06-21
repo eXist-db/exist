@@ -29,9 +29,12 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
-import static org.exist.xquery.FunctionDSL.param;
-import static org.exist.xquery.FunctionDSL.returnsOpt;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.util.UtilModule.functionSignature;
 
 /**
@@ -42,8 +45,18 @@ import static org.exist.xquery.functions.util.UtilModule.functionSignature;
  */
 public class SystemProperty extends BasicFunction {
 
-    public final static FunctionSignature signature = functionSignature(
-            "system-property",
+    private final static String FS_AVAILABLE_SYSTEM_PROPERTIES_NAME = "available-system-properties";
+    public final static FunctionSignature FS_AVAILABLE_SYSTEM_PROPERTIES = functionSignature(
+            FS_AVAILABLE_SYSTEM_PROPERTIES_NAME,
+            "Returns a list of available system properties. " +
+                    "Predefined properties are: vendor, vendor-url, product-name, product-version, product-build, and all Java " +
+                    "System Properties.",
+            returnsOptMany(Type.STRING, "The names of the available system properties")
+    );
+
+    private final static String FS_SYSTEM_PROPERTY_NAME = "system-property";
+    public final static FunctionSignature FS_SYSTEM_PROPERTY = functionSignature(
+            FS_SYSTEM_PROPERTY_NAME,
             "Returns the value of a system property. Similar to the corresponding XSLT function. " +
                     "Predefined properties are: vendor, vendor-url, product-name, product-version, product-build, and all Java " +
                     "System Properties.",
@@ -57,11 +70,26 @@ public class SystemProperty extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        final String key = args[0].getStringValue();
-        String value = ExistSystemProperties.getInstance().getExistSystemProperty(key, null);
-        if (value == null) {
-            value = context.getJavaSystemProperties().get(key, null);
+        if (isCalledAs(FS_AVAILABLE_SYSTEM_PROPERTIES_NAME)) {
+
+            final Set<String> availableProperties = new HashSet<>();
+            availableProperties.addAll(ExistSystemProperties.getInstance().getAvailableExistSystemProperties());
+            availableProperties.addAll(context.getJavaSystemProperties().keys().toSet());
+
+            final ValueSequence result = new ValueSequence(availableProperties.size());
+            for (final String availableProperty : availableProperties) {
+                result.add(new StringValue(this, availableProperty));
+            }
+
+            return result;
+
+        } else {
+            final String key = args[0].getStringValue();
+            String value = ExistSystemProperties.getInstance().getExistSystemProperty(key, null);
+            if (value == null) {
+                value = context.getJavaSystemProperties().get(key, null);
+            }
+            return value == null ? Sequence.EMPTY_SEQUENCE : new StringValue(this, value);
         }
-        return value == null ? Sequence.EMPTY_SEQUENCE : new StringValue(this, value);
     }
 }
