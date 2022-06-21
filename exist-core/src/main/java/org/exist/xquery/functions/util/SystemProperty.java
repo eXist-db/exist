@@ -21,11 +21,16 @@
  */
 package org.exist.xquery.functions.util;
 
+import io.lacuna.bifurcan.IMap;
+import io.lacuna.bifurcan.ISet;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.ExistSystemProperties;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.AccessUtil;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
@@ -42,8 +47,11 @@ import static org.exist.xquery.functions.util.UtilModule.functionSignature;
  *
  * @author Wolfgang Meier
  * @author Loren Cahlander
+ * @author <a href="mailto:adam@evolvedbinary.com>Adam Retter</a>
  */
 public class SystemProperty extends BasicFunction {
+
+    private static final Logger LOGGER = LogManager.getLogger(SystemProperty.class);
 
     private final static String FS_AVAILABLE_SYSTEM_PROPERTIES_NAME = "available-system-properties";
     public final static FunctionSignature FS_AVAILABLE_SYSTEM_PROPERTIES = functionSignature(
@@ -70,11 +78,21 @@ public class SystemProperty extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+        final UtilModule utilModule = (UtilModule) getParentModule();
+        final IMap<String, ISet<String>> systemPropertyAccessGroups = utilModule.getSystemPropertyAccessGroups();
+        final IMap<String, ISet<String>> systemPropertyAccessUsers = utilModule.getSystemPropertyAccessUsers();
+
         if (isCalledAs(FS_AVAILABLE_SYSTEM_PROPERTIES_NAME)) {
 
             final Set<String> availableProperties = new HashSet<>();
             availableProperties.addAll(ExistSystemProperties.getInstance().getAvailableExistSystemProperties());
-            availableProperties.addAll(context.getJavaSystemProperties().keys().toSet());
+
+            // add any Java System Properties that the user has access to
+            for (final String systemPropertyName : context.getJavaSystemProperties().keys()) {
+                if (AccessUtil.isAllowedAccess(context.getEffectiveUser(), systemPropertyAccessGroups, systemPropertyAccessUsers, systemPropertyName)) {
+                    availableProperties.add(systemPropertyName);
+                }
+            }
 
             final ValueSequence result = new ValueSequence(availableProperties.size());
             for (final String availableProperty : availableProperties) {
@@ -84,11 +102,22 @@ public class SystemProperty extends BasicFunction {
             return result;
 
         } else {
-            final String key = args[0].getStringValue();
-            String value = ExistSystemProperties.getInstance().getExistSystemProperty(key, null);
+            final String systemPropertyName = args[0].getStringValue();
+
+            // always allow access to all eXist-db System Properties
+            String value = ExistSystemProperties.getInstance().getExistSystemProperty(systemPropertyName, null);
             if (value == null) {
-                value = context.getJavaSystemProperties().get(key, null);
+
+                // check for a Java System Property that the user has access to
+                if (!AccessUtil.isAllowedAccess(context.getEffectiveUser(), systemPropertyAccessGroups, systemPropertyAccessUsers, systemPropertyName)) {
+                    final String txt = "Permission denied, calling user '" + context.getSubject().getName() + "' must be granted access to the Java System Property: " + systemPropertyName + ".";
+                    LOGGER.error(txt);
+                    return Sequence.EMPTY_SEQUENCE;
+                }
+
+                value = context.getJavaSystemProperties().get(systemPropertyName, null);
             }
+
             return value == null ? Sequence.EMPTY_SEQUENCE : new StringValue(this, value);
         }
     }
