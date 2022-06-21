@@ -121,7 +121,13 @@ public class FunEnvironmentTest {
         final XQuery xqueryService = pool.getXQueryService();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
-            final String query = "fn:environment-variable('PATH')";
+            final String query;
+            if (isWindows()) {
+                query = "fn:environment-variable('Path')";
+            } else {
+                query = "fn:environment-variable('PATH')";
+            }
+
             final Sequence result = xqueryService.execute(broker, query, null);
 
             if (shouldReturnEmptySequence) {
@@ -130,5 +136,9 @@ public class FunEnvironmentTest {
                 assertFalse(result.isEmpty());
             }
         }
+    }
+
+    private static boolean isWindows() {
+        return System.getProperty("os.name").toLowerCase().startsWith("win");
     }
 }
