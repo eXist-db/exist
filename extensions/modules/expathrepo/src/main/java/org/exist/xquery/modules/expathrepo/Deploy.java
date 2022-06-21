@@ -280,7 +280,7 @@ public class Deploy extends BasicFunction {
         @Override
         public XarSource load(final String name, final Version version) throws IOException {
             String pkgURL = repoURL + "?name=" + URLEncoder.encode(name, "UTF-8") +
-                "&processor=" + ExistSystemProperties.getInstance().getExistSystemProperty("product-version", "2.2.0");
+                "&processor=" + ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, "2.2.0");
             if (version != null) {
                 if (version.getMin() != null) {
                     pkgURL += "&semver-min=" + version.getMin();

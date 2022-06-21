@@ -101,7 +101,7 @@ public class JnlpWriter {
             writer.writeAttribute("codebase", codeBase);
             writer.writeAttribute("href", "exist.jnlp");
 
-            String version = ExistSystemProperties.getInstance().getExistSystemProperty("product-version", null);
+            String version = ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, null);
             if(version!=null){
                 writer.writeAttribute("version", version);
             }

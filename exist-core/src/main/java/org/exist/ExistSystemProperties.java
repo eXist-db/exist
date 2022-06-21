@@ -37,6 +37,12 @@ import org.apache.logging.log4j.Logger;
 @ThreadSafe
 public class ExistSystemProperties {
 
+    public static final String PROP_PRODUCT_NAME = "product-name";
+    public static final String PROP_PRODUCT_VERSION = "product-version";
+    public static final String PROP_PRODUCT_BUILD = "product-build";
+    public static final String PROP_GIT_BRANCH = "git-branch";
+    public static final String PROP_GIT_COMMIT = "git-commit";
+
     private static final Logger LOG = LogManager.getLogger(ExistSystemProperties.class);
     private static final ExistSystemProperties instance = new ExistSystemProperties();
 

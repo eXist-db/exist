@@ -49,6 +49,6 @@ public class GetProductName extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        return new StringValue(ExistSystemProperties.getInstance().getExistSystemProperty("product-name", "eXist"));
+        return new StringValue(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_NAME, "eXist"));
     }
 }
