@@ -69,8 +69,8 @@ public class SplashScreen extends JFrame implements Observer, Comparable {
         final ExistSystemProperties sysProps = ExistSystemProperties.getInstance();
         final StringBuilder builder = new StringBuilder();
 	    builder.append("Version ");
-        builder.append(sysProps.getExistSystemProperty("product-version", "unknown"));
-        final String gitCommit = sysProps.getExistSystemProperty("git-commit");
+        builder.append(sysProps.getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, "unknown"));
+        final String gitCommit = sysProps.getExistSystemProperty(ExistSystemProperties.PROP_GIT_COMMIT);
         if (gitCommit != null && !gitCommit.isEmpty()) {
             builder.append(" (");
             builder.append(gitCommit, 0, Math.min(7, gitCommit.length()));

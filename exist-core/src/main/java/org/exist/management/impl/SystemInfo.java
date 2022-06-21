@@ -38,22 +38,22 @@ public class SystemInfo implements SystemInfoMXBean {
 
     @Override
     public String getProductName() {
-        return ExistSystemProperties.getInstance().getExistSystemProperty("product-name","eXist");
+        return ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_NAME,"eXist");
     }
 
     @Override
     public String getProductVersion() {
-        return ExistSystemProperties.getInstance().getExistSystemProperty("product-version","unknown");
+        return ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION,"unknown");
     }
 
     @Override
     public String getProductBuild() {
-        return ExistSystemProperties.getInstance().getExistSystemProperty("product-build","unknown");
+        return ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_BUILD,"unknown");
     }
 
     @Override
     public String getGitCommit() {
-        return ExistSystemProperties.getInstance().getExistSystemProperty("git-commit", "unknown Git commit ID");
+        return ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_GIT_COMMIT, "unknown Git commit ID");
     }
 
     @Override

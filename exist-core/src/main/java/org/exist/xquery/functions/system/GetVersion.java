@@ -53,6 +53,6 @@ public class GetVersion extends BasicFunction {
 
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        return new StringValue(this, ExistSystemProperties.getInstance().getExistSystemProperty("product-version", "unknown version"));
+        return new StringValue(this, ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, "unknown version"));
     }
 }

@@ -54,6 +54,6 @@ public class GetRevision extends BasicFunction {
 
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        return new StringValue(this, ExistSystemProperties.getInstance().getExistSystemProperty("git-commit", "unknown Git commit ID"));
+        return new StringValue(this, ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_GIT_COMMIT, "unknown Git commit ID"));
     }
 }
