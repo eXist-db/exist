@@ -25,20 +25,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import com.evolvedbinary.j8fu.lazy.LazyVal;
+import com.evolvedbinary.j8fu.lazy.AtomicLazyVal;
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
  *
- * @author aretter
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
+@ThreadSafe
 public class SystemProperties {
 
     private static final Logger LOG = LogManager.getLogger(SystemProperties.class);
     private static final SystemProperties instance = new SystemProperties();
 
-    private final LazyVal<Properties> properties = new LazyVal<>(this::load);
+    private final AtomicLazyVal<Properties> properties = new AtomicLazyVal<>(this::load);
 
     public final static SystemProperties getInstance() {
         return instance;
