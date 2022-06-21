@@ -32,6 +32,7 @@ import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.AccessUtil;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -50,17 +51,19 @@ public class FunEnvironment extends BasicFunction {
                     "Returns a list of environment variable names.",
                     null,
                     new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE,
-                            "Returns a sequence of strings, being the names of the environment variables. User must be DBA.")
+                            "Returns a sequence of strings, being the names of the environment variables. " +
+                                    "Only the Environment Variables that the calling user has been granted access to are returned (see conf.xml).")
             ),
             new FunctionSignature(
                     new QName("environment-variable", Function.BUILTIN_FUNCTION_NS),
                     "Returns the value of a system environment variable, if it exists.",
-                    new SequenceType[]{
+                    new SequenceType[] {
                             new FunctionParameterSequenceType("name", Type.STRING,
                                     Cardinality.EXACTLY_ONE, "Name of environment variable.")
                     },
-                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "Corresponding value of the environment variable, "
-                            + "if there is no environment variable with a matching name, the function returns the empty sequence. User must be DBA.")
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "Corresponding value of the environment variable, " +
+                            "if there is no environment variable with a matching name, the function returns the empty sequence. " +
+                            "User must have been granted access to the Environment Variable (see conf.xml).")
             )
     };
 
@@ -70,12 +73,9 @@ public class FunEnvironment extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-
-        if (!context.getSubject().hasDbaRole()) {
-            final String txt = "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.";
-            LOGGER.error(txt);
-            return Sequence.EMPTY_SEQUENCE;
-        }
+        final FnModule fnModule = (FnModule) getParentModule();
+        final IMap<String, ISet<String>> environmentVariableAccessGroups = fnModule.getEnvironmentVariableAccessGroups();
+        final IMap<String, ISet<String>> environmentVariableAccessUsers = fnModule.getEnvironmentVariableAccessUsers();
 
         if (isCalledAs("available-environment-variables")) {
 
@@ -83,20 +83,23 @@ public class FunEnvironment extends BasicFunction {
 
             final IMap<String, String> environmentVariables = context.getEnvironmentVariables();
             for (final String environmentVariableName : environmentVariables.keys()) {
-                result.add(new StringValue(this, environmentVariableName));
+                if (AccessUtil.isAllowedAccess(context.getEffectiveUser(), environmentVariableAccessGroups, environmentVariableAccessUsers, environmentVariableName)) {
+                    result.add(new StringValue(this, environmentVariableName));
+                }
             }
 
             return result;
 
         } else {
 
-            if (args[0].isEmpty()) {
+            final String environmentVariableName = args[0].itemAt(0).getStringValue();
+            if (!AccessUtil.isAllowedAccess(context.getEffectiveUser(), environmentVariableAccessGroups, environmentVariableAccessUsers, environmentVariableName)) {
+                final String txt = "Permission denied, calling user '" + context.getSubject().getName() + "' must be granted access to the Environment Variable: " + environmentVariableName + ".";
+                LOGGER.error(txt);
                 return Sequence.EMPTY_SEQUENCE;
             }
 
-            final String parameter = args[0].itemAt(0).getStringValue();
-
-            final String value = context.getEnvironmentVariables().get(parameter, null);
+            final String value = context.getEnvironmentVariables().get(environmentVariableName, null);
             if (value == null) {
                 return Sequence.EMPTY_SEQUENCE;
             }
