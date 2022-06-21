@@ -22,6 +22,7 @@
 package org.exist.xquery.functions.fn;
 
 import java.util.Map;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -41,29 +42,29 @@ import org.exist.xquery.value.ValueSequence;
 
 public class FunEnvironment extends BasicFunction {
 
-    protected static final Logger logger = LogManager.getLogger(FunEnvironment.class);
+    private static final Logger LOGGER = LogManager.getLogger(FunEnvironment.class);
 
     public final static FunctionSignature[] signature = {
-        new FunctionSignature(
-            new QName("available-environment-variables", Function.BUILTIN_FUNCTION_NS),
-            "Returns a list of environment variable names.",
-            null,
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE,
-            "Returns a sequence of strings, being the names of the environment variables. User must be DBA.")
-        ),
-        new FunctionSignature(
-            new QName("environment-variable", Function.BUILTIN_FUNCTION_NS),
-            "Returns the value of a system environment variable, if it exists.",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("name", Type.STRING,
-                    Cardinality.EXACTLY_ONE, "Name of environment variable.")
-            },
-            new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "Corrensponding value of the environment variable, "
-            + "if there is no environment variable with a matching name, the function returns the empty sequence. User must be DBA.")
-        )
+            new FunctionSignature(
+                    new QName("available-environment-variables", Function.BUILTIN_FUNCTION_NS),
+                    "Returns a list of environment variable names.",
+                    null,
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE,
+                            "Returns a sequence of strings, being the names of the environment variables. User must be DBA.")
+            ),
+            new FunctionSignature(
+                    new QName("environment-variable", Function.BUILTIN_FUNCTION_NS),
+                    "Returns the value of a system environment variable, if it exists.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("name", Type.STRING,
+                                    Cardinality.EXACTLY_ONE, "Name of environment variable.")
+                    },
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "Corrensponding value of the environment variable, "
+                            + "if there is no environment variable with a matching name, the function returns the empty sequence. User must be DBA.")
+            )
     };
 
-    public FunEnvironment(XQueryContext context, FunctionSignature signature) {
+    public FunEnvironment(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -72,7 +73,7 @@ public class FunEnvironment extends BasicFunction {
 
         if (!context.getSubject().hasDbaRole()) {
             final String txt = "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.";
-            logger.error(txt);
+            LOGGER.error(txt);
             return Sequence.EMPTY_SEQUENCE;
         }
 
