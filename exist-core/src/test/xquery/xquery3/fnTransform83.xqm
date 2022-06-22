@@ -19,28 +19,35 @@
  : License along with this library; if not, write to the Free Software
  : Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  :)
- 
+
 xquery version "3.1";
 
 module namespace testTransform="http://exist-db.org/xquery/test/function_transform";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
-declare variable $testTransform:transform-84-xsl := document {
-    <xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform' xmlns:xs='http://www.w3.org/2001/XMLSchema'
-                version='3.0'>
-                <xsl:template match='.' as='xs:integer'>
-                  <xsl:sequence select='. * .'/>
-                </xsl:template>
-            </xsl:stylesheet> };
+declare variable $testTransform:transform-83-xsl := document {
+<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+    <xsl:param name="debug" select="false()"/>
+
+    <xsl:template match="/">
+        <xsl:if test="$debug">
+            <xsl:message>STARTED</xsl:message>
+        </xsl:if>
+        <body>
+            <xsl:copy-of select="works"/>
+        </body>
+    </xsl:template>
+
+</xsl:stylesheet> };
 
 declare
-    %test:assertEquals(1,4,9,16,25)
-function testTransform:transform-err-18() {
-    let $xsl := $testTransform:transform-84-xsl
+    %test:assertEquals(2)
+function testTransform:transform-83() {
+    let $xsl := $testTransform:transform-83-xsl
     let $result := fn:transform(map{"stylesheet-node":$xsl,
-                               "delivery-format" : "raw",
-                               "initial-match-selection": 1 to 5
-                               })
-    return $result?output
+        "initial-match-selection": fn:doc('file://Users/alan/swProjects/evolvedBinary/exist-xqts-runner/work/qt3tests-master/docs/works-mod.xml')
+    })
+    return count($result?output//employee)
 };

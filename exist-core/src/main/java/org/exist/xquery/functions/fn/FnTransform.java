@@ -237,12 +237,23 @@ public class FnTransform extends BasicFunction {
                     }
                 } else {
                     if (options.initialMatchSelection.isPresent()) {
-                        final XdmValue selection = Convert.ToSaxon.of(options.initialMatchSelection.get());
-                        if (options.deliveryFormat == DeliveryFormat.RAW) {
-                            final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(selection));
-                            return makeResultMap(options, existValue, resultDocuments);
+                        final Sequence initialMatchSelection = options.initialMatchSelection.get();
+                        final Item item = initialMatchSelection.itemAt(0);
+                        if (item instanceof Document) {
+                            final Source sourceIMS = new DOMSource((Document)item, context.getBaseURI().getStringValue());
+                            if (options.deliveryFormat == DeliveryFormat.RAW) {
+                                final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(sourceIMS));
+                                return makeResultMap(options, existValue, resultDocuments);
+                            }
+                            xslt30Transformer.applyTemplates(sourceIMS, saxDestination);
+                        } else {
+                            final XdmValue selection = Convert.ToSaxon.of(initialMatchSelection);
+                            if (options.deliveryFormat == DeliveryFormat.RAW) {
+                                final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(selection));
+                                return makeResultMap(options, existValue, resultDocuments);
+                            }
+                            xslt30Transformer.applyTemplates(selection, saxDestination);
                         }
-                        xslt30Transformer.applyTemplates(selection, saxDestination);
                     } else if (sourceNode.isPresent()) {
                         if (options.deliveryFormat == DeliveryFormat.RAW) {
                             final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(sourceNode.get()));
