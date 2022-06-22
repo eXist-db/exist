@@ -534,86 +534,78 @@ public class FnTransform extends BasicFunction {
         throw new XPathException(this, ErrorCodes.FOXT0002, "Unable to extract version from XSLT via STaX");
     }
 
-    private static final Option<AnyURIValue> BASE_OUTPUT_URI = new Option<>(
+    private static final Option<AnyURIValue> BASE_OUTPUT_URI = new ItemOption<>(
             Type.STRING, "base-output-uri", v1_0, v2_0, v3_0);
-    private static final Option<BooleanValue> CACHE = new Option<>(
+    private static final Option<BooleanValue> CACHE = new ItemOption<>(
             Type.BOOLEAN, "cache", BooleanValue.TRUE, v1_0, v2_0, v3_0);
-    private static final Option<StringValue> DELIVERY_FORMAT = new Option<>(
+    private static final Option<StringValue> DELIVERY_FORMAT = new ItemOption<>(
             Type.STRING, "delivery-format", new StringValue("document"), v1_0, v2_0, v3_0);
-    private static final Option<BooleanValue> ENABLE_ASSERTIONS = new Option<>(
+    private static final Option<BooleanValue> ENABLE_ASSERTIONS = new ItemOption<>(
             Type.BOOLEAN, "enable-assertions", BooleanValue.FALSE, v3_0);
-    private static final Option<BooleanValue> ENABLE_MESSAGES = new Option<>(
+    private static final Option<BooleanValue> ENABLE_MESSAGES = new ItemOption<>(
             Type.BOOLEAN, "enable-messages", BooleanValue.TRUE, v1_0, v2_0, v3_0);
-    private static final Option<BooleanValue> ENABLE_TRACE = new Option<>(
+    private static final Option<BooleanValue> ENABLE_TRACE = new ItemOption<>(
             Type.BOOLEAN, "enable-trace", BooleanValue.TRUE, v2_0, v3_0);
-    private static final Option<ArrayType> FUNCTION_PARAMS = new Option<>(
+    private static final Option<ArrayType> FUNCTION_PARAMS = new ItemOption<>(
             Type.ARRAY,"function-params", v3_0);
-    private static final Option<Item> GLOBAL_CONTEXT_ITEM = new Option<>(
+    private static final Option<Item> GLOBAL_CONTEXT_ITEM = new ItemOption<>(
             Type.ITEM, "global-context-item", v3_0);
-    private static final Option<QNameValue> INITIAL_FUNCTION = new Option<>(
+    private static final Option<QNameValue> INITIAL_FUNCTION = new ItemOption<>(
             Type.QNAME,"initial-function", v3_0);
-    private static final Option<Item> INITIAL_MATCH_SELECTION = new Option<>(
-            Type.ITEM,"initial-match-selection", v3_0);
-    private static final Option<QNameValue> INITIAL_MODE = new Option<>(
+    private static final Option<Sequence> INITIAL_MATCH_SELECTION = new SequenceOption<>(
+            Type.ATOMIC,Type.NODE, "initial-match-selection", v3_0);
+    private static final Option<QNameValue> INITIAL_MODE = new ItemOption<>(
             Type.QNAME,"initial-mode", v1_0, v2_0, v3_0);
-    private static final Option<QNameValue> INITIAL_TEMPLATE = new Option<>(
+    private static final Option<QNameValue> INITIAL_TEMPLATE = new ItemOption<>(
             Type.QNAME,"initial-template", v2_0, v3_0);
-    private static final Option<StringValue> PACKAGE_NAME = new Option<>(
+    private static final Option<StringValue> PACKAGE_NAME = new ItemOption<>(
             Type.STRING,"package-name", v3_0);
-    private static final Option<StringValue> PACKAGE_LOCATION = new Option<>(
+    private static final Option<StringValue> PACKAGE_LOCATION = new ItemOption<>(
             Type.STRING,"package-location", v3_0);
-    private static final Option<NodeValue> PACKAGE_NODE = new Option<>(
+    private static final Option<NodeValue> PACKAGE_NODE = new ItemOption<>(
             Type.NODE,"package-node", v3_0);
-    private static final Option<StringValue> PACKAGE_TEXT = new Option<>(
+    private static final Option<StringValue> PACKAGE_TEXT = new ItemOption<>(
             Type.STRING,"package-text", v3_0);
-    private static final Option<StringValue> PACKAGE_VERSION = new Option<>(
+    private static final Option<StringValue> PACKAGE_VERSION = new ItemOption<>(
             Type.STRING,"package-version", new StringValue("*"), v3_0);
-    private static final Option<FunctionReference> POST_PROCESS = new Option<>(
+    private static final Option<FunctionReference> POST_PROCESS = new ItemOption<>(
             Type.FUNCTION_REFERENCE,"post-process", v1_0, v2_0, v3_0);
-    private static final Option<MapType> REQUESTED_PROPERTIES = new Option<>(
+    private static final Option<MapType> REQUESTED_PROPERTIES = new ItemOption<>(
             Type.MAP,"requested-properties", v1_0, v2_0, v3_0);
-    private static final Option<MapType> SERIALIZATION_PARAMS = new Option<>(
+    private static final Option<MapType> SERIALIZATION_PARAMS = new ItemOption<>(
             Type.MAP,"serialization-params", v1_0, v2_0, v3_0);
-    private static final Option<NodeValue> SOURCE_NODE = new Option<>(
+    private static final Option<NodeValue> SOURCE_NODE = new ItemOption<>(
             Type.NODE,"source-node", v1_0, v2_0, v3_0);
-    private static final Option<MapType> STATIC_PARAMS = new Option<>(
+    private static final Option<MapType> STATIC_PARAMS = new ItemOption<>(
             Type.MAP,"static-params", v3_0);
-    private static final Option<StringValue> STYLESHEET_BASE_URI = new Option<>(
+    private static final Option<StringValue> STYLESHEET_BASE_URI = new ItemOption<>(
             Type.STRING, "stylesheet-base-uri", v1_0, v2_0, v3_0);
-    private static final Option<StringValue> STYLESHEET_LOCATION = new Option<>(
+    private static final Option<StringValue> STYLESHEET_LOCATION = new ItemOption<>(
             Type.STRING,"stylesheet-location", v1_0, v2_0, v3_0);
-    private static final Option<NodeValue> STYLESHEET_NODE = new Option<>(
+    private static final Option<NodeValue> STYLESHEET_NODE = new ItemOption<>(
             Type.NODE,"stylesheet-node", v1_0, v2_0, v3_0);
-    private static final Option<MapType> STYLESHEET_PARAMS = new Option<>(
+    private static final Option<MapType> STYLESHEET_PARAMS = new ItemOption<>(
             Type.MAP,"stylesheet-params", v1_0, v2_0, v3_0);
-    private static final Option<StringValue> STYLESHEET_TEXT = new Option<>(
+    private static final Option<StringValue> STYLESHEET_TEXT = new ItemOption<>(
             Type.STRING,"stylesheet-text", v1_0, v2_0, v3_0);
-    private static final Option<MapType> TEMPLATE_PARAMS = new Option<>(
+    private static final Option<MapType> TEMPLATE_PARAMS = new ItemOption<>(
             Type.MAP,"template-params", v3_0);
-    private static final Option<MapType> TUNNEL_PARAMS = new Option<>(
+    private static final Option<MapType> TUNNEL_PARAMS = new ItemOption<>(
             Type.MAP,"tunnel-params", v3_0);
-    private static final Option<MapType> VENDOR_OPTIONS = new Option<>(
+    private static final Option<MapType> VENDOR_OPTIONS = new ItemOption<>(
             Type.MAP,"vendor-options", v1_0, v2_0, v3_0);
-    private static final Option<DecimalValue> XSLT_VERSION = new Option<>(
+    private static final Option<DecimalValue> XSLT_VERSION = new ItemOption<>(
             Type.DECIMAL,"xslt-version", v1_0, v2_0, v3_0);
 
-    static class Option<T extends Item> {
+    static abstract class Option<T> {
         public static final float v1_0 = 1.0f;
         public static final float v2_0 = 2.0f;
         public static final float v3_0 = 3.0f;
 
-        private final StringValue name;
-        private final Optional<T> defaultValue;
-        private final float[] appliesToVersions;
-        private final int itemSubtype;
-
-        public Option(final int itemSubtype, final String name, final float... appliesToVersions) {
-            this(itemSubtype, name, Optional.empty(), appliesToVersions);
-        }
-
-        public Option(final int itemSubtype, final String name, @Nullable final T defaultValue, final float... appliesToVersions) {
-            this(itemSubtype, name, Optional.ofNullable(defaultValue), appliesToVersions);
-        }
+        protected final StringValue name;
+        protected final Optional<T> defaultValue;
+        protected final float[] appliesToVersions;
+        protected final int itemSubtype;
 
         private Option(final int itemSubtype, final String name, final Optional<T> defaultValue, final float... appliesToVersions) {
             this.name = new StringValue(name);
@@ -622,6 +614,74 @@ public class FnTransform extends BasicFunction {
             this.itemSubtype = itemSubtype;
         }
 
+        public abstract Optional<T> get(final MapType options) throws XPathException;
+
+        private boolean notApplicableToVersion(final float xsltVersion) {
+            for (final float appliesToVersion : appliesToVersions) {
+                if (xsltVersion == appliesToVersion) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public Optional<T> get(final float xsltVersion, final MapType options) throws XPathException {
+            if (notApplicableToVersion(xsltVersion)) {
+                return Optional.empty();
+            }
+            
+            return get(options);
+        }
+    }
+
+    static class SequenceOption<T extends Sequence> extends Option<T> {
+
+        private final int sequenceSubtype;
+
+        public SequenceOption(final int sequenceSubtype, final int itemSubtype, final String name, final float... appliesToVersions) {
+            super(itemSubtype, name, Optional.empty(), appliesToVersions);
+            this.sequenceSubtype = sequenceSubtype;
+        }
+
+        public SequenceOption(final int sequenceSubtype, final int itemSubtype, final String name, @Nullable final T defaultValue, final float... appliesToVersions) {
+            super(itemSubtype, name, Optional.ofNullable(defaultValue), appliesToVersions);
+            this.sequenceSubtype = sequenceSubtype;
+        }
+
+        @Override
+        public Optional<T> get(final MapType options) throws XPathException {
+            if (options.contains(name)) {
+                final Sequence sequence = options.get(name);
+                if (sequence != null) {
+                    if (Type.subTypeOf(sequence.getItemType(), sequenceSubtype)) {
+                        return Optional.of((T) sequence);
+                    }
+                    final Item item0 = options.get(name).itemAt(0);
+                    if (item0 != null) {
+                        if (Type.subTypeOf(item0.getType(), itemSubtype)) {
+                            return Optional.of((T) item0);
+                        } else {
+                            throw new XPathException(
+                                    ErrorCodes.XPTY0004, "Type error: expected " + Type.getTypeName(itemSubtype) + ", got " + Type.getTypeName(sequence.getItemType()));
+                        }
+                    }
+                }
+            }
+            return defaultValue;
+        }
+    }
+
+    static class ItemOption<T extends Item> extends Option<T> {
+
+        public ItemOption(final int itemSubtype, final String name, final float... appliesToVersions) {
+            super(itemSubtype, name, Optional.empty(), appliesToVersions);
+        }
+
+        public ItemOption(final int itemSubtype, final String name, @Nullable final T defaultValue, final float... appliesToVersions) {
+            super(itemSubtype, name, Optional.ofNullable(defaultValue), appliesToVersions);
+        }
+
+        @Override
         public Optional<T> get(final MapType options) throws XPathException {
             if (options.contains(name)) {
                 final Item item0 = options.get(name).itemAt(0);
@@ -634,27 +694,6 @@ public class FnTransform extends BasicFunction {
                     }
                 }
             }
-            return defaultValue;
-        }
-
-        private boolean notApplicableToVersion(final float xsltVersion) {
-            for (final float appliesToVersion : appliesToVersions) {
-                if (xsltVersion == appliesToVersion) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public Optional<T> get(final float xsltVersion, final MapType options) {
-            if (notApplicableToVersion(xsltVersion)) {
-                return Optional.empty();
-            }
-
-            if (options.contains(name)) {
-                return Optional.of((T)options.get(name).itemAt(0));
-            }
-
             return defaultValue;
         }
     }
@@ -740,7 +779,7 @@ public class FnTransform extends BasicFunction {
         final Optional<QNameValue> initialTemplate;
         final Optional<QNameValue> initialMode;
         final Optional<NodeValue> sourceNode;
-        final Optional<Item> initialMatchSelection;
+        final Optional<Sequence> initialMatchSelection;
         final Optional<BooleanValue> shouldCache;
         final DeliveryFormat deliveryFormat;
         final Optional<AnyURIValue> baseOutputURI;
@@ -812,8 +851,8 @@ public class FnTransform extends BasicFunction {
             try {
                 deliveryFormat = DeliveryFormat.valueOf(string);
             } catch (final IllegalArgumentException ie) {
-                throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied " + FnTransform.DELIVERY_FORMAT.name +
-                        " is not a valid " + FnTransform.DELIVERY_FORMAT.name);
+                throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002,
+                        ": \"" + string + "\" is not a valid " + FnTransform.DELIVERY_FORMAT.name);
             }
             /* TODO (AP) it's unclear (spec vs XQTS) if this is meant to happen, or not ??
             if (deliveryFormat == DeliveryFormat.RAW && xsltVersion < 3.0f) {

@@ -34,9 +34,13 @@ declare variable $testTransform:transform-84-xsl := document {
             </xsl:stylesheet> };
 
 declare
-    %test:assertEquals("Peppa pig")
+    %test:assertEquals(1,4,9,16,25)
 function testTransform:transform-err-18() {
     let $xsl := $testTransform:transform-84-xsl
+    let $result0 := fn:transform(map{"stylesheet-location" : "http://www.w3.org/fots/fn/transform/staticbaseuri.xsl",
+                               "delivery-format" : "raw",
+                               "initial-match-selection": 1 to 5
+                               })
     let $result := fn:transform(map{"stylesheet-node":$xsl,
                                "delivery-format" : "raw",
                                "initial-match-selection": 1 to 5
