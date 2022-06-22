@@ -195,14 +195,18 @@ public class FnTransform extends BasicFunction {
 
                 final SAXDestination saxDestination = new SAXDestination(builderReceiver);
                 if (options.initialFunction.isPresent()) {
-                    final QName qName = options.initialFunction.get().getQName();
+                    final net.sf.saxon.s9api.QName qName = Convert.ToSaxon.of(options.initialFunction.get().getQName());
                     final XdmValue[] functionParams;
                     if (options.functionParams.isPresent()) {
                         functionParams = Convert.ToSaxon.of(options.functionParams.get());
                     } else {
                         functionParams = new XdmValue[0];
                     }
-                    xslt30Transformer.callFunction(Convert.ToSaxon.of(qName), functionParams, saxDestination);
+                    if (options.deliveryFormat == DeliveryFormat.RAW) {
+                        final Sequence existValue = Convert.ToExist.of(xslt30Transformer.callFunction(qName, functionParams));
+                        return makeResultMap(options, existValue, resultDocuments);
+                    }
+                    xslt30Transformer.callFunction(qName, functionParams, saxDestination);
                 } else if (options.initialTemplate.isPresent()) {
                     if (options.initialMode.isPresent()) {
                         throw new XPathException(this, ErrorCodes.FOXT0002,
