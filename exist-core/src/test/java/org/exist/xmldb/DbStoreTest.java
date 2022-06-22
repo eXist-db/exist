@@ -1,3 +1,24 @@
+/*
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
+ *
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 package org.exist.xmldb;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
@@ -9,38 +30,19 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XPathQueryService;
 
-import javax.print.URIException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
-
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Due to limitation of ExistXmldbEmbeddedServer we need to split this test to two files.
+ * It's not possible to have two instances of ExistXmldbEmbeddedServer at the same time.
+ */
 public class DbStoreTest {
 
-    @ClassRule(order = 1)
+    @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    @ClassRule(order = 2)
-    public static final ExistXmldbEmbeddedServer existEmbeddedServerWithAnyURI = new ExistXmldbEmbeddedServer(false, true,
-            true, getConfig(), UUID.randomUUID().toString());
-
-
     private final static String TEST_COLLECTION = "testAnyUri";
-
-    private final static Path getConfig() {
-        try {
-            //org/exist/xmldb/any-uri-enabled.xml
-            final URL path = DbStoreTest.class.getClassLoader().getResource("org/exist/xmldb/any-uri-enabled.xml");
-            return Paths.get(path.toURI());
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("unable to parse URI for resourse", e);
-        }
-    }
 
     @Test(expected = XMLDBException.class)
     public final void simpleTest() throws XMLDBException {
@@ -65,30 +67,5 @@ public class DbStoreTest {
 
         assertTrue(true);
     }
-
-    @Test
-    public final void testWithAnyUriEnabled() throws XMLDBException {
-        final Collection rootCol = existEmbeddedServerWithAnyURI.getRoot();
-        Collection testCol = rootCol.getChildCollection(TEST_COLLECTION);
-        if (testCol == null) {
-            testCol = DBUtils.addCollection(rootCol, TEST_COLLECTION);
-            assertNotNull(testCol);
-        }
-
-        final XPathQueryService xpqs =
-                (XPathQueryService) testCol.getService("XPathQueryService", "1.0");
-        final ResourceSet rs =
-                xpqs.query(
-                        "xmldb:store(\n" +
-                                "        '/db',\n" +
-                                "        'image.jpg',\n" +
-                                "        xs:anyURI('https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'),\n" +
-                                "        'image/png'\n" +
-                                "    )");
-        assertNotNull(rs);
-
-        assertTrue(true);
-    }
-
 
 }

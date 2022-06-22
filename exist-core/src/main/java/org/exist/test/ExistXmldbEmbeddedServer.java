@@ -98,18 +98,6 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
         this.asGuest = asGuest;
     }
 
-    /**
-     * @param asGuest Use the guest account, default is the admin account
-     * @param disableAutoDeploy Whether auto-deployment of XARs should be disabled
-     * @param useTemporaryStorage Whether the data and journal folder should use temporary storage
-     * @param configFile path to eXist-db's conf.xml configuration file
-     */
-    public ExistXmldbEmbeddedServer(final boolean asGuest, final boolean disableAutoDeploy, final boolean useTemporaryStorage, @Nullable final Path configFile,
-                                    @Nullable final String instanceName) {
-        this.existEmbeddedServer = new ExistEmbeddedServer(instanceName, configFile, null, disableAutoDeploy, useTemporaryStorage);
-        this.asGuest = asGuest;
-    }
-
     @Override
     protected void before() throws Throwable {
         startDb();
