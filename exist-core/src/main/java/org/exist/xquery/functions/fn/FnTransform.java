@@ -224,8 +224,7 @@ public class FnTransform extends BasicFunction {
                     //TODO (AP) - e.g. fn-transform-63 from XQTS has a <xsl:template name='main' as='xs:integer'>
                     //TODO (AP) - which alongside "delivery-format":"raw" fails to deliver an int
                     if (options.deliveryFormat == DeliveryFormat.RAW) {
-                        final XdmValue xdmValue = xslt30Transformer.callTemplate(Convert.ToSaxon.of(qName));
-                        final Sequence existValue = Convert.ToExist.of(xdmValue);
+                        final Sequence existValue = Convert.ToExist.of(xslt30Transformer.callTemplate(Convert.ToSaxon.of(qName)));
                         return makeResultMap(options, existValue, resultDocuments);
                     } else {
                         //TODO (AP) - The saxDestination conversion loses type information in some cases
@@ -234,8 +233,17 @@ public class FnTransform extends BasicFunction {
                     }
                 } else {
                     if (options.initialMatchSelection.isPresent()) {
-                        xslt30Transformer.applyTemplates(Convert.ToSaxon.of(options.initialMatchSelection.get()), saxDestination);
+                        final XdmValue selection = Convert.ToSaxon.of(options.initialMatchSelection.get());
+                        if (options.deliveryFormat == DeliveryFormat.RAW) {
+                            final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(selection));
+                            return makeResultMap(options, existValue, resultDocuments);
+                        }
+                        xslt30Transformer.applyTemplates(selection, saxDestination);
                     } else if (sourceNode.isPresent()) {
+                        if (options.deliveryFormat == DeliveryFormat.RAW) {
+                            final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(sourceNode.get()));
+                            return makeResultMap(options, existValue, resultDocuments);
+                        }
                         xslt30Transformer.applyTemplates(sourceNode.get(), saxDestination);
                     } else {
                         throw new XPathException(this,

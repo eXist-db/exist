@@ -27,6 +27,8 @@ import net.sf.saxon.s9api.XdmNode;
 import net.sf.saxon.s9api.XdmValue;
 import net.sf.saxon.type.BuiltInAtomicType;
 import org.exist.dom.QName;
+import org.exist.dom.memtree.ElementImpl;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.array.ArrayType;
@@ -62,22 +64,15 @@ class Convert {
                 return Sequence.EMPTY_SEQUENCE;
             }
 
-            XdmItem item = null;
-            if (xdmValue instanceof XdmItem) {
-                item = (XdmItem)xdmValue;
-            } else if (xdmValue.size() == 1) {
-                item = xdmValue.itemAt(0);
-            }
-            if (item != null) {
-                return ToExist.ofItem(item);
-            }
+            final ValueSequence valueSequence = new ValueSequence();
+            for (final XdmItem xdmItem : xdmValue) {
 
-            throw new XPathException(ErrorCodes.XPTY0004,
-                    "XdmValue " + xdmValue +
-                            " could not be converted to an eXist Sequence");
+                valueSequence.add(ToExist.ofItem(xdmItem));
+            }
+            return valueSequence;
         }
 
-        static Sequence ofItem(final XdmItem xdmItem) throws XPathException {
+        static Item ofItem(final XdmItem xdmItem) throws XPathException {
 
             if (xdmItem.isAtomicValue()) {
                 final net.sf.saxon.value.AtomicValue atomicValue = (net.sf.saxon.value.AtomicValue) xdmItem.getUnderlyingValue();
@@ -91,17 +86,19 @@ class Convert {
                                     " could not be converted to an eXist Sequence");
                 }
             } else if (xdmItem instanceof XdmNode) {
-                final XdmNode xdmNode = (XdmNode)xdmItem;
-                final Sequence sequence = new ValueSequence();
-                for (final XdmNode child : xdmNode.children()) {
-                    //TODO (AP) sequence.add(ofItem(child));
-                }
-                return sequence;
+                return ToExist.ofNode((XdmNode)xdmItem);
             }
 
             throw new XPathException(ErrorCodes.XPTY0004,
                     "XdmItem " + xdmItem +
                             " could not be converted to an eXist Sequence");
+        }
+
+        static NodeValue ofNode(final XdmNode xdmNode) throws XPathException {
+
+            throw new XPathException(ErrorCodes.XPTY0004,
+                    "XdmNode " + xdmNode +
+                            " could not be converted to an eXist Node, Not yet implemented");
         }
     }
 
@@ -115,18 +112,18 @@ class Convert {
             return of(qName.getQName());
         }
 
-        static XdmValue of(final Item item) throws XPathException {
+        static XdmItem of(final Item item) throws XPathException {
             final int itemType = item.getType();
             if (Type.subTypeOf(itemType, Type.ATOMIC)) {
                 final AtomicValue atomicValue = (AtomicValue) item;
                 if (Type.subTypeOf(itemType, Type.INTEGER)) {
-                    return XdmValue.makeValue(((IntegerValue) atomicValue).getInt());
+                    return (XdmItem)XdmValue.makeValue(((IntegerValue) atomicValue).getInt());
                 } else if (Type.subTypeOf(itemType, Type.NUMBER)) {
-                    return XdmValue.makeValue(((NumericValue) atomicValue).getDouble());
+                    return (XdmItem)XdmValue.makeValue(((NumericValue) atomicValue).getDouble());
                 } else if (Type.subTypeOf(itemType, Type.BOOLEAN)) {
-                    return XdmValue.makeValue(((BooleanValue) atomicValue).getValue());
+                    return (XdmItem)XdmValue.makeValue(((BooleanValue) atomicValue).getValue());
                 } else if (Type.subTypeOf(itemType, Type.STRING)) {
-                    return XdmValue.makeValue(((StringValue) atomicValue).getStringValue());
+                    return (XdmItem)XdmValue.makeValue(((StringValue) atomicValue).getStringValue());
                 }
             }
             throw new XPathException(ErrorCodes.XPTY0004,
@@ -148,9 +145,9 @@ class Convert {
             return XdmValue.makeSequence(ToSaxon.listOf(value));
         }
 
-        static private List<Object> listOf(final Sequence value) throws XPathException {
+        static private List<XdmItem> listOf(final Sequence value) throws XPathException {
             final int size = value.getItemCount();
-            final List<Object> result = new ArrayList<>(size);
+            final List<XdmItem> result = new ArrayList<>(size);
             for (int i = 0; i < size; i++) {
                 result.add(ToSaxon.of(value.itemAt(i)));
             }
