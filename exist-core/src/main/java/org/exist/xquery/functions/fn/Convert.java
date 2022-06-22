@@ -119,7 +119,9 @@ class Convert {
             final int itemType = item.getType();
             if (Type.subTypeOf(itemType, Type.ATOMIC)) {
                 final AtomicValue atomicValue = (AtomicValue) item;
-                if (Type.subTypeOf(itemType, Type.NUMBER)) {
+                if (Type.subTypeOf(itemType, Type.INTEGER)) {
+                    return XdmValue.makeValue(((IntegerValue) atomicValue).getInt());
+                } else if (Type.subTypeOf(itemType, Type.NUMBER)) {
                     return XdmValue.makeValue(((NumericValue) atomicValue).getDouble());
                 } else if (Type.subTypeOf(itemType, Type.BOOLEAN)) {
                     return XdmValue.makeValue(((BooleanValue) atomicValue).getValue());

@@ -47,10 +47,7 @@ import org.exist.xquery.util.DocUtils;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.exist.xslt.EXistURIResolver;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
@@ -72,7 +69,10 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -233,11 +233,18 @@ public class FnTransform extends BasicFunction {
                         xslt30Transformer.callTemplate(Convert.ToSaxon.of(qName), saxDestination);
                     }
                 } else {
-                    if (!sourceNode.isPresent()) {
-                        // TODO (AP) OK if initial match selection is supplied instead, not yet implemented
-                        throw new XPathException(this, ErrorCodes.FOXT0002, SOURCE_NODE.name + " not supplied");
+                    if (options.initialMatchSelection.isPresent()) {
+                        xslt30Transformer.applyTemplates(Convert.ToSaxon.of(options.initialMatchSelection.get()), saxDestination);
+                    } else if (sourceNode.isPresent()) {
+                        xslt30Transformer.applyTemplates(sourceNode.get(), saxDestination);
+                    } else {
+                        throw new XPathException(this,
+                                ErrorCodes.FOXT0002,
+                                "One of " + SOURCE_NODE.name + " or " +
+                                        INITIAL_MATCH_SELECTION.name + " or " +
+                                        INITIAL_TEMPLATE.name + " or " +
+                                        INITIAL_FUNCTION.name + " is required.");
                     }
-                    xslt30Transformer.applyTemplates(sourceNode.get(), saxDestination);
                 }
                 return makeResultMap(options, builder.getDocument(), resultDocuments);
 
@@ -338,7 +345,30 @@ public class FnTransform extends BasicFunction {
     }
 
     private static Sequence rawOutput(final NodeValue outputDocument) throws XPathException {
-        throw new XPathException(ErrorCodes.XPTY0004, "Seocndary document raw output is not yet implemented");
+        final Node node = outputDocument.getNode();
+        if (node != null) {
+            final NodeList children = node.getChildNodes();
+            final int length = children.getLength();
+            if (length == 0) {
+                return Sequence.EMPTY_SEQUENCE;
+            } else if (length == 1) {
+                final Node item = children.item(0);
+                if (item instanceof NodeValue) {
+                    return (NodeValue)item;
+                }
+            } else {
+                final ValueSequence valueSequence = new ValueSequence();
+                for (int i = 0; i < children.getLength(); i++) {
+                    final Node child = children.item(i);
+                    if (child instanceof NodeValue) {
+                        valueSequence.add((NodeValue)child);
+                    }
+                }
+                return valueSequence;
+            }
+            throw new XPathException(ErrorCodes.XPTY0004, "Unable to produce raw output from contents of: " + outputDocument);
+        }
+        return Sequence.EMPTY_SEQUENCE;
     }
 
     private static Optional<Source> getSourceNode(final Optional<NodeValue> sourceNode, final AnyURIValue baseURI) {
@@ -604,16 +634,7 @@ public class FnTransform extends BasicFunction {
                     }
                 }
             }
-
             return defaultValue;
-        }
-
-        public Optional<Sequence> getSeq(final MapType options) {
-            if (options.contains(name)) {
-                return Optional.of(options.get(name));
-            }
-
-            return defaultValue.map(ValueSequence::new);
         }
 
         private boolean notApplicableToVersion(final float xsltVersion) {
@@ -635,18 +656,6 @@ public class FnTransform extends BasicFunction {
             }
 
             return defaultValue;
-        }
-
-        public Optional<Sequence> getSeq(final float xsltVersion, final MapType options) {
-            if (notApplicableToVersion(xsltVersion)) {
-                return Optional.empty();
-            }
-
-            if (options.contains(name)) {
-                return Optional.of(options.get(name));
-            }
-
-            return defaultValue.map(ValueSequence::new);
         }
     }
 
@@ -731,6 +740,7 @@ public class FnTransform extends BasicFunction {
         final Optional<QNameValue> initialTemplate;
         final Optional<QNameValue> initialMode;
         final Optional<NodeValue> sourceNode;
+        final Optional<Item> initialMatchSelection;
         final Optional<BooleanValue> shouldCache;
         final DeliveryFormat deliveryFormat;
         final Optional<AnyURIValue> baseOutputURI;
@@ -743,8 +753,6 @@ public class FnTransform extends BasicFunction {
             for (final IEntry<AtomicValue, Sequence> entry : stylesheetParams) {
                 if (!(entry.key() instanceof QNameValue)) {
                     throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied stylesheet-param is not a valid xs:qname: " + entry);
-                } else {
-                    System.err.println("[VALID QNAME]: " + entry.key());
                 }
                 if (!(entry.value() instanceof Sequence)) {
                     throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied stylesheet-param is not a valid xs:sequence: " + entry);
@@ -782,6 +790,12 @@ public class FnTransform extends BasicFunction {
             staticParams = readParamsMap(FnTransform.STATIC_PARAMS.get(options), FnTransform.STATIC_PARAMS.name.getStringValue());
 
             sourceNode = FnTransform.SOURCE_NODE.get(options);
+            initialMatchSelection = FnTransform.INITIAL_MATCH_SELECTION.get(options);
+            if (sourceNode.isPresent() && initialMatchSelection.isPresent()) {
+                throw new XPathException(ErrorCodes.FOXT0002,
+                        "Both " + SOURCE_NODE.name + " and " + INITIAL_MATCH_SELECTION.name + " were supplied. " +
+                                "These options cannot both be supplied.");
+            }
 
             shouldCache = FnTransform.CACHE.get(xsltVersion, options);
 
@@ -801,6 +815,12 @@ public class FnTransform extends BasicFunction {
                 throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied " + FnTransform.DELIVERY_FORMAT.name +
                         " is not a valid " + FnTransform.DELIVERY_FORMAT.name);
             }
+            /* TODO (AP) it's unclear (spec vs XQTS) if this is meant to happen, or not ??
+            if (deliveryFormat == DeliveryFormat.RAW && xsltVersion < 3.0f) {
+                throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied " + FnTransform.DELIVERY_FORMAT.name +
+                        " is not valid when using XSLT version " + xsltVersion);
+            }
+             */
             return deliveryFormat;
         }
     }
