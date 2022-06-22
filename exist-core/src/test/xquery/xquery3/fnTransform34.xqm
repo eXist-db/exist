@@ -26,7 +26,7 @@ module namespace testTransform="http://exist-db.org/xquery/test/function_transfo
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
-declare variable $testTransform:transform-84-xsl := document {
+declare variable $testTransform:transform-34-xsl := document {
     <xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform' xmlns:xs='http://www.w3.org/2001/XMLSchema'
                 version='3.0'>
                 <xsl:template match='.' as='xs:integer'>
@@ -35,12 +35,11 @@ declare variable $testTransform:transform-84-xsl := document {
             </xsl:stylesheet> };
 
 declare
-    %test:assertEquals(1,4,9,16,25)
-function testTransform:transform-err-18() {
-    let $xsl := $testTransform:transform-84-xsl
-    let $result := fn:transform(map{"stylesheet-node":$xsl,
-                               "delivery-format" : "raw",
-                               "initial-match-selection": 1 to 5
-                               })
-    return $result?output
+    %test:assertTrue
+function testTransform:transform-34() {
+    let $xsl := $testTransform:transform-34-xsl
+    let $result := fn:transform(map {"stylesheet-node" : $xsl, "source-node" : parse-xml("<doc>this</doc>"),
+                               "base-output-uri" : resolve-uri("transform/sandbox/fn-transform-34.xml", "file://Users/alan"),
+                               "delivery-format" : "document"})
+    return $result?*
 };

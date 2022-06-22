@@ -558,7 +558,7 @@ public class FnTransform extends BasicFunction {
     }
 
     private static final Option<AnyURIValue> BASE_OUTPUT_URI = new ItemOption<>(
-            Type.STRING, "base-output-uri", v1_0, v2_0, v3_0);
+            Type.ANY_URI, "base-output-uri", v1_0, v2_0, v3_0);
     private static final Option<BooleanValue> CACHE = new ItemOption<>(
             Type.BOOLEAN, "cache", BooleanValue.TRUE, v1_0, v2_0, v3_0);
     private static final Option<StringValue> DELIVERY_FORMAT = new ItemOption<>(
