@@ -19,7 +19,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.xmldb;
+package org.exist.xquery.functions.xmldb;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.concurrent.DBUtils;
@@ -60,7 +60,7 @@ public class DbStoreTest {
                         "xmldb:store(\n" +
                                 "        '/db',\n" +
                                 "        'image.jpg',\n" +
-                                "        xs:anyURI('https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'),\n" +
+                                "        xs:anyURI('https://www.example.com/image.jpg'),\n" +
                                 "        'image/png'\n" +
                                 "    )");
         assertNotNull(rs);

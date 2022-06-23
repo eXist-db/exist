@@ -107,13 +107,13 @@ public class XMLDBModule extends AbstractInternalModule {
             new FunctionDef(XMLDBAuthenticate.loginSignatures[1], XMLDBAuthenticate.class)
     };
 
+    private boolean anyUriDisabled = true;
+
     static {
         Arrays.sort(functions, new FunctionComparator());
     }
 
-    private boolean anyUriDisabled = true;
-
-    public XMLDBModule(Map<String, List<?>> parameters) {
+    public XMLDBModule(final Map<String, List<?>> parameters) {
         super(functions, parameters, true);
 
         final List<String> anyUriDisabledParameterList = (List<String>) getParameter("anyUriDisabled");

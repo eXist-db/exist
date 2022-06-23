@@ -19,7 +19,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.xmldb;
+package org.exist.xquery.functions.xmldb;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Handler;
@@ -65,6 +65,7 @@ public class DbStoreTest2 {
     private static Path jettyRootDir = null;
     private static Path pictureLocation = null;
 
+    //Second jetty server to mock HTTP resources for tests.
     private static Server jettyServer = null;
     private static int jettyPort = 30350;
 
@@ -86,21 +87,18 @@ public class DbStoreTest2 {
         largeFileLocation = jettyRootDir.resolve("large-file.bin");
         pictureLocation = jettyRootDir.resolve("picture.jpg");
 
-        System.out.println("generating temp file : " + largeFileLocation.toAbsolutePath().toString());
-        System.out.println("generating temp file : " + largeFileLocation.getFileName().toString());
-
-        try (FileOutputStream fOut = new FileOutputStream(pictureLocation.toFile(), true)) {
-            byte buff[] = new byte[BUFFER_SIZE];
+        try (final FileOutputStream fOut = new FileOutputStream(pictureLocation.toFile(), true)) {
+            final byte buff[] = new byte[BUFFER_SIZE];
             fOut.write(buff);
         }
 
         jettyServer = new Server(jettyPort);
-        ResourceHandler resource_handler = new ResourceHandler();
+        final ResourceHandler resource_handler = new ResourceHandler();
         resource_handler.setDirectoriesListed(true);
-        String dir = jettyRootDir.toAbsolutePath().toFile().getCanonicalPath();
+        final String dir = jettyRootDir.toAbsolutePath().toFile().getCanonicalPath();
         resource_handler.setResourceBase(dir);
 
-        HandlerList handlers = new HandlerList();
+        final HandlerList handlers = new HandlerList();
         handlers.setHandlers(new Handler[]{resource_handler, new DefaultHandler()});
 
         jettyServer.setHandler(handlers);
@@ -140,8 +138,8 @@ public class DbStoreTest2 {
 
     @Test
     public final void testLargeFileStore() throws XMLDBException, IOException {
-        byte buff[] = new byte[BUFFER_SIZE];
-        try (FileOutputStream fOut = new FileOutputStream(largeFileLocation.toFile(), true)) {
+        final byte buff[] = new byte[BUFFER_SIZE];
+        try (final FileOutputStream fOut = new FileOutputStream(largeFileLocation.toFile(), true)) {
             for (long written = 0; written < FILE_SIZE; written += BUFFER_SIZE) {
                 fOut.write(buff);
             }
