@@ -803,10 +803,3 @@ function ser:item-separator-adaptive-method() {
     let $data := (1, 2)
     return ser:serialize-with-item-separator($data, "adaptive")
 };
-
-declare
-    %test:assertEquals("1--2")
-function ser:test() {
-    let $data := (1, 2)
-    return ser:serialize-with-item-separator($data, "xml")
-};
