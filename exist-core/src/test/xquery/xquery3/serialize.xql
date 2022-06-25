@@ -61,6 +61,18 @@ declare %private function ser:adaptive-map-params($data) {
     ser:adaptive-map-params($data, ())
 };
 
+declare %private function ser:serialize-with-item-separator($data as item()*, $method as xs:string) {
+    let $options :=
+        <output:serialization-parameters
+            xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
+            <output:method value="{$method}"/>
+            <output:indent>no</output:indent>
+            <output:item-separator>--</output:item-separator>
+        </output:serialization-parameters>
+    return
+        fn:serialize($data, $options)
+};
+
 declare variable $ser:atomic :=
     <atomic:root xmlns:atomic="http://www.w3.org/XQueryTest" xmlns:foo="http://www.example.com/foo"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -202,7 +214,8 @@ function ser:serialize-empty-params() {
 };
 
 declare
-    %test:assertEquals("aaa bbb")
+    %test:assertEquals("aaa
+bbb")
 function ser:serialize-atomic() {
     let $nodes := ("aaa", "bbb")
     return
@@ -754,4 +767,46 @@ declare
 function ser:exist-process-xsl-pi-false() {
     let $doc := doc($ser:collection || "/test-xsl.xml")
     return fn:serialize($doc, map {xs:QName("exist:process-xsl-pi"): false()})
+};
+
+declare
+    %test:assertEquals("1--2")
+function ser:item-separator-text-method() {
+    let $data := (1, 2)
+    return ser:serialize-with-item-separator($data, "text")
+};
+
+declare
+    %test:assertEquals("1--2")
+function ser:item-separator-html-method() {
+    let $data := (1, 2)
+    return ser:serialize-with-item-separator($data, "html")
+};
+
+declare
+    %test:assertEquals("1--2")
+function ser:item-separator-xhtml-method() {
+    let $data := (1, 2)
+    return ser:serialize-with-item-separator($data, "xhtml")
+};
+
+declare
+    %test:assertEquals("1--2")
+function ser:item-separator-xml-method() {
+    let $data := (1, 2)
+    return ser:serialize-with-item-separator($data, "xml")
+};
+
+declare
+    %test:assertEquals("1--2")
+function ser:item-separator-adaptive-method() {
+    let $data := (1, 2)
+    return ser:serialize-with-item-separator($data, "adaptive")
+};
+
+declare
+    %test:assertEquals("1--2")
+function ser:test() {
+    let $data := (1, 2)
+    return ser:serialize-with-item-separator($data, "xml")
 };

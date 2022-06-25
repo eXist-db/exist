@@ -25,6 +25,7 @@ import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.map.AbstractMapType;
@@ -40,6 +41,8 @@ import java.util.Properties;
 import static org.exist.Namespaces.XSLT_XQUERY_SERIALIZATION_NS;
 
 public class FunSerialize extends BasicFunction {
+
+    private final static String DEFAULT_ITEM_SEPARATOR = "\n";
 
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(
@@ -81,7 +84,8 @@ public class FunSerialize extends BasicFunction {
 
             Sequence seq = args[0];
             if (xqSerializer.normalize()) {
-                seq = normalize(this, context, seq);
+                final String itemSeparator = outputProperties.getProperty(EXistOutputKeys.ITEM_SEPARATOR, DEFAULT_ITEM_SEPARATOR);
+                seq = normalize(this, context, seq, itemSeparator);
             }
 
             xqSerializer.serialize(seq);
@@ -133,7 +137,7 @@ public class FunSerialize extends BasicFunction {
      * @return normalized sequence
      * @throws XPathException in case of dynamic error
      */
-    public static Sequence normalize(final Expression callingExpr, final XQueryContext context, final Sequence input) throws XPathException {
+    public static Sequence normalize(final Expression callingExpr, final XQueryContext context, final Sequence input, final String itemSeparator) throws XPathException {
         if (input.isEmpty())
             // "If the sequence that is input to serialization is empty, create a sequence S1 that consists of a zero-length string."
             {return StringValue.EMPTY_STRING;}
@@ -154,7 +158,7 @@ public class FunSerialize extends BasicFunction {
                     // "For each subsequence of adjacent strings in S2, copy a single string to the new sequence
                     // equal to the values of the strings in the subsequence concatenated in order, each separated
                     // by a single space."
-                    {((StringValue)last).append(" " + next.getStringValue());}
+                    {((StringValue)last).append((itemSeparator == null ? " " : itemSeparator) + next.getStringValue());}
                 else
                     // "For each item in S1, if the item is atomic, obtain the lexical representation of the item by
                     // casting it to an xs:string and copy the string representation to the new sequence;"
