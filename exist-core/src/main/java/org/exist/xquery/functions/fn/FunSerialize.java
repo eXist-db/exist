@@ -42,7 +42,7 @@ import static org.exist.Namespaces.XSLT_XQUERY_SERIALIZATION_NS;
 
 public class FunSerialize extends BasicFunction {
 
-    private final static String DEFAULT_ITEM_SEPARATOR = "\n";
+    private final static String DEFAULT_ITEM_SEPARATOR = " ";
 
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(
